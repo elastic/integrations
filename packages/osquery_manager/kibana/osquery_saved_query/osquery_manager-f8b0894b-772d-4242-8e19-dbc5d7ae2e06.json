@@ -1,6 +1,6 @@
 {
   "attributes": {
-    "created_at": "2025-11-04T12:00:00.000Z",
+    "created_at": "2025-11-05T09:19:01.000Z",
     "created_by": "elastic",
     "description": "Detect suspicious systemd units on Linux, excluding system paths but flagging user-writable directories and unusual locations",
     "ecs_mapping": [
@@ -52,14 +52,14 @@
     "id": "suspicious_systemd_linux_elastic",
     "interval": "3600",
     "platform": "linux",
-    "query": "SELECT \n  id, \n  description, \n  load_state, \n  active_state, \n  sub_state, \n  fragment_path, \n  unit_file_state \nFROM systemd_units \nWHERE fragment_path NOT LIKE '/lib/systemd/%' \n  AND fragment_path NOT LIKE '/usr/lib/systemd/%' \n  AND (\n    fragment_path LIKE '/tmp/%' \n    OR fragment_path LIKE '/home/%' \n    OR fragment_path LIKE '/var/tmp/%'\n  ) \n  AND id LIKE '%.service' OR id LIKE '%.timer' \n  AND (unit_file_state = 'enabled' OR active_state = 'active') \nORDER BY id \nLIMIT 100;",
-    "updated_at": "2025-11-04T12:00:00.000Z",
+    "query": "SELECT \n  id, \n  description, \n  load_state, \n  active_state, \n  sub_state, \n  fragment_path, \n  unit_file_state \nFROM systemd_units \nWHERE fragment_path NOT LIKE '/lib/systemd/%' \n  AND fragment_path NOT LIKE '/usr/lib/systemd/%' \n  AND (\n    fragment_path LIKE '/tmp/%' \n    OR fragment_path LIKE '/home/%' \n    OR fragment_path LIKE '/var/tmp/%'\n  ) \n  AND (id LIKE '%.service' OR id LIKE '%.timer') \n  AND (unit_file_state = 'enabled' OR active_state = 'active') \nORDER BY id \nLIMIT 100;",
+    "updated_at": "2025-11-05T09:19:01.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "8.8.0",
   "id": "osquery_manager-f8b0894b-772d-4242-8e19-dbc5d7ae2e06",
   "references": [],
   "type": "osquery-saved-query",
-  "updated_at": "2025-11-04T12:00:00.000Z",
+  "updated_at": "2025-11-05T09:19:01.000Z",
   "version": "Wzk2LDJd"
 }

@@ -1,6 +1,6 @@
 {
   "attributes": {
-    "created_at": "2025-01-29T12:00:00.000Z",
+    "created_at": "2025-11-05T09:19:01.000Z",
     "created_by": "elastic",
     "description": "Document network configuration and identify anomalies like VPN or tunnel interfaces",
     "ecs_mapping": [
@@ -77,13 +77,13 @@
     "id": "network_interfaces_baseline_elastic",
     "interval": "3600",
     "query": "SELECT \n  ia.interface AS interface_name, \n  ia.address, \n  ia.mask, \n  id.mac, \n  id.mtu, \n  id.flags, \n  id.type, \n  id.description, \n  CASE \n    WHEN id.description LIKE '%VPN%' THEN 'VPN' \n    WHEN id.description LIKE '%Virtual%' THEN 'Virtual' \n    WHEN id.description LIKE '%Tunnel%' THEN 'Tunnel' \n    WHEN id.description LIKE '%TAP%' THEN 'TAP' \n    ELSE 'Physical' \n  END AS interface_type \nFROM interface_addresses ia \nJOIN interface_details id ON ia.interface = id.interface \nWHERE ia.address NOT LIKE '::1%' \n  AND ia.address != '127.0.0.1' \n  AND ia.address NOT LIKE 'fe80::%' \nORDER BY interface_type, ia.interface;",
-    "updated_at": "2025-01-29T12:00:00.000Z",
+    "updated_at": "2025-11-05T09:19:01.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "8.8.0",
   "id": "osquery_manager-cafd7d30-52d9-495a-ba23-020e6fa06357",
   "references": [],
   "type": "osquery-saved-query",
-  "updated_at": "2025-01-29T12:00:00.000Z",
+  "updated_at": "2025-11-05T09:19:01.000Z",
   "version": "WzkyLDJd"
 }
