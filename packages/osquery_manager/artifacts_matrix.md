@@ -1,6 +1,6 @@
 ## Osquery Saved Queries - Forensic Artifact Coverage
 
-This document tracks the coverage of forensic artifacts from the Velociraptor to Osquery mapping analysis.
+This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2025-11-05
 **Total Core Artifacts**: 12 available + 5 not available = 17 total
