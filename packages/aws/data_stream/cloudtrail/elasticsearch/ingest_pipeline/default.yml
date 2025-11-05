@@ -778,19 +778,15 @@ processors:
             String target = targetValue.toString();
             boolean classified = false;
 
-            // User-related: IAM users, roles, groups, policies, access keys, MFA devices
-            if (target.contains(":user/") || 
-                target.contains(":role/") || 
+            // User-related: IAM users, roles, assumed roles, federated users, instance profiles, access keys, MFA devices
+            if (target.contains(":user/") ||
+                target.contains(":role/") ||
                 target.contains(":assumed-role/") ||
                 target.contains(":federated-user/") ||
-                target.contains(":group/") ||
-                target.contains(":policy/") ||
+                target.contains(":instance-profile/") ||
                 target.contains(":mfa/") ||
-                target.toLowerCase().contains("username") ||
-                target.toLowerCase().contains("groupname") ||
-                target.toLowerCase().contains("rolename") ||
-                (target.length() == 20 && target.startsWith("AKIA")) || // Access Key ID pattern
-                (target.startsWith("arn:") && target.contains(":serialNumber:"))) {
+                (target.length() == 20 && target.startsWith("AKIA")) || // Access Key ID pattern (AKIA...)
+                (target.startsWith("arn:") && target.contains(":serialNumber:"))) { // MFA device serial numbers
               userTargets.add(target);
               classified = true;
             }
@@ -806,7 +802,7 @@ processors:
               hostTargets.add(target);
               classified = true;
             }
-            // Service-related: Most AWS resources (S3 buckets, Lambda functions, KMS keys, etc.)
+            // Service-related: AWS service resources, IAM policies/groups, and network infrastructure
             else if (target.contains(":stack/") ||  // CloudFormation
                      target.contains(":stack-set/") ||
                      target.contains(":trail/") ||  // CloudTrail
@@ -837,11 +833,13 @@ processors:
                      target.contains(":model/") ||  // Bedrock
                      target.contains(":loadbalancer/") ||  // ELB
                      target.contains(":table/") ||  // DynamoDB
-                     target.contains(":security-group/") ||  // EC2 Security Groups
-                     target.contains(":network-interface/") ||  // ENI
-                     target.contains(":vpc/") ||  // VPC
-                     target.contains(":subnet/") ||  // Subnet
-                     target.contains(":network-acl/") ||  // Network ACL
+                     target.contains(":group/") ||  // IAM Groups
+                     target.contains(":policy/") ||  // IAM Policies
+                     target.contains(":security-group/") ||  // EC2 Security Groups (ARN format)
+                     target.contains(":network-interface/") ||  // ENI (ARN format)
+                     target.contains(":vpc/") ||  // VPC (ARN format)
+                     target.contains(":subnet/") ||  // Subnet (ARN format)
+                     target.contains(":network-acl/") ||  // Network ACL (ARN format)
                      target.contains(":dhcp-options/") ||
                      target.startsWith("sg-") ||  // Security Group ID
                      target.startsWith("sgr-") ||  // Security Group Rule ID
@@ -851,7 +849,10 @@ processors:
                      target.startsWith("acl-") ||  // Network ACL ID
                      target.startsWith("rtb-") ||  // Route Table ID
                      target.startsWith("igw-") ||  // Internet Gateway ID
-                     target.startsWith("nat-")) {  // NAT Gateway ID
+                     target.startsWith("nat-") ||  // NAT Gateway ID
+                     target.startsWith("vpce-") ||  // VPC Endpoint ID
+                     target.startsWith("tgw-") ||  // Transit Gateway ID
+                     target.startsWith("pcx-")) {  // VPC Peering Connection ID
               serviceTargets.add(target);
               classified = true;
             }
@@ -894,6 +895,7 @@ processors:
                       (enrichCtx.actor.contains(":role/") || 
                        enrichCtx.actor.contains(":assumed-role/")))) {
             // IAM roles (including assumed roles) -> user.entity.id
+            // another option is to check if user.name is not null than assign user.entity.id
             field("user.entity.id").set([ enrichCtx.actor ]);
           } else if (enrichCtx.actor instanceof String && 
                      (enrichCtx.actor.contains(":user/") || 
