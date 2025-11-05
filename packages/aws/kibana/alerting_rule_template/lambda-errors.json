@@ -2,7 +2,7 @@
   "id": "lambda-errors",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[AWS Lambda] Errors",
+    "name": "[AWS Lambda] Errors High",
     "tags": ["AWS Lambda"],
     "ruleTypeId": ".es-query",
     "schedule": {
@@ -12,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-aws.lambda-default\n| STATS errors=sum(aws.lambda.Errors.avg) by cloud.account.id, cloud.region, aws.dimensions.FunctionName\n| WHERE errors > 0"
+        "esql": "// The recommended threshold value for errors is > 0, and the alerting rule is grouped by cloud account id, cloud region and function name. You can adjust the threshold value by modifying the statusfailed value in the WHERE clause.\nFROM metrics-aws.lambda-default\n| STATS errors=sum(aws.lambda.Errors.avg) by cloud.account.id, cloud.region, aws.dimensions.FunctionName\n| WHERE errors > 0"
       },
-      "aggType": "count",
       "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "event.ingested",
-      "excludeHitsFromPreviousRun": true
+      "timeField": "event.ingested"
     },
     "alertDelay": {
       "active": 1

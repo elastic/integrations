@@ -12,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-aws.sns-default\n| STATS notificationsfailed=avg(aws.sns.NumberOfNotificationsFailed.sum) by cloud.account.id, cloud.region, aws.dimensions.TopicName\n| WHERE notificationsfailed > 0"
+        "esql": "// The recommended threshold value for notifications failed is > 0, and the alerting rule is grouped by cloud account id, cloud region and topic name. You can adjust the threshold value by modifying the notificationsfailed value in the WHERE clause.\nFROM metrics-aws.sns-default\n| STATS notificationsfailed=avg(aws.sns.NumberOfNotificationsFailed.sum) by cloud.account.id, cloud.region, aws.dimensions.TopicName\n| WHERE notificationsfailed > 0"
       },
-      "aggType": "count",
       "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "event.ingested",
-      "excludeHitsFromPreviousRun": true
+      "timeField": "event.ingested"
     },
     "alertDelay": {
       "active": 1

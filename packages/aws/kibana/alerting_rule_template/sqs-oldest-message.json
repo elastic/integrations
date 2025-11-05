@@ -2,7 +2,7 @@
   "id": "sqs-oldest-message",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[AWS SQS] Oldest Message",
+    "name": "[AWS SQS] Oldest Message Age High",
     "tags": ["AWS SQS"],
     "ruleTypeId": ".es-query",
     "schedule": {
@@ -12,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-aws.sqs-default\n| STATS oldestmsgage=max(aws.sqs.oldest_message_age.sec) by cloud.account.id, cloud.region, aws.dimensions.QueueName\n| WHERE oldestmsgage >= 300"
+        "esql": "// The recommended threshold value for oldest message age is >= 300, and the alerting rule is grouped by cloud account id, cloud region and queue name. You can adjust the threshold value by modifying the oldestmsgage value in the WHERE clause.\nFROM metrics-aws.sqs-default\n| STATS oldestmsgage=max(aws.sqs.oldest_message_age.sec) by cloud.account.id, cloud.region, aws.dimensions.QueueName\n| WHERE oldestmsgage >= 300"
       },
-      "aggType": "count",
       "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "event.ingested",
-      "excludeHitsFromPreviousRun": true
+      "timeField": "event.ingested"
     },
     "alertDelay": {
       "active": 1

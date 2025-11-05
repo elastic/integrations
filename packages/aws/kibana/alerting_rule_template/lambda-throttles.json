@@ -2,7 +2,7 @@
   "id": "lambda-throttles",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[AWS Lambda] Throttles",
+    "name": "[AWS Lambda] Throttles high",
     "tags": ["AWS Lambda"],
     "ruleTypeId": ".es-query",
     "schedule": {
@@ -12,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-aws.lambda-default\n| STATS throttles=sum(aws.lambda.Throttles.avg) by cloud.account.id, cloud.region, aws.dimensions.FunctionName\n| WHERE throttles > 0"
+        "esql": "// The recommended threshold value for throttles is > 0, and the alerting rule is grouped by cloud account id, cloud region and function name. You can adjust the threshold value by modifying the throttles value in the WHERE clause.\nFROM metrics-aws.lambda-default\n| STATS throttles=sum(aws.lambda.Throttles.avg) by cloud.account.id, cloud.region, aws.dimensions.FunctionName\n| WHERE throttles > 0"
       },
-      "aggType": "count",
       "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "event.ingested",
-      "excludeHitsFromPreviousRun": true
+      "timeField": "event.ingested"
     },
     "alertDelay": {
       "active": 1
