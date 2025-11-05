@@ -62,9 +62,23 @@
 
 # Validation Steps
 - After configuration, open the Citrix ADC integration’s Assets tab to view the available dashboards; they should populate with data for the configured datasets.
+- While adding the integration, if you want to collect logs via logfile, keep Collect logs from Citrix ADC via file toggle on and then configure following parameters:
+    - Paths
+  or if you want to collect logs via TCP, keep Collect logs from Citrix ADC via TCP toggle on and then configure following parameters:
+    - Listen Address
+    - Listen Port
+  or if you want to collect logs via UDP, keep Collect logs from Citrix ADC via UDP toggle on and and then configure following parameters:
+    - Listen Address
+    - Listen Port
 - You can also verify metrics and logs in Discover under the `logs-*` data view.
 
 # Troubleshooting
+
+## Dummy values
+It is possible that for some fields, Citrix ADC sets dummy values. For example, a field cpuusagepcnt is represented by citrix_adc.system.cpu.utilization.pct. cpuusagepcnt is set to 4294967295 for some instances. If you also encounter it for some fields, reach out to the Citrix ADC support team.
+
+## Type conflicts
+If host.ip is shown conflicted under logs-* data view, this issue can be solved by reindexing the Interface, LBVserver, Service, System, and VPN data stream's indices.
 
 ## Common Configuration Issues
 - Dashboards not populated: verify the chosen log collection method (file/TCP/UDP) is enabled and correctly configured.
@@ -72,9 +86,6 @@
 
 ## Ingestion Errors
 - Type conflicts (for example, `host.ip` under `logs-*`): reindex the `Interface`, `LBVserver`, `Service`, `System`, and `VPN` data stream indices.
-
-## API Authentication Errors
-- Not covered in the source README.
 
 ## Vendor Resources
 - NetScaler Syslog Message Reference: [link](https://developer-docs.netscaler.com/en-us/netscaler-syslog-message-reference/current-release)
