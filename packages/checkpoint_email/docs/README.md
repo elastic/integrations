@@ -4,6 +4,12 @@ Check Point's [Harmony Email & Collaboration](https://www.checkpoint.com/harmony
 
 The Check Point Harmony Email & Collaboration integration collects security event logs using REST API.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 This integration collects the following logs:
@@ -54,11 +60,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-10-14T07:02:11.229Z",
     "agent": {
-        "ephemeral_id": "d813d5b1-cfe7-4ac4-aaa0-e7650b900f93",
-        "id": "827f87b2-02ca-4b27-832d-71d5d68dca7b",
-        "name": "elastic-agent-99857",
+        "ephemeral_id": "4212f748-0155-47d2-9f8a-36005b5c9b5d",
+        "id": "c7fe2335-91fd-4a8d-a52b-a5bc63c52933",
+        "name": "elastic-agent-89980",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.16.0"
     },
     "checkpoint_email": {
         "event": {
@@ -80,16 +86,16 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_email.event",
-        "namespace": "17695",
+        "namespace": "29281",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "827f87b2-02ca-4b27-832d-71d5d68dca7b",
+        "id": "c7fe2335-91fd-4a8d-a52b-a5bc63c52933",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.16.0"
     },
     "email": {
         "sender": {
@@ -105,7 +111,7 @@ An example event for `event` looks as following:
         "created": "2024-10-14T07:02:11.229Z",
         "dataset": "checkpoint_email.event",
         "id": "a6d8674a04c30123456789e4d3ebd98",
-        "ingested": "2024-10-28T10:57:08Z",
+        "ingested": "2025-09-17T05:59:16Z",
         "kind": "alert",
         "original": "{\"actions\":[],\"additionalData\":null,\"availableEventActions\":null,\"confidenceIndicator\":\"detected\",\"customerId\":\"exampletest\",\"data\":\"#{\\\"entity_id\\\": \\\"a6d8674a04c30123456789e4d3ebd98\\\", \\\"entity_type\\\": \\\"google_mail_email\\\", \\\"label\\\": \\\"Shadow IT\\\"} - #{\\\"entity_id\\\": \\\"113012345678906535444\\\", \\\"entity_type\\\": \\\"google_user\\\", \\\"label\\\": \\\"john@example.com\\\"} is using #{\\\"entity_id\\\": \\\"google.com\\\", \\\"entity_type\\\": \\\"av_dns_info\\\", \\\"label\\\": \\\"google.com (Search Engine)\\\"}\",\"description\":\"Shadow IT - john@example.com is using google.com (Search Engine)\",\"entityId\":\"25e0c50123456789e351b0dafa6aafa6\",\"entityLink\":\"https://in.portal.checkpoint.com/dashboard/email\\u0026collaboration/CGS1?route=cHJvZmlsZS9nsfhvbksdvnjhvdfVBsdbdfFbdbdBDBBdbrtHyujYJNtnhtnhtnOTIxZTM1MWIwZGFmYTZhYWZhNg==\",\"eventCreated\":\"2024-10-14T07:02:11.229935+00:00\",\"eventId\":\"a6d8674a04c30123456789e4d3ebd98\",\"saas\":\"google_mail\",\"senderAddress\":\"google-workspace-alerts-noreply@google.com\",\"severity\":\"3\",\"state\":\"pending\",\"type\":\"shadow_it\"}",
         "severity": 3,
@@ -133,7 +139,9 @@ An example event for `event` looks as following:
     },
     "source": {
         "user": {
-            "email": "google-workspace-alerts-noreply@google.com"
+            "domain": "google.com",
+            "email": "google-workspace-alerts-noreply@google.com",
+            "name": "google-workspace-alerts-noreply"
         }
     },
     "tags": [
@@ -161,15 +169,21 @@ An example event for `event` looks as following:
 | checkpoint_email.event.customer_id | Harmony Email & Collaboration customer ID. | keyword |
 | checkpoint_email.event.data | Description in not resolved form. | keyword |
 | checkpoint_email.event.description | Short explanation of the event. | keyword |
+| checkpoint_email.event.destination_address |  | keyword |
+| checkpoint_email.event.email_subject |  | keyword |
 | checkpoint_email.event.entity_id | Unique ID of the relevant SaaS entity. | keyword |
 | checkpoint_email.event.entity_link |  | keyword |
 | checkpoint_email.event.id | A unique ID used for scrolling. | keyword |
 | checkpoint_email.event.saas | Name of the relevant SaaS. | keyword |
+| checkpoint_email.event.scan_type |  | keyword |
 | checkpoint_email.event.sender_address |  | keyword |
 | checkpoint_email.event.severity |  | long |
 | checkpoint_email.event.severity_enum | Lowest, Low, Medium, High, Critical. | keyword |
 | checkpoint_email.event.state | Current state of the security event. | keyword |
 | checkpoint_email.event.type | Security event type. | keyword |
+| checkpoint_email.event.user.action |  | keyword |
+| checkpoint_email.event.user.address |  | keyword |
+| checkpoint_email.event.user.country |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

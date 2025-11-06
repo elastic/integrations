@@ -1,9 +1,13 @@
 format_version: "3.0.2"
 name: apache_tomcat
 title: Apache Tomcat
-version: "1.9.1"
+version: "1.12.1"
 description: Collect and parse logs and metrics from Apache Tomcat servers with Elastic Agent.
-categories: ["web", "observability"]
+categories:
+  - web
+  - observability
+  # Added application_observability category as Apache Tomcat is an application server, and this integration provides detailed application-level metrics and logs
+  - application_observability
 type: integration
 conditions:
   kibana:
@@ -70,11 +74,26 @@ policy_templates:
             multi: false
             required: false
             show_user: false
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+            type: text
+            multi: false
+            required: false
+            show_user: true
         title: Collect Apache Tomcat metrics
         description: Collect metrics from Apache Tomcat instances using prometheus endpoint.
       - type: filestream
         title: Collect logs from Apache Tomcat via file
         description: Collect logs from Apache Tomcat instances using filestream input.
+        vars:
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+            type: text
+            multi: false
+            required: false
+            show_user: true
 icons:
   - src: /img/logo.svg
     title: Apache Tomcat logo

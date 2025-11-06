@@ -126,6 +126,36 @@ processors:
       field: salesforce.setup_audit_trail.display
       pattern: "For user %{user.name}, %{?}"
       ignore_failure: true
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      value: "{{{user.id}}}"
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
 
   - script:
       description: Drops null/empty values recursively
@@ -149,11 +179,6 @@ processors:
       field:
         - json
         - message
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !ctx.tags.contains('preserve_original_event')"
       ignore_failure: true
       ignore_missing: true
 

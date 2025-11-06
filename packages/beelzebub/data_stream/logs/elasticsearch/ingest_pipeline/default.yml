@@ -1,0 +1,411 @@
+---
+description: Pipeline for Beelzebub logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.17.0'
+
+  - set:
+      field: event.kind
+      value: event
+
+  - append:
+      field: event.category
+      value: network
+
+  - append:
+      field: event.type
+      value: info
+
+  - rename:
+      if: ctx.event?.original == null
+      description: "Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document."
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      tag: rename_message_to_event_original
+
+  - remove:
+      if: ctx.event?.original != null
+      description: "Remove unnecessary message field if event.original exists"
+      field: message
+      ignore_missing: true
+
+  - gsub:
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && !(ctx.event?.original =~ /\"Password\": *\"\"/)'
+      description: "Redact any passwords in event.original"
+      field: event.original
+      pattern: '(.*"Password": *").*?(".*)'
+      replacement: '$1<REDACTED>$2'
+      ignore_missing: true
+      tag: redact_event_original
+
+  - remove:
+      description: "Remove filebeat parsed json object if redaction occurred"
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && !(ctx.event?.original =~ /\"Password\": *\"\"/)'
+      field: json
+      ignore_missing: true
+      tag: remove_json_due_to_redaction
+
+  - json:
+      if: ctx.event?.original != null && ctx.json == null
+      description: "Parse JSON from event.original only if we don't already have a JSON object provided by filebeat, or if redaction occurred"
+      field: event.original
+      target_field: json
+      tag: json_event_original
+
+  - date:
+      if: ctx.json?.event?.DateTime != null
+      description: "ECS mapping json.event.DateTime -> @timestamp, this is likely to be more accurate than json.time"
+      field: json.event.DateTime
+      formats:
+        - ISO8601
+      tag: parse_json_event_datetime
+
+  - date:
+      if: ctx.json?.event?.DateTime == null && ctx.json?.time != null
+      description: "ECS mapping json.time -> @timestamp, only if json.event.DateTime does not exist"
+      field: json.time
+      formats:
+        - ISO8601
+      tag: parse_json_time
+
+  - set:
+      description: "ECS mapping json.event.ID -> event.id"
+      field: event.id
+      copy_from: json.event.ID
+      ignore_empty_value: true
+
+  - set:
+      description: "ECS mapping json.event.Msg -> event.reason, this is likely to be more detailed than json.msg"
+      field: event.reason
+      copy_from: json.event.Msg
+      ignore_empty_value: true
+
+  - set:
+      description: "ECS mapping json.msg -> event.reason, only if json.event.Msg does not exist"
+      field: event.reason
+      copy_from: json.msg
+      ignore_empty_value: true
+
+  - convert:
+      if: ctx.json?.event?.SourceIp != null && ctx.json.event.SourceIp != ""
+      description: "ECS mapping json.event.SourceIp -> source.ip"
+      field: json.event.SourceIp
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      tag: convert_json_event_sourceip
+
+  - append:
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: "{{{source.ip}}}"
+      allow_duplicates: false
+      tag: append_source_ip_to_related_ip
+
+  - convert:
+      if: ctx.json?.event?.SourcePort != ""
+      description: "ECS mapping json.event.SourcePort -> source.port"
+      field: json.event.SourcePort
+      target_field: source.port
+      type: long
+      ignore_missing: true
+      tag: convert_json_event_sourceport
+
+  - geoip:
+      description: "Enrich event with source IP GeoIP data"
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+
+  - geoip:
+      description: "Enrich event with source IP GeoIP ASN contextual data"
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  - set:
+      description: "ECS mapping json.event.HTTPMethod -> http.request.method"
+      field: http.request.method
+      copy_from: json.event.HTTPMethod
+      ignore_empty_value: true
+
+  - set:
+      description: "ECS mapping json.event.Body -> http.request.body.content"
+      field: http.request.body.content
+      copy_from: json.event.Body
+      ignore_empty_value: true
+
+  - script:
+      description: "Count body length so we have can search based on size of body strings"
+      if: ctx.http?.request?.body?.content != null && (ctx.http?.request?.body?.content instanceof String)
+      lang: painless
+      source: ctx.http.request.body.bytes = ctx.http.request.body.content.length();
+
+  - uri_parts:
+      if: ctx.json?.event?.RequestURI != null && ctx.json?.event?.RequestURI != ""
+      description: "ECS extraction/mapping json.event.RequestURI -> uri.*"
+      field: json.event.RequestURI
+      ignore_missing: true
+
+  - user_agent:
+      if: ctx.json?.event?.UserAgent != null && ctx.json?.event?.UserAgent != ""
+      description: "ECS extraction/mapping json.event.UserAgent -> user_agent.*"
+      field: json.event.UserAgent
+      extract_device_type: true
+      ignore_missing: true
+
+### NOTE: Beelzebub now produces logs with two fields for headers, one is a
+#   string and the other is an object. The following 7 processors are used to
+#   support both log formats/situations and to avoid creating a type conflict
+#   with existing indices while still ensuring we have usable headers and
+#   header values to search with.
+
+  - remove:
+      if: ctx.json?.event?.Headers == ""
+      description: "Remove json.event.Headers if it an empty string so that we can skip some of processors"
+      field: json.event.Headers
+
+  - rename:
+      if: ctx.json?.event?.Headers instanceof String
+      description: "Rename json.event.Headers to json.event.HeadersText to maintain backwards compatibility with indexed data"
+      field: json.event.Headers
+      target_field: json.event.HeadersText
+      ignore_missing: true
+
+  - rename:
+      if: ctx.json?.event?.Headers == null && ctx.json?.event?.HeadersMap instanceof Map
+      description: "Rename json.event.HeadersMap to json.event.Headers as this is a pre-made object so we can skip gsub/kv based extractions"
+      field: json.event.HeadersMap
+      target_field: json.event.Headers
+      override: true
+      ignore_missing: true
+
+  - gsub:
+      if: ctx.json?.event?.Headers == null
+      description: "Replace leading and trailing syntax to support KVP extraction, put result in _tmp.HeadersText so additional processors will apply if it exists"
+      field: json.event.HeadersText
+      target_field: _tmp.HeadersText
+      ignore_missing: true
+      pattern: '(^\[Key: |],$)'
+      replacement: ''
+
+  - gsub:
+      if: ctx.json?.event?.Headers == null
+      description: "Fix field separator to support KVP extraction"
+      field: _tmp.HeadersText
+      ignore_missing: true
+      pattern: '],\[Key: '
+      replacement: ',##'
+
+  - kv:
+      if: ctx.json?.event?.Headers == null
+      description: "Extract headers as key value pairs."
+      field: _tmp.HeadersText
+      ignore_missing: true
+      ignore_failure: true
+      field_split: ',##'
+      value_split: ', values: '
+      target_field: json.event.Headers
+      trim_key: ' '
+      trim_value: ' '
+      strip_brackets: true
+
+  - script:
+      if: ctx.json?.event?.Headers instanceof Map
+      description: "Lowercase HTTP header names, which should in fact always be case irrelevant and so have no conflicting values, so that we can reliably refer to a field name"
+      source: |
+        def lowercaseMap = [:];
+        for(def entry : ctx.json.event.Headers.entrySet()){
+          lowercaseMap.put(entry.getKey().toLowerCase(), entry.getValue());
+        }
+        ctx.json.event.Headers = lowercaseMap;
+      tag: lowercase_http_header_names
+
+  - set:
+      if: ctx.http?.request?.referrer == null
+      description: "ECS mapping json.event.Headers.referer -> http.request.referrer if not already obtained"
+      field: http.request.referrer
+      copy_from: json.event.Headers.referer
+      ignore_empty_value: true
+      tag: ecs_map_headers_referer_http_request_referrer
+
+  - set:
+      if: ctx.url?.domain == null
+      description: "ECS mapping json.event.Headers.host -> url.domain if not already obtained"
+      field: url.domain
+      copy_from: json.event.Headers.host
+      ignore_empty_value: true
+      tag: ecs_map_headers_host_url_domain
+
+  - gsub:
+      description: "ECS extraction/mapping json.event.HostHTTPRequest -> url.domain if not already obtained"
+      if: ctx.json?.event?.HostHTTPRequest != null && ctx.url?.domain == null
+      field: json.event.HostHTTPRequest
+      ignore_missing: true
+      target_field: url.domain
+      pattern: '(:[0-9]+)*$'
+      replacement: ''
+      tag: gsub1_json_event_HostHTTPRequest
+
+  - gsub:
+      description: "ECS extraction/mapping json.event.HostHTTPRequest -> url.port if not already obtained"
+      if: ctx.json?.event?.HostHTTPRequest != null && ctx.json.event.HostHTTPRequest.contains(':') && ctx.url?.port == null
+      field: json.event.HostHTTPRequest
+      ignore_missing: true
+      target_field: _tmp.port
+      pattern: '^.*:'
+      replacement: ''
+      tag: gsub2_json_event_HostHTTPRequest
+
+  - convert:
+      description: "ECS extraction/mapping json.event.HostHTTPRequest -> url.port if not already obtained"
+      field: _tmp.port
+      target_field: url.port
+      type: integer
+      ignore_missing: true
+      tag: convert__tmp_port
+
+  - convert:
+      description: "Use convert to copy url.domain to destination.ip, ignore failures which indicates non-IP content"
+      field: url.domain
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+      tag: convert_url_domain
+
+  - set:
+      description: "Use url.port as destination.port if already extracted"
+      field: destination.port
+      copy_from: url.port
+      ignore_empty_value: true
+
+  - geoip:
+      description: "Enrich event with destination IP GeoIP data"
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+  - geoip:
+      description: "Enrich event with destination IP GeoIP ASN contextual data"
+      field: destination.ip
+      target_field: destination.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  - set:
+      description: "ECS mapping json.event.User -> user.name"
+      field: user.name
+      copy_from: json.event.User
+      ignore_empty_value: true
+      tag: ecs_map_user_name
+
+  - append:
+      if: ctx.user?.name != null
+      field: related.user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      tag: append_user_name_to_related_user
+
+  - rename:
+      field: json
+      target_field: beelzebub
+
+  - script:
+      description: "Drops null/empty values recursively to minimise event size"
+      lang: painless
+      source: |
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == '') {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+
+  - remove:
+      description: "Remove temporary and other unnecessary fields"
+      field:
+        - _tmp
+        - _config
+      ignore_missing: true
+
+  - remove:
+      if: ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      description: "Remove ECS mapped fields"
+      field:
+        - beelzebub.event.ID
+        - beelzebub.event.Msg
+        - beelzebub.event.SourceIp
+        - beelzebub.event.SourcePort
+        - beelzebub.event.HeadersMap
+        - beelzebub.event.HeadersText
+        - beelzebub.event.HTTPMethod
+        - beelzebub.event.Body
+        - beelzebub.event.RequestURI
+        - beelzebub.event.UserAgent
+        - beelzebub.event.HostHTTPRequest
+        - beelzebub.event.User
+      ignore_missing: true
+
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

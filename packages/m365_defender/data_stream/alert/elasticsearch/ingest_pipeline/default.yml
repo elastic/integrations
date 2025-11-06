@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Alert logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -52,6 +63,25 @@ processors:
       tag: fingerprint_processor
       target_field: _id
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Drops empty string values recursively.
+      tag: painless_remove_empty_from_evidence
+      if: ctx.json?.evidence != null
+      source: |-
+        boolean drop(Object object) {
+          if (object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx.json.evidence);
   - script:
       description: Dynamically map event.category and event.type field from evidence.
       tag: script_to_set_event_category_and_type
@@ -225,26 +255,27 @@ processors:
       tag: rename_severity
       target_field: m365_defender.alert.severity
       ignore_missing: true
-  - set:
-      field: event.severity
-      tag: set_event_severity_1
-      value: 1
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'informational'
-  - set:
-      field: event.severity
-      tag: set_event_severity_2
-      value: 2
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'low'
-  - set:
-      field: event.severity
-      tag: set_event_severity_3
-      value: 3
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'medium'
-  - set:
-      field: event.severity
-      tag: set_event_severity_4
-      value: 4
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'high'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.m365_defender?.alert?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.m365_defender.alert.severity;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.firstActivityDateTime
       tag: date_firstActivityDateTime
@@ -1090,6 +1121,16 @@ processors:
           field: related.hosts
           tag: append_foreach_version_into_related_hosts
           value: '{{{_ingest._value.version}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
+      tag: foreach_rename_evidence_azureAdDeviceId
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: device.id
+          tag: append_azureAdDeviceId_into_device_id
+          value: '{{{_ingest._value.azureAdDeviceId}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
@@ -2045,6 +2086,16 @@ processors:
           allow_duplicates: false
   - foreach:
       field: json.evidence
+      tag: foreach_evidence_process_name
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: process.name
+          tag: append_evidence_imageFile_to_process_name
+          value: '{{{_ingest._value.imageFile.fileName}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
       tag: foreach_evidence_rename_imageFile_filename
       if: ctx.json?.evidence instanceof List
       processor:
@@ -2446,6 +2497,26 @@ processors:
           ctx.process.parent.pid = convertToOrderedArray(processParentPid);
         }
   - foreach:
+      field: process.pid
+      tag: foreach_process_pid
+      if: ctx.process?.pid instanceof List
+      processor:
+        append:
+          field: process.entity_id
+          tag: append_process_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: process.parent.pid
+      tag: foreach_process_parent_pid
+      if: ctx.process?.parent?.pid instanceof List
+      processor:
+        append:
+          field: process.parent.entity_id
+          tag: append_process_parent_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
       field: json.evidence
       tag: foreach_evidence_remove_fields
       if: ctx.json?.evidence instanceof List
@@ -2536,6 +2607,63 @@ processors:
             - _ingest._value.registry_value
             - _ingest._value.security_group_id
           ignore_missing: true
+  - script:
+      lang: painless
+      tag: set_process_name_from_command_line
+      description: Set process.name from process.command_line.
+      if: ctx.process?.name == null
+      source: |
+        ctx.process = ctx.process ?: [:];
+        ctx.process.name = ctx.process.name ?: [];
+        // Normalize process.name to a list
+        def nameList = [];
+        if (ctx.process.name != null) {
+          if (ctx.process.name instanceof String) {
+            nameList.add(ctx.process.name);
+          } else if (ctx.process.name instanceof List) {
+            nameList.addAll(ctx.process.name);
+          }
+        }
+
+        // Deduplication using HashSet
+        def currentNames = new HashSet();
+        currentNames.addAll(nameList);
+        // Handle process.command_line (string or list)
+        if (ctx.process.command_line != null) {
+          // Convert string to list for unified handling
+          def cmdList = [];
+          if (ctx.process.command_line instanceof String) {
+            cmdList.add(ctx.process.command_line);
+          } else if (ctx.process.command_line instanceof List) {
+            cmdList.addAll(ctx.process.command_line);
+          }
+          for (cmd in cmdList) {
+            if (cmd != null && cmd.length() > 0) {
+              // Extract the first token
+              def parts = cmd.trim().splitOnToken(" ");
+              if (parts.length > 0) {
+                def executable = parts[0];
+                // If executable is a path, take only the last part
+                if (executable.contains("/")) {
+                  def slashParts = executable.splitOnToken("/");
+                  executable = slashParts[slashParts.length - 1];
+                }
+                executable = /\"/.matcher(executable).replaceAll("");
+                currentNames.add(executable);
+              }
+            }
+          }
+        }
+        // Update process.name with unique list
+        if (currentNames != null && currentNames.size() == 1) {
+          ctx.process.name = currentNames.iterator().next();
+        } else {
+          ctx.process.name = new ArrayList(currentNames);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: json
       tag: remove_json

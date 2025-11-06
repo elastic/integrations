@@ -161,6 +161,7 @@ processors:
       field: winlog.event_data.Path
       patterns:
         - "file:_(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?"
+        - "(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?"
       ignore_missing: true
   - split:
       field: winlog.event_data.Path
@@ -188,6 +189,7 @@ processors:
       field: winlog.event_data.FileName
       patterns:
         - 'file:_(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?'
+        - '(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?'
       ignore_missing: true
   - set:
       field: "file.path"
@@ -210,6 +212,7 @@ processors:
       patterns:
         - '\.%{GREEDYDATA:file.extension}$'
       ignore_missing: true
+      if: ctx.file?.name != null && ctx.file.name.contains('.')
   - set:
       field: file.hash.sha256
       copy_from: winlog.event_data.Sha256

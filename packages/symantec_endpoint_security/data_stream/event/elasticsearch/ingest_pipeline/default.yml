@@ -1166,23 +1166,32 @@ processors:
       if: ctx.ses?.category_id != null && ctx.ses.category_id == '6'
       tag: pipeline_category_diagnostic
       ignore_missing_pipeline: true
-  - foreach:
-      field: file.size
-      if: ctx.file?.size instanceof List
-      tag: foreach_file_size
-      processor:
-        convert:
-          field: _ingest._value
-          tag: convert_file_size_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - script:
+      description: Convert size array to longs
+      tag: script_to_convert_file_size
+      if: ctx.file?.size instanceof List && ctx.file.size.length != 0
+
+      lang: painless
+      source: >-
+        def new_sizes = [];
+        for (int i = 0; i < ctx.file.size.length; i++) {
+          def sz = ctx.file.size[i];
+          if (sz == null) {
+            continue
+          }
+          if (sz instanceof long || sz instanceof int) {
+            new_sizes.add((long)sz);
+          } else if (sz instanceof String && sz != "") {
+            new_sizes.add(Long.parseLong(sz));
+          }
+        }
+        ctx.file.size = new_sizes;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - script:
       description: Move raw_data to raw_data.value if the value is not compatible with flattened.
       lang: painless

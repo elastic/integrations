@@ -71,169 +71,201 @@ processors:
   ### Map tetragon fields to ECS
   ## Map Process
   - rename:
+      tag: rename__tmp__process_arguments_to_process_args_d9c6327c
       ignore_missing: true
       field: "_tmp_.process.arguments"
       target_field: "process.args"
 
   - split:
+      tag: split_process_args_9b745781
       ignore_missing: true
       field: process.args
       separator: "\\s+"
 
   - rename:
+      tag: rename__tmp__process_binary_to_process_executable_1376017a
       ignore_missing: true
       field: "_tmp_.process.binary"
       target_field: "process.executable"
 
   - rename:
+      tag: rename__tmp__process_cwd_to_process_working_directory_adde4caa
       ignore_missing: true
       field: "_tmp_.process.cwd"
       target_field: "process.working_directory"
 
   - rename:
+      tag: rename__tmp__process_pid_to_process_pid_b4b4f54b
       ignore_missing: true
       field: "_tmp_.process.pid"
       target_field: "process.pid"
 
   - rename:
+      tag: rename__tmp__process_exec_id_to_process_entity_id_3515f17d
       ignore_missing: true
       field: "_tmp_.process.exec_id"
       target_field: "process.entity_id"
 
   - rename:
+      tag: rename__tmp__process_tid_to_process_thread_id_c4bd6299
       ignore_missing: true
       field: "_tmp_.process.tid"
       target_field: "process.thread.id"
 
   - rename:
+      tag: rename__tmp__process_uid_to_process_user_id_de0bf91d
       ignore_missing: true
       field: "_tmp_.process.uid"
       target_field: "process.user.id"
 
   - convert:
+      tag: convert_process_user_id_aae0b419
       ignore_missing: true
       field: "process.user.id"
       type: string
 
   - rename:
+      tag: rename__tmp__process_start_time_to_process_start_241f1d03
       ignore_missing: true
       field: "_tmp_.process.start_time"
       target_field: "process.start"
 
   - set:
+      tag: set_event_action_c066f3bb
       if: 'ctx.cilium_tetragon?.log?.process_exec != null'
       field: event.action
       value: "executed"
 
   - set:
+      tag: set_event_action_3b2d3fd0
       if: 'ctx.cilium_tetragon?.log?.process_exit != null'
       field: event.action
       value: "end"
 
   - set:
+      tag: set_process_exit_code_8d4a4b02
       if: 'ctx.cilium_tetragon?.log?.process_exit?.status != null'
       field: process.exit_code
       copy_from: "cilium_tetragon.log.process_exit.status"
 
   # Map Parent
   - rename:
+      tag: rename__tmp__parent_arguments_to_process_parent_args_b1dfd84d
       ignore_missing: true
       field: "_tmp_.parent.arguments"
       target_field: "process.parent.args"
 
   - split:
+      tag: split_process_parent_args_203bf00b
       ignore_missing: true
       field: process.parent.args
       separator: "\\s+"
 
   - rename:
+      tag: rename__tmp__parent_binary_to_process_parent_executable_dfc3c887
       ignore_missing: true
       field: "_tmp_.parent.binary"
       target_field: "process.parent.executable"
 
   - rename:
+      tag: rename__tmp__parent_cwd_to_process_parent_working_directory_d1d02071
       ignore_missing: true
       field: "_tmp_.parent.cwd"
       target_field: "process.parent.working_directory"
 
   - rename:
+      tag: rename__tmp__parent_pid_to_process_parent_pid_09a2974e
       ignore_missing: true
       field: "_tmp_.parent.pid"
       target_field: "process.parent.pid"
 
   - rename:
+      tag: rename__tmp__parent_exec_id_to_process_parent_entity_id_85eca7ec
       ignore_missing: true
       field: "_tmp_.parent.exec_id"
       target_field: "process.parent.entity_id"
 
   - rename:
+      tag: rename__tmp__parent_tid_to_process_parent_thread_id_8c8bba70
       ignore_missing: true
       field: "_tmp_.parent.tid"
       target_field: "process.parent.thread.id"
 
   - rename:
+      tag: rename__tmp__parent_uid_to_process_parent_user_id_d5eceb26
       ignore_missing: true
       field: "_tmp_.parent.uid"
       target_field: "process.parent.user.id"
 
   - convert:
+      tag: convert_process_parent_user_id_e0270495
       ignore_missing: true
       field: "process.parent.user.id"
       type: string
 
   - rename:
+      tag: rename__tmp__parent_start_time_to_process_parent_start_15c043f2
       ignore_missing: true
       field: "_tmp_.parent.start_time"
       target_field: "process.parent.start"
 
   # Map container
   - rename:
+      tag: rename__tmp__process_pod_container_name_to_container_name_346567ab
       ignore_missing: true
       field: "_tmp_.process.pod.container.name"
       target_field: "container.name"
 
   - rename:
+      tag: rename__tmp__process_pod_container_id_to_container_id_d8316917
       ignore_missing: true
       field: "_tmp_.process.pod.container.id"
       target_field: "container.id"
 
   - rename:
+      tag: rename__tmp__process_pod_container_image_name_to_container_image_name_e0fae847
       ignore_missing: true
       field: "_tmp_.process.pod.container.image.name"
       target_field: "container.image.name"
 
   # Map orchestrator
   - rename:
+      tag: rename__tmp__process_pod_name_to_orchestrator_resource_name_4043ba9b
       ignore_missing: true
       field: "_tmp_.process.pod.name"
       target_field: "orchestrator.resource.name"
 
   - rename:
+      tag: rename__tmp__process_pod_namespace_to_orchestrator_namespace_4be258c1
       ignore_missing: true
       field: "_tmp_.process.pod.namespace"
       target_field: "orchestrator.namespace"
+
   #  - rename:
   #      ignore_missing: true
   #      field: "_tmp_.process.pod.pod_labels"
   #      target_field: "orchestrator.resource.label"
-
   - rename:
+      tag: rename__tmp__process_pod_workload_kind_to_orchestrator_resource_parent_type_1a0a36e3
       ignore_missing: true
       field: "_tmp_.process.pod.workload_kind"
       target_field: "orchestrator.resource.parent.type"
 
   # Other response properties
   - set:
+      tag: set_host_name_d11f3b5f
       field: "host.name"
       copy_from: "cilium_tetragon.log.node_name"
       if: 'ctx.cilium_tetragon?.log?.node_name != null'
 
   - set:
+      tag: set_orchestrator_cluster_name_3559b527
       field: "orchestrator.cluster.name"
       copy_from: "cilium_tetragon.log.cluster_name"
       if: 'ctx.cilium_tetragon?.log?.cluster_name != null'
 
   - remove:
+     tag: remove__tmp__33d3b89e
      field: "_tmp_"
 
   - script:
@@ -254,17 +286,26 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
       value: >-
-        Processor {{{_ingest.on_failure_processor_type}}} with tag
-        {{{_ingest.on_failure_processor_tag}}} in pipeline
-        {{{_ingest.on_failure_pipeline}}} failed with message:
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
   - remove:
       field: "_tmp_"
-
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

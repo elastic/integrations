@@ -290,6 +290,7 @@ An example event for `entity` looks as following:
 | entityanalytics_entra_id.device.version | For internal use only. | keyword |
 | entityanalytics_entra_id.user.account_enabled | true if the account is enabled; otherwise, false. | boolean |
 | entityanalytics_entra_id.user.business_phones | The telephone numbers for the user. | keyword |
+| entityanalytics_entra_id.user.department | The name of the department in which the user works. | keyword |
 | entityanalytics_entra_id.user.display_name | The name displayed in the address book for the user. This is usually the combination of the user's first name, middle initial and last name. | keyword |
 | entityanalytics_entra_id.user.given_name | The given name (first name) of the user. Maximum length is 64 characters. | keyword |
 | entityanalytics_entra_id.user.group.id | The unique identifier for the group. | keyword |

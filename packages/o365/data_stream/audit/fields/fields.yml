@@ -16,6 +16,8 @@
           type: keyword
     - name: ActorContextId
       type: keyword
+    - name: ActorInfoString
+      type: keyword
     - name: ActorIpAddress
       type: keyword
     - name: ActorUserId
@@ -51,6 +53,8 @@
       object_type_mapping_type: '*'
     - name: AppId
       type: keyword
+    - name: Application
+      type: keyword
     - name: ApplicationDisplayName
       type: keyword
     - name: ApplicationId
@@ -77,6 +81,8 @@
           type: keyword
         - name: Value
           type: keyword
+    - name: AuthenticationType
+      type: keyword
     - name: AzureActiveDirectoryEventType
       type: keyword
     - name: BCLValue
@@ -247,6 +253,8 @@
       type: keyword
     - name: DetectionType
       type: keyword
+    - name: DeviceName
+      type: keyword
     - name: Directionality
       type: keyword
     - name: EffectiveOrganization
@@ -269,6 +277,52 @@
       # not expressible here; object_type_mapping_type cannot be 'boolean'.
       object_type: keyword
       object_type_mapping_type: '*'
+    - name: ExchangeAggregatedFolders
+      type: nested
+      description: List of folders
+      fields:
+        - name: Path
+          type: keyword
+          description: Path of the folder
+        - name: Id
+          type: keyword
+          description: Folder ID
+        - name: FolderItems
+          type: nested
+          description: Items in the folder
+          fields:
+            - name: SizeInBytes
+              type: long
+              description: Size of the item in bytes
+            - name: Id
+              type: keyword
+              description: Item ID
+            - name: ImmutableId
+              type: keyword
+              description: Immutable ID of the item
+            - name: InternetMessageId
+              type: keyword
+              description: Internet message ID
+    - name: ExchangeAggregatedMessages
+      type: nested
+      description: List of messages
+      fields:
+        - name: Path
+          type: keyword
+          description: Path of the message
+        - name: Id
+          type: keyword
+          description: Message ID
+        - name: MessageItems
+          type: nested
+          description: Items in the message
+          fields:
+            - name: SizeInBytes
+              type: long
+              description: Size of the message item in bytes
+            - name: Id
+              type: keyword
+              description: Message item ID
     - name: ExchangeMetaData
       type: group
       fields:
@@ -282,6 +336,8 @@
           type: keyword
         - name: UniqueID
           type: keyword
+        - name: Subject
+          type: keyword
         - name: "*"
           type: long
     - name: Experience
@@ -294,6 +350,10 @@
       object_type_mapping_type: '*'
     - name: ExternalAccess
       type: boolean
+    - name: FileExtension
+      type: keyword
+    - name: FileSize
+      type: keyword
     - name: FileSizeBytes
       type: long
     - name: FilteringDate
@@ -381,6 +441,12 @@
       type: object
       object_type: keyword
       object_type_mapping_type: '*'
+      subobjects: false
+    - name: ModifiedProperties
+      type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
+      subobjects: false
     - name: Name
       type: keyword
     - name: NetworkMessageId
@@ -397,6 +463,8 @@
       type: keyword
     - name: Operation
       type: keyword
+    - name: OperationCount
+      type: long
     - name: OperationId
       type: keyword
     - name: OperationProperties
@@ -408,6 +476,8 @@
     - name: OrganizationName
       type: keyword
     - name: OriginalDeliveryLocation
+      type: keyword
+    - name: OriginatingDomain
       type: keyword
     - name: OriginatingServer
       type: keyword
@@ -427,6 +497,8 @@
       type: keyword
     - name: Parameters.Enabled
       type: keyword
+    - name: Parameters.From
+      type: keyword
     - name: Parameters.ForwardAsAttachmentTo
       type: keyword
     - name: Parameters.ForwardTo
@@ -437,6 +509,12 @@
       type: object
       object_type: keyword
       object_type_mapping_type: '*'
+      subobjects: false
+    - name: Parameters
+      type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
+      subobjects: false
     - name: PhishConfidenceLevel
       type: keyword
     - name: Platform
@@ -480,9 +558,24 @@
       type: keyword
     - name: SensitiveInfoDetectionIsIncluded
       type: boolean
+    - name: SensitivityLabelEventData
+      type: group
+      fields:
+        - name: ActionSourceDetail
+          type: long
+        - name: ContentType
+          type: keyword
+        - name: LabelEventType
+          type: long
+        - name: SensitivityLabelId
+          type: keyword
     - name: SessionId
       type: keyword
     - name: Severity
+      type: keyword
+    - name: Sha1
+      type: keyword
+    - name: Sha256
       type: keyword
     - name: SharePointMetaData.*
       type: object
@@ -549,6 +642,8 @@
           type: keyword
     - name: TargetContextId
       type: keyword
+    - name: TargetFilePath
+      type: keyword
     - name: TargetUserOrGroupName
       type: keyword
     - name: TargetUserOrGroupType
@@ -558,6 +653,10 @@
     - name: TeamName
       type: keyword
     - name: ThreatDetectionMethods
+      type: keyword
+    - name: TokenObjectId
+      type: keyword
+    - name: TokenTenantId
       type: keyword
     - name: Timestamp
       type: keyword

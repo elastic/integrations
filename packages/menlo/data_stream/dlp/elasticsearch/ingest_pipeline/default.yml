@@ -103,15 +103,32 @@ processors:
       field: menlo.protocol
       target_field: network.protocol
       ignore_missing: true
-  - append:
-      field: related.user
-      value: '{{{json.event.userid}}}'
-      allow_duplicates: false
-      if: ctx.json?.event?.userid != null
   - rename:
       field: json.event.userid
-      target_field: user.name
+      target_field: user.id
       ignore_missing: true
+  - grok:
+      field: user.id
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+        - '%{GREEDYDATA:user.name}'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user.email
+      copy_from: user.id
+      tag: copy_user_email
+      if: ctx.user?.id != null && ctx.user.id.indexOf("@") > 0
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
   - rename:
       field: json.event.filename
       target_field: file.name

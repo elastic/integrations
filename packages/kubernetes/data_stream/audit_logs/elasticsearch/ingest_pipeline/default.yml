@@ -1,6 +1,86 @@
 ---
 description: Pipeline for processing Kubernetes audit logs.
 processors:
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: kubernetes.audit
+      if: ctx.event?.original != null && ctx.kubernetes?.audit == null
+  - remove:
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+  # For Azure AKS logs
+  - rename:
+      field: kubernetes.audit
+      target_field: tmp.aks_audit
+      ignore_missing: true
+      if: >
+        ctx.kubernetes?.audit.category != null &&
+        ctx.kubernetes?.audit.operationName != null &&
+        ctx.kubernetes?.audit.resourceId != null &&
+        ctx.kubernetes?.audit.time != null
+      tag: rename_azure_aks_audit
+  - json:
+      field: tmp.aks_audit.properties.log
+      target_field: kubernetes.audit
+      if: ctx.tmp?.aks_audit?.properties?.log instanceof String && ctx.kubernetes?.audit == null
+      tag: json_azure_aks_audit_log
+  - rename:
+      field: tmp.aks_audit.properties.log
+      target_field: kubernetes.audit
+      if: ctx.tmp?.aks_audit?.properties?.log != null && ctx.kubernetes?.audit == null
+      tag: rename_azure_aks_audit_log
+  - remove:
+      field: tmp.aks_audit.properties.log
+      ignore_missing: true
+  - rename:
+      field: tmp.aks_audit
+      target_field: kubernetes.audit.aks_metadata
+      ignore_missing: true
+      tag: rename_azure_aks_metadata
+  - date:
+      field: kubernetes.audit.aks_metadata.time
+      if: ctx.kubernetes?.audit?.aks_metadata?.time != null
+      tag: date_azure_aks_time
+      formats:
+        - ISO8601
+  - rename:
+      field: kubernetes.audit.aks_metadata.operationName
+      target_field: kubernetes.audit.aks_metadata.operation_name
+      ignore_missing: true
+      tag: rename_aks_metadata_operation_name
+  - rename:
+      field: kubernetes.audit.aks_metadata.resourceId
+      target_field: kubernetes.audit.aks_metadata.resource_id
+      ignore_missing: true
+      tag: rename_aks_metadata_resource_id
+  - rename:
+      field: kubernetes.audit.aks_metadata.serviceBuild
+      target_field: kubernetes.audit.aks_metadata.service_build
+      ignore_missing: true
+      tag: rename_aks_metadata_service_build
+  - rename:
+      field: kubernetes.audit.aks_metadata.properties.containerID
+      target_field: kubernetes.audit.aks_metadata.container_id
+      ignore_missing: true
+      tag: rename_aks_metadata_container_id
+  - rename:
+      field: kubernetes.audit.aks_metadata.properties.pod
+      target_field: kubernetes.audit.aks_metadata.pod
+      ignore_missing: true
+      tag: rename_aks_metadata_pod
+  - rename:
+      field: kubernetes.audit.aks_metadata.properties.stream
+      target_field: kubernetes.audit.aks_metadata.stream
+      ignore_missing: true
+      tag: rename_aks_metadata_stream
+
+  # General processors
   - remove:
       if: "ctx.kubernetes?.audit?.responseObject != null"
       field: ["kubernetes.audit.responseObject.metadata"]
@@ -17,6 +97,36 @@ processors:
       field: event.action
       copy_from: kubernetes.audit.verb
       ignore_empty_value: true
+  - rename:
+      field: kubernetes.audit.insertId
+      target_field: kubernetes.audit.auditID
+      ignore_missing: true
+      if: ctx.audit?.auditID == null
+      tag: rename_audit_id
+  - rename:
+      field: kubernetes.audit.receiveTimestamp
+      target_field: kubernetes.audit.requestReceivedTimestamp
+      ignore_missing: true
+      if: ctx.audit?.requestReceivedTimestamp == null
+      tag: rename_requestReceivedTimestamp
+  - rename:
+      field: kubernetes.audit.timestamp
+      target_field: kubernetes.audit.stageTimestamp
+      ignore_missing: true
+      if: ctx.audit?.stageTimestamp == null
+      tag: rename_stageTimestamp
+  - rename:
+      field: kubernetes.audit.protoPayload.status.code
+      target_field: kubernetes.audit.responseStatus.code
+      ignore_missing: true
+      if: ctx.audit?.responseStatus?.code == null
+      tag: rename_responseStatusCode
+  - rename:
+      field: kubernetes.audit.labels
+      target_field: kubernetes.audit.annotations
+      ignore_missing: true
+      if: ctx.audit?.annotations == null
+      tag: rename_labels
   - script:
       lang: painless
       if: ctx.kubernetes?.audit?.annotations != null
@@ -61,10 +171,129 @@ processors:
       field: client.ip
       copy_from: source.ip
       ignore_empty_value: true
+
+  # Orchestrator fields
+  - set:
+      field: orchestrator.type
+      value: kubernetes
+  # For EKS and AKS logs
+  - set:
+      if: ctx.kubernetes?.audit?.apiVersion != null
+      field: orchestrator.api_version
+      copy_from: kubernetes.audit.apiVersion
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.objectRef?.resource != null
+      field: orchestrator.resource.type
+      copy_from: kubernetes.audit.objectRef.resource
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.objectRef?.namespace != null
+      field: orchestrator.namespace
+      copy_from: kubernetes.audit.objectRef.namespace
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.objectRef?.name != null
+      field: orchestrator.resource.name
+      copy_from: kubernetes.audit.objectRef.name
+      ignore_empty_value: true
+  # For GKE logs
+  - set:
+      if: ctx.kubernetes?.audit?.protoPayload?.resourceName != null
+      field: orchestrator.resource.name
+      copy_from: kubernetes.audit.protoPayload.resourceName
+      ignore_empty_value: true
+      override: false
+  - set:
+      if: ctx.kubernetes?.audit?.resource?.type != null
+      field: orchestrator.resource.type
+      copy_from: kubernetes.audit.resource.type
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.resource?.labels?.cluster_name != null
+      field: orchestrator.cluster.name
+      copy_from: kubernetes.audit.resource.labels.cluster_name
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.resource?.labels?.project_id != null
+      field: orchestrator.cluster.id
+      copy_from: kubernetes.audit.resource.labels.project_id
+      ignore_empty_value: true
+
+  # Cloud fields
+  - set:
+      field: cloud.provider
+      value: aws
+      if: ctx.input?.type == "aws-cloudwatch"
+  - set:
+      field: cloud.provider
+      value: azure
+      if: ctx.input?.type == "azure-eventhub"
+  - set:
+      field: cloud.provider
+      value: gcp
+      if: ctx.input?.type == "gcp-pubsub"
+
+  - append:
+      tag: append_related_user_uid
+      field: related.user
+      value: "{{{kubernetes.audit.user.uid}}}"
+      allow_duplicates: false
+      if: ctx.kubernetes?.audit?.user?.uid != null
+  - append:
+      tag: append_related_user_name
+      field: related.user
+      value: "{{{kubernetes.audit.user.username}}}"
+      allow_duplicates: false
+      if: ctx.kubernetes?.audit?.user?.username != null
+  - foreach:
+      field: source.ip
+      if: ctx.source?.ip != null && ctx.source.ip instanceof List
+      processor:
+        append:
+          tag: append_related_source_ip
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
+  - script:
+      description: Drops null/empty values recursively
+      tag: script_to_drop_empty_values
+      lang: painless
+      ignore_failure: true
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}

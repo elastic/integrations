@@ -11,28 +11,9 @@ This integration supports ingestion of logs from Squid Proxy, via the [Filestrea
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-Elastic Agent must be installed. For more information, refer to [Install Elastic Agents](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent. For more information, refer to [Install Elastic Agents](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 The minimum **Kibana version** required is **8.14.1**.
 
@@ -40,18 +21,16 @@ The minimum **Kibana version** required is **8.14.1**.
 
 [Configure Squid](https://wiki.squid-cache.org/Features/LogModules#Module:_System_Log) to export access logs using one of the supported methods (file (Module: Standard I/O), udp (Module: UDP Receiver), or tcp (Module: TCP Receiver)).
 
-The integration supports the following formats:
+The integration supports the following format: [Native log file](https://wiki.squid-cache.org/Features/LogFormat#squid).
 
-- [Native log file](https://wiki.squid-cache.org/Features/LogFormat#squid)
-
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
 1. In Kibana go to **Management** > **Integrations**.
 2. In the **Search for integrations** bar, type `Squid Proxy`.
 3. Select the `Squid Proxy` integration from the search results.
 4. Click **Add Squid Proxy** to add the integration.
 5. Add all the required integration configuration parameters according to the enabled input type.
-6. Click **Save and continue**.
+6. Save the integration.
 
 ## Logs reference
 

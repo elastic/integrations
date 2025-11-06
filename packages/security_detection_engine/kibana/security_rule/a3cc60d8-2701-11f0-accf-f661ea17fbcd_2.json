@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects non-interactive authentication activity against SharePoint Online (`Office 365 SharePoint Online`) by a user principal via the `Microsoft Authentication Broker` application. The session leverages a refresh token or Primary Refresh Token (PRT) without interactive sign-in, often used in OAuth phishing or token replay scenarios.",
+        "false_positives": [
+            "Legitimate non-interactive access to SharePoint Online via the Microsoft Authentication Broker may occur in enterprise environments, especially with MDM solutions or automated scripts. However, this should be explicitly allowed and monitored.",
+            "Some enterprise MDM or brokered flows may use refresh tokens legitimately (especially with hybrid/Azure AD joined devices). Automated scripts for legitimate tasks (e.g., reporting, backups) might use `python-requests`, though this should be explicitly allowed.",
+            "If the user is a developer or automation engineer, validate if this behavior was for testing purposes."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-azure.signinlogs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Microsoft Entra ID SharePoint Access for User Principal via Auth Broker",
+        "new_terms_fields": [
+            "azure.signinlogs.properties.user_principal_name"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Entra ID SharePoint Access for User Principal via Auth Broker\n\nThis rule identifies non-interactive sign-ins to SharePoint Online via the Microsoft Authentication Broker application using a refresh token or Primary Refresh Token (PRT). This type of activity may indicate token replay attacks, OAuth abuse, or automated access from previously consented apps or stolen sessions.\n\nThis is a [New Terms rule](https://www.elastic.co/guide/en/security/current/rules-ui-create.html#create-new-terms-rule) that detects the first occurrence of a user principal name accessing SharePoint Online via the Microsoft Authentication Broker application in the last 14 days.\n\n### Possible Investigation Steps:\n\n- `azure.signinlogs.properties.user_principal_name`: Identify the user involved. Investigate whether this user typically accesses SharePoint or if this is an anomaly.\n- `azure.signinlogs.properties.app_display_name`: Verify the application used (e.g., Authentication Broker). Determine if the app is expected for SharePoint access in your environment.\n- `azure.signinlogs.properties.resource_display_name`: Review the resource being accessed. SharePoint activity should be aligned with job roles or historical usage.\n- `azure.signinlogs.properties.incoming_token_type`: Indicates the token type used. Look for `refreshToken` or `primaryRefreshToken`, which may point to token replay or silent access.\n- `azure.signinlogs.properties.is_interactive`: If false, indicates the sign-in was non-interactive. Correlate with recent sign-ins to understand if a prior session may have been reused.\n- `user_agent.original`: Analyze the user agent string for automation indicators (e.g., scripts, unusual clients). Compare with what\u2019s typical for the user or device.\n- `source.ip`: Check the originating IP address. Investigate if the IP is associated with data centers, VPNs, anonymizers, or is geographically unusual for the user.\n- `source.geo.*`: Evaluate sign-in location details. Determine if the sign-in location aligns with expected travel or usage behavior.\n- `azure.signinlogs.properties.applied_conditional_access_policies`: Review whether Conditional Access policies were triggered or bypassed. Investigate if required controls (like MFA) were applied.\n- `azure.signinlogs.properties.authentication_processing_details`: Review any details about the authentication, such as token type or scopes. This may indicate delegated access or automation patterns.\n\n### False Positive Analysis\n\n- Certain MDM or mobile app scenarios may use refresh tokens legitimately via brokered apps.\n- Automated processes using authorized, scripted clients could trigger this activity, especially in developer or operations environments.\n- If Conditional Access policies are configured in \u201creport-only\u201d mode or exempted for trusted apps, activity may appear unusual but be authorized.\n\n### Response and Remediation\n\n- If activity appears unauthorized:\n  - Investigate and revoke active sessions or refresh tokens.\n  - Notify the user and validate expected activity.\n  - Review and audit app consent permissions and remove unused or high-risk delegated access.\n- Harden Conditional Access policies to limit non-interactive access to sensitive resources.\n- Monitor for repeated use of the same user agent, IP, or token type across other users to identify broader campaigns.\n- Consider alerting on unusual patterns in sign-in frequency, geography, and application usage for SharePoint and other key services.\n\n",
+        "query": "event.dataset: \"azure.signinlogs\"\n    and azure.signinlogs.properties.app_id: \"29d9ed98-a469-4536-ade2-f981bc1d605e\"\n    and azure.signinlogs.properties.resource_id: \"00000003-0000-0ff1-ce00-000000000000\"\n    and azure.signinlogs.identity: *\n    and azure.signinlogs.properties.user_principal_name: *\n    and azure.signinlogs.properties.incoming_token_type: (\"refreshToken\" or \"primaryRefreshToken\")\n    and azure.signinlogs.properties.is_interactive: false\n",
+        "references": [
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/",
+            "https://github.com/dirkjanm/ROADtools",
+            "https://dirkjanm.io/phishing-for-microsoft-entra-primary-refresh-tokens/"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.identity",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.incoming_token_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.is_interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.resource_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_principal_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a3cc60d8-2701-11f0-accf-f661ea17fbcd",
+        "setup": "#### Required Microsoft Entra ID Sign-In Logs\nTo use this rule, ensure that Microsoft Entra ID Sign-In Logs are being collected and streamed into the Elastic Stack via the Azure integration.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Collection",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Sign-in Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/",
+                        "subtechnique": [
+                            {
+                                "id": "T1213.002",
+                                "name": "Sharepoint",
+                                "reference": "https://attack.mitre.org/techniques/T1213/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 2
+    },
+    "id": "a3cc60d8-2701-11f0-accf-f661ea17fbcd_2",
+    "type": "security-rule"
+}

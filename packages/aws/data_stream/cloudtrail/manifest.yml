@@ -189,6 +189,30 @@ streams:
         multi: false
         default: true
 
+      - name: retain
+        type: select
+        title: Event Information Fields to Retain
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Cloudtrail `response_elements`, `request_parameters` and `additional_eventdata` data can
+          be placed in keyword and text fields as JSON, and in flattened fields. Depending on requirements
+          this configuration determines which fields will be retained in the final document. The Minimal
+          option retains the minimal set of fields required for the Security Detection Engine rules.
+        options:
+          - text: Keyword and Flattened
+            value: all
+          - text: Keyword
+            value: keyword
+          - text: Flattened
+            value: flattened
+          - text: Minimal
+            value: minimal
+          - text: Neither
+            value: none
+        default: all
+
   - input: aws-cloudwatch
     template_path: aws-cloudwatch.yml.hbs
     title: AWS CloudTrail Logs
@@ -251,7 +275,7 @@ streams:
         required: false
         default: beginning
         show_user: true
-        description: Allows user to specify if this input should read log files from the beginning or from the end.
+        description: Specify whether the input should start reading logs from the `beginning` (oldest log entry), `end` (newest log entry), or `lastSync` (last successful read timestamp if input ran before).
       - name: scan_frequency
         type: text
         title: Scan Frequency
@@ -325,3 +349,26 @@ streams:
         type: bool
         multi: false
         default: true
+
+      - name: retain
+        type: select
+        title: Event Information Fields to Retain
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Cloudtrail `response_elements`, `request_parameters` and `additional_eventdata` data can
+          be placed in keyword and text fields as JSON, and in flattened fields. Depending on requirements
+          This configuration determines which fields will be retained in the final document.
+        options:
+          - text: Keyword and Flattened
+            value: all
+          - text: Keyword
+            value: keyword
+          - text: Flattened
+            value: flattened
+          - text: Minimal
+            value: minimal
+          - text: Neither
+            value: none
+        default: all

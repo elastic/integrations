@@ -1,0 +1,92 @@
+---
+description: Pipeline for processing and enriching Entro audit logs according to ECS.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.17.0'
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - date:
+      field: date
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      timezone: UTC
+      tag: date_parse_timestamp
+      if: ctx.date != null
+      on_failure:
+        - remove:
+            field: date
+        - append:
+            field: error.message
+            value: >-
+                Processor '{{{ _ingest.on_failure_processor_type }}}'
+                {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+                {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - fingerprint:
+      fields:
+        - request_id
+        - secret_type
+        - exposed_value
+        - date
+      tag: fingerprint
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: request_id
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.value
+      copy_from: exposed_value
+      ignore_empty_value: true
+  - set:
+      field: log.origin.file.line
+      copy_from: line_number
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.category
+      value: ["Secret"]
+      ignore_empty_value: true
+      if: ctx.secret_type != null
+  - set:
+      field: vulnerability.description
+      copy_from: secret_type
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: ["vulnerability"]
+  - set:
+      field: event.type
+      value: ["info"]
+  - set:
+      field: event.dataset
+      value: "entro.audit"
+  - remove:
+      field:
+        - date
+        - request_id
+        - secret_type
+        - line_number
+        - exposed_value
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

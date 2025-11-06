@@ -19,9 +19,23 @@ echo "Configuring slave to start replication..."
 # Wait for the master to be ready and for its logs to be available
 MASTER_LOGS_AVAILABLE=false
 for i in {1..30}; do
-  MS_STATUS=$(mysql -h "$MYSQL_MASTER_HOST" -P 3306 -u root -p"$MYSQL_ROOT_PASSWORD" -e "SHOW MASTER STATUS;")
+  echo "Attempt $i: Checking master status..."
+  MS_STATUS=$(mysql -h "$MYSQL_MASTER_HOST" -P 3306 -u root -p"$MYSQL_ROOT_PASSWORD" -e "SHOW MASTER STATUS;" 2>/dev/null || echo "FAILED")
+
+  if [ "$MS_STATUS" = "FAILED" ]; then
+    echo "Failed to connect to master, retrying..."
+    sleep 2
+    continue
+  fi
+
+  echo "Master status: $MS_STATUS"
+
   CURRENT_LOG=$(echo "$MS_STATUS" | awk 'NR==2 {print $1}')
   CURRENT_POS=$(echo "$MS_STATUS" | awk 'NR==2 {print $2}')
+
+  echo "Debug: CURRENT_LOG = '$CURRENT_LOG'"
+  echo "Debug: CURRENT_POS = '$CURRENT_POS'"
+
   if [ -n "$CURRENT_LOG" ] && [ -n "$CURRENT_POS" ]; then
     MASTER_LOGS_AVAILABLE=true
     break
@@ -36,28 +50,48 @@ if [ "$MASTER_LOGS_AVAILABLE" = false ]; then
     exit 1
 fi
 
-echo "Master status obtained. Current log: $CURRENT_LOG, Current position: $CURRENT_POS."
+echo "Master status obtained. Current log: '$CURRENT_LOG', Current position: '$CURRENT_POS'."
+
+# Validate the values
+if [ -z "$CURRENT_LOG" ] || [ -z "$CURRENT_POS" ]; then
+  echo "Error: Empty log file or position values"
+  exit 1
+fi
 
 # Reset the slave to ensure a clean replication setup
 echo "Resetting the slave..."
-mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "STOP SLAVE; RESET SLAVE ALL;"
+mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "STOP SLAVE; RESET SLAVE ALL;" 2>/dev/null || echo "Slave was not running"
 
-# Prepare the CHANGE MASTER TO command
-start_slave_stmt="CHANGE MASTER TO MASTER_HOST='$MYSQL_MASTER_HOST', MASTER_USER='mydb_replica_user', MASTER_PASSWORD='mydb_replica_pwd', MASTER_LOG_FILE='$CURRENT_LOG', MASTER_LOG_POS=$CURRENT_POS; START SLAVE;"
 
-# Display the command that will be executed
-echo "Running the following command to start replication: $start_slave_stmt"
+mysql -uroot -p"$MYSQL_ROOT_PASSWORD" <<EOF
+CHANGE MASTER TO 
+  MASTER_HOST='$MYSQL_MASTER_HOST',
+  MASTER_USER='mydb_replica_user',
+  MASTER_PASSWORD='mydb_replica_pwd',
+  MASTER_LOG_FILE='$CURRENT_LOG',
+  MASTER_LOG_POS=$CURRENT_POS;
+EOF
 
-# Run the CHANGE MASTER TO command
-mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "$start_slave_stmt" || {
-    echo "Failed to start replication. Entering sleep mode for debugging."
-    tail -f /dev/null # This will keep the container running indefinitely
-}
+if [ $? -eq 0 ]; then
+    echo "CHANGE MASTER command executed successfully"
+
+    # Start the slave
+    mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "START SLAVE;"
+
+    if [ $? -eq 0 ]; then
+      echo "Slave started successfully"
+    else
+      echo "Failed to start slave"
+      exit 1
+    fi
+else
+  echo "Failed to execute CHANGE MASTER command"
+  exit 1
+fi
 
 # Verify slave status
 echo "Verifying slave status..."
-mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "GRANT REPLICATION CLIENT ON *.* TO 'mydb_replica_user'@'%'; FLUSH PRIVILEGES;"
 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "SHOW SLAVE STATUS \G"
 
 # Now, keep the script running to prevent the container from exiting
-wait
+tail -f /dev/null
