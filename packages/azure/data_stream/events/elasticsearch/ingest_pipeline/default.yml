@@ -11,10 +11,23 @@ processors:
       target_field: azure-eventhub
       if: 'ctx.azure?.eventhub != null'
       ignore_missing: true
+
   - set:
       field: event.kind
       value: event
-  
+
+  #
+  # Incoming pipeline input can be one of the following:
+  #
+  # - `message`
+  # - `body.structured`
+  #  
+
+  - set:
+      field: tmp_json
+      copy_from: body.structured
+      if: 'ctx.body?.structured != null'
+
   #
   # Set `event.dataset` value based on the event category.
   # ------------------------------------------------------
@@ -28,6 +41,7 @@ processors:
       field: message
       target_field: tmp_json
       description: 'Parses the message field as JSON and stores it in a temporary field to identify the event dataset.'
+      if: 'ctx.tmp_json == null'
   
   # Unfortunately, some Azure services produce logs with field names capitalized,
   # violating the spec [1].
@@ -44,6 +58,7 @@ processors:
       if: 'ctx.tmp_json?.category == null'
       ignore_missing: true
       description: 'Rename the invalid `Category` field to `category` to apply the correct routing rules.'
+
   # Unfortunately, some Azure services generate logs with
   # `CategoryValue` field instead of `Category` field.
   #
