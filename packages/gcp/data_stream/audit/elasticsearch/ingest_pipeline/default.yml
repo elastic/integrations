@@ -260,23 +260,27 @@ processors:
             }
             String actor = actorId.toString();
             
-            // Service accounts: serviceAccount:* or *.iam.gserviceaccount.com
-            if (actor.startsWith("serviceAccount:") || actor.contains(".iam.gserviceaccount.com")) {
+            // Service accounts: serviceAccount:* or *.gserviceaccount.com (includes cloudservices and iam)
+            if (actor.startsWith("serviceAccount:") || actor.contains(".gserviceaccount.com")) {
+              addNestedValue(ctx, "service.entity.id", actor);
+            }
+            // Service account paths: projects/*/serviceAccounts/*
+            else if (actor.contains("/serviceAccounts/")) {
               addNestedValue(ctx, "service.entity.id", actor);
             }
             // User accounts: user:* or email addresses (not service accounts)
-            else if (actor.startsWith("user:") || (actor.contains("@") && !actor.contains(".iam.gserviceaccount.com"))) {
+            else if (actor.startsWith("user:") || (actor.contains("@") && !actor.contains(".gserviceaccount.com"))) {
               addNestedValue(ctx, "user.entity.id", actor);
-            }
-            // GCP service or API names: *.googleapis.com
-            else if (actor.contains(".googleapis.com")) {
-              addNestedValue(ctx, "service.entity.id", actor);
             }
             // Compute instances: projects/*/zones/*/instances/*
             else if (actor.contains("/instances/")) {
               addNestedValue(ctx, "host.entity.id", actor);
             }
-            // Everything else (repo:, etc.)
+            // GCP service or API names: *.googleapis.com (but not principal:// or workloadIdentityPools)
+            else if (actor.contains(".googleapis.com") && !actor.startsWith("principal://") && !actor.contains("/workloadIdentityPools/")) {
+              addNestedValue(ctx, "service.entity.id", actor);
+            }
+            // Everything else (repo:, workloadIdentityPools, principal://, etc.)
             else {
               addNestedValue(ctx, "entity.id", actor);
             }
@@ -295,11 +299,15 @@ processors:
             if (target.contains("/instances/")) {
               addNestedValue(ctx, "host.target.entity.id", target);
             }
-            // IAM principals (users, service accounts, groups)
+            // Service accounts: projects/*/serviceAccounts/* or email addresses ending with .gserviceaccount.com
             else if (target.contains("/serviceAccounts/") || 
-                     target.contains("/users/") || 
+                     (target.contains("@") && target.contains(".gserviceaccount.com"))) {
+              addNestedValue(ctx, "service.target.entity.id", target);
+            }
+            // IAM principals (users, groups)
+            else if (target.contains("/users/") || 
                      target.contains("/groups/") ||
-                     (target.contains("@") && (target.contains(".iam.gserviceaccount.com") || target.contains("/members/")))) {
+                     (target.contains("@") && target.contains("/members/"))) {
               addNestedValue(ctx, "user.target.entity.id", target);
             }
             // GCP service resources
@@ -308,7 +316,6 @@ processors:
                      target.contains("/services") ||
                      target.contains("/policies/") ||
                      target.contains("/operations/") ||
-                     target.contains("/workloadIdentityPools/") ||
                      target.contains("/subnetworks") ||
                      target.contains("/networkEdgeSecurityServices") ||
                      target.contains("/functions/") ||
@@ -327,7 +334,7 @@ processors:
                      target.contains(".googleapis.com")) {
               addNestedValue(ctx, "service.target.entity.id", target);
             }
-            // Everything else (projects, zones without specific resources, etc.)
+            // Everything else (projects, zones, workloadIdentityPools, etc.)
             else {
               addNestedValue(ctx, "entity.target.id", target);
             }

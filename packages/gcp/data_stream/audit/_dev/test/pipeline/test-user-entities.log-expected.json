@@ -1,0 +1,450 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2024-11-06T10:00:00.000Z",
+            "actor": {
+                "entity": {
+                    "id": [
+                        "user:john.doe@elastic.co",
+                        "john.doe@elastic.co"
+                    ]
+                }
+            },
+            "client": {
+                "user": {
+                    "email": "john.doe@elastic.co",
+                    "id": "user:john.doe@elastic.co"
+                }
+            },
+            "cloud": {
+                "project": {
+                    "id": "test-project"
+                },
+                "provider": "gcp"
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "google.iam.admin.v1.CreateServiceAccount",
+                "category": [
+                    "network",
+                    "configuration"
+                ],
+                "id": "test-user-1",
+                "kind": "event",
+                "original": "{\"insertId\":\"test-user-1\",\"logName\":\"projects/test-project/logs/cloudaudit.googleapis.com%2Factivity\",\"protoPayload\":{\"@type\":\"type.googleapis.com/google.cloud.audit.AuditLog\",\"authenticationInfo\":{\"principalEmail\":\"john.doe@elastic.co\",\"principalSubject\":\"user:john.doe@elastic.co\"},\"authorizationInfo\":[{\"granted\":true,\"permission\":\"iam.serviceAccounts.create\",\"resource\":\"projects/test-project/serviceAccounts/test-sa\",\"resourceAttributes\":{}}],\"methodName\":\"google.iam.admin.v1.CreateServiceAccount\",\"requestMetadata\":{\"callerIp\":\"203.0.113.1\",\"callerSuppliedUserAgent\":\"gcloud-sdk\"},\"resourceName\":\"projects/test-project/serviceAccounts/new-service-account@test-project.iam.gserviceaccount.com\",\"serviceName\":\"iam.googleapis.com\"},\"receiveTimestamp\":\"2024-11-06T10:00:00.000000Z\",\"resource\":{\"labels\":{\"project_id\":\"test-project\"},\"type\":\"service_account\"},\"severity\":\"NOTICE\",\"timestamp\":\"2024-11-06T10:00:00.000000Z\"}",
+                "outcome": "success",
+                "provider": "activity",
+                "type": [
+                    "access",
+                    "allowed"
+                ]
+            },
+            "gcp": {
+                "audit": {
+                    "authorization_info": [
+                        {
+                            "granted": true,
+                            "permission": "iam.serviceAccounts.create",
+                            "resource": "projects/test-project/serviceAccounts/test-sa"
+                        }
+                    ],
+                    "receive_timestamp": "2024-11-06T10:00:00.000Z",
+                    "resource": {
+                        "type": "service_account"
+                    },
+                    "resource_name": "projects/test-project/serviceAccounts/new-service-account@test-project.iam.gserviceaccount.com",
+                    "type": "type.googleapis.com/google.cloud.audit.AuditLog"
+                }
+            },
+            "log": {
+                "level": "NOTICE",
+                "logger": "projects/test-project/logs/cloudaudit.googleapis.com%2Factivity"
+            },
+            "related": {
+                "entity": [
+                    "john.doe@elastic.co",
+                    "projects/test-project/serviceAccounts/new-service-account@test-project.iam.gserviceaccount.com",
+                    "user:john.doe@elastic.co"
+                ],
+                "ip": [
+                    "203.0.113.1"
+                ],
+                "user": [
+                    "john.doe@elastic.co"
+                ]
+            },
+            "service": {
+                "name": "iam.googleapis.com",
+                "target": {
+                    "entity": {
+                        "id": [
+                            "projects/test-project/serviceAccounts/new-service-account@test-project.iam.gserviceaccount.com"
+                        ]
+                    }
+                }
+            },
+            "source": {
+                "ip": "203.0.113.1"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "target": {
+                "entity": {
+                    "id": [
+                        "projects/test-project/serviceAccounts/new-service-account@test-project.iam.gserviceaccount.com"
+                    ]
+                }
+            },
+            "user": {
+                "entity": {
+                    "id": [
+                        "user:john.doe@elastic.co",
+                        "john.doe@elastic.co"
+                    ]
+                }
+            },
+            "user_agent": {
+                "device": {
+                    "name": "Other"
+                },
+                "name": "Other",
+                "original": "gcloud-sdk"
+            }
+        },
+        {
+            "@timestamp": "2024-11-06T10:01:00.000Z",
+            "actor": {
+                "entity": {
+                    "id": [
+                        "admin@example.com"
+                    ]
+                }
+            },
+            "client": {
+                "user": {
+                    "email": "admin@example.com"
+                }
+            },
+            "cloud": {
+                "project": {
+                    "id": "test-project"
+                },
+                "provider": "gcp"
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "google.iam.admin.v1.PatchServiceAccount",
+                "category": [
+                    "network",
+                    "configuration"
+                ],
+                "id": "test-user-2",
+                "kind": "event",
+                "original": "{\"insertId\":\"test-user-2\",\"logName\":\"projects/test-project/logs/cloudaudit.googleapis.com%2Factivity\",\"protoPayload\":{\"@type\":\"type.googleapis.com/google.cloud.audit.AuditLog\",\"authenticationInfo\":{\"principalEmail\":\"admin@example.com\"},\"authorizationInfo\":[{\"granted\":true,\"permission\":\"iam.serviceAccounts.update\",\"resource\":\"projects/test-project/serviceAccounts/123456789\",\"resourceAttributes\":{}}],\"methodName\":\"google.iam.admin.v1.PatchServiceAccount\",\"requestMetadata\":{\"callerIp\":\"203.0.113.2\"},\"resourceName\":\"projects/test-project/serviceAccounts/existing-sa@test-project.iam.gserviceaccount.com\",\"serviceName\":\"iam.googleapis.com\"},\"receiveTimestamp\":\"2024-11-06T10:01:00.000000Z\",\"resource\":{\"labels\":{\"email_id\":\"existing-sa@test-project.iam.gserviceaccount.com\",\"project_id\":\"test-project\"},\"type\":\"service_account\"},\"severity\":\"NOTICE\",\"timestamp\":\"2024-11-06T10:01:00.000000Z\"}",
+                "outcome": "success",
+                "provider": "activity",
+                "type": [
+                    "access",
+                    "allowed"
+                ]
+            },
+            "gcp": {
+                "audit": {
+                    "authorization_info": [
+                        {
+                            "granted": true,
+                            "permission": "iam.serviceAccounts.update",
+                            "resource": "projects/test-project/serviceAccounts/123456789"
+                        }
+                    ],
+                    "receive_timestamp": "2024-11-06T10:01:00.000Z",
+                    "resource": {
+                        "type": "service_account"
+                    },
+                    "resource_name": "projects/test-project/serviceAccounts/existing-sa@test-project.iam.gserviceaccount.com",
+                    "type": "type.googleapis.com/google.cloud.audit.AuditLog"
+                }
+            },
+            "log": {
+                "level": "NOTICE",
+                "logger": "projects/test-project/logs/cloudaudit.googleapis.com%2Factivity"
+            },
+            "related": {
+                "entity": [
+                    "projects/test-project/serviceAccounts/existing-sa@test-project.iam.gserviceaccount.com",
+                    "admin@example.com"
+                ],
+                "ip": [
+                    "203.0.113.2"
+                ],
+                "user": [
+                    "admin@example.com"
+                ]
+            },
+            "service": {
+                "name": "iam.googleapis.com",
+                "target": {
+                    "entity": {
+                        "id": [
+                            "projects/test-project/serviceAccounts/existing-sa@test-project.iam.gserviceaccount.com"
+                        ]
+                    }
+                }
+            },
+            "source": {
+                "ip": "203.0.113.2"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "target": {
+                "entity": {
+                    "id": [
+                        "projects/test-project/serviceAccounts/existing-sa@test-project.iam.gserviceaccount.com"
+                    ]
+                }
+            },
+            "user": {
+                "entity": {
+                    "id": [
+                        "admin@example.com"
+                    ]
+                }
+            }
+        },
+        {
+            "@timestamp": "2024-11-06T10:02:00.000Z",
+            "actor": {
+                "entity": {
+                    "id": [
+                        "user:jane.admin@company.org",
+                        "jane.admin@company.org"
+                    ]
+                }
+            },
+            "client": {
+                "user": {
+                    "email": "jane.admin@company.org",
+                    "id": "user:jane.admin@company.org"
+                }
+            },
+            "cloud": {
+                "project": {
+                    "id": "test-project"
+                },
+                "provider": "gcp"
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "entity": {
+                "target": {
+                    "id": [
+                        "projects/test-project"
+                    ]
+                }
+            },
+            "event": {
+                "action": "SetIamPolicy",
+                "category": [
+                    "network",
+                    "configuration"
+                ],
+                "id": "test-user-3",
+                "kind": "event",
+                "original": "{\"insertId\":\"test-user-3\",\"logName\":\"projects/test-project/logs/cloudaudit.googleapis.com%2Factivity\",\"protoPayload\":{\"@type\":\"type.googleapis.com/google.cloud.audit.AuditLog\",\"authenticationInfo\":{\"principalEmail\":\"jane.admin@company.org\",\"principalSubject\":\"user:jane.admin@company.org\"},\"authorizationInfo\":[{\"granted\":true,\"permission\":\"resourcemanager.projects.setIamPolicy\",\"resource\":\"projects/test-project\",\"resourceAttributes\":{}}],\"methodName\":\"SetIamPolicy\",\"request\":{\"@type\":\"type.googleapis.com/google.iam.v1.SetIamPolicyRequest\",\"policy\":{\"bindings\":[{\"members\":[\"user:bob@elastic.co\",\"group:developers@elastic.co\"],\"role\":\"roles/viewer\"}]}},\"requestMetadata\":{\"callerIp\":\"203.0.113.3\"},\"resourceName\":\"projects/test-project\",\"serviceName\":\"cloudresourcemanager.googleapis.com\"},\"receiveTimestamp\":\"2024-11-06T10:02:00.000000Z\",\"resource\":{\"labels\":{\"project_id\":\"test-project\"},\"type\":\"project\"},\"severity\":\"NOTICE\",\"timestamp\":\"2024-11-06T10:02:00.000000Z\"}",
+                "outcome": "success",
+                "provider": "activity",
+                "type": [
+                    "access",
+                    "allowed"
+                ]
+            },
+            "gcp": {
+                "audit": {
+                    "authorization_info": [
+                        {
+                            "granted": true,
+                            "permission": "resourcemanager.projects.setIamPolicy",
+                            "resource": "projects/test-project"
+                        }
+                    ],
+                    "receive_timestamp": "2024-11-06T10:02:00.000Z",
+                    "request": {
+                        "@type": "type.googleapis.com/google.iam.v1.SetIamPolicyRequest",
+                        "policy": {
+                            "bindings": [
+                                {
+                                    "members": [
+                                        "user:bob@elastic.co",
+                                        "group:developers@elastic.co"
+                                    ],
+                                    "role": "roles/viewer"
+                                }
+                            ]
+                        }
+                    },
+                    "resource": {
+                        "type": "project"
+                    },
+                    "resource_name": "projects/test-project",
+                    "type": "type.googleapis.com/google.cloud.audit.AuditLog"
+                }
+            },
+            "log": {
+                "level": "NOTICE",
+                "logger": "projects/test-project/logs/cloudaudit.googleapis.com%2Factivity"
+            },
+            "related": {
+                "entity": [
+                    "jane.admin@company.org",
+                    "group:developers@elastic.co",
+                    "user:bob@elastic.co",
+                    "roles/viewer",
+                    "user:jane.admin@company.org",
+                    "projects/test-project"
+                ],
+                "ip": [
+                    "203.0.113.3"
+                ],
+                "user": [
+                    "jane.admin@company.org"
+                ]
+            },
+            "service": {
+                "name": "cloudresourcemanager.googleapis.com"
+            },
+            "source": {
+                "ip": "203.0.113.3"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "target": {
+                "entity": {
+                    "id": [
+                        "projects/test-project"
+                    ]
+                }
+            },
+            "user": {
+                "entity": {
+                    "id": [
+                        "user:jane.admin@company.org",
+                        "jane.admin@company.org"
+                    ]
+                }
+            }
+        },
+        {
+            "@timestamp": "2024-11-06T10:03:00.000Z",
+            "actor": {
+                "entity": {
+                    "id": [
+                        "serviceAccount:service-account@test-project.iam.gserviceaccount.com",
+                        "service-account@test-project.iam.gserviceaccount.com"
+                    ]
+                }
+            },
+            "client": {
+                "user": {
+                    "email": "service-account@test-project.iam.gserviceaccount.com",
+                    "id": "serviceAccount:service-account@test-project.iam.gserviceaccount.com"
+                }
+            },
+            "cloud": {
+                "project": {
+                    "id": "test-project"
+                },
+                "provider": "gcp"
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "google.iam.admin.v1.SignJwt",
+                "category": [
+                    "network",
+                    "configuration"
+                ],
+                "id": "test-user-4",
+                "kind": "event",
+                "original": "{\"insertId\":\"test-user-4\",\"logName\":\"projects/test-project/logs/cloudaudit.googleapis.com%2Factivity\",\"protoPayload\":{\"@type\":\"type.googleapis.com/google.cloud.audit.AuditLog\",\"authenticationInfo\":{\"principalEmail\":\"service-account@test-project.iam.gserviceaccount.com\",\"principalSubject\":\"serviceAccount:service-account@test-project.iam.gserviceaccount.com\"},\"authorizationInfo\":[{\"granted\":true,\"permission\":\"iam.serviceAccounts.actAs\",\"resource\":\"projects/test-project/serviceAccounts/target-user@example.com\",\"resourceAttributes\":{}}],\"methodName\":\"google.iam.admin.v1.SignJwt\",\"requestMetadata\":{\"callerIp\":\"10.0.0.1\"},\"resourceName\":\"projects/test-project/serviceAccounts/12345/keys/67890\",\"serviceName\":\"iam.googleapis.com\"},\"receiveTimestamp\":\"2024-11-06T10:03:00.000000Z\",\"resource\":{\"labels\":{\"project_id\":\"test-project\",\"unique_id\":\"12345\"},\"type\":\"service_account\"},\"severity\":\"INFO\",\"timestamp\":\"2024-11-06T10:03:00.000000Z\"}",
+                "outcome": "success",
+                "provider": "activity",
+                "type": [
+                    "access",
+                    "allowed"
+                ]
+            },
+            "gcp": {
+                "audit": {
+                    "authorization_info": [
+                        {
+                            "granted": true,
+                            "permission": "iam.serviceAccounts.actAs",
+                            "resource": "projects/test-project/serviceAccounts/target-user@example.com"
+                        }
+                    ],
+                    "receive_timestamp": "2024-11-06T10:03:00.000Z",
+                    "resource": {
+                        "type": "service_account"
+                    },
+                    "resource_name": "projects/test-project/serviceAccounts/12345/keys/67890",
+                    "type": "type.googleapis.com/google.cloud.audit.AuditLog"
+                }
+            },
+            "log": {
+                "level": "INFO",
+                "logger": "projects/test-project/logs/cloudaudit.googleapis.com%2Factivity"
+            },
+            "related": {
+                "entity": [
+                    "service-account@test-project.iam.gserviceaccount.com",
+                    "projects/test-project/serviceAccounts/12345/keys/67890",
+                    "serviceAccount:service-account@test-project.iam.gserviceaccount.com"
+                ],
+                "ip": [
+                    "10.0.0.1"
+                ],
+                "user": [
+                    "service-account@test-project.iam.gserviceaccount.com"
+                ]
+            },
+            "service": {
+                "entity": {
+                    "id": [
+                        "serviceAccount:service-account@test-project.iam.gserviceaccount.com",
+                        "service-account@test-project.iam.gserviceaccount.com"
+                    ]
+                },
+                "name": "iam.googleapis.com",
+                "target": {
+                    "entity": {
+                        "id": [
+                            "projects/test-project/serviceAccounts/12345/keys/67890"
+                        ]
+                    }
+                }
+            },
+            "source": {
+                "ip": "10.0.0.1"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "target": {
+                "entity": {
+                    "id": [
+                        "projects/test-project/serviceAccounts/12345/keys/67890"
+                    ]
+                }
+            }
+        }
+    ]
+}
