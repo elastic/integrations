@@ -1,6 +1,6 @@
 # Faitour
 
-This integration is for [Faitour](https://github.com/MakoWish/Faitour2) honeypot event logs. The package processes messages from Faitour honeypot logs to allow visibility and alerting to observed activity on your network.
+This integration is for [Faitour](https://github.com/MakoWish/Faitour) honeypot event logs. The package processes messages from Faitour honeypot logs to allow visibility and alerting to observed activity on your network.
 
 ## Data streams
 

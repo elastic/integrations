@@ -1,6 +1,6 @@
 # Faitour
 
-This integration is for [Faitour](https://github.com/MakoWish/Faitour2) honeypot event logs. The package processes messages from Faitour honeypot logs to allow visibility and alerting to observed activity on your network.
+This integration is for [Faitour](https://github.com/MakoWish/Faitour) honeypot event logs. The package processes messages from Faitour honeypot logs to allow visibility and alerting to observed activity on your network.
 
 ## Data streams
 
@@ -41,7 +41,7 @@ An example event for `honeypot` looks as following:
         "dataset": "faitour.honeypot",
         "ingested": "2025-02-05T19:05:36.900080752Z",
         "kind": "alert",
-        "original": "{\"timestamp\":\"2025-02-05T18:00:04.944\",\"log\":{\"level\":\"INFO\",\"logger\":\"faitour\",\"origin\":{\"file\":{\"line\":28,\"name\":\"/home/foo/Faitour2/emulators/ssh.py\"}}},\"event\":{\"provider\":\"ssh\",\"type\":[\"connection\",\"allowed\",\"start\"],\"kind\":\"alert\",\"category\":[\"network\",\"authentication\",\"intrusion_detection\"],\"dataset\":\"faitour.honeypot\",\"action\":\"check_auth_password\",\"reason\":\"SSH authentication successful\",\"outcome\":\"success\"},\"user\":{\"name\":\"admin\",\"password\":\"<REDACTED>\"}}",
+        "original": "{\"timestamp\":\"2025-02-05T18:00:04.944\",\"log\":{\"level\":\"INFO\",\"logger\":\"faitour\",\"origin\":{\"file\":{\"line\":28,\"name\":\"/home/foo/Faitour/emulators/ssh.py\"}}},\"event\":{\"provider\":\"ssh\",\"type\":[\"connection\",\"allowed\",\"start\"],\"kind\":\"alert\",\"category\":[\"network\",\"authentication\",\"intrusion_detection\"],\"dataset\":\"faitour.honeypot\",\"action\":\"check_auth_password\",\"reason\":\"SSH authentication successful\",\"outcome\":\"success\"},\"user\":{\"name\":\"admin\",\"password\":\"<REDACTED>\"}}",
         "outcome": "success",
         "provider": "ssh",
         "reason": "SSH authentication successful",
@@ -58,7 +58,7 @@ An example event for `honeypot` looks as following:
         "origin": {
             "file": {
                 "line": 28,
-                "name": "/home/foo/Faitour2/emulators/ssh.py"
+                "name": "/home/foo/Faitour/emulators/ssh.py"
             }
         }
     },
@@ -105,7 +105,7 @@ An example event for `application` looks as following:
         "logger": "faitour",
         "origin": {
             "file": {
-                "name": "/home/foo/Faitour2/emulators/http.py",
+                "name": "/home/foo/Faitour/emulators/http.py",
                 "line": 271
             }
         }
@@ -114,7 +114,7 @@ An example event for `application` looks as following:
     "event": {
         "reason": "HTTP certificate and key already exist",
         "ingested": "2025-02-07T04:18:44.319671658Z",
-        "original": "{\"timestamp\":\"2025-02-05T19:30:39.315\",\"log\":{\"level\":\"DEBUG\",\"logger\":\"faitour\",\"origin\":{\"file\":{\"line\":271,\"name\":\"/home/foo/Faitour2/emulators/http.py\"}}},\"event\":{\"provider\":\"http\",\"type\":[\"info\"],\"kind\":\"event\",\"category\":[\"configuration\"],\"dataset\":\"faitour.application\",\"action\":\"generate_self_signed_cert\",\"reason\":\"HTTP certificate and key already exist\",\"outcome\":\"success\"}}",
+        "original": "{\"timestamp\":\"2025-02-05T19:30:39.315\",\"log\":{\"level\":\"DEBUG\",\"logger\":\"faitour\",\"origin\":{\"file\":{\"line\":271,\"name\":\"/home/foo/Faitour/emulators/http.py\"}}},\"event\":{\"provider\":\"http\",\"type\":[\"info\"],\"kind\":\"event\",\"category\":[\"configuration\"],\"dataset\":\"faitour.application\",\"action\":\"generate_self_signed_cert\",\"reason\":\"HTTP certificate and key already exist\",\"outcome\":\"success\"}}",
         "provider": "http",
         "kind": "event",
         "action": "generate_self_signed_cert",
