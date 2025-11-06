@@ -1,189 +1,101 @@
-# Citrix ADC Integration for Elastic
+# Citrix ADC Integration
 
 ## Overview
 
-The Citrix ADC integration for Elastic collects logs and metrics from your Citrix ADC instances, providing real-time visibility into network activity, threat detection, and security operations. This integration allows you to monitor the health and performance of your Citrix ADC environment, ingest Citrix NetScaler logs for security and operational analysis, and use pre-built dashboards to visualize trends and derive insights.
+The Citrix ADC integration allows you to monitor your Citrix ADC instance. Citrix ADC is an application delivery controller that performs application-specific traffic analysis to intelligently distribute, optimize, and secure Layer 4 - Layer 7 (L4–L7) network traffic for web applications.
 
-### Compatibility
+The Citrix Web App Firewall prevents security breaches, data loss, and possible unauthorized modifications to websites that access sensitive business or customer information. It does so by filtering both requests and responses, examining them for evidence of malicious activity, and blocking requests that exhibit such activity. Your site is protected not only from common types of attacks, but also from new, as yet unknown attacks. In addition to protecting web servers and websites from unauthorized access, the Web App Firewall protects against vulnerabilities in legacy CGI code or scripts, web frameworks, web server software, and other underlying operating systems.
 
-This integration has been tested and is compatible with Citrix ADC versions `v13.0`, `v13.1`, and `v14.1`.
+Use the Citrix ADC integration to:
 
-The minimum required Kibana version is `8.13.0`.
+Collect metrics related to the interface, lbvserver, service, system, vpn and logs.
+Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
+Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
-### How it works
+As an example, you can use the data from this integration to understand the load of the virtual servers, client-server connections, requests and responses across the Citrix ADC.
 
-This integration uses the Elastic Agent to collect data from Citrix ADC instances. Metrics are collected by polling the Citrix NITRO APIs via HTTP/JSON, while logs are collected from syslog messages (CEF or RFC 5424 compliant) or log files.
+## Data streams
 
-## What data does this integration collect?
+The Citrix ADC integration collects metrics data.
 
-The Citrix ADC integration collects the following types of data:
+Metrics give you insight into the statistics of the Citrix ADC. Metrics data streams collected by the Citrix ADC integration include [interface](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/interface/), [lbvserver](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/lb/lbvserver/), [service](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/basic/service/), [system](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/system/system/) and [vpn](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/vpn/vpn/), so that the user could monitor and troubleshoot the performance of the Citrix ADC instances.
 
-*   **Metrics:** `interface`, `lbvserver`, `service`, `system`, and `vpn` metrics are collected via HTTP/JSON polling of the Citrix NITRO APIs.
-*   **Logs:** Citrix NetScaler syslog events are collected. CEF format is recommended for Web Application Firewall (WAF) events, and RFC 5424-compliant syslog is recommended for other log types (supported in NetScaler 14.1+).
+**Log** is used to retrieve Citrix Netscaler logs. See more details in the documentation [here](https://developer-docs.netscaler.com/en-us/netscaler-syslog-message-reference/current-release).
 
-### Supported use cases
+**NOTE:** You can monitor metrics and logs inside the ingested documents for Citrix ADC in the `logs-*` index pattern from `Discover`.
 
-*   Monitor Citrix ADC health and performance across `interface`, `lbvserver`, `service`, `system`, and `vpn` data streams.
-*   Ingest Citrix NetScaler logs (CEF or syslog) for security and operational visibility.
-*   Use provided dashboards to visualize trends, measure usage, and derive insights.
-*   Create alerts to reduce MTTD/TR and reference logs when troubleshooting.
-*   Understand virtual server load, client/server connections, requests, and responses across Citrix ADC.
+## Compatibility
 
-## What do I need to use this integration?
+This integration has been tested against Citrix ADC `v13.0`, `v13.1` and `v14.1`.
 
-### Vendor prerequisites
+## Requirements
 
-*   Host(s) and administrator credentials for the Citrix ADC instance.
-*   Host format: `http[s]://<hostname>:<port>` (example: `http://example.com:9090`).
-*   Access to the NetScaler GUI to enable CEF logging and/or configure syslog servers.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). 
 
-### Elastic prerequisites
+The minimum **Kibana version** required is **8.12.0**.  
 
-*   An installed and enrolled Elastic Agent.
-*   Kibana version `>= 8.13.0` and an available Elasticsearch cluster.
-*   Permissions to add the Citrix ADC integration in Kibana.
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-## How do I deploy this integration?
+To ingest data from Citrix ADC, you must know the host(s) and the administrator credentials for the Citrix ADC instance.
 
-### Agent-based deployment
+Host Configuration Format: `http[s]://<hostname>:<port>`
+Example Host Configuration: `http://example.com:9090`
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+## Setup
+  
+For step-by-step instructions on how to set up an integration, check the [quick start](integrations://docs/extend/quick-start.md).
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+**NOTE:** It is recommended to configure the application firewall to enable CEF-formatted logs.
 
-### Onboard / configure
+### Configure CEF format
 
-#### Vendor set up steps
+1. Navigate to **Security** the NetScaler GUI.
+2. Click **Application Firewall** node.
+3. Select Change Engine Settings.
+4. Enable CEF Logging.
 
-##### Configure CEF format (recommended for WAF events)
+### Configure Syslog format
 
-1.  Navigate to **Security** in the NetScaler GUI.
-2.  Click **Application Firewall**.
-3.  Select **Change Engine Settings**.
-4.  Enable **CEF Logging**.
+You can use the Citrix WAF GUI to configure syslog servers and WAF message types to be sent to the syslog servers. Refer to [How to Send Application Firewall Messages to a Separate Syslog Server](https://support.citrix.com/s/article/CTX138973-how-to-send-application-firewall-messages-to-a-separate-syslog-server) and [How to Send NetScaler Application Firewall Logs to Syslog Server and NS.log](https://support.citrix.com/s/article/CTX483235-send-logs-to-external-syslog-server?language=en_US) for details.
 
-##### Configure Syslog format (if not using CEF)
+**NOTE:** Using RFC 5424 compliant syslog messages is recommended when using syslog, if supported by NetScaler. Support for RFC 5424 was added in NetScaler 14.1. Refer to [Configuring audit log action](https://docs.netscaler.com/en-us/citrix-adc/current-release/system/audit-logging/configuring-audit-logging.html#configuring-audit-log-action).
 
-*   Use the Citrix WAF GUI to configure syslog servers and message types to be sent.
-*   RFC 5424-compliant syslog is recommended when supported (NetScaler 14.1+). See [Configuring audit log action](https://docs.netscaler.com/en-us/citrix-adc/current-release/system/audit-logging/configuring-audit-logging.html#configuring-audit-log-action).
-*   **References:**
-    *   [How to Send Application Firewall Messages to a Separate Syslog Server](https://support.citrix.com/s/article/CTX138973-how-to-send-application-firewall-messages-to-a-separate-syslog-server)
-    *   [How to Send NetScaler Application Firewall Logs to Syslog Server and NS.log](https://support.citrix.com/s/article/CTX483235-send-logs-to-external-syslog-server?language=en_US)
+## Validation
 
-#### Kibana set up steps
+After the integration is successfully configured, click the Assets tab of the Citrix ADC Integration to display a list of available dashboards. The dashboard for your configured datastream should be populated with the required data.
 
-1.  In Kibana, go to **Management > Integrations**.
-2.  Search for “Citrix ADC”.
-3.  Select the Citrix ADC integration and add it.
-4.  Choose how to collect logs and configure the parameters:
-    *   **File:** set **Paths**.
-    *   **TCP:** set **Listen Address** and **Listen Port**.
-    *   **UDP:** set **Listen Address** and **Listen Port**.
-5.  Save the integration.
+### Enable the integration in Elastic
 
-### Validation
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Citrix ADC**.
+3. Select the **Citrix ADC** integration and add it.
+4. While adding the integration, if you want to collect logs via logfile, keep **Collect logs from Citrix ADC via file** toggle on and then configure following parameters:
+   - Paths
 
-After configuration, open the Citrix ADC integration’s **Assets** tab to view the available dashboards; they should populate with data for the configured datasets.
+   or if you want to collect logs via TCP, keep **Collect logs from Citrix ADC via TCP** toggle on and then configure following parameters:
+   - Listen Address
+   - Listen Port
 
-- While adding the integration, if you want to collect logs via logfile, keep **Collect logs from Citrix ADC via file** toggle on and then configure following parameters:
-    - `Paths`
-- If you want to collect logs via TCP, keep **Collect logs from Citrix ADC via TCP** toggle on and then configure following parameters:
-    - `Listen Address`
-    - `Listen Port`
-- If you want to collect logs via UDP, keep **Collect logs from Citrix ADC via UDP** toggle on and and then configure following parameters:
-    - `Listen Address`
-    - `Listen Port`
+   or if you want to collect logs via UDP, keep **Collect logs from Citrix ADC via UDP** toggle on and and then configure following parameters:
+   - Listen Address
+   - Listen Port
+5. Save the integration.
 
-You can also verify metrics and logs in **Discover** under the `logs-*` data view.
+### Troubleshooting
 
-## Troubleshooting
+#### Dummy values
 
-For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+It is possible that for some fields, Citrix ADC sets dummy values. For example, a field `cpuusagepcnt` is represented by `citrix_adc.system.cpu.utilization.pct`. `cpuusagepcnt` is set to `4294967295` for some [instances](https://github.com/citrix/citrix-adc-metrics-exporter/issues/44). If you also encounter it for some fields, reach out to the [Citrix ADC support team](https://support.citrix.com/plp/products/citrix_adc/tabs/popular-solutions).
 
-### Dummy values
-It is possible that for some fields, Citrix ADC sets dummy values. For example, a field `cpuusagepcnt` is represented by `citrix_adc.system.cpu.utilization.pct`. The `cpuusagepcnt` value is set to `4294967295` for some instances. If you also encounter it for some fields, reach out to the Citrix ADC support team.
+#### Type conflicts
 
-### Common Configuration Issues
-*   **Dashboards not populated:** Verify the chosen log collection method (file/TCP/UDP) is enabled and correctly configured.
-*   **Logs not parsed as expected:** Prefer CEF logging and ensure RFC 5424-compliant syslog is enabled when supported (14.1+).
+If `host.ip` is shown conflicted under ``logs-*`` data view, this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Interface``, ``LBVserver``, ``Service``, ``System``, and ``VPN`` data stream's indices.
 
-### Ingestion Errors
-*   **Type conflicts:** If `host.ip` is shown conflicted under the `logs-*` data view, this issue can be solved by reindexing the `Interface`, `LBVserver`, `Service`, `System`, and `VPN` data stream's indices.
-
-### Vendor Resources
-*   [NetScaler Syslog Message Reference](https://developer-docs.netscaler.com/en-us/netscaler-syslog-message-reference/current-release)
-*   [How to send WAF messages to a separate syslog server](https://support.citrix.com/s/article/CTX138973-how-to-send-application-firewall-messages-to-a-separate-syslog-server)
-*   [How to send NetScaler Application Firewall logs to external syslog/NS.log](https://support.citrix.com/s/article/CTX483235-send-logs-to-external-syslog-server?language=en_US)
-*   [Configuring audit log action (RFC 5424)](https://docs.netscaler.com/en-us/citrix-adc/current-release/system/audit-logging/configuring-audit-logging.html#configuring-audit-log-action)
-*   NITRO API metrics references:
-    *   [Interface](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/interface/)
-    *   [LBVserver](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/lb/lbvserver/)
-    *   [Service](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/basic/service/)
-    *   [System](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/system/system/)
-    *   [VPN](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/vpn/vpn/)
-
-## Scaling
-
-For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
-
-Prefer CEF logging for application firewall events; use RFC 5424-compliant syslog where supported (NetScaler 14.1+). Choose the appropriate log transport (file, TCP, or UDP) based on volume and reliability needs. Use multiple Agent inputs or scale syslog receivers as ingestion volume increases.
-
-## Reference
+## Metrics reference
 
 ### Interface
 
-The `interface` data stream collects metrics related to id, state, inbound packets, outbound packets and received packets.
-
-#### Interface fields
-
-**Exported fields**
-
-| Field | Description | Type | Unit | Metric Type |
-|---|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |  |
-| citrix_adc.interface.disabled.count | Number of times the specified interface is disabled by the NetScaler. | double |  | counter |
-| citrix_adc.interface.link.down_time | Duration for which the link is DOWN. | keyword |  |  |
-| citrix_adc.interface.link.up_time | Duration for which the link is UP. | keyword |  |  |
-| citrix_adc.interface.mac.moved.count | Number of MAC moves between ports. | double |  | counter |
-| citrix_adc.interface.mac.moved.rate | Rate (/s) counter for totmacmoved. | double |  | gauge |
-| citrix_adc.interface.packets.inbound.dropped.count | Number of inbound packets dropped by the specified interface. | double |  | counter |
-| citrix_adc.interface.packets.inbound.dropped.rate | Rate (/s) counter for errdroppedrxpkts. | double |  | gauge |
-| citrix_adc.interface.packets.inbound.dropped_by_hardware.count | Number of inbound packets dropped by the hardware on a specified interface once the NetScaler appliance starts or the interface statistics are cleared. | double |  | counter |
-| citrix_adc.interface.packets.inbound.dropped_by_hardware.rate | Rate (/s) counter for errpktrx. | double |  | gauge |
-| citrix_adc.interface.packets.inbound.error_free.discarded.count | Number of error-free inbound packets discarded by the specified interface due to a lack of resources. | double |  | counter |
-| citrix_adc.interface.packets.inbound.error_free.discarded.rate | Rate (/s) counter for errifindiscards. | double |  | gauge |
-| citrix_adc.interface.packets.outbound.dropped_by_hardware.count | Number of outbound packets dropped by the hardware on a specified interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
-| citrix_adc.interface.packets.outbound.dropped_by_hardware.rate | Rate (/s) counter for errpkttx. | double |  | gauge |
-| citrix_adc.interface.packets.outbound.error_free.discarded.count | Number of error-free outbound packets discarded by the specified interface due to a lack of resources. | double |  | counter |
-| citrix_adc.interface.packets.outbound.error_free.discarded.rate | Rate (/s) counter for nicerrifoutdiscards. | double |  | gauge |
-| citrix_adc.interface.packets.received.count | Number of packets received by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
-| citrix_adc.interface.packets.received.jumbo.count | Number of Jumbo Packets received on specified interface. | double |  | counter |
-| citrix_adc.interface.packets.received.jumbo.rate | Rate (/s) counter for jumbopktsreceived. | double |  | gauge |
-| citrix_adc.interface.packets.received.multicast.count | Number of multicast packets received by the specified interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
-| citrix_adc.interface.packets.received.multicast.rate | Rate (/s) counter for nictotmulticastpkts. | double |  | gauge |
-| citrix_adc.interface.packets.received.rate | Rate (/s) counter for totrxpkts. | double |  | gauge |
-| citrix_adc.interface.packets.received.tagged.count | Number of Tagged Packets received on specified Trunk interface through Allowed VLan List. | double |  | counter |
-| citrix_adc.interface.packets.received.tagged.rate | Rate (/s) counter for trunkpktsreceived. | double |  | gauge |
-| citrix_adc.interface.packets.transmission.dropped.count | Number of packets dropped in transmission by the specified interface due to one of the following reasons. (1) VLAN mismatch. (2) Oversized packets. (3) Interface congestion. (4) Loopback packets sent on non loopback interface. | double |  |  |
-| citrix_adc.interface.packets.transmission.dropped.rate | Rate (/s) counter for errdroppedtxpkts. | double |  |  |
-| citrix_adc.interface.packets.transmitted.count | Number of packets transmitted by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
-| citrix_adc.interface.packets.transmitted.jumbo.count | Number of Jumbo packets transmitted on specified interface by upper layer, with TSO enabled actual trasmission size could be non Jumbo. | double |  | counter |
-| citrix_adc.interface.packets.transmitted.jumbo.rate | Rate (/s) counter for jumbopktstransmitted. | double |  | gauge |
-| citrix_adc.interface.packets.transmitted.rate | Rate (/s) counter for tottxpkts. | double |  | gauge |
-| citrix_adc.interface.packets.transmitted.tagged.count | Number of Tagged Packets transmitted on specified Trunk interface through Allowed VLan List. | double |  | counter |
-| citrix_adc.interface.packets.transmitted.tagged.rate | Rate (/s) counter for trunkpktstransmitted. | double |  | gauge |
-| citrix_adc.interface.received.bytes.rate | Rate (/s) counter for totrxbytes. | double |  | gauge |
-| citrix_adc.interface.received.bytes.value | Number of bytes received by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double | byte | counter |
-| citrix_adc.interface.stalled.count | Number of times the interface stalled, when receiving packets, since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
-| citrix_adc.interface.state | Current state of the specified interface. | keyword |  |  |
-| citrix_adc.interface.transmitted.bytes.rate | Rate (/s) counter for tottxbytes. | double |  | gauge |
-| citrix_adc.interface.transmitted.bytes.value | Number of bytes transmitted by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double | byte | counter |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
-| data_stream.type | Data stream type. | constant_keyword |  |  |
-| input.type | Type of Filebeat input. | keyword |  |  |
-| interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |  |  |
-
+This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts. `interface` data stream collects metrics related to id, state, inbound packets, outbound packets and received packets.
 
 An example event for `interface` looks as following:
 
@@ -336,57 +248,62 @@ An example event for `interface` looks as following:
 }
 ```
 
-### Load Balancing Virtual Server
+**ECS Field Reference**
 
-The `lbvserver` data stream collects metrics related to name, state, client connections, requests and responses.
-
-#### Load Balancing Virtual Server fields
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| citrix_adc.lbvserver.client.connections.current.count | Number of current client connections. | double |  | gauge |
-| citrix_adc.lbvserver.client.connections.established.count | Number of client connections in ESTABLISHED state. | double |  | gauge |
-| citrix_adc.lbvserver.client.response_time.application_performance_index | Vserver APDEX (Application Performance Index) index based on client response times. | double |  |  |
-| citrix_adc.lbvserver.connections.actual.count | Number of current connections to the actual servers behind the virtual server. | double |  | gauge |
-| citrix_adc.lbvserver.down.backup.hits | Number of times traffic was diverted to the backup vserver since the primary vserver was DOWN. | double |  | counter |
-| citrix_adc.lbvserver.health | Health of the vserver. This gives percentage of UP services bound to the vserver. | double |  |  |
-| citrix_adc.lbvserver.hit.count | Total vserver hits. | double |  | counter |
-| citrix_adc.lbvserver.hit.rate | Rate (/s) counter for tothits. | double |  | gauge |
-| citrix_adc.lbvserver.name | Name of the virtual server. | keyword |  |  |
-| citrix_adc.lbvserver.packets.received.count | Total number of packets received by the service or virtual server. | double |  | counter |
-| citrix_adc.lbvserver.packets.sent.count | Total number of packets sent. | double |  | counter |
-| citrix_adc.lbvserver.packets.sent.rate | Rate (/s) counter for totalpktssent. | double |  | gauge |
-| citrix_adc.lbvserver.protocol | Protocol associated with the vserver. | keyword |  |  |
-| citrix_adc.lbvserver.request.deferred.count | Number of deferred requests on specific vserver. | double |  | counter |
-| citrix_adc.lbvserver.request.deferred.rate | Rate (/s) counter for deferredreq. | double |  | gauge |
-| citrix_adc.lbvserver.request.received.bytes.rate | Rate (/s) counter for totalrequestbytes. | double |  | gauge |
-| citrix_adc.lbvserver.request.received.bytes.value | Total number of request bytes received on the service or virtual server. | double | byte | counter |
-| citrix_adc.lbvserver.request.received.count | Total number of requests received on the service or virtual server. | double |  | counter |
-| citrix_adc.lbvserver.request.received.rate | Rate (/s) counter for totalrequests. | double |  | gauge |
-| citrix_adc.lbvserver.request.surge_queue.count | Number of requests in the surge queue. | double |  | gauge |
-| citrix_adc.lbvserver.request.waiting.count | Number of requests waiting on specific vserver. | double |  | gauge |
-| citrix_adc.lbvserver.requests_responses.dropped.count | Number invalid requests/responses dropped on the vserver. | double |  | counter |
-| citrix_adc.lbvserver.requests_responses.invalid.count | Number invalid requests/responses on the vserver. | double |  | counter |
-| citrix_adc.lbvserver.response.received.bytes.rate | Rate (/s) counter for totalresponsebytes. | double |  | gauge |
-| citrix_adc.lbvserver.response.received.bytes.value | Number of response bytes received by the service or virtual server. | double | byte | counter |
-| citrix_adc.lbvserver.response.received.count | Number of responses received on the service or virtual server. | double |  | counter |
-| citrix_adc.lbvserver.response.received.rate | Rate (/s) counter for totalresponses. | double |  | gauge |
-| citrix_adc.lbvserver.service.active.count | Number of ACTIVE services bound to a vserver. | double |  | gauge |
-| citrix_adc.lbvserver.service.inactive.count | Number of INACTIVE services bound to a vserver. | double |  | gauge |
-| citrix_adc.lbvserver.spillover.count | Number of times vserver experienced spill over. | double |  | counter |
-| citrix_adc.lbvserver.state | Current state of the server. | keyword |  |  |
-| citrix_adc.lbvserver.threshold.spillover | Spill Over Threshold set on the vserver. | double |  | gauge |
-| citrix_adc.lbvserver.time_to_last_byte.avg | Average TTLB (Time To Last Byte) between the client and the server. | double |  | gauge |
-| citrix_adc.lbvserver.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold. | double |  | gauge |
-| citrix_adc.lbvserver.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold. | double |  | gauge |
+| citrix_adc.interface.disabled.count | Number of times the specified interface is disabled by the NetScaler. | double |  | counter |
+| citrix_adc.interface.link.down_time | Duration for which the link is DOWN. | keyword |  |  |
+| citrix_adc.interface.link.up_time | Duration for which the link is UP. | keyword |  |  |
+| citrix_adc.interface.mac.moved.count | Number of MAC moves between ports. | double |  | counter |
+| citrix_adc.interface.mac.moved.rate | Rate (/s) counter for totmacmoved. | double |  | gauge |
+| citrix_adc.interface.packets.inbound.dropped.count | Number of inbound packets dropped by the specified interface. | double |  | counter |
+| citrix_adc.interface.packets.inbound.dropped.rate | Rate (/s) counter for errdroppedrxpkts. | double |  | gauge |
+| citrix_adc.interface.packets.inbound.dropped_by_hardware.count | Number of inbound packets dropped by the hardware on a specified interface once the NetScaler appliance starts or the interface statistics are cleared. | double |  | counter |
+| citrix_adc.interface.packets.inbound.dropped_by_hardware.rate | Rate (/s) counter for errpktrx. | double |  | gauge |
+| citrix_adc.interface.packets.inbound.error_free.discarded.count | Number of error-free inbound packets discarded by the specified interface due to a lack of resources. | double |  | counter |
+| citrix_adc.interface.packets.inbound.error_free.discarded.rate | Rate (/s) counter for errifindiscards. | double |  | gauge |
+| citrix_adc.interface.packets.outbound.dropped_by_hardware.count | Number of outbound packets dropped by the hardware on a specified interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
+| citrix_adc.interface.packets.outbound.dropped_by_hardware.rate | Rate (/s) counter for errpkttx. | double |  | gauge |
+| citrix_adc.interface.packets.outbound.error_free.discarded.count | Number of error-free outbound packets discarded by the specified interface due to a lack of resources. | double |  | counter |
+| citrix_adc.interface.packets.outbound.error_free.discarded.rate | Rate (/s) counter for nicerrifoutdiscards. | double |  | gauge |
+| citrix_adc.interface.packets.received.count | Number of packets received by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
+| citrix_adc.interface.packets.received.jumbo.count | Number of Jumbo Packets received on specified interface. | double |  | counter |
+| citrix_adc.interface.packets.received.jumbo.rate | Rate (/s) counter for jumbopktsreceived. | double |  | gauge |
+| citrix_adc.interface.packets.received.multicast.count | Number of multicast packets received by the specified interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
+| citrix_adc.interface.packets.received.multicast.rate | Rate (/s) counter for nictotmulticastpkts. | double |  | gauge |
+| citrix_adc.interface.packets.received.rate | Rate (/s) counter for totrxpkts. | double |  | gauge |
+| citrix_adc.interface.packets.received.tagged.count | Number of Tagged Packets received on specified Trunk interface through Allowed VLan List. | double |  | counter |
+| citrix_adc.interface.packets.received.tagged.rate | Rate (/s) counter for trunkpktsreceived. | double |  | gauge |
+| citrix_adc.interface.packets.transmission.dropped.count | Number of packets dropped in transmission by the specified interface due to one of the following reasons. (1) VLAN mismatch. (2) Oversized packets. (3) Interface congestion. (4) Loopback packets sent on non loopback interface. | double |  |  |
+| citrix_adc.interface.packets.transmission.dropped.rate | Rate (/s) counter for errdroppedtxpkts. | double |  |  |
+| citrix_adc.interface.packets.transmitted.count | Number of packets transmitted by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
+| citrix_adc.interface.packets.transmitted.jumbo.count | Number of Jumbo packets transmitted on specified interface by upper layer, with TSO enabled actual trasmission size could be non Jumbo. | double |  | counter |
+| citrix_adc.interface.packets.transmitted.jumbo.rate | Rate (/s) counter for jumbopktstransmitted. | double |  | gauge |
+| citrix_adc.interface.packets.transmitted.rate | Rate (/s) counter for tottxpkts. | double |  | gauge |
+| citrix_adc.interface.packets.transmitted.tagged.count | Number of Tagged Packets transmitted on specified Trunk interface through Allowed VLan List. | double |  | counter |
+| citrix_adc.interface.packets.transmitted.tagged.rate | Rate (/s) counter for trunkpktstransmitted. | double |  | gauge |
+| citrix_adc.interface.received.bytes.rate | Rate (/s) counter for totrxbytes. | double |  | gauge |
+| citrix_adc.interface.received.bytes.value | Number of bytes received by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double | byte | counter |
+| citrix_adc.interface.stalled.count | Number of times the interface stalled, when receiving packets, since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
+| citrix_adc.interface.state | Current state of the specified interface. | keyword |  |  |
+| citrix_adc.interface.transmitted.bytes.rate | Rate (/s) counter for tottxbytes. | double |  | gauge |
+| citrix_adc.interface.transmitted.bytes.value | Number of bytes transmitted by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double | byte | counter |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
+| interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |  |  |
 
+
+### Load Balancing Virtual Server
+
+This is the `lbvserver` data stream. The load balancing server is logically located between the client and the server farm, and manages traffic flow to the servers in the server farm. `lbvserver` data stream collects metrics related to name, state, client connections, requests and responses.
 
 An example event for `lbvserver` looks as following:
 
@@ -555,44 +472,59 @@ An example event for `lbvserver` looks as following:
 }
 ```
 
-### Service
+**ECS Field Reference**
 
-The `service` data stream collects metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources.
-
-#### Service fields
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| citrix_adc.service.client_connection.count | Number of current client connections. | double |  | counter |
-| citrix_adc.service.primary.ip_address | The IP address on which specific service is running. | ip |  |  |
-| citrix_adc.service.primary.port | The port on which the service is running. | long |  |  |
-| citrix_adc.service.request.bytes.rate | Rate (/s) counter for totalrequestbytes. | double |  | gauge |
-| citrix_adc.service.request.bytes.value | Total number of request bytes received on specific service or virtual server. | double | byte | counter |
-| citrix_adc.service.request.count | Total number of requests received on specific service or virtual server. | double |  | counter |
-| citrix_adc.service.request.rate | Rate (/s) counter for totalrequests. | double |  | gauge |
-| citrix_adc.service.response.bytes.rate | Rate (/s) counter for totalresponsebytes. | double |  | gauge |
-| citrix_adc.service.response.bytes.value | Number of response bytes received by specific service or virtual server. | double | byte | counter |
-| citrix_adc.service.response.count | Number of responses received on specific service or virtual server. | double |  | counter |
-| citrix_adc.service.response.rate | Rate (/s) counter for totalresponses. | double |  | gauge |
-| citrix_adc.service.reuse_pool | Number of requests in the idle queue/reuse pool. | double |  |  |
-| citrix_adc.service.server.connection.count | Number of current connections to the actual servers behind the virtual server. | double |  | counter |
-| citrix_adc.service.server.connection.established.count | Number of server connections in ESTABLISHED state. | double |  | counter |
-| citrix_adc.service.server.time_to_first_byte.avg | Average TTFB (Time To First Byte) between the NetScaler appliance and the server. | double |  | gauge |
-| citrix_adc.service.surge_queue.count | Number of requests in the surge queue. | double |  | counter |
-| citrix_adc.service.throughput.rate | Rate (/s) counter for throughput. | double |  | gauge |
-| citrix_adc.service.throughput.value | Number of bytes received or sent by specific service (Mbps). | double |  | counter |
-| citrix_adc.service.transaction.active.count | Number of active transactions handled by specific service. | double |  | counter |
-| citrix_adc.service.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold (\>4T). | double |  | gauge |
-| citrix_adc.service.transaction.time_to_last_byte.count | Total transactions where server TTLB (Time To Last Byte) is calculated. | double |  | counter |
-| citrix_adc.service.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold (\>T ;; \<4T). | double |  | counter |
+| citrix_adc.lbvserver.client.connections.current.count | Number of current client connections. | double |  | gauge |
+| citrix_adc.lbvserver.client.connections.established.count | Number of client connections in ESTABLISHED state. | double |  | gauge |
+| citrix_adc.lbvserver.client.response_time.application_performance_index | Vserver APDEX (Application Performance Index) index based on client response times. | double |  |  |
+| citrix_adc.lbvserver.connections.actual.count | Number of current connections to the actual servers behind the virtual server. | double |  | gauge |
+| citrix_adc.lbvserver.down.backup.hits | Number of times traffic was diverted to the backup vserver since the primary vserver was DOWN. | double |  | counter |
+| citrix_adc.lbvserver.health | Health of the vserver. This gives percentage of UP services bound to the vserver. | double |  |  |
+| citrix_adc.lbvserver.hit.count | Total vserver hits. | double |  | counter |
+| citrix_adc.lbvserver.hit.rate | Rate (/s) counter for tothits. | double |  | gauge |
+| citrix_adc.lbvserver.name | Name of the virtual server. | keyword |  |  |
+| citrix_adc.lbvserver.packets.received.count | Total number of packets received by the service or virtual server. | double |  | counter |
+| citrix_adc.lbvserver.packets.sent.count | Total number of packets sent. | double |  | counter |
+| citrix_adc.lbvserver.packets.sent.rate | Rate (/s) counter for totalpktssent. | double |  | gauge |
+| citrix_adc.lbvserver.protocol | Protocol associated with the vserver. | keyword |  |  |
+| citrix_adc.lbvserver.request.deferred.count | Number of deferred requests on specific vserver. | double |  | counter |
+| citrix_adc.lbvserver.request.deferred.rate | Rate (/s) counter for deferredreq. | double |  | gauge |
+| citrix_adc.lbvserver.request.received.bytes.rate | Rate (/s) counter for totalrequestbytes. | double |  | gauge |
+| citrix_adc.lbvserver.request.received.bytes.value | Total number of request bytes received on the service or virtual server. | double | byte | counter |
+| citrix_adc.lbvserver.request.received.count | Total number of requests received on the service or virtual server. | double |  | counter |
+| citrix_adc.lbvserver.request.received.rate | Rate (/s) counter for totalrequests. | double |  | gauge |
+| citrix_adc.lbvserver.request.surge_queue.count | Number of requests in the surge queue. | double |  | gauge |
+| citrix_adc.lbvserver.request.waiting.count | Number of requests waiting on specific vserver. | double |  | gauge |
+| citrix_adc.lbvserver.requests_responses.dropped.count | Number invalid requests/responses dropped on the vserver. | double |  | counter |
+| citrix_adc.lbvserver.requests_responses.invalid.count | Number invalid requests/responses on the vserver. | double |  | counter |
+| citrix_adc.lbvserver.response.received.bytes.rate | Rate (/s) counter for totalresponsebytes. | double |  | gauge |
+| citrix_adc.lbvserver.response.received.bytes.value | Number of response bytes received by the service or virtual server. | double | byte | counter |
+| citrix_adc.lbvserver.response.received.count | Number of responses received on the service or virtual server. | double |  | counter |
+| citrix_adc.lbvserver.response.received.rate | Rate (/s) counter for totalresponses. | double |  | gauge |
+| citrix_adc.lbvserver.service.active.count | Number of ACTIVE services bound to a vserver. | double |  | gauge |
+| citrix_adc.lbvserver.service.inactive.count | Number of INACTIVE services bound to a vserver. | double |  | gauge |
+| citrix_adc.lbvserver.spillover.count | Number of times vserver experienced spill over. | double |  | counter |
+| citrix_adc.lbvserver.state | Current state of the server. | keyword |  |  |
+| citrix_adc.lbvserver.threshold.spillover | Spill Over Threshold set on the vserver. | double |  | gauge |
+| citrix_adc.lbvserver.time_to_last_byte.avg | Average TTLB (Time To Last Byte) between the client and the server. | double |  | gauge |
+| citrix_adc.lbvserver.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold. | double |  | gauge |
+| citrix_adc.lbvserver.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold. | double |  | gauge |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
 
+
+### Service
+
+This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources. `service` data stream collects metrics related to name, IP address, port, throughput and transactions.
 
 An example event for `service` looks as following:
 
@@ -715,36 +647,46 @@ An example event for `service` looks as following:
 }
 ```
 
-### System
+**ECS Field Reference**
 
-The `system` data stream collects metrics like memory in use, total system memory, CPU count can be collected along with other statistics for system resources.
-
-#### System fields
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| citrix_adc.system.cpu.count | The number of CPUs on the NetScaler appliance. | double |  | gauge |
-| citrix_adc.system.cpu.utilization.additional_management.pct | Additional Management CPU utilization percentage. | double | percent | gauge |
-| citrix_adc.system.cpu.utilization.avg.pct | Shows average CPU utilization percentage if more than 1 CPU is present. | double | percent | gauge |
-| citrix_adc.system.cpu.utilization.management.pct | Average Management CPU utilization percentage. | double | percent | gauge |
-| citrix_adc.system.cpu.utilization.master.pct | CPU 0 (currently the master CPU) utilization, as percentage of capacity. | double | percent | gauge |
-| citrix_adc.system.cpu.utilization.packets.pct | Average CPU utilization percentage for all packet engines excluding management PE. | double | percent | gauge |
-| citrix_adc.system.cpu.utilization.pct | CPU utilization percentage. | double | percent | gauge |
-| citrix_adc.system.cpu.utilization.slave.pct | CPU 1 (currently the slave CPU) utilization, as percentage of capacity. | double | percent | gauge |
-| citrix_adc.system.disk.usage.flash_partition.pct | Used space in /flash partition of the disk, as a percentage. | double | percent | gauge |
-| citrix_adc.system.disk.usage.var_partition.pct | Used space in /var partition of the disk, as a percentage. | double | percent | gauge |
-| citrix_adc.system.memory.size.value | Total amount of system memory, in bytes. | double | byte | gauge |
-| citrix_adc.system.memory.usage.value | Main memory currently in use, in bytes. | double | byte | gauge |
-| citrix_adc.system.memory.utilization.pct | Percentage of memory utilization on NetScaler. | double | percent | gauge |
-| citrix_adc.system.start.time | Time when the NetScaler appliance was last started. | date |  |  |
+| citrix_adc.service.client_connection.count | Number of current client connections. | double |  | counter |
+| citrix_adc.service.primary.ip_address | The IP address on which specific service is running. | ip |  |  |
+| citrix_adc.service.primary.port | The port on which the service is running. | long |  |  |
+| citrix_adc.service.request.bytes.rate | Rate (/s) counter for totalrequestbytes. | double |  | gauge |
+| citrix_adc.service.request.bytes.value | Total number of request bytes received on specific service or virtual server. | double | byte | counter |
+| citrix_adc.service.request.count | Total number of requests received on specific service or virtual server. | double |  | counter |
+| citrix_adc.service.request.rate | Rate (/s) counter for totalrequests. | double |  | gauge |
+| citrix_adc.service.response.bytes.rate | Rate (/s) counter for totalresponsebytes. | double |  | gauge |
+| citrix_adc.service.response.bytes.value | Number of response bytes received by specific service or virtual server. | double | byte | counter |
+| citrix_adc.service.response.count | Number of responses received on specific service or virtual server. | double |  | counter |
+| citrix_adc.service.response.rate | Rate (/s) counter for totalresponses. | double |  | gauge |
+| citrix_adc.service.reuse_pool | Number of requests in the idle queue/reuse pool. | double |  |  |
+| citrix_adc.service.server.connection.count | Number of current connections to the actual servers behind the virtual server. | double |  | counter |
+| citrix_adc.service.server.connection.established.count | Number of server connections in ESTABLISHED state. | double |  | counter |
+| citrix_adc.service.server.time_to_first_byte.avg | Average TTFB (Time To First Byte) between the NetScaler appliance and the server. | double |  | gauge |
+| citrix_adc.service.surge_queue.count | Number of requests in the surge queue. | double |  | counter |
+| citrix_adc.service.throughput.rate | Rate (/s) counter for throughput. | double |  | gauge |
+| citrix_adc.service.throughput.value | Number of bytes received or sent by specific service (Mbps). | double |  | counter |
+| citrix_adc.service.transaction.active.count | Number of active transactions handled by specific service. | double |  | counter |
+| citrix_adc.service.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold (\>4T). | double |  | gauge |
+| citrix_adc.service.transaction.time_to_last_byte.count | Total transactions where server TTLB (Time To Last Byte) is calculated. | double |  | counter |
+| citrix_adc.service.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold (\>T ;; \<4T). | double |  | counter |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
 
+
+### System
+
+This is the `system` data stream. With the help of the system endpoint, metrics like memory in use, total system memory, CPU count can be collected along with other statistics for system resources.
 
 An example event for `system` looks as following:
 
@@ -849,64 +791,38 @@ An example event for `system` looks as following:
 }
 ```
 
-### VPN
+**ECS Field Reference**
 
-The `vpn` data stream collects metrics like CPS, ICA license, client-server requests, file system and sockets.
-
-#### VPN fields
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| citrix_adc.vpn.client_server.request.hit.count | Number of SSL VPN tunnels formed between VPN server and client. | double | gauge |
-| citrix_adc.vpn.client_server.request.hit.rate | Rate (/s) counter for cpsconnsuccess. | double | gauge |
-| citrix_adc.vpn.configuration_request_served.count | Number of client configuration requests received by VPN server. | double | gauge |
-| citrix_adc.vpn.configuration_request_served.rate | Rate (/s) counter for cfghtmlserved. | double | gauge |
-| citrix_adc.vpn.cps.failure.count | Number of CPS connection failures. | double | counter |
-| citrix_adc.vpn.cps.failure.rate | Rate (/s) counter for cpsconnfailure. | double | gauge |
-| citrix_adc.vpn.cps.success.count | Number of CPS connection success. | double | counter |
-| citrix_adc.vpn.cps.success.rate | Rate (/s) counter for cpsconnsuccess. | double | gauge |
-| citrix_adc.vpn.file_system.request.received.count | Number of file system requests received by VPN server. | double | counter |
-| citrix_adc.vpn.file_system.request.received.rate | Rate (/s) counter for totalfsrequest. | double | gauge |
-| citrix_adc.vpn.ica.license_failure.count | Number of ICA (Independent Computing Architecture) license failures. | double | counter |
-| citrix_adc.vpn.ica.license_failure.rate | Rate (/s) counter for icalicensefailure. | double | gauge |
-| citrix_adc.vpn.login_failed.license_unavailable.count | Number of users not able to login because of license unavailability. | double | counter |
-| citrix_adc.vpn.login_page.hits | Number of requests for VPN login page. | double | counter |
-| citrix_adc.vpn.socks.client_error.count | Number of SOCKS client errors. | double | counter |
-| citrix_adc.vpn.socks.client_error.rate | Rate (/s) counter for socksclienterror. | double | gauge |
-| citrix_adc.vpn.socks.connection.request.received.count | Number of received SOCKS connect requests. | double | counter |
-| citrix_adc.vpn.socks.connection.request.received.rate | Rate (/s) counter for socksconnreqrcvd. | double | gauge |
-| citrix_adc.vpn.socks.connection.request.sent.count | Number of sent SOCKS connect requests. | double | counter |
-| citrix_adc.vpn.socks.connection.request.sent.rate | Rate (/s) counter for socksconnreqsent. | double | gauge |
-| citrix_adc.vpn.socks.connection.response.received.count | Number of received SOCKS connect responses. | double | counter |
-| citrix_adc.vpn.socks.connection.response.received.rate | Rate (/s) counter for socksconnresprcvd. | double | gauge |
-| citrix_adc.vpn.socks.connection.response.sent.count | Number of sent SOCKS connect responses. | double | counter |
-| citrix_adc.vpn.socks.connection.response.sent.rate | Rate (/s) counter for socksconnrespsent. | double | gauge |
-| citrix_adc.vpn.socks.method.request.received.count | Number of received SOCKS method requests. | double | counter |
-| citrix_adc.vpn.socks.method.request.received.rate | Rate (/s) counter for socksmethreqrcvd. | double | gauge |
-| citrix_adc.vpn.socks.method.request.sent.count | Number of sent SOCKS method requests. | double | counter |
-| citrix_adc.vpn.socks.method.request.sent.rate | Rate (/s) counter for socksmethreqsent. | double | gauge |
-| citrix_adc.vpn.socks.method.response.received.count | Number of received SOCKS method responses. | double | counter |
-| citrix_adc.vpn.socks.method.response.received.rate | Rate (/s) counter for socksmethresprcvd. | double | gauge |
-| citrix_adc.vpn.socks.method.response.sent.count | Number of sent SOCKS method responses. | double | counter |
-| citrix_adc.vpn.socks.method.response.sent.rate | Rate (/s) counter for socksmethrespsent. | double | gauge |
-| citrix_adc.vpn.socks.server_error.count | Number of SOCKS server errors. | double | counter |
-| citrix_adc.vpn.socks.server_error.rate | Rate (/s) counter for socksservererror. | double | gauge |
-| citrix_adc.vpn.sta.connection.failure.count | Number of STA (Secure Ticket Authority) connection failures. | double | counter |
-| citrix_adc.vpn.sta.connection.failure.rate | Rate (/s) counter for staconnfailure. | double | gauge |
-| citrix_adc.vpn.sta.connection.success.count | Number of STA (Secure Ticket Authority) connection success. | double | counter |
-| citrix_adc.vpn.sta.connection.success.rate | Rate (/s) counter for staconnsuccess. | double | gauge |
-| citrix_adc.vpn.sta.request.sent.count | Number of STA (Secure Ticket Authority) requests sent. | double | counter |
-| citrix_adc.vpn.sta.request.sent.rate | Rate (/s) counter for starequestsent. | double | gauge |
-| citrix_adc.vpn.sta.response.received.count | Number of STA (Secure Ticket Authority) responses received. | double | counter |
-| citrix_adc.vpn.sta.response.received.rate | Rate (/s) counter for staresponserecvd. | double | gauge |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| input.type | Type of Filebeat input. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| citrix_adc.system.cpu.count | The number of CPUs on the NetScaler appliance. | double |  | gauge |
+| citrix_adc.system.cpu.utilization.additional_management.pct | Additional Management CPU utilization percentage. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.avg.pct | Shows average CPU utilization percentage if more than 1 CPU is present. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.management.pct | Average Management CPU utilization percentage. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.master.pct | CPU 0 (currently the master CPU) utilization, as percentage of capacity. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.packets.pct | Average CPU utilization percentage for all packet engines excluding management PE. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.pct | CPU utilization percentage. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.slave.pct | CPU 1 (currently the slave CPU) utilization, as percentage of capacity. | double | percent | gauge |
+| citrix_adc.system.disk.usage.flash_partition.pct | Used space in /flash partition of the disk, as a percentage. | double | percent | gauge |
+| citrix_adc.system.disk.usage.var_partition.pct | Used space in /var partition of the disk, as a percentage. | double | percent | gauge |
+| citrix_adc.system.memory.size.value | Total amount of system memory, in bytes. | double | byte | gauge |
+| citrix_adc.system.memory.usage.value | Main memory currently in use, in bytes. | double | byte | gauge |
+| citrix_adc.system.memory.utilization.pct | Percentage of memory utilization on NetScaler. | double | percent | gauge |
+| citrix_adc.system.start.time | Time when the NetScaler appliance was last started. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
 
+
+### VPN
+
+This is the `vpn` data stream. Citrix VPN is the add-on that provides full Secure Sockets Layer (SSL) virtual private network (VPN) capabilities to Citrix Gateway, allowing users to access remote applications on internal networks securely. `vpn` data stream collects metrics like CPS, ICA license, client-server requests, file system and sockets.
 
 An example event for `vpn` looks as following:
 
@@ -1085,11 +1001,188 @@ An example event for `vpn` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Check this [reference document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for more information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| citrix_adc.vpn.client_server.request.hit.count | Number of SSL VPN tunnels formed between VPN server and client. | double | gauge |
+| citrix_adc.vpn.client_server.request.hit.rate | Rate (/s) counter for cpsconnsuccess. | double | gauge |
+| citrix_adc.vpn.configuration_request_served.count | Number of client configuration requests received by VPN server. | double | gauge |
+| citrix_adc.vpn.configuration_request_served.rate | Rate (/s) counter for cfghtmlserved. | double | gauge |
+| citrix_adc.vpn.cps.failure.count | Number of CPS connection failures. | double | counter |
+| citrix_adc.vpn.cps.failure.rate | Rate (/s) counter for cpsconnfailure. | double | gauge |
+| citrix_adc.vpn.cps.success.count | Number of CPS connection success. | double | counter |
+| citrix_adc.vpn.cps.success.rate | Rate (/s) counter for cpsconnsuccess. | double | gauge |
+| citrix_adc.vpn.file_system.request.received.count | Number of file system requests received by VPN server. | double | counter |
+| citrix_adc.vpn.file_system.request.received.rate | Rate (/s) counter for totalfsrequest. | double | gauge |
+| citrix_adc.vpn.ica.license_failure.count | Number of ICA (Independent Computing Architecture) license failures. | double | counter |
+| citrix_adc.vpn.ica.license_failure.rate | Rate (/s) counter for icalicensefailure. | double | gauge |
+| citrix_adc.vpn.login_failed.license_unavailable.count | Number of users not able to login because of license unavailability. | double | counter |
+| citrix_adc.vpn.login_page.hits | Number of requests for VPN login page. | double | counter |
+| citrix_adc.vpn.socks.client_error.count | Number of SOCKS client errors. | double | counter |
+| citrix_adc.vpn.socks.client_error.rate | Rate (/s) counter for socksclienterror. | double | gauge |
+| citrix_adc.vpn.socks.connection.request.received.count | Number of received SOCKS connect requests. | double | counter |
+| citrix_adc.vpn.socks.connection.request.received.rate | Rate (/s) counter for socksconnreqrcvd. | double | gauge |
+| citrix_adc.vpn.socks.connection.request.sent.count | Number of sent SOCKS connect requests. | double | counter |
+| citrix_adc.vpn.socks.connection.request.sent.rate | Rate (/s) counter for socksconnreqsent. | double | gauge |
+| citrix_adc.vpn.socks.connection.response.received.count | Number of received SOCKS connect responses. | double | counter |
+| citrix_adc.vpn.socks.connection.response.received.rate | Rate (/s) counter for socksconnresprcvd. | double | gauge |
+| citrix_adc.vpn.socks.connection.response.sent.count | Number of sent SOCKS connect responses. | double | counter |
+| citrix_adc.vpn.socks.connection.response.sent.rate | Rate (/s) counter for socksconnrespsent. | double | gauge |
+| citrix_adc.vpn.socks.method.request.received.count | Number of received SOCKS method requests. | double | counter |
+| citrix_adc.vpn.socks.method.request.received.rate | Rate (/s) counter for socksmethreqrcvd. | double | gauge |
+| citrix_adc.vpn.socks.method.request.sent.count | Number of sent SOCKS method requests. | double | counter |
+| citrix_adc.vpn.socks.method.request.sent.rate | Rate (/s) counter for socksmethreqsent. | double | gauge |
+| citrix_adc.vpn.socks.method.response.received.count | Number of received SOCKS method responses. | double | counter |
+| citrix_adc.vpn.socks.method.response.received.rate | Rate (/s) counter for socksmethresprcvd. | double | gauge |
+| citrix_adc.vpn.socks.method.response.sent.count | Number of sent SOCKS method responses. | double | counter |
+| citrix_adc.vpn.socks.method.response.sent.rate | Rate (/s) counter for socksmethrespsent. | double | gauge |
+| citrix_adc.vpn.socks.server_error.count | Number of SOCKS server errors. | double | counter |
+| citrix_adc.vpn.socks.server_error.rate | Rate (/s) counter for socksservererror. | double | gauge |
+| citrix_adc.vpn.sta.connection.failure.count | Number of STA (Secure Ticket Authority) connection failures. | double | counter |
+| citrix_adc.vpn.sta.connection.failure.rate | Rate (/s) counter for staconnfailure. | double | gauge |
+| citrix_adc.vpn.sta.connection.success.count | Number of STA (Secure Ticket Authority) connection success. | double | counter |
+| citrix_adc.vpn.sta.connection.success.rate | Rate (/s) counter for staconnsuccess. | double | gauge |
+| citrix_adc.vpn.sta.request.sent.count | Number of STA (Secure Ticket Authority) requests sent. | double | counter |
+| citrix_adc.vpn.sta.request.sent.rate | Rate (/s) counter for starequestsent. | double | gauge |
+| citrix_adc.vpn.sta.response.received.count | Number of STA (Secure Ticket Authority) responses received. | double | counter |
+| citrix_adc.vpn.sta.response.received.rate | Rate (/s) counter for staresponserecvd. | double | gauge |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| input.type | Type of Filebeat input. | keyword |  |
+
+
 ### Logs
 
 The `citrix_adc.log` dataset provides events from the configured syslog server.
 
-#### Logs fields
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2012-12-18T21:46:17.000Z",
+    "agent": {
+        "ephemeral_id": "2976e761-4399-4de7-8ea0-97ea83ec7726",
+        "id": "418f7c57-c332-4913-b3ec-ddaa31f832a0",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.12.0"
+    },
+    "citrix": {
+        "cef_format": true,
+        "cef_version": "0",
+        "detail": "CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
+        "device_event_class_id": "APPFW",
+        "device_product": "NetScaler",
+        "device_vendor": "Citrix",
+        "device_version": "NS10.0",
+        "facility": "local0",
+        "name": "APPFW_STARTURL",
+        "ppe_id": "PPE0",
+        "priority": "info",
+        "profile_name": "profile1",
+        "session_id": "IliG4Dxp1SjOhKVRDVBXmqvAaIcA000",
+        "severity": "ALERT"
+    },
+    "client": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.144"
+    },
+    "data_stream": {
+        "dataset": "citrix_adc.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "418f7c57-c332-4913-b3ec-ddaa31f832a0",
+        "snapshot": false,
+        "version": "8.12.0"
+    },
+    "event": {
+        "action": "not blocked",
+        "agent_id_status": "verified",
+        "dataset": "citrix_adc.log",
+        "id": "465",
+        "ingested": "2024-03-20T08:51:14Z",
+        "original": "Dec 18 21:46:17 <local0.info> 81.2.69.144 CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
+        "severity": 6,
+        "timezone": "+00:00"
+    },
+    "http": {
+        "request": {
+            "id": "535",
+            "method": "GET"
+        }
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.249.4:48549"
+        }
+    },
+    "message": "Disallow Illegal URL.",
+    "observer": {
+        "product": "Netscaler",
+        "type": "firewall",
+        "vendor": "Citrix"
+    },
+    "source": {
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1",
+        "port": 54711
+    },
+    "tags": [
+        "preserve_original_event",
+        "citrix_adc.log",
+        "forwarded"
+    ],
+    "url": {
+        "domain": "vpx247.example.net",
+        "extension": "html",
+        "original": "http://vpx247.example.net/FFC/login_post.html?abc\\=def",
+        "path": "/FFC/login_post.html",
+        "query": "abc\\=def",
+        "scheme": "http"
+    }
+}
+```
+
+**ECS Field Reference**
+
+Check this [reference document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for more information on ECS fields.
 
 **Exported fields**
 
@@ -1358,224 +1451,3 @@ The `citrix_adc.log` dataset provides events from the configured syslog server.
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
-
-An example event for `log` looks as following:
-
-```json
-{
-    "@timestamp": "2012-12-18T21:46:17.000Z",
-    "agent": {
-        "ephemeral_id": "2976e761-4399-4de7-8ea0-97ea83ec7726",
-        "id": "418f7c57-c332-4913-b3ec-ddaa31f832a0",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.12.0"
-    },
-    "citrix": {
-        "cef_format": true,
-        "cef_version": "0",
-        "detail": "CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
-        "device_event_class_id": "APPFW",
-        "device_product": "NetScaler",
-        "device_vendor": "Citrix",
-        "device_version": "NS10.0",
-        "facility": "local0",
-        "name": "APPFW_STARTURL",
-        "ppe_id": "PPE0",
-        "priority": "info",
-        "profile_name": "profile1",
-        "session_id": "IliG4Dxp1SjOhKVRDVBXmqvAaIcA000",
-        "severity": "ALERT"
-    },
-    "client": {
-        "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
-            },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
-        },
-        "ip": "81.2.69.144"
-    },
-    "data_stream": {
-        "dataset": "citrix_adc.log",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "418f7c57-c332-4913-b3ec-ddaa31f832a0",
-        "snapshot": false,
-        "version": "8.12.0"
-    },
-    "event": {
-        "action": "not blocked",
-        "agent_id_status": "verified",
-        "dataset": "citrix_adc.log",
-        "id": "465",
-        "ingested": "2024-03-20T08:51:14Z",
-        "original": "Dec 18 21:46:17 <local0.info> 81.2.69.144 CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
-        "severity": 6,
-        "timezone": "+00:00"
-    },
-    "http": {
-        "request": {
-            "id": "535",
-            "method": "GET"
-        }
-    },
-    "input": {
-        "type": "udp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.249.4:48549"
-        }
-    },
-    "message": "Disallow Illegal URL.",
-    "observer": {
-        "product": "Netscaler",
-        "type": "firewall",
-        "vendor": "Citrix"
-    },
-    "source": {
-        "geo": {
-            "city_name": "Changchun",
-            "continent_name": "Asia",
-            "country_iso_code": "CN",
-            "country_name": "China",
-            "location": {
-                "lat": 43.88,
-                "lon": 125.3228
-            },
-            "region_iso_code": "CN-22",
-            "region_name": "Jilin Sheng"
-        },
-        "ip": "175.16.199.1",
-        "port": 54711
-    },
-    "tags": [
-        "preserve_original_event",
-        "citrix_adc.log",
-        "forwarded"
-    ],
-    "url": {
-        "domain": "vpx247.example.net",
-        "extension": "html",
-        "original": "http://vpx247.example.net/FFC/login_post.html?abc\\=def",
-        "path": "/FFC/login_post.html",
-        "query": "abc\\=def",
-        "scheme": "http"
-    }
-}
-```
-
-### Inputs used
-These inputs can be used with this integration:
-<details>
-<summary>httpjson</summary>
-
-## Setup
-
-For more details about the Http Json input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson).
-
-### Collecting logs from Http Json
-
-To collect logs via http json, select **Collect logs via API** and configure the following parameter:
-
-- API url: The API URL without the path.
-</details>
-<details>
-<summary>logfile</summary>
-
-## Setup
-For more details about the logfile input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-log).
-
-### Collecting logs from logfile
-
-To collect logs via logfile, select **Collect logs via the logfile input** and configure the following parameter:
-
-- Paths: List of glob-based paths to crawl and fetch log files from. Supports glob patterns like
-  `/var/log/*.log` or `/var/log/*/*.log` for subfolder matching. Each file found starts a
-  separate harvester.
-</details>
-<details>
-<summary>tcp</summary>
-
-## Setup
-
-For more details about the TCP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp).
-
-### Collecting logs from TCP
-
-To collect logs via TCP, select **Collect logs via TCP** and configure the following parameters:
-
-**Required Settings:**
-- Host
-- Port
-
-**Common Optional Settings:**
-- Max Message Size - Maximum size of incoming messages
-- Max Connections - Maximum number of concurrent connections
-- Timeout - How long to wait for data before closing idle connections
-- Line Delimiter - Character(s) that separate log messages
-
-## SSL/TLS Configuration
-
-To enable encrypted connections, configure the following SSL settings:
-
-**SSL Settings:**
-- Enable SSL*- Toggle to enable SSL/TLS encryption
-- Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
-- Certificate Key - Path to the private key file (`.key`)
-- Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
-- Client Authentication - Require client certificates (`none`, `optional`, or `required`)
-- Supported Protocols - TLS versions to support (e.g., `TLSv1.2`, `TLSv1.3`)
-
-**Example SSL Configuration:**
-```yaml
-ssl.enabled: true
-ssl.certificate: "/path/to/server.crt"
-ssl.key: "/path/to/server.key"
-ssl.certificate_authorities: ["/path/to/ca.crt"]
-ssl.client_authentication: "optional"
-```
-</details>
-<details>
-<summary>udp</summary>
-
-## Setup
-
-For more details about the UDP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp).
-
-### Collecting logs from UDP
-
-To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
-
-**Required Settings:**
-- Host
-- Port
-
-**Common Optional Settings:**
-- Max Message Size - Maximum size of UDP packets to accept (default: 10KB, max: 64KB)
-- Read Buffer - UDP socket read buffer size for handling bursts of messages
-- Read Timeout - How long to wait for incoming packets before checking for shutdown
-</details>
-
-
-### API usage
-
-These APIs are used with this integration:
-
-*   [Interface](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/interface/)
-*   [LBVserver](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/lb/lbvserver/)
-*   [Service](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/basic/service/)
-*   [System](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/system/system/)
-*   [VPN](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/vpn/vpn/)
