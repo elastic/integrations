@@ -1,0 +1,89 @@
+{
+  "attributes": {
+    "created_at": "2025-01-06T12:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Parse launchd services on macOS systems. Provides visibility into launchd service agents and daemons including: (1) Service identification (label, name, path), (2) Service configuration state (disabled status, run_at_load, keep_alive), (3) Program executable path, (4) Plist file path (source of service configuration), (5) Service execution context (username, groupname). Detection focuses on: services in unexpected states, services with unusual configurations (e.g., disabled critical services or enabled suspicious services), unauthorized service installations in user directories, launchd-based persistence mechanisms (common macOS persistence technique). Use Cases: System service inventory, service configuration monitoring, persistence mechanism detection (launchd-based persistence is common on macOS), unauthorized service installation detection, service misconfiguration identification, compliance auditing for service configurations, privilege escalation detection via service manipulation.",
+    "ecs_mapping": [
+      {
+        "key": "service.name",
+        "value": {
+          "field": "label"
+        }
+      },
+      {
+        "key": "file.path",
+        "value": {
+          "field": "path"
+        }
+      },
+      {
+        "key": "process.executable",
+        "value": {
+          "field": "program"
+        }
+      },
+      {
+        "key": "user.name",
+        "value": {
+          "field": "username"
+        }
+      },
+      {
+        "key": "group.name",
+        "value": {
+          "field": "groupname"
+        }
+      },
+      {
+        "key": "event.category",
+        "value": {
+          "value": [
+            "configuration",
+            "process"
+          ]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": [
+            "info"
+          ]
+        }
+      },
+      {
+        "key": "event.kind",
+        "value": {
+          "value": [
+            "state"
+          ]
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "darwin",
+            "macos",
+            "launchd",
+            "services",
+            "persistence",
+            "service_enumeration"
+          ]
+        }
+      }
+    ],
+    "id": "services_launchd_darwin_elastic",
+    "interval": "3600",
+    "platform": "darwin",
+    "query": "SELECT\n  label,\n  name,\n  path,\n  program,\n  disabled,\n  run_at_load,\n  keep_alive,\n  COALESCE(on_demand, 0) AS on_demand,\n  COALESCE(username, 'root') AS username,\n  COALESCE(groupname, 'wheel') AS groupname\nFROM launchd\nORDER BY disabled, label;",
+    "updated_at": "2025-01-06T12:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.2.0",
+  "id": "osquery_manager-5823a22e-5add-416d-a142-de323400edb0",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-01-06T12:00:00.000Z",
+  "version": "Wzk1LDJd"
+}

@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2025-11-06
-**Total Core Artifacts**: 12 in progress + 5 not available = 17 total
-**Total Queries**: 45 (18 core forensic variants + 27 additional)
-**Completion Rate**: 0% (0/17 core artifacts fully validated)
+**Total Core Artifacts**: 11 in progress + 5 not available = 16 total (1 fully completed)
+**Total Queries**: 47 (20 core forensic variants + 27 additional)
+**Completion Rate**: 5.9% (1/17 core artifacts fully validated)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Completed (Fully Validated) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 12    | 70.6%      |
+| ✅ Completed (Fully Validated) | 1     | 5.9%       |
+| ⚠️ In Progress (Needs Validation) | 11    | 64.7%      |
 | ❌ Not Available (Requires Extensions) | 5     | 29.4%      |
 
 ---
@@ -23,29 +23,28 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | # | Artifact                | ✓ | OS | Query | File | Description |
 |:-:|-------------------------|::|:--:|-------|:----:|-------------|
-| 1 | Services                | ⚠️ | Win | suspicious_services | - | Detect suspicious services running from user-writable directories or with generic names commonly used by malware |
-| 1a | Services                | ⚠️ | Mac | suspicious_launchd_macos | - | Detect suspicious launch daemons and agents on macOS, excluding system paths but flagging user-writable directories |
-| 1b | Services                | ⚠️ | Linux | suspicious_systemd_linux | - | Detect suspicious systemd units on Linux, excluding system paths but flagging user-writable directories and unusual locations |
-| 2 | Scheduled Tasks         | ⚠️ | Win | scheduled_tasks_persistence | - | Identify enabled scheduled tasks executing from suspicious locations or using LOLBins |
-| 2a | Scheduled Tasks         | ⚠️ | Mac+Linux | crontab_persistence | - | Detect suspicious crontab entries used for persistence (unified query for both platforms) |
-| 3 | Startup Items           | ⚠️ | Win | startup_items_persistence | - | Track startup items from registry and startup folders, focusing on non-Microsoft entries |
-| 4 | Process Listing         | ⚠️ | All | suspicious_processes | - | Detect suspicious running processes including fileless malware and processes from temp folders |
-| 5 | File Hashes             | ⚠️ | All | file_hashes_threat_intel | - | Enumerate recently modified executables with file hashes from suspicious locations |
-| 6 | ARP Cache               | ⚠️ | All | arp_cache_lateral_movement | - | Monitor ARP cache for lateral movement indicators |
-| 7 | Network Connections     | ⚠️ | All | network_connections_c2 | - | Identify active network connections to external IPs on common C2 and lateral movement ports |
-| 8 | Registry                | ⚠️ | Win | registry_persistence | - | Monitor Windows registry Run keys and startup locations for persistence mechanisms |
-| 8a | Startup / Persistence   | ⚠️ | Mac | startup_items_persistence_macos | - | Monitor macOS startup items for persistence mechanisms (equivalent to registry persistence) |
-| 8b | Autostart / Persistence | ⚠️ | Linux | autostart_persistence_linux | - | Monitor Linux autostart mechanisms via user systemd units (equivalent to registry persistence) |
-| 9 | LNK Files               | ⚠️ | Win | lnk_files_recent_activity | - | Analyze LNK shortcut files showing recently accessed documents and programs |
-| 10 | BITS Jobs               | ⚠️ | Win | bits_jobs_database | - | Detect suspicious BITS transfers by filtering out known-good domains (Microsoft, Google, Adobe, etc.) and internal networks - **Windows-only (no macOS/Linux equivalent)** |
-| 11 | Network Interfaces      | ⚠️ | All | network_interfaces_baseline | - | Document network configuration and identify anomalies like VPN or tunnel interfaces |
-| 12 | Disk Info               | ⚠️ | Win | disk_drives_removable_windows | - | Enumerate logical drives on Windows systems focusing on removable media and unusual volumes (uses logical_drives table) |
-| 12a | Disk Info               | ⚠️ | Mac+Linux | mounts_removable | - | Enumerate mounted volumes focusing on removable media and external drives (unified query for both platforms) |
-| 13 | AmCache                 | ❌ | Win | - | - | **Not Available** - Alternative: Use Prefetch + File Hashes + Registry uninstall keys |
-| 14 | Jumplists               | ❌ | Win | - | - | **Not Available** - Alternative: File enumeration + Shellbags + Office MRU |
-| 15 | Browser History         | ❌ | All | - | - | **Not Available** - Alternative: Downloads folder + cache analysis + ATC extension |
-| 16 | MFT                     | ❌ | Win | - | - | **Not Available** - Alternative: Trail of Bits extension + USN Journal + targeted queries |
-| 17 | File Handles            | ❌ | All | - | - | **Not Available** - Alternative: process_open_sockets + file table + eclecticiq extension |
+| 1 | Services                | ✅ | Win | services_windows_elastic | [892e](kibana/osquery_saved_query/osquery_manager-892ee425-60e7-4eb6-ba25-6e97dc3e2ea0.json) | Comprehensive Windows services enumeration with risk scoring (0-100), detecting suspicious services in user-writable directories, unsigned binaries, ServiceDLL hijacking, and privilege escalation patterns |
+| 1a | Services                | ✅ | Mac | services_launchd_darwin_elastic | [5823](kibana/osquery_saved_query/osquery_manager-5823a22e-5add-416d-a142-de323400edb0.json) | Parse launchd services on macOS, providing visibility into launch daemons and agents with configuration state and execution context |
+| 1b | Services                | ✅ | Linux | services_systemd_linux_elastic | [f8b0](kibana/osquery_saved_query/osquery_manager-f8b0894b-772d-4242-8e19-dbc5d7ae2e06.json) | Parse systemd services on Linux, monitoring service units with load state, activation state, and enablement status |
+| 2 | Scheduled Tasks         | ⚠️ | Win | - | - | - |
+| 3 | Startup Items           | ⚠️ | Win | - | - | - |
+| 4 | Process Listing         | ⚠️ | All | - | - | - |
+| 5 | File Hashes             | ⚠️ | All | - | - | - |
+| 6 | ARP Cache               | ⚠️ | All | - | - | - |
+| 7 | Network Connections     | ⚠️ | All | - | - | - |
+| 8 | Registry                | ⚠️ | Win | - | - | - |
+| 8a | Startup / Persistence   | ⚠️ | Mac | - | - | - |
+| 8b | Autostart / Persistence | ⚠️ | Linux | - | - | - |
+| 9 | LNK Files               | ⚠️ | Win | - | - | - |
+| 10 | BITS Jobs               | ⚠️ | Win | - | - | - |
+| 11 | Network Interfaces      | ⚠️ | All | - | - | - |
+| 12 | Disk Info               | ⚠️ | Win | - | - | - |
+| 12a | Disk Info               | ⚠️ | Mac+Linux | - | - | - |
+| 13 | AmCache                 | ❌ | Win | - | - | - |
+| 14 | Jumplists               | ❌ | Win | - | - | - |
+| 15 | Browser History         | ❌ | All | - | - | - |
+| 16 | MFT                     | ❌ | Win | - | - | - |
+| 17 | File Handles            | ❌ | All | - | - | - |
 
 ---
 
@@ -123,7 +122,7 @@ While these artifacts are not directly available, the existing queries provide s
 ## Artifacts by Category
 
 ### Persistence Mechanisms
-- ✅ Services
+- ✅ Services (Windows, macOS, Linux)
 - ⚠️ Scheduled Tasks
 - ⚠️ Startup Items
 - ⚠️ Registry

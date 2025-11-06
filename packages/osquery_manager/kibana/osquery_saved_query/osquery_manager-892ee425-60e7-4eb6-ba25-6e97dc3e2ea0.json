@@ -1,0 +1,182 @@
+{
+  "attributes": {
+    "created_at": "2025-01-06T10:30:00.000Z",
+    "created_by": "elastic",
+    "description": "Comprehensive Windows Services Enumeration with Risk Scoring (0-100). Provides complete visibility into all Windows services including: (1) Service configuration and state (name, display name, path, start type, status), (2) Service authentication context (user account), (3) Binary authenticity validation (code signatures, certificates), (4) File integrity verification (MD5, SHA256 hashes), (5) ServiceDLL analysis for DLL hijacking detection, (6) Registry-based persistence mechanisms (FailureCommand), (7) Service creation timeline (registry modification time). Risk Scoring identifies: CRITICAL (70-100) - Services in temp/user directories with unsigned binaries running as SYSTEM - immediate investigation required, HIGH (50-69) - Services in unusual locations or with untrusted signatures - review within 24 hours, MEDIUM (30-49) - Non-standard service configurations - weekly review recommended, LOW (0-29) - Standard services with expected configurations - baseline monitoring. Detection focuses on: unsigned or untrusted executables, services running from user-writable directories (Temp, AppData, Downloads, Public), privilege escalation vectors (SYSTEM account with suspicious paths), ServiceDLL hijacking (missing DLLs, unsigned DLLs in unusual locations), persistence via failure commands, suspicious service naming patterns (generic names like 'service', 'svc', 'update'). MITRE ATT&CK Coverage: T1543.003 (Create or Modify System Process: Windows Service) - Service installation and modification for persistence, T1574.011 (Hijack Execution Flow: Services Registry Permissions Weakness) - ServiceDLL hijacking for code execution, T1036.005 (Masquerading: Match Legitimate Name or Location) - Services masquerading as legitimate Windows services, T1112 (Modify Registry) - Registry-based service configuration manipulation. Use Cases: Malware persistence hunting, unauthorized service installation detection, privilege escalation investigation, DLL hijacking detection, forensic timeline reconstruction, compliance auditing for service configurations.",
+    "ecs_mapping": [
+      {
+        "key": "service.name",
+        "value": {
+          "field": "name"
+        }
+      },
+      {
+        "key": "service.state",
+        "value": {
+          "field": "status"
+        }
+      },
+      {
+        "key": "service.type",
+        "value": {
+          "field": "start_type"
+        }
+      },
+      {
+        "key": "process.executable",
+        "value": {
+          "field": "path"
+        }
+      },
+      {
+        "key": "user.name",
+        "value": {
+          "field": "user_account"
+        }
+      },
+      {
+        "key": "file.hash.md5",
+        "value": {
+          "field": "md5"
+        }
+      },
+      {
+        "key": "file.hash.sha256",
+        "value": {
+          "field": "sha256"
+        }
+      },
+      {
+        "key": "file.code_signature.subject_name",
+        "value": {
+          "field": "cert_subject"
+        }
+      },
+      {
+        "key": "file.code_signature.status",
+        "value": {
+          "field": "signature_status"
+        }
+      },
+      {
+        "key": "file.code_signature.trusted",
+        "value": {
+          "field": "cert_trusted"
+        }
+      },
+      {
+        "key": "dll.path",
+        "value": {
+          "field": "service_dll"
+        }
+      },
+      {
+        "key": "dll.hash.sha256",
+        "value": {
+          "field": "servicedll_sha256"
+        }
+      },
+      {
+        "key": "dll.hash.md5",
+        "value": {
+          "field": "servicedll_md5"
+        }
+      },
+      {
+        "key": "dll.code_signature.subject_name",
+        "value": {
+          "field": "servicedll_cert_subject"
+        }
+      },
+      {
+        "key": "dll.code_signature.status",
+        "value": {
+          "field": "servicedll_signature_status"
+        }
+      },
+      {
+        "key": "event.risk_score",
+        "value": {
+          "field": "risk_score"
+        }
+      },
+      {
+        "key": "event.severity",
+        "value": {
+          "field": "risk_level"
+        }
+      },
+      {
+        "key": "event.created",
+        "value": {
+          "field": "service_registry_mtime"
+        }
+      },
+      {
+        "key": "registry.key",
+        "value": {
+          "field": "registry_path"
+        }
+      },
+      {
+        "key": "process.command_line",
+        "value": {
+          "field": "failure_command"
+        }
+      },
+      {
+        "key": "event.category",
+        "value": {
+          "value": [
+            "configuration",
+            "process"
+          ]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": [
+            "info"
+          ]
+        }
+      },
+      {
+        "key": "event.kind",
+        "value": {
+          "value": [
+            "state"
+          ]
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "persistence",
+            "services",
+            "windows",
+            "service_enumeration",
+            "code_signing",
+            "servicedll_hijacking",
+            "privilege_escalation",
+            "risk_scoring",
+            "forensics"
+          ]
+        }
+      }
+    ],
+    "id": "services_windows_elastic",
+    "interval": "3600",
+    "platform": "windows",
+    "query": "SELECT\n  s.name,\n  s.display_name,\n  s.path,\n  s.status,\n  s.start_type,\n  s.user_account,\n\n  -- Risk scoring fields (critical for prioritization)\n  (\n    (CASE\n      WHEN s.path LIKE '%\\\\Temp\\\\%' THEN 40\n      WHEN s.path LIKE '%\\\\Users\\\\%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 40\n      WHEN s.path LIKE '%\\\\Users\\\\%\\\\Downloads\\\\%' THEN 35\n      WHEN s.path LIKE '%\\\\AppData\\\\Local\\\\%' THEN 35\n      WHEN s.path LIKE '%\\\\AppData\\\\Roaming\\\\%' THEN 30\n      WHEN s.path LIKE '%\\\\Users\\\\%\\\\Documents\\\\%' THEN 30\n      WHEN s.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 25\n      WHEN s.path LIKE '%\\\\ProgramData\\\\%' AND s.path NOT LIKE '%\\\\ProgramData\\\\Microsoft\\\\%' THEN 20\n      WHEN s.path LIKE '%\\\\Windows\\\\Temp\\\\%' THEN 25\n      ELSE 5\n    END) +\n    (CASE\n      WHEN a.result IS NULL OR a.result = '' THEN 25\n      WHEN a.result != 'trusted' THEN 25\n      WHEN a.subject_name NOT LIKE '%Microsoft%' AND a.subject_name NOT LIKE '%Windows%' THEN 15\n      ELSE 0\n    END) +\n    (CASE\n      WHEN s.user_account IN ('LocalSystem', 'NT AUTHORITY\\\\SYSTEM', 'SYSTEM') AND\n           (s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\AppData\\\\%' OR s.path LIKE '%\\\\Users\\\\%') THEN 20\n      WHEN s.user_account IN ('LocalSystem', 'NT AUTHORITY\\\\SYSTEM', 'SYSTEM') THEN 10\n      WHEN s.user_account LIKE '%Administrator%' THEN 5\n      ELSE 0\n    END) +\n    (CASE\n      WHEN LOWER(s.name) IN ('service', 'svc', 'system', 'update', 'windows', 'microsoft', 'security', 'monitor', 'agent', 'helper') THEN 10\n      WHEN LENGTH(s.name) <= 5 THEN 8\n      WHEN s.display_name = s.name OR s.display_name IS NULL OR s.display_name = '' THEN 5\n      ELSE 0\n    END) +\n    (CASE\n      WHEN r1.data IS NOT NULL AND r1.data != '' AND h_dll.sha256 IS NULL THEN 15\n      WHEN r1.data LIKE '%\\\\Temp\\\\%' OR r1.data LIKE '%\\\\AppData\\\\%' THEN 10\n      WHEN a_dll.result IS NOT NULL AND a_dll.result != 'trusted' THEN 10\n      WHEN r1.data IS NOT NULL AND r1.data NOT LIKE '%\\\\System32\\\\%' AND r1.data NOT LIKE '%\\\\SysWOW64\\\\%' THEN 5\n      ELSE 0\n    END) +\n    (CASE\n      WHEN r2.data IS NOT NULL AND r2.data != '' THEN 10\n      ELSE 0\n    END) +\n    (CASE\n      WHEN s.start_type IN ('AUTO_START', 'BOOT_START', 'SYSTEM_START') AND \n           s.status = 'STOPPED' AND\n           (s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\Users\\\\%') THEN 5\n      ELSE 0\n    END)\n  ) AS risk_score,\n  (CASE\n    WHEN (\n      (CASE\n        WHEN s.path LIKE '%\\\\Temp\\\\%' THEN 40\n        WHEN s.path LIKE '%\\\\Users\\\\%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 40\n        WHEN s.path LIKE '%\\\\Users\\\\%\\\\Downloads\\\\%' THEN 35\n        WHEN s.path LIKE '%\\\\AppData\\\\Local\\\\%' THEN 35\n        WHEN s.path LIKE '%\\\\AppData\\\\Roaming\\\\%' THEN 30\n        WHEN s.path LIKE '%\\\\Users\\\\%\\\\Documents\\\\%' THEN 30\n        WHEN s.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 25\n        WHEN s.path LIKE '%\\\\ProgramData\\\\%' AND s.path NOT LIKE '%\\\\ProgramData\\\\Microsoft\\\\%' THEN 20\n        WHEN s.path LIKE '%\\\\Windows\\\\Temp\\\\%' THEN 25\n        ELSE 5\n      END) +\n      (CASE\n        WHEN a.result IS NULL OR a.result = '' THEN 25\n        WHEN a.result != 'trusted' THEN 25\n        WHEN a.subject_name NOT LIKE '%Microsoft%' AND a.subject_name NOT LIKE '%Windows%' THEN 15\n        ELSE 0\n      END) +\n      (CASE\n        WHEN s.user_account IN ('LocalSystem', 'NT AUTHORITY\\\\SYSTEM', 'SYSTEM') AND\n             (s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\AppData\\\\%' OR s.path LIKE '%\\\\Users\\\\%') THEN 20\n        WHEN s.user_account IN ('LocalSystem', 'NT AUTHORITY\\\\SYSTEM', 'SYSTEM') THEN 10\n        WHEN s.user_account LIKE '%Administrator%' THEN 5\n        ELSE 0\n      END) +\n      (CASE\n        WHEN LOWER(s.name) IN ('service', 'svc', 'system', 'update', 'windows', 'microsoft', 'security', 'monitor', 'agent', 'helper') THEN 10\n        WHEN LENGTH(s.name) <= 5 THEN 8\n        WHEN s.display_name = s.name OR s.display_name IS NULL OR s.display_name = '' THEN 5\n        ELSE 0\n      END) +\n      (CASE\n        WHEN r1.data IS NOT NULL AND r1.data != '' AND h_dll.sha256 IS NULL THEN 15\n        WHEN r1.data LIKE '%\\\\Temp\\\\%' OR r1.data LIKE '%\\\\AppData\\\\%' THEN 10\n        WHEN a_dll.result IS NOT NULL AND a_dll.result != 'trusted' THEN 10\n        WHEN r1.data IS NOT NULL AND r1.data NOT LIKE '%\\\\System32\\\\%' AND r1.data NOT LIKE '%\\\\SysWOW64\\\\%' THEN 5\n        ELSE 0\n      END) +\n      (CASE\n        WHEN r2.data IS NOT NULL AND r2.data != '' THEN 10\n        ELSE 0\n      END) +\n      (CASE\n        WHEN s.start_type IN ('AUTO_START', 'BOOT_START', 'SYSTEM_START') AND \n             s.status = 'STOPPED' AND\n             (s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\Users\\\\%') THEN 5\n        ELSE 0\n      END)\n    ) >= 70 THEN 'CRITICAL'\n    WHEN (\n      (CASE\n        WHEN s.path LIKE '%\\\\Temp\\\\%' THEN 40\n        WHEN s.path LIKE '%\\\\Users\\\\%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 40\n        WHEN s.path LIKE '%\\\\Users\\\\%\\\\Downloads\\\\%' THEN 35\n        WHEN s.path LIKE '%\\\\AppData\\\\Local\\\\%' THEN 35\n        WHEN s.path LIKE '%\\\\AppData\\\\Roaming\\\\%' THEN 30\n        WHEN s.path LIKE '%\\\\Users\\\\%\\\\Documents\\\\%' THEN 30\n        WHEN s.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 25\n        WHEN s.path LIKE '%\\\\ProgramData\\\\%' AND s.path NOT LIKE '%\\\\ProgramData\\\\Microsoft\\\\%' THEN 20\n        WHEN s.path LIKE '%\\\\Windows\\\\Temp\\\\%' THEN 25\n        ELSE 5\n      END) +\n      (CASE\n        WHEN a.result IS NULL OR a.result = '' THEN 25\n        WHEN a.result != 'trusted' THEN 25\n        WHEN a.subject_name NOT LIKE '%Microsoft%' AND a.subject_name NOT LIKE '%Windows%' THEN 15\n        ELSE 0\n      END) +\n      (CASE\n        WHEN s.user_account IN ('LocalSystem', 'NT AUTHORITY\\\\SYSTEM', 'SYSTEM') AND\n             (s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\AppData\\\\%' OR s.path LIKE '%\\\\Users\\\\%') THEN 20\n        WHEN s.user_account IN ('LocalSystem', 'NT AUTHORITY\\\\SYSTEM', 'SYSTEM') THEN 10\n        WHEN s.user_account LIKE '%Administrator%' THEN 5\n        ELSE 0\n      END) +\n      (CASE\n        WHEN LOWER(s.name) IN ('service', 'svc', 'system', 'update', 'windows', 'microsoft', 'security', 'monitor', 'agent', 'helper') THEN 10\n        WHEN LENGTH(s.name) <= 5 THEN 8\n        WHEN s.display_name = s.name OR s.display_name IS NULL OR s.display_name = '' THEN 5\n        ELSE 0\n      END) +\n      (CASE\n        WHEN r1.data IS NOT NULL AND r1.data != '' AND h_dll.sha256 IS NULL THEN 15\n        WHEN r1.data LIKE '%\\\\Temp\\\\%' OR r1.data LIKE '%\\\\AppData\\\\%' THEN 10\n        WHEN a_dll.result IS NOT NULL AND a_dll.result != 'trusted' THEN 10\n        WHEN r1.data IS NOT NULL AND r1.data NOT LIKE '%\\\\System32\\\\%' AND r1.data NOT LIKE '%\\\\SysWOW64\\\\%' THEN 5\n        ELSE 0\n      END) +\n      (CASE\n        WHEN r2.data IS NOT NULL AND r2.data != '' THEN 10\n        ELSE 0\n      END) +\n      (CASE\n        WHEN s.start_type IN ('AUTO_START', 'BOOT_START', 'SYSTEM_START') AND \n             s.status = 'STOPPED' AND\n             (s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\Users\\\\%') THEN 5\n        ELSE 0\n      END)\n    ) >= 50 THEN 'HIGH'\n    WHEN (\n      (CASE\n        WHEN s.path LIKE '%\\\\Temp\\\\%' THEN 40\n        WHEN s.path LIKE '%\\\\Users\\\\%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 40\n        WHEN s.path LIKE '%\\\\Users\\\\%\\\\Downloads\\\\%' THEN 35\n        WHEN s.path LIKE '%\\\\AppData\\\\Local\\\\%' THEN 35\n        WHEN s.path LIKE '%\\\\AppData\\\\Roaming\\\\%' THEN 30\n        WHEN s.path LIKE '%\\\\Users\\\\%\\\\Documents\\\\%' THEN 30\n        WHEN s.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 25\n        WHEN s.path LIKE '%\\\\ProgramData\\\\%' AND s.path NOT LIKE '%\\\\ProgramData\\\\Microsoft\\\\%' THEN 20\n        WHEN s.path LIKE '%\\\\Windows\\\\Temp\\\\%' THEN 25\n        ELSE 5\n      END) +\n      (CASE\n        WHEN a.result IS NULL OR a.result = '' THEN 25\n        WHEN a.result != 'trusted' THEN 25\n        WHEN a.subject_name NOT LIKE '%Microsoft%' AND a.subject_name NOT LIKE '%Windows%' THEN 15\n        ELSE 0\n      END) +\n      (CASE\n        WHEN s.user_account IN ('LocalSystem', 'NT AUTHORITY\\\\SYSTEM', 'SYSTEM') AND\n             (s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\AppData\\\\%' OR s.path LIKE '%\\\\Users\\\\%') THEN 20\n        WHEN s.user_account IN ('LocalSystem', 'NT AUTHORITY\\\\SYSTEM', 'SYSTEM') THEN 10\n        WHEN s.user_account LIKE '%Administrator%' THEN 5\n        ELSE 0\n      END) +\n      (CASE\n        WHEN LOWER(s.name) IN ('service', 'svc', 'system', 'update', 'windows', 'microsoft', 'security', 'monitor', 'agent', 'helper') THEN 10\n        WHEN LENGTH(s.name) <= 5 THEN 8\n        WHEN s.display_name = s.name OR s.display_name IS NULL OR s.display_name = '' THEN 5\n        ELSE 0\n      END) +\n      (CASE\n        WHEN r1.data IS NOT NULL AND r1.data != '' AND h_dll.sha256 IS NULL THEN 15\n        WHEN r1.data LIKE '%\\\\Temp\\\\%' OR r1.data LIKE '%\\\\AppData\\\\%' THEN 10\n        WHEN a_dll.result IS NOT NULL AND a_dll.result != 'trusted' THEN 10\n        WHEN r1.data IS NOT NULL AND r1.data NOT LIKE '%\\\\System32\\\\%' AND r1.data NOT LIKE '%\\\\SysWOW64\\\\%' THEN 5\n        ELSE 0\n      END) +\n      (CASE\n        WHEN r2.data IS NOT NULL AND r2.data != '' THEN 10\n        ELSE 0\n      END) +\n      (CASE\n        WHEN s.start_type IN ('AUTO_START', 'BOOT_START', 'SYSTEM_START') AND \n             s.status = 'STOPPED' AND\n             (s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\Users\\\\%') THEN 5\n        ELSE 0\n      END)\n    ) >= 30 THEN 'MEDIUM'\n    ELSE 'LOW'\n  END) AS risk_level,\n\n  -- Service metadata\n  s.service_type,\n  s.module_path,\n  s.win32_exit_code,\n  'HKEY_LOCAL_MACHINE\\\\System\\\\CurrentControlSet\\\\Services\\\\' || s.name AS registry_path,\n\n  -- Timeline fields\n  r_service_key.mtime AS service_registry_mtime,\n  CAST((strftime('%s', 'now') - r_service_key.mtime) / 86400 AS INTEGER) AS days_since_creation,\n\n  -- Primary binary security (hashes and code signing)\n  h.sha256,\n  h.md5,\n  a.subject_name AS cert_subject,\n  a.issuer_name AS cert_issuer,\n  a.result AS signature_status,\n  CASE \n    WHEN a.result = 'trusted' THEN 1 \n    ELSE 0 \n  END AS cert_trusted,\n\n  -- ServiceDLL fields (DLL hijacking detection)\n  r1.data AS service_dll,\n  h_dll.sha256 AS servicedll_sha256,\n  h_dll.md5 AS servicedll_md5,\n  a_dll.subject_name AS servicedll_cert_subject,\n  a_dll.issuer_name AS servicedll_cert_issuer,\n  a_dll.result AS servicedll_signature_status,\n\n  -- Persistence mechanism detection\n  r2.data AS failure_command\nFROM services s\nLEFT JOIN registry r1 ON r1.path = 'HKEY_LOCAL_MACHINE\\\\System\\\\CurrentControlSet\\\\Services\\\\' || s.name || '\\\\Parameters' AND r1.name = 'ServiceDll'\nLEFT JOIN registry r2 ON r2.path = 'HKEY_LOCAL_MACHINE\\\\System\\\\CurrentControlSet\\\\Services\\\\' || s.name AND r2.name = 'FailureCommand'\nLEFT JOIN hash h ON h.path = s.path\nLEFT JOIN authenticode a ON a.path = s.path\nLEFT JOIN hash h_dll ON h_dll.path = r1.data\nLEFT JOIN authenticode a_dll ON a_dll.path = r1.data\nLEFT JOIN registry r_service_key ON r_service_key.path = 'HKEY_LOCAL_MACHINE\\\\System\\\\CurrentControlSet\\\\Services\\\\' || s.name\nWHERE s.name IS NOT NULL\nORDER BY risk_score DESC, s.start_type, s.status\nLIMIT 500;",
+    "updated_at": "2025-01-06T10:30:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.2.0",
+  "id": "osquery_manager-892ee425-60e7-4eb6-ba25-6e97dc3e2ea0",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-01-06T10:30:00.000Z",
+  "version": "WzgzLDJd"
+}
