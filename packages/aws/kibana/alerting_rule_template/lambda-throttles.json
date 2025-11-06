@@ -6,11 +6,11 @@
     "tags": ["AWS Lambda"],
     "ruleTypeId": ".es-query",
     "schedule": {
-      "interval": "1m"
+      "interval": "5m"
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 15,
+      "timeWindowSize": 5,
       "timeWindowUnit": "m",
       "esqlQuery": {
         "esql": "// The recommended threshold value for throttles is > 0, and the alerting rule is grouped by cloud account id, cloud region and function name. You can adjust the threshold value by modifying the throttles value in the WHERE clause.\nFROM metrics-aws.lambda-default\n| STATS throttles=sum(aws.lambda.Throttles.avg) by cloud.account.id, cloud.region, aws.dimensions.FunctionName\n| WHERE throttles > 0"

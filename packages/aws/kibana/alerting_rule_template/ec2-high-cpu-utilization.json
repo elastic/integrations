@@ -6,11 +6,11 @@
     "tags": ["AWS EC2"],
     "ruleTypeId": ".es-query",
     "schedule": {
-      "interval": "1m"
+      "interval": "5m"
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 15,
+      "timeWindowSize": 5,
       "timeWindowUnit": "m",
       "esqlQuery": {
         "esql": "// The recommended threshold value for CPU usage is >= 80, and the alerting rule is grouped by cloud account id, cloud region and instance id. You can adjust the threshold value by modifying the cpuutilization value in the WHERE clause.\nFROM metrics-aws.ec2_metrics-default\n| STATS cpuutilization=avg(host.cpu.usage*100) by cloud.account.id, cloud.region, aws.dimensions.InstanceId\n| WHERE cpuutilization >= 80"

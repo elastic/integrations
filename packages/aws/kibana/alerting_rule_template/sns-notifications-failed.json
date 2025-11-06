@@ -6,11 +6,11 @@
     "tags": ["AWS SNS"],
     "ruleTypeId": ".es-query",
     "schedule": {
-      "interval": "1m"
+      "interval": "5m"
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 15,
+      "timeWindowSize": 5,
       "timeWindowUnit": "m",
       "esqlQuery": {
         "esql": "// The recommended threshold value for notifications failed is > 0, and the alerting rule is grouped by cloud account id, cloud region and topic name. You can adjust the threshold value by modifying the notificationsfailed value in the WHERE clause.\nFROM metrics-aws.sns-default\n| STATS notificationsfailed=avg(aws.sns.NumberOfNotificationsFailed.sum) by cloud.account.id, cloud.region, aws.dimensions.TopicName\n| WHERE notificationsfailed > 0"

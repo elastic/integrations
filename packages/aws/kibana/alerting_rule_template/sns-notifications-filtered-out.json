@@ -6,11 +6,11 @@
     "tags": ["AWS SNS"],
     "ruleTypeId": ".es-query",
     "schedule": {
-      "interval": "1m"
+      "interval": "5m"
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 15,
+      "timeWindowSize": 5,
       "timeWindowUnit": "m",
       "esqlQuery": {
         "esql": "// The recommended threshold value for notifications filtered out is > 0, and the alerting rule is grouped by cloud account id, cloud region and topic name. You can adjust the threshold value by modifying the notificationsfilteredout value in the WHERE clause.\nFROM metrics-aws.sns-default\n| STATS notificationsfilteredout=avg(aws.sns.NumberOfNotificationsFilteredOut-InvalidAttributes.sum) by cloud.account.id, cloud.region, aws.dimensions.TopicName\n| WHERE notificationsfilteredout > 0"

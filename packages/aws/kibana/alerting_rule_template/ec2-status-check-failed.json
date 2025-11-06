@@ -6,11 +6,11 @@
     "tags": ["AWS EC2"],
     "ruleTypeId": ".es-query",
     "schedule": {
-      "interval": "1m"
+      "interval": "5m"
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 15,
+      "timeWindowSize": 5,
       "timeWindowUnit": "m",
       "esqlQuery": {
         "esql": "// The recommended threshold value for status check failed is > 0, and the alerting rule is grouped by cloud account id, cloud region and instance id. You can adjust the threshold value by modifying the statusfailed value in the WHERE clause.\nFROM metrics-aws.ec2_metrics-default\n| STATS statusfailed=max(aws.ec2.metrics.StatusCheckFailed.avg) by cloud.account.id, cloud.region, aws.dimensions.InstanceId\n| WHERE statusfailed > 0"
