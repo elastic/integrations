@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-11-05T09:19:01.000Z",
     "created_by": "elastic",
-    "description": "Detect suspicious crontab entries across macOS and Linux, flagging commands in temporary directories or using common attack tools",
+    "description": "Detects malicious crontab entries via schedule pattern analysis, command chaining detection, and multi-factor risk scoring. Identifies C2 beaconing, persistence mechanisms, and stealth techniques across Linux and macOS systems.",
     "ecs_mapping": [
       {
         "key": "process.command_line",
@@ -33,19 +33,35 @@
         }
       },
       {
+        "key": "event.risk_score",
+        "value": {
+          "field": "total_risk_score"
+        }
+      },
+      {
+        "key": "rule.name",
+        "value": {
+          "value": [
+            "Crontab Persistence Detection"
+          ]
+        }
+      },
+      {
         "key": "tags",
         "value": {
           "value": [
             "persistence",
             "crontab",
-            "scheduled-task"
+            "scheduled-task",
+            "T1053.003",
+            "cross-platform"
           ]
         }
       }
     ],
     "id": "crontab_persistence_elastic",
     "interval": "3600",
-    "query": "SELECT \n  event, \n  minute, \n  hour, \n  day_of_month, \n  month, \n  day_of_week, \n  command, \n  path \nFROM crontab \nWHERE command NOT LIKE '/usr/libexec/%' \n  AND command NOT LIKE '/usr/sbin/%' \n  AND command NOT LIKE '/System/%' \n  AND command NOT LIKE '/usr/bin/%' \n  AND command NOT LIKE '/bin/%' \n  AND command NOT LIKE '/sbin/%' \n  AND (\n    command LIKE '%/tmp/%' \n    OR command LIKE '%/var/tmp/%' \n    OR command LIKE '%/dev/shm/%' \n    OR command LIKE '%curl%' \n    OR command LIKE '%wget%' \n    OR command LIKE '%base64%' \n    OR command LIKE '%Downloads/%' \n    OR command LIKE '%Desktop/%' \n    OR command LIKE '%nc %' \n    OR command LIKE '%ncat%' \n    OR command LIKE '%/dev/tcp/%'\n  ) \nORDER BY path \nLIMIT 100;",
+    "query": "WITH crontab_base AS (\n  SELECT\n    c.event,\n    c.minute,\n    c.hour,\n    c.day_of_month,\n    c.month,\n    c.day_of_week,\n    c.command,\n    c.path,\n\n    CASE\n      WHEN c.event = '@reboot' THEN 'BOOT_PERSISTENCE'\n      WHEN c.minute = '*' THEN 'EVERY_MINUTE_CRITICAL'\n      WHEN c.minute LIKE '*/%' THEN\n        CASE\n          WHEN CAST(REPLACE(c.minute, '*/', '') AS INTEGER) <= 5 THEN 'BEACONING_5MIN'\n          WHEN CAST(REPLACE(c.minute, '*/', '') AS INTEGER) <= 15 THEN 'BEACONING_15MIN'\n          WHEN CAST(REPLACE(c.minute, '*/', '') AS INTEGER) <= 30 THEN 'BEACONING_30MIN'\n          ELSE 'PERIODIC_NORMAL'\n        END\n      WHEN c.event IN ('@hourly', '@daily', '@weekly', '@monthly', '@yearly') THEN 'EVENT_SCHEDULE'\n      ELSE 'CUSTOM_SCHEDULE'\n    END AS schedule_pattern,\n\n    CASE\n      WHEN c.command LIKE '%| bash%' OR c.command LIKE '%| sh%' THEN 'PIPED_SHELL_EXECUTION'\n      WHEN c.command LIKE '%| python%' THEN 'PIPED_SCRIPT_EXECUTION'\n      WHEN c.command LIKE '%|%' THEN 'PIPED_COMMAND'\n      WHEN c.command LIKE '%&&%' THEN 'CHAINED_SUCCESS'\n      WHEN c.command LIKE '%;%' THEN 'CHAINED_SEQUENTIAL'\n      WHEN c.command LIKE '%||%' THEN 'CHAINED_FAILURE'\n      ELSE 'SIMPLE_COMMAND'\n    END AS command_structure,\n\n    CASE\n      WHEN c.command LIKE '%>/dev/null%' OR c.command LIKE '%2>&1%' THEN 'STEALTH_REDIRECTION'\n      WHEN c.command LIKE '%nohup%' THEN 'BACKGROUND_EXECUTION'\n      WHEN c.command LIKE '%>/tmp/%' OR c.command LIKE '%>/var/tmp/%' THEN 'TEMP_LOG_REDIRECTION'\n      ELSE 'NORMAL_OUTPUT'\n    END AS output_pattern\n\n  FROM crontab c\n\n  WHERE (\n      c.command LIKE '%/tmp/%'\n      OR c.command LIKE '%/var/tmp/%'\n      OR c.command LIKE '%/dev/shm/%'\n\n      OR c.command LIKE '%curl%http%'\n      OR c.command LIKE '%wget%http%'\n\n      OR c.command LIKE '%base64%'\n      OR c.command LIKE '%xxd%'\n      OR c.command LIKE '%openssl%enc%'\n\n      OR c.command LIKE '%nc %' OR c.command LIKE '%ncat%'\n      OR c.command LIKE '%/dev/tcp/%'\n      OR c.command LIKE '%socat%'\n\n      OR c.command LIKE '%python%http%'\n      OR c.command LIKE '%python%socket%'\n      OR c.command LIKE '%perl%socket%'\n\n      OR c.command LIKE '%bash -c%'\n      OR c.command LIKE '%sh -c%'\n      OR c.command LIKE '%-c \"%'\n\n      OR c.command LIKE '%>/dev/null%'\n      OR c.command LIKE '%2>&1%'\n      OR c.command LIKE '%nohup%'\n\n      OR c.command LIKE '%| bash%' OR c.command LIKE '%| sh%'\n      OR c.command LIKE '%| python%'\n      OR c.command LIKE '%&&%'\n\n      OR c.command LIKE '%/home/%/Downloads/%'\n      OR c.command LIKE '%/home/%/Desktop/%'\n      OR c.command LIKE '%/Users/%/Downloads/%'\n    )\n),\n\nscored_crontab AS (\n  SELECT\n    *,\n    (\n      CASE\n        WHEN command LIKE '%curl%http%' OR command LIKE '%wget%http%' THEN 30\n        WHEN command LIKE '%curl%' OR command LIKE '%wget%' THEN 20\n        ELSE 0\n      END +\n\n      CASE\n        WHEN command LIKE '%nc %' OR command LIKE '%ncat%' THEN 30\n        WHEN command LIKE '%/dev/tcp/%' THEN 30\n        WHEN command LIKE '%socat%' THEN 25\n        WHEN command LIKE '%python%socket%' OR command LIKE '%perl%socket%' THEN 25\n        ELSE 0\n      END +\n\n      CASE\n        WHEN command LIKE '%base64%' THEN 20\n        WHEN command LIKE '%xxd%' OR command LIKE '%openssl%enc%' THEN 15\n        ELSE 0\n      END +\n\n      CASE\n        WHEN command LIKE '%/tmp/%' OR command LIKE '%/var/tmp/%' OR command LIKE '%/dev/shm/%' THEN 20\n        WHEN command LIKE '%/home/%/Downloads/%' OR command LIKE '%/Users/%/Downloads/%' THEN 15\n        ELSE 0\n      END\n    ) AS command_risk_score,\n\n    CASE\n      WHEN schedule_pattern = 'EVERY_MINUTE_CRITICAL' THEN 40\n      WHEN schedule_pattern = 'BEACONING_5MIN' THEN 35\n      WHEN schedule_pattern = 'BEACONING_15MIN' THEN 25\n      WHEN schedule_pattern = 'BEACONING_30MIN' THEN 15\n      WHEN schedule_pattern = 'BOOT_PERSISTENCE' THEN 20\n      ELSE 0\n    END AS schedule_risk_score,\n\n    (\n      CASE\n        WHEN command_structure = 'PIPED_SHELL_EXECUTION' THEN 30\n        WHEN command_structure = 'PIPED_SCRIPT_EXECUTION' THEN 25\n        WHEN command_structure IN ('PIPED_COMMAND', 'CHAINED_SUCCESS') THEN 20\n        WHEN command_structure IN ('CHAINED_SEQUENTIAL', 'CHAINED_FAILURE') THEN 10\n        ELSE 0\n      END +\n\n      CASE\n        WHEN output_pattern = 'STEALTH_REDIRECTION' THEN 15\n        WHEN output_pattern = 'BACKGROUND_EXECUTION' THEN 10\n        WHEN output_pattern = 'TEMP_LOG_REDIRECTION' THEN 10\n        ELSE 0\n      END\n    ) AS structure_risk_score\n  FROM crontab_base\n)\n\nSELECT\n  event,\n  minute,\n  hour,\n  day_of_month,\n  month,\n  day_of_week,\n  command,\n  path,\n  schedule_pattern,\n  command_structure,\n  output_pattern,\n  command_risk_score,\n  schedule_risk_score,\n  structure_risk_score,\n  (command_risk_score + schedule_risk_score + structure_risk_score) AS total_risk_score,\n  CASE\n    WHEN (command_risk_score + schedule_risk_score + structure_risk_score) >= 70 THEN 'CRITICAL'\n    WHEN (command_risk_score + schedule_risk_score + structure_risk_score) >= 50 THEN 'HIGH'\n    WHEN (command_risk_score + schedule_risk_score + structure_risk_score) >= 30 THEN 'MEDIUM'\n    ELSE 'LOW'\n  END AS risk_level\nFROM scored_crontab\nWHERE (command_risk_score + schedule_risk_score + structure_risk_score) >= 30\nORDER BY total_risk_score DESC, schedule_pattern, path\nLIMIT 200;",
     "updated_at": "2025-11-05T09:19:01.000Z",
     "updated_by": "elastic"
   },

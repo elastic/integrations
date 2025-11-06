@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-11-05T09:19:01.000Z",
     "created_by": "elastic",
-    "description": "Detect suspicious launch daemons and agents on macOS, excluding system paths but flagging user-writable directories",
+    "description": "Detects suspicious launchd persistence on macOS with multi-factor risk scoring. Monitors all standard LaunchAgents/LaunchDaemons locations, analyzes program paths, detects label masquerading, and prioritizes high-risk entries. Returns entries with risk_score >= 30 (MEDIUM+) or created within last 7 days.",
     "ecs_mapping": [
       {
         "key": "service.name",
@@ -59,13 +59,37 @@
             "macos"
           ]
         }
+      },
+      {
+        "key": "event.risk_score",
+        "value": {
+          "field": "risk_score"
+        }
+      },
+      {
+        "key": "event.risk_score_norm",
+        "value": {
+          "field": "risk_score"
+        }
+      },
+      {
+        "key": "file.created",
+        "value": {
+          "field": "created_time"
+        }
+      },
+      {
+        "key": "file.mtime",
+        "value": {
+          "field": "modified_time"
+        }
       }
     ],
     "id": "suspicious_launchd_macos_elastic",
     "interval": "3600",
     "platform": "darwin",
-    "query": "SELECT \n  name, \n  label, \n  path, \n  program, \n  program_arguments, \n  run_at_load, \n  keep_alive, \n  username \nFROM launchd \nWHERE path NOT LIKE '/System/Library/%' \n  AND path NOT LIKE '/Library/Apple/%' \n  AND path NOT LIKE '/Applications/Xcode.app/%' \n  AND (\n    path LIKE '/tmp/%' \n    OR path LIKE '/var/tmp/%' \n    OR path LIKE '/Users/%/Downloads/%' \n    OR path LIKE '/Users/%/Desktop/%'\n  ) \nORDER BY label \nLIMIT 100;",
-    "updated_at": "2025-11-05T09:19:01.000Z",
+    "query": "WITH launchd_base AS (\n  SELECT\n    l.name,\n    l.label,\n    l.path,\n    -- Extract executable from program_arguments (NO l.program column exists!)\n    CASE\n      WHEN l.program_arguments LIKE '<%' THEN\n        -- Handle XML array format: <string>/path/to/exe</string>\n        RTRIM(LTRIM(SUBSTR(l.program_arguments, INSTR(l.program_arguments, '<string>') + 8, INSTR(l.program_arguments, '</string>') - INSTR(l.program_arguments, '<string>') - 8)))\n      WHEN l.program_arguments != '' THEN\n        -- Use program_arguments as-is (might be a simple string or first element)\n        l.program_arguments\n      ELSE NULL\n    END AS program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    -- Infer username from plist location (NO l.username column exists!)\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'root'\n      WHEN l.path LIKE '/Users/%/Library/LaunchAgents/%' THEN\n        -- Extract username from path: /Users/USERNAME/Library/LaunchAgents/...\n        SUBSTR(l.path, 8, INSTR(SUBSTR(l.path, 8), '/') - 1)\n      WHEN l.path LIKE '/Users/%/Library/LaunchDaemons/%' THEN\n        -- Extract username from path: /Users/USERNAME/Library/LaunchDaemons/...\n        SUBSTR(l.path, 8, INSTR(SUBSTR(l.path, 8), '/') - 1)\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'system'\n      ELSE NULL\n    END AS username,\n    l.disabled,\n    f.ctime AS file_created,\n    f.mtime AS file_modified,\n    CAST((strftime('%s', 'now') - COALESCE(f.ctime, strftime('%s', 'now'))) / 86400 AS INTEGER) AS age_days,\n    -- Program risk category (use program_arguments directly)\n    CASE\n      WHEN l.program_arguments LIKE '/tmp/%' OR l.program_arguments LIKE '/var/tmp/%' THEN 'TEMP_EXECUTION'\n      WHEN l.program_arguments LIKE '/Users/%/Downloads/%' OR l.program_arguments LIKE '/Users/%/Desktop/%' THEN 'USER_DOWNLOAD'\n      WHEN l.program_arguments LIKE '/dev/shm/%' THEN 'SHARED_MEMORY'\n      WHEN l.program_arguments LIKE '/Users/%/.%' OR l.program_arguments LIKE '%/.hidden/%' THEN 'HIDDEN_PROGRAM'\n      WHEN l.program_arguments NOT LIKE '/usr/%' AND l.program_arguments NOT LIKE '/bin/%' AND l.program_arguments NOT LIKE '/sbin/%' AND l.program_arguments NOT LIKE '/Applications/%.app/%' AND l.program_arguments NOT LIKE '/System/%' THEN 'NON_STANDARD_LOCATION'\n      WHEN l.program_arguments LIKE '/usr/bin/python%' OR l.program_arguments LIKE '/bin/sh' OR l.program_arguments LIKE '/bin/bash' OR l.program_arguments LIKE '/usr/bin/perl%' OR l.program_arguments LIKE '/usr/bin/ruby%' THEN 'INTERPRETER'\n      WHEN l.program_arguments LIKE '/Applications/%.app/%' THEN 'APPLICATION'\n      ELSE 'SYSTEM_BINARY'\n    END AS program_risk_category,\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'ROOT_DAEMON'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'SYSTEM_AGENT'\n      WHEN l.path LIKE '/Users/%/Library/LaunchAgents/%' THEN 'USER_AGENT'\n      WHEN l.path LIKE '/Users/%/Library/LaunchDaemons/%' THEN 'USER_DAEMON'\n      WHEN l.path LIKE '/tmp/%' OR l.path LIKE '/var/tmp/%' THEN 'TEMP_PLIST'\n      WHEN l.path LIKE '/Users/%/Downloads/%' THEN 'DOWNLOADS'\n      WHEN l.path LIKE '/Users/%/Desktop/%' THEN 'DESKTOP'\n      ELSE 'OTHER'\n    END AS plist_location_type\n  FROM launchd l\n  LEFT JOIN file f ON f.path = l.path\n  WHERE (\n    l.path LIKE '/Library/LaunchAgents/%'\n    OR l.path LIKE '/Library/LaunchDaemons/%'\n    OR l.path LIKE '/Users/%/Library/LaunchAgents/%'\n    OR l.path LIKE '/Users/%/Library/LaunchDaemons/%'\n    OR l.path LIKE '/tmp/%'\n    OR l.path LIKE '/var/tmp/%'\n    OR l.path LIKE '/Users/%/Downloads/%'\n    OR l.path LIKE '/Users/%/Desktop/%'\n  )\n  AND l.path NOT LIKE '/System/Library/%'\n  AND l.path NOT LIKE '/Library/Apple/%'\n  AND l.path NOT LIKE '/Applications/Xcode.app/%'\n),\nscored_launchd AS (\n  SELECT\n    *,\n    (\n      CASE\n        WHEN path LIKE '/Library/LaunchDaemons/%' THEN 30\n        WHEN path LIKE '/tmp/%' OR path LIKE '/var/tmp/%' THEN 30\n        WHEN path LIKE '/Users/%/Library/LaunchAgents/%' THEN 25\n        WHEN path LIKE '/Users/%/Library/LaunchDaemons/%' THEN 25\n        WHEN path LIKE '/Users/%/Downloads/%' OR path LIKE '/Users/%/Desktop/%' THEN 20\n        WHEN path LIKE '/Library/LaunchAgents/%' THEN 20\n        ELSE 0\n      END +\n      CASE\n        WHEN program_risk_category IN ('TEMP_EXECUTION', 'SHARED_MEMORY') THEN 30\n        WHEN program_risk_category IN ('USER_DOWNLOAD', 'HIDDEN_PROGRAM') THEN 25\n        WHEN program_risk_category = 'NON_STANDARD_LOCATION' THEN 20\n        WHEN program_risk_category = 'INTERPRETER' THEN 15\n        ELSE 0\n      END +\n      CASE\n        WHEN label LIKE 'com.apple.%' AND path NOT LIKE '/System/Library/%' AND path NOT LIKE '/Library/Apple/%' THEN 20\n        WHEN label LIKE 'com.google.%' AND program NOT LIKE '/Applications/Google%' AND program NOT LIKE '/Library/Google/%' THEN 20\n        WHEN label LIKE '%malware%' OR label LIKE '%trojan%' OR label LIKE '%backdoor%' OR label LIKE '%virus%' THEN 20\n        WHEN label LIKE '%update%' OR label LIKE '%check%' OR label LIKE '%sync%' OR label LIKE '%agent%' THEN 15\n        WHEN label NOT LIKE '%.%' THEN 10\n        ELSE 0\n      END +\n      CASE\n        WHEN run_at_load = 1 AND keep_alive = 1 THEN 20\n        WHEN keep_alive = 1 THEN 15\n        WHEN run_at_load = 1 THEN 10\n        ELSE 0\n      END\n    ) AS risk_score\n  FROM launchd_base\n)\nSELECT\n  name,\n  label,\n  path,\n  program,\n  program_arguments,\n  run_at_load,\n  keep_alive,\n  username,\n  disabled,\n  datetime(file_created, 'unixepoch', 'localtime') AS created_time,\n  datetime(file_modified, 'unixepoch', 'localtime') AS modified_time,\n  age_days,\n  plist_location_type,\n  program_risk_category,\n  risk_score,\n  CASE\n    WHEN risk_score >= 70 THEN 'CRITICAL'\n    WHEN risk_score >= 50 THEN 'HIGH'\n    WHEN risk_score >= 30 THEN 'MEDIUM'\n    ELSE 'LOW'\n  END AS risk_level\nFROM scored_launchd\nWHERE risk_score >= 30 OR age_days <= 7\nORDER BY risk_score DESC, age_days ASC, label\nLIMIT 200;",
+    "updated_at": "2025-11-06T13:00:00.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "9.2.0",

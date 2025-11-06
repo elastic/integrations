@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-11-05T09:19:01.000Z",
     "created_by": "elastic",
-    "description": "Track startup items from registry and startup folders, focusing on non-Microsoft entries and suspicious paths",
+    "description": "Comprehensive Windows startup persistence detection with multi-factor risk scoring (0-100), binary hash validation, code signature verification, temporal analysis, and analyst guidance. Detects malicious autostart entries across Registry Run keys, Startup folders, and Task Scheduler. LIMITATIONS: LNK files require external parsing with LECmd.exe. Runs hourly. Query execution may take 15-30 seconds due to hash/authenticode JOINs.",
     "ecs_mapping": [
       {
         "key": "process.name",
@@ -53,12 +53,48 @@
             "autorun"
           ]
         }
+      },
+      {
+        "key": "risk.score",
+        "value": {
+          "field": "risk_score"
+        }
+      },
+      {
+        "key": "risk.level",
+        "value": {
+          "field": "risk_level"
+        }
+      },
+      {
+        "key": "file.hash.md5",
+        "value": {
+          "field": "md5"
+        }
+      },
+      {
+        "key": "file.hash.sha256",
+        "value": {
+          "field": "sha256"
+        }
+      },
+      {
+        "key": "file.code_signature.subject_name",
+        "value": {
+          "field": "signature_subject"
+        }
+      },
+      {
+        "key": "file.code_signature.status",
+        "value": {
+          "field": "signature_status"
+        }
       }
     ],
     "id": "startup_items_persistence_elastic",
     "interval": "3600",
     "platform": "windows",
-    "query": "SELECT \n  name, \n  path, \n  args, \n  type, \n  source, \n  status, \n  username \nFROM startup_items \nWHERE (\n    (path NOT LIKE 'C:\\\\Windows\\\\System32\\\\%' \n     AND path NOT LIKE 'C:\\\\Windows\\\\SysWOW64\\\\%' \n     AND path NOT LIKE 'C:\\\\Program Files\\\\Windows%' \n     AND path NOT LIKE 'C:\\\\Program Files\\\\Microsoft%') \n    OR path LIKE '%\\\\Users\\\\%\\\\AppData\\\\%' \n    OR path LIKE '%\\\\Temp\\\\%' \n    OR path LIKE '%\\\\Users\\\\Public\\\\%' \n    OR path LIKE '%\\\\ProgramData\\\\%' \n    OR path LIKE '%powershell%' \n    OR path LIKE '%cmd.exe%' \n    OR path LIKE '%wscript%' \n    OR path LIKE '%cscript%'\n  ) \nORDER BY source, name \nLIMIT 100;",
+    "query": "WITH base_data AS (\n  SELECT\n    si.name,\n    si.path,\n    si.args,\n    si.type,\n    si.source,\n    si.status,\n    si.username,\n    h.md5,\n    h.sha256,\n    a.subject_name AS signature_subject,\n    a.issuer_name AS signature_issuer,\n    a.result AS signature_result,\n    CAST((strftime('%s', 'now') - f.ctime) AS INTEGER) / 86400 AS days_since_created,\n    CAST((strftime('%s', 'now') - f.mtime) AS INTEGER) / 86400 AS days_since_modified,\n    datetime(f.ctime, 'unixepoch') AS file_created_timestamp,\n    datetime(f.mtime, 'unixepoch') AS file_modified_timestamp,\n    CASE WHEN p.pid IS NOT NULL THEN 'RUNNING' ELSE 'NOT_RUNNING' END AS execution_status,\n    CASE WHEN si.name LIKE '%.lnk' THEN 'LNK_FILE_NEEDS_PARSING' WHEN si.name LIKE '%.exe' THEN 'EXECUTABLE' WHEN si.name LIKE '%.bat' OR si.name LIKE '%.cmd' THEN 'BATCH_SCRIPT' WHEN si.name LIKE '%.vbs' OR si.name LIKE '%.js' THEN 'SCRIPT' ELSE 'OTHER' END AS file_type,\n    CASE WHEN a.result IS NULL THEN 'unsigned' WHEN a.result = 'trusted' THEN 'trusted' WHEN a.result != 'trusted' THEN 'untrusted' ELSE 'unknown' END AS signature_status,\n    (\n      CASE\n        WHEN si.path LIKE '%\\\\Temp\\\\%' THEN 40\n        WHEN si.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 40\n        WHEN si.path LIKE '%\\\\AppData\\\\Local\\\\%' THEN 35\n        WHEN si.path LIKE '%\\\\AppData\\\\Roaming\\\\%' THEN 30\n        WHEN si.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 30\n        WHEN si.path LIKE '%\\\\ProgramData\\\\%' THEN 20\n        WHEN si.path LIKE '%\\\\Users\\\\%\\\\Downloads\\\\%' THEN 35\n        WHEN si.path LIKE '%\\\\Users\\\\%\\\\Documents\\\\%' THEN 25\n        ELSE 5\n      END +\n      CASE WHEN a.result IS NULL THEN 10 WHEN a.result != 'trusted' THEN 25 ELSE 0 END +\n      CASE WHEN si.path LIKE '%powershell%' THEN 20 WHEN si.path LIKE '%cmd.exe%' THEN 15 WHEN si.path LIKE '%wscript%' OR si.path LIKE '%cscript%' THEN 18 WHEN si.path LIKE '%.bat%' OR si.path LIKE '%.cmd%' THEN 15 WHEN si.path LIKE '%.vbs%' OR si.path LIKE '%.js%' THEN 18 ELSE 0 END +\n      CASE WHEN si.args LIKE '%powershell%' THEN 10 WHEN si.args LIKE '%http://%' OR si.args LIKE '%https://%' THEN 10 WHEN si.args LIKE '%download%' THEN 8 WHEN si.args LIKE '%-enc%' OR si.args LIKE '%-encodedcommand%' THEN 10 WHEN si.args LIKE '%bypass%' THEN 8 ELSE 0 END +\n      CASE WHEN si.type LIKE '%Login Item%' THEN 5 WHEN si.type LIKE '%Startup%' THEN 3 ELSE 0 END +\n      CASE WHEN CAST((strftime('%s', 'now') - f.ctime) AS INTEGER) / 86400 < 1 THEN 15 WHEN CAST((strftime('%s', 'now') - f.ctime) AS INTEGER) / 86400 < 7 THEN 12 WHEN CAST((strftime('%s', 'now') - f.ctime) AS INTEGER) / 86400 < 30 THEN 8 WHEN CAST((strftime('%s', 'now') - f.mtime) AS INTEGER) / 86400 < 7 THEN 8 ELSE 0 END\n    ) AS risk_score\n  FROM startup_items si\n  LEFT JOIN hash h ON h.path = si.path\n  LEFT JOIN authenticode a ON a.path = si.path\n  LEFT JOIN file f ON f.path = si.path\n  LEFT JOIN processes p ON p.path = si.path\n  WHERE (\n    si.path LIKE '%\\\\Users\\\\%\\\\AppData\\\\%'\n    OR si.path LIKE '%\\\\Temp\\\\%'\n    OR si.path LIKE '%\\\\Users\\\\Public\\\\%'\n    OR si.path LIKE '%\\\\ProgramData\\\\%'\n    OR si.path LIKE '%powershell%'\n    OR si.path LIKE '%cmd.exe%'\n    OR si.path LIKE '%wscript%'\n    OR si.path LIKE '%cscript%'\n    OR (\n      si.path NOT LIKE 'C:\\\\Windows\\\\System32\\\\%'\n      AND si.path NOT LIKE 'C:\\\\Windows\\\\SysWOW64\\\\%'\n      AND si.path NOT LIKE 'C:\\\\Program Files\\\\Windows%'\n      AND si.path NOT LIKE 'C:\\\\Program Files\\\\Microsoft%'\n    )\n    OR (a.result IS NOT NULL AND a.result != 'trusted')\n  )\n)\nSELECT\n  name,\n  path,\n  args,\n  type,\n  source,\n  status,\n  username,\n  md5,\n  sha256,\n  signature_subject,\n  signature_issuer,\n  signature_result,\n  days_since_created,\n  days_since_modified,\n  file_created_timestamp,\n  file_modified_timestamp,\n  execution_status,\n  file_type,\n  signature_status,\n  risk_score,\n  CASE WHEN risk_score >= 70 THEN 'CRITICAL' WHEN risk_score >= 50 THEN 'HIGH' WHEN risk_score >= 30 THEN 'MEDIUM' ELSE 'LOW' END AS risk_level,\n  CASE\n    WHEN risk_score >= 70 AND name LIKE '%.lnk' THEN 'CRITICAL: LNK file in suspicious location. Use LECmd.exe to parse: LECmd.exe -f ' || path || '. Check target executable, arguments, and working directory. Isolate host if malicious.'\n    WHEN risk_score >= 70 AND (signature_result IS NOT NULL AND signature_result != 'trusted') THEN 'CRITICAL: Untrusted code signature on startup item. Verify digital signature issuer. Submit hash to threat intelligence. Consider host isolation.'\n    WHEN risk_score >= 70 THEN 'CRITICAL: High-risk startup item detected. Verify legitimacy against approved software list. Check file creation timeline. Analyze binary content. Consider host isolation.'\n    WHEN risk_score >= 50 AND path LIKE '%powershell%' THEN 'HIGH: PowerShell in startup item. Review script content for malicious commands (download, execution, obfuscation). Check arguments for encoded commands.'\n    WHEN risk_score >= 50 THEN 'HIGH: Suspicious startup item. Verify against baseline. Check digital signature if applicable. Review creation timestamp and correlate with user activity.'\n    WHEN risk_score >= 30 THEN 'MEDIUM: Startup item in non-standard location. Verify against approved software list. Monitor for execution and analyze behavior if unknown.'\n    ELSE 'LOW: Log for baseline. Monitor for changes.'\n  END AS analyst_notes,\n  CASE\n    WHEN risk_score >= 50 THEN '1. Parse LNK file if applicable (LECmd.exe) | 2. Hash file and check threat intel (VirusTotal, AlienVault) | 3. Review file system timeline for related activity | 4. Check for DLLs in same directory (DLL hijacking) | 5. Analyze file content/strings | 6. Consider removal and host isolation if malicious'\n    WHEN risk_score >= 30 THEN '1. Verify against approved software list | 2. Check digital signature details | 3. Review creation timestamp and correlate with user activity | 4. Monitor for execution and analyze behavior | 5. Add to baseline if legitimate'\n    ELSE '1. Log for baseline | 2. Monitor for changes | 3. Periodic review as part of audit process'\n  END AS next_steps\nFROM base_data\nORDER BY risk_score DESC, source, name\nLIMIT 100;",
     "updated_at": "2025-11-05T09:19:01.000Z",
     "updated_by": "elastic"
   },
