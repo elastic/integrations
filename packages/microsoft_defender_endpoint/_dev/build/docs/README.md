@@ -100,6 +100,10 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 | High                   | 73               |
 | Critical               | 99               |
 
+## Troubleshooting
+
+- Expiring SAS URLs: The option `SAS Valid Hours` in `vulnerability` data stream controls the duration that the `Shared Access Signature (SAS)` download URLs are valid for. The default value of this option is `1h` i.e., 1 hour, and the maximum allowed value is `6h` i.e., 6 hours. Increase the value of the option `SAS Valid Hours` when you see `error.message` indicates signatures are invalid, or when you notice invalid signature errors inside CEL trace logs.
+
 ## Logs Reference
 
 ### Log
