@@ -1,0 +1,77 @@
+{
+  "attributes": {
+    "created_at": "2025-01-06T12:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Parse systemd services on Linux systems. Provides visibility into systemd service units including: (1) Service identification (unit name, description), (2) Load state (whether unit definition was properly loaded), (3) Activation state (high-level active/inactive status), (4) Sub-state details (low-level unit activation state), (5) Service enablement status (enabled, disabled, masked), (6) Unit file path (source of unit configuration). Detection focuses on: services in unexpected states (loaded but inactive), services with unusual configurations, masked or disabled critical services. Use Cases: System service inventory, service state monitoring, persistence mechanism detection (systemd service-based persistence), unauthorized service installation detection, service misconfiguration identification, compliance auditing for service configurations.",
+    "ecs_mapping": [
+      {
+        "key": "service.name",
+        "value": {
+          "field": "id"
+        }
+      },
+      {
+        "key": "service.state",
+        "value": {
+          "field": "active_state"
+        }
+      },
+      {
+        "key": "file.path",
+        "value": {
+          "field": "fragment_path"
+        }
+      },
+      {
+        "key": "event.category",
+        "value": {
+          "value": [
+            "configuration",
+            "process"
+          ]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": [
+            "info"
+          ]
+        }
+      },
+      {
+        "key": "event.kind",
+        "value": {
+          "value": [
+            "state"
+          ]
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "linux",
+            "systemd",
+            "services",
+            "persistence",
+            "service_enumeration"
+          ]
+        }
+      }
+    ],
+    "id": "services_systemd_linux_elastic",
+    "interval": "3600",
+    "platform": "linux",
+    "query": "SELECT\n  id,\n  load_state,\n  active_state,\n  sub_state,\n  description,\n  unit_file_state,\n  fragment_path\nFROM systemd_units\nWHERE id LIKE '%.service'\nORDER BY active_state, id;",
+    "updated_at": "2025-01-06T12:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.2.0",
+  "id": "osquery_manager-f8b0894b-772d-4242-8e19-dbc5d7ae2e06",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-01-06T12:00:00.000Z",
+  "version": "Wzk2LDJd"
+}
+
