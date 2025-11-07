@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2025-11-07
-**Total Core Artifacts**: 36 available + 4 in progress + 6 not available = 46 total variants
-**Total Queries**: 73 (46 core forensic variants + 27 additional)
-**Completion Rate**: 78.3% (36/46 core artifacts fully supported)
+**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
+**Total Queries**: 30 (3 core forensic variants + 27 additional)
+**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
 
 ---
 
@@ -13,62 +13,62 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 36    | 78.3%      |
-| ⚠️ In Progress (Needs Validation) | 4     | 8.7%       |
+| ✅ Available (Fully Supported) | 0     | 0%         |
+| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
 
 ## Core Forensic Artifacts Coverage
 
-| # | Artifact | ✓ | OS | Query | File | Implementation Completed | Implementation Notes |
-|---|----------|---|----|----|------|--------------------------|----------------------|
-| 1 | AppCompatCache          | ✅ | Win | - | - | ⏳ | shimcache table |
-| 2 | AmCache                 | ❌ | Win | - | - | ❌ | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime |
-| 3 | BITS Jobs Database      | ⚠️ | Win | - | - | ⏳ | Not a native table, but can be queried via windows_eventlog |
-| 4 | Browser URL History     | ⚠️ | Win | - | - | ⏳ | No native table. Can be supported via ATC custom tables |
-| 4a | Browser URL History     | ⚠️ | Linux | - | - | ⏳ | No native table. Can be supported via ATC custom tables |
-| 4b | Browser URL History     | ⚠️ | Mac | - | - | ⏳ | No native table. Can be supported via ATC custom tables |
-| 5 | File Listing            | ✅ | Win | - | - | ⏳ | file and hash tables |
-| 5a | File Listing            | ✅ | Linux | - | - | ⏳ | file and hash tables |
-| 5b | File Listing            | ✅ | Mac | - | - | ⏳ | file and hash tables |
-| 6 | Installed Services      | ✅ | Win | - | - | ⏳ | services table |
-| 6a | Installed Services      | ✅ | Linux | - | - | ⏳ | services table |
-| 6b | Installed Services      | ✅ | Mac | - | - | ⏳ | services table |
-| 7 | Jumplists               | ❌ | Win | - | - | ❌ | Not natively supported — PR #7260 closed due to OLE format complexity |
-| 8 | LNK files               | ✅ | Win | - | - | ⏳ | shortcut_files table (deprecated), file table and recent_files table is an alternative (osquery upgrade needed for recent files) |
-| 9 | ARP Cache               | ✅ | Win | - | - | ⏳ | arp_cache table |
-| 9a | ARP Cache               | ✅ | Linux | - | - | ⏳ | arp_cache table |
-| 9b | ARP Cache               | ✅ | Mac | - | - | ⏳ | arp_cache table |
-| 10 | Disks & Volumes         | ✅ | Win | - | - | ⏳ | disk_info table |
-| 10a | Disks & Volumes         | ✅ | Linux | - | - | ⏳ | disk_info table |
-| 10b | Disks & Volumes         | ✅ | Mac | - | - | ⏳ | disk_info table |
-| 11 | Network Interfaces & IP Configuration | ✅ | Win | - | - | ⏳ | interface_details, interface_addresses, interface_ipv6 |
-| 11a | Network Interfaces & IP Configuration | ✅ | Linux | - | - | ⏳ | interface_details, interface_addresses, interface_ipv6 |
-| 11b | Network Interfaces & IP Configuration | ✅ | Mac | - | - | ⏳ | interface_details, interface_addresses, interface_ipv6 |
-| 12 | NTFS USN Journal        | ✅ | Win | - | - | ⏳ | ntfs_journal_events table |
-| 13 | Open Handles            | ❌ | Win | - | - | ❌ | PR #7835 open; external extension available: EclecticIQ ext |
-| 13a | Open Handles            | ❌ | Linux | - | - | ❌ | PR #7835 open; external extension available: EclecticIQ ext |
-| 13b | Open Handles            | ❌ | Mac | - | - | ❌ | PR #7835 open; external extension available: EclecticIQ ext |
-| 14 | Persistence             | ✅ | Win | - | - | ⏳ | Supported across multiple tables (services, startup_items, scheduled_tasks) |
-| 14a | Persistence             | ✅ | Linux | - | - | ⏳ | Supported across multiple tables (services, startup_items, scheduled_tasks) |
-| 14b | Persistence             | ✅ | Mac | - | - | ⏳ | Supported across multiple tables (services, startup_items, scheduled_tasks) |
-| 15 | PowerShell History      | ✅ | Win | - | - | ⏳ | powershell_events table |
-| 16 | Prefetch Files          | ✅ | Win | - | - | ⏳ | prefetch table |
-| 17 | Process Listing         | ✅ | Win | - | - | ⏳ | processes table |
-| 17a | Process Listing         | ✅ | Linux | - | - | ⏳ | processes table |
-| 17b | Process Listing         | ✅ | Mac | - | - | ⏳ | processes table |
-| 18 | Registry                | ✅ | Win | - | - | ⏳ | registry table |
-| 19 | Shell History           | ✅ | Linux | - | - | ⏳ | shell_history table |
-| 19a | Shell History           | ✅ | Mac | - | - | ⏳ | shell_history table |
-| 20 | Shellbags               | ✅ | Win | - | - | ⏳ | shellbags table |
-| 21 | Tasks                   | ✅ | Win | - | - | ⏳ | scheduled_tasks table |
-| 21a | Tasks                   | ✅ | Linux | - | - | ⏳ | scheduled_tasks table |
-| 21b | Tasks                   | ✅ | Mac | - | - | ⏳ | scheduled_tasks table |
-| 22 | User Assist             | ✅ | Win | - | - | ⏳ | userassist table |
-| 23 | WMI Config & Used Apps  | ✅ | Win | - | - | ⏳ | wmi_cli_event_consumers, wmi_script_event_consumers |
-| 24 | WMI Providers & Filters | ✅ | Win | - | - | ⏳ | wmi_event_filters, wmi_filter_consumer_binding |
-| 25 | MFT                     | ❌ | Win | - | - | ❌ | Not natively supported. Available via Trail of Bits extension |
+| # | Artifact | ✓ | OS | Query | File | Implementation Notes                                                                                                             |
+|---|----------|--|----|-------|------|----------------------------------------------------------------------------------------------------------------------------------|
+| 1 | AppCompatCache          | ⚠️ | Win | -     | -    | shimcache table                                                                                                                  |
+| 2 | AmCache                 | ❌ | Win | -     | -    | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
+| 3 | BITS Jobs Database      | ⚠️ | Win | -     | -    | Not a native table, but can be queried via windows_eventlog                                                                      |
+| 4 | Browser URL History     | ⚠️ | Win | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
+| 4a | Browser URL History     | ⚠️ | Linux | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
+| 4b | Browser URL History     | ⚠️ | Mac | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
+| 5 | File Listing            | ⚠️ | Win | -     | -    | file and hash tables                                                                                                             |
+| 5a | File Listing            | ⚠️ | Linux | -     | -    | file and hash tables                                                                                                             |
+| 5b | File Listing            | ⚠️ | Mac | -     | -    | file and hash tables                                                                                                             |
+| 6 | Installed Services      | ⚠️ | Win | -     | -    | services table                                                                                                                   |
+| 6a | Installed Services      | ⚠️ | Linux | -     | -    | systemd table                                                                                                                    |
+| 6b | Installed Services      | ⚠️ | Mac | -     | -    | launchd table                                                                                                                    |
+| 7 | Jumplists               | ❌ | Win | -     | -    | Not natively supported — PR #7260 closed due to OLE format complexity                                                            |
+| 8 | LNK files               | ⚠️ | Win | -     | -    | shortcut_files table (deprecated), file table and recent_files table is an alternative (osquery upgrade needed for recent files) |
+| 9 | ARP Cache               | ⚠️ | Win | -     | -    | arp_cache table                                                                                                                  |
+| 9a | ARP Cache               | ⚠️ | Linux | -     | -    | arp_cache table                                                                                                                  |
+| 9b | ARP Cache               | ⚠️ | Mac | -     | -    | arp_cache table                                                                                                                  |
+| 10 | Disks & Volumes         | ⚠️ | Win | -     | -    | disk_info table                                                                                                                  |
+| 10a | Disks & Volumes         | ⚠️ | Linux | -     | -    | disk_info table                                                                                                                  |
+| 10b | Disks & Volumes         | ⚠️ | Mac | -     | -    | disk_info table                                                                                                                  |
+| 11 | Network Interfaces & IP Configuration | ⚠️ | Win | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
+| 11a | Network Interfaces & IP Configuration | ⚠️ | Linux | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
+| 11b | Network Interfaces & IP Configuration | ⚠️ | Mac | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
+| 12 | NTFS USN Journal        | ⚠️ | Win | -     | -    | ntfs_journal_events table                                                                                                        |
+| 13 | Open Handles            | ❌ | Win | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
+| 13a | Open Handles            | ❌ | Linux | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
+| 13b | Open Handles            | ❌ | Mac | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
+| 14 | Persistence             | ⚠️ | Win | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
+| 14a | Persistence             | ⚠️ | Linux | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
+| 14b | Persistence             | ⚠️ | Mac | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
+| 15 | PowerShell History      | ⚠️ | Win | -     | -    | powershell_events table                                                                                                          |
+| 16 | Prefetch Files          | ⚠️ | Win | -     | -    | prefetch table                                                                                                                   |
+| 17 | Process Listing         | ⚠️ | Win | -     | -    | processes table                                                                                                                  |
+| 17a | Process Listing         | ⚠️ | Linux | -     | -    | processes table                                                                                                                  |
+| 17b | Process Listing         | ⚠️ | Mac | -     | -    | processes table                                                                                                                  |
+| 18 | Registry                | ⚠️ | Win | -     | -    | registry table                                                                                                                   |
+| 19 | Shell History           | ⚠️ | Linux | -     | -    | shell_history table                                                                                                              |
+| 19a | Shell History           | ⚠️ | Mac | -     | -    | shell_history table                                                                                                              |
+| 20 | Shellbags               | ⚠️ | Win | -     | -    | shellbags table                                                                                                                  |
+| 21 | Tasks                   | ⚠️ | Win | -     | -    | scheduled_tasks table                                                                                                            |
+| 21a | Tasks                   | ⚠️ | Linux | -     | -    | scheduled_tasks table                                                                                                            |
+| 21b | Tasks                   | ⚠️ | Mac | -     | -    | scheduled_tasks table                                                                                                            |
+| 22 | User Assist             | ⚠️ | Win | -     | -    | userassist table                                                                                                                 |
+| 23 | WMI Config & Used Apps  | ⚠️ | Win | -     | -    | wmi_cli_event_consumers, wmi_script_event_consumers                                                                              |
+| 24 | WMI Providers & Filters | ⚠️ | Win | -     | -    | wmi_event_filters, wmi_filter_consumer_binding                                                                                   |
+| 25 | MFT                     | ❌ | Win | -     | -    | Not natively supported. Available via Trail of Bits extension                                                                    |
 
 ---
 
@@ -152,40 +152,40 @@ While some artifacts are not directly available, the existing queries provide st
 ## Artifacts by Category
 
 ### Execution Artifacts
-- ✅ AppCompatCache (Windows: shimcache table)
-- ✅ PowerShell History (Windows: powershell_events table)
-- ✅ Prefetch Files (Windows: prefetch table)
+- ⚠️ AppCompatCache (Windows: shimcache table)
+- ⚠️ PowerShell History (Windows: powershell_events table)
+- ⚠️ Prefetch Files (Windows: prefetch table)
 - ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
 
 ### Persistence Mechanisms
-- ✅ Installed Services (All platforms: services table)
-- ✅ Persistence (All platforms: multiple tables)
-- ✅ Registry (Windows: registry table)
-- ✅ Tasks (All platforms: scheduled_tasks table)
-- ✅ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
-- ✅ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
+- ⚠️ Installed Services (All platforms: services table)
+- ⚠️ Persistence (All platforms: multiple tables)
+- ⚠️ Registry (Windows: registry table)
+- ⚠️ Tasks (All platforms: scheduled_tasks table)
+- ⚠️ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
+- ⚠️ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
 - ⚠️ BITS Jobs Database (Windows: via windows_eventlog)
 
 ### User Activity
-- ✅ LNK files (Windows: shortcut_files, file, recent_files tables)
-- ✅ Shell History (Linux/Mac: shell_history table)
-- ✅ Shellbags (Windows: shellbags table)
-- ✅ User Assist (Windows: userassist table)
+- ⚠️ LNK files (Windows: shortcut_files, file, recent_files tables)
+- ⚠️ Shell History (Linux/Mac: shell_history table)
+- ⚠️ Shellbags (Windows: shellbags table)
+- ⚠️ User Assist (Windows: userassist table)
 - ⚠️ Browser URL History (All platforms: via ATC custom tables)
 - ❌ Jumplists (Not Available - Use Shellbags + LNK Files as alternatives)
 
 ### File System/Forensics
-- ✅ File Listing (All platforms: file and hash tables)
-- ✅ NTFS USN Journal (Windows: ntfs_journal_events table)
+- ⚠️ File Listing (All platforms: file and hash tables)
+- ⚠️ NTFS USN Journal (Windows: ntfs_journal_events table)
 - ❌ MFT (Not Available - Use NTFS USN Journal as alternative or Trail of Bits extension)
 
 ### Network/C2 Indicators
-- ✅ ARP Cache (All platforms: arp_cache table)
-- ✅ Network Interfaces & IP Configuration (All platforms: interface_details, interface_addresses, interface_ipv6)
+- ⚠️ ARP Cache (All platforms: arp_cache table)
+- ⚠️ Network Interfaces & IP Configuration (All platforms: interface_details, interface_addresses, interface_ipv6)
 
 ### System Information
-- ✅ Disks & Volumes (All platforms: disk_info table)
-- ✅ Process Listing (All platforms: processes table)
+- ⚠️ Disks & Volumes (All platforms: disk_info table)
+- ⚠️ Process Listing (All platforms: processes table)
 - ❌ Open Handles (Not Available - PR #7835 open, EclecticIQ extension available)
 
 ---
