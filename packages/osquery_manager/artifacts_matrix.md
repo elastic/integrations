@@ -4,7 +4,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2025-11-07
 **Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
+**Total Queries**: 27 (1 core forensic variant + 26 additional)
 **Completion Rate**: 2.2% (1/46 core artifacts fully supported)
 
 ---
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 1     | 2.2%       |
+| ⚠️ In Progress (Needs Validation) | 39    | 84.8%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -37,9 +37,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 6b | Installed Services      | ⚠️ | Mac | -     | -    | launchd table                                                                                                                    |
 | 7 | Jumplists               | ❌ | Win | -     | -    | Not natively supported — PR #7260 closed due to OLE format complexity                                                            |
 | 8 | LNK files               | ⚠️ | Win | -     | -    | shortcut_files table (deprecated), file table and recent_files table is an alternative (osquery upgrade needed for recent files) |
-| 9 | ARP Cache               | ⚠️ | Win | -     | -    | arp_cache table                                                                                                                  |
-| 9a | ARP Cache               | ⚠️ | Linux | -     | -    | arp_cache table                                                                                                                  |
-| 9b | ARP Cache               | ⚠️ | Mac | -     | -    | arp_cache table                                                                                                                  |
+| 9 | ARP Cache (Enriched)    | ✅ | Win | arp_cache_elastic | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-11ef-89c6-331eb0db6d02.json) | Enriched ARP cache with local interface details (local IP, local MAC). Combines arp_cache with interface_details and interface_addresses tables. Equivalent to Windows.Network.ArpCache artifact. Includes ECS mappings for destination.ip, destination.mac, host.ip, host.mac, network.name, network.type |
 | 10 | Disks & Volumes         | ⚠️ | Win | -     | -    | disk_info table                                                                                                                  |
 | 10a | Disks & Volumes         | ⚠️ | Linux | -     | -    | disk_info table                                                                                                                  |
 | 10b | Disks & Volumes         | ⚠️ | Mac | -     | -    | disk_info table                                                                                                                  |
@@ -180,7 +178,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ❌ MFT (Not Available - Use NTFS USN Journal as alternative or Trail of Bits extension)
 
 ### Network/C2 Indicators
-- ⚠️ ARP Cache (All platforms: arp_cache table)
+- ✅ ARP Cache Enriched (Windows: arp_cache + interface_details + interface_addresses tables with joins, includes ECS mappings)
 - ⚠️ Network Interfaces & IP Configuration (All platforms: interface_details, interface_addresses, interface_ipv6)
 
 ### System Information
