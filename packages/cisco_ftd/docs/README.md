@@ -1,217 +1,99 @@
-# Cisco FTD Integration
+# Cisco FTD Integration for Elastic
 
-This integration is for [Cisco](https://www.cisco.com/c/en/us/support/security/index.html) Firepower Threat Defence (FTD) device's logs. The package processes syslog messages from Cisco Firepower devices.
+## Overview
 
-It includes the following datasets for receiving logs over syslog or read from a file:
+The Cisco Firepower Threat Defense (FTD) integration for Elastic collects logs from Cisco FTD devices, enabling comprehensive monitoring, threat detection, and security analysis within the Elastic Stack. This integration parses syslog messages from Cisco FTD, providing real-time visibility into network traffic, security events, and system activity. By centralizing these logs, organizations can enhance their security posture, streamline incident response, and gain deep insights into their network's operations.
 
-- `log` dataset: supports Cisco Firepower Threat Defense (FTD) logs.
+### Compatibility
 
-## Configuration
+This integration is compatible with Cisco FTD devices that support syslog export. It requires Elastic Stack version 8.11.0 or higher.
 
-Cisco provides a range of Firepower devices, which may have different configuration steps. We recommend users navigate to the device specific configuration page, and search for/go to the "FTD Logging" or "Configure Logging on FTD" page for the specific device.
+### How it works
 
-### Input Types
+The integration works by receiving syslog data sent from a Cisco FTD device. Elastic Agent can be configured to listen for these logs on a specific TCP or UDP port, or to read them directly from a log file. Once received, the agent processes and parses the logs before sending them to Elasticsearch.
 
-The integration supports three input types:
+## What data does this integration collect?
 
-1. **TCP Input**: Collects logs via TCP syslog. Configure the FTD device to send syslog messages to the Elastic Agent host on the specified TCP port (default: 9003).
+The Cisco FTD integration collects logs containing detailed information about:
+*   **Connection Events**: Firewall traffic, network address translation (NAT), and connection summaries.
+*   **Security Events**: Intrusion detection and prevention (IPS/IDS) alerts, file and malware protection events, and security intelligence data.
+*   **System Events**: Device health, system status, and configuration changes.
 
-2. **UDP Input**: Collects logs via UDP syslog. Configure the FTD device to send syslog messages to the Elastic Agent host on the specified UDP port (default: 9003). UDP provides lower latency but less reliability than TCP.
+### Supported use cases
 
-3. **Logfile Input**: Reads logs from local log files. Useful for batch processing or when syslog forwarding is not available. Specify the path to the log file(s) on the system.
+- **Real-time Threat Detection**: Use Elastic SIEM to identify and respond to threats like malware, intrusions, and policy violations.
+- **Network Traffic Analysis**: Visualize and analyze network traffic patterns to identify anomalies, troubleshoot connectivity issues, and optimize performance.
+- **Security Auditing and Compliance**: Maintain a searchable archive of all firewall activity to support compliance requirements and forensic investigations.
+- **Operational Monitoring**: Track the health and status of your FTD devices to ensure they are functioning correctly.
 
-### Configuration Parameters
+## What do I need to use this integration?
 
-- **Host and Port**: Configure the listening host (default: localhost) and port (default: 9003) for TCP/UDP inputs.
-- **Timezone**: IANA timezone or offset (e.g., `+0200`) for interpreting syslog timestamps without timezone information (default: UTC).
-- **Preserve Original Event**: When enabled, stores the raw syslog message in the `event.original` field.
-- **Internal/External Zones**: Configure zone names to help determine network direction. Private CIDR ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) can be used as fallback.
-- **Consider Private Networks as Internal**: When enabled, treats private CIDR ranges as internal networks for direction detection (default: true).
+Elastic Agent must be installed on a host that is reachable by your Cisco FTD device over the network. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-## Handling security fields
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
-Due to unknown amount of sub-fields present under the field `cisco.ftd.security`, it is mapped as [`flattened` datatype](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html). This limited certain operations, such as aggregations, to be performed on sub-fields of `cisco.ftd.security`. See [flattened datatype limitations](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html#supported-operations) for more details.
+## How do I deploy this integration?
 
-After analyzing more example logs, starting Cisco FTD integration version `2.21.0`, a new field `cisco.ftd.security_event` is added with a known set of fields moved over from `cisco.ftd.security`. With this, users can now perform aggregations on sub-fields of `cisco.ftd.security_event`. In addition to already moved fields, if users desire to add more fields onto `cisco.ftd.security_event` from `cisco.ftd.security`, they can make use of [`@custom` ingest pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-fleet-elastic-agent) that is automatically applied on every document at the end of the existing default pipeline.
+### Onboard / configure
 
-To create and [add processors](https://www.elastic.co/guide/en/elasticsearch/reference/current/processors.html) to this `@custom` pipeline for Cisco FTD, users must follow below steps:
-1. In Kibana, navigate to `Stack Management -> Ingest Pipelines`.
-2. Click `Create Pipeline -> New Pipeline`.
-3. Add `Name` as `logs-cisco_ftd.log@custom` and an optional `Description`.
-4. Add processors to rename appropriate fields from `cisco.ftd.security` to `cisco.ftd.security_event`.
-    - Under `Processors`, click `Add a processor`.
-    - Say, you want to move field `threat_name` from `cisco.ftd.security` into `cisco.ftd.security_event`, then add a `Rename` processor with `Field` as `cisco.ftd.security.threat_name` and `Target field` as `cisco.ftd.security_event.threat_name`.
-    - Optionally add `Convert` processor to convert the datatype of the renamed field under `cisco.ftd.security_event`.
+#### 1. Configure Cisco FTD to send Syslog Data
 
-Now that the fields are available under `cisco.ftd.security_event`, users can perform aggregations of sub-fields under `cisco.ftd.security_event` as desired.
+You must configure your Cisco FTD device to forward syslog messages to the Elastic Agent. The specific steps may vary depending on whether you are using Firepower Device Manager (FDM) or Firepower Management Center (FMC).
 
-## Logs
+1.  **Define the Elastic Agent as a Syslog Server**:
+    *   In your FDM or FMC interface, navigate to the syslog configuration section (e.g., **Objects > Syslog Servers** or **Device > System Settings > Logging**).
+    *   Add a new syslog server, providing the IP address and port of the machine where the Elastic Agent is running.
+    *   Ensure the protocol (TCP or UDP) matches the input you configure in the integration.
 
-### FTD
+2.  **Configure Logging Rules**:
+    *   Create or edit a logging rule to send specific event classes to the newly configured syslog server.
+    *   It is recommended to send all relevant message IDs to ensure comprehensive data collection.
 
-The `log` dataset collects the Cisco Firepower Threat Defense (FTD) logs.
+3.  **Deploy Changes**:
+    *   Save and deploy your configuration changes to the FTD device.
 
-An example event for `log` looks as following:
+For detailed, step-by-step instructions, refer to the official Cisco documentation, such as [Configure Logging on FTD](https://www.cisco.com/c/en/us/td/docs/security/firepower/70/fdm/fptd-fdm-config-guide-700/fptd-fdm-logging.html).
 
-```json
-{
-    "@timestamp": "2019-08-16T09:39:02.000Z",
-    "agent": {
-        "ephemeral_id": "477973c4-b380-4791-ad68-919bc71782eb",
-        "id": "dc57df32-adfa-4d1e-9386-d4519fc2d1e9",
-        "name": "elastic-agent-79310",
-        "type": "filebeat",
-        "version": "8.18.0"
-    },
-    "cisco": {
-        "ftd": {
-            "rule_name": "malware-and-file-policy",
-            "security": {
-                "file_storage_status": "Not Stored (Disposition Was Pending)",
-                "threat_name": "Win.Ransomware.Eicar::95.sbx.tg"
-            },
-            "security_event": {
-                "application_protocol": "HTTP",
-                "client": "cURL",
-                "dst_ip": "81.2.69.144",
-                "dst_port": 80,
-                "file_action": "Malware Cloud Lookup",
-                "file_direction": "Download",
-                "file_name": "eicar_com.zip",
-                "file_policy": "malware-and-file-policy",
-                "file_sandbox_status": "File Size Is Too Small",
-                "file_sha256": "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad",
-                "file_size": 184,
-                "file_type": "ZIP",
-                "first_packet_second": "2019-08-16T09:39:02Z",
-                "protocol": "tcp",
-                "sha_disposition": "Unavailable",
-                "spero_disposition": "Spero detection not performed on file",
-                "src_ip": "10.0.1.20",
-                "src_port": 46004,
-                "uri": "http://www.eicar.org/download/eicar_com.zip",
-                "user": "No Authentication Required"
-            },
-            "threat_category": "Win.Ransomware.Eicar::95.sbx.tg"
-        }
-    },
-    "data_stream": {
-        "dataset": "cisco_ftd.log",
-        "namespace": "84072",
-        "type": "logs"
-    },
-    "destination": {
-        "address": "81.2.69.144",
-        "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
-            },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
-        },
-        "ip": "81.2.69.144",
-        "port": 80
-    },
-    "ecs": {
-        "version": "8.17.0"
-    },
-    "elastic_agent": {
-        "id": "dc57df32-adfa-4d1e-9386-d4519fc2d1e9",
-        "snapshot": false,
-        "version": "8.18.0"
-    },
-    "event": {
-        "action": "malware-detected",
-        "agent_id_status": "verified",
-        "category": [
-            "malware",
-            "file"
-        ],
-        "code": "430005",
-        "dataset": "cisco_ftd.log",
-        "ingested": "2025-05-20T10:32:02Z",
-        "kind": "event",
-        "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
-        "severity": 1,
-        "start": "2019-08-16T09:39:02Z",
-        "timezone": "UTC",
-        "type": [
-            "info"
-        ]
-    },
-    "file": {
-        "hash": {
-            "sha256": "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad"
-        },
-        "name": "eicar_com.zip",
-        "size": 184
-    },
-    "host": {
-        "hostname": "firepower"
-    },
-    "input": {
-        "type": "udp"
-    },
-    "log": {
-        "level": "alert",
-        "source": {
-            "address": "192.168.249.3:51934"
-        }
-    },
-    "network": {
-        "application": "curl",
-        "community_id": "1:jk2uwniJ2oCG0t73HeZ9w8gtA8E=",
-        "direction": "outbound",
-        "iana_number": "6",
-        "protocol": "http",
-        "transport": "tcp"
-    },
-    "observer": {
-        "hostname": "firepower",
-        "product": "ftd",
-        "type": "idps",
-        "vendor": "Cisco"
-    },
-    "related": {
-        "hash": [
-            "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad"
-        ],
-        "hosts": [
-            "firepower"
-        ],
-        "ip": [
-            "10.0.1.20",
-            "81.2.69.144"
-        ]
-    },
-    "rule": {
-        "ruleset": "malware-and-file-policy"
-    },
-    "source": {
-        "address": "10.0.1.20",
-        "ip": "10.0.1.20",
-        "port": 46004
-    },
-    "tags": [
-        "preserve_original_event",
-        "private_is_internal",
-        "cisco-ftd",
-        "forwarded"
-    ],
-    "url": {
-        "domain": "www.eicar.org",
-        "extension": "zip",
-        "original": "http://www.eicar.org/download/eicar_com.zip",
-        "path": "/download/eicar_com.zip",
-        "scheme": "http"
-    }
-}
-```
+#### 2. Add the Cisco FTD Integration in Elastic
+
+1.  In Kibana, navigate to **Management > Integrations**.
+2.  In the search bar, enter **Cisco FTD**.
+3.  Click the integration to see more details and then click **Add integration**.
+4.  Configure the integration settings. You must select the input method that matches your Cisco FTD configuration (TCP, UDP, or log file).
+    *   **For TCP/UDP**: Specify the `host` and `port` where the Elastic Agent should listen for syslog messages. This must match the destination you configured on your FTD device.
+    *   **For Log File**: Provide the file `paths` that the agent should monitor.
+5.  Click **Save and continue** to add the integration policy to an Elastic Agent.
+
+### Validation
+
+To validate that the integration is working, navigate to the **Discover** tab in Kibana. Filter for the `cisco_ftd.log` dataset (`data_stream.dataset : "cisco_ftd.log"`) and verify that logs from your FTD device are being ingested. You can also check the pre-built dashboards for this integration by searching for "Cisco FTD" in the **Dashboards** section.
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Handling `security` fields
+
+A field named `cisco.ftd.security` contains a variable number of sub-fields, which is mapped as a [`flattened` datatype](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html). This mapping limits certain operations, such as aggregations, on its sub-fields.
+
+To enable aggregations on common security-related fields, the integration automatically moves a known set of fields from `cisco.ftd.security` to a new field, `cisco.ftd.security_event`. If you need to perform aggregations on additional fields within `cisco.ftd.security`, you can create a custom ingest pipeline to move them.
+
+To create this custom pipeline:
+1.  In Kibana, navigate to **Stack Management > Ingest Pipelines**.
+2.  Click **Create Pipeline > New Pipeline**.
+3.  Set the `Name` to `logs-cisco_ftd.log@custom`.
+4.  Add a **Rename** processor:
+    *   Set `Field` to the source field, e.g., `cisco.ftd.security.threat_name`.
+    *   Set `Target field` to the destination, e.g., `cisco.ftd.security_event.threat_name`.
+5.  Add more processors as needed and save the pipeline. This `@custom` pipeline will be automatically applied to all incoming Cisco FTD logs.
+
+## Reference
+
+### log
+
+The `log` data stream collects logs from Cisco Firepower Threat Defense (FTD) devices.
+
+#### log fields
 
 **Exported fields**
 
@@ -550,80 +432,247 @@ An example event for `log` looks as following:
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 
 
-## Use Cases
+#### log sample event
 
-- **Network Security Monitoring**: Monitor firewall events, access control rule matches, and security policy violations
-- **Threat Detection**: Detect malware, botnets, and other security threats through file analysis and threat intelligence
-- **Compliance Reporting**: Track network access, user authentication, and security events for compliance requirements
-- **VPN Monitoring**: Monitor VPN connections, user authentication, and session management
-- **SSL/TLS Inspection**: Track SSL/TLS inspection events and policy enforcement
-- **URL Filtering**: Monitor web application usage, URL categories, and web filtering policies
-- **DNS Monitoring**: Track DNS queries and responses for security analysis
-- **Network Flow Analysis**: Analyze network connections, traffic patterns, and bandwidth usage
+An example event for `log` looks as following:
 
-## Event Types
+```json
+{
+    "@timestamp": "2019-08-16T09:39:02.000Z",
+    "agent": {
+        "ephemeral_id": "477973c4-b380-4791-ad68-919bc71782eb",
+        "id": "dc57df32-adfa-4d1e-9386-d4519fc2d1e9",
+        "name": "elastic-agent-79310",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "cisco": {
+        "ftd": {
+            "rule_name": "malware-and-file-policy",
+            "security": {
+                "file_storage_status": "Not Stored (Disposition Was Pending)",
+                "threat_name": "Win.Ransomware.Eicar::95.sbx.tg"
+            },
+            "security_event": {
+                "application_protocol": "HTTP",
+                "client": "cURL",
+                "dst_ip": "81.2.69.144",
+                "dst_port": 80,
+                "file_action": "Malware Cloud Lookup",
+                "file_direction": "Download",
+                "file_name": "eicar_com.zip",
+                "file_policy": "malware-and-file-policy",
+                "file_sandbox_status": "File Size Is Too Small",
+                "file_sha256": "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad",
+                "file_size": 184,
+                "file_type": "ZIP",
+                "first_packet_second": "2019-08-16T09:39:02Z",
+                "protocol": "tcp",
+                "sha_disposition": "Unavailable",
+                "spero_disposition": "Spero detection not performed on file",
+                "src_ip": "10.0.1.20",
+                "src_port": 46004,
+                "uri": "http://www.eicar.org/download/eicar_com.zip",
+                "user": "No Authentication Required"
+            },
+            "threat_category": "Win.Ransomware.Eicar::95.sbx.tg"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_ftd.log",
+        "namespace": "84072",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "81.2.69.144",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.144",
+        "port": 80
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "dc57df32-adfa-4d1e-9386-d4519fc2d1e9",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "malware-detected",
+        "agent_id_status": "verified",
+        "category": [
+            "malware",
+            "file"
+        ],
+        "code": "430005",
+        "dataset": "cisco_ftd.log",
+        "ingested": "2025-05-20T10:32:02Z",
+        "kind": "event",
+        "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
+        "severity": 1,
+        "start": "2019-08-16T09:39:02Z",
+        "timezone": "UTC",
+        "type": [
+            "info"
+        ]
+    },
+    "file": {
+        "hash": {
+            "sha256": "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad"
+        },
+        "name": "eicar_com.zip",
+        "size": 184
+    },
+    "host": {
+        "hostname": "firepower"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "alert",
+        "source": {
+            "address": "192.168.249.3:51934"
+        }
+    },
+    "network": {
+        "application": "curl",
+        "community_id": "1:jk2uwniJ2oCG0t73HeZ9w8gtA8E=",
+        "direction": "outbound",
+        "iana_number": "6",
+        "protocol": "http",
+        "transport": "tcp"
+    },
+    "observer": {
+        "hostname": "firepower",
+        "product": "ftd",
+        "type": "idps",
+        "vendor": "Cisco"
+    },
+    "related": {
+        "hash": [
+            "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad"
+        ],
+        "hosts": [
+            "firepower"
+        ],
+        "ip": [
+            "10.0.1.20",
+            "81.2.69.144"
+        ]
+    },
+    "rule": {
+        "ruleset": "malware-and-file-policy"
+    },
+    "source": {
+        "address": "10.0.1.20",
+        "ip": "10.0.1.20",
+        "port": 46004
+    },
+    "tags": [
+        "preserve_original_event",
+        "private_is_internal",
+        "cisco-ftd",
+        "forwarded"
+    ],
+    "url": {
+        "domain": "www.eicar.org",
+        "extension": "zip",
+        "original": "http://www.eicar.org/download/eicar_com.zip",
+        "path": "/download/eicar_com.zip",
+        "scheme": "http"
+    }
+}
+```
 
-The integration processes various Cisco FTD event types including:
 
-- **Security Events**: Malware detection, file transfers, threat intelligence matches
-- **Access Control Events**: Rule matches, connection allows/blocks, policy decisions
-- **VPN Events**: Connection establishment, termination, user authentication (AAA)
-- **SSL/TLS Events**: SSL inspection, certificate validation, policy enforcement
-- **DNS Events**: DNS queries, responses, and filtering
-- **System Events**: Failover, updates, configuration changes
-- **File Events**: File uploads/downloads, file analysis results, sandbox status
+### Inputs used
+These inputs can be used with this integration:
+<details>
+<summary>logfile</summary>
 
-## Field Mappings
+## Setup
+For more details about the logfile input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-log).
 
-The integration maps Cisco FTD syslog messages to Elastic Common Schema (ECS) fields:
+### Collecting logs from logfile
 
-- Network fields: `source.ip`, `destination.ip`, `source.port`, `destination.port`, `network.protocol`, `network.transport`
-- Event fields: `event.action`, `event.category`, `event.type`, `event.severity`, `event.code`
-- File fields: `file.name`, `file.hash.sha256`, `file.size`, `file.type`
-- URL fields: `url.original`, `url.domain`, `url.path`, `url.scheme`
-- User fields: `user.name`, `source.user.name`, `destination.user.name`
-- Observer fields: `observer.hostname`, `observer.product`, `observer.vendor`, `observer.type`
+To collect logs via logfile, select **Collect logs via the logfile input** and configure the following parameter:
 
-Cisco-specific fields are prefixed with `cisco.ftd.*` and include:
+- Paths: List of glob-based paths to crawl and fetch log files from. Supports glob patterns like
+  `/var/log/*.log` or `/var/log/*/*.log` for subfolder matching. Each file found starts a
+  separate harvester.
+</details>
+<details>
+<summary>tcp</summary>
 
-- `cisco.ftd.message_id`: The Cisco FTD message identifier
-- `cisco.ftd.rule_name`: Access Control List rule name
-- `cisco.ftd.security_event.*`: Structured security event fields
-- `cisco.ftd.security.*`: Flattened security fields (for unknown/variable fields)
-- `cisco.ftd.threat_category`: Threat category (virus, botnet, trojan, etc.)
-- `cisco.ftd.threat_level`: Threat level (very-low, low, moderate, high, very-high)
+## Setup
 
-## Troubleshooting
+For more details about the TCP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp).
 
-### No Data Appearing
+### Collecting logs from TCP
 
-- Verify Elastic Agent is running and healthy
-- Check network connectivity between FTD device and Elastic Agent
-- Verify syslog server configuration on FTD device matches Elastic Agent host/port
-- Check firewall rules allow syslog traffic
-- Review Elastic Agent logs for connection errors
+To collect logs via TCP, select **Collect logs via TCP** and configure the following parameters:
 
-### Parsing Errors
+**Required Settings:**
+- Host
+- Port
 
-- Check `event.original` field to see the raw syslog message
-- Verify FTD device is sending logs in expected syslog format
-- Review Elastic Agent logs for parsing error details
-- Ensure FTD device software version is compatible with the integration
+**Common Optional Settings:**
+- Max Message Size - Maximum size of incoming messages
+- Max Connections - Maximum number of concurrent connections
+- Timeout - How long to wait for data before closing idle connections
+- Line Delimiter - Character(s) that separate log messages
 
-### Incorrect Timestamps
+## SSL/TLS Configuration
 
-- Configure the `tz_offset` parameter in the integration settings
-- Use IANA timezone format (e.g., "America/New_York") or offset format (e.g., "+0500")
-- Verify FTD device timezone settings match your configuration
+To enable encrypted connections, configure the following SSL settings:
 
-### Network Direction Issues
+**SSL Settings:**
+- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
+- Certificate Key - Path to the private key file (`.key`)
+- Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
+- Client Authentication - Require client certificates (`none`, `optional`, or `required`)
+- Supported Protocols - TLS versions to support (e.g., `TLSv1.2`, `TLSv1.3`)
 
-- Configure internal and external zones in the integration settings
-- Ensure zone names match exactly with FTD device zone configuration
-- Verify `private_is_internal` setting matches your network topology
+**Example SSL Configuration:**
+```yaml
+ssl.enabled: true
+ssl.certificate: "/path/to/server.crt"
+ssl.key: "/path/to/server.key"
+ssl.certificate_authorities: ["/path/to/ca.crt"]
+ssl.client_authentication: "optional"
+```
+</details>
+<details>
+<summary>udp</summary>
 
-## Additional Resources
+## Setup
 
-- [Cisco Firepower Threat Defense Documentation](https://www.cisco.com/c/en/us/support/security/firepower-threat-defense/products-installation-and-configuration-guides-list.html)
-- [Elastic Integrations Documentation](https://www.elastic.co/guide/en/integrations/index.html)
-- [Elastic Agent Documentation](https://www.elastic.co/guide/en/fleet/current/index.html)
+For more details about the UDP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp).
+
+### Collecting logs from UDP
+
+To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of UDP packets to accept (default: 10KB, max: 64KB)
+- Read Buffer - UDP socket read buffer size for handling bursts of messages
+- Read Timeout - How long to wait for incoming packets before checking for shutdown
+</details>
+
