@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2025-11-07
-**Total Core Artifacts**: 4 available + 36 in progress + 6 not available = 46 total variants
-**Total Queries**: 33 (6 core forensic variants + 27 additional)
-**Completion Rate**: 8.7% (4/46 core artifacts fully supported)
+**Total Core Artifacts**: 3 available + 37 in progress + 6 not available = 46 total variants
+**Total Queries**: 31 (1 core browser history query + 30 additional)
+**Completion Rate**: 6.5% (3/46 core artifact variants fully supported: Browser URL History on Windows, macOS, Linux)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 4     | 8.7%       |
-| ⚠️ In Progress (Needs Validation) | 36    | 78.3%      |
+| ✅ Available (Fully Supported) | 3     | 6.5%       |
+| ⚠️ In Progress (Needs Validation) | 37    | 80.4%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -26,9 +26,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 1 | AppCompatCache          | ⚠️ | Win | -     | -    | shimcache table                                                                                                                  |
 | 2 | AmCache                 | ❌ | Win | -     | -    | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
 | 3 | BITS Jobs Database      | ⚠️ | Win | -     | -    | Not a native table, but can be queried via windows_eventlog                                                                      |
-| 4 | Browser URL History     | ✅ | Win | browser_history_windows_elastic | [b352f3c9](kibana/osquery_saved_query/osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874.json) | ATC configuration required. Chrome only by default. Extendable to Edge, Brave, Opera. See [ATC Setup Guide](docs/browser_history_atc_setup.md) |
-| 4a | Browser URL History     | ✅ | Linux | browser_history_linux_elastic | [d160e647](kibana/osquery_saved_query/osquery_manager-d160e647-90e7-4a25-8787-528d6861e6bb.json) | ATC configuration required. Chrome only by default. Extendable to Chromium, Firefox, Brave, Opera. See [ATC Setup Guide](docs/browser_history_atc_setup.md) |
-| 4b | Browser URL History     | ✅ | Mac | browser_history_darwin_elastic | [2b6b4890](kibana/osquery_saved_query/osquery_manager-2b6b4890-bc6b-479a-88be-859b8852e506.json) | ATC configuration required. Chrome only by default. Extendable to Brave, Opera. See [ATC Setup Guide](docs/browser_history_atc_setup.md) |
+| 4 | Browser URL History     | ✅ | All | browser_history_elastic | [b352f3c9](kibana/osquery_saved_query/osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874.json) | Elastic osquery extension required (osquerybeat). Cross-platform (Windows, macOS, Linux). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration needed. See [Setup Guide](docs/browser_history_setup.md) |
 | 5 | File Listing            | ⚠️ | Win | -     | -    | file and hash tables                                                                                                             |
 | 5a | File Listing            | ⚠️ | Linux | -     | -    | file and hash tables                                                                                                             |
 | 5b | File Listing            | ⚠️ | Mac | -     | -    | file and hash tables                                                                                                             |
@@ -125,7 +123,7 @@ The following artifacts cannot be queried with standard osquery and require exte
 
 | # | Artifact | Status | Notes |
 |:-:|----------|:------:|-------|
-| 1 | Browser URL History (All Platforms) | ✅ | **NOW AVAILABLE**: Full ATC implementation with 3 OS-specific queries (Windows, macOS, Linux). Chrome by default, extendable to Edge, Brave, Opera, Firefox. See [browser_history_atc_setup.md](docs/browser_history_atc_setup.md) for configuration |
+| 1 | Browser URL History (All Platforms) | ✅ | **FULLY AVAILABLE**: Native `browser_history` table via Elastic osquery extension (osquerybeat). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration required. See [browser_history_setup.md](docs/browser_history_setup.md) |
 | 2 | BITS Jobs Database (Windows) | ⚠️ | Not a native table, but can be queried via windows_eventlog table |
 
 ### Alternative Coverage
@@ -133,7 +131,7 @@ The following artifacts cannot be queried with standard osquery and require exte
 While some artifacts are not directly available, the existing queries provide strong coverage through related artifacts:
 
 **Execution Tracking**: Use Prefetch + AppCompatCache (shimcache) + File Listing + Process Listing instead of AmCache
-**User Activity**: Use Shellbags + LNK Files + Recent Files + **Browser History via ATC (NEW)** instead of Jumplists
+**User Activity**: Use Shellbags + LNK Files + Recent Files + **Browser History via Elastic osquery extension (UPDATED)** instead of Jumplists
 **File System Monitoring**: Use NTFS USN Journal + File Listing with Hashes instead of MFT
 **Resource Access**: Use Network Connections (process_open_sockets) + Process Listing instead of Open Handles
 
@@ -171,7 +169,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Shell History (Linux/Mac: shell_history table)
 - ⚠️ Shellbags (Windows: shellbags table)
 - ⚠️ User Assist (Windows: userassist table)
-- ✅ **Browser URL History (All platforms: via ATC custom tables - Chrome by default, extendable)** - **NEW**
+- ✅ **Browser URL History (All platforms: Elastic osquery extension `browser_history` table - Multi-browser support)** - **UPDATED**
 - ❌ Jumplists (Not Available - Use Shellbags + LNK Files + Browser History as alternatives)
 
 ### File System/Forensics
