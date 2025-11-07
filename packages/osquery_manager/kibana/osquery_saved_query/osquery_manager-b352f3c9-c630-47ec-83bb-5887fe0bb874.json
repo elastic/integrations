@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-11-07T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Collects browser history from all supported browsers across all platforms using the Elastic osquery extension. IMPORTANT: Requires the Elastic osquery extension (osquerybeat). Automatically discovers and queries Chrome, Edge, Firefox, and Safari browser histories without ATC configuration. Returns URL history with visit timestamps, page titles, browser names, user profiles, and navigation context. Works on Windows, macOS, and Linux.",
+        "ecs_mapping": [
+            {
+                "key": "url.full",
+                "value": {
+                    "field": "url"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "field": "title"
+                }
+            },
+            {
+                "key": "user_agent.name",
+                "value": {
+                    "field": "browser"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "user"
+                }
+            },
+            {
+                "key": "url.domain",
+                "value": {
+                    "field": "domain"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": "web"
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": "info"
+                }
+            }
+        ],
+        "id": "browser_history_elastic",
+        "interval": "3600",
+        "platform": "linux,darwin,windows",
+        "query": "-- Browser history from Elastic osquery extension\n-- Supports: Chrome, Edge, Firefox, Safari\n-- Returns last 7 days of browsing activity\nSELECT\n  datetime,\n  url,\n  title,\n  browser,\n  user,\n  domain,\n  transition_type\nFROM browser_history\nWHERE timestamp > (strftime('%s', 'now') - 604800)\nORDER BY timestamp DESC;",
+        "updated_at": "2025-11-07T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-07T00:00:00.000Z",
+    "version": "WzEsMV0="
+}
