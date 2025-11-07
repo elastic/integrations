@@ -1,11 +1,18 @@
 ---
-description: Pipeline for processing BeyondInsight and Password Safe Managed Accounts logs.
+description: Pipeline for processing BeyondTrust Password Safe Managed Accounts.
 processors:
+  - set:
+      field: ecs.version
+      value: '9.1.0'
   - terminate:
       tag: data_collection_error
-      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
+      description: >-
+        This API does does not have a cursor.
+        The integration collects all assets on each execution.
+        The fingerprint prevents some duplication of managed account records that have not changed.
       fields:
         - event.original
       target_field: _id
@@ -13,186 +20,117 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: beyondinsight_password_safe.managedaccount
-
-####################
-# Scripts for processing input #
-####################
   - script:
-      description: Drops null/empty values recursively.
+      description: Remove null values and empty strings from beyondinsight_password_safe.managedaccount.
       lang: painless
       source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
-
-  - rename:
-      field: beyondinsight_password_safe.managedaccount.IsISAAccess
-      target_field: beyondinsight_password_safe.managedaccount.is_isa_access
-      ignore_missing: true
+        ctx.beyondinsight_password_safe.managedaccount.entrySet().removeIf(entry ->
+          entry.getValue() == null ||
+          (entry.getValue() instanceof String && entry.getValue().isEmpty())
+        );
   - script:
-      description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
-      lang: painless
+      tag: script_numeric_id_to_string
+      description: Convert numeric ID fields to strings.
+      params:
+        numeric_ids:
+          - AccountId
+          - ApplicationID
+          - ChangeState
+          - PlatformID
+          - SystemId
       source: |
-        Map keysToSnakeCase(Map m) {
-          def regex = /_?([a-z])([A-Z]+)/;
-          def snakeCaseMap = [:];
-
-          for (entry in m.entrySet()) {
-            def k = entry.getKey();
-            def v = entry.getValue();
-
-            if (v instanceof Map) {
-              v = keysToSnakeCase(v);
-            } else if (v instanceof List) {
-              for (int i = 0; i < v.size(); i++) {
-                def item = v.get(i);
-                if (item instanceof Map) {
-                  v.set(i, keysToSnakeCase(item));
-                }
-              }
-            }
-
-            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
-            snakeCaseMap.put(k, v);
+        for (field in params.numeric_ids) {
+          def value = ctx.beyondinsight_password_safe.managedaccount[field];
+          if (value instanceof Number) {
+            ctx.beyondinsight_password_safe.managedaccount[field] =
+              Integer.toString(value.intValue());
           }
-          return snakeCaseMap;
         }
-
-        if (ctx.beyondinsight_password_safe.managedaccount != null) {
-          ctx.beyondinsight_password_safe.managedaccount = keysToSnakeCase(ctx.beyondinsight_password_safe.managedaccount);
+  - script:
+      tag: script_camel_to_snake_naming
+      description: Rename CapitalCamelCase-ish fields to lower_snake_case.
+      params:
+        field_mappings:
+          AccountDescription: account_description
+          AccountId: account_id
+          AccountName: account_name
+          ApplicationDisplayName: application_display_name
+          ApplicationID: application_id
+          ChangeState: change_state
+          DefaultReleaseDuration: default_release_duration
+          DomainName: domain_name
+          InstanceName: instance_name
+          IsChanging: is_changing
+          IsISAAccess: is_isa_access
+          LastChangeDate: last_change_date
+          MaximumReleaseDuration: maximum_release_duration
+          NextChangeDate: next_change_date
+          PlatformID: platform_id
+          PreferredNodeID: preferred_node_id
+          SystemId: system_id
+          SystemName: system_name
+          UserPrincipalName: user_principal_name
+      source: |
+        Map renamedFields = [:];
+        for (entry in ctx.beyondinsight_password_safe.managedaccount.entrySet()) {
+          def originalKey = entry.getKey();
+          def snakeKey = params.field_mappings[originalKey];
+          if (snakeKey != null) {
+            renamedFields[snakeKey] = entry.getValue();
+          } else {
+            renamedFields[originalKey] = entry.getValue();
+          }
         }
-
-
-####################
-# ECS Fields #
-####################
-  - set:
-      field: ecs.version
-      value: '8.11.0'
-
-  - set:
-      field: event.kind
-      value: event
-
-  - append:
-      field: event.category
-      value: iam
-
-  - append:
-      field: event.type
-      value: info
-
-  - convert:
-      field: beyondinsight_password_safe.managedaccount.system_id
-      type: string
-
-  - set:
-      field: host.id
-      copy_from: beyondinsight_password_safe.managedaccount.system_id
-
-  - append:
-      field: related.hosts
-      value: '{{{beyondinsight_password_safe.managedaccount.system_name}}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedaccount.system_name != null
-
-  - append:
-      field: related.hosts
-      value: '{{{beyondinsight_password_safe.managedaccount.system_id}}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedaccount.system_id != null
-
-  - append:
-      field: related.hosts
-      value: '{{{beyondinsight_password_safe.managedaccount.domain_name}}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedaccount.domain_name != null
-
-  - append:
-      field: host.hostname
-      value: '{{{beyondinsight_password_safe.managedaccount.system_name}}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedaccount.system_name != null
-
-  - set:
-      field: host.domain
-      copy_from: beyondinsight_password_safe.managedaccount.domain_name
-      if: ctx.beyondinsight_password_safe.managedaccount.domain_name != null
-
-  - convert:
-      field: beyondinsight_password_safe.managedaccount.application_id
-      type: string
-  - convert:
-      field: beyondinsight_password_safe.managedaccount.platform_id
-      type: string
-  - convert:
-      field: beyondinsight_password_safe.managedaccount.account_id
-      type: string
-
-  - set:
-      field: user.id
-      copy_from: beyondinsight_password_safe.managedaccount.account_id
-
-  - set:
-      field: user.name
-      copy_from: beyondinsight_password_safe.managedaccount.account_name
-
-  - set:
-      field: user.email
-      copy_from: beyondinsight_password_safe.managedaccount.user_principal_name
-      if: ctx.beyondinsight_password_safe.managedaccount.user_principal_name != null
-
-  - append:
-      field: related.user
-      value: '{{beyondinsight_password_safe.managedaccount.account_id}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedaccount.account_id != null
-
-  - append:
-      field: related.user
-      value: '{{beyondinsight_password_safe.managedaccount.account_name}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedaccount.account_name != null
-
-  - append:
-      field: related.user
-      value: '{{beyondinsight_password_safe.managedaccount.user_principal_name}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedaccount.user_principal_name != null
-
-####################
-# Managed Account Fields #
-####################
+        ctx.beyondinsight_password_safe.managedaccount = renamedFields;
   - date:
       if: ctx.beyondinsight_password_safe?.managedaccount?.last_change_date != null
       field: beyondinsight_password_safe.managedaccount.last_change_date
       target_field: beyondinsight_password_safe.managedaccount.last_change_date
       formats:
-        - yyyy-MM-dd'T'HH:mm:ss.SS
         - ISO8601
-
+  - set:
+      field: '@timestamp'
+      copy_from: beyondinsight_password_safe.managedaccount.last_change_date
+      ignore_empty_value: true
   - date:
       if: ctx.beyondinsight_password_safe?.managedaccount?.next_change_date != null
       field: beyondinsight_password_safe.managedaccount.next_change_date
       target_field: beyondinsight_password_safe.managedaccount.next_change_date
       formats:
-        - yyyy-MM-dd'T'HH:mm:ss.SS
         - ISO8601
-  - convert:
-      field: beyondinsight_password_safe.managedaccount.change_state
-      type: string
-      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: iam
+  - append:
+      field: event.type
+      value: info
+  - set:
+      field: host.id
+      copy_from: beyondinsight_password_safe.managedaccount.system_id
+      ignore_empty_value: true
+  - set:
+      field: host.hostname
+      copy_from: beyondinsight_password_safe.managedaccount.system_name
+      ignore_empty_value: true
+  - set:
+      field: host.domain
+      copy_from: beyondinsight_password_safe.managedaccount.domain_name
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      copy_from: beyondinsight_password_safe.managedaccount.account_id
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: beyondinsight_password_safe.managedaccount.account_name
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      copy_from: beyondinsight_password_safe.managedaccount.user_principal_name
+      ignore_empty_value: true
   - script:
       description: Convert ChangeState numeric values to human-readable format.
       tag: script_change_state_strings
@@ -208,6 +146,31 @@ processors:
         if (description != null) {
           ctx.beyondinsight_password_safe.managedaccount.change_state = description;
         }
+  - append:
+      if: ctx.beyondinsight_password_safe?.managedaccount?.system_id != null
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.managedaccount.system_id}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.beyondinsight_password_safe?.managedaccount?.system_name != null
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.managedaccount.system_name}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.beyondinsight_password_safe?.managedaccount?.account_id != null
+      field: related.user
+      value: '{{{beyondinsight_password_safe.managedaccount.account_id}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.beyondinsight_password_safe?.managedaccount?.account_name != null
+      field: related.user
+      value: '{{{beyondinsight_password_safe.managedaccount.account_name}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.beyondinsight_password_safe?.managedaccount?.user_principal_name != null
+      field: related.user
+      value: '{{{beyondinsight_password_safe.managedaccount.user_principal_name}}}'
+      allow_duplicates: false
 on_failure:
   - set:
       field: event.kind

@@ -1,17 +1,18 @@
 format_version: "3.4.0"
 name: m365_defender
 title: Microsoft Defender XDR
-version: "4.0.0"
+version: "5.1.1"
 description: Collect logs from Microsoft Defender XDR with Elastic Agent.
 categories:
   - "security"
   - "edr_xdr"
+  - "vulnerability_workflow"
 type: integration
 conditions:
   elastic:
     subscription: basic
   kibana:
-    version: "^8.19.2 || ^9.1.2"
+    version: "^8.19.4 || ^9.1.4"
 policy_templates:
   - name: m365_defender
     title: Microsoft Defender XDR Logs
@@ -173,6 +174,18 @@ policy_templates:
             show_user: false
             default: 
               - "https://securitycenter.onmicrosoft.com/windowsatpservice/.default"
+          - name: oauth_endpoint_params
+            type: yaml
+            title: OAuth2 Endpoint Params
+            description: Set of values that will be sent on each resource to the OAuth Server URL. Each param key can have multiple values and they are appended to the URL as query parameters.
+            show_user: false
+            multi: false
+            required: false
+            default: |
+              #grant_type: client_credentials
+              #refresh_token:
+              #  - refresh_token_1
+              #  - refresh_token_2
           - name: proxy_url
             type: text
             title: Proxy URL

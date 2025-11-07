@@ -15,6 +15,7 @@ Ready to monitor, ingest, and visualize something? Let’s get started. You’ll
 * [Edit ingest pipelines](/extend/edit-ingest-pipeline.md): Customize ingest pipelines to parse, enrich, and transform incoming data before it’s indexed.
 * [Edit field mappings](/extend/add-mapping.md): Specify and adjust field mappings to define the structure and types of your indexed data.
 * [Create and export dashboards](/extend/create-dashboards.md): Build {{kib}} dashboards and visualizations to explore and analyze the ingested data.
+* [Enable automatic installation for content packages](/extend/auto-install-content-packages.md): Enable automatic installation for your content package if data with a matching dataset is ingested in {{es}}.
 * [Testing and validation](/extend/testing-validation.md): Run tests and validate your integration to ensure it works as expected and meets quality standards.
 * [Finishing touches](/extend/finishing-touches.md): Finalize documentation, metadata, and package details to prepare your integration for release.
 * [Tips for building integrations](/extend/tips-for-building.md): Explore best practices and helpful advice to streamline your integration development process.
@@ -22,17 +23,3 @@ Ready to monitor, ingest, and visualize something? Let’s get started. You’ll
 ::::{tip}
 Familiar with the {{stack}} and just want a quick way to get started? See [*Quick start: Sample integration*](/extend/quick-start.md).
 ::::
-
-
-
-
-
-
-
-
-
-
-
-
-
-

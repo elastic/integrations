@@ -2,6 +2,7 @@
 description: Pipeline for CEF logs. CEF decoding happens in the Agent. This performs additional enrichment and vendor specific transformations.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: 8.17.0
   - convert:
@@ -22,6 +23,7 @@ processors:
       target_field: destination.geo
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       field: source.ip
       database_file: GeoLite2-ASN.mmdb
       ignore_missing: true
@@ -30,6 +32,7 @@ processors:
       - organization_name
       target_field: source.as
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       field: destination.ip
       database_file: GeoLite2-ASN.mmdb
       ignore_missing: true
@@ -38,61 +41,74 @@ processors:
       - organization_name
       target_field: destination.as
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       ignore_missing: true
       target_field: source.as.number
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       ignore_missing: true
       target_field: source.as.organization.name
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       ignore_missing: true
       target_field: destination.as.number
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       ignore_missing: true
       target_field: destination.as.organization.name
   - append:
+      tag: append_related_hash_592251e0
       if: ctx?.cef?.extensions?.fileHash != null && ctx?.cef?.extensions?.fileHash != ''
       field: related.hash
       allow_duplicates: false
       value: '{{{cef.extensions.fileHash}}}'
   - append:
+      tag: append_related_hash_be4900bb
       if: ctx?.cef?.extensions?.oldFileHash != null && ctx?.cef?.extensions?.oldFileHash != ''
       field: related.hash
       allow_duplicates: false
       value: '{{{cef.extensions.oldFileHash}}}'
   - append:
+      tag: append_related_ip_73d5506a
       if: ctx?.destination?.ip != null && ctx?.destination?.ip != ''
       field: related.ip
       allow_duplicates: false
       value: '{{{destination.ip}}}'
   - append:
+      tag: append_related_ip_3da81053
       if: ctx?.destination?.nat?.ip != null && ctx?.destination?.nat?.ip != ''
       field: related.ip
       allow_duplicates: false
       value: '{{{destination.nat.ip}}}'
   - append:
+      tag: append_related_ip_74a1d0ad
       if: ctx?.source?.ip != null && ctx?.source?.ip != ''
       field: related.ip
       allow_duplicates: false
       value: '{{{source.ip}}}'
   - append:
+      tag: append_related_ip_78428a7e
       if: ctx?.source?.nat?.ip != null && ctx?.source?.nat?.ip != ''
       field: related.ip
       allow_duplicates: false
       value: '{{{source.nat.ip}}}'
   - append:
+      tag: append_related_user_75c0abfc
       if: ctx?.destination?.user?.name != null
       field: related.user
       value: '{{{destination.user.name}}}'
   - append:
+      tag: append_related_user_afcddc50
       if: ctx?.source?.user?.name != null && ctx?.source?.user?.name != ''
       field: related.user
       allow_duplicates: false
       value: '{{{source.user.name}}}'
   - append:
+      tag: append_related_hosts_c0e4bbd6
       if: ctx?.observer?.hostname != null && ctx?.observer?.hostname != ''
       field: related.hosts
       allow_duplicates: false
@@ -121,11 +137,13 @@ processors:
       ignore_missing: true
       pattern: '[:.]'
       replacement: '-'
-      tag: gsub mac
+      tag: gsub_source_mac_1b14f2a4
   - uppercase:
+      tag: uppercase_destination_mac_04de3657
       field: destination.mac
       ignore_missing: true
   - uppercase:
+      tag: uppercase_source_mac_5b4e7be2
       field: source.mac
       ignore_missing: true
   #
@@ -146,17 +164,20 @@ processors:
         - '^%{ECS_SYSLOG_PRI}%{NONNEGINT} %{SYSLOG_TIMESTAMP} ' # RFC5224
       tag: timestamp extract grok
   - date:
+      tag: date__tmp_timestamp8601_c38c0806
       if: ctx?._tmp?.timestamp8601 != null
       field: _tmp.timestamp8601
       formats:
         - ISO8601
   - date:
+      tag: date__tmp_timestamp_771f472e
       if: ctx?._tmp?.timestamp != null
       field: _tmp.timestamp
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
   - remove:
+      tag: remove_event_original_9f895a30
       if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
       field: event.original
       ignore_failure: true
@@ -176,19 +197,28 @@ processors:
       value: '{{{_tmp.observer}}}'
   # Set ECS event outcome from ArcSight outcomes
   - set:
+      tag: set_event_outcome_da09bb71
       if: ctx.cef?.extensions?.categoryOutcome == "/Success"
       field: event.outcome
       value: success
   - set:
+      tag: set_event_outcome_cb9ede45
       if: ctx.cef?.extensions?.categoryOutcome == "/Failure"
       field: event.outcome
       value: failure
   # Cleanup
   - remove:
+      tag: remove_8c701636
       field:
         - cef.extensions._cefVer
         - _tmp
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - remove:
       field:
@@ -196,8 +226,15 @@ on_failure:
       ignore_missing: true
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

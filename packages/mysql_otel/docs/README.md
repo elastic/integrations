@@ -1,12 +1,12 @@
 # MYSQL metrics for OpenTelemetry Collector
 
-The MySQL metrics from MySQL OTEL receiver allows you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
+The MySQL metrics from MySQL OpenTelemetry receiver allow you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
 
 The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics collected via OpenTelemetry ([MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/mysqlreceiver)), enabling you to monitor database performance and troubleshoot issues effectively in real time.
 
 ## Compatibility
 
-The content pack has been tested with [OpenTelemetry MySQL receiver v0.129.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/README.md).
+The MySQL OpenTelemetry assets have been tested with [OpenTelemetry MySQL receiver v0.129.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/README.md).
 
 Databases tested against:
 - MySQL 8.0, 9.4
@@ -19,7 +19,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-1. Install and configure the EDOT Collector or upstream Collector to export metrics to ElasticSearch, as shown in the following example:
+1. Install and configure the upstream OpenTelemetry Collector to export metrics to ElasticSearch, as shown in the following example:
 
 ```yaml
 receivers:

@@ -2,6 +2,7 @@
 description: Pipeline for PFsense PHP-FPM logs
 processors:
   - grok:
+      tag: grok_message_dc596a09
       field: message
       patterns:
         - '^%{DATA}: %{PF_APP_DATA}'
@@ -12,28 +13,34 @@ processors:
         PF_APP_LOGOUT: "User (%{DATA:_tmp.action}) for user '%{USER:user.name}' from: %{IP:source.address}"
         PF_APP_ERROR: "webConfigurator %{DATA:_tmp.action} for user '%{DATA:user.name}' from: %{IP:source.address}"
   - append:
+      tag: append_event_category_80db0fcd
       field: event.category
       value: authentication
       allow_duplicates: false
   - set:
+      tag: set_event_outcome_b39ddcc4
       field: event.outcome
       value: success
       if: 'ctx._tmp?.action.toLowerCase().contains("success")'
   - set:
+      tag: set_event_outcome_83ced4a6
       field: event.outcome
       value: failure
       if: 'ctx._tmp?.action.toLowerCase().contains("authentication error")'
   - convert:
+      tag: convert_source_address_to_source_ip_f5632a20
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_observer_ip_to_host_ip_92a4a9e0
       field: observer.ip
       target_field: host.ip
       ignore_missing: true
   - rename:
+      tag: rename_observer_name_to_host_name_34df84ec
       field: observer.name
       target_field: host.name
       ignore_missing: true
@@ -43,4 +50,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

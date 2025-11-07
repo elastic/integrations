@@ -89,6 +89,27 @@ processors:
       tag: rename_resource_to_resources
       ignore_missing: true
       if: ctx.ocsf?.resources == null
+  - append:
+      field: ocsf.resources
+      value: []
+      if: ctx.ocsf?.resources != null
+  - foreach:
+      field: ocsf.resources
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "pipeline_resources_data_json" }}'
+  - json:
+      field: ocsf.unmapped
+      if: ctx.ocsf?.unmapped instanceof String
+      on_failure:
+        - rename:
+            field: ocsf.unmapped
+            target_field: ocsf.unmapped.value
+  - rename:
+      field: ocsf.unmapped
+      target_field: ocsf.unmapped.value
+      if: ctx.ocsf?.unmapped != null && !(ctx.ocsf.unmapped instanceof Map)
   - rename:
       field: ocsf.finding_info_list
       target_field: ocsf.finding_info

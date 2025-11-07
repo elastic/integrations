@@ -19,11 +19,37 @@ processors:
       field: cloud.provider
       value: azure
   - drop:
-      description: Drop if  inavlid json
+      description: Drop if invalid json
       if: 'ctx.event?.original != null && ctx.event.original.contains(''"records"'')'
   - json:
       field: event.original
       target_field: azure.frontdoor.access
+  - script:
+      description: Drops fields with empty or N/A values recursively
+      tag: script_to_drop_invalid_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
   - rename:
       field: azure.frontdoor.access.resourceId
       target_field: azure.frontdoor.resource_id
@@ -272,12 +298,12 @@ processors:
       field: related.user
       value: '{{{user.full_name}}}'
       allow_duplicates: false
-      if: 'ctx.user?.name != null'
+      if: 'ctx.user?.full_name != null'
   - append:
       field: related.user
       value: '{{{user.id}}}'
       allow_duplicates: false
-      if: 'ctx.user?.name != null'
+      if: 'ctx.user?.id != null'
   - rename:
       field: azure.frontdoor.access.identity.claims_initiated_by_user.tenantid
       target_field: cloud.account.id
@@ -348,4 +374,4 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

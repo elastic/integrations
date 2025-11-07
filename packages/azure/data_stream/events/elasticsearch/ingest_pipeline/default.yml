@@ -44,6 +44,20 @@ processors:
       if: 'ctx.tmp_json?.category == null'
       ignore_missing: true
       description: 'Rename the invalid `Category` field to `category` to apply the correct routing rules.'
+  # Unfortunately, some Azure services generate logs with
+  # `CategoryValue` field instead of `Category` field.
+  #
+  # We need to rename `CategoryValue` as `category` to
+  # apply the correct routing rules.
+  # 
+  # Refs;
+  # - https://github.com/elastic/integrations/issues/15206
+  - rename:
+      field: tmp_json.CategoryValue
+      target_field: tmp_json.category
+      if: ctx.tmp_json?.category == null
+      ignore_missing: true
+      description: 'Rename the invalid `CategoryValue` field to `category` to apply the correct routing rules.'
 
   # Defaults to azure.events if the `category` field is not present.
   - set:
