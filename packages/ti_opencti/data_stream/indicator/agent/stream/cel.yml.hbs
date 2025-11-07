@@ -153,9 +153,8 @@ program: |
               }
             ]
             // Filter to only include filters where condition is true
-            .filter(f, f.condition)
-            // Map to create the final filter objects (removing the condition field)
-            .map(f, {
+            // and map to create the final filter objects (removing the condition field)
+            .map(f, f.condition, {
               "key": f.key,
               "values": f.values,
               "operator": f.operator
@@ -186,7 +185,7 @@ program: |
           "want_more": body.data.indicators.pageInfo.hasNextPage,
           "cursor": { "value": body.data.indicators.pageInfo.endCursor },
           "last_modified": has(body.data.indicators.edges) && body.data.indicators.edges.size() > 0 ?
-            body.data.indicators.edges.map(e, e.node.modified).max()
+            body.data.indicators.edges.map(e, timestamp(e.node.modified)).max()
           :
             state.?last_modified.orValue(null)
         })
