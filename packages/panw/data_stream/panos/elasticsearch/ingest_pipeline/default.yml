@@ -20,7 +20,7 @@ processors:
   - set:
       tag: set_event_timezone_ab6989dd
       field: event.timezone
-      value: '{{{_conf.tz_offset}}}'
+      copy_from: _conf.tz_offset
       if: ctx._conf?.tz_offset instanceof String && !ctx._conf.tz_offset.equalsIgnoreCase('local')
 
   # Collects the first few parts of the message to be used for conditional parsing later
@@ -370,7 +370,7 @@ processors:
       tag: set_session_start_time_ee5db372
       if: ctx.panw?.panos?.parent_session?.start_time != null
       field: session.start_time
-      value: '{{{panw.panos.parent_session.start_time}}}'
+      copy_from: panw.panos.parent_session.start_time
 
   # Remove NAT fields when translation was not done.
   - remove:
@@ -1852,7 +1852,7 @@ processors:
   - set:
       tag: set_rule_name_809e7c7b
       field: rule.name
-      value: '{{{panw.panos.ruleset}}}'
+      copy_from: panw.panos.ruleset
       ignore_empty_value: true
       if: ctx.rule?.name == null
   - append:
@@ -2057,6 +2057,12 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
   - set:
@@ -2075,3 +2081,7 @@ on_failure:
         - _conf
         - message
       ignore_missing: true
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
