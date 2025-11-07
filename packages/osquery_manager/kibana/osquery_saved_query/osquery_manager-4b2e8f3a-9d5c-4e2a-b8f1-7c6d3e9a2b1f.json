@@ -1,0 +1,88 @@
+{
+  "attributes": {
+    "created_at": "2025-11-07T10:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Monitor BITS (Background Intelligent Transfer Service) file transfers to detect potential data exfiltration or malware downloads via suspicious external hosts. Identifies: (1) BITS transfers to non-whitelisted domains, (2) Downloads from unusual/suspicious sources, (3) File transfer activity outside typical enterprise patterns. Allowlist filtering excludes known-good vendors (Microsoft, Adobe, Google, Oracle, HP, Mozilla) and private IP ranges to reduce false positives. Covers MITRE ATT&CK: T1197 (BITS Jobs - Defense Evasion, Persistence).",
+    "ecs_mapping": [
+      {
+        "key": "event.category",
+        "value": {
+          "value": [
+            "network"
+          ]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": [
+            "connection",
+            "info"
+          ]
+        }
+      },
+      {
+        "key": "event.code",
+        "value": {
+          "field": "eventid"
+        }
+      },
+      {
+        "key": "event.provider",
+        "value": {
+          "field": "provider_name"
+        }
+      },
+      {
+        "key": "url.full",
+        "value": {
+          "field": "Url"
+        }
+      },
+      {
+        "key": "url.domain",
+        "value": {
+          "field": "Host"
+        }
+      },
+      {
+        "key": "file.name",
+        "value": {
+          "field": "Name"
+        }
+      },
+      {
+        "key": "event.action",
+        "value": {
+          "value": [
+            "bits-transfer"
+          ]
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "persistence",
+            "defense_evasion",
+            "bits_jobs",
+            "network_transfer",
+            "mitre_t1197"
+          ]
+        }
+      }
+    ],
+    "id": "bits_monitoring_windows_elastic",
+    "interval": "3600",
+    "platform": "windows",
+    "query": "-- Monitor BITS (Background Intelligent Transfer Service) file transfers\n-- Source: Windows Event Log (Microsoft-Windows-Bits-Client/Operational)\n-- Event ID 59: BITS transfer completion events\n-- Focus: External/suspicious download sources (filters out known-good vendors and private IPs)\n-- MITRE ATT&CK: T1197 (BITS Jobs)\n\nWITH extracted AS (\n    SELECT\n        datetime,\n        provider_name,\n        eventid,\n        json_extract(data, '$.EventData.url') AS Url,\n        split(\n            replace(\n                replace(json_extract(data, '$.EventData.url'), 'https://', ''),\n                'http://', ''\n            ),\n            '/', 1\n        ) AS Host,\n        json_extract(data, '$.EventData.name') AS Name\n    FROM windows_eventlog\n    WHERE channel = 'Microsoft-Windows-Bits-Client/Operational'\n      AND eventid = 59\n)\n\nSELECT *\nFROM extracted\nWHERE regex_match(\n    Host,\n    '(office365\\.com|office\\.net|windowsupdate\\.com|live\\.com|mozilla\\.com|adobe\\.com|microsoft\\.com|google\\.com|oracle\\.com|hp\\.com|aka\\.ms|gvt1\\.com|oneclient\\.sfx\\.ms|10\\..*|192\\.168\\..*|172\\.(1[6-9]|2[0-9]|3[0-1])\\..*)',\n    0\n) IS NULL;",
+    "updated_at": "2025-11-07T10:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.2.0",
+  "id": "osquery_manager-4b2e8f3a-9d5c-4e2a-b8f1-7c6d3e9a2b1f",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-11-07T10:00:00.000Z",
+  "version": "WzEwMCwyXQ=="
+}
