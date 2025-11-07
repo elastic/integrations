@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Total Core Artifacts**: 2 available + 38 in progress + 6 not available = 46 total variants
+**Total Queries**: 31 (4 core forensic variants + 27 additional)
+**Completion Rate**: 4.3% (2/46 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 1     | 2.2%       |
+| ⚠️ In Progress (Needs Validation) | 38    | 82.6%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -25,7 +25,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 |---|----------|--|----|-------|------|----------------------------------------------------------------------------------------------------------------------------------|
 | 1 | AppCompatCache          | ⚠️ | Win | -     | -    | shimcache table                                                                                                                  |
 | 2 | AmCache                 | ❌ | Win | -     | -    | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
-| 3 | BITS Jobs Database      | ⚠️ | Win | -     | -    | Not a native table, but can be queried via windows_eventlog                                                                      |
+| 3 | BITS Jobs Database      | ✅ | Win | bits_monitoring_windows_elastic | [4b2e](kibana/osquery_saved_query/osquery_manager-4b2e8f3a-9d5c-4e2a-b8f1-7c6d3e9a2b1f.json) | Not a native table, but can be queried via windows_eventlog (EventID 59)                                                        |
 | 4 | Browser URL History     | ⚠️ | Win | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
 | 4a | Browser URL History     | ⚠️ | Linux | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
 | 4b | Browser URL History     | ⚠️ | Mac | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
@@ -126,7 +126,6 @@ The following artifacts cannot be queried with standard osquery and require exte
 | # | Artifact | Status | Notes |
 |:-:|----------|:------:|-------|
 | 1 | Browser URL History (All Platforms) | ⚠️ | No native table, databases locked while browser running. Can be supported via ATC custom tables. Alternative: Downloads folder analysis, file system queries for browser cache |
-| 2 | BITS Jobs Database (Windows) | ⚠️ | Not a native table, but can be queried via windows_eventlog table |
 
 ### Alternative Coverage
 
@@ -164,7 +163,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Tasks (All platforms: scheduled_tasks table)
 - ⚠️ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
 - ⚠️ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
-- ⚠️ BITS Jobs Database (Windows: via windows_eventlog)
+- ✅ BITS Jobs Database (Windows: via windows_eventlog)
 
 ### User Activity
 - ⚠️ LNK files (Windows: shortcut_files, file, recent_files tables)
