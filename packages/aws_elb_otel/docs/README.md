@@ -25,7 +25,7 @@ For the full documentation on how to set up the EDOT Cloud Forwarder, follow thi
 
 ## Alternative setup using [AWS S3 receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awss3receiver)
 
-Alternative setup allows to bypass "Serverless only" limitation.
+The alternative setup allows you to bypass the "Serverless only" limitation.
 
 ### Prerequisites
 
@@ -34,9 +34,9 @@ Alternative setup allows to bypass "Serverless only" limitation.
 - An SQS queue receiving notifications on object creation in the S3 bucket
 - `awss3receiver` and `awslogsencodingextension`
 
-### Config example
+### Configuration example
 
-For details on configuration refer to corresponding docs: [awss3receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awss3receiver), [awslogsencodingextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension), [elasticsearchexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter)
+For details on configuration refer to the following documentation: [awss3receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awss3receiver#aws-s3-receiver), [awslogsencodingextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension#aws-logs-encoding-extension), [elasticsearchexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter#configuration-options)
 
 ```yaml
 extensions:
