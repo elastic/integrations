@@ -428,7 +428,7 @@ An example event for `audit` looks as following:
 | o365.audit.ObjectId |  | keyword |
 | o365.audit.ObjectType |  | keyword |
 | o365.audit.Operation |  | keyword |
-| o365.audit.OperationCount |  | keyword |
+| o365.audit.OperationCount |  | long |
 | o365.audit.OperationId |  | keyword |
 | o365.audit.OperationProperties |  | object |
 | o365.audit.OrganizationId |  | keyword |

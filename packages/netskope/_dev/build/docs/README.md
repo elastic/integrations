@@ -44,6 +44,8 @@ Please make sure to use the given response formats.
 
 Considering you already have an AWS S3 bucket setup, to configure it with Netskope, follow [these steps](https://docs.netskope.com/en/stream-logs-to-amazon-s3) to enable the log streaming.
 
+**Note**: It is recommended to use the combined Alerts V2 and Events V2 data stream rather than configuring the individual Events V2 or Alerts V2 data stream. The alerts_events_v2 stream automatically directs logs to the appropriate individual data streams.
+
 #### Collect data from Azure Blob Storage
 
 1. If you already have an Azure storage container setup, configure it with Netskope via log streaming.
@@ -176,23 +178,11 @@ Default port: _9021_
 
 {{event "alerts"}}
 
-### Alerts V2
-
-{{fields "alerts_v2"}}
-
-{{event "alerts_v2"}}
-
 ### Events
 
 {{fields "events"}}
 
 {{event "events"}}
-
-### Events V2
-
-{{fields "events_v2"}}
-
-{{event "events_v2"}}
 
 ### Transaction
 
