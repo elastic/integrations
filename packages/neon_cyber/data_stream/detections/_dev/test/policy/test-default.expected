@@ -1,0 +1,92 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: neon_cyber
+      name: test-default-neon_cyber
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: neon_cyber.detections
+          interval: 1h
+          program: |-
+            (
+              state.with(
+                request(
+                  "GET",
+                  state.url.trim_right("/") + "/v1/detections"
+                ).with(
+                  {
+                    "Header": {
+                      "Authorization": [state.api_token],
+                    }
+                  }
+                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    {
+                      "events": dyn(
+                        (has(body.data) && body.data.size() > 0) ?
+                          body.data.map(e,
+                            {
+                              "message": e.encode_json(),
+                            }
+                          )
+                        :
+                          []
+                      )
+                    }
+                  )
+                :
+                  {
+                    "events": dyn(
+                      {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + state.url.trim_right("/") + "/v1/detections: " + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      }
+                    )
+                  }
+                )
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_token
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://api.neoncyber.io
+          state:
+            api_token: ${SECRET_0}
+          tags:
+            - forwarded
+            - neon_cyber-detections
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-neon_cyber.detections-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

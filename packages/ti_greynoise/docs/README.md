@@ -96,6 +96,12 @@ Follow **Steps to Create Detection Rule** below to create indicator match detect
     - **Set Runs Every** - Defines how frequently the rule runs.
     - **Additional Lookback Time** - Specifies how far back to check for matches.
 
+**Note :** To further restrict GreyNoise threat intelligence data used for matching, you can add KQL filters in **Indicator index query** section such as:
+```
+NOT greynoise.ip.internet_scanner_intelligence.classification : "benign"
+```
+You can also use the **plus (+) filter button** in Kibana to refine the GreyNoise threat intel dataset before matching it against your source index.
+
 Once the rule is saved and enabled, alerts will appear in the **Security > Alerts** section when matches are detected.
 
 The following transform and its associated pipelines are used to filter relevant data from alerts. Follow **Steps to enable rule transforms** to enable these transforms and populate `Threat Intelligence` dashboard.
@@ -120,7 +126,10 @@ The following transform and its associated pipelines are used to filter relevant
    - Click **Update** to save the changes.
 5. Click the **three dots** again next to the transform and select **Start** to activate it.
 
-**Note:** After updating the integration, make sure to update the pipeline prefix accordingly.
+### Updating the Integration
+
+- When the integration is updated, the **rule transform will be stopped**.
+- After updating integration, you must reconfigure the rule transform by adding the pipeline with the updated integration version.
 
 ## Troubleshooting
 
@@ -134,6 +143,12 @@ The following transform and its associated pipelines are used to filter relevant
 6. If any transform is not in a **Healthy** state, try resetting it:
    - Click the **three dots** next to the transform, then select **Reset**.
    - After resetting, restart the transform.
+7. If dashboards are not updating after an integration upgrade, verify that the rule transform is running with the correct ingest pipeline.
+   - Reconfigure the rule transform to use the updated pipeline name, including the integration version.
+     For example:
+     ```
+     {updated_package_version}-ti_greynoise-correlation_detection_rule-pipeline
+     ```
 
 ## Logs reference
 

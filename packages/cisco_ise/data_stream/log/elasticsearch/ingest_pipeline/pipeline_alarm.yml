@@ -1,6 +1,7 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
 
@@ -30,6 +31,7 @@ processors:
       pattern: 'From %{source.address} To %{destination.address}'
       on_failure:
         - append:
+            tag: append_error_message_c2eeada6
             field: error.message
             value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}} with "{{{message}}}"'
   - rename:
@@ -39,17 +41,20 @@ processors:
       ignore_failure: true
 
   - rename:
+      tag: rename_cisco_ise_log_log_details_raw_server_to_server_address_e0c15b7e
       field: cisco_ise.log.log_details_raw.server
       target_field: server.address
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_raw_nad_address_to__tmp_nad_ip_b1d90281
       field: cisco_ise.log.log_details_raw.nad_address
       type: ip
       target_field: _tmp.nad_ip
       ignore_failure: true
       ignore_missing: true
   - append:
+      tag: append_related_ip_0a52dd75
       field: related.ip
       value: '{{{_tmp.nad_ip}}}'
       allow_duplicates: false
@@ -61,86 +66,117 @@ processors:
       ignore_failure: true
 
   - append:
+      tag: append_related_hosts_cabe814d
       field: related.hosts
       value: '{{{source.address}}}'
       allow_duplicates: false
       if: ctx.source?.address != null && ctx.source.address != ''
   - append:
+      tag: append_related_hosts_38bebbb6
       field: related.hosts
       value: '{{{destination.address}}}'
       allow_duplicates: false
       if: ctx.destination?.address != null && ctx.destination.address != ''
   - append:
+      tag: append_related_hosts_5b8aefa3
       field: related.hosts
       value: '{{{server.address}}}'
       allow_duplicates: false
       if: ctx.server?.address != null && ctx.server.address != ''
 
   - rename:
+      tag: rename_cisco_ise_log_log_details_raw_nas_ip_address_to_cisco_ise_log_nas_ip_address_53b4f915
       field: cisco_ise.log.log_details_raw.nas_ip_address
       target_field: cisco_ise.log.nas_ip_address
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_nas_ip_address_to__tmp_nas_ip_ba4d7c57
       field: cisco_ise.log.nas_ip_address
       type: ip
       target_field: _tmp.nas_ip
       ignore_failure: true
       ignore_missing: true
   - append:
+      tag: append_related_ip_c5bd077f
       field: related.ip
       value: '{{{_tmp.nas_ip}}}'
       allow_duplicates: false
       if: ctx._tmp?.nas_ip != null
   - rename:
+      tag: rename_cisco_ise_log_log_details_raw_nas_identifier_to_cisco_ise_log_nas_identifier_3ca1ca01
       field: cisco_ise.log.log_details_raw.nas_identifier
       target_field: cisco_ise.log.nas_identifier
       ignore_failure: true
       ignore_missing: true
 
   - rename:
+      tag: rename_cisco_ise_log_log_details_raw_failure_reason_to_cisco_ise_log_failure_reason_69760021
       field: cisco_ise.log.log_details_raw.failure_reason
       target_field: cisco_ise.log.failure_reason
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_raw_network_device_name_to_cisco_ise_log_network_device_name_7a98e725
       field: cisco_ise.log.log_details_raw.network_device_name
       target_field: cisco_ise.log.network_device_name
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_raw_calling_station_id_to_cisco_ise_log_calling_station_id_acd40ccd
       field: cisco_ise.log.log_details_raw.calling_station_id
       target_field: cisco_ise.log.calling_station_id
       ignore_failure: true
       ignore_missing: true
   - gsub:
+      tag: gsub_cisco_ise_log_calling_station_id_6e43bc28
       field: cisco_ise.log.calling_station_id
       pattern: '[-:.]'
       replacement: '-'
       ignore_failure: true
       ignore_missing: true
   - uppercase:
+      tag: uppercase_cisco_ise_log_calling_station_id_30b565fd
       field: cisco_ise.log.calling_station_id
       ignore_failure: true
       ignore_missing: true
   - append:
+      tag: append_server_mac_641065b2
       field: server.mac
       value: '{{{cisco_ise.log.calling_station_id}}}'
       allow_duplicates: false
       if: ctx.cisco_ise?.log?.calling_station_id != null
   - convert:
+      tag: convert_cisco_ise_log_log_details_raw_network_device_ip_to__tmp_dev_ip_72ff5e8e
       field: cisco_ise.log.log_details_raw.network_device_ip
       type: ip
       target_field: _tmp.dev_ip
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename__tmp_dev_ip_to_cisco_ise_log_network_device_ip_569d5d0e
       field: _tmp.dev_ip
       target_field: cisco_ise.log.network_device_ip
       ignore_failure: true
       ignore_missing: true
   - append:
+      tag: append_related_ip_3edb4ce4
       field: related.ip
       value: '{{{cisco_ise.log.network_device_ip}}}'
       allow_duplicates: false
       if: ctx.cisco_ise?.log?.network_device_ip != null
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

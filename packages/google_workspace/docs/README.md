@@ -627,6 +627,10 @@ An example event for `login` looks as following:
 | google_workspace.login.failure_type | Login failure type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
 | google_workspace.login.is_second_factor |  | boolean |
 | google_workspace.login.is_suspicious |  | boolean |
+| google_workspace.login.network_info.ip_asn |  | keyword |
+| google_workspace.login.network_info.region_code |  | keyword |
+| google_workspace.login.network_info.subdivision_code |  | keyword |
+| google_workspace.login.resource_ids |  | keyword |
 | google_workspace.login.sensitive_action_name |  | keyword |
 | google_workspace.login.timestamp | UNIX timestmap of login in microseconds. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | long |
 | google_workspace.login.type | Login credentials type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |

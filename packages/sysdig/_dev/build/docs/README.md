@@ -2,13 +2,15 @@
 This integration allows for the shipping of [Sysdig](https://sysdig.com/) logs to Elastic for security, observability and organizational awareness. Logs can then be analyzed by using either the dashboard included with the integration or via the creation of custom dashboards within Kibana.
 
 ## Data Streams
-The Sysdig integration collects three types of logs:
+The Sysdig integration collects four types of logs:
 
 **Alerts** The Alerts data stream collected by the Sysdig integration is comprised of Sysdig Alerts. See more details about Sysdig Alerts in [Sysdig's Alerts Documentation](https://docs.sysdig.com/en/docs/sysdig-monitor/alerts/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
 
-**Event** The event data stream collected through the Sysdig integration consists of Sysdig Security Events. See more details about Security Events in [Sysdig's Events Feed Documentation](https://docs.sysdig.com/en/docs/sysdig-secure/threats/activity/events-feed/).
+**Event** The event data stream collected through the Sysdig integration consists of Sysdig Security Events. See more details about Security Events in [Sysdig's Events Feed Documentation](https://docs.sysdig.com/en/docs/sysdig-secure/threats/activity/events-feed/). It uses Sysdig's Next Gen API (standardized). You can access your regional documentation through the links [here](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-next-gen-api-documentation-using-regional-endpoints).
 
-**Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig vulnerability scan results. See more details about vulnerabilities in [Sysdig's Vulnerability Management documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/).
+**CSPM** The CSPM data stream collected through the Sysdig integration consists of Sysdig compliance results. See more details about compliance results in [Sysdig's Compliance documentation](https://docs.sysdig.com/en/sysdig-secure/compliance/). It uses Sysdig's Current API (non-standardised). You can access your regional documentation through the links [here](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-current-api-documentation-using-regional-endpoints).
+
+**Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig vulnerability scan results. See more details about vulnerabilities in [Sysdig's Vulnerability Management documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/). It uses Sysdig's Next Gen API (standardized). You can access your regional documentation through the links [here](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-next-gen-api-documentation-using-regional-endpoints).
 
 For vulnerability data, Each interval fetches all available scan results from the configured stage. Currently, only one stage can be configured at a time. Users wishing to collect scan results from different stages must configure additional integrations for each desired stage.
 
@@ -36,9 +38,12 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 
 **Required:** To configure Sysdig to output JSON, you must set up as webhook notification channel as outlined in the [Sysdig Documentation](https://docs.sysdig.com/en/docs/administration/administration-settings/outbound-integrations/notifications-management/set-up-notification-channels/configure-a-webhook-channel/).
 
-### To collect data from the Sysdig Next Gen API:
+### To collect data from the Sysdig API:
 
-- Retrieve the API Token by following [Sysdig's API Token Guide](https://docs.sysdig.com/en/retrieve-the-sysdig-api-token).
+- Retrieve the API Token by following the [Sysdig API Token Guide](https://docs.sysdig.com/en/retrieve-the-sysdig-api-token).
+- The API URL varies by region. To determine the correct URL for your region, use the following guides:
+  - For Sysdig's Next Gen API, refer to the [regional endpoints guide](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-the-sysdig-api-using-the-regional-endpoints).
+  - For Sysdig's Current API, refer to the [SaaS regions and IP ranges guide](https://docs.sysdig.com/en/administration/saas-regions-and-ip-ranges/#overview).
 
 ### Enabling the integration in Elastic:
 
@@ -50,7 +55,6 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 6. Select "Save and continue" to save the integration.
 
 **Note**:
-  - The URL may vary depending on your region. Please refer to the [Documentation](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-the-sysdig-api-using-the-regional-endpoints) to find the correct URL for your region.
   - If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the `Maximum Pages Per Interval` setting in the configuration.
   - Users wishing to collect vulnerability scan results from multiple stages must configure individual integrations for each desired stage.
 
@@ -60,8 +64,6 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 
 Sysdig alerts can contain a multitude of various fields pertaining to the type of activity on the host machine.
 
-#### Example
-
 {{ event "alerts" }}
 
 {{ fields "alerts" }}
@@ -70,17 +72,21 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 
 This is the `event` dataset.
 
-#### Example
-
 {{event "event"}}
 
 {{fields "event"}}
 
+### CSPM
+
+This is the `CSPM` dataset.
+
+{{event "cspm"}}
+
+{{fields "cspm"}}
+
 ### Vulnerability
 
 This is the `vulnerability` dataset.
-
-#### Example
 
 {{event "vulnerability"}}
 

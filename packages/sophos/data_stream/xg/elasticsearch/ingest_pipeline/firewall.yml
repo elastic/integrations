@@ -5,28 +5,35 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - set:
+    tag: set_event_action_3c69f2d9
     field: event.action
     value: "{{{sophos.xg.log_subtype}}}"
     if: "ctx.sophos?.xg?.log_subtype != null"
 - set:
+    tag: set_event_outcome_a78e5234
     field: event.outcome
     value: success
     if: "ctx.sophos?.xg?.log_subtype != null"
 - set:
+    tag: set_event_kind_855a8855
     field: event.kind
     value: alert
     if: '["03001", "05001", "05151", "00003", "00004"].contains(ctx.event?.code)'
 - append:
+    tag: append_event_category_10629b7a
     field: event.category
     value: intrusion_detection
     if: '["03001", "05001", "05151", "00003", "00004"].contains(ctx.event?.code)'
 - append:
+    tag: append_event_category_7afdca3c
     field: event.category
     value: network
 - append:
+    tag: append_event_type_757efc71
     field: event.type
     value:
       - start
@@ -34,6 +41,7 @@ processors:
       - connection
     if: "['Start', 'Interim'].contains(ctx.sophos?.xg?.connevent)"
 - append:
+    tag: append_event_type_7230c318
     field: event.type
     value:
       - end
@@ -41,6 +49,7 @@ processors:
       - connection
     if: "ctx.sophos?.xg?.connevent == 'Stop'"
 - append:
+    tag: append_event_type_078fb998
     field: event.type
     value:
       - denied
@@ -51,21 +60,25 @@ processors:
 ## ECS Server/Destination Mapping ##
 ####################################
 - rename:
+    tag: rename_sophos_xg_dst_ip_to_destination_ip_17b8be30
     field: sophos.xg.dst_ip
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_ip != null"
 - rename:
+    tag: rename_sophos_xg_tran_dst_ip_to_destination_nat_ip_bcd99821
     field: sophos.xg.tran_dst_ip
     target_field: destination.nat.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.tran_dst_ip != null"
 - rename:
+    tag: rename_sophos_xg_destinationip_to_destination_ip_23124ee2
     field: sophos.xg.destinationip
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.destinationip !=null"
 - convert:
+    tag: convert_sophos_xg_dst_port_to_destination_port_cea07508
     field: sophos.xg.dst_port
     target_field: destination.port
     type: long
@@ -73,6 +86,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_port != null"
 - convert:
+    tag: convert_sophos_xg_tran_dst_port_to_destination_nat_port_3e98dd11
     field: sophos.xg.tran_dst_port
     target_field: destination.nat.port
     type: long
@@ -80,6 +94,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.tran_dst_port != null"
 - convert:
+    tag: convert_sophos_xg_recv_pkts_to_destination_packets_1171cc34
     field: sophos.xg.recv_pkts
     target_field: destination.packets
     type: long
@@ -87,6 +102,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.recv_pkts !=null"
 - convert:
+    tag: convert_sophos_xg_packets_received_to_destination_packets_d7aa3a58
     field: sophos.xg.packets_received
     target_field: destination.packets
     type: long
@@ -98,26 +114,31 @@ processors:
 ## ECS Client/Source Mapping ##
 ###############################
 - rename:
+    tag: rename_sophos_xg_src_ip_to_source_ip_db814f5f
     field: sophos.xg.src_ip
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_ip != null"
 - rename:
+    tag: rename_sophos_xg_tran_src_ip_to_source_nat_ip_5e97b8e8
     field: sophos.xg.tran_src_ip
     target_field: source.nat.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.tran_src_ip != null"
 - rename:
+    tag: rename_sophos_xg_src_trans_ip_to_source_nat_ip_6562d156
     field: sophos.xg.src_trans_ip
     target_field: source.nat.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_trans_ip != null"
 - rename:
+    tag: rename_sophos_xg_sourceip_to_source_ip_1c907c33
     field: sophos.xg.sourceip
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.sourceip != null"
 - convert:
+    tag: convert_sophos_xg_src_port_to_source_port_c97a8dfb
     field: sophos.xg.src_port
     target_field: source.port
     type: long
@@ -125,6 +146,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_port != null"
 - convert:
+    tag: convert_sophos_xg_tran_src_port_to_source_nat_port_08f8a3c4
     field: sophos.xg.tran_src_port
     target_field: source.nat.port
     type: long
@@ -132,17 +154,21 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.tran_src_port != null"
 - rename:
+    tag: rename_sophos_xg_src_mac_to_source_mac_638314a3
     field: sophos.xg.src_mac
     target_field: source.mac
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_mac != null"
 - trim:
+    tag: trim_sophos_xg_sent_pkts_00cc4b46
     field: sophos.xg.sent_pkts
     ignore_missing: true
 - trim:
+    tag: trim_sophos_xg_packets_sent_48896197
     field: sophos.xg.packets_sent
     ignore_missing: true
 - convert:
+    tag: convert_sophos_xg_sent_pkts_to_source_packets_96f4266d
     field: sophos.xg.sent_pkts
     target_field: source.packets
     type: long
@@ -150,6 +176,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.sent_pkts != null"
 - convert:
+    tag: convert_sophos_xg_packets_sent_to_source_packets_b24dbfbd
     field: sophos.xg.packets_sent
     target_field: source.packets
     type: long
@@ -157,11 +184,13 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.packets_sent != null"
 - rename:
+    tag: rename_sophos_xg_user_name_to_source_user_name_98774918
     field: sophos.xg.user_name
     target_field: source.user.name
     ignore_missing: true
     if: "ctx.sophos?.xg?.user_name != null"
 - rename:
+    tag: rename_sophos_xg_user_gp_to_source_user_group_name_277fc915
     field: sophos.xg.user_gp
     target_field: source.user.group.name
     ignore_missing: true
@@ -171,11 +200,13 @@ processors:
 ## ECS Rule Mapping ##
 ######################
 - rename:
+    tag: rename_sophos_xg_fw_rule_id_to_rule_id_69aa6b49
     field: sophos.xg.fw_rule_id
     target_field: rule.id
     ignore_missing: true
     if: "ctx.rule?.id == null"
 - rename:
+    tag: rename_sophos_xg_policy_type_to_rule_ruleset_9689a1e7
     field: sophos.xg.policy_type
     target_field: rule.ruleset
     ignore_missing: true
@@ -185,26 +216,32 @@ processors:
 ## ECS Network Mapping
 ######################
 - rename:
+    tag: rename_sophos_xg_application_to_network_protocol_3ab78d03
     field: sophos.xg.application
     target_field: network.protocol
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_protocol_to_network_transport_9c443cec
     field: sophos.xg.protocol
     target_field: network.transport
     ignore_missing: true
 - set:
+    tag: set_network_direction_7664f3cc
     field: network.direction
     value: inbound
     if: "['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx.observer?.egress?.zone) && ctx.observer?.ingress?.zone == 'WAN'"
 - set:
+    tag: set_network_direction_38b1abf3
     field: network.direction
     value: outbound
     if: "['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx.observer?.ingress?.zone) && ctx.observer?.egress?.zone == 'WAN'"
 - set:
+    tag: set_network_direction_780e0045
     field: network.direction
     value: internal
     if: "['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx.observer?.ingress?.zone) && ['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx.observer?.egress?.zone)"
 - set:
+    tag: set_network_direction_7849e373
     field: network.direction
     value: external
     if: "ctx.observer?.ingress?.zone == 'WAN' && ctx.observer?.egress?.zone == 'WAN'"
@@ -213,9 +250,11 @@ processors:
 ## Cleanup ##
 #############
 - lowercase:
+      tag: lowercase_event_action_0a05ce67
       field: event.action
       ignore_failure: true
 - remove:
+    tag: remove_942949b9
     field:
     - sophos.xg.dst_port
     - sophos.xg.tran_dst_port
@@ -232,4 +271,12 @@ on_failure:
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

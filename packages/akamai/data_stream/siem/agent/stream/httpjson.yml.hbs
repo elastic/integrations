@@ -18,8 +18,15 @@ request.tracer.maxbackups: 5
 request.transforms:
   - set:
       target: url.params.from
+      # On the initial request (no cursor), this calculates the start time.
+      # It takes the more recent of two values: the user-defined 'initial_interval'
+      # or the API's maximum 12-hour look-back, preventing API errors.
       value: >-
-        [[ if not (index .cursor "last_offset") ]][[ (now (parseDuration "-{{initial_interval}}")).Unix ]][[ end ]]
+        [[- if not (index .cursor "last_offset") -]]
+          [[- $initialTime := (now (parseDuration "-{{initial_interval}}")).Unix -]]
+          [[- $maxLookbackTime := (now (parseDuration "-12h")).Unix -]]
+          [[- max $maxLookbackTime $initialTime -]]
+        [[- end -]]
   - set:
       target: url.params.to
       value: >- 
