@@ -50,6 +50,10 @@ processors:
       field: json.accountName
       target_field: sentinel_one.agent.account.name
       ignore_missing: true
+  - set:
+      field: sentinel_one.account.name
+      copy_from: sentinel_one.agent.account.name
+      ignore_empty_value: true
   - rename:
       field: json.activeDirectory.computerDistinguishedName
       target_field: sentinel_one.agent.active_directory.computer.name
@@ -272,6 +276,10 @@ processors:
       field: json.id
       target_field: sentinel_one.agent.agent.id
       ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: sentinel_one.agent.agent.id
+      ignore_empty_value: true
   - set:
       field: host.id
       copy_from: sentinel_one.agent.agent.id
@@ -611,6 +619,10 @@ processors:
       field: json.osArch
       target_field: sentinel_one.agent.os.arch
       ignore_missing: true
+  - set:
+      field: host.architecture
+      copy_from: sentinel_one.agent.os.arch
+      ignore_empty_value: true
   - rename:
       field: json.osName
       target_field: host.os.name
@@ -736,10 +748,18 @@ processors:
       field: json.siteId
       target_field: sentinel_one.agent.site.id
       ignore_missing: true
+  - set:
+      field: sentinel_one.site.id
+      copy_from: sentinel_one.agent.site.id
+      ignore_empty_value: true
   - rename:
       field: json.siteName
       target_field: sentinel_one.agent.site.name
       ignore_missing: true
+  - set:
+      field: sentinel_one.site.name
+      copy_from: sentinel_one.agent.site.name
+      ignore_empty_value: true
   - rename:
       field: json.storageName
       target_field: sentinel_one.agent.storage.name
