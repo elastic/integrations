@@ -469,17 +469,15 @@ program: |-
         )
       )
   ).as(state,
-    (
-      // Ensure that we bring the current type up to the current time,
-      // even if we did not get any content for the query period.
-      has(state.?work.curr_type) && state.?cursor.last_for.optMap(last_for,
-        state.work.curr_type.to_lower().as(curr_type, curr_type in last_for ?
-            timestamp(last_for[curr_type]) < now - duration("1h")
-          :
-            false
-        )
-      ).orValue(false) && !state.work.todo_type.exists(t, t == state.work.curr_type)
-    ) ?
+    (// Ensure that we bring the current type up to the current time,
+    // even if we did not get any content for the query period.
+    has(state.?work.curr_type) && state.?cursor.last_for.optMap(last_for,
+      state.work.curr_type.to_lower().as(curr_type, (curr_type in last_for) ?
+        (timestamp(last_for[curr_type]) < now - duration("1h"))
+      :
+        false
+      )
+    ).orValue(false) && !state.work.todo_type.exists(t, t == state.work.curr_type)) ?
       state.with(
         {
           "work": state.work.with({"todo_type": [state.work.curr_type] + state.work.todo_type}),
@@ -491,7 +489,8 @@ program: |-
     state.with(
       {
         "want_more": state.work.as(w,
-          size(w.?todo_type.orValue([])) != 0 || size(w.?todo_content.orValue([])) != 0 || w.?next_list.orValue("") != ""
+          size(w.?todo_type.orValue([])) != 0 || size(w.?todo_content.orValue([])) != 0 ||
+          w.?next_list.orValue("") != ""
         ),
       }
     )
