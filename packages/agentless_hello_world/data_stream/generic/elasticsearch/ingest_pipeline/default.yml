@@ -17,27 +17,6 @@ processors:
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-      if: ctx.event?.original == null
-  - remove:
-      field: message
-      tag: remove_message
-      ignore_missing: true
-      description: The `message` field is no longer required if the document has an `event.original` field.
-      if: ctx.event?.original != null
-  - json:
-      field: event.original
-      target_field: agentless_hello_world.generic
-      on_failure:
-        - set:
-            field: error.type
-            value: "json_parse_error"
-        - set:
-            field: error.message
-            value: "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: event
