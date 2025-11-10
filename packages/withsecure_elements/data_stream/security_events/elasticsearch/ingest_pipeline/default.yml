@@ -78,12 +78,33 @@ processors:
       if: ctx.withsecure_elements?.security_events?.action != null
       ignore_failure: true
       tag: set_event_action
-  - set:
-      field: event.severity
-      copy_from: withsecure_elements.security_events.severity
+  - script:
+      lang: painless
+      tag: normalize_security_event_severity
       if: ctx.withsecure_elements?.security_events?.severity != null
-      ignore_failure: true
-      tag: set_event_severity
+      source: >
+        def severityValue = ctx.withsecure_elements.security_events.severity;
+        if (severityValue == null) return;
+        if (severityValue instanceof Number) {
+          ctx.event.severity = ((Number) severityValue).intValue();
+          return;
+        }
+        def normalized = severityValue.toString().toLowerCase();
+        Map mapping = [
+          'informational': 0,
+          'info'         : 0,
+          'notice'       : 1,
+          'low'          : 2,
+          'medium'       : 3,
+          'moderate'     : 3,
+          'high'         : 4,
+          'critical'     : 5,
+          'severe'       : 5,
+          'fatal'        : 6
+        ];
+        if (mapping.containsKey(normalized)) {
+          ctx.event.severity = mapping.get(normalized);
+        }
 
   # Set timestamps
   - date:

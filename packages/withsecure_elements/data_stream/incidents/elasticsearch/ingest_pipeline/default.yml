@@ -41,11 +41,11 @@ processors:
       tag: set_event_module
   - set:
       field: event.category
-      value: threat
+      value: [threat]
       tag: set_event_category
   - set:
       field: event.type
-      value: incident
+      value: [incident]
       tag: set_event_type
   - set:
       field: event.kind
@@ -81,17 +81,36 @@ processors:
       ignore_failure: true
       tag: set_event_id
   - set:
-      field: event.severity
-      copy_from: withsecure_elements.incidents.severity
-      if: ctx.withsecure_elements?.incidents?.severity != null
-      ignore_failure: true
-      tag: set_event_severity
-  - set:
       field: event.risk_score
       copy_from: withsecure_elements.incidents.riskScore
       if: ctx.withsecure_elements?.incidents?.riskScore != null
       ignore_failure: true
       tag: set_event_risk_score
+  - script:
+      lang: painless
+      tag: normalize_incident_severity
+      if: ctx.withsecure_elements?.incidents?.severity != null
+      source: >
+        def severityValue = ctx.withsecure_elements.incidents.severity;
+        if (severityValue == null) return;
+        if (severityValue instanceof Number) {
+          ctx.event.severity = ((Number) severityValue).intValue();
+          return;
+        }
+        def normalized = severityValue.toString().toLowerCase();
+        Map mapping = [
+          'informational': 0,
+          'info'         : 0,
+          'low'          : 1,
+          'medium'       : 2,
+          'moderate'     : 2,
+          'high'         : 3,
+          'severe'       : 4,
+          'critical'     : 5
+        ];
+        if (mapping.containsKey(normalized)) {
+          ctx.event.severity = mapping.get(normalized);
+        }
 
   # Set timestamps
   - date:

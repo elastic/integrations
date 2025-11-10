@@ -1,8 +1,8 @@
-- name: withsecure
+- name: withsecure_elements
   type: group
   description: Fields for WithSecure Elements data
   fields:
-    - name: security.event
+    - name: security_events
       type: group
       description: Security event information
       fields:
@@ -24,25 +24,22 @@
         - name: description
           type: text
           description: Detailed description of the event type
-        - name: server_timestamp
-          type: date
-          description: Timestamp when the event was received by the server
         - name: persistence_timestamp
           type: date
           description: Timestamp when the event was persisted
         - name: client_timestamp
           type: date
           description: Timestamp when the event was generated on the client
-        - name: event_transaction_id
+        - name: eventTransactionId
           type: keyword
           description: Transaction ID for the event
         - name: acknowledged
           type: boolean
           description: Whether the event has been acknowledged
-        - name: acknowledged_by
+        - name: acknowledgedBy
           type: keyword
           description: User who acknowledged the event
-        - name: ack_timestamp
+        - name: ackTimestamp
           type: date
           description: Timestamp when the event was acknowledged
         - name: organization
@@ -75,10 +72,37 @@
             - name: name
               type: keyword
               description: Device name
-        - name: user_name
+        - name: userName
           type: keyword
           description: User name associated with the event
         - name: details
-          type: object
-          object_type: keyword
+          type: group
           description: Additional event details
+          fields:
+            - name: profileName
+              type: keyword
+              description: Name of the security profile
+            - name: path
+              type: keyword
+              description: Path related to the event
+            - name: alertType
+              type: keyword
+              description: Alert type reported by WithSecure
+            - name: throttledCount
+              type: keyword
+              description: Number of throttled events
+            - name: profileId
+              type: keyword
+              description: Profile identifier
+            - name: profileVersion
+              type: keyword
+              description: Version of the profile
+            - name: hostIpAddress
+              type: keyword
+              description: Host IP address associated with the event
+            - name: userName
+              type: keyword
+              description: User name specified in the event details
+            - name: clientTimestamp
+              type: keyword
+              description: Original client timestamp included in the event details
