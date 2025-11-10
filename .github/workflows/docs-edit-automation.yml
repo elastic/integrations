@@ -31,7 +31,7 @@ jobs:
           echo "🔍 Analyzing documentation changes..."
 
           # Get changed files directly from PR
-          if ! PR_FILES=$(gh pr view $PR_NUMBER --json files -q '.files[].path' 2>/dev/null); then
+          if ! PR_FILES=$(gh pr view "$PR_NUMBER" --json files -q '.files[].path' 2>/dev/null); then
             echo "Error: Failed to fetch PR files"
             exit 1
           fi
@@ -53,7 +53,7 @@ jobs:
           fi
           
           # Get custom changelog description from PR body
-          if ! PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body // ""' 2>/dev/null); then
+          if ! PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body // ""' 2>/dev/null); then
             echo "Warning: Failed to fetch PR body, using default changelog description"
             PR_BODY=""
           fi
