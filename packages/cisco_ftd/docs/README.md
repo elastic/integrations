@@ -52,7 +52,7 @@ You must configure your Cisco FTD device to forward syslog messages to the Elast
 3.  **Deploy Changes**:
     *   Save and deploy your configuration changes to the FTD device.
 
-For detailed, step-by-step instructions, refer to the official Cisco documentation, such as [Configure Logging on FTD](https://www.cisco.com/c/en/us/td/docs/security/firepower/70/fdm/fptd-fdm-config-guide-700/fptd-fdm-logging.html).
+For detailed, step-by-step instructions, refer to the official Cisco documentation, such as [Configure Logging on FTD via FMC](https://www.cisco.com/c/en/us/support/docs/security/firepower-ngfw/200479-Configure-Logging-on-FTD-via-FMC.html).
 
 #### 2. Add the Cisco FTD Integration in Elastic
 

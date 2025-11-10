@@ -202,13 +202,13 @@ Note: Cisco provides a range of Firepower devices, which may have different conf
 - **Not applicable**: This integration uses syslog protocol and does not require API authentication
 
 ## Vendor Resources
-- [Cisco Firepower Threat Defense Documentation](https://www.cisco.com/c/en/us/support/security/firepower-threat-defense/products-installation-and-configuration-guides-list.html)
-- [Cisco FTD Logging Configuration Guide](https://www.cisco.com/c/en/us/support/security/firepower-threat-defense/products-installation-and-configuration-guides-list.html)
-- [Cisco Firepower Management Center Documentation](https://www.cisco.com/c/en/us/support/security/firepower-management-center/products-installation-and-configuration-guides-list.html)
+- [Cisco Secure Firewall Management Center Examples](https://www.cisco.com/c/en/us/support/security/defense-center/products-configuration-examples-list.html)
+- [Configure Logging on FTD via FMC](https://www.cisco.com/c/en/us/support/docs/security/firepower-ngfw/200479-Configure-Logging-on-FTD-via-FMC.html)
+- [Configure FMC to Send Audit Logs to a Syslog Server](https://www.cisco.com/c/en/us/support/docs/security/secure-firewall-management-center/221019-configure-fmc-to-send-audit-logs-to-a-sy.html)
 
 # Documentation sites
-- [Cisco Firepower Threat Defense Product Page](https://www.cisco.com/c/en/us/products/security/firepower-threat-defense/index.html)
-- [Cisco Firepower Documentation](https://www.cisco.com/c/en/us/support/security/firepower-threat-defense/tsd-products-support-series-home.html)
-- [Cisco FTD Syslog Configuration](https://www.cisco.com/c/en/us/support/security/firepower-threat-defense/products-installation-and-configuration-guides-list.html)
+- [Cisco Secure Firewall Management Center Examples](https://www.cisco.com/c/en/us/support/security/defense-center/products-configuration-examples-list.html)
+- [Cisco Firepower Threat Defense Product Page](https://www.cisco.com/c/en/us/support/security/firepower-ngfw/series.html)
+- [Cisco FTD Software Release and Sustaining Bulletin](https://www.cisco.com/c/en/us/products/collateral/security/firewalls/bulletin-c25-743178.html)
 - [Elastic Integrations Documentation](https://www.elastic.co/guide/en/integrations/index.html)
 - [Elastic Agent Documentation](https://www.elastic.co/guide/en/fleet/current/index.html)
