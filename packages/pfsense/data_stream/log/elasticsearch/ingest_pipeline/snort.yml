@@ -2,13 +2,26 @@
 description: Pipeline for PFsense SNORT logs.
 processors:
     - grok:
+            tag: grok_message_26af318e
             field: message
             patterns:
                 - '\[%{NUMBER:snort.generator_id}:%{NUMBER:snort.signature_id}:%{NUMBER:snort.signature_revision}\] \(%{DATA:snort.preprocessor}\) %{GREEDYDATA:snort.alert_message} \[Classification: %{DATA:snort.classification}\] \[Priority: %{NONNEGINT:snort.priority:long}\] \{%{WORD:network.protocol}\} %{IP:source.address}:%{NUMBER:source.port:long} -> %{IP:destination.address}:%{NUMBER:destination.port:long}'
     - lowercase:
+        tag: lowercase_network_protocol_49872259
         field: network.protocol
         ignore_missing: true
 on_failure:
     - set:
-          field: error.message
-          value: "{{{ _ingest.on_failure_message }}}"
+        field: error.message
+        value: >-
+          Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+          failed with message '{{{ _ingest.on_failure_message }}}'
+    - set:
+        field: event.kind
+        value: pipeline_error
+    - append:
+        field: tags
+        value: preserve_original_event
+        allow_duplicates: false

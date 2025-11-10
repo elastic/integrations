@@ -1,9 +1,11 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - grok:
+      tag: grok_cisco_secure_email_gateway_log_message_cef715af
       field: cisco_secure_email_gateway.log.message
       patterns:
         - '^graymail \[CONFIG\] %{WORD:cisco_secure_email_gateway.log.vendor_action} %{GREEDYDATA:cisco_secure_email_gateway.log.object}$'
@@ -46,9 +48,11 @@ processors:
         - '^MID %{NUMBER:email.message_id} %{DATA:file.extension} file %{GREEDYDATA:cisco_secure_email_gateway.log.details}$'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
   - lowercase:
+      tag: lowercase_network_protocol_d249a697
       field: network.protocol
       ignore_failure: true
   - set:
+      tag: set_event_type_82891cd5
       field: event.type
       if: ctx.cisco_secure_email_gateway?.log?.type == 'changed'
       value: change
@@ -59,6 +63,7 @@ processors:
       if: ctx.cisco_secure_email_gateway?.log?.spf_aligned != ''
       on_failure:
         - append:
+            tag: append_error_message_b79cc933
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
@@ -68,6 +73,7 @@ processors:
       if: ctx.cisco_secure_email_gateway?.log?.dkim_aligned != ''
       on_failure:
         - append:
+            tag: append_error_message_0f52bcc7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -78,6 +84,7 @@ processors:
       if: ctx.cisco_secure_email_gateway?.log?.spf_aligned != ''
       on_failure:
         - append:
+            tag: append_error_message_67cc2100
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -88,21 +95,25 @@ processors:
       if: ctx.cisco_secure_email_gateway?.log?.dkim_aligned != ''
       on_failure:
         - append:
+            tag: append_error_message_809db13e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_e39e3bad
       field: related.ip
       value: '{{{cisco_secure_email_gateway.log.interface}}}'
       if: ctx.cisco_secure_email_gateway?.log?.interface != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_429cda39
       field: related.ip
       value: '{{{cisco_secure_email_gateway.log.address}}}'
       if: ctx.cisco_secure_email_gateway?.log?.address != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_51dd17d0
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
@@ -114,4 +125,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
