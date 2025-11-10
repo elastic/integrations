@@ -1,0 +1,42 @@
+---
+description: Pipeline for processing domain-name STIX patterns
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_domain-name_pattern
+      patterns:
+        - "^\\[?domain-name:value%{SPACE}=%{SPACE}'%{DATA:_tmp.domain}'\\]?"
+        - "^\\[?domain-name:resolves_to_refs\\[\\*\\].value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}'\\]?"
+        - "^\\[?domain-name:resolves_to_refs\\[\\*\\].value%{SPACE}=%{SPACE}'%{DATA:_tmp.domain}'\\]?"
+        - "^\\[?ipv4-addr:value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}'\\]?"
+        - "^\\[?ipv4-addr:value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}/%{NUMBER}'\\]?"
+        - "^\\[?ipv6-addr:value%{SPACE}=%{SPACE}'%{IP:_tmp.ip}'\\]?"
+      ignore_failure: true
+
+  # Add domain name to ECS-compliant field
+  - append:
+      field: threat.indicator.url.domain
+      value: '{{{ _tmp.domain }}}'
+      if: ctx._tmp?.domain != null
+
+  # Optionally preserve full domain value in original field as well
+  - append:
+      field: threat.indicator.url.original
+      value: '{{{ _tmp.domain }}}'
+      if: ctx._tmp?.domain != null
+
+  # IP mapping
+  - append:
+      field: threat.indicator.ip
+      value: '{{{ _tmp.ip }}}'
+      if: ctx._tmp?.ip != null
+
+  - append:
+      field: related.ip
+      value: '{{{ _tmp.ip }}}'
+      if: ctx._tmp?.ip != null
+      allow_duplicates: false
+
+  - remove:
+      field: _tmp
+      ignore_missing: true
