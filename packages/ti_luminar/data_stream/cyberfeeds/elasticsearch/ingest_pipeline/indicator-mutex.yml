@@ -1,0 +1,18 @@
+---
+description: Pipeline for processing mutex STIX patterns
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_mutex_pattern
+      patterns:
+        - "^\\[?mutex:name%{SPACE}=%{SPACE}'%{DATA:_tmp.mutex}'\\]?"
+      ignore_failure: true
+
+  - append:
+      field: threat.indicator.mutex
+      value: '{{{ _tmp.mutex }}}'
+      if: ctx._tmp?.mutex != null
+
+  - remove:
+      field: _tmp
+      ignore_missing: true

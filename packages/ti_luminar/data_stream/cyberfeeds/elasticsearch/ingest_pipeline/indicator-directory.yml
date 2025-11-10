@@ -1,0 +1,24 @@
+---
+description: Pipeline for processing directory STIX patterns
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_directory_pattern
+      patterns:
+        - "(?i:^\\[?directory:path%{SPACE}=%{SPACE}'%{DATA:_tmp.dir_path}'\\]?)"
+      ignore_failure: true
+
+  - append:
+      field: threat.indicator.directory.path
+      value: '{{{ _tmp.dir_path }}}'
+      if: ctx._tmp?.dir_path != null
+
+  - append:
+      field: related.directory
+      value: '{{{ _tmp.dir_path }}}'
+      if: ctx._tmp?.dir_path != null
+      allow_duplicates: false
+
+  - remove:
+      field: _tmp
+      ignore_missing: true
