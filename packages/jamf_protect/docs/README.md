@@ -112,26 +112,40 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-18T02:21:21.700Z",
+    "@timestamp": "2025-10-28T06:40:44.009Z",
     "agent": {
-        "ephemeral_id": "27e2f226-8bea-4235-b83c-c7919dfa8f8c",
-        "id": "cc46dccd-0ce0-4fb8-9f12-7c7427af9273",
-        "name": "elastic-agent-80088",
+        "ephemeral_id": "1e2893fd-6cd2-4457-9d11-76db04aa40fe",
+        "id": "42d9c674-11c5-4683-8f79-8632a8dc911a",
+        "name": "elastic-agent-61406",
         "type": "filebeat",
-        "version": "8.19.3"
+        "version": "8.16.5"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-jamf-protect-alerts-bucket-67017",
+                "name": "elastic-package-jamf-protect-alerts-bucket-67017"
+            },
+            "object": {
+                "key": "test-alerts.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "jamf_protect.alerts",
-        "namespace": "43213",
+        "namespace": "71797",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "cc46dccd-0ce0-4fb8-9f12-7c7427af9273",
+        "id": "42d9c674-11c5-4683-8f79-8632a8dc911a",
         "snapshot": false,
-        "version": "8.19.3"
+        "version": "8.16.5"
     },
     "event": {
         "action": "CustomURLHandlerCreation",
@@ -142,8 +156,9 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2025-09-18T02:21:22Z",
+        "ingested": "2025-10-28T06:40:45Z",
         "kind": "alert",
+        "original": "{\"caid\":\"9344154b2323cbfdca098e408354212d4331ac3e9e538497aba0f766723661f7\",\"certid\":\"312301bd32f3fc8f82c7d6e57814764ae751f171f37496407d8998a32892bcea\",\"input\":{\"host\":{\"os\":\"Version 14.2 (Build 23C5030f)\",\"ips\":[\"175.16.199.1\"],\"serial\":\"C02ZW0GTLVDL\",\"hostname\":\"LMAC-ZW0GTLVDL\",\"protectVersion\":\"5.1.1.2\",\"provisioningUDID\":\"32EC79C5-26DC-535A-85F7-986F063297E2\"},\"match\":{\"tags\":[\"Visibility\"],\"uuid\":\"6bdb0697-6d07-47bc-a37d-6c3348a5d953\",\"event\":{\"dev\":16777225,\"gid\":0,\"pid\":15910,\"uid\":0,\"path\":\"/Applications/.Microsoft Teams (work or school).app.installBackup\",\"type\":3,\"uuid\":\"391104e6-ca86-4afb-82c0-7453595624a6\",\"iNode\":19478271,\"eventID\":154840,\"prevFile\":\"/Applications/Microsoft Teams (work or school).app\",\"timestamp\":1700566364.184953},\"facts\":[{\"name\":\"CustomURLHandlerCreation\",\"tags\":[\"Visibility\"],\"uuid\":\"25a295ca-f4b3-4f78-8faa-80e9182645f1\",\"human\":\"Application that uses custom url handler created\",\"actions\":[{\"name\":\"CacheFile\"},{\"name\":\"Report\"}],\"context\":[{\"name\":\"Signer\",\"value\":\"4\",\"valueType\":\"String\"},{\"name\":\"BundleURLTypes\",\"value\":\"{\\n    CFBundleTypeRole = Editor;\\n    CFBundleURLName = \\\"com.microsoft.teams2\\\";\\n    CFBundleURLSchemes =     (\\n        msteams\\n    );\\n}\",\"valueType\":\"String\"}],\"version\":1,\"severity\":0}],\"custom\":false,\"actions\":[{\"name\":\"CacheFile\"},{\"name\":\"Report\"}],\"context\":[{\"name\":\"Signer\",\"value\":\"4\",\"valueType\":\"String\"},{\"name\":\"BundleURLTypes\",\"value\":\"{\\n    CFBundleTypeRole = Editor;\\n    CFBundleURLName = \\\"com.microsoft.teams2\\\";\\n    CFBundleURLSchemes =     (\\n        msteams\\n    );\\n}\",\"valueType\":\"String\"}],\"severity\":0},\"related\":{\"files\":[{\"gid\":0,\"uid\":0,\"fsid\":16777225,\"mode\":16804,\"path\":\"/Applications/.Microsoft Teams (work or school).app.installBackup\",\"size\":96,\"inode\":19478271,\"xattrs\":[\"com.apple.macl\"],\"changed\":1700566364,\"created\":0,\"sha1hex\":\"\",\"accessed\":1698762823,\"modified\":1698762823,\"sha256hex\":\"\",\"isDownload\":false,\"objectType\":\"GPSystemObject\",\"isAppBundle\":true,\"isDirectory\":true,\"signingInfo\":{\"appid\":\"\",\"status\":-67062,\"teamid\":\"\",\"signerType\":4,\"authorities\":[],\"entitlements\":[],\"statusMessage\":\"code object is not signed at all\",\"informationStage\":\"extended\"},\"isScreenShot\":false}],\"users\":[{\"uid\":0,\"name\":\"root\",\"uuid\":\"C02ZW0GTLVDL0\"}],\"groups\":[{\"gid\":0,\"name\":\"wheel\",\"uuid\":\"C02ZW0GTLVDL0\"}],\"binaries\":[{\"gid\":0,\"uid\":0,\"fsid\":16777225,\"mode\":33261,\"path\":\"/Library/PrivilegedHelperTools/com.microsoft.autoupdate.helper\",\"size\":293200,\"inode\":19877984,\"xattrs\":[],\"changed\":1700045896,\"created\":1700045896,\"sha1hex\":\"5ddcd49004e66cead79ca82991f1b4d4a8ba52d9\",\"accessed\":1700045896,\"modified\":1700045896,\"sha256hex\":\"8fd91d9d1ca53ef93921c8072e12ec082c9eba62bf93f0f900e71b6aa4fa0ed8\",\"isDownload\":false,\"objectType\":\"GPSystemObject\",\"isAppBundle\":false,\"isDirectory\":false,\"signingInfo\":{\"appid\":\"com.microsoft.autoupdate.helper\",\"cdhash\":\"Ji34X0RVyhgstFZxr7Jsmtnf8Ts=\",\"status\":0,\"teamid\":\"UBF8T346G9\",\"signerType\":2,\"authorities\":[\"Developer ID Application: Microsoft Corporation (UBF8T346G9)\",\"Developer ID Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"isScreenShot\":false}],\"processes\":[{\"gid\":0,\"pid\":15910,\"uid\":0,\"args\":[\"/Library/PrivilegedHelperTools/com.microsoft.autoupdate.helper\",\"XPC_SERVICE_NAME=com.microsoft.autoupdate.helper\",\"PATH=/usr/bin:/bin:/usr/sbin:/sbin\",\"XPC_FLAGS=1\",\"pfz=0x7ffffff12000\",\"stack_guard=0x94bec1a9eb9800ea\",\"malloc_entropy=0x7777a3bc060946c0,0x6f95455435250cbc\",\"ptr_munge=0x749c1515ccadfca\",\"main_stack=0x7ff7bf6da000,0x800000,0x7ff7bb6da000,0x4000000\",\"executable_file=0x1a01000009,0x12f5060\",\"dyld_file=0x1a01000009,0xfffffff000982f7\",\"executable_cdhash=262df85f4455ca182cb45671afb26c9ad9dff13b\",\"executable_boothash=1fc9ca7065a4d7a9c299cc51414c052e5d7025d7\",\"th_port=0x103\"],\"name\":\"com.microsoft.autoupdate.helper\",\"path\":\"/Library/PrivilegedHelperTools/com.microsoft.autoupdate.helper\",\"pgid\":15910,\"ppid\":1,\"rgid\":0,\"ruid\":0,\"uuid\":\"b8cd6fa5-e8c3-4f05-88a0-68469d04806c\",\"flags\":[],\"processType\":\"GPSystemObject\",\"signingInfo\":{\"appid\":\"com.microsoft.autoupdate.helper\",\"cdhash\":\"Ji34X0RVyhgstFZxr7Jsmtnf8Ts=\",\"status\":0,\"teamid\":\"UBF8T346G9\",\"signerType\":2,\"authorities\":[\"Developer ID Application: Microsoft Corporation (UBF8T346G9)\",\"Developer ID Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"inheritedFlags\":[],\"responsiblePID\":15910,\"startTimestamp\":1700566364,\"originalParentPID\":1,\"processIdentifier\":266122}]},\"eventType\":\"GPFSEvent\"}}",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
         "severity": 0,
@@ -179,7 +194,13 @@ An example event for `alerts` looks as following:
         }
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-jamf-protect-alerts-bucket-67017.s3.us-east-1.amazonaws.com/test-alerts.log"
+        },
+        "offset": 0
     },
     "process": {
         "args": [
@@ -257,8 +278,10 @@ An example event for `alerts` looks as following:
         "name": "CustomURLHandlerCreation"
     },
     "tags": [
-        "jamf_protect-alerts",
+        "collect_sqs_logs",
         "Visibility",
+        "jamf_protect.alerts",
+        "preserve_original_event",
         "forwarded"
     ]
 }
@@ -269,6 +292,9 @@ An example event for `alerts` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -306,17 +332,31 @@ An example event for `telemetry` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-26T08:30:40.888Z",
+    "@timestamp": "2025-10-28T06:44:28.855Z",
     "agent": {
-        "ephemeral_id": "87dfe716-ac1e-4884-b6a9-9e0b14cb84fa",
-        "id": "ace49470-c6d1-4be3-958a-46f731fdb9bc",
-        "name": "elastic-agent-47172",
+        "ephemeral_id": "eb7e72ca-f3e6-436a-8ce6-440f47da52de",
+        "id": "7c612b6f-6e6b-46ef-9e04-52f9aabba22a",
+        "name": "elastic-agent-58522",
         "type": "filebeat",
-        "version": "8.18.3"
+        "version": "8.16.5"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-jamf-protect-telemetry-bucket-47328",
+                "name": "elastic-package-jamf-protect-telemetry-bucket-47328"
+            },
+            "object": {
+                "key": "test-telemetry.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "jamf_protect.telemetry",
-        "namespace": "31348",
+        "namespace": "94247",
         "type": "logs"
     },
     "device": {
@@ -328,9 +368,9 @@ An example event for `telemetry` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "ace49470-c6d1-4be3-958a-46f731fdb9bc",
+        "id": "7c612b6f-6e6b-46ef-9e04-52f9aabba22a",
         "snapshot": false,
-        "version": "8.18.3"
+        "version": "8.16.5"
     },
     "event": {
         "action": "exec",
@@ -341,7 +381,7 @@ An example event for `telemetry` looks as following:
         "code": "9",
         "dataset": "jamf_protect.telemetry",
         "id": "CDB31202-8CB4-4C72-A9C6-7F494CD5F598",
-        "ingested": "2025-08-26T08:30:41Z",
+        "ingested": "2025-10-28T06:44:29Z",
         "kind": "event",
         "provider": "Jamf Protect",
         "reason": "A new process has been executed",
@@ -370,12 +410,18 @@ An example event for `telemetry` looks as following:
         }
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "aws-s3"
     },
     "jamf_protect": {
         "telemetry": {
             "event_allowed_by_esclient": false
         }
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-jamf-protect-telemetry-bucket-47328.s3.us-east-1.amazonaws.com/test-telemetry.log"
+        },
+        "offset": 0
     },
     "observer": {
         "product": "Jamf Protect",
@@ -464,8 +510,11 @@ An example event for `telemetry` looks as following:
         ]
     },
     "tags": [
+        "collect_sqs_logs",
+        "preserve_original_event",
         "forwarded",
-        "jamf_protect-telemetry"
+        "jamf_protect-telemetry",
+        "jamf_protect.telemetry"
     ],
     "user": {
         "effective": {
@@ -482,6 +531,9 @@ An example event for `telemetry` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -637,17 +689,31 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-26T08:32:41.199Z",
+    "@timestamp": "2025-10-28T07:00:53.248Z",
     "agent": {
-        "ephemeral_id": "0a974337-4fd7-47e2-b246-3291a22ef306",
-        "id": "31b39c8b-7fdd-4fc4-ae65-f7155066f766",
-        "name": "elastic-agent-12407",
+        "ephemeral_id": "9eab9582-cf9c-475d-8863-e5b04e2f1a6a",
+        "id": "8c1c5a4a-d426-4847-8f4f-33bcb9c10ee1",
+        "name": "elastic-agent-60299",
         "type": "filebeat",
-        "version": "8.18.3"
+        "version": "8.16.5"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-jamf-protect-web-threat-events-bucket-87144",
+                "name": "elastic-package-jamf-protect-web-threat-events-bucket-87144"
+            },
+            "object": {
+                "key": "test-web-threat-events.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_threat_events",
-        "namespace": "11080",
+        "namespace": "23600",
         "type": "logs"
     },
     "destination": {
@@ -659,9 +725,9 @@ An example event for `web_threat_events` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "31b39c8b-7fdd-4fc4-ae65-f7155066f766",
+        "id": "8c1c5a4a-d426-4847-8f4f-33bcb9c10ee1",
         "snapshot": false,
-        "version": "8.18.3"
+        "version": "8.16.5"
     },
     "event": {
         "action": "Detected",
@@ -671,7 +737,7 @@ An example event for `web_threat_events` looks as following:
         ],
         "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
-        "ingested": "2025-08-26T08:32:42Z",
+        "ingested": "2025-10-28T07:00:54Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
@@ -687,17 +753,39 @@ An example event for `web_threat_events` looks as following:
         "name": "Books"
     },
     "host": {
+        "architecture": "x86_64",
+        "containerized": true,
         "geo": {
             "country_iso_code": "gb"
         },
-        "hostname": "Apple iPhone 11",
+        "hostname": "elastic-agent-60299",
         "id": "09f81436-de17-441e-a631-0461252c629b",
+        "ip": [
+            "192.168.245.2",
+            "192.168.240.8"
+        ],
+        "mac": [
+            "02-42-C0-A8-F0-08",
+            "02-42-C0-A8-F5-02"
+        ],
+        "name": "elastic-agent-60299",
         "os": {
-            "full": "IOS 11.2.5"
+            "full": "IOS 11.2.5",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
         }
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-jamf-protect-web-threat-events-bucket-87144.s3.us-east-1.amazonaws.com/test-web-threat-events.log"
+        },
+        "offset": 0
     },
     "observer": {
         "product": "Jamf Protect",
@@ -715,8 +803,7 @@ An example event for `web_threat_events` looks as following:
         "port": 3025
     },
     "tags": [
-        "forwarded",
-        "jamf_protect-web-threat-events"
+        "collect_sqs_logs"
     ],
     "user": {
         "email": "user@mail.com",
@@ -730,6 +817,9 @@ An example event for `web_threat_events` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -764,17 +854,31 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-26T08:33:42.355Z",
+    "@timestamp": "2025-10-28T06:55:49.657Z",
     "agent": {
-        "ephemeral_id": "26301c0b-99f9-4877-896b-6cfa4b1317f2",
-        "id": "8988739a-d5bb-4955-b5ca-31462326c97e",
-        "name": "elastic-agent-33205",
+        "ephemeral_id": "5ff4940e-e15a-4986-9cee-4d991d21805c",
+        "id": "a84ed05a-6c6b-4b51-8e4a-07513f999b67",
+        "name": "elastic-agent-90498",
         "type": "filebeat",
-        "version": "8.18.3"
+        "version": "8.16.5"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-jamf-protect-web-traffic-events-bucket-31604",
+                "name": "elastic-package-jamf-protect-web-traffic-events-bucket-31604"
+            },
+            "object": {
+                "key": "test-web-traffic-events.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_traffic_events",
-        "namespace": "32521",
+        "namespace": "56069",
         "type": "logs"
     },
     "dns": {
@@ -793,9 +897,9 @@ An example event for `web_traffic_events` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "8988739a-d5bb-4955-b5ca-31462326c97e",
+        "id": "a84ed05a-6c6b-4b51-8e4a-07513f999b67",
         "snapshot": false,
-        "version": "8.18.3"
+        "version": "8.16.5"
     },
     "event": {
         "action": "DNS Lookup",
@@ -805,7 +909,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "dataset": "jamf_protect.web_traffic_events",
-        "ingested": "2025-08-26T08:33:43Z",
+        "ingested": "2025-10-28T06:55:50Z",
         "kind": "event",
         "outcome": [
             "success"
@@ -818,15 +922,38 @@ An example event for `web_traffic_events` looks as following:
         ]
     },
     "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-90498",
         "id": "3453be41-0f2d-4d43-9ec2-a53f39fff93c",
+        "ip": [
+            "192.168.241.2",
+            "192.168.240.8"
+        ],
+        "mac": [
+            "02-42-C0-A8-F0-08",
+            "02-42-C0-A8-F1-02"
+        ],
+        "name": "elastic-agent-90498",
         "os": {
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": [
+                "linux",
                 "ios"
-            ]
+            ],
+            "version": "20230201"
         }
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-jamf-protect-web-traffic-events-bucket-31604.s3.us-east-1.amazonaws.com/test-web-traffic-events.log"
+        },
+        "offset": 0
     },
     "observer": {
         "product": "Jamf Protect",
@@ -840,8 +967,7 @@ An example event for `web_traffic_events` looks as following:
         "name": "DNS Lookup"
     },
     "tags": [
-        "forwarded",
-        "jamf_protect-web-traffic-events"
+        "collect_sqs_logs"
     ],
     "user": {
         "email": "hjilling@icloud.com",
@@ -855,6 +981,9 @@ An example event for `web_traffic_events` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
