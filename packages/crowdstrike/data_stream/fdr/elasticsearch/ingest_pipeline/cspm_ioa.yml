@@ -1,0 +1,256 @@
+---
+description: Pipeline for processing Could Security Posture's IOA events.
+processors:
+  # Event categorization
+  - set:
+      field: event.kind
+      value: alert
+      tag: set_event_kind_alert
+  - append:
+      field: event.category
+      value: configuration
+      tag: append_event_category_configuration
+  - append:
+      field: event.type
+      tag: append_info_change_type
+      value:
+        - info
+        - change
+
+  # Converts
+  - convert:
+      field: crowdstrike.policy_severity
+      tag: convert_crowdstrike_policy_severity_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.policy_severity
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: crowdstrike.source_ip_address
+      tag: convert_crowdstrike_source_ip_address_to_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.source_ip_address
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: crowdstrike.user_identity_mfa_authenticated
+      tag: convert_crowdstrike_user_identity_mfa_authenticated_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.user_identity_mfa_authenticated
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: crowdstrike.read_only
+      tag: convert_crowdstrike_read_only_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.read_only
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: crowdstrike.management_event
+      tag: convert_crowdstrike_management_event_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.management_event
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: crowdstrike.policy_id
+      tag: convert_crowdstrike_policy_id_string
+      target_field: crowdstrike.policy_id
+      type: string
+      ignore_missing: true
+  - date:
+      field: crowdstrike.event_created
+      tag: date_crowdstrike_event_created
+      target_field: event.created
+      formats:
+        - ISO8601
+      if: ctx.crowdstrike?.event_created != null && ctx.crowdstrike.event_created != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ECS mappings
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_created
+      copy_from: event.created
+      ignore_empty_value: true
+  - rename:
+      field: crowdstrike.event_id
+      tag: rename_crowdstrike_event_id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event_name
+      tag: rename_crowdstrike_event_name
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event_source
+      tag: rename_crowdstrike_event_source
+      target_field: source.domain
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.user_identity_principal_id
+      tag: rename_crowdstrike_user_identity_principal_id
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.user_identity_user_name
+      tag: rename_crowdstrike_user_identity_user_name
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.policy_description
+      tag: rename_policy_description_to_rule_description
+      target_field: rule.description
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_policy_statement
+      copy_from: crowdstrike.policy_statement
+      ignore_empty_value: true
+  - rename:
+      field: crowdstrike.policy_statement
+      tag: rename_policy_statement_to_message
+      target_field: message
+      ignore_missing: true
+  - append:
+      field: threat.tactic.name
+      tag: append_tactic_name
+      value: '{{{crowdstrike.mitre_attack_tactic}}}'
+      if: ctx.crowdstrike?.mitre_attack_tactic != null
+      allow_duplicates: false
+  - append:
+      field: threat.technique.name
+      tag: append_technique_name
+      value: '{{{crowdstrike.mitre_attack_technique}}}'
+      if: ctx.crowdstrike?.mitre_attack_technique != null
+      allow_duplicates: false
+  - rename:
+      field: crowdstrike.cloud_provider
+      tag: rename_cloud_provider
+      target_field: cloud.provider
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.policy_id
+      tag: rename_policy_id
+      target_field: rule.id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.source_ip_address
+      tag: rename_source_ip_address
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.cloud_service_friendly
+      tag: rename_cloud_service_friendly
+      target_field: cloud.service.name
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.account
+      tag: rename_crowdstrike_account
+      target_field: cloud.account.id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.cloud_region
+      tag: rename_crowdstrike_cloud_region
+      target_field: cloud.region
+      ignore_missing: true
+  - user_agent:
+      field: crowdstrike.user_agent
+      ignore_missing: true
+  # Override severity set in default.yml
+  # as Cloud Security has a different range.
+  - script:
+      lang: painless
+      tag: set_severity_name_from_crowdstrike_policy_severity
+      if: ctx.crowdstrike?.policy_severity instanceof long
+      source: |-
+        long severity = ctx.crowdstrike.policy_severity;
+        if (severity == 0) {
+          ctx.crowdstrike.SeverityName = 'critical';
+        } else if (severity == 1) {
+          ctx.crowdstrike.SeverityName = 'high';
+        } else if (severity == 2) {
+          ctx.crowdstrike.SeverityName = 'medium';
+        } else if (severity == 3) {
+          ctx.crowdstrike.SeverityName = 'informational';
+        }
+  - script:
+      lang: painless
+      if: ctx.crowdstrike?.SeverityName instanceof String && ctx.crowdstrike.SeverityName != ''
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String name = ctx.crowdstrike.SeverityName;
+        if (name.equalsIgnoreCase("low") || name.equalsIgnoreCase("info") || name.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (name.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (name.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (name.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+
+  # Cleanup
+  - remove:
+      field:
+        - crowdstrike.mitre_attack_tactic
+        - crowdstrike.mitre_attack_technique
+        - crowdstrike.event_created
+        - crowdstrike.user_agent
+      ignore_missing: true
+
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
