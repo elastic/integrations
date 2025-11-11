@@ -13,7 +13,6 @@ inputs:
           crowdstrike_app_id: test_app_id
           data_stream:
             dataset: crowdstrike.falcon
-            type: logs
           processors: null
           program: |
             state.response.decode_json().as(body, {
@@ -35,7 +34,8 @@ inputs:
             })
           publisher_pipeline.disable_host: true
           redact:
-            fields: null
+            fields:
+                - client_secret
           stream_type: crowdstrike
           tags:
             - preserve_original_event
