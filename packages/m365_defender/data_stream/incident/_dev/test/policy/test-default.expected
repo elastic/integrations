@@ -1,0 +1,82 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: m365_defender
+      name: test-default-m365_defender
+      streams:
+        - auth.oauth2.client.id: xxxx
+          auth.oauth2.client.secret: ${SECRET_0}
+          auth.oauth2.scopes: http://graph.microsoft.com/.default
+          auth.oauth2.token_url: http://login.microsoftonline.com/efgh/token
+          config_version: 2
+          cursor:
+            last_update_time:
+                value: '[[.last_event.lastUpdateDateTime]]'
+          data_stream:
+            dataset: m365_defender.incident
+          interval: 1m
+          publisher_pipeline.disable_host: true
+          request.ssl: null
+          request.timeout: 30s
+          request.tracer:
+            enabled: false
+            filename: ../../logs/httpjson/http-request-trace-*.ndjson
+            maxbackups: 5
+          request.transforms:
+            - set:
+                target: url.params.$top
+                value: 50
+            - set:
+                target: url.params.$skip
+                value: 0
+            - set:
+                default: lastUpdateDateTime ge [[formatDate (now (parseDuration "-24h"))]]
+                target: url.params.$filter
+                value: lastUpdateDateTime ge [[.cursor.last_update_time]]
+            - set:
+                target: url.params.$orderby
+                value: lastUpdateDateTime asc
+            - set:
+                target: url.params.$expand
+                value: alerts
+          request.url: http://graph.microsoft.com/v1.0/security/incidents
+          response.pagination:
+            - set:
+                do_not_log_failure: true
+                fail_on_template_error: true
+                target: url.params.$filter
+                value: '[[.last_response.url.params.Get "$filter"]]'
+            - set:
+                do_not_log_failure: true
+                fail_on_template_error: true
+                target: url.params.$skip
+                value: '[[if (eq (len .last_response.body.value) 50)]][[add (toInt (.last_response.url.params.Get "$skip")) 50]][[end]]'
+          response.split:
+            ignore_empty_value: true
+            split:
+                keep_parent: true
+                target: body.alerts
+            target: body.value
+          tags:
+            - forwarded
+            - m365_defender-incident
+      type: httpjson
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-m365_defender.incident-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

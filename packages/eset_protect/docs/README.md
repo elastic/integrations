@@ -58,15 +58,15 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2023-10-26T13:36:53.000Z",
     "agent": {
-        "ephemeral_id": "c57caace-7bf5-4540-8dbf-086080c70b5f",
-        "id": "55ae3f57-aa54-4ac3-a016-4f0ad3b506c2",
-        "name": "elastic-agent-24261",
+        "ephemeral_id": "b51f7ff3-ce17-4024-92bc-3d0e88739447",
+        "id": "b48af936-fff7-410e-bceb-954a720e7c99",
+        "name": "elastic-agent-51462",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "eset_protect.detection",
-        "namespace": "83546",
+        "namespace": "23163",
         "type": "logs"
     },
     "destination": {
@@ -95,7 +95,7 @@ An example event for `detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "55ae3f57-aa54-4ac3-a016-4f0ad3b506c2",
+        "id": "b48af936-fff7-410e-bceb-954a720e7c99",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -132,7 +132,7 @@ An example event for `detection` looks as following:
             "intrusion_detection"
         ],
         "dataset": "eset_protect.detection",
-        "ingested": "2025-10-29T15:12:55Z",
+        "ingested": "2025-11-10T06:06:25Z",
         "kind": "alert",
         "original": "{\"category\":\"DETECTION_CATEGORY_NETWORK_INTRUSION\",\"context\":{\"circumstances\":\"Eicar\",\"deviceUuid\":\"xxx-xxxx-1234-5678-xxxxxxxxxxxx\",\"process\":{\"path\":\"C:\\\\Windows\\\\chrome.exe\"},\"userName\":\"testingpc\\\\example\"},\"networkCommunication\":{\"protocolName\":\"0\",\"remoteIpAddress\":\"89.160.20.112\",\"remotePort\":443},\"objectHashSha1\":\"AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D\",\"objectTypeName\":\"File\",\"objectUrl\":\"C:\\\\Temp\\\\06516f11-xxxx-xxxx-xxxx-37da66b5de99_ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8.zip.e99\\\\ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8\",\"occurTime\":\"2023-10-26T13:36:53Z\",\"responses\":[{}],\"severityLevel\":\"SEVERITY_LEVEL_MEDIUM\",\"typeName\":\"TCP Port scanning attack\",\"uuid\":\"xxx-xxxx-xxxx-1234-xxxxxxxxxxxx\"}",
         "type": [
@@ -245,24 +245,24 @@ An example event for `device_task` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-29T15:15:21.280Z",
+    "@timestamp": "2025-11-10T06:07:33.442Z",
     "agent": {
-        "ephemeral_id": "6d4a7718-4ff3-4f15-8323-6a082873e1f9",
-        "id": "5e1ab90f-817d-4894-8a53-7d5107a7216b",
-        "name": "elastic-agent-77752",
+        "ephemeral_id": "2de42df7-1a70-45c2-bdb4-f36db2841c08",
+        "id": "3d09e751-a7b0-418a-ba1c-07154b8f5558",
+        "name": "elastic-agent-81384",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "eset_protect.device_task",
-        "namespace": "94034",
+        "namespace": "78597",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5e1ab90f-817d-4894-8a53-7d5107a7216b",
+        "id": "3d09e751-a7b0-418a-ba1c-07154b8f5558",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -304,7 +304,7 @@ An example event for `device_task` looks as following:
         "action": "Shutdown computer",
         "agent_id_status": "verified",
         "dataset": "eset_protect.device_task",
-        "ingested": "2025-10-29T15:15:24Z",
+        "ingested": "2025-11-10T06:07:36Z",
         "kind": "event",
         "original": "{\"action\":{\"name\":\"Shutdown computer\",\"params\":{\"@type\":\"type.googleapis.com/Era.Common.DataDefinition.Task.ESS.OnDemandScan\",\"cleaningEnabled\":true,\"customProfileName\":\"DefaultProfile\",\"scanProfile\":\"InDepth\",\"scanTargets\":[\"eset://AllTargets\"]}},\"description\":\"Automatically created via context menu\",\"displayName\":\"Reboot Computer - via context menu\",\"targets\":{\"devicesUuids\":[\"0205321e-XXXX-XXXX-1234-feeb35010ea7\",\"0205321e-XXXX-XXXX-5678-feeb35010ea7\",\"0205321e-XXXX-1234-5678-feeb35010ea7\"]},\"triggers\":[{\"manual\":{\"expireTime\":\"2023-12-01T01:30:00Z\"}}],\"uuid\":\"c93070e0-XXXX-1234-5678-c48f0e5e0b7e\",\"versionId\":\"1511\"}",
         "type": [

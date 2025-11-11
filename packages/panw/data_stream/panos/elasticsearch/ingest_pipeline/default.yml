@@ -2057,6 +2057,12 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
   - set:
@@ -2075,3 +2081,7 @@ on_failure:
         - _conf
         - message
       ignore_missing: true
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
