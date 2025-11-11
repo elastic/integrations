@@ -210,6 +210,7 @@ For more information on architectures that can be used for scaling this integrat
 | macos.unified_log.event.message.out_of_order_bytes |  | long |
 | macos.unified_log.event.message.packets_in |  | long |
 | macos.unified_log.event.message.packets_out |  | long |
+| macos.unified_log.event.message.pake |  | keyword |
 | macos.unified_log.event.message.path_status |  | keyword |
 | macos.unified_log.event.message.peer |  | boolean |
 | macos.unified_log.event.message.pid |  | long |
