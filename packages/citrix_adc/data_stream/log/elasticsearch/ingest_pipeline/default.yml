@@ -55,8 +55,8 @@ processors:
       type: long
       ignore_missing: true
 
-# Time zone (in order: log, config, locale, default to UTC).
 
+  # Time zone (in order: log, config, locale, default to UTC).
   - set:
       field: _tmp.tz
       value: UTC
@@ -79,8 +79,8 @@ processors:
       field: event.timezone
       copy_from: _tmp.tz
 
-# Syslog timestamp
 
+  # Syslog timestamp
   - date:
       if: ctx._tmp?.timestamp8601 != null
       tag: date_syslog_timestamp8601
@@ -174,8 +174,8 @@ processors:
           }
         });
 
-# Native-format timestamp
 
+  # Native-format timestamp
   - date:
       tag: date_timestamp_native
       field: _tmp.timestamp_native
@@ -257,8 +257,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-# Move vendor time fields to ECS.
 
+  # Move vendor time fields to ECS.
   - set:
       tag: set_@timestamp_from_citrix_native
       field: '@timestamp'
@@ -450,6 +450,12 @@ processors:
         - _conf
       tag: remove_tmp_and_conf
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - remove:
       field:
@@ -465,3 +471,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
