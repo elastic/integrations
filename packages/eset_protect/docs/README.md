@@ -58,15 +58,15 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2023-10-26T13:36:53.000Z",
     "agent": {
-        "ephemeral_id": "a2da59f5-382d-41e2-be5e-0b06df998911",
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b51f7ff3-ce17-4024-92bc-3d0e88739447",
+        "id": "b48af936-fff7-410e-bceb-954a720e7c99",
+        "name": "elastic-agent-51462",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "eset_protect.detection",
-        "namespace": "ep",
+        "namespace": "23163",
         "type": "logs"
     },
     "destination": {
@@ -95,9 +95,9 @@ An example event for `detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
+        "id": "b48af936-fff7-410e-bceb-954a720e7c99",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "eset_protect": {
         "detection": {
@@ -132,7 +132,7 @@ An example event for `detection` looks as following:
             "intrusion_detection"
         ],
         "dataset": "eset_protect.detection",
-        "ingested": "2024-04-16T05:41:07Z",
+        "ingested": "2025-11-10T06:06:25Z",
         "kind": "alert",
         "original": "{\"category\":\"DETECTION_CATEGORY_NETWORK_INTRUSION\",\"context\":{\"circumstances\":\"Eicar\",\"deviceUuid\":\"xxx-xxxx-1234-5678-xxxxxxxxxxxx\",\"process\":{\"path\":\"C:\\\\Windows\\\\chrome.exe\"},\"userName\":\"testingpc\\\\example\"},\"networkCommunication\":{\"protocolName\":\"0\",\"remoteIpAddress\":\"89.160.20.112\",\"remotePort\":443},\"objectHashSha1\":\"AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D\",\"objectTypeName\":\"File\",\"objectUrl\":\"C:\\\\Temp\\\\06516f11-xxxx-xxxx-xxxx-37da66b5de99_ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8.zip.e99\\\\ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8\",\"occurTime\":\"2023-10-26T13:36:53Z\",\"responses\":[{}],\"severityLevel\":\"SEVERITY_LEVEL_MEDIUM\",\"typeName\":\"TCP Port scanning attack\",\"uuid\":\"xxx-xxxx-xxxx-1234-xxxxxxxxxxxx\"}",
         "type": [
@@ -245,26 +245,26 @@ An example event for `device_task` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-16T05:41:49.641Z",
+    "@timestamp": "2025-11-10T06:07:33.442Z",
     "agent": {
-        "ephemeral_id": "a2da59f5-382d-41e2-be5e-0b06df998911",
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "2de42df7-1a70-45c2-bdb4-f36db2841c08",
+        "id": "3d09e751-a7b0-418a-ba1c-07154b8f5558",
+        "name": "elastic-agent-81384",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "eset_protect.device_task",
-        "namespace": "ep",
+        "namespace": "78597",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
+        "id": "3d09e751-a7b0-418a-ba1c-07154b8f5558",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "eset_protect": {
         "device_task": {
@@ -304,7 +304,7 @@ An example event for `device_task` looks as following:
         "action": "Shutdown computer",
         "agent_id_status": "verified",
         "dataset": "eset_protect.device_task",
-        "ingested": "2024-04-16T05:41:59Z",
+        "ingested": "2025-11-10T06:07:36Z",
         "kind": "event",
         "original": "{\"action\":{\"name\":\"Shutdown computer\",\"params\":{\"@type\":\"type.googleapis.com/Era.Common.DataDefinition.Task.ESS.OnDemandScan\",\"cleaningEnabled\":true,\"customProfileName\":\"DefaultProfile\",\"scanProfile\":\"InDepth\",\"scanTargets\":[\"eset://AllTargets\"]}},\"description\":\"Automatically created via context menu\",\"displayName\":\"Reboot Computer - via context menu\",\"targets\":{\"devicesUuids\":[\"0205321e-XXXX-XXXX-1234-feeb35010ea7\",\"0205321e-XXXX-XXXX-5678-feeb35010ea7\",\"0205321e-XXXX-1234-5678-feeb35010ea7\"]},\"triggers\":[{\"manual\":{\"expireTime\":\"2023-12-01T01:30:00Z\"}}],\"uuid\":\"c93070e0-XXXX-1234-5678-c48f0e5e0b7e\",\"versionId\":\"1511\"}",
         "type": [
@@ -380,15 +380,15 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-06-21T03:56:20.000Z",
     "agent": {
-        "ephemeral_id": "fe2f9827-1823-4a86-8826-b6789530f104",
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "15db6629-f3a1-4a0f-94ea-1bf6ec62aaba",
+        "id": "adf2804e-ca6b-4c6b-90af-e9060e7ee1b2",
+        "name": "elastic-agent-28441",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "eset_protect.event",
-        "namespace": "ep",
+        "namespace": "71776",
         "type": "logs"
     },
     "destination": {
@@ -416,9 +416,9 @@ An example event for `event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
+        "id": "adf2804e-ca6b-4c6b-90af-e9060e7ee1b2",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.16.0"
     },
     "eset_protect": {
         "event": {
@@ -451,7 +451,7 @@ An example event for `event` looks as following:
             "web"
         ],
         "dataset": "eset_protect.event",
-        "ingested": "2024-04-16T05:42:56Z",
+        "ingested": "2025-10-30T10:35:48Z",
         "kind": "alert",
         "original": "{\"event_type\":\"FilteredWebsites_Event\",\"ipv4\":\"192.168.30.30\",\"hostname\":\"win-test\",\"group_name\":\"All/Lost & found\",\"os_name\":\"Microsoft Windows 11 Pro\",\"group_description\":\"Lost & found static group\",\"source_uuid\":\"d9477661-8fa4-4144-b8d4-e37b983bcd69\",\"occured\":\"21-Jun-2021 03:56:20\",\"severity\":\"Warning\",\"event\":\"An attempt to connect to URL\",\"target_address\":\"89.160.20.128\",\"target_address_type\":\"IPv4\",\"scanner_id\":\"HTTP filter\",\"action_taken\":\"blocked\",\"object_uri\":\"https://test.com\",\"hash\":\"ABCDAA625E6961037B8904E113FD0C232A7D0EDC\",\"username\":\"WIN-TEST\\\\Administrator\",\"processname\":\"C:\\\\Program Files\\\\Web browser\\\\brwser.exe\",\"rule_id\":\"Blocked by PUA blacklist\"}",
         "type": [
@@ -477,7 +477,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.247.8:59824"
+            "address": "192.168.241.3:58054"
         },
         "syslog": {
             "appname": "ERAServer",

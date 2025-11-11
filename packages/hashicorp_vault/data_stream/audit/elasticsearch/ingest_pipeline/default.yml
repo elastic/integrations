@@ -2,15 +2,18 @@
 description: Pipeline for processing Hashicorp Vault audit logs.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
+      tag: rename_message_to_event_original_86cdcc50
       field: message
       target_field: event.original
       ignore_missing: true
       ignore_failure: true
       if: ctx.event?.original == null
   - json:
+      tag: json_event_original_to_hashicorp_vault_audit_6c38e128
       field: event.original
       target_field: hashicorp_vault.audit
       ignore_failure: true
@@ -19,10 +22,12 @@ processors:
   # @timestamp
   #
   - date:
+      tag: date_hashicorp_vault_audit_time_f9f1cd6d
       field: hashicorp_vault.audit.time
       formats:
         - ISO8601
   - remove:
+      tag: remove_c4735a36
       field:
         - hashicorp_vault.audit.time
       ignore_missing: true
@@ -31,39 +36,47 @@ processors:
   # event categorization.
   #
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_109b4d72
       field: event.category
       value: authentication
   # Request operation can be: create, delete, list, read, update.
   - append:
+      tag: append_event_type_c9285984
       if: ctx?.hashicorp_vault?.audit?.request?.operation == 'delete'
       field: event.type
       value: [info, end]
       allow_duplicates: false
   - append:
+      tag: append_event_type_ed937003
       if: ctx?.hashicorp_vault?.audit?.request?.operation == 'update'
       field: event.type
       value: info
       allow_duplicates: false
   - append:
+      tag: append_event_type_d608774b
       if: >
         ['read', 'list', 'create'].contains(ctx.hashicorp_vault?.audit?.request?.operation)
       field: event.type
       value: [info, start]
       allow_duplicates: false
   - append:
+      tag: append_event_type_ba367678
       if: ctx?.hashicorp_vault?.audit?.error != null
       field: event.type
       value: info
       allow_duplicates: false
   - append:
+      tag: append_event_type_edf811d3
       if: ctx?.hashicorp_vault?.audit?.error != null && ctx.hashicorp_vault.audit.error.contains("denied")
       field: event.type
       value: info
       allow_duplicates: false
   - set:
+      tag: set_event_action_aa76e088
       field: event.action
       copy_from: hashicorp_vault.audit.request.operation
 
@@ -71,28 +84,34 @@ processors:
   # event.outcome
   #
   - set:
+      tag: set_event_outcome_18a79512
       if: ctx?.hashicorp_vault?.audit?.error == null
       field: event.outcome
       value: success
   - set:
+      tag: set_event_outcome_eaa01289
       if: ctx?.hashicorp_vault?.audit?.error != null
       field: event.outcome
       value: failure
 
   - set:
+      tag: set_event_id_5845187a
       field: event.id
       copy_from: hashicorp_vault.audit.request.id
       ignore_failure: true
   - set:
+      tag: set_message_933e1844
       field: message
       copy_from: hashicorp_vault.audit.error
       ignore_failure: true
   - convert:
+      tag: convert_hashicorp_vault_audit_request_remote_address_to_source_ip_98cf868d
       field: hashicorp_vault.audit.request.remote_address
       target_field: source.ip
       type: ip
       ignore_missing: true
   - convert:
+      tag: convert_hashicorp_vault_audit_request_remote_port_to_source_port_1efe5263
       field: hashicorp_vault.audit.request.remote_port
       target_field: source.port
       type: long
@@ -100,16 +119,19 @@ processors:
 
   # OIDC auth metadata.
   - set:
+      tag: set_user_email_44dc7cff
       field: user.email
       copy_from: hashicorp_vault.audit.auth.metadata.email
       ignore_failure: true
   - set:
+      tag: set_user_id_11ea468d
       field: user.id
       copy_from: hashicorp_vault.audit.auth.metadata.account_id
       ignore_failure: true
 
   # Nomad auth metadata. (Recognize it by the presence of all four fields.)
   - set:
+      tag: set_nomad_allocation_id_7d186f74
       if: >
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.NodeID != null &&
@@ -119,6 +141,7 @@ processors:
       copy_from: hashicorp_vault.audit.auth.metadata.AllocationID
       ignore_failure: true
   - set:
+      tag: set_nomad_namespace_e9a67c6c
       if: >
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.NodeID != null &&
@@ -128,6 +151,7 @@ processors:
       copy_from: hashicorp_vault.audit.auth.metadata.Namespace
       ignore_failure: true
   - set:
+      tag: set_nomad_node_id_dd6c1680
       if: >
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.NodeID != null &&
@@ -137,6 +161,7 @@ processors:
       copy_from: hashicorp_vault.audit.auth.metadata.NodeID
       ignore_failure: true
   - set:
+      tag: set_nomad_task_name_d3c4aba5
       if: >
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.NodeID != null &&
@@ -148,11 +173,13 @@ processors:
 
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -161,23 +188,40 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
   - append:
+      tag: append_related_ip_549fa858
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx?.source?.ip != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
