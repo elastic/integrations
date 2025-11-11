@@ -295,8 +295,6 @@ The documentation for ECS fields can be found at:
 | opencti.indicator.creator_identity_class | The type of the creator of this indicator (e.g. "organization"). | keyword |
 | opencti.indicator.detection | Whether the indicator has been detected. | boolean |
 | opencti.indicator.detection_rule.query | The query for the detection rule. | keyword |
-| opencti.indicator.detection_rule.risk_score | The risk score of the detection rule. | long |
-| opencti.indicator.detection_rule.severity | The severity of the detection rule. | keyword |
 | opencti.indicator.detection_rule.type | The type of the detection rule. | keyword |
 | opencti.indicator.external_reference.description | A description for a related record in an external system. | keyword |
 | opencti.indicator.external_reference.external_id | A non-STIX ID for a related record in an external system. | keyword |

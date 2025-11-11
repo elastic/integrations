@@ -925,31 +925,6 @@ processors:
       copy_from: opencti.indicator.pattern
       if: ctx.opencti?.indicator?.rule_compatible == true
 
-  - script:
-      description: Set detection rule severity based on confidence
-      lang: painless
-      if: ctx.opencti?.indicator?.rule_compatible == true
-      source: |
-        if (ctx.opencti?.indicator?.score != null) {
-          int score = ctx.opencti.indicator.score;
-          if (score >= 80) {
-            ctx.opencti.indicator.detection_rule.severity = 'critical';
-            ctx.opencti.indicator.detection_rule.risk_score = 90;
-          } else if (score >= 60) {
-            ctx.opencti.indicator.detection_rule.severity = 'high';
-            ctx.opencti.indicator.detection_rule.risk_score = 70;
-          } else if (score >= 40) {
-            ctx.opencti.indicator.detection_rule.severity = 'medium';
-            ctx.opencti.indicator.detection_rule.risk_score = 50;
-          } else {
-            ctx.opencti.indicator.detection_rule.severity = 'low';
-            ctx.opencti.indicator.detection_rule.risk_score = 30;
-          }
-        } else {
-          ctx.opencti.indicator.detection_rule.severity = 'medium';
-          ctx.opencti.indicator.detection_rule.risk_score = 50;
-        }
-
   #######################################################
   # Tag to show if ECS indicator details were populated #
   #######################################################
