@@ -13,7 +13,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for used_logspace is > 90, and the alerting rule is grouped by Server Name. You can adjust the threshold value by modifying the used_logspace in the WHERE clause. \n FROM metrics-microsoft_sqlserver.transaction_log-default\n| STATS used_logspace=MAX(mssql.metrics.used_log_space_pct) * 100\n by mssql.metrics.server_name\n| WHERE used_logspace > 90"
+        "esql": "// Alert triggers when the used_logspace exceeds the recommended threshold value {90} within the look back time window.\n// The alert is grouped by Server Name.\n// You can adjust the threshold value by modifying the used_logspace in the WHERE clause. \n FROM metrics-microsoft_sqlserver.transaction_log-default\n| STATS used_logspace=MAX(mssql.metrics.used_log_space_pct) * 100\n by mssql.metrics.server_name\n| WHERE used_logspace > 90"
       },
       "groupBy": "row",
       "timeField": "@timestamp"

@@ -13,7 +13,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for lock_waits is > 100, and the alerting rule is grouped by Server Name. You can adjust the threshold value by modifying the lockwaits in the WHERE clause. \n FROM metrics-microsoft_sqlserver.performance-default\n| STATS lockwaits=avg(mssql.metrics.lock_waits_per_sec) by mssql.metrics.server_name\n| WHERE lockwaits > 100"
+        "esql": "// Alert triggers when the number of lock_waits exceeds the recommended threshold value {100} within the look back time window, \n// The alert is grouped by Server Name.\n// You can adjust the threshold value by modifying the lockwaits in the WHERE clause. \n FROM metrics-microsoft_sqlserver.performance-default\n| STATS lockwaits=avg(mssql.metrics.lock_waits_per_sec) by mssql.metrics.server_name\n| WHERE lockwaits > 100"
       },
       "groupBy": "row",
       "timeField": "@timestamp"
