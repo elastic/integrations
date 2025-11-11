@@ -1,36 +1,33 @@
 {
-  "id": "mongodb-replication-lag-high",
-  "type": "alerting_rule_template",
-  "attributes": {
-    "name": "[MongoDB Replication] High replication lag",
-    "tags": ["MongoDB", "Replication"],
-    "ruleTypeId": ".es-query",
-    "schedule": {
-      "interval": "1m"
+    "id": "mongodb-replication-lag-high",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[MongoDB Replication] High replication lag",
+        "tags": [
+            "MongoDB",
+            "Replication"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "FROM metrics-mongodb.replstatus-default\n| STATS replication_lag = MAX(`mongodb.replstatus.lag.max`) BY `mongodb.replstatus.set_name`\n| WHERE replication_lag > 10000"
+            },
+            "groupBy": "row",
+            "termSize": 5,
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
     },
-    "params": {
-      "searchType": "esqlQuery",
-      "timeWindowSize": 5,
-      "timeWindowUnit": "m",
-      "threshold": [0],
-      "thresholdComparator": ">",
-      "size": 100,
-      "esqlQuery": {
-        "esql": "FROM metrics-mongodb.replstatus-default\n| STATS replication_lag = MAX(`mongodb.replstatus.lag.max`) BY `mongodb.replstatus.set_name`\n| WHERE replication_lag > 10000"
-      },
-      "aggType": "count",
-      "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "@timestamp",
-      "excludeHitsFromPreviousRun": true
-    },
-    "alertDelay": {
-      "active": 1
-    }
-  },
-  "managed": true,
-  "coreMigrationVersion": "8.8.0",
-  "typeMigrationVersion": "10.1.0"
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
 }
 
