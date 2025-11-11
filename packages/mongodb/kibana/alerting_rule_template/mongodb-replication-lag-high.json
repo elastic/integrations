@@ -16,7 +16,7 @@
             "timeWindowSize": 5,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "FROM metrics-mongodb.replstatus-default\n| STATS replication_lag = MAX(`mongodb.replstatus.lag.max`) BY `mongodb.replstatus.set_name`\n| WHERE replication_lag > 10000"
+                "esql": "FROM metrics-mongodb.replstatus-default\n| WHERE @timestamp >= NOW() - 5 MINUTES\n| STATS replication_lag=MAX(mongodb.replstatus.lag.max) BY mongodb.replstatus.set_name\n| WHERE replication_lag > 10000"
             },
             "groupBy": "row",
             "termSize": 5,

@@ -16,7 +16,7 @@
             "timeWindowSize": 5,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "FROM metrics-mongodb.replstatus-default\n| STATS unhealthy_members = MAX(`mongodb.replstatus.members.unhealthy.count`) BY `mongodb.replstatus.set_name`\n| WHERE unhealthy_members > 0"
+                "esql": "FROM metrics-mongodb.replstatus-default\n| WHERE @timestamp >= NOW() - 5 MINUTES\n| STATS unhealthy_members=MAX(mongodb.replstatus.members.unhealthy.count) BY mongodb.replstatus.set_name\n| WHERE unhealthy_members > 0"
             },
             "groupBy": "row",
             "termSize": 5,

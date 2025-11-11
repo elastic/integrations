@@ -16,7 +16,7 @@
             "timeWindowSize": 5,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "FROM metrics-mongodb.replstatus-default\n| STATS oplog_headroom_min = MIN(`mongodb.replstatus.headroom.min`) BY `mongodb.replstatus.set_name`\n| WHERE oplog_headroom_min < 3600000"
+                "esql": "FROM metrics-mongodb.replstatus-default\n| WHERE @timestamp >= NOW() - 5 MINUTES\n| STATS oplog_headroom_min=MIN(mongodb.replstatus.headroom.min) BY mongodb.replstatus.set_name\n| WHERE oplog_headroom_min < 900000"
             },
             "groupBy": "row",
             "termSize": 5,
