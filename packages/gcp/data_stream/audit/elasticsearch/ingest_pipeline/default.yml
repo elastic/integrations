@@ -219,6 +219,127 @@ processors:
       field: target.entity.id
       value: "{{{json.resource.disk_id}}}"
       if: ctx.json?.resouce?.disk_id != null
+##
+# Classify actor and target entities by type for enhanced graph visualization
+##
+  - script:
+      description: Classify actor and target entities into type-specific fields
+      lang: painless
+      on_failure:
+        - set:
+            description: Adds error reason to the document
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
+      source: |
+        void addNestedValue(def ctx, String path, def value) {
+          if (value == null || value == "") {
+            return;
+          }
+          String[] parts = path.splitOnToken('.');
+          def current = ctx;
+          for (int i = 0; i < parts.length - 1; i++) {
+            if (current[parts[i]] == null) {
+              current[parts[i]] = [:];
+            }
+            current = current[parts[i]];
+          }
+          String lastPart = parts[parts.length - 1];
+          if (current[lastPart] == null) {
+            current[lastPart] = [];
+          }
+          if (!current[lastPart].contains(value)) {
+            current[lastPart].add(value);
+          }
+        }
+        
+        // Classify actor entities
+        if (ctx.actor?.entity?.id instanceof List) {
+          for (def actorId : ctx.actor.entity.id) {
+            if (actorId == null || actorId == "") {
+              continue;
+            }
+            String actor = actorId.toString();
+            
+            // Service accounts: serviceAccount:* or *.gserviceaccount.com (includes cloudservices and iam)
+            if (actor.startsWith("serviceAccount:") || actor.contains(".gserviceaccount.com")) {
+              addNestedValue(ctx, "service.entity.id", actor);
+            }
+            // Service account paths: projects/*/serviceAccounts/*
+            else if (actor.contains("/serviceAccounts/")) {
+              addNestedValue(ctx, "service.entity.id", actor);
+            }
+            // User accounts: user:* or email addresses (not service accounts)
+            else if (actor.startsWith("user:") || (actor.contains("@") && !actor.contains(".gserviceaccount.com"))) {
+              addNestedValue(ctx, "user.entity.id", actor);
+            }
+            // Compute instances: projects/*/zones/*/instances/*
+            else if (actor.contains("/instances/")) {
+              addNestedValue(ctx, "host.entity.id", actor);
+            }
+            // GCP service or API names: *.googleapis.com (but not principal:// or workloadIdentityPools)
+            else if (actor.contains(".googleapis.com") && !actor.startsWith("principal://") && !actor.contains("/workloadIdentityPools/")) {
+              addNestedValue(ctx, "service.entity.id", actor);
+            }
+            // Everything else (repo:, workloadIdentityPools, principal://, etc.)
+            else {
+              addNestedValue(ctx, "entity.id", actor);
+            }
+          }
+        }
+        
+        // Classify target entities
+        if (ctx.target?.entity?.id instanceof List) {
+          for (def targetId : ctx.target.entity.id) {
+            if (targetId == null || targetId == "") {
+              continue;
+            }
+            String target = targetId.toString();
+            
+            // Compute instances
+            if (target.contains("/instances/")) {
+              addNestedValue(ctx, "host.target.entity.id", target);
+            }
+            // Service accounts: projects/*/serviceAccounts/* or email addresses ending with .gserviceaccount.com
+            else if (target.contains("/serviceAccounts/") || 
+                     (target.contains("@") && target.contains(".gserviceaccount.com"))) {
+              addNestedValue(ctx, "service.target.entity.id", target);
+            }
+            // IAM principals (users, groups)
+            else if (target.contains("/users/") || 
+                     target.contains("/groups/") ||
+                     (target.contains("@") && target.contains("/members/"))) {
+              addNestedValue(ctx, "user.target.entity.id", target);
+            }
+            // GCP service resources
+            else if (target.contains("/machineTypes") ||
+                     target.contains("/deployments/") ||
+                     target.contains("/services") ||
+                     target.contains("/policies/") ||
+                     target.contains("/operations/") ||
+                     target.contains("/subnetworks") ||
+                     target.contains("/networkEdgeSecurityServices") ||
+                     target.contains("/functions/") ||
+                     target.contains("/buckets/") ||
+                     target.contains("/datasets/") ||
+                     target.contains("/tables/") ||
+                     target.contains("/disks/") ||
+                     target.contains("/networks/") ||
+                     target.contains("/firewalls/") ||
+                     target.contains("/backendServices/") ||
+                     target.contains("/forwardingRules/") ||
+                     target.contains("/healthChecks/") ||
+                     target.contains("/sslCertificates/") ||
+                     target.contains("/targetPools/") ||
+                     target.contains("/urlMaps/") ||
+                     target.contains(".googleapis.com")) {
+              addNestedValue(ctx, "service.target.entity.id", target);
+            }
+            // Everything else (projects, zones, workloadIdentityPools, etc.)
+            else {
+              addNestedValue(ctx, "entity.target.id", target);
+            }
+          }
+        }
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
