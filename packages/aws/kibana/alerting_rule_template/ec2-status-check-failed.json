@@ -13,7 +13,7 @@
       "timeWindowSize": 5,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for status check failed is > 0, and the alerting rule is grouped by cloud account id, cloud region and instance id. You can adjust the threshold value by modifying the statusfailed value in the WHERE clause.\nFROM metrics-aws.ec2_metrics-default\n| STATS statusfailed=max(aws.ec2.metrics.StatusCheckFailed.avg) by cloud.account.id, cloud.region, aws.dimensions.InstanceId\n| WHERE statusfailed > 0"
+        "esql": "// Alert triggers when the statusfailed exceeds the recommended threshold value {0} within the look back time window.\n// The alert is grouped by cloud account id, cloud region and instance id.\n// You can adjust the threshold value by modifying the statusfailed in the WHERE clause.\nFROM metrics-aws.ec2_metrics-default\n| STATS statusfailed=max(aws.ec2.metrics.StatusCheckFailed.avg) by cloud.account.id, cloud.region, aws.dimensions.InstanceId\n| WHERE statusfailed > 0"
       },
       "groupBy": "row",
       "timeField": "event.ingested"

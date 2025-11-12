@@ -13,7 +13,7 @@
       "timeWindowSize": 5,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for errors is > 0, and the alerting rule is grouped by cloud account id, cloud region and function name. You can adjust the threshold value by modifying the statusfailed value in the WHERE clause.\nFROM metrics-aws.lambda-default\n| STATS errors=sum(aws.lambda.Errors.avg) by cloud.account.id, cloud.region, aws.dimensions.FunctionName\n| WHERE errors > 0"
+        "esql": "// Alert triggers when the errors exceeds the recommended threshold value {0} within the look back time window.\n// The alert is grouped by cloud account id, cloud region and function name.\n// You can adjust the threshold value by modifying the errors in the WHERE clause.\nFROM metrics-aws.lambda-default\n| STATS errors=sum(aws.lambda.Errors.avg) by cloud.account.id, cloud.region, aws.dimensions.FunctionName\n| WHERE errors > 0"
       },
       "groupBy": "row",
       "timeField": "event.ingested"
