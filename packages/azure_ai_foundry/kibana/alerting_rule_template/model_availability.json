@@ -6,14 +6,14 @@
     "tags": ["Azure AI Foundry"],
     "ruleTypeId": ".es-query",
     "schedule": {
-      "interval": "1m"
+      "interval": "5m"
     },
     "params": {
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for model availability is < 99%, and the alerting rule is grouped by Model Name. You can adjust the threshold value by modifying the model_availability in the WHERE clause, which is specified in percent. \n FROM metrics-azure.ai_foundry-default\n| STATS model_availability = MAX(azure.ai_foundry.model_availability_rate.avg) * 100\n by azure.dimensions.model_deployment_name\n| WHERE model_availability < 99"
+        "esql": "// Alert triggers when the model availability less than the recommended threshold value {99%} within the look back time window.\n// The alert is grouped by Model Name.\n// You can adjust the threshold value by modifying the model_availability in the WHERE clause, which is specified in percent. \n FROM metrics-azure.ai_foundry-default\n| STATS model_availability = MAX(azure.ai_foundry.model_availability_rate.avg) * 100\n by azure.dimensions.model_deployment_name\n| WHERE model_availability < 99"
 
       },
       "groupBy": "row",
