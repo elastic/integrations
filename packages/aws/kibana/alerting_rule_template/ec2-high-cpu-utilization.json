@@ -13,7 +13,7 @@
       "timeWindowSize": 5,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// Alert triggers when the cpuutilization exceeds the recommended threshold value {80} within the look back time window.\n// The alert is grouped by cloud account id, cloud region and instance id.\n// You can adjust the threshold value by modifying the cpuutilization in the WHERE clause.\nFROM metrics-aws.ec2_metrics-default\n| STATS cpuutilization=avg(host.cpu.usage*100) by cloud.account.id, cloud.region, aws.dimensions.InstanceId\n| WHERE cpuutilization >= 80"
+        "esql": "// Alert triggers when the cpuutilization is greater than or equal to the recommended threshold value {80} within the look back time window.\n// The alert is grouped by cloud account id, cloud region and instance id.\n// You can adjust the threshold value by modifying the cpuutilization in the WHERE clause.\nFROM metrics-aws.ec2_metrics-default\n| STATS cpuutilization=avg(host.cpu.usage*100) by cloud.account.id, cloud.region, aws.dimensions.InstanceId\n| WHERE cpuutilization >= 80"
       },
       "groupBy": "row",
       "timeField": "event.ingested"
