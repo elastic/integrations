@@ -13,7 +13,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for latency is > 5 seconds, and the alerting rule is grouped by statement user_id and host name. You can adjust the threshold value by modifying the avg_query_time value in the WHERE clause, which is specified in milliseconds. \n FROM metrics-postgresql.statement-default\n| STATS avg_query_time=avg(postgresql.statement.query.time.mean.ms) by host.name, postgresql.statement.user.id\n| WHERE avg_query_time >= 5000"
+        "esql": "// Alert triggers when the latency is greater than or equal to recommended threshold value {5 secs} within the look back time window.\n// The alert is grouped by statement user_id and host name.\n// You can adjust the threshold value by modifying the avg_query_time value in the WHERE clause, which is specified in milliseconds. \n FROM metrics-postgresql.statement-default\n| STATS avg_query_time=avg(postgresql.statement.query.time.mean.ms) by host.name, postgresql.statement.user.id\n| WHERE avg_query_time >= 5000"
       },
       "groupBy": "row",
       "timeField": "@timestamp"
