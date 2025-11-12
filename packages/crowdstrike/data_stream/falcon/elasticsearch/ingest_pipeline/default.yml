@@ -247,6 +247,10 @@ processors:
         }
 
   - pipeline:
+      name: '{{ IngestPipeline "data_protection_detection_summary" }}'
+      tag: pipeline_data_protection_detection_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "DataProtectionDetectionSummaryEvent"
+  - pipeline:
       name: '{{ IngestPipeline "detection_summary" }}'
       tag: pipeline_detection_summary
       if: ctx.crowdstrike?.metadata?.eventType == "DetectionSummaryEvent"
