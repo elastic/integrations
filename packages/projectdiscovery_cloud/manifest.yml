@@ -24,7 +24,7 @@ policy_templates:
     title: ProjectDiscovery Cloud
     description: Collect vulnerability changelogs from ProjectDiscovery Cloud
     inputs:
-      - type: httpjson
+      - type: cel
         title: ProjectDiscovery Cloud API
         description: Collects vulnerability changelog events from ProjectDiscovery Cloud
         vars:
@@ -34,16 +34,13 @@ policy_templates:
             default: https://api.projectdiscovery.io
             required: true
           - name: api_key
-            type: text
+            type: password
             title: API Key
-            # You may mark as secret in production; during local dev, plain text avoids interpolation pitfalls.
-            secret: false
+            secret: true
             required: true
           - name: team_id
             type: text
             title: Team ID
-            # Required for your tenant (your curl needed it). Make it required to avoid empty header -> 401.
-            secret: false
             required: true
           - name: interval
             type: text
@@ -58,16 +55,14 @@ policy_templates:
           - name: time_window
             type: text
             title: Time window (PD `time` query param)
-            default: last_day
             required: false
           - name: http_client_timeout
             type: text
             title: HTTP client timeout
-            default: 10m
+            default: 30s
             required: false
           - name: enable_request_tracer
             type: bool
             title: Enable HTTP request tracing
-            description: Enable detailed HTTP request/response logging for debugging. Writes to ../../logs/httpjson/http-request-trace-*.ndjson
             default: false
             required: false
