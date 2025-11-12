@@ -28,7 +28,7 @@ processors:
   - gsub:
       tag: gsub_syslog5424_sd_756bcbdd
       field: syslog5424_sd
-      pattern: "[\u0000-\u001F\u007F]"
+      pattern: "[\x00-\x1f\x7f]"
       replacement: ""
   - script:
       tag: script_da23a97d
@@ -1702,6 +1702,12 @@ processors:
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
@@ -1713,3 +1719,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
