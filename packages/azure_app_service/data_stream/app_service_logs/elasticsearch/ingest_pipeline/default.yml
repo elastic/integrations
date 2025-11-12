@@ -28,6 +28,15 @@ processors:
       field: event.original
       target_field: azure.app_service
       ignore_failure: true
+# Save the original raw value of the `azure.app_service.properties` field in a temporary field (`azure.app_service.properties_raw`) before parsing it as JSON. This temporary field will be used to set the value of `azure.app_service.log` in the `appservice-platformlogs-inner-pipeline.yml` pipeline.
+  - set:
+      field: azure.app_service.properties_raw
+      value: "{{{azure.app_service.properties}}}"
+  - json:
+      field: azure.app_service.properties
+      target_field: azure.app_service.properties
+      if: 'ctx?.azure?.app_service?.properties instanceof String && ctx?.azure?.app_service?.properties?.startsWith("{")'
+      ignore_failure: true
   - date:
       field: azure.app_service.time
       target_field: '@timestamp'
@@ -55,6 +64,11 @@ processors:
   - pipeline:
       if: "ctx?.azure?.app_service?.category == 'AppServiceAppLogs'"
       name: '{{ IngestPipeline "appservice-applogs-inner-pipeline" }}'
+  - pipeline:
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - remove:
+      field: azure.app_service.properties_raw
+      ignore_missing: true
 on_failure:
   - append:
       field: "error.message"

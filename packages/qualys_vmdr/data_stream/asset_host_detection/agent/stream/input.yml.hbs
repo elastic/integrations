@@ -22,6 +22,7 @@ state:
   params: {{input_parameters}}
   show_igs: {{show_igs}}
   keep_xml: {{preserve_original_event}}
+  query_limit: {{host_qid_list_query_limit}}
 redact:
   fields:
     - password
@@ -32,7 +33,7 @@ program: |
       "id": state.?interval.id.orValue(uuid()),
     }
   })).as(state,
-    (has(state.worklist) && size(state.worklist) > 0 
+    (has(state.worklist) && size(state.worklist) > 0
     ?
       state
     :
@@ -60,39 +61,24 @@ program: |
             (
               has(resp.Body) && size(resp.Body) != 0
               ?
-                (resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_ahd'), "decode_xml_error_ahd").as(ahd_body, 
-                  !has(ahd_body.decode_xml_error_ahd) 
+                (resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_ahd'), "decode_xml_error_ahd").as(ahd_body,
+                  !has(ahd_body.decode_xml_error_ahd)
                   ?
-                    (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.hasValue() 
+                    (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.hasValue()
                     ?
                       ({
                         "worklist": {
                           "AHD_LIST": (
                             ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.orValue([]).flatten()
                           ),
-                          // HOST_QID_LIST has unique QIDs from current batch of hosts.
-                          // When entire HOST_QID_LIST is sent to KB API && if size(HOST_QID_LIST) ~ 2000, this can lead to "414 Request-URI Too Long" response.
-                          // As a temporary workaround when unique QIDs >= 1000, it is split into even/odd.
-                          // This workaround will be updated with new tail and front functions added from https://github.com/elastic/mito/pull/81 in next beats version.
                           "HOST_QID_LIST": (
                             ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.orValue([]).collate("DETECTION_LIST.DETECTION.QID").flatten().as(qids,
                               qids.map(qid, string(qid)).as(str_qids, zip(str_qids, qids))
-                            ).keys().as(qids_str, size(qids_str) < 1000 ?
-                              // Put all QIDs into list
-                              [
-                                qids_str
-                              ]
-                            :
-                              // Split QIDs into even and odd
-                              [
-                                qids_str.filter(i, int(i) % 2 == 0),
-                                qids_str.filter(i, int(i) % 2 > 0),
-                              ]
-                            )
+                            ).keys()
                           ),
                           "KB_MAP": {},
                         },
-                        "next_page": { 
+                        "next_page": {
                           ?"link": ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL
                         },
                         "next": 0,
@@ -126,7 +112,7 @@ program: |
                     }
                 )))
               :
-                // Qualys sends 200 success but with no response body. 
+                // Qualys sends 200 success but with no response body.
                 // Handling this case as okay.
                 {
                   "events": [],
@@ -190,11 +176,11 @@ program: |
         ))
       )
     ).as(state, state.with(
-      !has(state.worklist) ? state : 
-        has(state.worklist.HOST_QID_LIST) && size(state.worklist.HOST_QID_LIST[0]) > 0 ?
+      !has(state.worklist) ? state :
+        has(state.worklist.HOST_QID_LIST) && size(state.worklist.HOST_QID_LIST) > 0 ?
           request("GET", state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/?" +
             {
-              "ids": [state.worklist.HOST_QID_LIST[0].join(",")],
+              "ids": [front(state.worklist.HOST_QID_LIST, int(state.query_limit)).join(",")],
               "action": ["list"],
             }.format_query()
           ).with({
@@ -203,8 +189,8 @@ program: |
               "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
             }
           }).do_request().as(resp, (resp.StatusCode == 200 ?
-            resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_kb'), "decode_xml_error_kb").as(kb_body, 
-              !has(kb_body.decode_xml_error_kb) 
+            resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_kb'), "decode_xml_error_kb").as(kb_body,
+              !has(kb_body.decode_xml_error_kb)
               ?
                 (
                   has(kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
@@ -213,18 +199,18 @@ program: |
                         "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
                     })).as(kb_list, kb_list.map(k, k.QID).as(qids, zip(qids, kb_list)).as(kb_map,
                       state.worklist.KB_MAP.with(kb_map).as(wl_kb_map,
-                        size(state.worklist.HOST_QID_LIST) == 1 ?
+                        size(state.worklist.HOST_QID_LIST) <= int(state.query_limit) ?
                           // Ready to publish events as last set of QIDs for this batch of hosts have been collected. Reset worklist.
                           {
                             "events": (
-                              state.worklist.AHD_LIST.map(h, 
+                              state.worklist.AHD_LIST.map(h,
                                 h.DETECTION_LIST.DETECTION.map(v,
                                   h.with({
                                     "DETECTION_LIST": v,
-                                    "KNOWLEDGE_BASE": try(wl_kb_map[v.QID], "map_has_no_key_error").as(kb_qid, 
-                                      !has(kb_qid.map_has_no_key_error)? 
+                                    "KNOWLEDGE_BASE": try(wl_kb_map[v.QID], "map_has_no_key_error").as(kb_qid,
+                                      !has(kb_qid.map_has_no_key_error)?
                                         kb_qid
-                                      : 
+                                      :
                                         {}
                                     ),
                                   })
@@ -244,7 +230,7 @@ program: |
                           {
                             "events": [],
                             "worklist": state.worklist.with({
-                              "HOST_QID_LIST": tail(state.worklist.HOST_QID_LIST),
+                              "HOST_QID_LIST": tail(state.worklist.HOST_QID_LIST, int(state.query_limit)),
                               "KB_MAP": wl_kb_map,
                             }),
                             "want_more": true,
@@ -264,7 +250,7 @@ program: |
                       "worklist": {},
                       "want_more": false,
                     }
-                ).as(state, 
+                ).as(state,
                   state.want_more && size(state.events) == 0 ?
                     state.with({"events": [{"message": "retry"}]})
                   :

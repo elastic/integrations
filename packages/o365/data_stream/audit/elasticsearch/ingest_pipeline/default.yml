@@ -1414,13 +1414,11 @@ processors:
         }
   - script:
       tag: convert_operationcount
-      description: Ensure that OperationCount is not rendered with e-notation or other numeric
+      description: Ensure that OperationCount is rendered as a long
       if: ctx.o365audit?.OperationCount != null
       source: |-
         if (ctx.o365audit.OperationCount instanceof Number) {
-          ctx.o365audit.OperationCount = ((long)ctx.o365audit.OperationCount).toString();
-        } else {
-          ctx.o365audit.OperationCount = ctx.o365audit.OperationCount.toString();
+          ctx.o365audit.OperationCount = ((Number)ctx.o365audit.OperationCount).longValue();
         }
   - append:
       field: email.message_id

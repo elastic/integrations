@@ -1,0 +1,140 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the addition of an expiration lifecycle configuration to an Amazon S3 bucket. S3 lifecycle rules can automatically delete or transition objects after a defined period. Adversaries can abuse them by configuring auto-deletion of logs, forensic evidence, or sensitive objects to cover their tracks. This rule detects the use of the PutBucketLifecycle or PutBucketLifecycleConfiguration APIs with Expiration parameters, which may indicate an attempt to automate the removal of data to hinder investigation or maintain operational secrecy after malicious activity.",
+        "event_category_override": "event.type",
+        "false_positives": [
+            "Legitimate administrators may add lifecycle expiration configurations to reduce storage costs or enforce retention policies. Confirm whether this change aligns with an approved data management policy or infrastructure-as-code workflow. Known lifecycle automation processes (e.g., cost-management tools, data-lifecycle governance jobs) can be safely excluded from alerting once verified."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "aws.cloudtrail.resources.arn",
+                "aws.cloudtrail.resources.type",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS S3 Bucket Expiration Lifecycle Configuration Added",
+        "note": "## Triage and analysis\n\n### Investigating AWS S3 Bucket Expiration Lifecycle Configuration Added\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\nThis rule detects when a lifecycle expiration policy is added to an S3 bucket via the `PutBucketLifecycle` or `PutBucketLifecycleConfiguration` API. Note: `PutBucketLifecycleConfiguration` is the newer supported API call, however both of these API calls show up as `PutBucketLifecycle` in Cloudtrail [ref](https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html#cloudtrail-bucket-level-tracking).\nLifecycle expiration automatically deletes objects after a defined period (`Expiration:Days`), which can be leveraged by adversaries to erase logs, exfiltration evidence, or security artifacts before detection and response teams can review them.\n\nBecause deletion is automated and often silent, detecting the initial configuration event is critical.\n\n#### Possible investigation steps\n\n**Identify the actor and execution context**\n\n- **Principal and Identity Type**:  \n  Review `aws.cloudtrail.user_identity.arn`, `aws.cloudtrail.user_identity.type`, and `aws.cloudtrail.user_identity.access_key_id`.  \n  Determine if the actor is an IAM user, role, or automation service account.  \n  - Unusual: temporary credentials, federated roles, or previously inactive accounts.\n- **Source Information**:  \n  Review `source.ip`, `cloud.region`, and `user_agent.original` for unexpected geolocations, tool usage (CLI, SDK, automation service), or newly-observed hosts.\n- **Timestamp correlation**:  \n  Use `@timestamp` to check if this activity occurred during change windows or off-hours.\n\n**Examine the lifecycle configuration details**\n- Extract details from `aws.cloudtrail.request_parameters`:\n  - `Expiration`: Number of days until deletion (e.g., `Days=1` indicates rapid expiry).  \n  - `Prefix`: If limited to certain object paths (e.g., `/logs/`, `/tmp/`).  \n  - `Status`: `Enabled` vs. `Disabled`.  \n  - `ID` or rule name: May reveal purpose (\u201ccleanup-test\u201d, \u201cdelete-logs\u201d).\n- Determine the affected bucket from `aws.cloudtrail.resources.arn` or `aws.cloudtrail.resources.type`.  \n  Cross-check the bucket\u2019s purpose (e.g., log storage, data lake, analytics export, threat forensics).  \n  - High-risk if the bucket contains audit, CloudTrail, or application logs.\n\n**Correlate with related AWS activity**\nUse AWS CloudTrail search or your SIEM to pivot for:\n- **Prior suspicious activity**:\n  - `DeleteObject`, `PutBucketPolicy`, `PutBucketAcl`, or `PutBucketLogging` changes to disable visibility.\n  - IAM changes such as `AttachUserPolicy` or `CreateAccessKey` that may have enabled this modification.\n- **Subsequent changes**:\n  - `PutBucketLifecycle` events in other buckets (repeated pattern).  \n  - Rapid `DeleteObject` events or object expiration confirmations.\n- **Cross-account activity**:\n  - Lifecycle rules followed by replication or cross-account copy events may indicate lateral exfiltration setup.\n\n**Assess intent and risk**\n- Verify if the actor has a valid business case for altering object retention.  \n- If the bucket is used for security, compliance, or audit data, treat this as potential defense evasion.  \n- Evaluate whether the lifecycle rule removes data faster than your retention policy permits.\n\n### False positive analysis\n\n- **Cost optimization**: Storage teams may automate lifecycle policies to reduce cost on infrequently accessed data.\n- **Compliance enforcement**: Organizations implementing legal retention policies may set expiration for specific datasets.\n- **Automation and IaC pipelines**: Terraform or CloudFormation templates often apply `PutBucketLifecycle` during resource deployment.\n\n### Response and remediation\n\n**Containment and validation**\n1. **Revert or disable** the lifecycle configuration if it is unauthorized:  \n   - Use the AWS Console or CLI (`delete-bucket-lifecycle` or `put-bucket-lifecycle-configuration --lifecycle-configuration Disabled`).\n2. **Preserve evidence**:  \n   - Copy existing objects (especially logs or forensic data) before they expire.  \n   - Enable object versioning or replication to protect against loss.\n\n**Investigation**\n3. Review CloudTrail and S3 Access Logs for the same bucket:\n   - Identify who and what performed previous deletions.\n   - Determine whether any objects of investigative value have already been removed.\n4. Search for other S3 buckets where similar lifecycle configurations were added in a short timeframe.\n\n**Recovery and hardening**\n5. Implement guardrails:\n   - Use AWS Config rules like `s3-bucket-lifecycle-configuration-check` to monitor lifecycle changes.\n   - Restrict `s3:PutLifecycleConfiguration` to specific administrative roles.\n   - Enable [S3 Object Lock](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html) on log or evidence buckets to enforce immutability.\n6. Enable Security Hub and GuardDuty findings for additional anomaly detection on S3 data management activity.\n\n### Additional information\n\n- **AWS Documentation**  \n  - [S3 Lifecycle Configuration](https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html)  \n  - [DeleteBucketLifecycle API Reference](https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketLifecycle.html)\n- **AWS Playbooks**  \n  - [Data Exposure and Exfiltration Response](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/IRP-PersonalDataBreach.md)  \n  - [AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/main)\n",
+        "query": "info where event.dataset == \"aws.cloudtrail\"\n   and event.action == \"PutBucketLifecycle\"\n   and event.outcome == \"success\"\n   and stringContains(aws.cloudtrail.request_parameters, \"Expiration=\")\n",
+        "references": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "ff320c56-f8fa-11ee-8c44-f661ea17fbce",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Amazon S3",
+            "Use Case: Asset Visibility",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1070",
+                        "name": "Indicator Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1070/"
+                    },
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.008",
+                                "name": "Disable or Modify Cloud Logs",
+                                "reference": "https://attack.mitre.org/techniques/T1562/008/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/",
+                        "subtechnique": [
+                            {
+                                "id": "T1485.001",
+                                "name": "Lifecycle-Triggered Deletion",
+                                "reference": "https://attack.mitre.org/techniques/T1485/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 6
+    },
+    "id": "ff320c56-f8fa-11ee-8c44-f661ea17fbce_6",
+    "type": "security-rule"
+}

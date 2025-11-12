@@ -389,9 +389,15 @@ processors:
 
   - date:
       field: cef.extensions.deviceReceiptTime
+      tag: date_deviceReceiptTime
       target_field: thycotic_ss.event.time
       formats:
         - ISO8601
+      if: ctx.cef?.extensions?.deviceReceiptTime != null && ctx.cef.extensions.deviceReceiptTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       description: "Store CEF time as a thycotic_ss specific field, some delay appears to exist between event occurrence and Thycotic SS log transmission"
 
   #############

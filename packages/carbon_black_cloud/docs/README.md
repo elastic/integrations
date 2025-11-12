@@ -645,15 +645,6 @@ An example event for `endpoint_event` looks as following:
 | @timestamp | Event timestamp. | date |
 | carbon_black_cloud.endpoint_event.alert_id | The ID of the Alert this event is associated with. | keyword |
 | carbon_black_cloud.endpoint_event.backend.timestamp | Time when the backend received the batch of events. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.guid | Unique ID of the child process. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.hash.md5 | Cryptographic MD5 hashes of the executable file backing the child process. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.hash.sha256 | Cryptographic SHA256 hashes of the executable file backing the child process. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.name | Full path to the target of the crossproc event on the device's local file system. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.pid | OS-reported Process ID of the child process. | long |
-| carbon_black_cloud.endpoint_event.childproc.publisher.name | The name of the publisher. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.publisher.state | The state of the publisher. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.reputation | Carbon Black Cloud Reputation string for the childproc. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.username | The username associated with the user context that the child process was started under. | keyword |
 | carbon_black_cloud.endpoint_event.create_time | The time at which the event was ingested in carbon black cloud. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.action | The action taken on cross-process. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.api | Name of the operating system API called by the actor process. | keyword |
@@ -683,11 +674,22 @@ An example event for `endpoint_event` looks as following:
 | carbon_black_cloud.endpoint_event.netconn.proxy.port | UDP/TCP port number associated with the "proxy" end of this network connection. | keyword |
 | carbon_black_cloud.endpoint_event.organization_key | The organization key associated with the console instance. | keyword |
 | carbon_black_cloud.endpoint_event.process.duration | The time difference in seconds between the process start and process terminate event. | long |
+| carbon_black_cloud.endpoint_event.process.grandparent.command_line | Full command line that started the grandparent process, including the absolute path to the executable, and all arguments. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.entity_id | Unique identifier for the grandparent process. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.executable | Absolute path to the process executable. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.hash.md5 | Cryptographic MD5 hashes of the grandparent process. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.hash.sha256 | Cryptographic SHA256 hashes of the grandparent process. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.pid | The grandparent's process id. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.reputation | Reputation of the grandparent process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.publisher.name | The name of the publisher. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.process.parent.reputation | Reputation of the parent process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.terminated | True if parent process was terminated else false. | boolean |
+| carbon_black_cloud.endpoint_event.process.parent.username | The username associated with the user context that the parent process was started under. | keyword |
 | carbon_black_cloud.endpoint_event.process.publisher.name | The name of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.process.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.process.reputation | Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
-| carbon_black_cloud.endpoint_event.process.terminated | True if process was terminated elase false. | boolean |
+| carbon_black_cloud.endpoint_event.process.terminated | True if process was terminated else false. | boolean |
 | carbon_black_cloud.endpoint_event.process.username | The username associated with the user context that this process was started under. | keyword |
 | carbon_black_cloud.endpoint_event.schema | The schema version. The current schema version is "1". This schema version will only be incremented if the field definitions are changed in a backwards-incompatible way. | long |
 | carbon_black_cloud.endpoint_event.scriptload.count | Count of scriptload events across all processes reported by the sensor since last initialization. | long |

@@ -17,7 +17,8 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -28,11 +29,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🔍 Analyzing documentation changes..."
-          
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          
+
           # Get changed files directly from PR
-          if ! PR_FILES=$(gh pr view $PR_NUMBER --json files -q '.files[].path' 2>/dev/null); then
+          if ! PR_FILES=$(gh pr view "$PR_NUMBER" --json files -q '.files[].path' 2>/dev/null); then
             echo "Error: Failed to fetch PR files"
             exit 1
           fi
@@ -54,7 +53,7 @@ jobs:
           fi
           
           # Get custom changelog description from PR body
-          if ! PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body // ""' 2>/dev/null); then
+          if ! PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body // ""' 2>/dev/null); then
             echo "Warning: Failed to fetch PR body, using default changelog description"
             PR_BODY=""
           fi
@@ -115,8 +114,7 @@ jobs:
           CHANGE_TYPE="${{ steps.analyze.outputs.change_type }}"
           VERSION_BUMP="${{ steps.analyze.outputs.version_bump }}"
           CHANGELOG_DESC="${{ steps.analyze.outputs.changelog_desc }}"
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          
+
           # Create clean package list for the for loop
           PACKAGE_LIST=$(echo $PACKAGES | xargs)
           
@@ -165,7 +163,6 @@ jobs:
           CHANGE_TYPE="${{ steps.analyze.outputs.change_type }}"
           VERSION_BUMP="${{ steps.analyze.outputs.version_bump }}"
           CHANGELOG_DESC="${{ steps.analyze.outputs.changelog_desc }}"
-          PR_NUMBER=${{ github.event.pull_request.number }}
 
           PACKAGE_LIST=$(echo $PACKAGES | xargs)
 

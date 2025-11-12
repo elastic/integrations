@@ -1412,9 +1412,14 @@ processors:
       processor:
         append:
           field: file.path
-          value: '{{{_ingest._value.file_details.path}}}'
+          value: '{{{_ingest._value.file_details.path}}}\{{{_ingest._value.file_details.name}}}'
           allow_duplicates: false
           ignore_failure: true
+  - script:
+      tag: script_remove_backslash
+      if: ctx.file?.path instanceof List
+      source: |-
+        ctx.file.path.removeIf(v -> v == '\\');
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List

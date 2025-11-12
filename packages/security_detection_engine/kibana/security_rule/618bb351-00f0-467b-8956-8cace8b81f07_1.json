@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when an Amazon S3 bucket policy is modified to grant public access using a wildcard (Principal:\"*\") statement. This rule analyzes PutBucketPolicy events that include both Effect=Allow and Principal:\"*\" in the request parameters, indicating that permissions were extended to all identities, potentially making the bucket or its contents publicly accessible. Publicly exposing an S3 bucket is one of the most common causes of sensitive data leaks in AWS environments. Adversaries or misconfigurations can leverage this exposure to exfiltrate data, host malicious content, or collect credentials and logs left in open storage.",
+        "event_category_override": "event.type",
+        "false_positives": [
+            "This rule does not differentiate by itself whether the same policy also includes Deny statements that restrict public access. If a policy includes both Effect=Allow and Effect=Deny with Principal:\"*\", this rule may still trigger. Such cases should be manually analyzed to verify whether the Deny statement effectively negates the public exposure."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "aws.cloudtrail.resources.arn",
+                "aws.cloudtrail.resources.type",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS S3 Bucket Policy Added to Allow Public Access",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. \n> While every effort has been made to ensure its quality, we recommend validating the content and adapting it to your specific environment and operational needs.\n\n### Investigating AWS S3 Bucket Policy Added to Allow Public Access\n\nThis rule detects modifications to Amazon S3 bucket policies using the `PutBucketPolicy` API where both `Effect=Allow`\nand `Principal:\"*\"` are present. This effectively grants permissions to all AWS identities, including unauthenticated users.  \nSuch exposure can result in sensitive data leaks, ransomware staging, or unauthorized data collection.  \n\nThis rule focuses on policy-based exposure rather than ACL-based or block-public-access configurations.  \nIt will still trigger if a bucket policy includes both `Effect=Allow` and `Effect=Deny` statements that contain `Principal:\"*\"`. Those cases should be reviewed to confirm whether the `Deny` statement restricts access sufficiently.\n\n#### Possible investigation steps\n\n- **Identify the Actor**\n  - Review `aws.cloudtrail.user_identity.arn`, `aws.cloudtrail.user_identity.type`, and `aws.cloudtrail.user_identity.access_key_id` to identify who made the change.\n  - Validate whether this user or role is authorized to modify S3 bucket policies.\n  - Examine `source.ip`, `source.geo`, and `user_agent.original` to identify unusual sources or tools (e.g., CLI or SDK-based activity).\n\n- **Analyze the Bucket Policy Content**\n  - Extract the full JSON from `aws.cloudtrail.request_parameters`.\n  - Look for `Effect=Allow` statements paired with `Principal:\"*\"`.\n  - Identify what permissions were granted \u2014 for example:\n    - `s3:GetObject` (read access to all objects)\n    - `s3:PutObject` or `s3:*` (read/write access)\n  - Check if the policy also contains any `Effect=Deny` statements targeting `Principal:\"*\"`.  \n    If present, determine whether these statements fully restrict public access, if so this alert can be closed.\n\n- **Assess the Impact and Scope**\n  - Review `aws.cloudtrail.resources.arn` to confirm which bucket was affected.\n  - Determine if the bucket contains sensitive, regulated, or internal data.\n  - Check for `PutPublicAccessBlock` or `DeleteBucketPolicy` events in close proximity, as attackers often disable protections first.\n\n- **Correlate with Related Activity**\n  - Review CloudTrail for `GetObject` or `ListBucket` events following the policy change to identify possible data access.\n  - Look for policy changes across multiple buckets by the same actor, suggesting scripted or automated misuse.\n\n- **Validate Intent**\n  - Contact the bucket owner or application owner to determine whether this change was part of a legitimate operation (e.g., website hosting or public dataset publishing).\n  - Review change management logs or ticketing systems for documented approval.\n\n### False positive analysis\n\n- **Intended Public Access**\n  - Buckets used for static websites, documentation hosting, or public datasets may legitimately contain `Principal:\"*\"`.\n  - Verify such use cases are covered by organizational policies and hardened with least-privilege permissions (e.g., read-only).\n\n- **Effect=Deny Condition**\n  - This rule does not currently exclude cases where `Principal:\"*\"` appears under both `Effect=Allow` and `Effect=Deny`.\n  - Analysts should review the bucket policy JSON to confirm whether `Deny` statements restrict the same resources.\n  - If access remains blocked to unauthorized entities, the alert can be dismissed as a false positive.\n\n- **Automation or Pipeline Behavior**\n  - Some automated pipelines or templates (e.g., Terraform, CloudFormation) create temporary policies with `Principal:\"*\"` for bootstrap access.  \n    Review timing, user agent, and role identity for expected automation patterns.\n\n### Response and remediation\n\n- **Containment**\n  - If exposure is unauthorized, immediately remove the public access policy using:\n    - `aws s3api delete-bucket-policy` or restore from version control.\n  - Re-enable Block Public Access at the account and bucket levels.\n\n- **Investigation and Scoping**\n  - Review CloudTrail and S3 access logs to identify whether external IPs accessed bucket objects after the policy change.\n  - Search for similar policy updates across other buckets in the same account or region.\n  - Validate AWS Config history for baseline deviations and determine how long the bucket was publicly exposed.\n\n- **Recovery and Hardening**\n  - Reinstate the intended bucket policy from backups or version control.\n  - Implement AWS Config rules:\n    - `s3-bucket-public-read-prohibited`\n    - `s3-bucket-public-write-prohibited`\n  - Restrict `s3:PutBucketPolicy` permissions to trusted administrative roles.\n  - Apply service control policies (SCPs) that prevent policies containing `Principal:\"*\"` unless explicitly approved.\n  - Enable continuous monitoring through AWS Security Hub or GuardDuty for any new public exposure events.\n\n### Additional information\n  - **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n  - **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n  - **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "info where event.dataset == \"aws.cloudtrail\"\n    and event.provider == \"s3.amazonaws.com\"\n    and event.action == \"PutBucketPolicy\" \n    and event.outcome == \"success\"\n    and stringContains(aws.cloudtrail.request_parameters, \"Effect=Allow\")\n    and stringContains(aws.cloudtrail.request_parameters, \"Principal=\\\\*\")\n",
+        "references": [
+            "https://stratus-red-team.cloud/attack-techniques/AWS/aws.exfiltration.s3-backdoor-bucket-policy/",
+            "https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketPolicy.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "618bb351-00f0-467b-8956-8cace8b81f07",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS S3",
+            "Use Case: Threat Detection",
+            "Tactic: Exfiltration",
+            "Tactic: Collection",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1537",
+                        "name": "Transfer Data to Cloud Account",
+                        "reference": "https://attack.mitre.org/techniques/T1537/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1530",
+                        "name": "Data from Cloud Storage",
+                        "reference": "https://attack.mitre.org/techniques/T1530/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "618bb351-00f0-467b-8956-8cace8b81f07_1",
+    "type": "security-rule"
+}

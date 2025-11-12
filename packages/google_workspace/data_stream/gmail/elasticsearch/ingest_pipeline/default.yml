@@ -829,7 +829,25 @@ processors:
       tag: append_message_info_post_delivery_info_interaction_attachment_sha256_into_related_hash
       value: '{{{google_workspace.gmail.message_info.post_delivery_info.interaction.attachment.sha256}}}'
       allow_duplicates: false
-      if: ctx.google_workspace?.gmail?.message_info?.post_delivery_info?.interaction?.attachment?.sha256 != null
+      if: >-
+        ctx.google_workspace?.gmail?.message_info?.post_delivery_info?.interaction?.attachment instanceof Map &&
+        ctx.google_workspace.gmail.message_info.post_delivery_info.interaction.attachment.sha256 != null
+  - script:
+      tag: script_foreach_message_info_post_delivery_info_interaction_attachment_sha256_append_into_related_hash
+      if: >-
+        ctx.google_workspace?.gmail?.message_info?.post_delivery_info?.interaction?.attachment instanceof List
+      source: |-
+        def shas = new HashSet();
+        for (def a: ctx.google_workspace.gmail.message_info.post_delivery_info.interaction.attachment) {
+          if (a.sha256 == null) {
+            continue;
+          }
+          shas.add(a.sha256)
+        }
+        if (shas.size() != 0) {
+          ctx.related = ctx.related ?: [:];
+          ctx.related.hash = new ArrayList(shas);
+        }
   - remove:
       field:
         - google_workspace.gmail.event_id

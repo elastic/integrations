@@ -868,6 +868,63 @@ processors:
           ctx.threat.indicator.x509 = mergeListOfMaps(ctx.threat.indicator.x509);
         }
 
+  ###################################
+  # Fingerprint for deduplication   #
+  ###################################
+
+  # Generate a consistent document ID based on the indicator's unique STIX ID
+  # This prevents duplicates when multiple agents fetch the same data
+  - fingerprint:
+      fields:
+        - opencti.indicator.standard_id  # STIX ID is globally unique and consistent
+        - threat.indicator.modified_at
+      target_field: _id
+      ignore_missing: true
+      description: Generate consistent document ID for deduplication
+      tag: fingerprint_id
+
+  ###########################################################
+  # Tag indicators suitable for Security rule creation     #
+  ###########################################################
+
+  - set:
+      field: opencti.indicator.rule_compatible
+      value: true
+      if: >-
+        ctx.opencti?.indicator?.pattern_type != null && (
+        ctx.opencti.indicator.pattern_type == 'kql' ||
+        ctx.opencti.indicator.pattern_type == 'lucene' ||
+        ctx.opencti.indicator.pattern_type == 'eql' ||
+        ctx.opencti.indicator.pattern_type == 'esql'
+        ) && ctx.opencti?.indicator?.revoked != true
+      description: Mark indicators that can be converted to detection rules
+
+  - append:
+      field: tags
+      value: detection-rule-candidate
+      if: ctx.opencti?.indicator?.rule_compatible == true
+      allow_duplicates: false
+
+  - set:
+      field: opencti.indicator.detection_rule.type
+      value: query
+      if: ctx.opencti?.indicator?.pattern_type == 'kql' || ctx.opencti?.indicator?.pattern_type == 'lucene'
+
+  - set:
+      field: opencti.indicator.detection_rule.type
+      value: eql
+      if: ctx.opencti?.indicator?.pattern_type == 'eql'
+
+  - set:
+      field: opencti.indicator.detection_rule.type
+      value: esql
+      if: ctx.opencti?.indicator?.pattern_type == 'esql'
+
+  - set:
+      field: opencti.indicator.detection_rule.query
+      copy_from: opencti.indicator.pattern
+      if: ctx.opencti?.indicator?.rule_compatible == true
+
   #######################################################
   # Tag to show if ECS indicator details were populated #
   #######################################################
