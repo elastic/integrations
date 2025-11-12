@@ -13,7 +13,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for quota errors is > 0, and the alerting rule is grouped by Model Name. You can adjust the threshold value by modifying the quota_error count in the WHERE clause. \n FROM logs-azure_openai.logs-default\n| STATS quota_error = COUNT(http.response.status_code == 429) by azure.dimensions.model_deployment_name\n| WHERE quota_error > 0"
+        "esql": "// Alert triggers when the quota_error is greater than recommended threshold value {0} within the look back time window.\n// The alert is grouped by Model Name.\n// You can adjust the threshold value by modifying the quota_error count in the WHERE clause. \n FROM logs-azure_openai.logs-default\n| STATS quota_error = COUNT(http.response.status_code == 429) by azure.dimensions.model_deployment_name\n| WHERE quota_error > 0"
       },
       "groupBy": "row",
       "timeField": "@timestamp"

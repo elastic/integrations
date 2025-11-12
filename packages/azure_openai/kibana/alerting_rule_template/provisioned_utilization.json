@@ -13,7 +13,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for provisioned utilization is > 85%, and the alerting rule is grouped by Model Name. You can adjust the threshold value by modifying the provisioned_utilization in the WHERE clause, which is specified in percent. \n FROM metrics-azure.open_ai-default\n| STATS provisioned_utilization = MAX(azure.open_ai.provisioned_managed_utilization_v2.avg) * 100\n by azure.dimensions.model_deployment_name\n| WHERE provisioned_utilization > 85"
+        "esql": "// Alert triggers when the provisioned utilization exceeds the recommended threshold value {85%} within the look back time window.\n// The alert is grouped by Model Name.\n// You can adjust the threshold value by modifying the provisioned_utilization in the WHERE clause, which is specified in percent. \n FROM metrics-azure.open_ai-default\n| STATS provisioned_utilization = MAX(azure.open_ai.provisioned_managed_utilization_v2.avg) * 100\n by azure.dimensions.model_deployment_name\n| WHERE provisioned_utilization > 85"
       },
       "groupBy": "row",
       "timeField": "@timestamp"

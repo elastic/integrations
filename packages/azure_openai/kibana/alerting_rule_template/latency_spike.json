@@ -13,7 +13,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for response latency is > 5 seconds, and the alerting rule is grouped by Model Name. You can adjust the threshold value by modifying the time_to_response in the WHERE clause, which is specified in milliseconds. \nFROM metrics-azure.open_ai-default\n| STATS time_to_response = AVG(azure.open_ai.time_to_response.avg) by azure.dimensions.model_deployment_name\n| WHERE time_to_response > 5000"
+        "esql": "// Alert triggers when the response latency exceeds the recommended threshold value {5 secs} within the look back time window.\n// The alert is grouped by Model Name.\n// You can adjust the threshold value by modifying the time_to_response in the WHERE clause, which is specified in milliseconds. \nFROM metrics-azure.open_ai-default\n| STATS time_to_response = AVG(azure.open_ai.time_to_response.avg) by azure.dimensions.model_deployment_name\n| WHERE time_to_response > 5000"
       },
       "groupBy": "row",
       "timeField": "@timestamp"
