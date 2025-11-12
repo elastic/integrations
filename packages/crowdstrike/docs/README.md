@@ -40,7 +40,7 @@ The integration collects and ingests events from multiple CrowdStrike Falcon dat
 
 4. **Falcon Data Replicator (FDR)**:
 
-    This collects events in near real time from your endpoints, cloud workloads, identities, via the Falcon platform’s lightweight agent. CrowdStrike Falcon Data Replicator (FDR) enables you with actionable insights to improve SOC performance.
+    The FDR feed consists of regular transfers of data (data dumps) rather than ongoing streams of data from your endpoints, cloud workloads, identities, via the Falcon platform’s lightweight agent. CrowdStrike Falcon Data Replicator (FDR) enables you with actionable insights to improve SOC performance. FDR isn't useful for real-time alerts because it's not an ongoing stream of data.
 
     Logs received from the Falcon Data Replicator are indexed into the `fdr` dataset in Elasticsearch.
 
