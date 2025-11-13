@@ -212,3 +212,4 @@ Note: Cisco provides a range of Firepower devices, which may have different conf
 - [Cisco FTD Software Release and Sustaining Bulletin](https://www.cisco.com/c/en/us/products/collateral/security/firewalls/bulletin-c25-743178.html)
 - [Elastic Integrations Documentation](https://www.elastic.co/guide/en/integrations/index.html)
 - [Elastic Agent Documentation](https://www.elastic.co/guide/en/fleet/current/index.html)
+- [Elastic Ingest/Fleet Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems)

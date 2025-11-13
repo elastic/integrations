@@ -1,3 +1,4 @@
+{{- generatedHeader }}
 # Cisco FTD Integration for Elastic
 
 ## Overview
@@ -6,7 +7,7 @@ The Cisco Firepower Threat Defense (FTD) integration for Elastic collects logs f
 
 ### Compatibility
 
-This integration is compatible with Cisco FTD devices that support syslog export. It requires Elastic Stack version 8.11.0 or higher.
+This integration is compatible with Cisco FTD devices that support syslog export. It requires Elastic Stack version 8.11.0 or newer.
 
 ### How it works
 
@@ -72,8 +73,6 @@ To validate that the integration is working, navigate to the **Discover** tab in
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
-### Handling `security` fields
-
 A field named `cisco.ftd.security` contains a variable number of sub-fields, which is mapped as a [`flattened` datatype](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html). This mapping limits certain operations, such as aggregations, on its sub-fields.
 
 To enable aggregations on common security-related fields, the integration automatically moves a known set of fields from `cisco.ftd.security` to a new field, `cisco.ftd.security_event`. If you need to perform aggregations on additional fields within `cisco.ftd.security`, you can create a custom ingest pipeline to move them.
@@ -86,6 +85,10 @@ To create this custom pipeline:
     *   Set `Field` to the source field, e.g., `cisco.ftd.security.threat_name`.
     *   Set `Target field` to the destination, e.g., `cisco.ftd.security_event.threat_name`.
 5.  Add more processors as needed and save the pipeline. This `@custom` pipeline will be automatically applied to all incoming Cisco FTD logs.
+
+## Scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
 
