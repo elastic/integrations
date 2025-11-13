@@ -1452,8 +1452,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.AllowlistingFilterId |  | keyword |
-| crowdstrike.AntiTamperStateFlag |  | keyword |
 | crowdstrike.AnodeIndicators |  | nested |
+| crowdstrike.AntiTamperStateFlag |  | keyword |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ApplicationName |  | match_only_text |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
