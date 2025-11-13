@@ -295,9 +295,9 @@ program: |-
       // ------------------------------------------------------------------------
   
       max(
-        state.?cursor.last_for[state.todo_types[0].to_lower()].optMap(t, t.parse_time(time_layout.RFC3339)).orValue(
-          now() - duration(state.base.list_contents_start_time)
-        ),
+        state.?cursor.last_for[state.todo_types[0].to_lower()].orValue(
+          string(now() - duration(state.base.list_contents_start_time))
+        ).parse_time(time_layout.RFC3339),
         now() - duration(state.base.maximum_age)
       ).as(start,
         timestamp(state.stopping_point).as(stopping_point,
