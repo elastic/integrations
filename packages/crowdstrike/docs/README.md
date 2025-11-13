@@ -97,9 +97,9 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-11-03T18:00:22.328Z",
     "agent": {
-        "ephemeral_id": "c322e005-c870-4f69-ad13-7ec993efb684",
-        "id": "9892c9f1-5a42-4557-9594-2fb1efe8c2b9",
-        "name": "elastic-agent-25240",
+        "ephemeral_id": "efb69ba7-0736-4cf7-a39f-70f3183e7530",
+        "id": "d541c008-3558-403d-9392-4faa6d42fcb4",
+        "name": "elastic-agent-43429",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -320,7 +320,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.alert",
-        "namespace": "21437",
+        "namespace": "96581",
         "type": "logs"
     },
     "device": {
@@ -334,18 +334,24 @@ An example event for `alert` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9892c9f1-5a42-4557-9594-2fb1efe8c2b9",
+        "id": "d541c008-3558-403d-9392-4faa6d42fcb4",
         "snapshot": true,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "process"
+        ],
         "dataset": "crowdstrike.alert",
         "id": "ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600",
-        "ingested": "2025-09-11T13:06:41Z",
+        "ingested": "2025-10-09T10:20:29Z",
         "kind": "alert",
         "original": "{\"agent_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"aggregate_id\":\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"alleged_filetype\":\"exe\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"cloud_indicator\":\"false\",\"cmdline\":\"\\\"C:\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\\\"\",\"composite_id\":\"92012896127c4a8236ba7601b886b0:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"confidence\":10,\"context_timestamp\":\"2023-11-03T18:00:31Z\",\"control_graph_id\":\"ctg:2ce4127b334ad4adc8c1c54dbfec4b:163208931778\",\"crawl_edge_ids\":{\"Sensor\":[\"KZcZ=__;K\\u0026cmqQ]Z=W,QK4W.9(rBfs\\\\gfmjTblqI^F-_oNnAWQ\\u0026-o0:dR/\\u003e\\u003e2J\\u003cd2T/ji6R\\u0026RIHe-tZSkP*q?HW;:leq.:kk)\\u003eIVMD36[+=kiQDRm.bB?;d\\\"V0JaQlaltC59Iq6nM?6\\u003eZAs+LbOJ9p9A;9'WV9^H3XEMs8N\",\"KZcZA__;?\\\"cmott@m_k)MSZ^+C?.cg\\u003cLga#0@71X07*LY2teE56*16pL[=!bjF7g@0jOQE'jT6RX_F@sr#RP-U/d[#nm9A,A,W%cl/T@\\u003cWalY1K_h%QDBBF;_e7S!!*'!\",\"KZd)iK2;s\\\\ckQl_P*d=Mo?^a7/JKc\\\\*L48169!7I5;0\\\\\\u003cH^hNG\\\"ZQ3#U3\\\"eo\\u003c\\u003e92t[f!\\u003e*b9WLY@H!V0N,BJsNSTD:?/+fY';e\\u003cOHh9AmlT?5\\u003cgGqK:*L99kat+P)eZ$HR\\\"Ql@Q!!!$!rr\",\"N6=Ks_B9Bncmur)?\\\\[fV$k/N5;:6@aB$P;R$2XAaPJ?E\\u003cG5,UfaP')8#2AY4ff+q?T?b0/RBi-YAeGmb\\u003c6Bqp[DZh#I(jObGkjJJaMf\\\\:#mb;BM\\\\L[g!\\\\F*M!!*'!\",\"N6B%O'=_7d#%u\\u0026d[+LTNDs\\u003c3307?8n=GrFI:4YYGCL,cIt-Tuj!\\u0026\\u003c6:3RbCuNjL#gW\\u0026=)E4^/'fp*.bFX@p_$,R6.\\\"=lV*T*5Vfc.:nkd$+YD:DJ,Ls0[sArC')K%YTc$:@kUQW5s8N\",\"N6B%s!\\\\k)ed$F6\\u003ea%iM\\\"\\u003cFTSe/eH8M:\\u003c9gf;$$.b??kpC*99aX!Lq:g6:Q3@Ga4Zrb@MaMa]L'YAt$IFBu])\\\"H^sF$r7gDPf6\\u0026CHpVKO3\\u003cDgK9,Y/e@V\\\"b\\u0026m!\\u003c\\u003c'\",\"N6CU\\u0026%VT\\\"d$=67=h\\\\I)/BJH:8-lS!.%\\\\-!$1@bAhtVO?q4]9'9'haE4N0*-0Uh'-'f',YW3]T=jL3D#N=fJi]Pp-bWej+R9q[%h[p]p26NK8q3b50k9G:.\\u0026eM\\u003cQer\\u003e__\\\"59K'R?_='rK/'hA\\\"r+L5i-*Ut5PI!!*'!\",\"N6CUF__;K!d$:[C93.?=/5(5KnM]!L#UbnSY5HOHc#[6A\\u0026FE;(naXB4h/OG\\\"%MDAR=fo41Z]rXc\\\"J-\\\\\\u0026\\u0026V8UW.?I6V*G+,))Ztu_IuCMV#ZJ:QDJ_EjQmjiX#HENY'WD0rVAV$Gl6_+0e:2$8D)):.LUs+8-S$L!!!$!rr\",\"N6CUF__;K!d$:\\\\N43JV0AO56@6D0$!na(s)d.dQ'iI1*uiKt#j?r\\\"X'\\\\AtNML2_C__7ic6,8Dc[F\\u003c0NTUGtl%HD#?/Y)t8!1X.;G!*FQ9GP-ukQn6I##\\u0026$^81(P+hN*-#rf/cUs)Wb\\\"\\u003c_/?I'[##WMh'H[Rcl+!!\\u003c\\u003c'\",\"N6L[G__;K!d\\\"qhT7k?[D\\\"Bk:5s%+=\\u003e#DM0j$_\\u003cr/JG0TCEQ!Ug(be3)\\u0026R2JnX+RSqorgC-NCjf6XATBWX(5\\u003cL1J1DV\\u003e44ZjO9q*d!YLuHhkq!3\\u003e3tpi\\u003eOPYZp9]5f1#/AlRZL06/I6cl\\\"d.\\u0026=To@9kS!prs8N\"]},\"crawl_vertex_ids\":{\"Sensor\":[\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ctg:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ind:2ce412d17b34ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"mod:2ce412d17b334ad4adc8c1c54dbfec4b:caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"pid:2ce412d17b33d4adc8c1c54dbfec4b:392734873135\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993\",\"quf:2ce412d17b334ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\"]},\"crawled_timestamp\":\"2023-11-03T19:00:23.985020992Z\",\"created_timestamp\":\"2023-11-03T18:01:23.995794943Z\",\"data_domains\":[\"Endpoint\"],\"description\":\"ThisfilemeetstheAdware/PUPAnti-malwareMLalgorithm'slowest-confidencethreshold.\",\"device\":{\"agent_load_flags\":\"0\",\"agent_local_time\":\"2023-10-12T03:45:57.753Z\",\"agent_version\":\"7.04.17605.0\",\"bios_manufacturer\":\"ABC\",\"bios_version\":\"F8CN42WW(V2.05)\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"config_id_base\":\"65994763\",\"config_id_build\":\"17605\",\"config_id_platform\":\"3\",\"device_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"external_ip\":\"81.2.69.142\",\"first_seen\":\"2023-04-07T09:36:36Z\",\"groups\":[\"18704e21288243b58e4c76266d38caaf\"],\"hostinfo\":{\"active_directory_dn_display\":[\"WinComputers\",\"WinComputers\\\\ABC\"],\"domain\":\"ABC.LOCAL\"},\"hostname\":\"ABC709-1175\",\"last_seen\":\"2023-11-03T17:51:42Z\",\"local_ip\":\"81.2.69.142\",\"mac_address\":\"ab-21-48-61-05-b2\",\"machine_domain\":\"ABC.LOCAL\",\"major_version\":\"10\",\"minor_version\":\"0\",\"modified_timestamp\":\"2023-11-03T17:53:43Z\",\"os_version\":\"Windows11\",\"ou\":[\"ABC\",\"WinComputers\"],\"platform_id\":\"0\",\"platform_name\":\"Windows\",\"pod_labels\":null,\"product_type\":\"1\",\"product_type_desc\":\"Workstation\",\"site_name\":\"Default-First-Site-Name\",\"status\":\"normal\",\"system_manufacturer\":\"LENOVO\",\"system_product_name\":\"20VE\"},\"falcon_host_link\":\"https://falcon.us-2.crowdstrike.com/activity-v2/detections/dhjffg:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"filename\":\"openvpn-abc-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"grandparent_details\":{\"cmdline\":\"C:\\\\Windows\\\\system32\\\\userinit.exe\",\"filename\":\"userinit.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\userinit.exe\",\"local_process_id\":\"4328\",\"md5\":\"b07f77fd3f9828b2c9d61f8a36609741\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392734873135\",\"process_id\":\"392734873135\",\"sha256\":\"caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"timestamp\":\"2023-10-30T16:49:19Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"yuvraj.mahajan\"},\"has_script_or_module_ioc\":\"true\",\"id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"indicator_id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"ioc_context\":[{\"ioc_description\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"ioc_source\":\"library_load\",\"ioc_type\":\"hash_sha256\",\"ioc_value\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"type\":\"module\"}],\"ioc_values\":[],\"is_synthetic_quarantine_disposition\":true,\"local_process_id\":\"17076\",\"logon_domain\":\"ABSYS\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"name\":\"PrewittPupAdwareSensorDetect-Lowest\",\"objective\":\"FalconDetectionMethod\",\"parent_details\":{\"cmdline\":\"C:\\\\WINDOWS\\\\Explorer.EXE\",\"filename\":\"explorer.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\explorer.exe\",\"local_process_id\":\"1040\",\"md5\":\"8cc3fcdd7d52d2d5221303c213e044ae\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"process_id\":\"392736520876\",\"sha256\":\"0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"timestamp\":\"2023-11-03T18:00:32Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"},\"parent_process_id\":\"392736520876\",\"pattern_disposition\":2176,\"pattern_disposition_description\":\"Prevention/Quarantine,processwasblockedfromexecutionandquarantinewasattempted.\",\"pattern_disposition_details\":{\"blocking_unsupported_or_disabled\":false,\"bootup_safeguard_enabled\":false,\"critical_process_disabled\":false,\"detect\":false,\"fs_operation_blocked\":false,\"handle_operation_downgraded\":false,\"inddet_mask\":false,\"indicator\":false,\"kill_action_failed\":false,\"kill_parent\":false,\"kill_process\":false,\"kill_subprocess\":false,\"operation_blocked\":false,\"policy_disabled\":false,\"process_blocked\":true,\"quarantine_file\":true,\"quarantine_machine\":false,\"registry_operation_blocked\":false,\"rooting\":false,\"sensor_only\":false,\"suspend_parent\":false,\"suspend_process\":false},\"pattern_id\":5761,\"platform\":\"Windows\",\"poly_id\":\"AACSASiWEnxKlIIaw8LWC-8XINBatE2uYZaWqRAAATiEEfPFwhoY4opnh1CQjm0tvUQp4Lu5eOAx29ZVj-qrGrA==\",\"process_end_time\":\"1699034421\",\"process_id\":\"399748687993\",\"process_start_time\":\"1699034413\",\"product\":\"epp\",\"quarantined_files\":[{\"filename\":\"\\\\Device\\\\Volume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"id\":\"2ce412d17b334ad4adc8c1c54dbfec4b_b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"state\":\"quarantined\"}],\"scenario\":\"NGAV\",\"severity\":30,\"sha1\":\"0000000000000000000000000000000000000000\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"show_in_ui\":true,\"source_products\":[\"FalconInsight\"],\"source_vendors\":[\"CrowdStrike\"],\"status\":\"new\",\"tactic\":\"MachineLearning\",\"tactic_id\":\"CSTA0004\",\"technique\":\"Adware/PUP\",\"technique_id\":\"CST0000\",\"timestamp\":\"2023-11-03T18:00:22.328Z\",\"tree_id\":\"1931778\",\"tree_root\":\"38687993\",\"triggering_process_graph_id\":\"pid:2ce4124ad4adc8c1c54dbfec4b:399748687993\",\"type\":\"ldt\",\"updated_timestamp\":\"2023-11-03T19:00:23.985007341Z\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"}",
-        "severity": 21
+        "severity": 21,
+        "type": [
+            "start"
+        ]
     },
     "file": {
         "name": "openvpn-abc-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe",
@@ -752,12 +758,14 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 
 #### Falcon SIEM Connector configuration file
 
-By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhoseclient.cf` provides configuration options related to the events collected by Falcon SIEM Connector.
+By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhoseclient.cfg` provides configuration options related to the events collected by Falcon SIEM Connector.
 
 Parts of the configuration file called `EventTypeCollection` and `EventSubTypeCollection` provides a list of event types that the connector should collect.
 
 Current supported event types are:
+- DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
+- EppDetectionSummaryEvent
 - IncidentSummaryEvent
 - UserActivityAuditEvent
 - AuthActivityAuditEvent
@@ -799,6 +807,7 @@ Current supported event types are:
 | crowdstrike.event.AgentId |  | keyword |
 | crowdstrike.event.AgentIdString |  | keyword |
 | crowdstrike.event.AggregateId |  | keyword |
+| crowdstrike.event.AnodeIndicators |  | nested |
 | crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
@@ -815,16 +824,27 @@ Current supported event types are:
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
 | crowdstrike.event.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
+| crowdstrike.event.ContentPatternCounts |  | nested |
+| crowdstrike.event.ContentPatterns.ConfidenceLevel |  | long |
+| crowdstrike.event.ContentPatterns.ID |  | keyword |
+| crowdstrike.event.ContentPatterns.MatchCount |  | long |
+| crowdstrike.event.ContentPatterns.Name |  | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
 | crowdstrike.event.DataDomains | Data domains of the event that was the primary indicator or created it. | keyword |
 | crowdstrike.event.Description |  | keyword |
+| crowdstrike.event.Destination |  | nested |
+| crowdstrike.event.Destination.Channel |  | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
+| crowdstrike.event.DetectionType |  | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
+| crowdstrike.event.EgressEventId |  | keyword |
+| crowdstrike.event.EgressSessionId |  | keyword |
 | crowdstrike.event.EmailAddresses | Summary list of all associated entity email addresses. | keyword |
 | crowdstrike.event.EnvironmentVariables | Provides one or more JSON objects which includes related environment variables. | nested |
+| crowdstrike.event.EventTimestamp |  | date |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
 | crowdstrike.event.ExecutablesWritten.FileName |  | keyword |
@@ -839,11 +859,18 @@ Current supported event types are:
 | crowdstrike.event.ExecutionMetadata.SearchWindowEnd |  | date |
 | crowdstrike.event.ExecutionMetadata.SearchWindowStart |  | date |
 | crowdstrike.event.FalconHostLink |  | keyword |
+| crowdstrike.event.FileCategoryCounts |  | nested |
 | crowdstrike.event.FileName |  | keyword |
 | crowdstrike.event.FilePath |  | keyword |
+| crowdstrike.event.FileType.Type.CategoryID |  | keyword |
+| crowdstrike.event.FileType.Type.CategoryName |  | keyword |
+| crowdstrike.event.FileType.Type.Description |  | keyword |
+| crowdstrike.event.FileType.Type.ID |  | keyword |
+| crowdstrike.event.FileType.Type.Name |  | keyword |
 | crowdstrike.event.FilesAccessed.FileName |  | keyword |
 | crowdstrike.event.FilesAccessed.FilePath |  | keyword |
 | crowdstrike.event.FilesAccessed.Timestamp |  | date |
+| crowdstrike.event.FilesEgressedCount |  | long |
 | crowdstrike.event.FilesWritten.FileName |  | keyword |
 | crowdstrike.event.FilesWritten.FilePath |  | keyword |
 | crowdstrike.event.FilesWritten.Timestamp |  | date |
@@ -874,6 +901,7 @@ Current supported event types are:
 | crowdstrike.event.IdpPolicyRuleTrigger | Identity Protection policy rule trigger. | keyword |
 | crowdstrike.event.IncidentType | Incident Type | keyword |
 | crowdstrike.event.Ipv | Protocol for network request. | keyword |
+| crowdstrike.event.IsClipboard |  | boolean |
 | crowdstrike.event.ItemPostedTimestamp | Time the raw intelligence was posted. | date |
 | crowdstrike.event.ItemType | Type of raw intelligence. | keyword |
 | crowdstrike.event.KeyStoreErrors | Describes a KeyStore error. | keyword |
@@ -889,6 +917,8 @@ Current supported event types are:
 | crowdstrike.event.MachineDomain | Domain for the machine associated with the detection. | keyword |
 | crowdstrike.event.MatchCount | Number of firewall rule matches. | long |
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
+| crowdstrike.event.MatchedClassification.ID |  | keyword |
+| crowdstrike.event.MatchedClassification.Name |  | keyword |
 | crowdstrike.event.MobileAppsDetails | Provides one or more JSON objects describing the related mobile applications. | nested |
 | crowdstrike.event.MobileAppsDetails.AndroidAppLabel |  | keyword |
 | crowdstrike.event.MobileAppsDetails.AndroidAppVersionName |  | keyword |
@@ -921,6 +951,7 @@ Current supported event types are:
 | crowdstrike.event.Objective | Method of detection. | keyword |
 | crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
+| crowdstrike.event.OriginWebLocations |  | flattened |
 | crowdstrike.event.ParentImageFileName | The parent image file name involved. | keyword |
 | crowdstrike.event.ParentImageFilePath |  | keyword |
 | crowdstrike.event.ParentProcessId |  | long |
@@ -962,6 +993,8 @@ Current supported event types are:
 | crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
 | crowdstrike.event.ReferrerUrl |  | keyword |
 | crowdstrike.event.Region |  | keyword |
+| crowdstrike.event.RelatedClassifications.ID |  | keyword |
+| crowdstrike.event.RelatedClassifications.Name |  | keyword |
 | crowdstrike.event.ReportFileReference |  | keyword |
 | crowdstrike.event.ReportID |  | keyword |
 | crowdstrike.event.ReportName |  | keyword |
@@ -971,9 +1004,11 @@ Current supported event types are:
 | crowdstrike.event.ResourceIdType | The type of the detected resource identifier. | keyword |
 | crowdstrike.event.ResourceName | Resource name if any. | keyword |
 | crowdstrike.event.ResourceUrl | The URL to the cloud resource. | keyword |
+| crowdstrike.event.ResponseAction |  | keyword |
 | crowdstrike.event.RootAccessIndicators | Provides one or more JSON objects which includes logs and stack traces from the suspicious source. | nested |
 | crowdstrike.event.RpcOpClassification | RPC operation type. | keyword |
 | crowdstrike.event.RuleAction | Firewall rule action. | keyword |
+| crowdstrike.event.RuleId |  | keyword |
 | crowdstrike.event.RulePriority | Priority of the monitoring rule that found the match. | keyword |
 | crowdstrike.event.SELinuxEnforcementPolicy | State of SELinux enforcement policy on an Android device. | keyword |
 | crowdstrike.event.SHA1String | SHA1 sum of the executable associated with the detection. | keyword |
@@ -1022,8 +1057,12 @@ Current supported event types are:
 | crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
 | crowdstrike.event.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
+| crowdstrike.event.UserDepartment |  | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
+| crowdstrike.event.UserMapped |  | boolean |
 | crowdstrike.event.UserName |  | keyword |
+| crowdstrike.event.UserNotified |  | boolean |
+| crowdstrike.event.UserTitle |  | keyword |
 | crowdstrike.event.UserUUID |  | keyword |
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
 | crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
@@ -1413,6 +1452,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.AllowlistingFilterId |  | keyword |
+| crowdstrike.AnodeIndicators |  | nested |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ApplicationName |  | match_only_text |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
@@ -1474,6 +1514,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.CertificatePublisher |  | keyword |
 | crowdstrike.CertificateSignatureHash |  | keyword |
 | crowdstrike.CertificateSignatureHashAlgorithm |  | keyword |
+| crowdstrike.ChangeTime |  | date |
 | crowdstrike.ChangedPcrBitmap |  | match_only_text |
 | crowdstrike.ChannelDiffStatus |  | keyword |
 | crowdstrike.ChannelId |  | keyword |
@@ -1505,6 +1546,11 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ConnectionAddressIP6 |  | match_only_text |
 | crowdstrike.ConnectionFlags |  | keyword |
 | crowdstrike.ConnectionType |  | keyword |
+| crowdstrike.ContentPatternCounts |  | nested |
+| crowdstrike.ContentPatterns.ConfidenceLevel |  | long |
+| crowdstrike.ContentPatterns.ID |  | keyword |
+| crowdstrike.ContentPatterns.MatchCount |  | long |
+| crowdstrike.ContentPatterns.Name |  | keyword |
 | crowdstrike.ContentSHA256HashData |  | keyword |
 | crowdstrike.ContextBaseFileName |  | keyword |
 | crowdstrike.ContextImageFileName |  | keyword |
@@ -1529,9 +1575,12 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.DcNumBlockingPolicies |  | match_only_text |
 | crowdstrike.Description |  | keyword |
 | crowdstrike.DesiredAccess |  | keyword |
+| crowdstrike.Destination |  | nested |
+| crowdstrike.Destination.Channel |  | keyword |
 | crowdstrike.DetectDescription |  | keyword |
 | crowdstrike.DetectId |  | keyword |
 | crowdstrike.DetectName |  | keyword |
+| crowdstrike.DetectionType |  | keyword |
 | crowdstrike.DeviceId |  | keyword |
 | crowdstrike.DeviceMountCounter |  | long |
 | crowdstrike.DevicePropertyClassGuid |  | match_only_text |
@@ -1565,6 +1614,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.EfiVariableSetupModeAttributes |  | match_only_text |
 | crowdstrike.EfiVariableSignatureSupport |  | match_only_text |
 | crowdstrike.EfiVariableSignatureSupportAttributes |  | match_only_text |
+| crowdstrike.EgressEventId |  | keyword |
+| crowdstrike.EgressSessionId |  | keyword |
 | crowdstrike.EnabledPrivilegesBitmask |  | keyword |
 | crowdstrike.EndTime |  | date |
 | crowdstrike.Entitlements |  | keyword |
@@ -1577,6 +1628,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.EtwRawThreadId |  | long |
 | crowdstrike.EventCorrelationId |  | keyword |
 | crowdstrike.EventOrigin |  | integer |
+| crowdstrike.EventTimestamp |  | date |
 | crowdstrike.EventType |  | keyword |
 | crowdstrike.EventUUID |  | keyword |
 | crowdstrike.ExceptionAddress |  | keyword |
@@ -1601,6 +1653,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
 | crowdstrike.FileCategory |  | keyword |
+| crowdstrike.FileCategoryCounts |  | nested |
 | crowdstrike.FileContent |  | match_only_text |
 | crowdstrike.FileDeletedCount |  | long |
 | crowdstrike.FileEcpBitmask |  | keyword |
@@ -1611,12 +1664,18 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.FileSigningTime |  | keyword |
 | crowdstrike.FileSubType |  | keyword |
 | crowdstrike.FileSystemOperationType |  | keyword |
+| crowdstrike.FileType.Type.CategoryID |  | keyword |
+| crowdstrike.FileType.Type.CategoryName |  | keyword |
+| crowdstrike.FileType.Type.Description |  | keyword |
+| crowdstrike.FileType.Type.ID |  | keyword |
+| crowdstrike.FileType.Type.Name |  | keyword |
 | crowdstrike.FileVaultIsEnabled |  | match_only_text |
 | crowdstrike.FileVersion |  | keyword |
 | crowdstrike.FileWrittenFlags |  | keyword |
 | crowdstrike.FilesAccessed.FileName |  | keyword |
 | crowdstrike.FilesAccessed.FilePath |  | keyword |
 | crowdstrike.FilesAccessed.Timestamp |  | date |
+| crowdstrike.FilesEgressedCount |  | long |
 | crowdstrike.FilesWritten.FileName |  | keyword |
 | crowdstrike.FilesWritten.FilePath |  | keyword |
 | crowdstrike.FilesWritten.Timestamp |  | date |
@@ -1711,6 +1770,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.InterfaceVersion |  | keyword |
 | crowdstrike.IpEntryFlags |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
+| crowdstrike.IsClipboard |  | boolean |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsProcessInitializing |  | keyword |
@@ -1760,6 +1820,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.Malicious |  | keyword |
 | crowdstrike.ManagedPdbBuildPath |  | match_only_text |
 | crowdstrike.MappedFromUserMode |  | keyword |
+| crowdstrike.MatchedClassification.ID |  | keyword |
+| crowdstrike.MatchedClassification.Name |  | keyword |
 | crowdstrike.MaxReassemblySize |  | keyword |
 | crowdstrike.MaxRouterAdvertisementInterval |  | keyword |
 | crowdstrike.MaxThreadCount |  | long |
@@ -1833,6 +1895,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.OciContainerHostConfigPrivileged |  | match_only_text |
 | crowdstrike.OciContainerHostConfigPublishAllPorts |  | match_only_text |
 | crowdstrike.OciContainerHostConfigReadOnlyRootfs |  | match_only_text |
+| crowdstrike.OciContainerId |  | match_only_text |
 | crowdstrike.OciContainerImageId |  | match_only_text |
 | crowdstrike.OciContainerInfoRetransmitted |  | match_only_text |
 | crowdstrike.OciContainerMounts |  | match_only_text |
@@ -1847,6 +1910,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.OperStatus |  | keyword |
 | crowdstrike.OperationFlags |  | keyword |
 | crowdstrike.Options |  | keyword |
+| crowdstrike.OriginWebLocations |  | flattened |
 | crowdstrike.OriginalContentLength |  | keyword |
 | crowdstrike.OriginalEventTimeStamp |  | keyword |
 | crowdstrike.OriginalFilename |  | keyword |
@@ -1986,6 +2050,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RegStringValue |  | match_only_text |
 | crowdstrike.RegType |  | keyword |
 | crowdstrike.RegValueName |  | keyword |
+| crowdstrike.RelatedClassifications.ID |  | keyword |
+| crowdstrike.RelatedClassifications.Name |  | keyword |
 | crowdstrike.RemoteAccount |  | keyword |
 | crowdstrike.RemoteAddressMaskIP4 |  | keyword |
 | crowdstrike.RemoteAddressMaskIP6 |  | keyword |
@@ -1994,7 +2060,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RequestType |  | keyword |
 | crowdstrike.ResendToCloud |  | keyword |
 | crowdstrike.RespondingDnsServer |  | keyword |
+| crowdstrike.ResponseAction |  | keyword |
 | crowdstrike.RetransmitTime |  | keyword |
+| crowdstrike.RootPath |  | keyword |
 | crowdstrike.RouteAge |  | keyword |
 | crowdstrike.RouteMetric |  | keyword |
 | crowdstrike.RouteOrigin |  | keyword |
@@ -2004,6 +2072,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RpcNestingLevel |  | keyword |
 | crowdstrike.RpcOpClassification |  | match_only_text |
 | crowdstrike.RpcOpNum |  | keyword |
+| crowdstrike.RuleId |  | keyword |
 | crowdstrike.RunDllInvocationCount |  | long |
 | crowdstrike.SHA1HashData |  | keyword |
 | crowdstrike.SHA1String |  | keyword |
@@ -2144,21 +2213,25 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.UnsignedModuleLoadCount |  | long |
 | crowdstrike.UploadId |  | keyword |
 | crowdstrike.User |  | keyword |
+| crowdstrike.UserDepartment |  | keyword |
 | crowdstrike.UserFlags |  | keyword |
 | crowdstrike.UserGroupsBitmask |  | keyword |
 | crowdstrike.UserLogoffType |  | keyword |
 | crowdstrike.UserLogonFlags |  | keyword |
 | crowdstrike.UserLogonFlags_decimal |  | keyword |
+| crowdstrike.UserMapped |  | boolean |
 | crowdstrike.UserMemoryAllocateExecutableCount |  | long |
 | crowdstrike.UserMemoryAllocateExecutableRemoteCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableRemoteCount |  | long |
 | crowdstrike.UserName |  | keyword |
+| crowdstrike.UserNotified |  | boolean |
 | crowdstrike.UserRid |  | keyword |
 | crowdstrike.UserSid |  | keyword |
 | crowdstrike.UserSid_readable |  | keyword |
 | crowdstrike.UserThread |  | keyword |
 | crowdstrike.UserTime |  | long |
+| crowdstrike.UserTitle |  | keyword |
 | crowdstrike.ValidLifetime |  | keyword |
 | crowdstrike.VerifiedCertificate |  | keyword |
 | crowdstrike.VersionInfo |  | match_only_text |

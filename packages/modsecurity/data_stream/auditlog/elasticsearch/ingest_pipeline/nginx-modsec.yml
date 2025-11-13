@@ -2,34 +2,41 @@
 description: Pipeline for apache modsecurity audit log.
 processors:
   - rename:
+      tag: rename_json_transaction_time_stamp_to__temps_date_175935df
       field: json.transaction.time_stamp
       target_field: _temps.date
       ignore_missing: true
 
   # Time zone can come from two sources, choose in order: config, locale, default to UTC.
   - set:
+      tag: set__temps_tz_e05ccb85
       field: _temps.tz
       copy_from: _conf.tz_offset
       if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
   - set:
+      tag: set__temps_tz_421d98a4
       field: _temps.tz
       copy_from: event.timezone
       override: false
       if: ctx.event?.timezone != null
   - set:
+      tag: set__temps_tz_56876443
       field: _temps.tz
       value: UTC
       override: false
   - gsub:
+      tag: gsub__temps_tz_8e2cb4b7
       field: _temps.tz
       pattern: "^([-+]\\d{2})(\\d{2})$"
       replacement: "$1:$2"
       if: ctx._temps?.tz != null
   - set:
+      tag: set_event_timezone_8476ef7a
       field: event.timezone
       copy_from: _temps.tz
 
   - date:
+      tag: date__temps_date_3a8c247e
       field: _temps.date
       timezone: "{{{ event.timezone }}}"
       formats:
@@ -42,6 +49,7 @@ processors:
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
+            tag: remove_event_timezone_e204d14e
             field: event.timezone
             ignore_missing: true
         - date:
@@ -56,59 +64,73 @@ processors:
               - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
             on_failure:
               - append:
+                  tag: append_error_message_59dcceee
                   field: error.message
                   value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
               - fail:
+                  tag: fail_d70c5a65
                   message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
-# rename ecs
+  # rename ecs
   - rename:
+      tag: rename_json_transaction_client_ip_to_source_ip_4f38acf7
       field: json.transaction.client_ip
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_json_transaction_client_port_to_source_port_d5cf090b
       field: json.transaction.client_port
       target_field: source.port
       ignore_missing: true
   - rename:
+      tag: rename_json_transaction_request_method_to_http_request_method_b85b7a0e
       field: json.transaction.request.method
       target_field: http.request.method
       ignore_missing: true
   - convert:
+      tag: convert_json_transaction_request_http_version_to_http_version_61c1a00c
       field: json.transaction.request.http_version
       target_field: http.version
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_json_transaction_request_headers_host_to_json_transaction_request_headers_Host_50a00924
       field: json.transaction.request.headers.host
       target_field: json.transaction.request.headers.Host
       ignore_missing: true
   - set:
+      tag: set__temps_url_8d7d4133
       field: _temps.url
       if: ctx.json.transaction.host_port == 443
       value: "https://{{{json.transaction.request.headers.Host}}}:{{{json.transaction.host_port}}}{{{json.transaction.request.uri}}}"
   - set:
+      tag: set__temps_url_fa79ebd5
       field: _temps.url
       if: ctx.json.transaction.host_port == 80
       value: "http://{{{json.transaction.request.headers.Host}}}:{{{json.transaction.host_port}}}{{{json.transaction.request.uri}}}"
   - uri_parts:
+      tag: uri_parts__temps_url_1e26796c
       field: _temps.url
       ignore_failure: true
       keep_original: true
       remove_if_successful: true
   - rename:
+      tag: rename_json_transaction_response_http_code_to_http_response_status_code_2ebdacc2
       field: json.transaction.response.http_code
       target_field: http.response.status_code
       ignore_missing: true
   - rename:
+      tag: rename_json_transaction_response_headers_Content-Type_to_http_response_mime_type_e37d7a97
       field: json.transaction.response.headers.Content-Type
       target_field: http.response.mime_type
       ignore_missing: true
   - rename:
+      tag: rename_json_transaction_response_Content-Length_to_http_response_bytes_10aeaad5
       field: json.transaction.response.Content-Length
       target_field: http.response.bytes
       ignore_missing: true
   - foreach:
+      tag: foreach_json_transaction_messages_9b1acb57
       field: json.transaction.messages
       ignore_missing: true
       processor:
@@ -116,25 +138,30 @@ processors:
           field: modsec.audit.messages
           value: '{{{_ingest._value.message}}}'
   - foreach:
+      tag: foreach_json_transaction_messages_06262592
       field: json.transaction.messages
       ignore_missing: true
       processor:
         remove:
           field: _ingest._value.message
   - rename:
+      tag: rename_json_transaction_messages_to_modsec_audit_details_a003c6ab
       field: json.transaction.messages
       target_field: modsec.audit.details
       if: ctx.json?.transaction?.messages != null && ctx.json?.transaction?.messages.length != 0
 
-# user agent and geoip enrich
+  # user agent and geoip enrich
   - user_agent:
+      tag: user_agent_json_transaction_request_headers_User-Agent_8333430d
       field: json.transaction.request.headers.User-Agent
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -143,23 +170,29 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_4595ee28
       field: event.category
       value: web
   - append:
+      tag: append_event_type_f8289914
       field: event.type
       value: access
   - remove:
+      tag: remove_d7845b70
       field:
         - json
         - _conf
@@ -172,4 +205,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
