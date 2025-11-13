@@ -765,6 +765,83 @@ processors:
           // Always set the legacy target.entity.id for backward compatibility
           field("target.entity.id").set(enrichCtx.target);
           
+          // Define resource type classifications
+          def userResourceTypes = new HashSet();
+          userResourceTypes.add('user');
+          userResourceTypes.add('role');
+          userResourceTypes.add('assumed-role');
+          userResourceTypes.add('federated-user');
+          userResourceTypes.add('instance-profile');
+          userResourceTypes.add('mfa');
+          userResourceTypes.add('serialNumber');
+          
+          def hostResourceTypes = new HashSet();
+          hostResourceTypes.add('instance');
+          hostResourceTypes.add('volume');
+          hostResourceTypes.add('snapshot');
+          hostResourceTypes.add('image');
+          
+          def serviceResourceTypes = new HashSet();
+          serviceResourceTypes.add('stack');
+          serviceResourceTypes.add('stack-set');
+          serviceResourceTypes.add('trail');
+          serviceResourceTypes.add('configuration-recorder');
+          serviceResourceTypes.add('file-system');
+          serviceResourceTypes.add('mount-target');
+          serviceResourceTypes.add('rule');
+          serviceResourceTypes.add('detector');
+          serviceResourceTypes.add('key');
+          serviceResourceTypes.add('function');
+          serviceResourceTypes.add('log-group');
+          serviceResourceTypes.add('log-stream');
+          serviceResourceTypes.add('alarm');
+          serviceResourceTypes.add('db');
+          serviceResourceTypes.add('cluster');
+          serviceResourceTypes.add('global-cluster');
+          serviceResourceTypes.add('trust-anchor');
+          serviceResourceTypes.add('resolver-query-log-config');
+          serviceResourceTypes.add('secret');
+          serviceResourceTypes.add('parameter');
+          serviceResourceTypes.add('document');
+          serviceResourceTypes.add('session');
+          serviceResourceTypes.add('webacl');
+          serviceResourceTypes.add('rulegroup');
+          serviceResourceTypes.add('ipset');
+          serviceResourceTypes.add('topic');
+          serviceResourceTypes.add('model');
+          serviceResourceTypes.add('loadbalancer');
+          serviceResourceTypes.add('table');
+          serviceResourceTypes.add('group');
+          serviceResourceTypes.add('policy');
+          serviceResourceTypes.add('security-group');
+          serviceResourceTypes.add('network-interface');
+          serviceResourceTypes.add('vpc');
+          serviceResourceTypes.add('subnet');
+          serviceResourceTypes.add('network-acl');
+          serviceResourceTypes.add('dhcp-options');
+          
+          // Simple ID prefixes for host resources
+          def hostIdPrefixes = new HashSet();
+          hostIdPrefixes.add('i-');
+          hostIdPrefixes.add('vol-');
+          hostIdPrefixes.add('snap-');
+          hostIdPrefixes.add('ami-');
+          
+          // Simple ID prefixes for service resources
+          def serviceIdPrefixes = new HashSet();
+          serviceIdPrefixes.add('sg-');
+          serviceIdPrefixes.add('sgr-');
+          serviceIdPrefixes.add('eni-');
+          serviceIdPrefixes.add('vpc-');
+          serviceIdPrefixes.add('subnet-');
+          serviceIdPrefixes.add('acl-');
+          serviceIdPrefixes.add('rtb-');
+          serviceIdPrefixes.add('igw-');
+          serviceIdPrefixes.add('nat-');
+          serviceIdPrefixes.add('vpce-');
+          serviceIdPrefixes.add('tgw-');
+          serviceIdPrefixes.add('pcx-');
+          
           def userTargets = new TreeSet();
           def hostTargets = new TreeSet();
           def serviceTargets = new TreeSet();
@@ -778,83 +855,64 @@ processors:
             String target = targetValue.toString();
             boolean classified = false;
 
-            // User-related: IAM users, roles, assumed roles, federated users, instance profiles, access keys, MFA devices
-            if (target.contains(":user/") ||
-                target.contains(":role/") ||
-                target.contains(":assumed-role/") ||
-                target.contains(":federated-user/") ||
-                target.contains(":instance-profile/") ||
-                target.contains(":mfa/") ||
-                (target.length() == 20 && target.startsWith("AKIA")) || // Access Key ID pattern (AKIA...)
-                (target.startsWith("arn:") && target.contains(":serialNumber:"))) { // MFA device serial numbers
-              userTargets.add(target);
-              classified = true;
+            // Handle ARN format: arn:aws:service:region:account-id:resource-type/resource-id
+            if (target.startsWith("arn:")) {
+              def parts = target.splitOnToken(":");
+              if (parts.length >= 6) {
+                // Extract resource type (last part before /)
+                String resourcePart = parts[5];
+                String resourceType = resourcePart;
+                
+                // Handle resource-type/resource-id format
+                int slashIdx = resourcePart.indexOf("/");
+                if (slashIdx > 0) {
+                  resourceType = resourcePart.substring(0, slashIdx);
+                }
+                
+                // Classify based on resource type
+                if (userResourceTypes.contains(resourceType)) {
+                  userTargets.add(target);
+                  classified = true;
+                } else if (hostResourceTypes.contains(resourceType)) {
+                  hostTargets.add(target);
+                  classified = true;
+                } else if (serviceResourceTypes.contains(resourceType)) {
+                  serviceTargets.add(target);
+                  classified = true;
+                } else if (parts[2] == "s3") {
+                  // Special case: S3 buckets/objects are service resources
+                  serviceTargets.add(target);
+                  classified = true;
+                }
+              }
             }
-            // Host-related: EC2 instances, volumes, snapshots, AMIs
-            else if (target.startsWith("i-") ||  // EC2 instance ID
-                     target.startsWith("vol-") ||  // EBS volume ID
-                     target.startsWith("snap-") ||  // Snapshot ID
-                     target.startsWith("ami-") ||  // AMI ID
-                     target.contains(":instance/") ||
-                     target.contains(":volume/") ||
-                     target.contains(":snapshot/") ||
-                     target.contains(":image/")) {
-              hostTargets.add(target);
-              classified = true;
-            }
-            // Service-related: AWS service resources, IAM policies/groups, and network infrastructure
-            else if (target.contains(":stack/") ||  // CloudFormation
-                     target.contains(":stack-set/") ||
-                     target.contains(":trail/") ||  // CloudTrail
-                     target.contains(":configuration-recorder/") ||  // Config
-                     target.contains(":file-system/") ||  // EFS
-                     target.contains(":mount-target/") ||
-                     target.contains(":rule/") ||  // EventBridge/CloudWatch Events
-                     target.contains(":detector/") ||  // GuardDuty
-                     target.contains(":key/") ||  // KMS
-                     target.contains(":function/") ||  // Lambda
-                     target.contains(":log-group/") ||  // CloudWatch Logs
-                     target.contains(":log-stream/") ||
-                     target.contains(":alarm/") ||  // CloudWatch Alarms
-                     target.contains(":db/") ||  // RDS
-                     target.contains(":cluster/") ||
-                     target.contains(":global-cluster/") ||
-                     target.contains(":trust-anchor/") ||  // IAM Roles Anywhere
-                     target.contains(":resolver-query-log-config/") ||  // Route53 Resolver
-                     target.contains("arn:aws:s3:") ||  // S3
-                     target.contains(":secret:") ||  // Secrets Manager
-                     target.contains(":parameter/") ||  // SSM Parameter
-                     target.contains(":document/") ||  // SSM Document
-                     target.contains(":session/") ||  // SSM Session
-                     target.contains(":webacl/") ||  // WAFv2
-                     target.contains(":rulegroup/") ||
-                     target.contains(":ipset/") ||
-                     target.contains(":topic:") ||  // SNS
-                     target.contains(":model/") ||  // Bedrock
-                     target.contains(":loadbalancer/") ||  // ELB
-                     target.contains(":table/") ||  // DynamoDB
-                     target.contains(":group/") ||  // IAM Groups
-                     target.contains(":policy/") ||  // IAM Policies
-                     target.contains(":security-group/") ||  // EC2 Security Groups (ARN format)
-                     target.contains(":network-interface/") ||  // ENI (ARN format)
-                     target.contains(":vpc/") ||  // VPC (ARN format)
-                     target.contains(":subnet/") ||  // Subnet (ARN format)
-                     target.contains(":network-acl/") ||  // Network ACL (ARN format)
-                     target.contains(":dhcp-options/") ||
-                     target.startsWith("sg-") ||  // Security Group ID
-                     target.startsWith("sgr-") ||  // Security Group Rule ID
-                     target.startsWith("eni-") ||  // ENI ID
-                     target.startsWith("vpc-") ||  // VPC ID
-                     target.startsWith("subnet-") ||  // Subnet ID
-                     target.startsWith("acl-") ||  // Network ACL ID
-                     target.startsWith("rtb-") ||  // Route Table ID
-                     target.startsWith("igw-") ||  // Internet Gateway ID
-                     target.startsWith("nat-") ||  // NAT Gateway ID
-                     target.startsWith("vpce-") ||  // VPC Endpoint ID
-                     target.startsWith("tgw-") ||  // Transit Gateway ID
-                     target.startsWith("pcx-")) {  // VPC Peering Connection ID
-              serviceTargets.add(target);
-              classified = true;
+            // Handle simple resource IDs with prefixes
+            else if (!classified) {
+              // Access Key ID pattern (AKIA...)
+              if (target.length() == 20 && target.startsWith("AKIA")) {
+                userTargets.add(target);
+                classified = true;
+              } else {
+                // Check host ID prefixes
+                for (def prefix : hostIdPrefixes) {
+                  if (target.startsWith(prefix)) {
+                    hostTargets.add(target);
+                    classified = true;
+                    break;
+                  }
+                }
+                
+                // Check service ID prefixes if not yet classified
+                if (!classified) {
+                  for (def prefix : serviceIdPrefixes) {
+                    if (target.startsWith(prefix)) {
+                      serviceTargets.add(target);
+                      classified = true;
+                      break;
+                    }
+                  }
+                }
+              }
             }
 
             // Generic fallback for everything else (including account IDs)
@@ -886,32 +944,57 @@ processors:
           field("actor.entity.id").set([ enrichCtx.actor ]);
           
           def userType = $("json.userIdentity.type", null);
+          String actorStr = enrichCtx.actor.toString();
+          boolean classified = false;
           
+          // User types that map directly to user entity
+          def userIdentityTypes = new HashSet();
+          userIdentityTypes.add('IAMUser');
+          userIdentityTypes.add('Root');
+          userIdentityTypes.add('AssumedRole');
+          
+          // Check userType first (most reliable indicator)
           if (userType == "AWSService") {
-            // AWS services -> service.entity.id
             field("service.entity.id").set([ enrichCtx.actor ]);
-          } else if (userType == "AssumedRole" || 
-                     (enrichCtx.actor instanceof String && 
-                      (enrichCtx.actor.contains(":role/") || 
-                       enrichCtx.actor.contains(":assumed-role/")))) {
-            // IAM roles (including assumed roles) -> user.entity.id
-            // another option is to check if user.name is not null than assign user.entity.id
+            classified = true;
+          } else if (userIdentityTypes.contains(userType)) {
             field("user.entity.id").set([ enrichCtx.actor ]);
-          } else if (enrichCtx.actor instanceof String && 
-                     (enrichCtx.actor.contains(":user/") || 
-                      enrichCtx.actor.contains(":federated-user/"))) {
-            // IAM users -> user.entity.id
-            field("user.entity.id").set([ enrichCtx.actor ]);
-          } else if (enrichCtx.actor instanceof String && 
-                     (enrichCtx.actor.contains(":instance/") || 
-                      enrichCtx.actor.startsWith("i-"))) {
-            // EC2 instances -> host.entity.id
+            classified = true;
+          }
+          
+          // If not classified by userType, parse ARN structure
+          if (!classified && actorStr.startsWith("arn:")) {
+            def parts = actorStr.splitOnToken(":");
+            if (parts.length >= 6) {
+              String resourcePart = parts[5];
+              String resourceType = resourcePart;
+              
+              // Handle resource-type/resource-id format
+              int slashIdx = resourcePart.indexOf("/");
+              if (slashIdx > 0) {
+                resourceType = resourcePart.substring(0, slashIdx);
+              }
+              
+              // Classify based on resource type
+              if (resourceType == "user" || resourceType == "role" || 
+                  resourceType == "assumed-role" || resourceType == "federated-user") {
+                field("user.entity.id").set([ enrichCtx.actor ]);
+                classified = true;
+              } else if (resourceType == "instance") {
+                field("host.entity.id").set([ enrichCtx.actor ]);
+                classified = true;
+              }
+            }
+          }
+          
+          // Check simple instance ID format
+          if (!classified && actorStr.startsWith("i-")) {
             field("host.entity.id").set([ enrichCtx.actor ]);
-          } else if (userType == "IAMUser" || userType == "Root") {
-            // IAM users and root -> user.entity.id
-            field("user.entity.id").set([ enrichCtx.actor ]);
-          } else {
-            // Fallback for other types -> entity.id
+            classified = true;
+          }
+          
+          // Fallback for other types -> entity.id
+          if (!classified) {
             field("entity.id").set([ enrichCtx.actor ]);
           }
         }
