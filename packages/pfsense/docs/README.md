@@ -1,190 +1,87 @@
-# pfSense Integration
+# pfSense Integration for Elastic
 
-This is an integration to parse certain logs from [pfSense and OPNsense firewalls](https://docs.netgate.com/pfsense/en/latest/). It parses logs received over the network via syslog (UDP/TCP/TLS). pfSense natively only supports UDP. OPNsense supports all 3 transports.
+## Overview
+The pfSense integration for Elastic enables the collection of logs from pfSense and OPNsense firewalls. It parses logs received over the network via syslog (UDP, TCP, or TLS), providing visibility into network traffic, security events, and system health.
 
-Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, Squid, and PHP-FPM (Authentication) logs.  
-All other events will be dropped.
-The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration. Install the HAProxy integration assets to use them.
+This integration facilitates real-time monitoring and analysis of firewall activity, helping with threat detection and network troubleshooting.
 
-## pfSense Setup
-1. Navigate to _Status -> System Logs_, then click on _Settings_
-2. At the bottom check _Enable Remote Logging_
-3. (Optional) Select a specific interface to use for forwarding
-4. Input the agent IP address and port as set via the integration config into the field _Remote log servers_ (e.g. 192.168.100.50:5140)
-5. Under _Remote Syslog Contents_ select what logs to forward to the agent
-   * Select _Everything_ to forward all logs to the agent or select the individual services to forward. Any log entry not in the list above will be dropped. This will cause additional data to be sent to the agent and Elasticsearch. The firewall, VPN, DHCP, DNS, and Authentication (PHP-FPM) logs are able to be individually selected. In order to collect HAProxy and Squid or other "package" logs, the _Everything_ option must be selected.
+### How it works
+The integration works by receiving syslog data streams from pfSense or OPNsense devices. Elastic Agent listens on a configured network port (UDP, TCP, or TLS), receives the logs, processes them through its ingest pipelines to parse and structure the data, and then securely sends the data to Elasticsearch for indexing and analysis.
 
-## OPNsense Setup
-1. Navigate to _System -> Settings -> Logging/Targets_
-2. Add a new _Logging/Target_ (Click the plus icon)
-    - Transport = UDP or TCP or TLS
-    - Applications = Select a list of applications to send to remote syslog. Leave empty for all.
-    - Levels = Nothing Selected
-    - Facilities = Nothing Selected
-    - Hostname = IP of Elastic agent as configured in the integration config
-    - Port = Port of Elastic agent as configured in the integration config
-    - Certificate = Client certificate to use (when selecting a tls transport type)
-    - Description = Syslog to Elasticsearch
-    - Click Save   
+## What data does this integration collect?
+The pfSense integration collects and parses the following types of logs:
+* Firewall
+* Unbound (DNS)
+* DHCP Daemon
+* OpenVPN
+* IPsec
+* HAProxy
+* Squid (Web Proxy)
+* PHP-FPM (Authentication events)
 
- The module is by default configured to run with the `udp` input on port `9001`.
+**Note:** The HAProxy dashboards are compatible with the official HAProxy integration. For the best experience, it is recommended to also install the HAProxy integration assets. All other log types not listed above will be dropped.
 
-**Important**  
-The pfSense integration supports both the BSD logging format (used by pfSense by default and OPNsense) and the Syslog format (optional for pfSense).
-However the syslog format is recommended. It will provide the firewall hostname and timestamps with timezone information.
-When using the BSD format, the `Timezone Offset` config must be set when deploying the agent or else the timezone will default to the timezone of the agent. See `https://<pfsense url>/status_logs_settings.php` and https://docs.netgate.com/pfsense/en/latest/monitoring/logs/settings.html for more information.
+## What do I need to use this integration?
+You need an installed Elastic Agent to act as the collection point for the syslog data.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed to stream data from the syslog receiver and ship it to Elastic. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/install-elastic-agents.html).
+
+### Onboard / configure
+
+Follow the steps below to configure your pfSense or OPNsense device to send logs to the Elastic Agent.
+
+#### pfSense Setup
+
+1.  In the pfSense web interface, navigate to **Status > System Logs**, and then click on the **Settings** tab.
+2.  Scroll to the bottom and check the **Enable Remote Logging** box.
+3.  (Optional) Select a specific source interface to use for log forwarding under **Source Address**.
+4.  In the **Remote log servers** field, enter the IP address and port of your Elastic Agent (e.g., `192.168.100.50:9001`).
+5.  Under **Remote Syslog Contents**, select the logs you wish to forward.
+    *   To collect logs from packages like HAProxy or Squid, you must select **Everything**.
+    *   For standard logs, you can select individual services like Firewall, DHCP, OpenVPN, etc.
+
+#### OPNsense Setup
+
+1.  In the OPNsense web interface, navigate to **System > Settings > Logging / Targets**.
+2.  Click the **Add** button (plus icon) to create a new logging target.
+3.  Configure the target with the following settings:
+    *   **Transport**: UDP, TCP, or TLS, matching your Elastic Agent input configuration.
+    *   **Applications**: Leave empty to forward all logs, or select specific applications.
+    *   **Levels & Facilities**: Leave with "Nothing Selected".
+    *   **Hostname**: The IP address of your Elastic Agent.
+    *   **Port**: The port your Elastic Agent is listening on.
+    *   **Certificate**: (For TLS only) Select the appropriate client certificate.
+    *   **Description**: A descriptive name, e.g., "Syslog to Elastic".
+4.  Click **Save**.
+
+**Important Configuration Note:**
+
+The pfSense integration supports both the BSD logging format (default on pfSense) and the standard Syslog format (RFC 5424, an option on pfSense).
+
+The **Syslog format is highly recommended** as it provides the firewall's hostname and includes proper timezone information in the timestamps.
+
+If you must use the BSD format, you **must** configure the `Timezone Offset` setting in the integration policy. If you do not, timestamps will default to the timezone of the Elastic Agent, which may be incorrect. For more details, see the pfSense [log settings documentation](https://docs.netgate.com/pfsense/en/latest/monitoring/logs/settings.html).
+
+### Validation
+
+1.  On a host connected to the pfSense network, generate traffic that will trigger a firewall log event. For example, attempt a connection that you know will be blocked by a firewall rule.
+2.  Check the pfSense system logs to confirm that new event data is being written. In the pfSense web interface, navigate to **Status > System Logs > Firewall**.
+3.  In Kibana, navigate to the **Discover** tab or open the pre-built **Firewall - Dashboard [pfSense]** dashboard.
+4.  Filter for pfSense data by using the KQL query `event.dataset : "pfsense.log"`.
+5.  Verify that new log events from the pfSense host are appearing. You should see logs corresponding to the traffic you generated.
 
 A huge thanks to [a3ilson](https://github.com/a3ilson) for the https://github.com/pfelk/pfelk repo, which is the foundation for the majority of the grok patterns and dashboards in this integration.
 
-## Logs
+## Reference
 
-### pfSense log
+### log
+The `log` data stream contains all log types collected from the pfSense or OPNsense device.
 
-This is the pfSense `log` dataset.
-
-An example event for `log` looks as following:
-
-```json
-{
-    "@timestamp": "2021-07-04T00:10:14.578Z",
-    "agent": {
-        "ephemeral_id": "da2d428d-04f5-4b59-b655-6e915448dbe5",
-        "id": "0746c3a9-3a6e-4fb6-8c0d-bf706948547a",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.9.0"
-    },
-    "data_stream": {
-        "dataset": "pfsense.log",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "destination": {
-        "address": "175.16.199.1",
-        "geo": {
-            "city_name": "Changchun",
-            "continent_name": "Asia",
-            "country_iso_code": "CN",
-            "country_name": "China",
-            "location": {
-                "lat": 43.88,
-                "lon": 125.3228
-            },
-            "region_iso_code": "CN-22",
-            "region_name": "Jilin Sheng"
-        },
-        "ip": "175.16.199.1",
-        "port": 853
-    },
-    "ecs": {
-        "version": "8.17.0"
-    },
-    "elastic_agent": {
-        "id": "0746c3a9-3a6e-4fb6-8c0d-bf706948547a",
-        "snapshot": false,
-        "version": "8.9.0"
-    },
-    "event": {
-        "action": "block",
-        "agent_id_status": "verified",
-        "category": [
-            "network"
-        ],
-        "dataset": "pfsense.log",
-        "ingested": "2023-09-22T15:34:05Z",
-        "kind": "event",
-        "original": "<134>1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
-        "provider": "filterlog",
-        "reason": "match",
-        "timezone": "-05:00",
-        "type": [
-            "connection",
-            "denied"
-        ]
-    },
-    "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "172.27.0.4:45848"
-        },
-        "syslog": {
-            "priority": 134
-        }
-    },
-    "message": "146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
-    "network": {
-        "bytes": 60,
-        "community_id": "1:pOXVyPJTFJI5seusI/UD6SwvBjg=",
-        "direction": "inbound",
-        "iana_number": "6",
-        "transport": "tcp",
-        "type": "ipv4",
-        "vlan": {
-            "id": "12"
-        }
-    },
-    "observer": {
-        "ingress": {
-            "interface": {
-                "name": "igb1.12"
-            },
-            "vlan": {
-                "id": "12"
-            }
-        },
-        "name": "pfSense.example.com",
-        "type": "firewall",
-        "vendor": "netgate"
-    },
-    "pfsense": {
-        "ip": {
-            "flags": "DF",
-            "id": 32989,
-            "offset": 0,
-            "tos": "0x0",
-            "ttl": 63
-        },
-        "tcp": {
-            "flags": "S",
-            "length": 0,
-            "options": [
-                "mss",
-                "sackOK",
-                "TS",
-                "nop",
-                "wscale"
-            ],
-            "window": 64240
-        }
-    },
-    "process": {
-        "name": "filterlog",
-        "pid": 72237
-    },
-    "related": {
-        "ip": [
-            "175.16.199.1",
-            "10.170.12.50"
-        ]
-    },
-    "rule": {
-        "id": "1535324496"
-    },
-    "source": {
-        "address": "10.170.12.50",
-        "ip": "10.170.12.50",
-        "port": 49652
-    },
-    "tags": [
-        "preserve_original_event",
-        "pfsense",
-        "forwarded"
-    ]
-}
-```
-
+#### log fields
 **Exported fields**
 
 | Field | Description | Type |
@@ -447,4 +344,214 @@ An example event for `log` looks as following:
 | user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
+
+
+#### log sample event
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2021-07-04T00:10:14.578Z",
+    "agent": {
+        "ephemeral_id": "da2d428d-04f5-4b59-b655-6e915448dbe5",
+        "id": "0746c3a9-3a6e-4fb6-8c0d-bf706948547a",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.0"
+    },
+    "data_stream": {
+        "dataset": "pfsense.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "175.16.199.1",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1",
+        "port": 853
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "0746c3a9-3a6e-4fb6-8c0d-bf706948547a",
+        "snapshot": false,
+        "version": "8.9.0"
+    },
+    "event": {
+        "action": "block",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "pfsense.log",
+        "ingested": "2023-09-22T15:34:05Z",
+        "kind": "event",
+        "original": "<134>1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
+        "provider": "filterlog",
+        "reason": "match",
+        "timezone": "-05:00",
+        "type": [
+            "connection",
+            "denied"
+        ]
+    },
+    "input": {
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "172.27.0.4:45848"
+        },
+        "syslog": {
+            "priority": 134
+        }
+    },
+    "message": "146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
+    "network": {
+        "bytes": 60,
+        "community_id": "1:pOXVyPJTFJI5seusI/UD6SwvBjg=",
+        "direction": "inbound",
+        "iana_number": "6",
+        "transport": "tcp",
+        "type": "ipv4",
+        "vlan": {
+            "id": "12"
+        }
+    },
+    "observer": {
+        "ingress": {
+            "interface": {
+                "name": "igb1.12"
+            },
+            "vlan": {
+                "id": "12"
+            }
+        },
+        "name": "pfSense.example.com",
+        "type": "firewall",
+        "vendor": "netgate"
+    },
+    "pfsense": {
+        "ip": {
+            "flags": "DF",
+            "id": 32989,
+            "offset": 0,
+            "tos": "0x0",
+            "ttl": 63
+        },
+        "tcp": {
+            "flags": "S",
+            "length": 0,
+            "options": [
+                "mss",
+                "sackOK",
+                "TS",
+                "nop",
+                "wscale"
+            ],
+            "window": 64240
+        }
+    },
+    "process": {
+        "name": "filterlog",
+        "pid": 72237
+    },
+    "related": {
+        "ip": [
+            "175.16.199.1",
+            "10.170.12.50"
+        ]
+    },
+    "rule": {
+        "id": "1535324496"
+    },
+    "source": {
+        "address": "10.170.12.50",
+        "ip": "10.170.12.50",
+        "port": 49652
+    },
+    "tags": [
+        "preserve_original_event",
+        "pfsense",
+        "forwarded"
+    ]
+}
+```
+
+### Inputs used
+These inputs can be used with this integration:
+<details>
+<summary>tcp</summary>
+
+## Setup
+
+For more details about the TCP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp).
+
+### Collecting logs from TCP
+
+To collect logs via TCP, select **Collect logs via TCP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of incoming messages
+- Max Connections - Maximum number of concurrent connections
+- Timeout - How long to wait for data before closing idle connections
+- Line Delimiter - Character(s) that separate log messages
+
+## SSL/TLS Configuration
+
+To enable encrypted connections, configure the following SSL settings:
+
+**SSL Settings:**
+- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
+- Certificate Key - Path to the private key file (`.key`)
+- Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
+- Client Authentication - Require client certificates (`none`, `optional`, or `required`)
+- Supported Protocols - TLS versions to support (e.g., `TLSv1.2`, `TLSv1.3`)
+
+**Example SSL Configuration:**
+```yaml
+ssl.enabled: true
+ssl.certificate: "/path/to/server.crt"
+ssl.key: "/path/to/server.key"
+ssl.certificate_authorities: ["/path/to/ca.crt"]
+ssl.client_authentication: "optional"
+```
+</details>
+<details>
+<summary>udp</summary>
+
+## Setup
+
+For more details about the UDP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp).
+
+### Collecting logs from UDP
+
+To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of UDP packets to accept (default: 10KB, max: 64KB)
+- Read Buffer - UDP socket read buffer size for handling bursts of messages
+- Read Timeout - How long to wait for incoming packets before checking for shutdown
+</details>
 
