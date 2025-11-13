@@ -1295,7 +1295,7 @@ processors:
       formats:
         - ISO8601
         - epoch_millis
-      if: ctx.json['sca:atlantisIngestTime'] != null && ctx.json['sca:atlantisIngestTime'] != ''
+      if: ctx.json != null && ctx.json['sca:atlantisIngestTime'] != null && ctx.json['sca:atlantisIngestTime'] != ''
       on_failure:
         - append:
             field: error.message
@@ -1748,7 +1748,7 @@ processors:
       formats:
         - ISO8601
         - epoch_millis
-      if: ctx.json['sca:ingestTime'] != null && ctx.json['sca:ingestTime'] != ''
+      if: ctx.json != null && ctx.json['sca:ingestTime'] != null && ctx.json['sca:ingestTime'] != ''
       on_failure:
         - append:
             field: error.message
@@ -2955,10 +2955,23 @@ processors:
   - remove:
       field: _conf
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error

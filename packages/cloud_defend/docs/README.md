@@ -1,3 +1,7 @@
+> ⚠️ **IMPORTANT**
+>
+> Defend for containers *BETA* is deprecated in Elastic Stack version 9.0 and also not supported for installation in Elastic Cloud Serverless.
+
 # How Container Workload Protection Works
 
 CWP is powered by a lightweight integration (Defend for Containers *BETA*) that is bundled and configured by the Elastic Agent. The agent is installed as a daemonset on supported Kubernetes clusters and the integration uses eBPF LSM and tracepoint probes to produce system events. Events are evaluated against eBPF LSM hook points, enabling a configured policy to be evaluated before system activity is allowed to proceed.

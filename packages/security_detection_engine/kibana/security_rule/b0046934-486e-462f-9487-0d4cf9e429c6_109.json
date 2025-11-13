@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Timestomping is an anti-forensics technique which is used to modify the timestamps of a file, often to mimic files that are in the same folder.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-endpoint.events.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "max_signals": 33,
+        "name": "Timestomping using Touch Command",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Timestomping using Touch Command\n\nTimestomping is a technique used by adversaries to alter file timestamps, making malicious files blend with legitimate ones. The 'touch' command, prevalent in Linux and macOS, can modify access and modification times. Attackers exploit this to evade detection. The detection rule identifies suspicious 'touch' usage by non-root users, focusing on specific arguments and excluding benign processes, thus highlighting potential timestomping activities.\n\n### Possible investigation steps\n\n- Review the process details to identify the user who executed the 'touch' command, focusing on the user.id field to determine if the user is legitimate and authorized to perform such actions.\n- Examine the process.args field to understand the specific arguments used with the 'touch' command, particularly looking for the use of \"-r\", \"-t\", \"-a*\", or \"-m*\" which indicate potential timestomping activity.\n- Investigate the parent process of the 'touch' command by checking the process.parent.name field to determine if it was initiated by a suspicious or unexpected process, excluding known benign processes like \"pmlogger_daily\", \"pmlogger_janitor\", and \"systemd\".\n- Cross-reference the file paths and names involved in the 'touch' command with known system files and directories to assess if the files are legitimate or potentially malicious.\n- Check for any recent alerts or logs related to the same user or process to identify patterns or repeated attempts at timestomping or other suspicious activities.\n\n### False positive analysis\n\n- Non-root users running legitimate scripts or applications that use the touch command with similar arguments may trigger false positives. To mitigate this, identify and whitelist these specific scripts or applications by adding their paths to the exclusion list.\n- Automated system maintenance tasks that involve file timestamp modifications can be mistaken for malicious activity. Review and exclude known maintenance processes by adding them to the exclusion criteria, ensuring they do not match the suspicious argument patterns.\n- Development tools or environments that utilize the touch command for file management during build processes might be flagged. Analyze these tools and exclude their typical usage patterns by specifying their paths or parent processes in the exclusion list.\n- User-initiated file management activities, such as organizing or backing up files, can inadvertently match the rule's criteria. Educate users on the implications of using touch with specific arguments and consider excluding common user directories from the rule if they are frequently involved in such activities.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further malicious activity and potential lateral movement by the attacker.\n- Conduct a thorough review of the affected system's file system to identify and document any files with suspicious timestamp modifications, focusing on those altered by non-root users.\n- Restore any critical files with altered timestamps from known good backups to ensure data integrity and system reliability.\n- Revoke or reset credentials for any non-root users involved in the suspicious 'touch' command activity to prevent unauthorized access.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring on the affected system and similar environments to detect any further attempts at timestomping or related suspicious activities.\n- Review and update access controls and permissions to ensure that only authorized users have the ability to modify file timestamps, reducing the risk of future timestomping attempts.",
+        "query": "process where event.type == \"start\" and\n process.name : \"touch\" and user.id != \"0\" and\n process.args : (\"-r\", \"-t\", \"-a*\",\"-m*\") and\n not process.args : (\n   \"/usr/lib/go-*/bin/go\", \"/usr/lib/dracut/dracut-functions.sh\", \"/tmp/KSInstallAction.*/m/.patch/*\"\n) and not process.parent.name in (\"pmlogger_daily\", \"pmlogger_janitor\", \"systemd\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "b0046934-486e-462f-9487-0d4cf9e429c6",
+        "setup": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions <8.2,\nevents will not define `event.ingested` and default fallback for EQL rules was not added until version 8.2.\nHence for this rule to work effectively, users will need to add a custom ingest pipeline to populate\n`event.ingested` to @timestamp.\nFor more details on adding a custom ingest pipeline refer - https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1070",
+                        "name": "Indicator Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1070/",
+                        "subtechnique": [
+                            {
+                                "id": "T1070.006",
+                                "name": "Timestomp",
+                                "reference": "https://attack.mitre.org/techniques/T1070/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 109
+    },
+    "id": "b0046934-486e-462f-9487-0d4cf9e429c6_109",
+    "type": "security-rule"
+}

@@ -35,7 +35,7 @@ targets:
           title=$(yq .title packages/$i/manifest.yml)
           pkg=$i
           echo "- $title [$pkg]"
-        done | yq -o json .)
+        done | sort -s -f | yq -o json .)
         
         yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_bug.yml'
         yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_feature_request.yml'

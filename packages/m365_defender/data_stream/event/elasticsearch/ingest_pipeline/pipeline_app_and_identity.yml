@@ -651,24 +651,36 @@ processors:
       field: user.id
       copy_from: m365_defender.event.account.sid
       ignore_empty_value: true
-      tag: set_user_id
+      tag: set_user_id_1
       if: ctx.m365_defender.event.category.toLowerCase().contains('identitylogonevents')
-  - set:
-      field: user.name
-      copy_from: m365_defender.event.account.name
-      tag: set_user_name
-      if: ctx.m365_defender?.event?.account?.name != null
   - set:
       field: user.id
       copy_from: m365_defender.event.account.id
       ignore_empty_value: true
-      tag: set_user_id
+      tag: set_user_id_2
       if: ctx.m365_defender.event.category.toLowerCase().contains('cloudappevents')
+  - set:
+      field: user.id
+      copy_from: m365_defender.event.account.object_id
+      tag: set_user_id_3
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')
+  - set:
+      field: user.name
+      copy_from: m365_defender.event.account.name
+      tag: set_user_name_1
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: m365_defender.event.raw_event_data.UserId
+      tag: set_user_name_2
+      ignore_empty_value: true
+      override: false
   - set:
       field: user.name
       copy_from: m365_defender.event.account.display_name
-      tag: set_user_name
-      if: ctx.m365_defender?.event?.account?.display_name != null && ctx.user?.name == null
+      tag: set_user_name_3
+      ignore_empty_value: true
+      override: false
   - set:
       field: user.full_name
       copy_from: m365_defender.event.account.display_name
@@ -679,11 +691,6 @@ processors:
       copy_from: m365_defender.event.account.email_address
       tag: set_user_email
       if: ctx.m365_defender?.event?.account?.email_address != null
-  - set:
-      field: user.id
-      copy_from: m365_defender.event.account.object_id
-      tag: set_id
-      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')
   # User Agent mapping
   - user_agent:
       field: m365_defender.event.user_agent

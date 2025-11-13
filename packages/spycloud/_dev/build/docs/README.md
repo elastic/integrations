@@ -22,42 +22,23 @@ The SpyCloud integration collects three types of logs: Breach Catalog, Breach Re
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
 
-### To collect logs through REST API, follow the below steps:
+### Collect logs through REST API
 
-- Considering you already have a SpyCloud account, log in to your SpyCloud instance to obtain your API key. Navigate to **Main > API**, where you will find your API key under the **Keys > API Key** section.
-- To obtain the Base URL, navigate to **Main > API** and click on the **View Docs** link, your URL can be located within the **API Reference** section.
+1. Considering you already have a SpyCloud account, log in to your SpyCloud instance to obtain your API key. Navigate to **Main > API**, where you will find your API key under the **Keys > API Key** section.
+2. To obtain the Base URL, navigate to **Main > API** and click on the **View Docs** link, your URL can be located within the **API Reference** section.
 
 **NOTE**: Your system's IP should be allowlisted by the SpyCloud team to be able to access the APIs and get the data.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `SpyCloud Enterprise Protection`.
-3. Select the "SpyCloud Enterprise Protection" integration from the search results.
-4. Select "Add SpyCloud Enterprise Protection Integration" to add the integration.
-5. While adding the integration, if you want to collect Breach Catalog logs via REST API, please enter the following details:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **SpyCloud Enterprise Protection**.
+3. Select the **SpyCloud Enterprise Protection** integration and add it.
+4. While adding the integration, if you want to collect Breach Catalog logs via REST API, please enter the following details:
    - URL
    - API Key
    - Interval
@@ -74,6 +55,7 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
    - API Key
    - Initial Interval
    - Interval
+5. Save the integration.
 
 **NOTE**: By default, the URL is set to "https://api.spycloud.io/enterprise-v2".
 

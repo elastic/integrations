@@ -96,12 +96,12 @@
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.s3_daily_storage
-      if: ctx.aws?.cloudwatch?.namespace == "AWS/S3" && (ctx.aws?.s3?.metrics?.BucketSizeBytes != null || ctx.aws?.s3?.metrics?.NumberOfObjects != null)
+      if: ctx.event?.dataset == 'aws.s3_daily_storage'
       namespace:
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.s3_request
-      if: ctx.aws?.cloudwatch?.namespace == "AWS/S3" && ctx.aws?.s3?.metrics?.BucketSizeBytes == null && ctx.aws?.s3?.metrics?.NumberOfObjects == null
+      if: ctx.event?.dataset == 'aws.s3_request'
       namespace:
         - "{{data_stream.namespace}}"
         - default
@@ -116,53 +116,12 @@
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws_mq.activemq_metrics
-      if: ctx.aws?.cloudwatch?.namespace == "AWS/AmazonMQ" && (
-        ctx.aws?.amazonmq?.metrics?.AmqpMaximumConnections != null || 
-        ctx.aws?.amazonmq?.metrics?.MqttMaximumConnections != null || 
-        ctx.aws?.amazonmq?.metrics?.OpenwireMaximumConnections != null || 
-        ctx.aws?.amazonmq?.metrics?.StompMaximumConnections != null || 
-        ctx.aws?.amazonmq?.metrics?.WsMaximumConnections != null || 
-        ctx.aws?.amazonmq?.metrics?.CurrentConnectionsCount != null || 
-        ctx.aws?.amazonmq?.metrics?.EstablishedConnectionsCount != null || 
-        ctx.aws?.amazonmq?.metrics?.InactiveDurableTopicSubscribersCount != null || 
-        ctx.aws?.amazonmq?.metrics?.JournalFilesForFastRecovery != null || 
-        ctx.aws?.amazonmq?.metrics?.JournalFilesForFullRecovery != null || 
-        ctx.aws?.amazonmq?.metrics?.NetworkConnectorConnectionCount != null || 
-        ctx.aws?.amazonmq?.metrics?.NetworkIn != null || 
-        ctx.aws?.amazonmq?.metrics?.NetworkOut != null || 
-        ctx.aws?.amazonmq?.metrics?.OpenTransactionCount != null || 
-        ctx.aws?.amazonmq?.metrics?.TotalConsumerCount != null || 
-        ctx.aws?.amazonmq?.metrics?.TotalMessageCount != null || 
-        ctx.aws?.amazonmq?.metrics?.TotalProducerCount != null || 
-        ctx.aws?.amazonmq?.metrics?.VolumeReadOps != null || 
-        ctx.aws?.amazonmq?.metrics?.VolumeWriteOps != null || 
-        ctx.aws?.amazonmq?.metrics?.ReceiveCount != null || 
-        ctx.aws?.amazonmq?.metrics?.ProducerCount != null || 
-        ctx.aws?.amazonmq?.metrics?.QueueSize != null || 
-        ctx.aws?.amazonmq?.metrics?.TotalEnqueueCount != null || 
-        ctx.aws?.amazonmq?.metrics?.TotalDequeueCount != null)
+      if: ctx.event?.dataset == 'aws_mq.activemq_metrics'
       namespace:
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws_mq.rabbitmq_metrics
-      if: ctx.aws?.cloudwatch?.namespace == "AWS/AmazonMQ" && (
-        ctx.aws?.amazonmq?.metrics?.ExchangeCount != null || 
-        ctx.aws?.amazonmq?.metrics?.QueueCount != null || 
-        ctx.aws?.amazonmq?.metrics?.ConnectionCount != null || 
-        ctx.aws?.amazonmq?.metrics?.ChannelCount != null || 
-        ctx.aws?.amazonmq?.metrics?.MessageCount != null || 
-        ctx.aws?.amazonmq?.metrics?.MessageReadyCount != null || 
-        ctx.aws?.amazonmq?.metrics?.MessageUnacknowledgedCount != null || 
-        ctx.aws?.amazonmq?.metrics?.PublishRate != null || 
-        ctx.aws?.amazonmq?.metrics?.ConfirmRate != null || 
-        ctx.aws?.amazonmq?.metrics?.AckRate != null || 
-        ctx.aws?.amazonmq?.metrics?.SystemCpuUtilization != null || 
-        ctx.aws?.amazonmq?.metrics?.RabbitMQMemLimit != null || 
-        ctx.aws?.amazonmq?.metrics?.RabbitMQMemUsed != null || 
-        ctx.aws?.amazonmq?.metrics?.RabbitMQDiskFreeLimit != null || 
-        ctx.aws?.amazonmq?.metrics?.RabbitMQFdUsed != null || 
-        ctx.aws?.amazonmq?.metrics?.RabbitMQIOReadAverageTime != null || 
-        ctx.aws?.amazonmq?.metrics?.RabbitMQIOWriteAverageTime != null)
+      if: ctx.event?.dataset == 'aws_mq.rabbitmq_metrics'
       namespace:
         - "{{data_stream.namespace}}"
         - default

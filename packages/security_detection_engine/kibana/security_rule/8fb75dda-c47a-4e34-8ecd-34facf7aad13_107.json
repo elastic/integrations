@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a service account is deleted in Google Cloud Platform (GCP). A service account is a special type of account used by an application or a virtual machine (VM) instance, not a person. Applications use service accounts to make authorized API calls, authorized as either the service account itself, or as G Suite or Cloud Identity users through domain-wide delegation. An adversary may delete a service account in order to disrupt their target's business operations.",
+        "false_positives": [
+            "Service accounts may be deleted by system administrators. Verify that the behavior was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-gcp*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GCP Service Account Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GCP Service Account Deletion\n\nIn Google Cloud Platform, service accounts are crucial for enabling applications and VMs to perform authorized actions without user intervention. Adversaries may exploit this by deleting service accounts to disrupt operations or remove access. The detection rule monitors audit logs for successful service account deletions, flagging potential malicious activity to ensure timely investigation and response.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.action:google.iam.admin.v*.DeleteServiceAccount to identify the exact time and source of the deletion.\n- Identify the user or service account that initiated the deletion by examining the actor information in the audit logs.\n- Check the event.dataset:gcp.audit logs for any preceding or subsequent actions by the same user or service account to determine if there is a pattern of suspicious activity.\n- Investigate the context of the deleted service account, including its permissions and the resources it had access to, to assess the potential impact of its deletion.\n- Contact the relevant team or individual responsible for the service account to verify if the deletion was authorized and intentional.\n- If unauthorized, review access controls and consider implementing additional security measures to prevent future unauthorized deletions.\n\n### False positive analysis\n\n- Routine maintenance or updates may involve the deletion and recreation of service accounts. To manage this, create exceptions for known maintenance activities by excluding specific service account names or associated project IDs during these periods.\n- Automated scripts or deployment tools might delete and recreate service accounts as part of their normal operation. Identify these scripts and exclude their actions from triggering alerts by filtering based on the user or service account executing the script.\n- Organizational policy changes or restructuring can lead to legitimate service account deletions. Coordinate with the IT or security team to document these changes and adjust the detection rule to exclude these known events.\n- Test environments often involve frequent creation and deletion of service accounts. Exclude test project IDs or environments from the detection rule to prevent unnecessary alerts.\n\n### Response and remediation\n\n- Immediately revoke any permissions associated with the deleted service account to prevent unauthorized access or actions by adversaries exploiting the deletion.\n- Restore the deleted service account if possible, using GCP's undelete feature, to minimize disruption to business operations and restore normal functionality.\n- Review and audit recent IAM activity logs to identify any unauthorized or suspicious actions that may have preceded or followed the service account deletion.\n- Notify the security team and relevant stakeholders about the incident to ensure awareness and facilitate coordinated response efforts.\n- Implement additional monitoring on critical service accounts to detect and alert on any further unauthorized deletion attempts.\n- Conduct a root cause analysis to determine how the service account deletion was initiated and address any security gaps or misconfigurations that allowed it.\n- Enhance access controls and consider implementing multi-factor authentication for actions involving service account management to prevent similar incidents in the future.",
+        "query": "event.dataset:gcp.audit and event.action:google.iam.admin.v*.DeleteServiceAccount and event.outcome:success\n",
+        "references": [
+            "https://cloud.google.com/iam/docs/service-accounts"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8fb75dda-c47a-4e34-8ecd-34facf7aad13",
+        "setup": "The GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 107
+    },
+    "id": "8fb75dda-c47a-4e34-8ecd-34facf7aad13_107",
+    "type": "security-rule"
+}

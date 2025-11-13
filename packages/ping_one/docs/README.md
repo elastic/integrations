@@ -117,11 +117,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-08-08T15:31:08.237Z",
     "agent": {
-        "ephemeral_id": "e4d8fc8f-71fa-4e20-bd11-1c06f2e1d137",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "1262c630-c826-45b1-a250-30d9299c4ad0",
+        "id": "14fa9ed6-e3fd-4caa-9a4b-a61b540b6d02",
+        "name": "elastic-agent-55090",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "client": {
         "user": {
@@ -131,16 +131,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "ping_one.audit",
-        "namespace": "ep",
+        "namespace": "30586",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "14fa9ed6-e3fd-4caa-9a4b-a61b540b6d02",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "user.access_allowed",
@@ -151,7 +151,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "ping_one.audit",
         "id": "123abc123-12ab-1234-1abc-abc123abc12",
-        "ingested": "2023-09-22T17:21:19Z",
+        "ingested": "2025-10-29T05:29:53Z",
         "kind": "event",
         "original": "{\"_embedded\":{},\"action\":{\"type\":\"USER.ACCESS_ALLOWED\"},\"actors\":{\"client\":{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/applications/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"PingOne Admin Console\",\"type\":\"CLIENT\"},\"user\":{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"example@gmail.com\",\"population\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"type\":\"USER\"}},\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"recordedAt\":\"2022-08-08T15:31:08.237Z\",\"resources\":[{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"example@gmail.com\",\"population\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"type\":\"USER\"}],\"result\":{\"description\":\"Passed role access control\",\"status\":\"SUCCESS\"}}",
         "outcome": "success",
@@ -218,6 +218,7 @@ An example event for `audit` looks as following:
         "user": [
             "123abc123-12ab-1234-1abc-abc123abc12",
             "PingOne Admin Console",
+            "example",
             "example@gmail.com"
         ]
     },
@@ -234,8 +235,10 @@ An example event for `audit` looks as following:
         "scheme": "https"
     },
     "user": {
+        "domain": "gmail.com",
+        "email": "example@gmail.com",
         "id": "123abc123-12ab-1234-1abc-abc123abc12",
-        "name": "example@gmail.com"
+        "name": "example"
     }
 }
 ```
@@ -273,6 +276,7 @@ An example event for `audit` looks as following:
 | ping_one.audit.created_at | The date and time at which the event was created (ISO 8601 format). | date |
 | ping_one.audit.embedded |  | flattened |
 | ping_one.audit.id | A string that specifies the ID of the audit activity event. | keyword |
+| ping_one.audit.internal_correlation.transaction_id |  | keyword |
 | ping_one.audit.recorded_at | The date and time at which the event was recorded (ISO 8601 format). | date |
 | ping_one.audit.resources.environment.id | The UUID assigned as the key for the environment resource. | keyword |
 | ping_one.audit.resources.href | A string that specifies the URL for the specified resource. | keyword |
@@ -283,5 +287,7 @@ An example event for `audit` looks as following:
 | ping_one.audit.result.description | A string that specifies the description of the result of the operation. | text |
 | ping_one.audit.result.id | A string that specifies the ID for the result of the operation. | keyword |
 | ping_one.audit.result.status | A string that specifies the result of the operation. Options are succeeded or failed. | keyword |
+| ping_one.audit.source.ip_address |  | ip |
+| ping_one.audit.source.user_agent |  | keyword |
 | ping_one.audit.tags | A string identifying the activity as the action of an administrator on other administrators. | keyword |
 

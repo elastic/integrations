@@ -176,6 +176,7 @@ program: |
   									{
   										"auth_data": auth_data,
   										"task_id": null,
+  										"next_startTime": state.cursor.current_startTime,
   									}
   								),
   							}
@@ -318,8 +319,8 @@ program: |
   										"auth_data": auth_data,
   										"task_id": null,
   										"page_token": null,
-  										"next_startTime": has(body.?data.results) && body.data.results.size() > 0 ?
-  											optional.of(body.data.results.map(t, timestamp(t.time)).max().format(time_layout.RFC3339))
+  										"next_startTime": has(body.?data.records) && body.data.records.size() > 0 ?
+  											optional.of(body.data.records.map(t, timestamp(t.time)).max().format(time_layout.RFC3339))
   										:
   											state.cursor.current_endTime,
   										"next_endTime": null,

@@ -1,0 +1,140 @@
+# BeyondInsight Password Safe - Managed Accounts Test Mock Configuration
+#
+# Test Scenario: Simulates paginated retrieval of managed accounts with session expiration and re-authentication:
+# 1. Initial authentication via SignAppin endpoint (returns 200, sets session cookie)
+# 2. First ManagedAccounts request with limit=1&offset=0 (returns 200, first session)
+# 3. Second ManagedAccounts request with limit=1&offset=1 (returns 401, session expired)
+# 4. Re-authentication via SignAppin endpoint (returns 200, new session cookie)
+# 5. Retry ManagedAccounts request with limit=1&offset=1 (returns 200, second session)
+# 6. Final ManagedAccounts request with limit=1&offset=2 (returns 200, empty array - no more data)
+#
+# This tests the integration's ability to handle:
+# - Session-based authentication with BeyondTrust API
+# - Paginated data retrieval with limit/offset parameters
+# - Session expiration (401) and automatic re-authentication
+# - Proper handling of empty result sets indicating end of pagination
+
+rules:
+  # Auth
+  - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
+    methods: ["POST"]
+    request_headers:
+      Authorization: ['PS-Auth key=test_api_key; runas=testuser; pwd=\[password\];']
+      Content-Type: ['application/json']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+        body: |
+          {{ minify_json `
+          {
+            "UserId": 1,
+            "SID": null,
+            "EmailAddress": "test.user@example.com",
+            "UserName": "testuser",
+            "Name": "Test User"
+          }
+          `}}
+
+  - path: "/BeyondTrust/api/public/v3/ManagedAccounts"
+    methods: ["GET"]
+    query_params:
+      offset: '0'
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value1']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          [
+              {
+                  "PlatformID": 4,
+                  "SystemId": 5,
+                  "SystemName": "KittenGrowth",
+                  "InstanceName": "Primary",
+                  "DomainName": "example.com",
+                  "AccountId": 5,
+                  "AccountName": "MacdonaldP.Irene",
+                  "UserPrincipalName": "irene@example.com",
+                  "ApplicationID": 123,
+                  "ApplicationDisplayName": "AccountingApp",
+                  "MaximumReleaseDuration": 525600,
+                  "DefaultReleaseDuration": 120,
+                  "LastChangeDate": "2024-12-10T08:57:45.9",
+                  "NextChangeDate": "2024-12-12T00:00:00.0",
+                  "ChangeState": 2,
+                  "IsChanging": false,
+                  "IsISAAccess": true,
+                  "PreferredNodeID": "2ca45774-d4e0-4b8f-9b52-3f52b78ae2ca",
+                  "AccountDescription": "Primary managed account for KittenGrowth system"
+              }
+          ]
+          `}}
+
+  - path: "/BeyondTrust/api/public/v3/ManagedAccounts"
+    methods: ["GET"]
+    query_params:
+      offset: '1'
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value1']
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type: ['application/json']
+        body: >-
+          "User not authenticated"
+
+  - path: "/BeyondTrust/api/public/v3/ManagedAccounts"
+    methods: ["GET"]
+    query_params:
+      offset: '1'
+      limit: '1'
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          [
+              {
+                  "PlatformID": 5,
+                  "SystemId": 6,
+                  "SystemName": "SecondSystem",
+                  "InstanceName": "Primary",
+                  "DomainName": "example.com",
+                  "AccountId": 5,
+                  "AccountName": "MacdonaldP.Irene",
+                  "UserPrincipalName": "irene@example.com",
+                  "ApplicationID": 123,
+                  "ApplicationDisplayName": "AccountingApp",
+                  "MaximumReleaseDuration": 525600,
+                  "DefaultReleaseDuration": 120,
+                  "LastChangeDate": "2024-12-10T08:57:45.9",
+                  "NextChangeDate": "2024-12-12T00:00:00.0",
+                  "ChangeState": 2,
+                  "IsChanging": false,
+                  "IsISAAccess": true,
+                  "PreferredNodeID": "2ca45774-d4e0-4b8f-9b52-3f52b78ae2ca",
+                  "AccountDescription": "Secondary managed account for SecondSystem"
+              }
+          ]
+          `}}
+
+  - path: "/BeyondTrust/api/public/v3/ManagedAccounts"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: '[]'

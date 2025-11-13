@@ -31,13 +31,20 @@ program: |
           "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
         }
       }).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).as(body, {
+        resp.Body.as(body, {
           "worklist": (
-            has(state.cursor) && has(state.cursor.log_file) && state.cursor.log_file != null
-            ?
-              string(body).split(state.cursor.log_file)[1].split("\n").filter(x,x!="").map(x,{"filename":x})
+            has(state.?cursor.log_file) && state.cursor.log_file != null ?
+              string(body).split(state.cursor.log_file)[?1].optMap(f,
+                f.split("\n").map(x, x != "",
+                  {"filename":x}
+                )
+              ).orValue(string(body).split("\n").map(x,
+                {"filename":x}
+              ))
             :
-              string(body).split("\n").map(x,{"filename":x})
+              string(body).split("\n").map(x,
+                {"filename":x}
+              )
           ),
           "next": 0,
         })
@@ -71,7 +78,7 @@ program: |
           "Authorization": ["Basic "+string(base64(state.user + ":" + state.password))],
         }
       }).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).as(body, {
+        resp.Body.as(body, {
           "events": try(string(body), "error").as(body, type(body) == type("") ?
             dyn((body+"|==|").split("|==|")[1].split("\n").filter(x,x!="").map(x,{"message":x}))
           :
@@ -90,8 +97,7 @@ program: |
           ),
           "cursor": {
             "log_file": (
-              has(state.cursor) && has(state.cursor.log_file) && state.cursor.log_file != null
-              ?
+              has(state.?cursor.log_file) && state.cursor.log_file != null ?
                 (
                   (v.worklist[v.next].filename).split(".")[0] != (state.cursor.log_file).split(".")[0] ?
                     v.worklist[v.next].filename

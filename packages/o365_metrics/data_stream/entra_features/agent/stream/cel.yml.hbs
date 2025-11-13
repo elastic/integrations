@@ -1,0 +1,167 @@
+config_version: 2
+interval: {{interval}}
+auth.oauth2:
+    client.id: {{client_id}}
+    client.secret: {{client_secret}}
+    provider: azure
+    scopes:
+{{#each token_scopes as |token_scope|}}
+      - {{token_scope}}
+{{/each}}
+    endpoint_params: 
+        grant_type: client_credentials
+{{#if token_url}}
+    token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+    azure.tenant_id: {{azure_tenant_id}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+{{#if resource_ssl}}
+resource.ssl: 
+  {{resource_ssl}}
+{{/if}}
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+{{#if resource_redirect_forward_headers}}
+resource.redirect.forward_headers: {{resource_redirect_forward_headers}}
+{{/if}}
+{{#if resource_redirect_headers_ban_list}}
+resource.redirect.headers_ban_list:
+{{#each resource_redirect_headers_ban_list as |item|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if resource_redirect_max_redirects}}
+resource.redirect.max_redirects: {{resource_redirect_max_redirects}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+state:
+  want_more: false
+  base:
+    tenant_id: "{{azure_tenant_id}}"
+    period: "{{period}}"
+
+redact:
+  fields:
+    - base.tenant_id
+
+program: |
+      state.with(
+        request("GET", state.url + "/organization").do_request().as(orgs_resp,
+          orgs_resp.StatusCode == 200
+          ?
+            bytes(orgs_resp.Body).decode_json().as(orgs_json, 
+              request("GET", state.url + "/directory/onPremisesSynchronization").do_request().as(onprem_resp, 
+                onprem_resp.StatusCode == 200
+                ?
+                  bytes(onprem_resp.Body).decode_json().as(onprem_json,
+                    {
+                      "events": [{
+                        "o365": {
+                          "metrics": {
+                            "entra": {
+                              "features": {
+                                  "on_premises_sync_enabled": orgs_json.value[0].onPremisesSyncEnabled != null ? orgs_json.value[0].onPremisesSyncEnabled : false,
+                                  "on_premises_last_sync_datetime": orgs_json.value[0].onPremisesLastSyncDateTime,
+                                  "password_sync_enabled": onprem_json.value[0].features.passwordSyncEnabled != null ? onprem_json.value[0].features.passwordSyncEnabled : false,
+                                  "password_writeback_enabled": onprem_json.value[0].features.passwordWritebackEnabled != null ? onprem_json.value[0].features.passwordWritebackEnabled : false,
+                                  "directory_extensions_enabled": onprem_json.value[0].features.directoryExtensionsEnabled != null ? onprem_json.value[0].features.directoryExtensionsEnabled : false,
+                                  "quarantine_upon_upn_conflict_enabled": onprem_json.value[0].features.quarantineUponUpnConflictEnabled != null ? onprem_json.value[0].features.quarantineUponUpnConflictEnabled : false,
+                                  "quarantine_upon_proxy_addresses_conflict_enabled": onprem_json.value[0].features.quarantineUponProxyAddressesConflictEnabled != null ? onprem_json.value[0].features.quarantineUponProxyAddressesConflictEnabled : false,
+                                  "soft_match_on_upn_enabled": onprem_json.value[0].features.softMatchOnUpnEnabled != null ? onprem_json.value[0].features.softMatchOnUpnEnabled : false,
+                                  "cloud_password_policy_for_password_synced_users_enabled": onprem_json.value[0].features.cloudPasswordPolicyForPasswordSyncedUsersEnabled != null ? onprem_json.value[0].features.cloudPasswordPolicyForPasswordSyncedUsersEnabled : false,
+                                  "fope_conflict_resolution_enabled": onprem_json.value[0].features.fopeConflictResolutionEnabled != null ? onprem_json.value[0].features.fopeConflictResolutionEnabled : false,
+                                  "unified_group_writeback_enabled": onprem_json.value[0].features.unifiedGroupWritebackEnabled != null ? onprem_json.value[0].features.unifiedGroupWritebackEnabled : false,
+                                  "user_writeback_enabled": onprem_json.value[0].features.userWritebackEnabled != null ? onprem_json.value[0].features.userWritebackEnabled : false,
+                                  "device_writeback_enabled": onprem_json.value[0].features.deviceWritebackEnabled != null ? onprem_json.value[0].features.deviceWritebackEnabled : false,
+                                  "synchronize_upn_for_managed_users_enabled": onprem_json.value[0].features.synchronizeUpnForManagedUsersEnabled != null ? onprem_json.value[0].features.synchronizeUpnForManagedUsersEnabled : false,
+                                  "user_force_password_change_on_logon_enabled": onprem_json.value[0].features.userForcePasswordChangeOnLogonEnabled != null ? onprem_json.value[0].features.userForcePasswordChangeOnLogonEnabled : false,
+                                  "concurrent_org_id_provisioning_enabled": onprem_json.value[0].features.concurrentOrgIdProvisioningEnabled != null ? onprem_json.value[0].features.concurrentOrgIdProvisioningEnabled : false,
+                                  "concurrent_credential_update_enabled": onprem_json.value[0].features.concurrentCredentialUpdateEnabled != null ? onprem_json.value[0].features.concurrentCredentialUpdateEnabled : false,
+                                  "group_write_back_enabled": onprem_json.value[0].features.groupWriteBackEnabled != null ? onprem_json.value[0].features.groupWriteBackEnabled : false,
+                                  "block_soft_match_enabled": onprem_json.value[0].features.blockSoftMatchEnabled != null ? onprem_json.value[0].features.blockSoftMatchEnabled : false,
+                                  "block_cloud_object_takeover_through_hard_match_enabled": onprem_json.value[0].features.blockCloudObjectTakeoverThroughHardMatchEnabled != null ? onprem_json.value[0].features.blockCloudObjectTakeoverThroughHardMatchEnabled : false,
+                                  "bypass_dir_sync_overrides_enabled": onprem_json.value[0].features.bypassDirSyncOverridesEnabled != null ? onprem_json.value[0].features.bypassDirSyncOverridesEnabled : false
+                              }
+                            }
+                          }
+                        }
+                      }]
+                    }
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(onprem_resp.StatusCode),
+                        "id": string(onprem_resp.Status),
+                        "message": "GET " + "https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization"+ ": " + (
+                          size(onprem_resp.Body) != 0 ?
+                            string(onprem_resp.Body)
+                          :
+                            string(onprem_resp.Status) + ' (' + string(onprem_resp.StatusCode) + ')'
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+              )
+            )
+          : 
+            {
+              "events": {
+                "error": {
+                  "code": string(orgs_resp.StatusCode),
+                  "id": string(orgs_resp.Status),
+                  "message": "GET " + "https://graph.microsoft.com/v1.0/organization" + ": " + (
+                    size(orgs_resp.Body) != 0 ?
+                      string(orgs_resp.Body)
+                    :
+                      string(orgs_resp.Status) + ' (' + string(orgs_resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )

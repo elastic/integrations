@@ -1,12 +1,18 @@
-format_version: 3.2.3
+format_version: 3.3.2
 name: wiz
 title: Wiz
-version: "3.0.0"
+version: "3.9.2"
 description: Collect logs from Wiz with Elastic Agent.
 type: integration
 categories:
   - security
   - cloudsecurity_cdr
+  - vulnerability_workflow
+  - misconfiguration_workflow
+  # Added cloud category as Wiz provides cloud security analysis and monitoring
+  - cloud
+  # Added siem category as Wiz provides security event data for monitoring and incident response
+  - siem
 conditions:
   kibana:
     version: "~8.16.6 || ~8.17.4 || ^8.18.0 || ^9.0.0"
@@ -37,6 +43,10 @@ screenshots:
     title: Misconfiguration Findings view with Wiz data in Elastic Security Screenshot
     size: 600x600
     type: image/png
+  - src: /img/wiz-defend-dashboard.png
+    title: Wiz Defend Dashboard Screenshot
+    size: 600x600
+    type: image/png
 icons:
   - src: /img/wiz-logo.svg
     title: Wiz logo
@@ -62,14 +72,14 @@ policy_templates:
           - name: client_id
             type: text
             title: Client ID
-            description: Client ID for the Wiz.
+            description: Client ID for the Wiz environment.
             multi: false
             required: true
             show_user: true
           - name: client_secret
             type: password
             title: Client Secret
-            description: Client Secret for the Wiz.
+            description: Client Secret for the Wiz environment.
             multi: false
             required: true
             show_user: true
@@ -125,6 +135,9 @@ policy_templates:
               #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
+      - type: http_endpoint
+        title: Collect Wiz Defend logs via HTTP Endpoint
+        description: Collecting Detection events from Wiz Defend via HTTP Endpoint.
 owner:
   github: elastic/security-service-integrations
   type: elastic

@@ -23,6 +23,75 @@ processors:
                 - append:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.attacks
+      if: ctx.ses?.attacks instanceof List
+      tag: foreach_attacks_for_tactic_uids
+      processor:
+        foreach:
+          field: _ingest._value.tactic_uids
+          tag: foreach_tactic_uids
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.tactic.id
+              value: '{{{_ingest._value}}}'
+              tag: append_attacks_tactic_uids_to_threat_tactic_id
+              allow_duplicates: false
+  - foreach:
+      field: ses.attacks
+      if: ctx.ses?.attacks instanceof List
+      tag: foreach_attacks_for_technique_uid
+      processor:
+        append:
+          field: threat.technique.id
+          value: '{{{_ingest._value.technique_uid}}}'
+          tag: append_attacks_technique_uid_to_threat_technique_id
+          allow_duplicates: false
+  - foreach:
+      field: ses.attacks
+      if: ctx.ses?.attacks instanceof List
+      tag: foreach_attacks_for_technique_name
+      processor:
+        append:
+          field: threat.technique.name
+          value: '{{{_ingest._value.technique_name}}}'
+          tag: append_attacks_technique_name_to_threat_technique_name
+          allow_duplicates: false
+  - foreach:
+      field: ses.attacks
+      if: ctx.ses?.attacks instanceof List
+      tag: foreach_attacks_for_sub_technique_uid
+      processor:
+        append:
+          field: threat.technique.subtechnique.id
+          value: '{{{_ingest._value.sub_technique_uid}}}'
+          tag: append_attacks_sub_technique_uid_to_threat_technique_subtechnique_id
+          allow_duplicates: false
+  - foreach:
+      field: ses.attacks
+      if: ctx.ses?.attacks instanceof List
+      tag: foreach_attacks_for_sub_technique_name
+      processor:
+        append:
+          field: threat.technique.subtechnique.name
+          value: '{{{_ingest._value.sub_technique_name}}}'
+          tag: append_attacks_sub_technique_name_to_threat_technique_subtechnique_name
+          allow_duplicates: false
+  - foreach:
+      field: ses.attacks
+      if: ctx.ses?.attacks instanceof List && ctx.tags?.contains('preserve_duplicate_custom_fields') != true
+      tag: foreach_remove_custom_duplicate_fields_from_ses_attacks
+      processor:
+        remove:
+          field:
+            - _ingest._value.tactic_uids
+            - _ingest._value.technique_uid
+            - _ingest._value.technique_name
+            - _ingest._value.sub_technique_uid
+            - _ingest._value.sub_technique_name
+          tag: remove_custom_duplicate_fields_from_ses_attacks
+          ignore_missing: true
 on_failure:
   - append:
       field: error.message

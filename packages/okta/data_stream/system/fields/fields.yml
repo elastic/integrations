@@ -37,6 +37,10 @@
       type: keyword
       description: |
         Display name of the actor.
+      multi_fields:
+        - name: text
+          type: match_only_text
+          default_field: false
 - name: okta.client
   type: group
   fields:
@@ -51,6 +55,10 @@
           type: keyword
           description: |
             The raw informaton of the user agent.
+          multi_fields:
+            - name: text
+              type: match_only_text
+              default_field: false
         - name: os
           type: keyword
           description: |
@@ -164,9 +172,15 @@
       type: keyword
       description: |
         The type of transaction. Must be one of "WEB", "JOB".
-    - name: detail.request_api_token_id
-      type: keyword
-      description: ID of the API token used in a request.
+    - name: detail
+      type: group
+      fields:
+        - name: request_api_token_id
+          type: keyword
+          description: ID of the API token used in a request.
+        - name: root_api_token_id
+          type: keyword
+          description: ID of the root API token.
 - name: okta.debug_context
   type: group
   fields:
@@ -227,6 +241,10 @@
       type: keyword
       description: |
         The URL.
+      multi_fields:
+        - name: text
+          type: match_only_text
+          default_field: false
     - name: debug_data.flattened
       type: flattened
       description: |
@@ -333,11 +351,14 @@
     - name: external_session_id
       type: keyword
       description: |
-        The session identifer of the external session if any.
+        The session identifier of the external session if any.
     - name: interface
       type: keyword
       description: |
         The interface used. e.g., Outlook, Office365, wsTrust
+    - name: root_session_id
+      type: keyword
+      description: The session identifier of the root if any.
 - name: okta.security_context
   type: group
   fields:

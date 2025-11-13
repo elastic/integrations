@@ -1,0 +1,111 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies the assignment of rights to access content from another mailbox. An adversary may use the compromised account to send messages to other accounts in the network of the target organization while creating inbox rules, so messages can evade spam/phishing detection mechanisms.",
+        "false_positives": [
+            "Assignment of rights to a service account."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-o365*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "o365.audit.ObjectId",
+                "user.id",
+                "o365.audit.Parameters.User",
+                "o365.audit.Parameters.AccessRights",
+                "source.ip",
+                "user_agent.original",
+                "event.action"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "O365 Exchange Suspicious Mailbox Right Delegation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating O365 Exchange Suspicious Mailbox Right Delegation\n\nMicrosoft 365 Exchange allows users to delegate mailbox access, enabling collaboration by granting permissions like FullAccess, SendAs, or SendOnBehalf. However, adversaries can exploit this by assigning these rights to compromised accounts, facilitating unauthorized access and message manipulation. The detection rule identifies successful permission assignments, excluding system accounts, to flag potential misuse and maintain security integrity.\n\n### Possible investigation steps\n\n- Review the event logs to identify the user account that was granted mailbox permissions, focusing on the user.id field to determine if the account is legitimate or potentially compromised.\n- Examine the o365.audit.Parameters.AccessRights field to confirm the specific permissions granted (FullAccess, SendAs, or SendOnBehalf) and assess the potential impact of these permissions.\n- Investigate the history of the user account that was granted permissions, including recent login activity and any unusual behavior, to identify signs of compromise.\n- Check for any recent changes or anomalies in the mailbox that received the permissions, such as unexpected email forwarding rules or unusual email activity.\n- Correlate the event with other security alerts or logs to identify any related suspicious activities or patterns that might indicate a broader security incident.\n\n### False positive analysis\n\n- Delegation for administrative purposes: Regular delegation of mailbox rights for administrative tasks can trigger alerts. To manage this, create exceptions for known administrative accounts that frequently require such permissions.\n- Shared mailbox access: Organizations often use shared mailboxes for collaborative purposes. Identify and exclude these shared mailboxes from the rule to prevent false positives.\n- Temporary project-based access: Temporary access granted for specific projects can be mistaken for suspicious activity. Implement a process to document and whitelist these temporary permissions.\n- Automated system processes: Some automated processes may require mailbox access rights. Review and exclude these processes from the rule to avoid unnecessary alerts.\n- Frequent delegation by specific roles: Certain roles, like executive assistants, may regularly delegate mailbox access. Identify these roles and adjust the rule to accommodate their typical behavior.\n\n### Response and remediation\n\n- Immediately revoke the delegated permissions identified in the alert to prevent further unauthorized access to the mailbox.\n- Conduct a thorough review of the affected mailbox and any associated accounts to identify any unauthorized changes or suspicious activities, such as unexpected email forwarding rules or message deletions.\n- Reset the passwords for the compromised account and any other accounts that may have been affected to prevent further unauthorized access.\n- Notify the affected user(s) and relevant stakeholders about the incident, providing guidance on recognizing phishing attempts and securing their accounts.\n- Escalate the incident to the security operations team for further investigation and to determine if additional accounts or systems have been compromised.\n- Implement additional monitoring on the affected accounts and mailboxes to detect any further suspicious activities or attempts to re-establish unauthorized access.\n- Review and update access control policies and permissions settings to ensure that only necessary permissions are granted and that they are regularly audited.",
+        "query": "event.dataset:o365.audit and event.provider:Exchange and event.action:Add-MailboxPermission and\no365.audit.Parameters.AccessRights:(FullAccess or SendAs or SendOnBehalf) and event.outcome:success \nand not user.id:(\"NT AUTHORITY\\SYSTEM (Microsoft.Exchange.ServiceHost)\" or \"NT AUTHORITY\\SYSTEM (Microsoft.Exchange.AdminApi.NetCore)\" or \"NT AUTHORITY\\SYSTEM (w3wp)\")\n",
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^2.11.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Parameters.AccessRights",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "0ce6487d-8069-4888-9ddd-61b52490cebc",
+        "setup": "The Office 365 Logs Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Microsoft 365",
+            "Use Case: Configuration Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.002",
+                                "name": "Additional Email Delegate Permissions",
+                                "reference": "https://attack.mitre.org/techniques/T1098/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 209
+    },
+    "id": "0ce6487d-8069-4888-9ddd-61b52490cebc_209",
+    "type": "security-rule"
+}

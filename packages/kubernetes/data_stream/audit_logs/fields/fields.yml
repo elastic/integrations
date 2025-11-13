@@ -1,6 +1,32 @@
 - name: kubernetes.audit
   type: group
   fields:
+    - name: aks_metadata
+      type: group
+      fields:
+        - name: category
+          description: The log category of the event being logged. Only for Azure AKS logs.
+          type: keyword
+        - name: container_id
+          description: The ID of the container that the event is logging. Only for Azure AKS logs.
+          type: keyword
+        - name: operation_name
+          description: The name of the operation that the event is logging. Only for Azure AKS logs.
+          type: keyword
+        - name: pod
+          description: The name of the pod that emitted the event. Only for Azure AKS logs.
+          type: keyword
+        - name: resource_id
+          description: The resource ID of the resource that emitted the event. Only for Azure AKS logs.
+          type: keyword
+        - name: service_build
+          description: The build of the service that the event is logging. Only for Azure AKS logs.
+          type: keyword
+        - name: stream
+          type: keyword
+        - name: time
+          description: The timestamp (UTC) of the event being logged. Only for Azure AKS logs.
+          type: date
     - name: apiVersion
       type: keyword
       description: Audit event api version
@@ -231,3 +257,59 @@
           type: text
         - name: pod-security_kubernetes_io/audit-violations
           type: text
+    - name: logName
+      type: keyword
+    - name: operation
+      type: group
+      fields:
+        - name: id
+          type: keyword
+        - name: producer
+          type: keyword
+        - name: first
+          type: boolean
+        - name: last
+          type: boolean
+    - name: protoPayload
+      type: group
+      fields:
+        - name: "@type"
+          type: keyword
+        - name: authenticationInfo.principalEmail
+          type: keyword
+        - name: authorizationInfo
+          type: group
+          fields:
+            - name: granted
+              type: boolean
+            - name: permission
+              type: keyword
+            - name: resource
+              type: keyword
+        - name: methodName
+          type: keyword
+        - name: requestMetadata
+          type: group
+          fields:
+            - name: callerIp
+              type: ip
+            - name: callerSuppliedUserAgent
+              type: keyword
+        - name: resourceName
+          type: keyword
+        - name: serviceName
+          type: keyword
+    - name: resource
+      type: group
+      fields:
+        - name: type
+          type: keyword
+        - name: labels
+          type: group
+          fields:
+            - name: cluster_name
+              type: keyword
+            - name: location
+              type: keyword
+            - name: project_id
+              type: keyword

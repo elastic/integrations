@@ -638,6 +638,18 @@ processors:
             field: ses.connection.url.rep_score_id
             ignore_missing: true
   - append:
+      field: url.scheme
+      tag: append_url_scheme_from_connection_url_scheme
+      value: '{{{ses.connection.url.scheme}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.url?.scheme != null
+  - append:
+      field: url.domain
+      tag: append_url_domain_from_connection_url_host
+      value: '{{{ses.connection.url.host}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.url?.host != null
+  - append:
       field: url.full
       tag: append_url_full_from_connection_url_text
       value: '{{{ses.connection.url.text}}}'

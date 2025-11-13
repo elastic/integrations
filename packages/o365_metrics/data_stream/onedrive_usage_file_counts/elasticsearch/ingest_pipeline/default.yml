@@ -86,10 +86,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - remove: 
-      field:
-        - o365.metrics.onedrive.usage.file.counts.site_type
-      ignore_missing: true
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_report_date
@@ -98,6 +94,7 @@ processors:
   - fingerprint:
       fields:
         - o365.metrics.onedrive.usage.file.counts.report.date
+        - o365.metrics.onedrive.usage.file.counts.site_type
       target_field: _id
 
   - script:

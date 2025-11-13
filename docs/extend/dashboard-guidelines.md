@@ -66,15 +66,11 @@ Keep the following guidelines in mind when positioning your elements on dashboar
 
 * Keep related visualizations close to each other.
 
-    :::{image} images/grouping-in-visualizations.png
-    :alt: Closely grouped visualizations
-    :::
+    ![Closely grouped visualizations](images/grouping-in-visualizations.png)
 
 * Use Markdown to create blocks of related content.
 
-    :::{image} images/markdown-grouping.png
-    :alt: Markdown grouping in visualizations
-    :::
+    ![Markdown grouping in visualizations](images/markdown-grouping.png)
 
 * Reading Direction
 
@@ -84,9 +80,7 @@ Keep the following guidelines in mind when positioning your elements on dashboar
 
     Placing a big chart at the center of a dashboard, especially one with prominent visual shapes such as rectangles, helps to reinforce a natural visual focal point that lies in the center of the interface.
 
-    :::{image} images/rows-in-visualizations.png
-    :alt: Central focal point in visualization
-    :::
+    ![Central focal point in visualization](images/rows-in-visualizations.png)
 
 
 
@@ -117,9 +111,7 @@ As much as possible, avoid using general filters, that is filters with `-*`.  Co
 
 Example:
 
-:::{image} images/filter-in-visualization.png
-:alt: Filter in a visualization
-:::
+![Filter in a visualization](images/filter-in-visualization.png)
 
 
 ### Do not use library visualizations [_do_not_use_library_visualizations]
@@ -142,18 +134,15 @@ Use color to distinguish categories, represent quantity/density, and highlight d
 
 If your dashboard is made to identify specific behaviors, it might be interesting to consider a color setting that could help to point those out. Use a neutral color for generic elements and an accented color for the things that you want to highlight.
 
-:::{image} images/colors-in-visualizations.png
-:alt: Colors in visualizations
-:::
+![Colors in visualizations](images/colors-in-visualizations.png)
 
 
 ## Titles in Visualisations matter [_titles_in_visualisations_matter]
 
-Titles can have a strong visual impact on dashboards, especially when there are a lot of small charts. Two principles can generally be followed:
+Titles can have a strong visual impact on dashboards, especially when there are a lot of small charts. The following principles can generally be adhered to:
 
 * Remove unnecessary or repetitive titles when the information is already explained or written within the chart.
 * When a title is needed, make it self explanatory and exhaustive. This way, you will be able to remove axis titles and other specifications leaving more space for the chart itself.
+* Do not include the package name as part of each visualization title (e.g., avoid `[<PACKAGE NAME> Logs]`). This was historically done when each visualization was a separate object, but it creates unnecessary repetition in modern dashboard layouts.
 
-:::{image} images/titles-in-visualizations.png
-:alt: Titles in visualizations
-:::
+![Titles in visualizations](images/titles-in-visualizations.png)

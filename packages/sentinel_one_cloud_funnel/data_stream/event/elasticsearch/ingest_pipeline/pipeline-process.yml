@@ -347,6 +347,7 @@ processors:
   - remove:
       field:
       - process.parent
+      ignore_missing: true
   - rename:
       field: process
       target_field: process.parent
@@ -419,7 +420,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.kind
-      value: pipeline_error
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

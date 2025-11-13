@@ -75,12 +75,14 @@ spec:
           # TODO Determine if special handling of `---` is required (issue: https://github.com/elastic/package-spec/pull/54)
           contentMediaType: "application/x-yaml; require-document-dashes=true"
           required: false
+          allowLink: true
           $ref: "../../integration/elasticsearch/pipeline.spec.yml"
         - description: Supporting ingest pipeline definitions in JSON
           type: file
           pattern: '^.+\.json$'
           contentMediaType: "application/json"
           required: false
+          allowLink: true
           $ref: "../../integration/elasticsearch/pipeline.spec.yml"
     - description: Sample event file
       type: file

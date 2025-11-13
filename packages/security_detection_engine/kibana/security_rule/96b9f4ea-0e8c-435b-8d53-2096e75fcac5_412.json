@@ -1,0 +1,77 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects attempts to create an Okta API token. An adversary may create an Okta API token to maintain access to an organization's network while they work to achieve their objectives. An attacker may abuse an API token to execute techniques such as creating user accounts or disabling security rules or policies.",
+        "false_positives": [
+            "If the behavior of creating Okta API tokens is expected, consider adding exceptions to this rule to filter false positives."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-okta*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Attempt to Create Okta API Token",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Attempt to Create Okta API Token\n\nOkta API tokens are crucial for automating and managing identity and access tasks within an organization. However, if compromised, these tokens can be exploited by adversaries to gain persistent access, manipulate user accounts, or alter security settings. The detection rule identifies suspicious token creation activities by monitoring specific Okta system events, helping to thwart unauthorized access attempts.\n\n### Possible investigation steps\n\n- Review the event logs for entries with event.dataset:okta.system and event.action:system.api_token.create to identify the specific instance of API token creation.\n- Identify the user account associated with the token creation event to determine if the action aligns with their typical behavior or role within the organization.\n- Check the timestamp of the event to correlate with other security events or anomalies that occurred around the same time.\n- Investigate the IP address and location from which the API token creation request originated to assess if it matches the user's usual access patterns.\n- Examine any recent changes to user accounts or security settings that may have been executed using the newly created API token.\n- Review the organization's policy on API token creation to ensure compliance and determine if the action was authorized.\n\n### False positive analysis\n\n- Routine administrative tasks may trigger the rule when legitimate IT staff create API tokens for automation or integration purposes. To manage this, maintain a list of authorized personnel and their expected activities, and create exceptions for these known users.\n- Scheduled system maintenance or updates might involve creating API tokens, leading to false positives. Document these events and adjust the monitoring window or create temporary exceptions during these periods.\n- Third-party integrations that require API tokens for functionality can also trigger alerts. Identify and whitelist these integrations by verifying their necessity and security compliance.\n- Development and testing environments often involve frequent token creation for testing purposes. Exclude these environments from the rule or set up separate monitoring with adjusted thresholds to avoid unnecessary alerts.\n\n### Response and remediation\n\n- Immediately revoke the suspicious Okta API token to prevent any unauthorized access or actions within the organization's network.\n- Conduct a thorough review of recent activities associated with the compromised token to identify any unauthorized changes or access attempts.\n- Reset credentials and enforce multi-factor authentication for any accounts that were accessed or potentially compromised using the API token.\n- Notify the security team and relevant stakeholders about the incident to ensure awareness and coordination for further investigation and response.\n- Implement additional monitoring on Okta API token creation events to detect and respond to any further unauthorized attempts promptly.\n- Review and update access controls and permissions related to API token creation to ensure they align with the principle of least privilege.\n- Escalate the incident to senior security management if there is evidence of broader compromise or if the threat actor's objectives are unclear.",
+        "query": "event.dataset:okta.system and event.action:system.api_token.create\n",
+        "references": [
+            "https://developer.okta.com/docs/reference/api/system-log/",
+            "https://developer.okta.com/docs/reference/api/event-types/",
+            "https://www.elastic.co/security-labs/testing-okta-visibility-and-detection-dorothy",
+            "https://www.elastic.co/security-labs/monitoring-okta-threats-with-elastic-security",
+            "https://www.elastic.co/security-labs/starter-guide-to-understanding-okta"
+        ],
+        "related_integrations": [
+            {
+                "package": "okta",
+                "version": "^3.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "96b9f4ea-0e8c-435b-8d53-2096e75fcac5",
+        "setup": "The Okta Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Use Case: Identity and Access Audit",
+            "Data Source: Okta",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1136",
+                        "name": "Create Account",
+                        "reference": "https://attack.mitre.org/techniques/T1136/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 412
+    },
+    "id": "96b9f4ea-0e8c-435b-8d53-2096e75fcac5_412",
+    "type": "security-rule"
+}

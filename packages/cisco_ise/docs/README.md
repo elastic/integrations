@@ -35,166 +35,165 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-02-21T19:13:08.328Z",
+    "@timestamp": "2020-04-27T11:11:47.028-08:00",
     "agent": {
-        "ephemeral_id": "1c70d737-7545-456d-8fb9-7033dca67ed3",
-        "id": "901f4c48-583a-4848-aa7b-89dc8e9c4b76",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "6c81402f-0755-47b6-bc90-21791e9df481",
+        "id": "7d678a1a-bd1e-4279-b210-634e520569c3",
+        "name": "elastic-agent-25731",
         "type": "filebeat",
-        "version": "8.10.2"
+        "version": "8.18.0"
     },
     "cisco_ise": {
         "log": {
             "acct": {
-                "request": {
-                    "flags": "Stop"
+                "authentic": "RADIUS",
+                "session": {
+                    "id": "00000000/d4:ca:6d:14:87:3b/20879"
+                },
+                "status": {
+                    "type": "Start"
                 }
             },
             "acs": {
                 "session": {
-                    "id": "ldnnacpsn1/359344348/952729"
+                    "id": "hijk.xyz.com/176956368/1092777"
                 }
             },
-            "authen_method": "TacacsPlus",
-            "avpair": {
-                "priv_lvl": 15,
-                "start_time": "2020-03-26T01:17:12.000Z",
-                "task_id": "2962",
-                "timezone": "GMT"
+            "airespace": {
+                "wlan": {
+                    "id": 1
+                }
+            },
+            "allowed_protocol": {
+                "matched": {
+                    "rule": "Default"
+                }
+            },
+            "called_station": {
+                "id": "00-24-97-69-7a-c0"
+            },
+            "calling_station": {
+                "id": "d4-ca-6d-14-87-3b"
             },
             "category": {
-                "name": "CISE_TACACS_Accounting"
+                "name": "CISE_RADIUS_Accounting"
             },
-            "cmdset": "[ CmdAV=show mac-address-table <cr> ]",
+            "class": "CACS:0a2025060001794f52cfa877:hijk.xyz.com/176956368/1092772",
             "config_version": {
-                "id": 1829
+                "id": 33
             },
             "cpm": {
                 "session": {
-                    "id": "81.2.69.144Accounting306034364"
+                    "id": "0a222bc0000000d123e111f0"
                 }
             },
-            "device": {
-                "type": [
-                    "Device Type#All Device Types#Routers",
-                    "Device Type#All Device Types#Routers"
-                ]
+            "event": {
+                "timestamp": "2014-01-10T07:59:55.000Z"
             },
-            "ipsec": [
-                "IPSEC#Is IPSEC Device",
-                "IPSEC#Is IPSEC Device"
-            ],
-            "location": [
-                "Location#All Locations#EMEA",
-                "Location#All Locations#EMEA"
-            ],
+            "framed": {
+                "ip": "81.2.69.145"
+            },
+            "location": "Location#All Locations#SJC#WNBU",
             "message": {
-                "code": "3300",
-                "description": "Tacacs-Accounting: TACACS+ Accounting with Command",
-                "id": "0000000001"
+                "code": "3000",
+                "description": "Radius-Accounting: RADIUS Accounting start request",
+                "id": "0000070618"
             },
-            "model": {
-                "name": "Unknown"
+            "nas": {
+                "identifier": "Acme_fe:56:00",
+                "ip": "81.2.69.145",
+                "port": {
+                    "number": 13,
+                    "type": "Wireless - IEEE 802.11"
+                }
             },
             "network": {
                 "device": {
                     "groups": [
-                        "Location#All Locations#EMEA",
-                        "Device Type#All Device Types#Routers",
-                        "IPSEC#Is IPSEC Device"
+                        "Location#All Locations#SJC#WNBU",
+                        "Device Type#All Device Types#Wireless#WLC"
                     ],
-                    "name": "wlnwan1",
-                    "profile": [
-                        "Cisco",
-                        "Cisco"
-                    ]
+                    "name": "WNBU-WLC1"
                 }
             },
-            "port": "tty10",
-            "privilege": {
-                "level": 15
-            },
             "request": {
-                "latency": 1
-            },
-            "response": {
-                "AcctReply-Status": "Success"
+                "latency": 6
             },
             "segment": {
                 "number": 0,
-                "total": 4
+                "total": 1
             },
             "selected": {
                 "access": {
-                    "service": "Device Admin - TACACS"
+                    "service": "Default Network Access"
                 }
             },
-            "service": {
-                "argument": "shell",
-                "name": "Login"
-            },
-            "software": {
-                "version": "Unknown"
-            },
             "step": [
-                "13006",
+                "11004",
+                "11017",
                 "15049",
                 "15008",
                 "15048",
-                "13035"
+                "15048",
+                "15048",
+                "15004",
+                "15006",
+                "11005"
             ],
-            "type": "Accounting"
+            "tunnel": {
+                "medium": {
+                    "type": "(tag=0) 802"
+                },
+                "private": {
+                    "group_id": "(tag=0) 70"
+                },
+                "type": "(tag=0) VLAN"
+            }
         }
     },
     "client": {
-        "ip": "81.2.69.144"
+        "ip": "81.2.69.145"
     },
     "data_stream": {
         "dataset": "cisco_ise.log",
-        "namespace": "ep",
+        "namespace": "46135",
         "type": "logs"
-    },
-    "destination": {
-        "ip": "81.2.69.144"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "901f4c48-583a-4848-aa7b-89dc8e9c4b76",
-        "snapshot": false,
-        "version": "8.10.2"
+        "id": "7d678a1a-bd1e-4279-b210-634e520569c3",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
-        "action": "tacacs-accounting",
+        "action": "radius-accounting",
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
+        "code": "3000",
         "dataset": "cisco_ise.log",
-        "ingested": "2023-10-03T09:31:56Z",
+        "ingested": "2025-04-23T06:54:05Z",
         "kind": "event",
-        "original": "<182>Feb 21 19:13:08 cisco-ise-host CISE_TACACS_Accounting 0000000001 4 0 2020-02-21 19:13:08.328 +00:00 0018415781 3300 NOTICE Tacacs-Accounting: TACACS+ Accounting with Command, ConfigVersionId=1829, Device IP Address=81.2.69.144, CmdSet=[ CmdAV=show mac-address-table <cr> ], RequestLatency=1, NetworkDeviceName=wlnwan1, Type=Accounting, Privilege-Level=15, Service=Login, User=psxvne, Port=tty10, Remote-Address=81.2.69.144, Authen-Method=TacacsPlus, AVPair=task_id=2962, AVPair=timezone=GMT, AVPair=start_time=1585185432, AVPair=priv-lvl=15, AcctRequest-Flags=Stop, Service-Argument=shell, AcsSessionID=ldnnacpsn1/359344348/952729, SelectedAccessService=Device Admin - TACACS, Step=13006, Step=15049, Step=15008, Step=15048, Step=13035, NetworkDeviceGroups=Location#All Locations#EMEA, NetworkDeviceGroups=Device Type#All Device Types#Routers, NetworkDeviceGroups=IPSEC#Is IPSEC Device, CPMSessionID=81.2.69.144Accounting306034364, Model Name=Unknown, Software Version=Unknown, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }",
-        "sequence": 18415781,
-        "timezone": "+00:00",
+        "sequence": 91827141,
+        "timezone": "-08:00",
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "cisco-ise-host"
+        "hostname": "hijk.xyz.com"
     },
     "input": {
-        "type": "filestream"
+        "type": "udp"
     },
     "log": {
-        "file": {
-            "device_id": 2080,
-            "inode": 88860,
-            "path": "/tmp/service_logs/log.log"
-        },
         "level": "notice",
-        "offset": 71596,
+        "source": {
+            "address": "192.168.253.1:51868"
+        },
         "syslog": {
             "priority": 182,
             "severity": {
@@ -202,25 +201,24 @@ An example event for `log` looks as following:
             }
         }
     },
-    "message": "2020-02-21 19:13:08.328 +00:00 0018415781 3300 NOTICE Tacacs-Accounting: TACACS+ Accounting with Command, ConfigVersionId=1829, Device IP Address=81.2.69.144, CmdSet=[ CmdAV=show mac-address-table <cr> ], RequestLatency=1, NetworkDeviceName=wlnwan1, Type=Accounting, Privilege-Level=15, Service=Login, User=psxvne, Port=tty10, Remote-Address=81.2.69.144, Authen-Method=TacacsPlus, AVPair=task_id=2962, AVPair=timezone=GMT, AVPair=start_time=1585185432, AVPair=priv-lvl=15, AcctRequest-Flags=Stop, Service-Argument=shell, AcsSessionID=ldnnacpsn1/359344348/952729, SelectedAccessService=Device Admin - TACACS, Step=13006, Step=15049, Step=15008, Step=15048, Step=13035, NetworkDeviceGroups=Location#All Locations#EMEA, NetworkDeviceGroups=Device Type#All Device Types#Routers, NetworkDeviceGroups=IPSEC#Is IPSEC Device, CPMSessionID=81.2.69.144Accounting306034364, Model Name=Unknown, Software Version=Unknown, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }",
+    "message": "2020-04-27 11:11:47.028075 -08:00 0091827141 3000 NOTICE Radius-Accounting: RADIUS Accounting start request, ConfigVersionId=33, Device IP Address=81.2.69.145, RequestLatency=6, NetworkDeviceName=WNBU-WLC1, User-Name=nisehorrrrn, NAS-IP-Address=81.2.69.145, NAS-Port=13, Framed-IP-Address=81.2.69.145, Class=CACS:0a2025060001794f52cfa877:hijk.xyz.com/176956368/1092772, Called-Station-ID=00-24-97-69-7a-c0, Calling-Station-ID=d4-ca-6d-14-87-3b, NAS-Identifier=Acme_fe:56:00, Acct-Status-Type=Start, Acct-Session-Id=00000000/d4:ca:6d:14:87:3b/20879, Acct-Authentic=RADIUS, Event-Timestamp=1389340795, NAS-Port-Type=Wireless - IEEE 802.11, Tunnel-Type=(tag=0) VLAN, Tunnel-Medium-Type=(tag=0) 802, Tunnel-Private-Group-ID=(tag=0) 70, Airespace-Wlan-Id=1, AcsSessionID=hijk.xyz.com/176956368/1092777, SelectedAccessService=Default Network Access, Step=11004, Step=11017, Step=15049, Step=15008, Step=15048, Step=15048, Step=15048, Step=15004, Step=15006, Step=11005, NetworkDeviceGroups=Location#All Locations#SJC#WNBU, NetworkDeviceGroups=Device Type#All Device Types#Wireless#WLC, CPMSessionID=0a222bc0000000d123e111f0, AllowedProtocolMatchedRule=Default, Location=Location#All Locations#SJC#WNBU, Device Type=Device Type#All Device Types#Wireless#WLC",
     "related": {
         "hosts": [
-            "cisco-ise-host"
+            "hijk.xyz.com"
         ],
         "ip": [
-            "81.2.69.144"
+            "81.2.69.145"
         ],
         "user": [
-            "psxvne"
+            "nisehorrrrn"
         ]
     },
     "tags": [
-        "preserve_original_event",
         "forwarded",
         "cisco_ise-log"
     ],
     "user": {
-        "name": "psxvne"
+        "name": "nisehorrrrn"
     }
 }
 ```
@@ -461,6 +459,8 @@ An example event for `log` looks as following:
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.port | Port of the client. | long |
+| client.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| client.user.email | User email address. | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | client.user.name.text | Multi-field of `client.user.name`. | match_only_text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |

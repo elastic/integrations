@@ -1,0 +1,1161 @@
+---
+description: Pipeline for processing Meet Audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.16.0
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Google Workspace
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Meet
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_flatten_event_parameters
+      if: ctx.json?.events?.parameters instanceof List
+      description: Script to flatten the event parameters.
+      source: >
+        ctx.google_workspace = ctx.google_workspace ?: [:];
+        ctx.google_workspace.meet = ctx.google_workspace.meet ?: [:];
+        for (def param : ctx.json.events.parameters) {
+          if (param.name == null) {
+            continue;
+          }
+          def lw_case_name = param.name.toLowerCase();
+          if (param.value != null) {
+            ctx.google_workspace.meet[lw_case_name] = param.value;
+          } else if (param.boolValue != null) {
+            ctx.google_workspace.meet[lw_case_name] = param.boolValue;
+          } else if (param.intValue != null) {
+            ctx.google_workspace.meet[lw_case_name] = param.intValue;
+          } else if (param.multiValue != null) {
+            ctx.google_workspace.meet[lw_case_name] = param.multiValue;
+          } else if (param.multiIntValue != null) {
+            ctx.google_workspace.meet[lw_case_name] = param.multiIntValue;
+          } else if (param.multiBoolValue != null) {
+            ctx.google_workspace.meet[lw_case_name] = param.multiBoolValue;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json.events.parameters
+      ignore_missing: true
+  - rename:
+      field: json.events.name
+      tag: rename_json_events_name
+      target_field: google_workspace.meet.name
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: set_network_into_event_category
+      value: network
+      if: ctx.google_workspace?.meet?.name != null && ctx.google_workspace.meet.name == "call_ended"
+  - script:
+      description: Set event type based on event name.
+      if: ctx.google_workspace?.meet?.name != null
+      tag: set_event_type_from_meet_name
+      lang: painless
+      params:
+        abuse_report_submitted: info
+        broadcast_activity: info
+        call_ended: info
+        livestream_watched: info
+        dialed_out: info
+        in_meet_broadcast_activity: info
+        invitation_sent: info
+        knocking_accepted: info
+        knocking_denied: info
+        poll_answered: info
+        poll_created: creation
+        presentation_started: info
+        presentation_stopped: info
+        question_created: creation
+        question_responded: info
+        recording_activity: info
+        ring_answered: info
+        ring_missed: info
+        ring_sent: info
+        transcription_activity: info
+        watermarking_active: info
+        watermarking_starting: info
+        watermarking_stopped: info
+        whiteboard_started: info
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def type = [];
+        type.add(params.get(ctx.google_workspace.meet.name));
+        ctx.event.type = type;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.kind
+      tag: rename_json_kind
+      target_field: google_workspace.kind
+      ignore_missing: true
+  - rename: 
+      field: json.ownerDomain
+      target_field: google_workspace.organization.domain
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      tag: rename_json_etag
+      target_field: google_workspace.etag
+      ignore_missing: true
+  - rename:
+      field: json.actor.callerType
+      tag: rename_actor_callerType
+      target_field: google_workspace.actor.caller_type
+      ignore_missing: true
+  - rename:
+      field: json.actor.email
+      tag: rename_actor_email
+      target_field: google_workspace.actor.email
+      ignore_missing: true
+  - set:
+      field: source.user.email
+      tag: set_source_user_email_from_identifier
+      copy_from: google_workspace.meet.identifier
+      ignore_empty_value: true
+      if: ctx.google_workspace?.meet?.identifier != null && ctx.google_workspace?.meet?.identifier_type == "email_address"
+  - set:
+      field: source.user.email
+      tag: set_source_user_email_from_actor_email
+      copy_from: google_workspace.actor.email
+      ignore_empty_value: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_source_user_email
+      copy_from: source.user.email
+      ignore_empty_value: true
+  - dissect:
+      field: source.user.email
+      tag: dissect_user_email
+      if: ctx.source?.user?.email != null && ctx.source.user.email.contains('@')
+      pattern: '%{}@%{source.user.domain}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.actor.key
+      tag: rename_actor_key
+      target_field: google_workspace.actor.key
+      ignore_missing: true
+  - rename:
+      field: json.actor.profileId
+      tag: rename_actor_profileId
+      target_field: google_workspace.actor.profile_id
+      ignore_missing: true
+  - set:
+      field: source.user.id
+      tag: set_source_user_id_from_actor_profile_id
+      copy_from: google_workspace.actor.profile_id
+      ignore_empty_value: true
+  - set:
+      field: user
+      tag: set_user_from_source_user
+      copy_from: source.user
+      ignore_empty_value: true
+  - rename:
+      field: json.id.applicationName
+      tag: rename_id_applicationName
+      target_field: google_workspace.id.application_name
+      ignore_missing: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_id_application_name
+      copy_from: google_workspace.id.application_name
+      ignore_empty_value: true
+  - rename:
+      field: json.id.customerId
+      tag: rename_id_customerId
+      target_field: google_workspace.id.customer_id
+      ignore_missing: true
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_customerId
+      copy_from: google_workspace.id.customer_id
+      ignore_empty_value: true
+  - date:
+      field: json.id.time
+      tag: date_id_time
+      target_field: google_workspace.id.time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.id?.time != null && ctx.json.id.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_id_time
+      copy_from: google_workspace.id.time
+      ignore_empty_value: true
+  - rename:
+      field: json.id.uniqueQualifier
+      tag: rename_id_uniqueQualifier
+      target_field: google_workspace.id.unique_qualifier
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_id_unique_qualifier
+      copy_from: google_workspace.id.unique_qualifier
+      ignore_empty_value: true
+  - convert:
+      field: json.ipAddress
+      tag: convert_ipAddress_to_ip
+      target_field: google_workspace.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ipAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_google_workspace_ip_address
+      copy_from: google_workspace.ip_address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      database_file: GeoLite2-ASN.mmdb
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: json.events.type
+      tag: rename_json_events_type
+      target_field: google_workspace.meet.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_name
+      copy_from: google_workspace.meet.name
+      ignore_empty_value: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: '_'
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_workspace.meet.action_time
+      tag: date_action_time
+      target_field: google_workspace.meet.action_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      output_format: strict_date_optional_time_nanos
+      if: ctx.google_workspace?.meet?.action_time != null && ctx.google_workspace.meet.action_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_meet_action_time
+      copy_from: google_workspace.meet.action_time
+      ignore_empty_value: true
+  - convert:
+      field: google_workspace.meet.audio_recv_packet_loss_max
+      tag: convert_audio_recv_packet_loss_max_to_long
+      target_field: google_workspace.meet.endpoint.audio.recv_packet_loss_max
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.audio_recv_packet_loss_mean
+      tag: convert_audio_recv_packet_loss_mean_to_long
+      target_field: google_workspace.meet.endpoint.audio.recv_packet_loss_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.audio_recv_seconds
+      tag: convert_audio_recv_seconds_to_long
+      target_field: google_workspace.meet.endpoint.audio.recv_seconds
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.audio_send_bitrate_kbps_mean
+      tag: convert_audio_send_bitrate_kbps_mean_to_long
+      target_field: google_workspace.meet.endpoint.audio.send_bitrate_kbps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.audio_send_packet_loss_max
+      tag: convert_audio_send_packet_loss_max_to_long
+      target_field: google_workspace.meet.endpoint.audio.send_packet_loss_max
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.audio_send_packet_loss_mean
+      tag: convert_audio_send_packet_loss_mean_to_long
+      target_field: google_workspace.meet.endpoint.audio.send_packet_loss_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.audio_send_seconds
+      tag: convert_audio_send_seconds_to_long
+      target_field: google_workspace.meet.endpoint.audio.send_seconds
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.meet.device_type
+      tag: rename_device_type
+      target_field: google_workspace.meet.endpoint.device_type
+      ignore_missing: true
+  - rename:
+      field: google_workspace.meet.display_name
+      tag: rename_display_name
+      target_field: google_workspace.meet.endpoint.display_name
+      ignore_missing: true
+  - convert:
+      field: google_workspace.meet.duration_seconds
+      tag: convert_duration_seconds_to_long
+      target_field: google_workspace.meet.endpoint.duration_seconds
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.duration
+      tag: set_event_duration_from_meet_endpoint_duration_seconds
+      copy_from: google_workspace.meet.endpoint.duration_seconds
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: convert_event_duration_to_ns
+      if: ctx.event?.duration != null
+      params:
+        S_TO_NS: 1000000000
+      source: >-
+        ctx.event.duration *= params.S_TO_NS;
+  - convert:
+      field: google_workspace.meet.end_of_call_rating
+      tag: convert_end_of_call_rating_to_long
+      target_field: google_workspace.meet.endpoint.end_of_call_rating
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.meet.endpoint_id
+      tag: rename_endpoint_id
+      target_field: google_workspace.meet.endpoint.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.meet.identifier
+      tag: rename_identifier
+      target_field: google_workspace.meet.endpoint.identifier
+      ignore_missing: true
+  - rename:
+      field: google_workspace.meet.identifier_type
+      tag: rename_identifier_type
+      target_field: google_workspace.meet.endpoint.identifier_type
+      ignore_missing: true
+  - convert:
+      field: google_workspace.meet.ip_address
+      tag: convert_ip_address_to_ip
+      target_field: google_workspace.meet.endpoint.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.google_workspace?.meet?.ip_address != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_google_workspace_meet_endpoint_ip_address_into_host_ip
+      value: '{{{google_workspace.meet.endpoint.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.meet?.endpoint?.ip_address != null
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+  - geoip:
+      field: host.ip
+      database_file: GeoLite2-ASN.mmdb
+      target_field: host.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: host.as.asn
+      target_field: host.as.number
+      ignore_missing: true
+  - rename:
+      field: host.as.organization_name
+      target_field: host.as.organization.name
+      ignore_missing: true
+  - convert:
+      field: google_workspace.meet.is_external
+      tag: convert_is_external_to_boolean
+      target_field: google_workspace.meet.endpoint.is_external
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.meet.location_country
+      tag: rename_location_country
+      target_field: google_workspace.meet.endpoint.location_country
+      ignore_missing: true
+  - set:
+      field: host.geo.country_iso_code
+      tag: set_host_geo_country_iso_code_from_meet_endpoint_location_country
+      copy_from: google_workspace.meet.endpoint.location_country
+      ignore_empty_value: true
+  - rename:
+      field: google_workspace.meet.location_region
+      tag: rename_location_region
+      target_field: google_workspace.meet.endpoint.location_region
+      ignore_missing: true
+  - convert:
+      field: google_workspace.meet.network_congestion
+      tag: convert_network_congestion_to_long
+      target_field: google_workspace.meet.endpoint.network.congestion
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.network_estimated_download_kbps_mean
+      tag: convert_network_estimated_download_kbps_mean_to_long
+      target_field: google_workspace.meet.endpoint.network.estimated_download_kbps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.network_estimated_upload_kbps_mean
+      tag: convert_network_estimated_upload_kbps_mean_to_long
+      target_field: google_workspace.meet.endpoint.network.estimated_upload_kbps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.network_recv_jitter_msec_max
+      tag: convert_network_recv_jitter_msec_max_to_long
+      target_field: google_workspace.meet.endpoint.network.recv_jitter_msec_max
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.network_recv_jitter_msec_mean
+      tag: convert_network_recv_jitter_msec_mean_to_long
+      target_field: google_workspace.meet.endpoint.network.recv_jitter_msec_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.network_rtt_msec_mean
+      tag: convert_network_rtt_msec_mean_to_long
+      target_field: google_workspace.meet.endpoint.network.rtt_msec_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.network_send_jitter_msec_mean
+      tag: convert_network_send_jitter_msec_mean_to_long
+      target_field: google_workspace.meet.endpoint.network.send_jitter_msec_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.meet.network_transport_protocol
+      tag: rename_network_transport_protocol
+      target_field: google_workspace.meet.endpoint.network.transport_protocol
+      ignore_missing: true
+  - set:
+      field: network.transport
+      tag: set_network_transport_from_meet_endpoint_network_transport_protocol
+      copy_from: google_workspace.meet.endpoint.network.transport_protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - convert:
+      field: google_workspace.meet.screencast_recv_bitrate_kbps_mean
+      tag: convert_screencast_recv_bitrate_kbps_mean_to_long
+      target_field: google_workspace.meet.endpoint.screencast.recv_bitrate_kbps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_recv_fps_mean
+      tag: convert_screencast_recv_fps_mean_to_long
+      target_field: google_workspace.meet.endpoint.screencast.recv_fps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_recv_long_side_median_pixels
+      tag: convert_screencast_recv_long_side_median_pixels_to_long
+      target_field: google_workspace.meet.endpoint.screencast.recv_long_side_median_pixels
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_recv_packet_loss_max
+      tag: convert_screencast_recv_packet_loss_max_to_long
+      target_field: google_workspace.meet.endpoint.screencast.recv_packet_loss_max
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_recv_packet_loss_mean
+      tag: convert_screencast_recv_packet_loss_mean_to_long
+      target_field: google_workspace.meet.endpoint.screencast.recv_packet_loss_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_recv_seconds
+      tag: convert_screencast_recv_seconds_to_long
+      target_field: google_workspace.meet.endpoint.screencast.recv_seconds
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_recv_short_side_median_pixels
+      tag: convert_screencast_recv_short_side_median_pixels_to_long
+      target_field: google_workspace.meet.endpoint.screencast.recv_short_side_median_pixels
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_send_bitrate_kbps_mean
+      tag: convert_screencast_send_bitrate_kbps_mean_to_long
+      target_field: google_workspace.meet.endpoint.screencast.send_bitrate_kbps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_send_fps_mean
+      tag: convert_screencast_send_fps_mean_to_long
+      target_field: google_workspace.meet.endpoint.screencast.send_fps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_send_long_side_median_pixels
+      tag: convert_screencast_send_long_side_median_pixels_to_long
+      target_field: google_workspace.meet.endpoint.screencast.send_long_side_median_pixels
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_send_packet_loss_max
+      tag: convert_screencast_send_packet_loss_max_to_long
+      target_field: google_workspace.meet.endpoint.screencast.send_packet_loss_max
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_send_packet_loss_mean
+      tag: convert_screencast_send_packet_loss_mean_to_long
+      target_field: google_workspace.meet.endpoint.screencast.send_packet_loss_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_send_seconds
+      tag: convert_screencast_send_seconds_to_long
+      target_field: google_workspace.meet.endpoint.screencast.send_seconds
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.screencast_send_short_side_median_pixels
+      tag: convert_screencast_send_short_side_median_pixels_to_long
+      target_field: google_workspace.meet.endpoint.screencast.send_short_side_median_pixels
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.start_timestamp_seconds
+      tag: convert_start_timestamp_seconds_to_long
+      target_field: google_workspace.meet.endpoint.start_timestamp_seconds
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: convert_start_timestamp_seconds_to_ms
+      if: ctx.google_workspace?.meet?.endpoint?.start_timestamp_seconds != null
+      params:
+        S_TO_MS: 1000
+      source: >-
+        ctx.event.start = ctx.google_workspace.meet.endpoint.start_timestamp_seconds * params.S_TO_MS;
+  - date:
+      field: event.start
+      tag: date_event_start
+      target_field: event.start
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.event?.start != null && ctx.event.start != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_recv_fps_mean
+      tag: convert_video_recv_fps_mean_to_long
+      target_field: google_workspace.meet.endpoint.video.recv_fps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_recv_long_side_median_pixels
+      tag: convert_video_recv_long_side_median_pixels_to_long
+      target_field: google_workspace.meet.endpoint.video.recv_long_side_median_pixels
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_recv_packet_loss_max
+      tag: convert_video_recv_packet_loss_max_to_long
+      target_field: google_workspace.meet.endpoint.video.recv_packet_loss_max
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_recv_packet_loss_mean
+      tag: convert_video_recv_packet_loss_mean_to_long
+      target_field: google_workspace.meet.endpoint.video.recv_packet_loss_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_recv_seconds
+      tag: convert_video_recv_seconds_to_long
+      target_field: google_workspace.meet.endpoint.video.recv_seconds
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_recv_short_side_median_pixels
+      tag: convert_video_recv_short_side_median_pixels_to_long
+      target_field: google_workspace.meet.endpoint.video.recv_short_side_median_pixels
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_send_bitrate_kbps_mean
+      tag: convert_video_send_bitrate_kbps_mean_to_long
+      target_field: google_workspace.meet.endpoint.video.send_bitrate_kbps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_send_fps_mean
+      tag: convert_video_send_fps_mean_to_long
+      target_field: google_workspace.meet.endpoint.video.send_fps_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_send_long_side_median_pixels
+      tag: convert_video_send_long_side_median_pixels_to_long
+      target_field: google_workspace.meet.endpoint.video.send_long_side_median_pixels
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_send_packet_loss_max
+      tag: convert_video_send_packet_loss_max_to_long
+      target_field: google_workspace.meet.endpoint.video.send_packet_loss_max
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_send_packet_loss_mean
+      tag: convert_video_send_packet_loss_mean_to_long
+      target_field: google_workspace.meet.endpoint.video.send_packet_loss_mean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_send_seconds
+      tag: convert_video_send_seconds_to_long
+      target_field: google_workspace.meet.endpoint.video.send_seconds
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.meet.video_send_short_side_median_pixels
+      tag: convert_video_send_short_side_median_pixels_to_long
+      target_field: google_workspace.meet.endpoint.video.send_short_side_median_pixels
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.meet.livestream_ecdn_location
+      tag: rename_livestream_ecdn_location
+      target_field: google_workspace.meet.livestream.endpoint.ecdn_location
+      ignore_missing: true
+  - rename:
+      field: google_workspace.meet.livestream_ecdn_network
+      tag: rename_livestream_ecdn_network
+      target_field: google_workspace.meet.livestream.endpoint.ecdn_network
+      ignore_missing: true
+  - convert:
+      field: google_workspace.meet.livestream_private_ip_address
+      tag: convert_livestream_private_ip_address_to_ip
+      target_field: google_workspace.meet.livestream.endpoint.private_ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.google_workspace?.meet?.livestream_private_ip_address != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.meet.livestream_view_page_id
+      tag: rename_livestream_view_page_id
+      target_field: google_workspace.meet.livestream.view_page_id
+      ignore_missing: true
+  - split:
+      field: google_workspace.meet.target_display_names
+      tag: split_target_display_names
+      separator: ',\s*'
+      target_field: google_workspace.meet.target.display_names
+      if: ctx.google_workspace?.meet?.target_display_names != null
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.meet.target_email
+      tag: rename_target_email
+      target_field: google_workspace.meet.target.email
+      ignore_missing: true
+  - set:
+      field: user.target.email
+      tag: set_user_target_email_from_meet_target_email
+      copy_from: google_workspace.meet.target.email
+      ignore_empty_value: true
+  - set:
+      field: user.target.name
+      tag: set_user_target_name_from_user_target_email
+      copy_from: user.target.email
+      ignore_empty_value: true
+  - dissect:
+      field: user.target.email
+      tag: dissect_user_target_email
+      if: ctx.user?.target?.email != null && ctx.user.target.email.contains('@')
+      pattern: '%{}@%{user.target.domain}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.meet.target_phone_number
+      tag: rename_target_phone_number
+      target_field: google_workspace.meet.target.phone_number
+      ignore_missing: true
+  - set:
+      field: google_workspace.meet.target.phone_number
+      tag: mask_target_phone_number
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.google_workspace?.meet?.target?.phone_number != null
+  - convert:
+      field: google_workspace.meet.target_user_count
+      tag: convert_target_user_count_to_long
+      target_field: google_workspace.meet.target.user_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_actor_email_into_related_user
+      value: '{{{google_workspace.actor.email}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.actor?.email != null
+  - append:
+      field: related.user
+      tag: append_user_target_email_into_related_user
+      value: '{{{user.target.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.email != null
+  - append:
+      field: related.user
+      tag: append_organizer_email_into_related_user
+      value: '{{{google_workspace.meet.organizer_email}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.meet?.organizer_email != null
+  - foreach:
+      field: google_workspace.meet.target.display_names
+      if: ctx.google_workspace?.meet?.target?.display_names instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_target_display_names_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_endpoint_display_name_into_related_user
+      value: '{{{google_workspace.meet.endpoint.display_name}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.meet?.endpoint?.display_name != null
+  - append:
+      field: related.user
+      tag: append_endpoint_identifier_into_related_user
+      value: '{{{google_workspace.meet.endpoint.identifier}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.meet?.endpoint?.identifier != null && ctx.google_workspace?.meet?.endpoint?.identifier_type == "email_address"
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_host_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.ip
+      tag: append_livestream_endpoint_private_ip_address_into_related_ip
+      value: '{{{google_workspace.meet.livestream.endpoint.private_ip_address}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.meet?.livestream?.endpoint?.private_ip_address != null
+  - append:
+      field: related.ip
+      tag: append_ip_address_into_related_ip
+      value: '{{{google_workspace.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.ip_address != null
+  - remove:
+      field:
+        - google_workspace.actor.email
+        - google_workspace.actor.profile_id
+        - google_workspace.id.application_name
+        - google_workspace.id.customer_id
+        - google_workspace.id.time
+        - google_workspace.id.unique_qualifier
+        - google_workspace.ip_address
+        - google_workspace.meet.action_time
+        - google_workspace.meet.endpoint.duration_seconds
+        - google_workspace.meet.endpoint.ip_address
+        - google_workspace.meet.endpoint.location_country
+        - google_workspace.meet.endpoint.network.transport_protocol
+        - google_workspace.meet.endpoint.start_timestamp_seconds
+        - google_workspace.meet.target.email
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - google_workspace.meet.audio_recv_packet_loss_max
+        - google_workspace.meet.audio_recv_packet_loss_mean
+        - google_workspace.meet.audio_recv_seconds
+        - google_workspace.meet.audio_send_bitrate_kbps_mean
+        - google_workspace.meet.audio_send_packet_loss_max
+        - google_workspace.meet.audio_send_packet_loss_mean
+        - google_workspace.meet.audio_send_seconds
+        - google_workspace.meet.duration_seconds
+        - google_workspace.meet.end_of_call_rating
+        - google_workspace.meet.ip_address
+        - google_workspace.meet.is_external
+        - google_workspace.meet.network_congestion
+        - google_workspace.meet.network_estimated_download_kbps_mean
+        - google_workspace.meet.network_estimated_upload_kbps_mean
+        - google_workspace.meet.network_recv_jitter_msec_max
+        - google_workspace.meet.network_recv_jitter_msec_mean
+        - google_workspace.meet.network_rtt_msec_mean
+        - google_workspace.meet.network_send_jitter_msec_mean
+        - google_workspace.meet.screencast_recv_seconds
+        - google_workspace.meet.screencast_send_bitrate_kbps_mean
+        - google_workspace.meet.screencast_send_fps_mean
+        - google_workspace.meet.screencast_send_long_side_median_pixels
+        - google_workspace.meet.screencast_send_packet_loss_max
+        - google_workspace.meet.screencast_send_packet_loss_mean
+        - google_workspace.meet.screencast_send_seconds
+        - google_workspace.meet.screencast_send_short_side_median_pixels
+        - google_workspace.meet.start_timestamp_seconds
+        - google_workspace.meet.video_recv_seconds
+        - google_workspace.meet.video_send_bitrate_kbps_mean
+        - google_workspace.meet.video_send_fps_mean
+        - google_workspace.meet.video_send_long_side_median_pixels
+        - google_workspace.meet.video_send_packet_loss_max
+        - google_workspace.meet.video_send_packet_loss_mean
+        - google_workspace.meet.video_send_seconds
+        - google_workspace.meet.video_send_short_side_median_pixels
+        - google_workspace.meet.target_display_names
+        - google_workspace.meet.target_user_count
+      tag: remove_converted_fields
+      ignore_missing: true
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

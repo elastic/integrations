@@ -1,0 +1,165 @@
+config_version: 2
+interval: {{interval}}
+auth.oauth2:
+    client.id: {{client_id}}
+    client.secret: {{client_secret}}
+    provider: azure
+    scopes:
+{{#each token_scopes_management as |token_scope|}}
+      - {{token_scope}}
+{{/each}}
+    endpoint_params: 
+        grant_type: client_credentials
+{{#if token_url}}
+    token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+    azure.tenant_id: {{azure_tenant_id}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url_management}}
+{{#if resource_ssl}}
+resource.ssl: 
+  {{resource_ssl}}
+{{/if}}
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+{{#if resource_redirect_forward_headers}}
+resource.redirect.forward_headers: {{resource_redirect_forward_headers}}
+{{/if}}
+{{#if resource_redirect_headers_ban_list}}
+resource.redirect.headers_ban_list:
+{{#each resource_redirect_headers_ban_list as |item|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if resource_redirect_max_redirects}}
+resource.redirect.max_redirects: {{resource_redirect_max_redirects}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+state:
+  want_more: false
+  premium_check_path: '/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck?serviceType=AadSyncService&skipCount=0&takeCount=50'
+  service_path: '/providers/Microsoft.ADHybridHealthService/services'
+  api_query_param: '&api-version=2014-01-01'
+  base:
+    tenant_id: "{{azure_tenant_id}}"
+    period: "{{period}}"
+
+redact:
+  fields:
+    - base.tenant_id
+
+program: |
+    state.with(
+      request(
+        "GET", 
+        state.url.trim_right("/") + state.premium_check_path + state.api_query_param
+      ).do_request().as(services_resp,
+        services_resp.StatusCode == 200
+        ?
+          bytes(services_resp.Body).decode_json().as(services_json,
+            {
+              "events": services_json.value.collate("serviceName").map(serviceName,
+                {
+                 "o365":{  
+                  "metrics": {
+                      "entra": {
+                      "agent": {
+                        "service_name": serviceName,
+                        "service_members" :
+                        request(
+                          "GET", 
+                          state.url.trim_right("/") + state.service_path + "/" + serviceName + "/servicemembers?" + state.api_query_param
+                        ).do_request().as(servicemembers_resp,
+                         servicemembers_resp.StatusCode != 200
+                          ?
+                            [{
+                                "error": [
+                                  string(servicemembers_resp.StatusCode), 
+                                  string(servicemembers_resp.Body)
+                                ].join(" ")
+                            }]
+                          :
+                            bytes(servicemembers_resp.Body).decode_json().as(body,   
+                                body.value.map(servicemembers, {
+                                      "last_reboot": servicemembers.lastReboot,
+                                      "last_disabled": servicemembers.lastDisabled,
+                                      "last_updated": servicemembers.lastUpdated,
+                                      "active_alerts": servicemembers.activeAlerts,
+                                      "resolved_alerts": servicemembers.resolvedAlerts,
+                                      "created_date": servicemembers.createdDate,
+                                      "disabled": servicemembers.disabled,
+                                      "service_id": servicemembers.serviceId,
+                                      "service_member_id": servicemembers.serviceMemberId,
+                                      "machine_id": servicemembers.machineId,
+                                      "machine_name": servicemembers.machineName,
+                                      "role": servicemembers.role,
+                                      "status": servicemembers.status,
+                                      "os_version": servicemembers.osVersion,
+                                      "os_name": servicemembers.osName
+                                })
+                            )
+                        )
+                    }
+                  }
+                }
+               }
+              }
+              ),
+              "want_more": false
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(services_resp.StatusCode),
+                "id": string(services_resp.Status),
+                "message": "GET " + state.premium_check_path + ": " + (
+                  size(services_resp.Body) != 0 ?
+                    string(services_resp.Body)
+                  :
+                    string(services_resp.Status) + ' (' + string(services_resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false
+          }
+      )
+    )

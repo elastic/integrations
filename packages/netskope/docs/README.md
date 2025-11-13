@@ -1,6 +1,8 @@
 # Netskope
 
-This integration is for Netskope. It can be used to receive logs sent by [Netskope Cloud Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785) on respective TCP ports.
+This integration is for Netskope. It can be used to receive logs sent by [Netskope Cloud Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785) and [Netskope Log Streaming](https://docs.netskope.com/en/log-streaming/). To receive log from Netskope Cloud Log Shipper use the TCP input, and for Netskope Log Streaming use any of the Cloud based inputs (AWS, GCS, or Azure Blob Storage).
+
+
 
 The log message is expected to be in JSON format. The data is mapped to
 ECS fields where applicable and the remaining fields are written under
@@ -8,6 +10,7 @@ ECS fields where applicable and the remaining fields are written under
 
 ## Setup steps
 
+### For receiving log from Netskope Cloud Shipper
 1. Configure this integration with the TCP input in Kibana.
 2. For all Netskope Cloud Exchange configurations refer to the [Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785).
 3. In Netskope Cloud Exchange please enable Log Shipper, add your Netskope Tenant.
@@ -32,6 +35,126 @@ ECS fields where applicable and the remaining fields are written under
 
 > Note: For detailed steps refer to [Configure Log Shipper SIEM Mappings](https://docs.netskope.com/en/configure-log-shipper-siem-mappings.html).
 Please make sure to use the given response formats.
+
+### For receiving log from Netskope Log Streaming
+1. To configure Log streaming please refer to the [Log Streaming Configuration](https://docs.netskope.com/en/configuring-streams). Ensure that compression is set to GZIP when configuring the stream as other compression types are not supported.
+
+
+#### Collect data from an AWS S3 bucket
+
+Considering you already have an AWS S3 bucket setup, to configure it with Netskope, follow [these steps](https://docs.netskope.com/en/stream-logs-to-amazon-s3) to enable the log streaming.
+
+**Note**: It is recommended to use the combined Alerts V2 and Events V2 data stream rather than configuring the individual Events V2 or Alerts V2 data stream. The alerts_events_v2 stream automatically directs logs to the appropriate individual data streams.
+
+#### Collect data from Azure Blob Storage
+
+1. If you already have an Azure storage container setup, configure it with Netskope via log streaming.
+2. Enable the Netskope log streaming by following [these instructions](https://docs.netskope.com/en/stream-logs-to-azure-blob).
+3. Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options. For OAuth2 (Entra ID RBAC), you will need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you will need either the Service Account Key or the URI to access the data.
+
+
+- How to setup the `auth.oauth2` credentials can be found in the Azure documentation [here]( https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- For more details about the Azure Blob Storage input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).
+
+Note:
+- The service principal must be granted the appropriate permissions to read blobs. Ensure that the necessary role assignments are in place for the service principal to access the storage resources. For more information, please refer to the [Azure Role-Based Access Control (RBAC) documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage).
+- We recommend assigning either the **Storage Blob Data Reader** or **Storage Blob Data Owner** role. The **Storage Blob Data Reader** role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The **Storage Blob Data Owner** role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
+
+#### Collect data from a GCS bucket
+
+1. If you already have a GCS bucket setup, configure it with Netskope via log streaming.
+2. Enable the Netskope log streaming by following [these instructions](https://docs.netskope.com/en/stream-logs-to-gcp-cloud-storage).
+3. Configure the integration with your GCS project ID, Bucket name and Service Account Key/Service Account Credentials File.
+
+For more details about the GCS input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html).
+
+#### The GCS credentials key file:
+
+Once you have added a key to GCP service account, you will get a JSON key file that can only be downloaded once.
+If you're new to GCS bucket creation, follow these steps:
+
+1. Make sure you have a service account available, if not follow the steps below:
+   - Navigate to 'APIs & Services' > 'Credentials'
+   - Click on 'Create credentials' > 'Service account'
+2. Once the service account is created, you can navigate to the 'Keys' section and attach/generate your service account key.
+3. Make sure to download the JSON key file once prompted.
+4. Use this JSON key file either inline (JSON string object), or by specifying the path to the file on the host machine, where the agent is running.
+
+A sample JSON Credentials file looks as follows:
+```json
+{
+  "type": "dummy_service_account",
+  "project_id": "dummy-project",
+  "private_key_id": "dummy-private-key-id",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nDummyPrivateKey\n-----END PRIVATE KEY-----\n",
+  "client_email": "dummy-service-account@example.com",
+  "client_id": "12345678901234567890",
+  "auth_uri": "https://dummy-auth-uri.com",
+  "token_uri": "https://dummy-token-uri.com",
+  "auth_provider_x509_cert_url": "https://dummy-auth-provider-cert-url.com",
+  "client_x509_cert_url": "https://dummy-client-cert-url.com",
+  "universe_domain": "dummy-universe-domain.com"
+}
+```
+
+
+#### Collect data from AWS SQS
+
+1. If you have already set up a connection to push data into the AWS bucket; if not, refer to the section above.
+
+2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+   - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in Netskope.
+3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+   - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
+
+For more details about the AWS-S3 input settings, check this [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
+
+### Enable the integration in Elastic
+
+1. In Kibana go to **Management** > **Integrations**.
+2. In "Search for integrations" top bar, search for `Netskope`.
+3. Select the **Netskope** integration from the search results.
+4. Select "Add Netskope" to add the integration.
+5. While adding the integration, there are different options to collect logs; 
+    
+    To collect logs via AWS S3 when adding the integration, you must provide the following details::
+    - Collect logs via S3 Bucket toggled on
+    - Access Key ID
+    - Secret Access Key
+    - Bucket ARN
+    - Session Token
+
+    To collect logs via AWS SQS when adding the integration, you must provide the following details:
+    - Collect logs via S3 Bucket toggled off
+    - Queue URL
+    - Secret Access Key
+    - Access Key ID
+
+    To collect logs via GCS when adding the integration, you must provide the following details:
+    - Project ID
+    - Buckets
+    - Service Account Key/Service Account Credentials File
+
+    To collect logs via Azure Blob Storage when adding the integration, you must provide the following details:
+
+    - For OAuth2 (Microsoft Entra ID RBAC):
+        - Toggle on **Collect logs using OAuth2 authentication**
+        - Account Name
+        - Client ID
+        - Client Secret
+        - Tenant ID
+        - Container Details.
+
+    - For Service Account Credentials:
+        - Service Account Key or the URI
+        - Account Name
+        - Container Details
+        
+
+    To collect logs via TCP when adding the integration, you must provide the following details:
+    - Listen Address
+    - Listen Port
+6. Save the integration.
 
 ## Compatibility
 
@@ -114,8 +237,9 @@ Default port: _9021_
 | netskope.alerts.audit.category | The subcategories in an application such as IAM, EC in AWS, login, token, file, etc., in case of Google. | keyword |
 | netskope.alerts.audit.type | The sub category in audit according to SaaS / IaaS apps. | keyword |
 | netskope.alerts.bin.timestamp | Applicable to only: Shared Credentials, Data Exfiltration, Bulk Anomaly types( Bulk Upload/Download/Delete) and Failed Login Anomaly type. Bin TimeStamp (is a window used that is used for certain types of anomalies - for breaking into several windows per day/hour). | long |
-| netskope.alerts.breach.date | Breach date for compromised credentials. | double |
-| netskope.alerts.breach.description | N/A | keyword |
+| netskope.alerts.breach.date | Breach date for compromised credentials. | date |
+| netskope.alerts.breach.description | Breach description for compromised credentials. | keyword |
+| netskope.alerts.breach.description.text | Multi-field of `netskope.alerts.breach.description`. | match_only_text |
 | netskope.alerts.breach.id | Breach ID for compromised credentials. | keyword |
 | netskope.alerts.breach.media_references | Media references of breach. | keyword |
 | netskope.alerts.breach.score | Breach score for compromised credentials. | long |
@@ -1057,5 +1181,359 @@ An example event for `events` looks as following:
         "forwarded",
         "netskope-events"
     ]
+}
+```
+
+### Transaction
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.resource.group | Resource group. | keyword |
+| azure.resource.id | Resource ID. | keyword |
+| azure.resource.name | Name. | keyword |
+| azure.resource.provider | Resource type/namespace. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object. | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object. | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container. | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| netskope.transaction.bytes | Sum of client bytes plus server bytes. | long |
+| netskope.transaction.c_ip | Client IP as seen by the Netskope proxy. This will be the machine IP if available, IPv4 address. | ip |
+| netskope.transaction.cs_bytes | Bytes received from the client. | long |
+| netskope.transaction.cs_content_type | The content-type header in the HTTP request. | keyword |
+| netskope.transaction.cs_dns | The destination domain requested. | keyword |
+| netskope.transaction.cs_host | The value in the host header from the request. | keyword |
+| netskope.transaction.cs_method | The HTTP method (e.g. GET, POST). | keyword |
+| netskope.transaction.cs_referer | The value of the referrer header. | keyword |
+| netskope.transaction.cs_uri | Path information plus query string. | keyword |
+| netskope.transaction.cs_uri_port | Port specified in the request header. | long |
+| netskope.transaction.cs_uri_query | The query string portion of the HTTP request. | keyword |
+| netskope.transaction.cs_uri_scheme | The protocol used. | keyword |
+| netskope.transaction.cs_user_agent | The user-agent header in the HTTP request. | keyword |
+| netskope.transaction.cs_username | The client’s username. | keyword |
+| netskope.transaction.date | Date of generation, YY-MM-DD format. NOTE: Human readable string for the “x-cs-timestamp” field. | date |
+| netskope.transaction.rs_status | The HTTP status code received from the remote server. | long |
+| netskope.transaction.s_ip | The server IPv4 address. NOTE: During SSL bypass, the s-ip field displays as Unavailable when it’s neither IPv4 or IPv6. | ip |
+| netskope.transaction.sc_bytes | Bytes received from the server. | long |
+| netskope.transaction.sc_content_type | The content-type header from the response. | keyword |
+| netskope.transaction.sc_status | The HTTP status code received from the server. | long |
+| netskope.transaction.time | Time of generation in HH:MM-SEC format in GMT. NOTE: Human readable string for the “x-cs-timestamp” field. | keyword |
+| netskope.transaction.time_taken | Delta (integer value in ms) when the request processing started and the full response was received. | keyword |
+| netskope.transaction.x_c_browser | Client’s browser. | keyword |
+| netskope.transaction.x_c_browser_version | Client’s browser version. | keyword |
+| netskope.transaction.x_c_country | Country of the client (user). | keyword |
+| netskope.transaction.x_c_device | Client’s device type. | keyword |
+| netskope.transaction.x_c_latitude | Latitude of the client. | double |
+| netskope.transaction.x_c_local_time | The local time of the client calculated from geolocation of the device IP. | date |
+| netskope.transaction.x_c_location | Location of the client. | keyword |
+| netskope.transaction.x_c_longitude | Longitude of the client. | double |
+| netskope.transaction.x_c_os | Operating system of the client. | keyword |
+| netskope.transaction.x_c_region | Region of the client. | keyword |
+| netskope.transaction.x_c_zipcode | Zip code of the client. | keyword |
+| netskope.transaction.x_category | Primary category name applicable for the url in this transaction. | keyword |
+| netskope.transaction.x_category_id | Primary category ID applicable for the url in this transaction, e.g. category ID is 7 for the Cloud Storage category. | keyword |
+| netskope.transaction.x_client_ssl_err | Description of SSL error between client (browser) and proxy. | keyword |
+| netskope.transaction.x_cs_access_method | Steering method used to access the Netskope cloud. | keyword |
+| netskope.transaction.x_cs_app | Cloud application name. | keyword |
+| netskope.transaction.x_cs_app_activity | The cloud application activity identified by the proxy. | keyword |
+| netskope.transaction.x_cs_app_category | Cloud application category from the CCI database. | keyword |
+| netskope.transaction.x_cs_app_cci | Cloud Confidence Index of the Cloud application from the CCI database. | long |
+| netskope.transaction.x_cs_app_ccl | Cloud Confidence Level of the Cloud application from the CCI database. | keyword |
+| netskope.transaction.x_cs_app_from_user | The user identity detected in the cloud application. | keyword |
+| netskope.transaction.x_cs_app_instance_id | The cloud application instance ID identified by the proxy. | keyword |
+| netskope.transaction.x_cs_app_instance_name | Reserved for future use. | keyword |
+| netskope.transaction.x_cs_app_instance_tag | Reserved for future use. | keyword |
+| netskope.transaction.x_cs_app_object_id | The ID of the object transferred to/from the cloud application. | keyword |
+| netskope.transaction.x_cs_app_object_name | The name of the object transferred to/from the cloud application. | keyword |
+| netskope.transaction.x_cs_app_object_type | The type of the object transferred to/from the cloud application. | keyword |
+| netskope.transaction.x_cs_app_suite | The cloud application suite name. | keyword |
+| netskope.transaction.x_cs_app_tags | Cloud application tags from the CCI database. | keyword |
+| netskope.transaction.x_cs_app_to_user | The recipients of a share/send activity detected in the cloud application. | keyword |
+| netskope.transaction.x_cs_connect_host | The host value received in the Client to Proxy HTTP CONNECT request. This field is empty if there is no CONNECT. | keyword |
+| netskope.transaction.x_cs_connect_port | The port value received in the Client to Proxy HTTP CONNECT request. This field is empty if there is no CONNECT. | keyword |
+| netskope.transaction.x_cs_connect_user_agent | The User-Agent header value received in the Client to Proxy HTTP CONNECT request. This field is empty if there is no CONNECT or the field is missing. | keyword |
+| netskope.transaction.x_cs_domain_fronted_sni | The SNI of the SSL connection where Netskope detected domain fronting. In other words, the SNI and Host header were mismatched. SSL inspection must be enabled to see this field. | keyword |
+| netskope.transaction.x_cs_dst_ip | The destination IP of the client to proxy session. | ip |
+| netskope.transaction.x_cs_dst_port | The destination port of the client to proxy session. | long |
+| netskope.transaction.x_cs_http_version | The version of the HTTP protocol of the request. | keyword |
+| netskope.transaction.x_cs_ip_connect_xff | X-Forwarded-For header value received in the Client to Proxy HTTP CONNECT request. This field is empty if there is no CONNECT or if the field is missing. | ip |
+| netskope.transaction.x_cs_ip_xff | X-Forwarded-For header value received in the Client to Proxy GET request. This field is empty if there is no header or if GET is not decrypted. | ip |
+| netskope.transaction.x_cs_page_id | Identifier associated with the page event object. | keyword |
+| netskope.transaction.x_cs_session_id | A session for the current user which consists of: user, device, OS, app, browser. | keyword |
+| netskope.transaction.x_cs_site | Destination site. | keyword |
+| netskope.transaction.x_cs_sni | The hostname that the client is attempting to connect to using the SNI extension in the TLS handshake. | keyword |
+| netskope.transaction.x_cs_src_ip | The source IP of the client to proxy session. | ip |
+| netskope.transaction.x_cs_src_ip_egress | The public IP used to contact the NewEdge data plane on the traffic coming from the Client device. | ip |
+| netskope.transaction.x_cs_src_port | The source port of the client to proxy session. | long |
+| netskope.transaction.x_cs_ssl_cipher | The SSL Cipher negotiated between the Client device and the NewEdge data plane for the HTTPS request. | keyword |
+| netskope.transaction.x_cs_ssl_engine_action | Indicates the result of the SSL Engine behavior after certificate evaluation and SSL/TLS negotiation. Possible values include: allow, block, or bypass. | keyword |
+| netskope.transaction.x_cs_ssl_engine_action_reason | Provides details of the SSL Engine action. | keyword |
+| netskope.transaction.x_cs_ssl_fronting_error | Indicates if the server certificate received from the destination server has a mismatch between the SNI and the hostname of the encrypted HTTP request. | keyword |
+| netskope.transaction.x_cs_ssl_handshake_error | Indicates if the SSL Engine encountered a problem when establishing the SSL/TLS negotiation. For more information, refer to the x-server-ssl-err and x-client-ssl-err fields. | keyword |
+| netskope.transaction.x_cs_ssl_ja3 | Fingerprints the way the Client communicates over TLS. | keyword |
+| netskope.transaction.x_cs_ssl_version | The SSL Version negotiated between the Client device and the NewEdge data plane for the HTTPS request. | keyword |
+| netskope.transaction.x_cs_timestamp | Date of the request as epoch time. NOTE: This field is the epoch version of the “date” and “time” fields. | date |
+| netskope.transaction.x_cs_traffic_type | Type of traffic could be “Web” or “CloudApp”. NOTE: During SSL bypass, x-cs-traffic-type always displays as Unavailable. | keyword |
+| netskope.transaction.x_cs_tunnel_id | VPN tunnel ID. | keyword |
+| netskope.transaction.x_cs_uri_path | Path of the URI from the received HTTP request. | keyword |
+| netskope.transaction.x_cs_url | The full URL of the request received, includes scheme, host, port, path and query. | keyword |
+| netskope.transaction.x_cs_userip | The client IP address. If the client IP address is not found, the field is left blank. | ip |
+| netskope.transaction.x_error | The error encountered when processing the transaction. | keyword |
+| netskope.transaction.x_other_category | Secondary categories applicable for the url in this transaction. | keyword |
+| netskope.transaction.x_other_category_id | IDs of secondary categories applicable for the url in this transaction, e.g. category ID is 537 for the News & Media; Entertainment category. | keyword |
+| netskope.transaction.x_policy_action | The action performed by the proxy on the transaction after the Real-time policy engine analysis (e.g. allow, block, bypass, alert, user alert). | keyword |
+| netskope.transaction.x_policy_dst_host | The hostname computed by the Real-time policy engine. The source for the hostname is provided in the x-policy-dst-host-source field. | keyword |
+| netskope.transaction.x_policy_dst_host_source | The source for the hostname value computed by the Real-time policy engine (e.g. OriginalDestDomain, Sni, Uri, HttpHostHeader). | keyword |
+| netskope.transaction.x_policy_dst_ip | The destination IP computed by the Real-time policy engine, from DNS resolution. | keyword |
+| netskope.transaction.x_policy_justification_reason | The justification provided by the end user in case of “useralert” action. | keyword |
+| netskope.transaction.x_policy_justification_type | The justification type selected by the end user in case of “useralert” action. | keyword |
+| netskope.transaction.x_policy_name | The Real-time policy name that triggered the action. | keyword |
+| netskope.transaction.x_policy_src_ip | The source IP computed by the Real-time policy engine from the source IP or XFF header. | keyword |
+| netskope.transaction.x_r_cert_enddate | The end date/time of the server certificate received from the destination server. | date |
+| netskope.transaction.x_r_cert_expired | Indicates if the server certificate received from the destination server is expired or not yet valid. | keyword |
+| netskope.transaction.x_r_cert_incomplete_chain | Indicates if the server certificate received from destination server has an incomplete issuer chain. | keyword |
+| netskope.transaction.x_r_cert_issuer_cn | The issuer CN attribute of the server certificate received from destination server. | keyword |
+| netskope.transaction.x_r_cert_mismatch | Indicates if the server certificate received from the destination server has a mismatch between the SNI and the CN/SAN. | keyword |
+| netskope.transaction.x_r_cert_revocation_check | Reserved for future use. | keyword |
+| netskope.transaction.x_r_cert_revoked | Indicates if the server certificate received from the destination server is revoked. | keyword |
+| netskope.transaction.x_r_cert_self_signed | Indicates if the server certificate received from  the destination server is self-signed. | keyword |
+| netskope.transaction.x_r_cert_startdate | The start date/time of the server certificate received from the destination server. | date |
+| netskope.transaction.x_r_cert_subject_cn | The CN attribute of the server certificate received from the destination server. | keyword |
+| netskope.transaction.x_r_cert_untrusted_root | Indicates if the server certificate received from the destination server is signed by a trusted issuer. | keyword |
+| netskope.transaction.x_r_cert_valid | Overall result of the evaluation of the validity of the server certificate received from destination server. This field doesn’t reflect the action of the SSL Engine. | keyword |
+| netskope.transaction.x_request_id | Request ID needed to correlate DLP and TSS incidents with transaction events. | keyword |
+| netskope.transaction.x_rs_file_category | The category of the object transferred to/from the remote server. | keyword |
+| netskope.transaction.x_rs_file_language | Reserved for future use. | keyword |
+| netskope.transaction.x_rs_file_md5 | The MD5 Hash of the object transferred to/from the remote server. | keyword |
+| netskope.transaction.x_rs_file_sha256 | Reserved for future use. | keyword |
+| netskope.transaction.x_rs_file_size | Reserved for future use. | keyword |
+| netskope.transaction.x_rs_file_type | The type of the object transferred to/from the remote server. | keyword |
+| netskope.transaction.x_s_country | Destination country. | keyword |
+| netskope.transaction.x_s_custom_signing_ca_error | Indicates that the SSL Engine failed to intercept with a Custom signing CA. | keyword |
+| netskope.transaction.x_s_dp_name | The dataplane name processing the request. | keyword |
+| netskope.transaction.x_s_latitude | Destination latitude. | double |
+| netskope.transaction.x_s_location | Destination location (e.g. city). | keyword |
+| netskope.transaction.x_s_longitude | Destination longitude. | double |
+| netskope.transaction.x_s_region | Destination region (e.g. state). | keyword |
+| netskope.transaction.x_s_zipcode | Destination zip code. | keyword |
+| netskope.transaction.x_sc_notification_name | The name of the user notification displayed to the end user in case of action “block” or “useralert”. | keyword |
+| netskope.transaction.x_server_ssl_err | Description of SSL error between proxy and content servers. | keyword |
+| netskope.transaction.x_sr_dst_ip | The destination IP of the proxy to remote server session. | ip |
+| netskope.transaction.x_sr_dst_port | The destination port of the proxy to remote server session. | long |
+| netskope.transaction.x_sr_headers_name | List of custom headers inserted. | keyword |
+| netskope.transaction.x_sr_headers_value | List of custom header values inserted. | keyword |
+| netskope.transaction.x_sr_src_ip | The source IP of the proxy to remote server session. This field is blank if dedicated IPs are used. | ip |
+| netskope.transaction.x_sr_src_port | The source port of the proxy to remote server session. This field is blank if dedicated IPs are used. | long |
+| netskope.transaction.x_sr_ssl_cipher | The SSL Cipher negotiated between the NewEdge data plane and the Destination Server for the HTTPS request. | keyword |
+| netskope.transaction.x_sr_ssl_client_certificate_error | Indicates that the destination server requested a Client certificate during SSL/TLS negotiation. | keyword |
+| netskope.transaction.x_sr_ssl_engine_action | Indicates the result of the SSL Engine behavior after certificate evaluation and SSL/TLS Negotiation. Possible values include: allow, block, or bypass. | keyword |
+| netskope.transaction.x_sr_ssl_engine_action_reason | Provides details of the SSL Engine action. | keyword |
+| netskope.transaction.x_sr_ssl_handshake_error | Indicates if the SSL Engine encountered a problem to establish SSL/TLS negotiation. For more information, refer to the x-server-ssl-err and x-client-ssl-err fields for more information. | keyword |
+| netskope.transaction.x_sr_ssl_ja3s | Fingerprints the way the server responds to the TLS. | keyword |
+| netskope.transaction.x_sr_ssl_malformed_ssl | Indicates that the SSL Engine encountered a malformed SSL packet during SSL/TLS negotiation. | keyword |
+| netskope.transaction.x_sr_ssl_version | The SSL Version negotiated between the NewEdge data plane and the Destination Server for the HTTPS request. | keyword |
+| netskope.transaction.x_ssl_bypass | Indicates if the request was SSL bypassed. | keyword |
+| netskope.transaction.x_ssl_bypass_reason | Inidacates if the request was SSL bypassed, this field provides the reason. | keyword |
+| netskope.transaction.x_ssl_policy_action | Action of the SSL Decryption Policy that matched the request. Possible values include, Decrypt or DoNotDecrypt. | keyword |
+| netskope.transaction.x_ssl_policy_categories | Destination Hostname Categories computed by the SSL Policy Engine to evaluate the SSL Decryption Policies. | keyword |
+| netskope.transaction.x_ssl_policy_dst_host | The Destination Hostname computed by the SSL Policy Engine to evaluate the SSL Decryption Policies. | keyword |
+| netskope.transaction.x_ssl_policy_dst_host_source | Describes how the Destination Hostname was computed by the SSL Policy Engine. Possible values include from SNI or original host. | keyword |
+| netskope.transaction.x_ssl_policy_dst_ip | The Destination IP computed by the SSL Policy Engine to evaluate the SSL Decryption Policies. | ip |
+| netskope.transaction.x_ssl_policy_name | Name of the SSL Decryption Policy that matched the request. | keyword |
+| netskope.transaction.x_ssl_policy_src_ip | The Source IP computed by the SSL Policy Engine to evaluate the SSL Decryption Policies. | ip |
+| netskope.transaction.x_transaction_id | Transaction ID needed to correlate application events with transaction events. | keyword |
+| netskope.transaction.x_type | The type of log message, which can be “http_transaction” or “WebSocket”.  NOTE: When parsing an HTTP Upgrade response, Netskope uses the Upgrade header to determine if the traffic is WebSocket. | keyword |
+
+
+An example event for `transaction` looks as following:
+
+```json
+{
+    "@timestamp": "2024-08-05T16:24:19.000Z",
+    "agent": {
+        "ephemeral_id": "73ef6f9e-02fa-4820-96f6-57f704d05a9f",
+        "id": "872a4105-d8cc-45fc-9c6d-91fb6a33d8c8",
+        "name": "elastic-agent-53332",
+        "type": "filebeat",
+        "version": "8.17.8"
+    },
+    "client": {
+        "geo": {
+            "city_name": "The Dalles",
+            "country_name": "US",
+            "location": {
+                "lat": 45.6056,
+                "lon": 23.5943
+            },
+            "postal_code": "97058",
+            "region_name": "Oregon"
+        },
+        "ip": "10.70.0.19"
+    },
+    "cloud": {
+        "provider": "google cloud"
+    },
+    "data_stream": {
+        "dataset": "netskope.transaction",
+        "namespace": "15203",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 0,
+        "domain": "us-west1-b-osconfig.googleapis.com",
+        "ip": "142.250.99.95",
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "872a4105-d8cc-45fc-9c6d-91fb6a33d8c8",
+        "snapshot": false,
+        "version": "8.17.8"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "netskope.transaction",
+        "id": "2035489204758272484",
+        "ingested": "2025-09-23T10:11:04Z",
+        "kind": "event",
+        "type": [
+            "info"
+        ]
+    },
+    "gcs": {
+        "storage": {
+            "bucket": {
+                "name": "testbucket"
+            },
+            "object": {
+                "content_type": "application/x-gzip",
+                "name": "trxn.csv.gz"
+            }
+        }
+    },
+    "http": {
+        "request": {
+            "method": "PRI"
+        },
+        "version": "1.1"
+    },
+    "input": {
+        "type": "gcs"
+    },
+    "log": {
+        "file": {
+            "path": "gs://testbucket/trxn.csv.gz"
+        },
+        "offset": 0
+    },
+    "netskope": {
+        "transaction": {
+            "bytes": 18,
+            "cs_host": "us-west1-b-osconfig.googleapis.com",
+            "cs_uri": "*",
+            "date": "2024-08-05T00:00:00.000Z",
+            "time": "16:24:19",
+            "x_c_latitude": 45.6056,
+            "x_c_longitude": 23.5943,
+            "x_category": "Technology",
+            "x_category_id": "564",
+            "x_cs_access_method": "Client",
+            "x_cs_page_id": "0",
+            "x_cs_session_id": "0",
+            "x_cs_src_ip_egress": "34.82.190.203",
+            "x_cs_ssl_engine_action": "Allow",
+            "x_cs_ssl_engine_action_reason": "Established",
+            "x_cs_ssl_fronting_error": "No",
+            "x_cs_ssl_handshake_error": "No",
+            "x_cs_userip": "10.70.0.19",
+            "x_error": "http-malformed",
+            "x_other_category": "Cloud Storage",
+            "x_other_category_id": "7",
+            "x_request_id": "0",
+            "x_s_custom_signing_ca_error": "No",
+            "x_s_dp_name": "US-SEA2",
+            "x_sr_ssl_engine_action": "None",
+            "x_sr_ssl_engine_action_reason": "NotEstablished",
+            "x_ssl_bypass": "No",
+            "x_ssl_policy_action": "Decrypt",
+            "x_ssl_policy_categories": [
+                "Technology",
+                " Cloud Storage"
+            ],
+            "x_ssl_policy_dst_host": "us-west1-b-osconfig.googleapis.com",
+            "x_ssl_policy_dst_host_source": "Sni",
+            "x_ssl_policy_dst_ip": "142.250.99.95",
+            "x_ssl_policy_src_ip": "10.70.0.19",
+            "x_type": "http_transaction"
+        }
+    },
+    "related": {
+        "hosts": [
+            "us-west1-b-osconfig.googleapis.com"
+        ],
+        "ip": [
+            "10.70.0.19",
+            "142.250.99.95",
+            "34.82.190.203"
+        ],
+        "user": [
+            "john.doe@gmail.com"
+        ]
+    },
+    "source": {
+        "bytes": 18,
+        "geo": {
+            "city_name": "The Dalles",
+            "country_name": "US",
+            "location": {
+                "lat": 45.6056,
+                "lon": 23.5943
+            },
+            "postal_code": "97058",
+            "region_name": "Oregon"
+        },
+        "ip": "10.70.0.19",
+        "port": 32951
+    },
+    "tags": [
+        "forwarded",
+        "netskope-transaction"
+    ],
+    "tls": {
+        "cipher": "TLS_AES_256_GCM_SHA384",
+        "client": {
+            "ja3": "7a15285d4efc355608b304698cd7f9ab",
+            "server_name": "us-west1-b-osconfig.googleapis.com"
+        },
+        "version": "1.3",
+        "version_protocol": "tls"
+    },
+    "url": {
+        "port": 443
+    },
+    "user": {
+        "email": "john.doe@gmail.com"
+    }
 }
 ```

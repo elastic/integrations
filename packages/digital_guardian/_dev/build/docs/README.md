@@ -6,37 +6,17 @@ The integration allows collection of events and alerts from [Digital Guardian An
 
 ## Data streams
 
-The Digital Guardian integration collects events to populate following data-streams:
+The Digital Guardian integration collects events to populate the following data stream:
 
 - **digital_guardian.arc**: Collects all events and alerts from `Digital Guardian Analytics & Reporting Cloud (ARC)` via the REST API.
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### Digital Guardian ARC
-
-#### Copy Digital Guardian ARC required configuration properties:
+### Copy the required configuration properties for Digital Guardian ARC 
 
 1. Copy `Client ID`: From ARC Tenant Settings, copy the Tenant ID.
 2. Copy `Client Secret`: From ARC Tenant Settings, copy the Authentication Token.
@@ -46,20 +26,18 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
     - Navigate to `Admin > reports > export profiles`
     - Copy only the GUID part from the export profile.
 
-#### Enabling the Digital Guardian integration in Elastic with ARC dataset:
+### Enable the Digital Guardian integration in Elastic with ARC dataset
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Digital Guardian`.
-3. Select the "Digital Guardian" integration from the search results.
-4. Select "Add Digital Guardian" to add the integration.
-5. Configure all required integration parameters. 
-    - ARC data requires following parameters:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Digital Guardian**.
+3. Select the **Digital Guardian** integration and add it.
+4. Configure the following parameters:
         - `Client ID`
         - `Client Secret`
         - `ARC Server URL`
         - `Authorization Server URL`
         - `ARC Export Profile ID`
-6. Save the integration.
+5. Save the integration.
 
 ## Logs reference
 

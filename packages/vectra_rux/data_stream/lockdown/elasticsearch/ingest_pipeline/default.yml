@@ -1,0 +1,261 @@
+---
+description: Pipeline for processing lockdown logs.
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.id
+        - json.entity_id
+        - json.lock_event_timestamp
+        - json.unlock_event_timestamp
+      tag: fingerprint_lockdown
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Vectra RUX
+  - append:
+      field: event.category
+      tag: set_event_category
+      value: host
+      if: ctx.json?.type == 'host'
+  - append:
+      field: event.type
+      tag: set_event_type
+      value: info
+      if: ctx.json?.type == 'host'
+  - convert:
+      field: json.certainty
+      tag: convert_certainty_to_long
+      target_field: vectra_rux.lockdown.certainty
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.entity_id
+      tag: convert_entity_id_to_string
+      target_field: vectra_rux.lockdown.entity_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_lockdown_entity_id
+      copy_from: vectra_rux.lockdown.entity_id
+      ignore_empty_value: true
+      if: ctx.json?.type == 'account'
+  - append:
+      field: related.user
+      tag: append_user_id_into_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - set:
+      field: host.id
+      tag: set_host_id_from_lockdown_entity_id
+      copy_from: vectra_rux.lockdown.entity_id
+      ignore_empty_value: true
+      if: ctx.json?.type == 'host'
+  - append:
+      field: related.hosts
+      tag: append_host_id_into_related_hosts
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      if: ctx.host?.id != null  
+  - rename:
+      field: json.entity_name
+      tag: rename_entity_name
+      target_field: vectra_rux.lockdown.entity_name
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_lockdown_entity_name
+      copy_from: vectra_rux.lockdown.entity_name
+      ignore_empty_value: true
+      if: ctx.json?.type == 'account' && ctx.vectra_rux?.lockdown?.entity_name.contains("@")
+  - append:
+      field: related.user
+      tag: append_user_email_into_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - set:
+      field: host.name
+      tag: set_user_name_from_lockdown_entity_name
+      copy_from: vectra_rux.lockdown.entity_name
+      ignore_empty_value: true
+      if: ctx.json?.type == 'host'
+  - append:
+      field: related.hosts
+      tag: append_host_name_into_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - convert:
+      field: json.id
+      tag: convert_id_to_string
+      target_field: vectra_rux.lockdown.id
+      type: string
+      ignore_missing: true
+  - date:
+      field: json.lock_event_timestamp
+      tag: date_lock_event_timestamp
+      target_field: vectra_rux.lockdown.lock_event_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.lock_event_timestamp != null && ctx.json.lock_event_timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_lockdown_lock_event_timestamp
+      copy_from: vectra_rux.lockdown.lock_event_timestamp
+      ignore_empty_value: true
+  - set:
+      field: event.start
+      tag: set_event_start_from_lockdown_lock_event_timestamp
+      copy_from: vectra_rux.lockdown.lock_event_timestamp
+      ignore_empty_value: true
+  - rename:
+      field: json.locked_by
+      tag: rename_locked_by
+      target_field: vectra_rux.lockdown.locked_by
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_lockdown_locked_by
+      copy_from: vectra_rux.lockdown.locked_by
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: vectra_rux.lockdown.type
+      ignore_missing: true
+  - date:
+      field: json.unlock_event_timestamp
+      tag: date_unlock_event_timestamp
+      target_field: vectra_rux.lockdown.unlock_event_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.unlock_event_timestamp != null && ctx.json.unlock_event_timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_lockdown_unlock_event_timestamp
+      copy_from: vectra_rux.lockdown.unlock_event_timestamp
+      ignore_empty_value: true
+  - remove:
+      field:
+        - vectra_rux.lockdown.entity_id
+        - vectra_rux.lockdown.lock_event_timestamp
+        - vectra_rux.lockdown.locked_by
+        - vectra_rux.lockdown.unlock_event_timestamp
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

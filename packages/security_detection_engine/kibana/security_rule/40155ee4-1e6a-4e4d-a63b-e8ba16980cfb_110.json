@@ -1,0 +1,68 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected a suspicious Windows process. This process has been classified as malicious in two ways. It was predicted to be malicious by the ProblemChild supervised ML model, and it was found to be suspicious given that its user context is unusual and does not commonly manifest malicious activity,by an unsupervised ML model. Such a process may be an instance of suspicious or malicious activity, possibly involving LOLbins, that may be resistant to detection using conventional search rules.",
+        "from": "now-45m",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "problem_child_rare_process_by_user",
+        "name": "Unusual Process Spawned by a User",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Process Spawned by a User\n\nThe detection of unusual processes spawned by users leverages machine learning to identify anomalies in user behavior and process execution. Adversaries often exploit legitimate tools, known as LOLbins, to evade detection. This rule uses both supervised and unsupervised ML models to flag processes that deviate from typical user activity, indicating potential misuse or masquerading tactics.\n\n### Possible investigation steps\n\n- Review the user context associated with the alert to determine if the user has a history of spawning unusual processes or if this is an isolated incident.\n- Examine the specific process flagged by the alert, including its command line arguments, parent process, and any associated network activity, to identify potential indicators of compromise.\n- Check for the presence of known LOLbins or other legitimate tools that may have been exploited, as indicated by the alert's focus on defense evasion tactics.\n- Investigate any recent changes in the user's behavior or system configuration that could explain the anomaly, such as software updates or new application installations.\n- Correlate the alert with other security events or logs from the same timeframe to identify any related suspicious activities or patterns.\n- Assess the risk score and severity level in the context of the organization's threat landscape to prioritize the response and determine if further action is needed.\n\n### False positive analysis\n\n- Legitimate administrative tools may trigger false positives if they are used in atypical contexts. Users should review the context of the process execution and, if deemed safe, add these tools to an exception list to prevent future alerts.\n- Scheduled tasks or scripts that run infrequently might be flagged as unusual. Verify the legitimacy of these tasks and consider excluding them if they are part of regular maintenance or updates.\n- Software updates or installations can spawn processes that appear anomalous. Confirm the source and purpose of these updates, and if they are routine, create exceptions for these specific processes.\n- Developers or IT personnel using command-line tools for legitimate purposes may trigger alerts. Evaluate the necessity of these tools in their workflow and whitelist them if they are consistently used in a non-malicious manner.\n- New or infrequently used applications might be flagged due to lack of historical data. Assess the application's legitimacy and, if appropriate, add it to a list of known safe applications to reduce false positives.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread or communication with potential command and control servers.\n- Terminate the suspicious process identified by the alert to halt any ongoing malicious activity.\n- Conduct a thorough review of the user's recent activity and access logs to identify any unauthorized actions or data access.\n- Reset the credentials of the affected user account to prevent further unauthorized access, ensuring that strong, unique passwords are used.\n- Scan the system for additional indicators of compromise, such as other unusual processes or modifications to system files, and remove any identified threats.\n- Restore the system from a known good backup if any critical system files or configurations have been altered.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/problemchild",
+            "https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "problemchild",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "40155ee4-1e6a-4e4d-a63b-e8ba16980cfb",
+        "setup": "## Setup\n\nThe rule requires the Living off the Land (LotL) Attack Detection integration assets to be installed, as well as Windows process events collected by integrations such as Elastic Defend or Winlogbeat.\n\n### LotL Attack Detection Setup\nThe LotL Attack Detection integration detects living-off-the-land activity in Windows process events.\n\n#### Prerequisite Requirements:\n- Fleet is required for LotL Attack Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Windows process events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) integration or Winlogbeat(https://www.elastic.co/guide/en/beats/winlogbeat/current/_winlogbeat_overview.html).\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To set up and run Winlogbeat, follow [this](https://www.elastic.co/guide/en/beats/winlogbeat/current/winlogbeat-installation-configuration.html) guide.\n\n#### The following steps should be executed to install assets associated with the LotL Attack Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Living off the Land Attack Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Living off the Land Attack Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 110
+    },
+    "id": "40155ee4-1e6a-4e4d-a63b-e8ba16980cfb_110",
+    "type": "security-rule"
+}

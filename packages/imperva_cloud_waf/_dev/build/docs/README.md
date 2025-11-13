@@ -10,29 +10,11 @@ This integration supports ingestion of events from Imperva Cloud WAF, via AWS S3
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).  
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
 
-### Steps to setup Amazon S3 Connection(Push Mode):
+### Setup Amazon S3 Connection (Push Mode)
 
 1. Login to your [Imperva Cloud WAF console](https://authentication-management.service.imperva.com/login).
 2. On the sidebar, click Logs > Log Setup.
@@ -44,7 +26,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
     - Format. Select the format for the log files: CEF
     - Compress logs. By default, log files are compressed. Set the option to not compress files.
 
-### Steps to obtain API URL, API Key and API ID(Pull Mode):
+### Obtain API URL, API Key and API ID (Pull Mode)
 
 1. Login to your [Imperva Cloud WAF console](https://authentication-management.service.imperva.com/login).
 2. On the sidebar, click Logs > Log Setup.
@@ -55,12 +37,11 @@ There are some minimum requirements for running Elastic Agent and for more infor
     - Format. Select the format for the log files: CEF
     - Compress logs. By default, log files are compressed. Set the option to not compress files.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Imperva Cloud WAF
-3. Click on the "Imperva Cloud WAF" integration from the search results.
-4. Click on the "Add Imperva Cloud WAF" button to add the integration.
+1. In Kibana go to **Management** > **Integrations**.
+2. In the search bar, type **Imperva Cloud WAF**.
+3. Select the **Imperva Cloud WAF** integration and add it.
 5. While adding the integration, if you want to collect logs via AWS S3, keep **Collect Imperva Cloud WAF logs via AWS S3 or AWS SQS** toggle on and then configure following parameters:
    - access key id
    - secret access key

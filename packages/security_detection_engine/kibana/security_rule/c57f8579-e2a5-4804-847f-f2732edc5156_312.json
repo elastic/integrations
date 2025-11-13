@@ -1,0 +1,131 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the modification of the Remote Desktop Protocol (RDP) Shadow registry or the execution of processes indicative of an active RDP shadowing session. An adversary may abuse the RDP Shadowing feature to spy on or control other users active RDP sessions.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.registry-*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Remote Desktop Shadowing Activity",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Remote Desktop Shadowing Activity\n\nRemote Desktop Shadowing allows administrators to view or control active RDP sessions, aiding in support and troubleshooting. However, adversaries can exploit this feature to monitor or hijack user sessions without consent. The detection rule identifies suspicious modifications to RDP Shadow registry settings and the execution of specific processes linked to shadowing, signaling potential misuse.\n\n### Possible investigation steps\n\n- Review the registry event details to confirm if there was a modification to the RDP Shadow registry path, specifically checking for changes in \"HKLM\\Software\\Policies\\Microsoft\\Windows NT\\Terminal Services\\Shadow\".\n- Investigate the process events to identify if \"RdpSaUacHelper.exe\" or \"RdpSaProxy.exe\" were started by \"svchost.exe\", which could indicate unauthorized shadowing activity.\n- Check for any instances of \"mstsc.exe\" being executed with the \"/shadow:*\" argument, as this could signify an attempt to shadow an RDP session.\n- Correlate the identified processes and registry changes with user activity logs to determine if the actions were authorized or expected as part of legitimate administrative tasks.\n- Analyze network logs for any unusual remote connections or lateral movement patterns that coincide with the timing of the detected shadowing activity.\n- Consult endpoint security solutions like Microsoft Defender for Endpoint or SentinelOne for additional context or alerts related to the same host or user account involved in the shadowing activity.\n\n### False positive analysis\n\n- Legitimate administrative activities may trigger alerts when IT staff use RDP Shadowing for support. To manage this, create exceptions for known IT administrator accounts or specific IP addresses.\n- Scheduled maintenance or automated scripts that modify RDP Shadow registry settings can be mistaken for malicious activity. Identify and exclude these processes or scripts from the detection rule.\n- Security software or monitoring tools that interact with RDP sessions might mimic shadowing behavior. Verify these tools and whitelist their processes to prevent false alerts.\n- Training sessions or remote support tools that use RDP Shadowing features can generate alerts. Document and exclude these activities by identifying their unique process names or arguments.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement.\n- Terminate any suspicious processes identified in the alert, such as RdpSaUacHelper.exe, RdpSaProxy.exe, or mstsc.exe with shadowing arguments, to stop potential session hijacking.\n- Revert any unauthorized changes to the RDP Shadow registry settings to their default or secure state to prevent further exploitation.\n- Conduct a thorough review of user accounts and permissions on the affected system to ensure no unauthorized changes have been made, and reset passwords for any compromised accounts.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for RDP activities across the network to detect and respond to similar threats more quickly in the future.\n- Review and update RDP access policies and configurations to ensure they align with best practices, such as enforcing multi-factor authentication and limiting RDP access to only necessary users and systems.",
+        "query": "/* Identifies the modification of RDP Shadow registry or\n  the execution of processes indicative of active shadow RDP session */\n\nany where host.os.type == \"windows\" and\n(\n  (event.category == \"registry\" and\n     registry.path : (\n      \"HKLM\\\\Software\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Terminal Services\\\\Shadow\",\n      \"\\\\REGISTRY\\\\MACHINE\\\\Software\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Terminal Services\\\\Shadow\",\n      \"MACHINE\\\\Software\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Terminal Services\\\\Shadow\"\n    )\n  ) or\n  (event.category == \"process\" and event.type == \"start\" and\n     (process.name : (\"RdpSaUacHelper.exe\", \"RdpSaProxy.exe\") and process.parent.name : \"svchost.exe\") or\n     (?process.pe.original_file_name : \"mstsc.exe\" and process.args : \"/shadow:*\")\n  )\n)\n",
+        "references": [
+            "https://bitsadm.in/blog/spying-on-users-using-rdp-shadowing",
+            "https://swarm.ptsecurity.com/remote-desktop-services-shadowing/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c57f8579-e2a5-4804-847f-f2732edc5156",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.001",
+                                "name": "Remote Desktop Protocol",
+                                "reference": "https://attack.mitre.org/techniques/T1021/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 312
+    },
+    "id": "c57f8579-e2a5-4804-847f-f2732edc5156_312",
+    "type": "security-rule"
+}
