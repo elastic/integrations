@@ -101,40 +101,45 @@ program: |-
     // Initialize a fixed stopping point for this sequence of evaluations.
     // Stop just before now to avoid times that may have unstable results.
     // Make it a string value to avoid type problems.
-    state.with({
-      "stopping_point": state.?stopping_point.orValue(string(now - duration("3s"))),
-    })
+    state.with(
+      {
+        "stopping_point": state.?stopping_point.orValue(string(now - duration("3s"))),
+      }
+    )
   ).as(state,
     // Initialize the list of types to consider in this sequence of evaluations.
-    state.with({
-      "todo_types": state.?todo_types.orValue([]).as(existing_todo_types,
-        existing_todo_types.size() > 0 ?
-          existing_todo_types
-        :
-          state.base.content_types.split(",").map(t, t.trim_space())
-      )
-    })
+    state.with(
+      {
+        "todo_types": state.?todo_types.orValue([]).as(existing_todo_types,
+          (existing_todo_types.size() > 0) ?
+            existing_todo_types
+          :
+            state.base.content_types.split(",").map(t, t.trim_space())
+        ),
+      }
+    )
   ).as(state,
-
-    state.todo_types.size() == 0 ?
-      //------------------------------------------------------------------------
+  
+    (state.todo_types.size() == 0) ?
+      // ------------------------------------------------------------------------
       // No types active - Log an error and stop
-      //------------------------------------------------------------------------
-
-      state.with({
-        "events": {
-          "error": {
-            "message": "No content types found: '" + state.base.content_types + "'"
+      // ------------------------------------------------------------------------
+  
+      state.with(
+        {
+          "events": {
+            "error": {
+              "message": "No content types found: '" + state.base.content_types + "'",
+            },
           },
-        },
-        "want_more": false,
-      })
-
+          "want_more": false,
+        }
+      )
     : !state.?subscribed.orValue({}).keys().exists(k, k == state.todo_types[0]) ?
-      //------------------------------------------------------------------------
+      // ------------------------------------------------------------------------
       // Not subscribed to the current type - Subscribe
-      //------------------------------------------------------------------------
-
+      // ------------------------------------------------------------------------
+  
       request(
         "POST",
         sprintf(
@@ -150,129 +155,145 @@ program: |-
         )
       ).do_request().as(sub_resp, (sub_resp.StatusCode == 200 || sub_resp.StatusCode == 400) ?
         // Subscription successful - Record subscription, requeue type and continue
-        state.with({
-          "todo_types": tail(state.todo_types) + [state.todo_types[0]],
-          "subscribed": state.?subscribed.orValue({}).with({ state.todo_types[0]: true }),
-          "want_more": true,
-          "events": [{"retry": true}],
-        })
+        state.with(
+          {
+            "todo_types": tail(state.todo_types) + [state.todo_types[0]],
+            "subscribed": state.?subscribed.orValue({}).with({state.todo_types[0]: true}),
+            "want_more": true,
+            "events": [{"retry": true}],
+          }
+        )
       :
         // Subscription error - Log it, skip type and continue if there's another type
-        state.with({
-          "events": {
-            "error": {
-              "code": string(sub_resp.StatusCode),
-              "id": string(sub_resp.Status),
-              "message": "POST /activity/feed/subscriptions/start?contentType=" + state.todo_types[0] + ": " + (
-                (size(sub_resp.Body) != 0) ?
-                  string(sub_resp.Body)
-                :
-                  string(sub_resp.Status) + " (" + string(sub_resp.StatusCode) + ")"
-              ),
-            },
-          },
-          "todo_types": tail(state.todo_types),
-          "want_more": tail(state.todo_types).size() > 0,
-        })
-      )
-
-    : state.?cursor.todo_content[0].hasValue() ? (
-      //------------------------------------------------------------------------
-      // Content to fetch - Fetch it
-      //------------------------------------------------------------------------
-
-      timestamp(state.cursor.todo_content[0].contentExpiration) <= now() ?
-        // Content expired - Skip this content and continue
-        state.with({
-          "cursor": state.cursor.with({"todo_content": tail(state.cursor.todo_content)}),
-          "want_more": true,
-          "events": [{"retry": true}],
-        })
-      :
-        request(
-          "GET",
-          state.cursor.todo_content[0].contentUri
-        ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
-          // Fetch successful - Return events, continue with remaining content
-          state.with({
-            "events": content_resp.Body.decode_json().map(e,
-              {
-                "o365audit": e,
-                "event": {"original": e.encode_json()},
-              }
-            ),
-            "cursor": state.cursor.with({"todo_content": tail(state.cursor.todo_content)}),
-            "want_more": true,
-          })
-        :
-          // Fetch error - Log it, skip this content and continue
-          state.with({
+        state.with(
+          {
             "events": {
               "error": {
-                "code": string(content_resp.StatusCode),
-                "id": string(content_resp.Status),
-                "message": "GET " + state.cursor.todo_content[0].contentUri + ": " + (
-                  (size(content_resp.Body) != 0) ?
-                    string(content_resp.Body)
+                "code": string(sub_resp.StatusCode),
+                "id": string(sub_resp.Status),
+                "message": "POST /activity/feed/subscriptions/start?contentType=" + state.todo_types[0] + ": " + (
+                  (size(sub_resp.Body) != 0) ?
+                    string(sub_resp.Body)
                   :
-                    string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
+                    string(sub_resp.Status) + " (" + string(sub_resp.StatusCode) + ")"
                 ),
               },
             },
-            "cursor": state.cursor.with({"todo_content": tail(state.cursor.todo_content)}),
-            "want_more": true,
-          })
+            "todo_types": tail(state.todo_types),
+            "want_more": tail(state.todo_types).size() > 0,
+          }
         )
-    )
-
+      )
+    : state.?cursor.todo_content[0].hasValue() ?
+      (
+        // ------------------------------------------------------------------------
+        // Content to fetch - Fetch it
+        // ------------------------------------------------------------------------
+  
+        (timestamp(state.cursor.todo_content[0].contentExpiration) <= now()) ?
+          // Content expired - Skip this content and continue
+          state.with(
+            {
+              "cursor": state.cursor.with({"todo_content": tail(state.cursor.todo_content)}),
+              "want_more": true,
+              "events": [{"retry": true}],
+            }
+          )
+        :
+          request(
+            "GET",
+            state.cursor.todo_content[0].contentUri
+          ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
+            // Fetch successful - Return events, continue with remaining content
+            state.with(
+              {
+                "events": content_resp.Body.decode_json().map(e,
+                  {
+                    "o365audit": e,
+                    "event": {"original": e.encode_json()},
+                  }
+                ),
+                "cursor": state.cursor.with({"todo_content": tail(state.cursor.todo_content)}),
+                "want_more": true,
+              }
+            )
+          :
+            // Fetch error - Log it, skip this content and continue
+            state.with(
+              {
+                "events": {
+                  "error": {
+                    "code": string(content_resp.StatusCode),
+                    "id": string(content_resp.Status),
+                    "message": "GET " + state.cursor.todo_content[0].contentUri + ": " + (
+                      (size(content_resp.Body) != 0) ?
+                        string(content_resp.Body)
+                      :
+                        string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
+                    ),
+                  },
+                },
+                "cursor": state.cursor.with({"todo_content": tail(state.cursor.todo_content)}),
+                "want_more": true,
+              }
+            )
+          )
+      )
     : state.?cursor.todo_links[0].hasValue() ?
-      //------------------------------------------------------------------------
+      // ------------------------------------------------------------------------
       // Listing link generated or received - Request it
-      //------------------------------------------------------------------------
-
+      // ------------------------------------------------------------------------
+  
       request(
         "GET",
         state.cursor.todo_links[0]
       ).do_request().as(list_resp, (list_resp.StatusCode == 200) ?
         // Listing successful - Enqueue any additional link, enqueue content to fetch
         list_resp.Body.decode_json().as(content_list,
-          state.with({
-            "cursor": state.cursor.with({
-              // The non-canonical header name NextPageUri is always normalized to Nextpageuri
-              "todo_links": tail(state.cursor.todo_links) + list_resp.Header.?Nextpageuri[0].optMap(l, [l]).orValue([]),
-              "todo_content": state.cursor.?todo_content.orValue([]) + content_list,
-            }),
-            "want_more": true,
-            "events": [{"retry": true}],
-          })
+          state.with(
+            {
+              "cursor": state.cursor.with(
+                {
+                  // The non-canonical header name NextPageUri is always normalized to Nextpageuri
+                  "todo_links": tail(state.cursor.todo_links) + (list_resp.Header.?Nextpageuri[0].optMap(l, [l])).orValue([]),
+                  "todo_content": state.cursor.?todo_content.orValue([]) + content_list,
+                }
+              ),
+              "want_more": true,
+              "events": [{"retry": true}],
+            }
+          )
         )
       :
         // Listing error - Log it, skip this link and continue
-        state.with({
-          "events": {
-            "error": {
-              "code": string(list_resp.StatusCode),
-              "id": string(list_resp.Status),
-              "message": "GET " + state.cursor.todo_links[0] + ": " + (
-                (size(list_resp.Body) != 0) ?
-                  string(list_resp.Body)
-                :
-                  string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
-              ),
+        state.with(
+          {
+            "events": {
+              "error": {
+                "code": string(list_resp.StatusCode),
+                "id": string(list_resp.Status),
+                "message": "GET " + state.cursor.todo_links[0] + ": " + (
+                  (size(list_resp.Body) != 0) ?
+                    string(list_resp.Body)
+                  :
+                    string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
+                ),
+              },
             },
-          },
-          "cursor": state.cursor.with({
-            "todo_links": tail(state.cursor.todo_links)
-          }),
-          "want_more": true,
-        })
+            "cursor": state.cursor.with(
+              {
+                "todo_links": tail(state.cursor.todo_links),
+              }
+            ),
+            "want_more": true,
+          }
+        )
       )
-
     :
-      //------------------------------------------------------------------------
+      // ------------------------------------------------------------------------
       // Subscribed and no ready work - Check the current type
-      //------------------------------------------------------------------------
-
+      // ------------------------------------------------------------------------
+  
       max(
         state.?cursor.last_for[state.todo_types[0].to_lower()].optMap(t, t.parse_time(time_layout.RFC3339)).orValue(
           now() - duration(state.base.list_contents_start_time)
@@ -289,49 +310,56 @@ program: |-
       ).as(time_range,
         (time_range.start < time_range.stopping_point && time_range.end - time_range.start >= duration("1ms")) ?
           // Not up to date - Generate a link, update last_for, requeue type
-          state.with({
-            "cursor": state.?cursor.orValue({}).with({
-              "todo_links": state.?cursor.todo_links.orValue([]) + [
-                sprintf(
-                  "%s/api/v1.0/%s/activity/feed/subscriptions/content?%s",
-                  [
-                    state.url.trim_right("/"),
-                    state.base.tenant_id,
+          state.with(
+            {
+              "cursor": state.?cursor.orValue({}).with(
+                {
+                  "todo_links": state.?cursor.todo_links.orValue([]) + [
+                    sprintf(
+                      "%s/api/v1.0/%s/activity/feed/subscriptions/content?%s",
+                      [
+                        state.url.trim_right("/"),
+                        state.base.tenant_id,
+                        {
+                          "contentType": [state.todo_types[0]],
+                          "PublisherIdentifier": [state.base.tenant_id],
+                          "startTime": [string(time_range.start)],
+                          "endTime": [string(time_range.end)],
+                        }.format_query(),
+                      ]
+                    ),
+                  ],
+                  "last_for": state.?cursor.last_for.orValue({}).with(
                     {
-                      "contentType": [state.todo_types[0]],
-                      "PublisherIdentifier": [state.base.tenant_id],
-                      "startTime": [string(time_range.start)],
-                      "endTime": [string(time_range.end)],
-                    }.format_query(),
-                  ]
-                )
-              ],
-              "last_for": state.?cursor.last_for.orValue({}).with({
-                state.todo_types[0].to_lower(): string(time_range.end),
-              }),
-            }),
-            "todo_types": tail(state.todo_types) + [state.todo_types[0]],
-            "want_more": true,
-            "events": [{"retry": true}],
-          })
-
-        : state.todo_types.size() > 1 ?
+                      state.todo_types[0].to_lower(): string(time_range.end),
+                    }
+                  ),
+                }
+              ),
+              "todo_types": tail(state.todo_types) + [state.todo_types[0]],
+              "want_more": true,
+              "events": [{"retry": true}],
+            }
+          )
+        : (state.todo_types.size() > 1) ?
           // Up to date, more types to consider - Consider remaining types
-          state.with({
-            "todo_types": tail(state.todo_types),
-            "want_more": true,
-            "events": [{"retry": true}],
-          })
-
+          state.with(
+            {
+              "todo_types": tail(state.todo_types),
+              "want_more": true,
+              "events": [{"retry": true}],
+            }
+          )
         :
           // Up to date, no more types to consider - Stop
-          state.drop("stopping_point").with({
-            "todo_types": [],
-            "want_more": false,
-            "events": [],
-          })
+          state.drop("stopping_point").with(
+            {
+              "todo_types": [],
+              "want_more": false,
+              "events": [],
+            }
+          )
       )
-
   )
 {{#if tags}}
 tags:
