@@ -14,7 +14,7 @@ This integration facilitates the following use cases:
 
 ### Compatibility
 
-This integration has been tested with HashiCorp Vault 1.11 and 1.21.
+This integration has been tested with HashiCorp Vault 1.11.
 It requires Elastic Stack version 8.12.0 or higher.
 
 ## What data does this integration collect?
