@@ -6,27 +6,27 @@ Apache [ActiveMQ](https://activemq.apache.org) is the most popular open-source, 
 
 Use the ActiveMQ integration to:
 
-- Collect logs related to the audit and ActiveMQ instance and collect metrics related to the broker, queue and topic.
-- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+- Collect audit and application logs and gather broker, queue, and topic metrics.
+- Create visualizations to monitor usage trends, analyze key data, and derive business insights.
+- Create alerts that reduce MTTD and MTTR by referencing relevant logs during troubleshooting.
 
 ## Data streams
 
-The ActiveMQ integration collects logs and metrics data.
+The ActiveMQ integration collects log and metric data.
 
-Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by ActiveMQ integration are `audit` and `log` so that users can keep track of the username, audit threads, messages, name of the caller issuing the logging requests, logging event etc.
+Logs help you keep a record of events that happen on your machine. The `audit` and `log` data streams let users track usernames, audit threads, messages, caller names, logging requests, and other logging events.
 
-Metrics give you insight into the statistics of the ActiveMQ. The `Metric` data streams collected by the ActiveMQ integration are `broker`, `queue` and `topic` so that the user can monitor and troubleshoot the performance of the ActiveMQ instance.
+Metrics provide insight into ActiveMQ statistics. The `broker`, `queue`, and `topic` data streams help monitor and troubleshoot the performance of the ActiveMQ instance.
 
 Data streams:
-- `audit`: Collects information related to the username, audit threads and messages.
-- `broker`: Collects information related to the statistics of enqueued and dequeued messages, consumers, producers and memory usage (broker, store, temp).
+- `audit`: Collects information related to usernames, audit threads, and messages.
+- `broker`: Collects statistics on enqueued and dequeued messages, consumers, producers, and memory usage (broker, store, temp).
 - `log`: Collects information related to the startup and shutdown of the ActiveMQ application server, the deployment of new applications, or the failure of one or more subsystems.
-- `queue`: Collects information related to the statistics of queue name and size, exchanged messages and number of producers and consumers.
-- `topic`: Collects information related to the statistics of exchanged messages, consumers, producers and memory usage.
+- `queue`: Collects statistics on queue names and sizes, exchanged messages, and the number of producers and consumers.
+- `topic`: Collects statistics on exchanged messages, consumers, producers, and memory usage.
 
 Note:
-- Users can monitor and see the log inside the ingested documents for ActiveMQ in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
+- You can monitor logs in the ingested documents for ActiveMQ by using the `logs-*` index pattern in `Discover`, and view metrics with the `metrics-*` index pattern.
 
 ## Compatibility
 
@@ -43,7 +43,7 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 ## Supported Log Formats
 
-Here are the supported log format for the Audit logs and ActiveMQ logs in the ActiveMQ instance,
+Here are the supported log formats for the audit and ActiveMQ logs in the ActiveMQ instance:
 
 ### Audit Logs
 
@@ -53,11 +53,9 @@ Here are the supported log format for the Audit logs and ActiveMQ logs in the Ac
 
 Here is the breakdown of the pattern:
 
-- %-5p: This part represents the log level left-aligned with a width of 5 characters. The - signifies left alignment.
-
-- %m: This part represents the log message.
-
-- %t%n: This part represents the thread name (%t) followed by a newline (%n).
+- %-5p: Represents the log level left-aligned with a width of 5 characters. The - signifies left alignment.
+- %m: Represents the log message.
+- %t%n: Represents the thread name (%t) followed by a newline (%n).
 
 ### ActiveMQ Logs
 
@@ -66,33 +64,28 @@ Here is the breakdown of the pattern:
 ```
 
 Here is the breakdown of the pattern:
-- %d: This part represents the date and time of the log event in the ISO8601 format.
-
-- %-5p: This part represents the log level left-aligned with a width of 5 characters. The - signifies left alignment.
-
-- %m: This part represents the log message.
-
-- %c: This part represents the logger category (class name).
-
-- %t%n: This part represents the thread name (%t) followed by a newline (%n).
-
-- %throwable{full}: This part represents the full stack trace if an exception is attached to the log entry.
+- %d: Represents the date and time of the log event in ISO8601 format.
+- %-5p: Represents the log level left-aligned with a width of 5 characters. The - signifies left alignment.
+- %m: Represents the log message.
+- %c: Represents the logger category (class name).
+- %t%n: Represents the thread name (%t) followed by a newline (%n).
+- %throwable{full}: Represents the full stack trace if an exception is attached to the log entry.
 
 ## Validation
 
-After the integration is successfully configured, clicking on the Assets tab of the ActiveMQ Integration should display a list of available dashboards. Click on the dashboard available for your configured data stream. It should be populated with the required data.
+After the integration is successfully configured, the Assets tab of the ActiveMQ Integration displays a list of available dashboards. Select the dashboard for your configured data stream. It should be populated with the required data.
 
 ## Troubleshooting
 
-If `host.ip` is shown conflicted under ``logs-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Audit`` and ``Log`` data stream's indices.
+If `host.ip` appears as conflicted in the ``logs-*`` data view, [reindex](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Audit`` and ``Log`` data stream indices.
 
-If `host.ip` is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) the ``Broker``, ``Queue`` and ``Topic`` data stream's indices.
+If `host.ip` appears as conflicted in the ``metrics-*`` data view, [reindex](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) the ``Broker``, ``Queue`` and ``Topic`` data stream indices.
 
 ## Logs
 
 ### ActiveMQ Logs
 
-These logs are System logs of ActiveMQ.
+These logs are system logs of ActiveMQ.
 
 {{event "log"}}
 
@@ -104,7 +97,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Audit Logs
 
-In secured environments, it is required to log every user management action. ActiveMQ implements audit logging, which means that every management action made through JMX or Web Console management interface is logged and available for later inspection.
+In secured environments, every user management action must be logged. ActiveMQ implements audit logging, which means that every management action made through the JMX or Web Console management interfaces is logged and available for later inspection.
 
 {{event "audit"}}
 
@@ -130,7 +123,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Queue Metrics
 
-Queues are FIFO (first-in, first-out) pipelines of messages produced and consumed by brokers and clients. Producers create messages and push them onto these queues. Then, those messages are polled and collected by consumer applications, one message at a time. Metrics show statistics of exchanged messages, consumers, producers and memory usage.
+Queues are FIFO (first-in, first-out) pipelines of messages produced and consumed by brokers and clients. Producers create messages and push them onto these queues. Then, those messages are polled and collected by consumer applications, one message at a time. Metrics show statistics on exchanged messages, consumers, producers, and memory usage.
 
 {{event "queue"}}
 
@@ -142,7 +135,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Topic Metrics
 
-Topics are subscription-based message broadcast channels. When a producing application sends a message, multiple recipients who are 'subscribed' to that topic receive a broadcast of the message. Metrics show statistics of exchanged messages, consumers, producers and memory usage.
+Topics are subscription-based message broadcast channels. When a producing application sends a message, multiple recipients who are 'subscribed' to that topic receive a broadcast of the message. Metrics show statistics on exchanged messages, consumers, producers, and memory usage.
 
 {{event "topic"}}
 
