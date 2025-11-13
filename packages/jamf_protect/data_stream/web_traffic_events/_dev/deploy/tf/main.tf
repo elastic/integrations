@@ -12,11 +12,11 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "elastic-package-jamf-protect-web-traffic-events-bucket-${var.TEST_RUN_ID}"
+  bucket = "elastic-package-jamf-protect-web-traffic-bucket-${var.TEST_RUN_ID}"
 }
 
 resource "aws_sqs_queue" "queue" {
-  name       = "elastic-package-jamf-protect-web-traffic-events-queue-${var.TEST_RUN_ID}"
+  name       = "elastic-package-jamf-protect-web-traffic-queue-${var.TEST_RUN_ID}"
   policy     = <<POLICY
 {
   "Version": "2012-10-17",
@@ -25,7 +25,7 @@ resource "aws_sqs_queue" "queue" {
       "Effect": "Allow",
       "Principal": "*",
       "Action": "sqs:SendMessage",
-      "Resource": "arn:aws:sqs:*:*:elastic-package-jamf-protect-web-traffic-events-queue-${var.TEST_RUN_ID}",
+      "Resource": "arn:aws:sqs:*:*:elastic-package-jamf-protect-web-traffic-queue-${var.TEST_RUN_ID}",
       "Condition": {
         "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.bucket.arn}" }
       }

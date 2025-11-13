@@ -854,31 +854,17 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-28T06:55:49.657Z",
+    "@timestamp": "2025-11-13T07:12:39.481Z",
     "agent": {
-        "ephemeral_id": "5ff4940e-e15a-4986-9cee-4d991d21805c",
-        "id": "a84ed05a-6c6b-4b51-8e4a-07513f999b67",
-        "name": "elastic-agent-90498",
+        "ephemeral_id": "dbaf5cab-c8c0-46dd-a5bd-90d5c27e4ac7",
+        "id": "7c805f55-db38-4dc5-8e57-9420f6bcb965",
+        "name": "elastic-agent-92836",
         "type": "filebeat",
         "version": "8.16.5"
     },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-jamf-protect-web-traffic-events-bucket-31604",
-                "name": "elastic-package-jamf-protect-web-traffic-events-bucket-31604"
-            },
-            "object": {
-                "key": "test-web-traffic-events.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
-    },
     "data_stream": {
         "dataset": "jamf_protect.web_traffic_events",
-        "namespace": "56069",
+        "namespace": "18393",
         "type": "logs"
     },
     "dns": {
@@ -897,7 +883,7 @@ An example event for `web_traffic_events` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a84ed05a-6c6b-4b51-8e4a-07513f999b67",
+        "id": "7c805f55-db38-4dc5-8e57-9420f6bcb965",
         "snapshot": false,
         "version": "8.16.5"
     },
@@ -909,7 +895,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "dataset": "jamf_protect.web_traffic_events",
-        "ingested": "2025-10-28T06:55:50Z",
+        "ingested": "2025-11-13T07:12:40Z",
         "kind": "event",
         "outcome": [
             "success"
@@ -922,38 +908,15 @@ An example event for `web_traffic_events` looks as following:
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-90498",
         "id": "3453be41-0f2d-4d43-9ec2-a53f39fff93c",
-        "ip": [
-            "192.168.241.2",
-            "192.168.240.8"
-        ],
-        "mac": [
-            "02-42-C0-A8-F0-08",
-            "02-42-C0-A8-F1-02"
-        ],
-        "name": "elastic-agent-90498",
         "os": {
-            "kernel": "3.10.0-1160.92.1.el7.x86_64",
-            "name": "Wolfi",
-            "platform": "wolfi",
             "type": [
-                "linux",
                 "ios"
-            ],
-            "version": "20230201"
+            ]
         }
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-jamf-protect-web-traffic-events-bucket-31604.s3.us-east-1.amazonaws.com/test-web-traffic-events.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "observer": {
         "product": "Jamf Protect",
@@ -967,7 +930,8 @@ An example event for `web_traffic_events` looks as following:
         "name": "DNS Lookup"
     },
     "tags": [
-        "collect_sqs_logs"
+        "forwarded",
+        "jamf_protect-web-traffic-events"
     ],
     "user": {
         "email": "hjilling@icloud.com",
