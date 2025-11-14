@@ -65,3 +65,14 @@ The metrics include the following dimensions for enhanced filtering and analysis
 
 {{event "metrics"}}
 {{fields "metrics"}}
+
+## Logs
+
+### Runtime Application Logs
+
+Amazon Bedrock AgentCore runtime application logs provide detailed insights into agent execution, decision-making processes, and operational events. The integration collects comprehensive log data from your intelligent agents to help you understand agent behavior and troubleshoot issues.
+
+For more details about enabling logs for AgentCore, check the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "runtime_application_logs"}}
+{{fields "runtime_application_logs"}}
