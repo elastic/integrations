@@ -1,0 +1,78 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  - dot_expander:
+      field: "*"
+      path: attributes
+  - dot_expander:
+      field: "*"
+      path: resource.attributes
+  - set:
+      field: aws.vpcflow.version
+      copy_from: attributes.aws.vpc.flow.log.version
+  - set:
+      field: aws.vpcflow.account_id
+      copy_from: resource.attributes.cloud.account.id
+  - set:
+      field: aws.vpcflow.interface_id
+      copy_from: attributes.network.interface.name
+  - set:
+      field: aws.vpcflow.srcaddr
+      copy_from: attributes.source.address
+  - set:
+      field: aws.vpcflow.dstaddr
+      copy_from: attributes.destination.address
+  - set:
+      field: aws.vpcflow.srcport
+      copy_from: attributes.source.port
+  - set:
+      field: aws.vpcflow.dstport
+      copy_from: attributes.destination.port
+  - set:
+      field: aws.vpcflow.protocol
+      copy_from: attributes.network.protocol.name
+  - set:
+      field: aws.vpcflow.packets
+      copy_from: attributes.aws.vpc.flow.packets
+  - set:
+      field: aws.vpcflow.bytes
+      copy_from: attributes.aws.vpc.flow.bytes
+  - script:
+      lang: painless
+      source: |
+        ctx.tmpStart = Instant.ofEpochMilli(ctx.attributes.aws.vpc.flow.start).toEpochMilli();
+  - date:
+      field: tmpStart
+      target_field: event.start
+      ignore_failure: true
+      formats:
+        - UNIX
+  - set:
+      field: event.end
+      copy_from: '@timestamp'
+  - set:
+      field: aws.vpcflow.action
+      copy_from: attributes.aws.vpc.flow.action
+  - set:
+      field: aws.vpcflow.log_status
+      copy_from: attributes.aws.vpc.flow.status
+  - remove:
+      field:
+        - attributes
+        - resource.attributes
+        - tmpStart
+      ignore_missing: true
+  - set:
+      field: pre_extracted
+      value: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
