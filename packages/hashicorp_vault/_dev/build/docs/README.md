@@ -167,6 +167,13 @@ Add the following line to your Vault configuration file to enable JSON-formatted
     - Search for "Hashicorp Vault" to find the pre-built dashboards.
     - Verify that data is populating the dashboard panels.
 
+## Performance and scaling
+
+- **Audit Log Performance**: Vault's file audit device provides the strongest delivery guarantees. When using this method, ensure adequate disk I/O capacity, as Vault will block operations if it cannot write audit logs.
+- **TCP Socket Considerations**: When using the socket audit device for real-time log streaming, be aware that Vault operations will be blocked if the TCP connection to the Elastic Agent is unavailable. To mitigate this risk, HashiCorp recommends running a socket audit device as a secondary device alongside a primary file audit device.
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -194,13 +201,6 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 - [HashiCorp Vault File Audit Device](https://developer.hashicorp.com/vault/docs/audit/file)
 - [HashiCorp Vault Telemetry Configuration](https://developer.hashicorp.com/vault/docs/configuration/telemetry)
 - [HashiCorp Vault Troubleshooting](https://developer.hashicorp.com/vault/docs/troubleshoot)
-
-## Scaling
-
-- **Audit Log Performance**: Vault's file audit device provides the strongest delivery guarantees. Ensure adequate disk I/O capacity, as Vault will block operations if it cannot write audit logs.
-- **Metrics Collection**: The default collection interval is 30 seconds. Adjust this period based on your monitoring needs and Vault server load.
-
-For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
 
