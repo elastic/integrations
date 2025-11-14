@@ -1,0 +1,165 @@
+rules:
+- path: /externalApi/v2/realm/account_id/token
+  methods: [ "POST" ]
+  query_params:
+    client_id: slightlysecretclientid
+    client_secret: totallysecretlientsecret
+    grant_type: client_credentials
+    scope: externalAPI/stix.readonly
+  request_headers:
+    Content-Type:
+    - "application/x-www-form-urlencoded"
+  responses:
+  - status_code: 200
+    headers:
+      Content-Type:
+      - "application/json"
+    body: |-
+      {{ minify_json `
+      {
+        "access_token": "topsecretaccesstokenthatshouldnotbeleakedforabit",
+        "token_type": "Bearer",
+        "expires_in": 1799,
+        "scope": "",
+        "refresh_expires_in": 0,
+        "not-before-policy":0
+      }
+      `}}
+- path: /externalApi/taxii/collections/3e6bd19d-cd50-4ced-baf9-6335a3edc3ff/objects
+  methods: [ "GET" ]
+  request_headers:
+    Authorization:
+    - 'Bearer abcd1234'
+  query_params:
+    next: null
+  responses:
+  - status_code: 200
+    headers:
+      X-TAXII-Date-Added-Last: "2025-07-11T03:01:08.053990Z"
+      Content-Type: "application/taxii+json;version=2.1;charset=UTF-8"
+    body: |-
+      {
+        "more": true,
+        "objects": [
+        {
+            "type": "campaign",
+            "spec_version": "2.1",
+            "id": "campaign--ed9216db-0c40-5446-beb3-365d88e83abc",
+            "created": "2025-07-06T05:09:34.000Z",
+            "modified": "2025-07-06T19:00:05.182Z",
+            "extensions": {
+              "extension-definition--ddd2bf71-3c91-5f4d-8251-10cd685737c3": {
+                "extension_type": "property-extension",
+                "luminar_tenant_id": "00bed954-4b1a-4d52-97f7-2a2c51b824ff"
+              }
+            },
+            "name": "Magecart-style skimming attack on intertwitter[.]com"
+          },
+          {
+            "type": "report",
+            "spec_version": "2.1",
+            "id": "report--59825e74-1d40-54b4-a1f1-eebe014c2e36",
+            "created": "2025-07-06T05:09:34.000Z",
+            "modified": "2025-07-06T19:00:05.182Z",
+            "extensions": {
+              "extension-definition--ddd2bf71-3c91-5f4d-8251-10cd685737c3": {
+                "extension_type": "property-extension",
+                "luminar_tenant_id": "00bed954-4b1a-4d52-97f7-2a2c51b824ff"
+              }
+            },
+            "name": "Is relying on Indicators of Compromise secure enough?",
+            "description": "A Magecart-style skimming attack has been identified as still active on the WordPress site intertwitter[.]com, a platform associated with selling Twitter (X) follower packages. Attackers leveraged an old malicious infrastructure, previously flagged over a year ago, demonstrating the continued use and longevity of such domains across multiple skimming campaigns. The attack requires no server-side compromise; instead, it relies on a single injected JavaScript script that executes in the victim’s browser, evading traditional server-based security tools. The malicious script activates only on URLs containing /checkout or /admin and scrapes data from all form fields before exfiltrating it using an image request to a remote server, bypassing CORS protections. Techniques such as obfuscation, JSON tampering, and browser inspection detection are employed to evade analysis and detection. Sansec has confirmed that such malicious infrastructure can remain operational for years and that these attacks often persist undetected due to their narrow focus and stealthy activation logic.",
+            "published": "2025-07-06T05:09:34.000Z",
+            "report_types": [
+              "campaign",
+              "indicator"
+            ],
+            "object_refs": [
+              "campaign--ed9216db-0c40-5446-beb3-365d88e83abc",
+              "indicator--684466ec-3482-5b33-aadf-fc339ebabcdb",
+              "indicator--04b5bf33-9f39-5ec6-8ace-f6406cd704e8",
+              "software--76e29815-26be-5961-93ca-46c59022d7cf"
+            ]
+          }
+        ],
+        "next": "next_page"
+      }
+- path: /externalApi/taxii/collections/d078c83e-da9c-4b82-be51-e7af4693bc7f/objects/
+  methods: [ "GET" ]
+  request_headers:
+    Authorization:
+    - 'Bearer abcd1234'
+  query_params:
+    next: 'next_page'
+  responses:
+  - status_code: 200
+    headers:
+      X-TAXII-Date-Added-Last: "2020-03-24T14:31:50.000Z"
+      Content-Type: "application/taxii+json;version=2.1"
+    body: |-
+      {
+        "more": false,
+        "objects": [
+        {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": "indicator--91da0081-62f1-530a-a450-8c217a791040",
+            "created": "2025-07-02T00:00:00.000Z",
+            "modified": "2025-07-02T19:00:07.726Z",
+            "extensions": {
+              "extension-definition--ddd2bf71-3c91-5f4d-8251-10cd685737c3": {
+                "score": 100,
+                "extension_type": "property-extension",
+                "luminar_tenant_id": "00bed954-4b1a-4d52-97f7-2a2c51b824ff",
+                "conviction_reasons": [
+                  "bad_reputation"
+                ]
+              }
+            },
+            "confidence": 85,
+            "pattern": "[ipv4-addr:value = '64.132.33.231']",
+            "created_by_ref": "identity--5bf1ac35-8d08-509e-b31a-044cb09b4199",
+            "pattern_type": "stix",
+            "indicator_types": [
+              "malicious-activity"
+            ],
+            "valid_from": "2025-07-02T00:00:00.000Z",
+            "valid_until": "2025-07-09T00:00:00.000Z"
+          }
+        ]
+      }
+- path: /taxii2/root/collections/e5a96f14-8d19-4c66-80d5-46b330d1280f/objects/
+  methods: [ "GET" ]
+  request_headers:
+    Authorization:
+    - 'Bearer abcd1234'
+  responses:
+  - status_code: 200
+    headers:
+      X-TAXII-Date-Added-Last: "2020-03-24T14:31:50.000Z"
+      Content-Type: "application/taxii+json;version=2.1"
+    body: |-
+      {
+        "more": false,
+        "objects": [
+          {
+            "type": "incident",
+            "spec_version": "2.1",
+            "id": "incident--9878a86d-d9d8-5b53-8cc8-929ef20881f7",
+            "created": "2021-03-10T21:32:30.000Z",
+            "modified": "2025-06-05T01:09:39.407Z",
+            "extensions": {
+              "extension-definition--ddd2bf71-3c91-5f4d-8251-10cd685737c3": {
+                "extension_type": "property-extension",
+                "luminar_tenant_id": "00bed954-4b1a-4d52-97f7-2a2c51b824ff",
+                "luminar_threat_score": 60,
+                "collection_date": "2025-05-22T13:01:19.694Z",
+                "computer_name": "MUSIC"
+              }
+            },
+            "name": "Generic Stealer - MUSIC - 71.178.210.155 - 10/03/2021",
+            "description": "This incident involves the exfiltration of credentials from infected endpoints by a credential stealer malware. The stolen data was discovered being shared on the Telegram channel 'OBSERVERCLOUD - BEST FREE COMBO CLOUD' on March 1, 2024. The leak includes account details harvested from browsers and messaging apps, extracted from a data dump labeled 'U_L_P 136.txt' (67.9 MB).",
+            "created_by_ref": "identity--5bf1ac35-8d08-509e-b31a-044cb09b4199"
+          }
+        ]
+      }
