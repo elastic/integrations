@@ -1,0 +1,2742 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "1d5ef503-8d7a-4f85-a385-089e99bbc35b": {
+                    "explicitInput": {
+                        "dataViewId": "metrics-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "aws.dimensions.WorkloadIdentity",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Workload identity"
+                    },
+                    "grow": false,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "3097ad63-9941-4a80-8001-e310c83c8860": {
+                    "explicitInput": {
+                        "dataViewId": "metrics-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "aws.dimensions.ProviderName",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Outbound Auth"
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "ecb23075-2694-4598-aad1-fedc00cfe85c": {
+                    "explicitInput": {
+                        "dataViewId": "metrics-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "aws.dimensions.WorkloadIdentityDirectory",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Workload identity directory"
+                    },
+                    "grow": false,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
+        },
+        "description": "Agentcore identity dashboard showcasing authentication performance and token management operations.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "Dataset filter",
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "aws_bedrock_agentcore.metrics"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "aws_bedrock_agentcore.metrics"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "# Identity\n\nThis dashboard provides insights into the following:\n- Identity token fetch operations, including workload access tokens, resource tokens (OAuth), and Application Programming Interface (API) key retrieval metrics\n- Authentication success and failure monitoring with real-time tracking of token fetch operations across different providers\n- Throttling and performance analysis showing capacity constraints and operational bottlenecks for identity services\n- Provider-specific breakdowns displaying top workload identities and authentication providers",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "a79009bb-546c-4cf0-979d-14805b1d55fb",
+                    "w": 12,
+                    "x": 0,
+                    "y": 4
+                },
+                "panelIndex": "a79009bb-546c-4cf0-979d-14805b1d55fb",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "683051e2-0031-4d88-916d-23827c4a11ec": {
+                                            "columnOrder": [
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1"
+                                            ],
+                                            "columns": {
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Successful workload access token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.WorkloadAccessTokenFetchSuccess.sum"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#c6e3db",
+                                "layerId": "683051e2-0031-4d88-916d-23827c4a11ec",
+                                "layerType": "data",
+                                "metricAccessor": "2df289ba-75f3-49a9-a84b-3b30ea7123c1",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Successful fetches of workload access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Successful workload access token fetches"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "3871b2a7-e3a7-4624-bc4e-4f13db88c4e7",
+                    "w": 8,
+                    "x": 12,
+                    "y": 4
+                },
+                "panelIndex": "3871b2a7-e3a7-4624-bc4e-4f13db88c4e7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Successful resource token (OAuth) token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ResourceAccessTokenFetchSuccess.sum"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#b3cfe9",
+                                "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "layerType": "data",
+                                "metricAccessor": "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Successful fetches of resource access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Successful resource token fetches"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "966fd96e-e8ef-49dc-9ad6-07944eeb1283",
+                    "w": 8,
+                    "x": 20,
+                    "y": 4
+                },
+                "panelIndex": "966fd96e-e8ef-49dc-9ad6-07944eeb1283",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Successful API key fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ApiKeyFetchSuccess.sum"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#d9cce9",
+                                "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "layerType": "data",
+                                "metricAccessor": "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Successful fetches of API keys.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Successful API key fetches"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "9e431013-ab6f-435a-a4b5-0767aee28616",
+                    "w": 8,
+                    "x": 28,
+                    "y": 4
+                },
+                "panelIndex": "9e431013-ab6f-435a-a4b5-0767aee28616",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "683051e2-0031-4d88-916d-23827c4a11ec": {
+                                            "columnOrder": [
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1"
+                                            ],
+                                            "columns": {
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Failed workload access token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.WorkloadAccessTokenFetchFailures.sum"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#87aaa0",
+                                "layerId": "683051e2-0031-4d88-916d-23827c4a11ec",
+                                "layerType": "data",
+                                "metricAccessor": "2df289ba-75f3-49a9-a84b-3b30ea7123c1",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Failed fetches of workload access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Failed workload access token fetches"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "f179cd91-189c-43b7-b489-ead6f568a8ea",
+                    "w": 8,
+                    "x": 12,
+                    "y": 10
+                },
+                "panelIndex": "f179cd91-189c-43b7-b489-ead6f568a8ea",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Failed resource token (OAuth) token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ResourceAccessTokenFetchFailures.sum"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#83a0bc",
+                                "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "layerType": "data",
+                                "metricAccessor": "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Failed fetches of resource access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Failed resource token (OAuth) fetches"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "783f734a-a76e-40fd-bf94-1cf541a8d163",
+                    "w": 8,
+                    "x": 20,
+                    "y": 10
+                },
+                "panelIndex": "783f734a-a76e-40fd-bf94-1cf541a8d163",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Failed API key fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ApiKeyFetchFailures.sum"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#bcb0cb",
+                                "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "layerType": "data",
+                                "metricAccessor": "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Failed fetches of API keys.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Failed API key fetches"
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "c0fd3f99-7d36-431f-9714-457fb86f4add",
+                    "w": 8,
+                    "x": 28,
+                    "y": 10
+                },
+                "panelIndex": "c0fd3f99-7d36-431f-9714-457fb86f4add",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
+                                "id": "46c7c425-6940-4e8a-861d-bdf5ae62a7d7",
+                                "label": "Agentcore runtime",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
+                                "id": "9933e526-6f82-4771-ac36-12c31ea3fd01",
+                                "label": "Gateway",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
+                                "id": "2d7432d1-9823-43ad-a9da-396068481c5f",
+                                "label": "Memory",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 2,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
+                                "id": "c997665a-658e-4fae-b2a4-b253ebd05a46",
+                                "label": "Identity",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 3,
+                                "type": "dashboardLink"
+                            }
+                        ],
+                        "title": "Agentcore panel links"
+                    },
+                    "hidePanelTitles": true,
+                    "title": "Agentcore panel links"
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "473cd6d8-0088-44c4-b73e-3b16a6d0d7f8",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "473cd6d8-0088-44c4-b73e-3b16a6d0d7f8",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "683051e2-0031-4d88-916d-23827c4a11ec": {
+                                            "columnOrder": [
+                                                "6464d40e-e6cf-4922-8ef8-3e25ed92ea27",
+                                                "7409332b-a7c0-42ab-98e2-52b2d9d5e257",
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1"
+                                            ],
+                                            "columns": {
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.WorkloadAccessTokenFetchSuccess.sum"
+                                                },
+                                                "6464d40e-e6cf-4922-8ef8-3e25ed92ea27": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of aws.dimensions.WorkloadIdentity + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2df289ba-75f3-49a9-a84b-3b30ea7123c1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "aws.dimensions.WorkloadIdentityDirectory"
+                                                        ],
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "aws.dimensions.WorkloadIdentity"
+                                                },
+                                                "7409332b-a7c0-42ab-98e2-52b2d9d5e257": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "2df289ba-75f3-49a9-a84b-3b30ea7123c1"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "683051e2-0031-4d88-916d-23827c4a11ec",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessor": "6464d40e-e6cf-4922-8ef8-3e25ed92ea27",
+                                        "xAccessor": "7409332b-a7c0-42ab-98e2-52b2d9d5e257"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "A workload access token is an AWS-signed opaque access token that enables agents to access first-party AgentCore services, such as outbound credential providers.\n\nThe trend of successful fetches of workload access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Successful workload access token fetches"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "7d7ea558-d023-4721-8f19-032eb599fea5",
+                    "sectionId": "c347b0ef-2daa-4327-ab3e-81dfd79bbec2",
+                    "w": 16,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "7d7ea558-d023-4721-8f19-032eb599fea5",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "683051e2-0031-4d88-916d-23827c4a11ec": {
+                                            "columnOrder": [
+                                                "50dbd183-9326-493a-934f-a401f0f96662",
+                                                "e0df0bf4-f36a-483e-a892-460bd6e8dbeb",
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1"
+                                            ],
+                                            "columns": {
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.WorkloadAccessTokenFetchFailures.sum"
+                                                },
+                                                "50dbd183-9326-493a-934f-a401f0f96662": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of aws.dimensions.WorkloadIdentity + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2df289ba-75f3-49a9-a84b-3b30ea7123c1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "aws.dimensions.WorkloadIdentityDirectory"
+                                                        ],
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "aws.dimensions.WorkloadIdentity"
+                                                },
+                                                "e0df0bf4-f36a-483e-a892-460bd6e8dbeb": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "2df289ba-75f3-49a9-a84b-3b30ea7123c1"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "683051e2-0031-4d88-916d-23827c4a11ec",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessor": "50dbd183-9326-493a-934f-a401f0f96662",
+                                        "xAccessor": "e0df0bf4-f36a-483e-a892-460bd6e8dbeb"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "A workload access token is an AWS-signed opaque access token that enables agents to access first-party AgentCore services, such as outbound credential providers.\n\nThe trend of failed fetches of workload access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Failed workload access token fetches"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "d2a3bcb9-d095-4af8-b501-4a2e68d876ba",
+                    "sectionId": "c347b0ef-2daa-4327-ab3e-81dfd79bbec2",
+                    "w": 16,
+                    "x": 16,
+                    "y": 0
+                },
+                "panelIndex": "d2a3bcb9-d095-4af8-b501-4a2e68d876ba",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "683051e2-0031-4d88-916d-23827c4a11ec": {
+                                            "columnOrder": [
+                                                "50dbd183-9326-493a-934f-a401f0f96662",
+                                                "e0df0bf4-f36a-483e-a892-460bd6e8dbeb",
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1"
+                                            ],
+                                            "columns": {
+                                                "2df289ba-75f3-49a9-a84b-3b30ea7123c1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.WorkloadAccessTokenFetchThrottles.sum"
+                                                },
+                                                "50dbd183-9326-493a-934f-a401f0f96662": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of aws.dimensions.WorkloadIdentity + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2df289ba-75f3-49a9-a84b-3b30ea7123c1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "aws.dimensions.WorkloadIdentityDirectory"
+                                                        ],
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "aws.dimensions.WorkloadIdentity"
+                                                },
+                                                "e0df0bf4-f36a-483e-a892-460bd6e8dbeb": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "2df289ba-75f3-49a9-a84b-3b30ea7123c1"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "683051e2-0031-4d88-916d-23827c4a11ec",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessor": "50dbd183-9326-493a-934f-a401f0f96662",
+                                        "xAccessor": "e0df0bf4-f36a-483e-a892-460bd6e8dbeb"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "A workload access token is an AWS-signed opaque access token that enables agents to access first-party AgentCore services, such as outbound credential providers.\n\nThe trend of throttled fetches of workload access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Throttled workload access token fetches"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "b625195c-873a-418e-8653-469f64ab86cd",
+                    "sectionId": "c347b0ef-2daa-4327-ab3e-81dfd79bbec2",
+                    "w": 16,
+                    "x": 32,
+                    "y": 0
+                },
+                "panelIndex": "b625195c-873a-418e-8653-469f64ab86cd",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "ee151a09-e5be-4254-ba3c-a3838ddad247",
+                                                "e27bf303-024b-4461-bc75-bd14b3885f77",
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ResourceAccessTokenFetchSuccess.sum"
+                                                },
+                                                "e27bf303-024b-4461-bc75-bd14b3885f77": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ee151a09-e5be-4254-ba3c-a3838ddad247": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of aws.dimensions.ProviderName + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "aws.dimensions.Type"
+                                                        ],
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "aws.dimensions.ProviderName"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ee151a09-e5be-4254-ba3c-a3838ddad247",
+                                        "xAccessor": "e27bf303-024b-4461-bc75-bd14b3885f77"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Successful fetches of resource access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Successful resource token (OAuth) fetches"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "ddcfee40-6e4b-4d22-9e01-913b65a2ac73",
+                    "sectionId": "656dfa43-5e3e-432b-89da-45315353afb3",
+                    "w": 16,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "ddcfee40-6e4b-4d22-9e01-913b65a2ac73",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "ee151a09-e5be-4254-ba3c-a3838ddad247",
+                                                "e27bf303-024b-4461-bc75-bd14b3885f77",
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ResourceAccessTokenFetchFailures.sum"
+                                                },
+                                                "e27bf303-024b-4461-bc75-bd14b3885f77": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ee151a09-e5be-4254-ba3c-a3838ddad247": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of aws.dimensions.ProviderName + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "aws.dimensions.Type"
+                                                        ],
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "aws.dimensions.ProviderName"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ee151a09-e5be-4254-ba3c-a3838ddad247",
+                                        "xAccessor": "e27bf303-024b-4461-bc75-bd14b3885f77"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Failed fetches of resource access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Failed resource token (OAuth) fetches"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "b5c6e615-af42-4452-a5f0-1b817d2cb7d6",
+                    "sectionId": "656dfa43-5e3e-432b-89da-45315353afb3",
+                    "w": 16,
+                    "x": 16,
+                    "y": 0
+                },
+                "panelIndex": "b5c6e615-af42-4452-a5f0-1b817d2cb7d6",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "ee151a09-e5be-4254-ba3c-a3838ddad247",
+                                                "e27bf303-024b-4461-bc75-bd14b3885f77",
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Token fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ResourceAccessTokenFetchFailures.sum"
+                                                },
+                                                "e27bf303-024b-4461-bc75-bd14b3885f77": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ee151a09-e5be-4254-ba3c-a3838ddad247": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of aws.dimensions.ProviderName + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "aws.dimensions.Type"
+                                                        ],
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "aws.dimensions.ProviderName"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ee151a09-e5be-4254-ba3c-a3838ddad247",
+                                        "xAccessor": "e27bf303-024b-4461-bc75-bd14b3885f77"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Throttled fetches of resource access tokens.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Throttled resource token (OAuth) fetches"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "ed6115e4-36d8-423c-b8fc-2bf220e8f080",
+                    "sectionId": "656dfa43-5e3e-432b-89da-45315353afb3",
+                    "w": 16,
+                    "x": 32,
+                    "y": 0
+                },
+                "panelIndex": "ed6115e4-36d8-423c-b8fc-2bf220e8f080",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "3e1a4957-a4ce-4aaf-b44c-0e6f29b19336",
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "3e1a4957-a4ce-4aaf-b44c-0e6f29b19336": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "API key fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ApiKeyFetchSuccess.sum"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "3e1a4957-a4ce-4aaf-b44c-0e6f29b19336"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Successful API key fetches",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Successful API key fetches"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "0da3cbee-0ed5-4e38-8ef9-c00afc8823c8",
+                    "sectionId": "7d17b04d-24fe-4ff2-ae00-2d34614d7795",
+                    "w": 16,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "0da3cbee-0ed5-4e38-8ef9-c00afc8823c8",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "3e1a4957-a4ce-4aaf-b44c-0e6f29b19336",
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "3e1a4957-a4ce-4aaf-b44c-0e6f29b19336": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "API key fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ApiKeyFetchFailures.sum"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "3e1a4957-a4ce-4aaf-b44c-0e6f29b19336"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Failed API key fetches",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Failed API key fetches"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "fc3eff80-00ff-4d7b-9bec-e929ff912f6d",
+                    "sectionId": "7d17b04d-24fe-4ff2-ae00-2d34614d7795",
+                    "w": 16,
+                    "x": 16,
+                    "y": 0
+                },
+                "panelIndex": "fc3eff80-00ff-4d7b-9bec-e929ff912f6d",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "d151b5aa-7a70-4a5b-8e23-0142ed575c9a": {
+                                            "columnOrder": [
+                                                "3e1a4957-a4ce-4aaf-b44c-0e6f29b19336",
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                            ],
+                                            "columns": {
+                                                "3e1a4957-a4ce-4aaf-b44c-0e6f29b19336": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.ProviderName : * and aws.dimensions.WorkloadIdentity : * and aws.dimensions.WorkloadIdentityDirectory : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "API key fetches",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.ApiKeyFetchThrottles.sum"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "42dc5fc6-ec86-40f5-a93f-f5e45f0317b7"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "3e1a4957-a4ce-4aaf-b44c-0e6f29b19336"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Throttled API key fetches",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Throttled API key fetches"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "fe99f2bb-75cf-4ee8-8f8d-3af4e9cc75e6",
+                    "sectionId": "7d17b04d-24fe-4ff2-ae00-2d34614d7795",
+                    "w": 16,
+                    "x": 32,
+                    "y": 0
+                },
+                "panelIndex": "fe99f2bb-75cf-4ee8-8f8d-3af4e9cc75e6",
+                "type": "lens"
+            }
+        ],
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "c347b0ef-2daa-4327-ab3e-81dfd79bbec2",
+                    "y": 16
+                },
+                "title": "Workload access details"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "656dfa43-5e3e-432b-89da-45315353afb3",
+                    "y": 17
+                },
+                "title": "Resource token (OAuth) fetch details"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "7d17b04d-24fe-4ff2-ae00-2d34614d7795",
+                    "y": 18
+                },
+                "title": "Application Programming Interface (API) key fetch details"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Amazon Bedrock Agentcore] Identity",
+        "version": 3
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-11-12T04:57:03.652Z",
+    "id": "aws_bedrock_agentcore-b2372a13-4d94-43ec-8623-6c8d226dd071",
+    "managed": false,
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "3871b2a7-e3a7-4624-bc4e-4f13db88c4e7:indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "966fd96e-e8ef-49dc-9ad6-07944eeb1283:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "9e431013-ab6f-435a-a4b5-0767aee28616:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f179cd91-189c-43b7-b489-ead6f568a8ea:indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "783f734a-a76e-40fd-bf94-1cf541a8d163:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c0fd3f99-7d36-431f-9714-457fb86f4add:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "7d7ea558-d023-4721-8f19-032eb599fea5:indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d2a3bcb9-d095-4af8-b501-4a2e68d876ba:indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b625195c-873a-418e-8653-469f64ab86cd:indexpattern-datasource-layer-683051e2-0031-4d88-916d-23827c4a11ec",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "ddcfee40-6e4b-4d22-9e01-913b65a2ac73:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b5c6e615-af42-4452-a5f0-1b817d2cb7d6:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "ed6115e4-36d8-423c-b8fc-2bf220e8f080:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "0da3cbee-0ed5-4e38-8ef9-c00afc8823c8:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "fc3eff80-00ff-4d7b-9bec-e929ff912f6d:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "fe99f2bb-75cf-4ee8-8f8d-3af4e9cc75e6:indexpattern-datasource-layer-d151b5aa-7a70-4a5b-8e23-0142ed575c9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "aws_bedrock_agentcore-3235ab43-8fa0-47f5-9590-b8d7451a4c92",
+            "name": "473cd6d8-0088-44c4-b73e-3b16a6d0d7f8:link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock_agentcore-b113ff26-879e-4ea2-b0ac-993b98ed06c4",
+            "name": "473cd6d8-0088-44c4-b73e-3b16a6d0d7f8:link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock_agentcore-1f2ef1c3-afab-4b23-9e8b-b966f2fe40d2",
+            "name": "473cd6d8-0088-44c4-b73e-3b16a6d0d7f8:link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock_agentcore-b2372a13-4d94-43ec-8623-6c8d226dd071",
+            "name": "473cd6d8-0088-44c4-b73e-3b16a6d0d7f8:link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_3097ad63-9941-4a80-8001-e310c83c8860:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_1d5ef503-8d7a-4f85-a385-089e99bbc35b:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_ecb23075-2694-4598-aad1-fedc00cfe85c:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}

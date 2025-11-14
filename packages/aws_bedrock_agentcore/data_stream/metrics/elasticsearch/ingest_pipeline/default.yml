@@ -1,0 +1,26 @@
+---
+description: Pipeline for Amazon Bedrock AgentCore metrics
+processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
+  - set:
+      field: cloud.account.name
+      copy_from: cloud.account.id
+      override: false
+      ignore_empty_value: true
+  - rename:   
+      field: aws.bedrock-agentcore
+      target_field: aws.bedrock_agentcore
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - set:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
