@@ -15,8 +15,8 @@ fields:
   _conf:
     ioc_expiration_duration: {{ioc_expiration_duration}}
 {{/if}}
-    feed_name: "Cyber Feeds"
-    feed_reference: "www.cyberluminar.com"
+    feed_name: Cyber Feeds
+    feed_reference: https://www.cognyte.com/solutions/external-threat-intelligence/
 
 state:
   url: {{url}}
@@ -26,7 +26,7 @@ state:
   initial_interval: {{initial_interval}}
   limit: 9999
   token_url: {{url}}/externalApi/v2/realm/{{account_id}}/token
-  collection_url: {{url}}/externalApi/taxii/collections/3e6bd19d-cd50-4ced-baf9-6335a3edc3ff/objects
+  list_collection_url: {{url}}/externalApi/taxii/collections/
 
 redact:
   fields:
@@ -52,7 +52,7 @@ program: |
         ).do_request().as(auth, auth.StatusCode == 200 ?
           bytes(auth.Body).decode_json().as(auth_body,
             auth_body.with({
-              "expires": now + duration(string(int(auth_body.expires_in) - 60) + "s"),
+              "expires": now + duration(string(int(auth_body.expires_in) - 60) + "s")
             })
           )
         :
@@ -72,20 +72,67 @@ program: |
             "want_more": false
           }
         )
-    ).as(token, !has(token.access_token) ? token :
+    ).as(token, !has(token.access_token) ? token :  // Exit early if auth failed
+      // === FETCH COLLECTION ID ===
+      token.with(
+      has(state.collection_id) && has(state.collection_url) ?
+        { "collection_id": state.collection_id, "collection_url": state.collection_url }
+      :
+        request(
+          "GET",
+          state.list_collection_url
+        ).with({
+          "Header": {
+            "Content-Type": ["application/json"],
+            "Authorization": ["Bearer " + token.access_token]
+          }
+        }).do_request().as(coll_resp,
+          coll_resp.StatusCode == 200 ?
+            bytes(coll_resp.Body).decode_json().as(coll_body,
+              coll_body.collections.filter(c, c.title == "Cyber Feeds").size() > 0 ?
+                {"collection_id" : coll_body.collections.filter(c, c.title == "Cyber Feeds")[0].id,
+                 "collection_url": state.list_collection_url + coll_body.collections.filter(c, c.title == "Cyber Feeds")[0].id + "/objects"
+                }
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": "404",
+                      "id": "collection_not_found",
+                      "message": "Collection with title 'Cyber Feeds' not found"
+                    }
+                  },
+                  "want_more": false
+                }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(coll_resp.StatusCode),
+                  "id": string(coll_resp.Status),
+                  "message": "GET /collections failed: " + (
+                    size(coll_resp.Body) != 0 ? string(coll_resp.Body) : "Empty response"
+                  )
+                }
+              },
+              "want_more": false
+            }
+        )
+    )
+    ).as(token, has(token.events) ? token :  // Final early exit
       request(
         "GET",
         state.?want_more.orValue(false) ?
-            state.next_url
+          state.next_url
         : (has(state.initial_interval) && state.initial_interval != "") ?
-            (
-                state.collection_url + "/?" + {
-                    "added_after":[state.?cursor.last_timestamp.orValue((now() - duration(state.initial_interval)).format("2006-01-02T15:04:05.000000Z"))],
-                    "limit": [string(state.limit)],
-                }.format_query()
-            )
-            :
-              state.url
+          (
+            token.collection_url + "/?" + {
+              "added_after": [state.?cursor.last_timestamp.orValue((now() - duration(state.initial_interval)).format("2006-01-02T15:04:05.000000Z"))],
+              "limit": [string(state.limit)]
+            }.format_query()
+          )
+        : token.collection_url
       ).with({
         "Header": {
           "Content-Type": ["application/json"],
@@ -94,24 +141,26 @@ program: |
       }).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
         bytes(resp.Body).decode_json().as(body,
           {
-            "events": body.objects.map(e, {"message": e.encode_json(),"fetch_time": state.?cursor.last_timestamp.orValue((now() - duration(state.initial_interval)).format("2006-01-02T15:04:05.000000Z"))}),
+            "events": body.objects.map(e, {
+              "message": e.encode_json(),
+              "fetch_time": state.?cursor.last_timestamp.orValue((now() - duration(state.initial_interval)).format("2006-01-02T15:04:05.000000Z"))
+            }),
             "want_more": has(body.next) && body.next != null && body.next != "",
-            "next_url": (has(body.next) && body.next != null && body.next != "") ?
-                        (
-                            state.collection_url + "/?" + {
-                                "next": [string(body.next)],
-                                "limit": [string(state.limit)],
-                            }.format_query()
-                        )
-                    :
-                        state.url,
+            "next_url": has(body.next) && body.next != null && body.next != "" ?
+              token.collection_url + "/?" + {
+                "next": [string(body.next)],
+                "limit": [string(state.limit)]
+              }.format_query()
+              : token.collection_url,
             "cursor": {
-              ?"last_timestamp":resp.Header[?"X-TAXII-Date-Added-Last"]
+              ?"last_timestamp": resp.Header[?"X-TAXII-Date-Added-Last"]
             },
             "token": {
               "access_token": token.access_token,
               "expires": token.expires
-            }
+            },
+            "collection_id": token.collection_id,
+            "collection_url": token.collection_url
           }
         )
       :
@@ -120,7 +169,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET: " + (
+              "message": "GET TAXII objects failed: " + (
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
