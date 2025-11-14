@@ -1,59 +1,35 @@
-# Fortinet FortiGate Firewall Logs Integration for Elastic
+# Service Info
 
-## Overview
-
-The Fortinet FortiGate Firewall Logs integration for Elastic enables the collection of logs from Fortinet FortiGate firewalls. This allows for comprehensive security monitoring, threat detection, and network traffic analysis within the Elastic Stack. By ingesting FortiGate logs, users can gain visibility into firewall activity, monitor for security threats, audit policy compliance, and troubleshoot network issues.
-
-This integration facilitates:
-- Security monitoring and threat detection
+## Common use cases
+- Security monitoring and threat detection from FortiGate firewall logs
 - Network traffic analysis and monitoring
 - Firewall policy compliance and auditing
 - Intrusion detection and prevention system (IPS) event monitoring
 - VPN connection monitoring and troubleshooting
 - Web filtering and application control monitoring
 
-### Compatibility
+## Data types collected
+- Traffic logs (firewall allow/deny decisions)
+- UTM logs (antivirus, web filter, application control, IPS, DNS filter)
+- Event logs (system events, HA events, configuration changes)
+- Authentication logs (VPN, admin, and user authentication events)
 
+## Compatibility
 This integration has been tested against FortiOS versions 6.x and 7.x up to 7.4.1. Newer versions are expected to work but have not been tested.
 
-This integration is compatible with Elastic Stack version 8.11.0 or higher.
+## Scaling and Performance
 
-### How it works
 
-This integration collects logs from FortiGate firewalls by receiving syslog data over TCP or UDP, or by reading directly from log files. An Elastic Agent is deployed on a host that is configured as a syslog receiver or has access to the log files. The agent forwards the logs to your Elastic deployment, where they can be monitored or analyzed.
+# Set Up Instructions
 
-## What data does this integration collect?
+## Vendor prerequisites
+- FortiGate firewall with access to configure syslog settings
+- Network connectivity between FortiGate and Elastic Agent
 
-The Fortinet FortiGate Firewall Logs integration collects the following types of logs:
-*   **Traffic logs**: Records of firewall decisions to allow or deny traffic.
-*   **UTM (Unified Threat Management) logs**: Includes events from antivirus, web filter, application control, IPS, and DNS filter modules.
-*   **Event logs**: System-level events, high-availability (HA) events, and configuration changes.
-*   **Authentication logs**: Records of VPN, administrator, and user authentication events.
 
-### Supported use cases
+## Vendor set up steps
 
-Integrating Fortinet FortiGate logs with Elastic provides a powerful solution for enhancing security posture and operational visibility. Key use cases include:
-- **Real-time Threat Detection**: Leverage Elastic SIEM to detect and respond to threats identified in firewall logs.
-- **Network Traffic Analysis**: Use Kibana dashboards to visualize and analyze network traffic patterns, helping to identify anomalies and optimize network performance.
-- **Compliance and Auditing**: Maintain a searchable, long-term archive of firewall logs to meet compliance requirements and conduct security audits.
-- **Incident Response**: Accelerate incident investigation by correlating firewall data with other security and observability data sources within Elastic.
-
-## What do I need to use this integration?
-
-- A FortiGate firewall with administrative access to configure syslog settings.
-- Network connectivity between the FortiGate firewall and the Elastic Agent host.
-- Elastic Stack version 8.11.0 or higher.
-
-## How do I deploy this integration?
-
-### Agent-based deployment
-
-Elastic Agent must be installed on a host that will receive the syslog data or has access to the log files from the FortiGate firewall. For detailed installation instructions, refer to the Elastic Agent [installation guide](docs-content://reference/fleet/install-elastic-agents.md). Only one Elastic Agent is needed per host.
-
-### Vendor set up steps
-
-#### Syslog Configuration
-
+### Syslog Configuration
 You can configure FortiGate to send logs to the Elastic Agent using either the GUI or the CLI.
 
 **GUI Configuration:**
@@ -96,8 +72,7 @@ You can configure FortiGate to send logs to the Elastic Agent using either the G
 
 For more detailed information, refer to the [FortiGate CLI reference](https://docs.fortinet.com/document/fortigate/7.4.0/cli-reference/405620/config-log-syslogd-setting).
 
-### Onboard / configure in Kibana
-
+## Kibana set up steps
 1.  In Kibana, navigate to **Management > Integrations**.
 2.  Search for "Fortinet FortiGate Firewall Logs" and select the integration.
 3.  Click **Add Fortinet FortiGate Firewall Logs**.
@@ -167,52 +142,23 @@ Under **Advanced Options**, you can configure the following optional parameters:
 
 After configuring the input, assign the integration to an agent policy and click **Save and continue**.
 
-### Validation
+# Validation Steps
+1. Verify logs are being sent from FortiGate by checking the syslog configuration
+2. In Kibana, navigate to Discover and search for `data_stream.dataset: "fortinet_fortigate.log"`
+3. Verify that events are appearing with recent timestamps
+4. Check the dashboards provided by the integration (Management > Dashboards > "Fortinet FortiGate Overview")
+5. Generate test traffic on FortiGate (e.g., web browsing, firewall hits) and verify corresponding logs appear in Kibana
 
-1.  First, verify on the FortiGate device that logs are being actively sent to the configured Elastic Agent host.
-2.  In Kibana, navigate to **Discover**.
-3.  In the search bar, enter `data_stream.dataset: "fortinet_fortigate.log"` and check for incoming documents.
-4.  Verify that events are appearing with recent timestamps.
-5.  Navigate to **Management > Dashboards** and search for "Fortinet FortiGate Overview" to see if the visualizations are populated with data.
-6.  Generate some test traffic that would be logged by the firewall and confirm that the corresponding logs appear in Kibana.
+# Troubleshooting
 
-## Troubleshooting
+## Common Configuration Issues
+- **No data collected**: Verify network connectivity between FortiGate and Elastic Agent. Check that the configured listen port matches the port configured on FortiGate.
+- **TCP framing issues**: When using TCP with reliable syslog mode, ensure framing is set to `rfc6587` in both FortiGate configuration and the integration settings.
 
-For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+## Vendor Resources
+- [FortiGate CLI Reference - Syslog Settings](https://docs.fortinet.com/document/fortigate/7.4.0/cli-reference/405620/config-log-syslogd-setting)
 
-### Common Configuration Issues
-
--   **No data is being collected**:
-    *   Verify network connectivity (e.g., using `ping` or `netcat`) between the FortiGate firewall and the Elastic Agent host.
-    *   Ensure there are no firewalls or network ACLs blocking the syslog port.
-    *   Confirm that the listening port configured in the Elastic integration matches the destination port configured on the FortiGate device.
--   **TCP framing issues**:
-    *   When using TCP input with reliable syslog mode, both the FortiGate configuration and the integration settings must have framing set to `rfc6587`. Mismatched framing settings will result in parsing errors or lost logs.
-
-### Vendor Resources
-
--   [FortiGate CLI Reference - Syslog Settings](https://docs.fortinet.com/document/fortigate/7.4.0/cli-reference/405620/config-log-syslogd-setting)
--   [Fortinet Documentation Library](https://docs.fortinet.com/)
--   [FortiGate Administration Guide](https://docs.fortinet.com/product/fortigate)
-
-## Performance and Scaling
-
-For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation. A common approach for large-scale syslog collection is to place a load balancer or a dedicated syslog collector like Logstash between the FortiGate devices and the Elastic Agents.
-
-## Reference
-
-### log
-
-The `log` data stream collects all log types from the FortiGate firewall, including traffic, UTM, event, and authentication logs.
-
-#### log fields
-
-{{ fields "log" }}
-
-#### log sample event
-
-{{ event "log" }}
-
-### Inputs used
-
-{{ inputDocs }}
+# Documentation sites
+- [Fortinet Documentation Library](https://docs.fortinet.com/)
+- [FortiGate Administration Guide](https://docs.fortinet.com/product/fortigate)
+- [Technical Tip: How to configure syslog on FortiGate](https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-configure-syslog-on-FortiGate/ta-p/331959)
