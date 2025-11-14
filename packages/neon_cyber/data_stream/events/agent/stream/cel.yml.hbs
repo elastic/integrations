@@ -1,0 +1,85 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+state:
+  api_token: {{api_token}}
+redact:
+  fields:
+    - api_token
+program: |-
+  (
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/v1/events"
+      ).with(
+        {
+          "Header": {
+            "Authorization": [state.api_token],
+          }
+        }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          {
+            "events": dyn(
+              (has(body.data) && body.data.size() > 0) ?
+                body.data.map(e,
+                  {
+                    "message": e.encode_json(),
+                  }
+                )
+              :
+                []
+            )
+          }
+        )
+      :
+        {
+          "events": dyn(
+            {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/v1/events: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            }
+          )
+        }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
