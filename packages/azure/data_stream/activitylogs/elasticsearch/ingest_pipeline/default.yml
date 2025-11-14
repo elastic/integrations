@@ -8,11 +8,17 @@ processors:
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
+
+  # --------------------------------------
+  # `message` field cleanup steps.
+  # --------------------------------------
   - script:
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
+      if: 'ctx.message != null'
+      description: 'Replaces empty fields with an empty string in the `message` field.'
   - rename:
       field: message
       target_field: event.original
@@ -24,9 +30,23 @@ processors:
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
+
+  # Encoding extension  
+  - rename:
+      field: body.structured
+      target_field: azure.activitylogs
+      ignore_missing: true
+      description: 'Renames the `body.structured` field to `azure.activitylogs` to store the structured data.'
+  - remove:      
+      field: body
+      ignore_missing: true
+      description: 'Cleans up the `body` field after the structured data has been moved to the `azure.activitylogs` field.'
   - json:
       field: event.original
       target_field: azure.activitylogs
+      if: 'ctx.azure?.activitylogs == null'
+      description: 'Parses the `event.original` field as JSON and stores it in the `azure.activitylogs` field.'
+
   - date:
       field: azure.activitylogs.time
       target_field: '@timestamp'
