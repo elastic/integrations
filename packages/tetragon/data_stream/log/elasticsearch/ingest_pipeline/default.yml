@@ -286,6 +286,12 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
@@ -299,3 +305,7 @@ on_failure:
       value: pipeline_error
   - remove:
       field: "_tmp_"
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
