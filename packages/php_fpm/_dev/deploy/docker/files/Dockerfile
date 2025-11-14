@@ -1,4 +1,4 @@
-FROM bitnami/php-fpm:8.1.12-debian-11-r4
+FROM bitnamilegacy/php-fpm:8.1.12-debian-11-r4
 
 # Following command enables "/status" endpoint
 
