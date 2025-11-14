@@ -17,7 +17,6 @@ func main() {
 }
 
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
-
 	if r.URL.Path == "/health" {
 		return
 	}
@@ -41,7 +40,6 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	defer conn.Close()
 
 	var responseMessage []map[string]string
 

@@ -1,0 +1,130 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when an SNS topic message is published by a rare user in AWS. Adversaries may publish messages to SNS topics for phishing campaigns, data exfiltration, or lateral movement within the AWS environment. SNS topics are used to send notifications and messages to subscribed endpoints such as applications, devices or email addresses, making them a valuable target for adversaries to distribute malicious content or exfiltrate sensitive data. This is a [New Terms](https://www.elastic.co/guide/en/security/current/rules-ui-create.html#create-new-terms-rule) rule that only flags when this behavior is observed for the first time on a user in the last 14 days.",
+        "false_positives": [
+            "New users or roles may legitimately publish messages to SNS topics for authorized purposes. Ensure that the action is authorized before taking action."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "user_agent.original",
+                "aws.cloudtrail.flattened.request_parameters.topicArn",
+                "event.action",
+                "event.outcome",
+                "cloud.region",
+                "source.ip",
+                "source.geo.city_name",
+                "source.geo.region_name",
+                "source.geo.country_name",
+                "aws.cloudtrail.request_id",
+                "aws.cloudtrail.resources.arn",
+                "aws.cloudtrail.event_category",
+                "aws.cloudtrail.response_elements.messageId"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "SNS Topic Message Publish by Rare User",
+        "new_terms_fields": [
+            "aws.cloudtrail.user_identity.arn"
+        ],
+        "note": "## Triage and Analysis\n\n### Investigating SNS Topic Message Publish by Rare User\n\nThis rule identifies when a message is published to an SNS topic by a user who has rarely or never published messages before. This activity could indicate adversarial actions, such as using SNS topics for phishing campaigns, data exfiltration, or lateral movement within an AWS environment.\n\n#### Possible Investigation Steps\n\n- **Identify the Actor and Resource**:\n  - **User Identity and Role**: Examine the `aws.cloudtrail.user_identity.arn` to identify the user or role responsible for publishing the SNS message. Verify whether this actor is authorized to publish messages to SNS topics. This user is considered \"rare\" since they have not published messages to SNS topics in the last 14 days.\n  - **Access Key Details**: Review the `aws.cloudtrail.user_identity.access_key_id` to determine if the access key used is valid or compromised.\n  - **SNS Topic ARN**: Analyze `aws.cloudtrail.resources.arn` to confirm whether the SNS topic is critical, sensitive, or used for authorized purposes.\n\n- **Evaluate the Context of the SNS Message**:\n  - **Published Message Details**: AWS redacts the message content in CloudTrail logs, but you can view the message ID, subject, and other metadata. Investigate the message details for any indicators of malicious content.\n  - **Message Recipients**: Investigate the subscriptions associated with the SNS topic to identify if messages were sent to unauthorized or unexpected recipients.\n\n- **Analyze Source Information**:\n  - **Source IP Address**: Examine the `source.ip` field to identify the origin of the activity. Unusual IP addresses or geolocations may indicate unauthorized access.\n  - **User Agent**: Review `user_agent.original` to determine the tool or client used for publishing the SNS message. Automated tools or unexpected clients (e.g., `Boto3` from an unknown host) may signify misuse.\n\n- **Review Historical Activity**:\n  - **Actor\u2019s Past Behavior**: Identify whether the user has published messages to SNS topics before. Review similar past events for context.\n  - **Frequency and Patterns**: Examine the time and frequency of messages published by the same user or to the same SNS topic to detect anomalies.\n\n- **Correlate with Other Events**:\n  - **IAM or CloudTrail Events**: Look for events such as `AssumeRole`, `CreateAccessKey`, or other API actions associated with the same user ARN.\n  - **Unusual IAM Role Activity**: Determine if the actor has assumed roles or performed administrative tasks atypical for their role.\n\n### False Positive Analysis\n\n- **Routine Operational Use**:\n  - Confirm if the publishing activity aligns with standard operational tasks or automation scripts.\n  - Validate whether new or rare users were recently granted permissions for publishing messages to SNS topics.\n\n- **Testing or Monitoring Scripts**:\n  - Automated testing or monitoring tools may trigger this rule if configured to publish messages to SNS topics.\n\n### Response and Remediation\n\n- **Immediate Action**:\n  - If unauthorized activity is confirmed, disable the access key or IAM role associated with the user.\n  - Restrict or remove permissions from the SNS topic to prevent further misuse.\n\n- **Review Policies and Subscriptions**:\n  - Audit the IAM policies tied to the user and SNS topic to ensure appropriate permissions.\n  - Validate the subscriptions of the SNS topic to confirm all endpoints are authorized.\n\n- **Enhance Monitoring and Alerting**:\n  - Set up additional logging or alerting for SNS publish actions, especially from rare or unknown users.\n  - Monitor for similar actions across other SNS topics within the environment.\n\n- **Conduct a Root Cause Analysis**:\n  - Investigate how the user or role gained access to publish messages to the SNS topic.\n  - Determine if other AWS resources or services have been affected.\n\n### Additional Information\n\nFor more information on SNS topic management and securing AWS resources, refer to:\n- [AWS SNS Publish API Documentation](https://docs.aws.amazon.com/sns/latest/api/API_Publish.html)\n- [AWS CloudTrail Documentation](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference.html)\n",
+        "query": "event.dataset:\"aws.cloudtrail\"\n    and event.provider:\"sns.amazonaws.com\"\n    and event.action:\"Publish\"\n    and event.outcome:\"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/sns/latest/api/API_Publish.html",
+            "https://hackingthe.cloud/aws/exploitation/Misconfigured_Resource-Based_Policies/exploting_public_resources_attack_playbook/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "2112ecce-cd34-11ef-873f-f661ea17fbcd",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS SNS",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Tactic: Lateral Movement",
+            "Tactic: Exfiltration"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1534",
+                        "name": "Internal Spearphishing",
+                        "reference": "https://attack.mitre.org/techniques/T1534/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1567",
+                        "name": "Exfiltration Over Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1567/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 3
+    },
+    "id": "2112ecce-cd34-11ef-873f-f661ea17fbcd_3",
+    "type": "security-rule"
+}

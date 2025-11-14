@@ -51,6 +51,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:2022-04-04.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -70,6 +71,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
       pageToken: page-2
     request_headers:
       Accept:
@@ -105,6 +107,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -407,6 +410,2010 @@ rules:
           "events":[{"type":"ACCESS","name":"DELETE_DISTRIBUTION_CONTENT","parameters":[{"name":"ASSET_ID","value":"abc-123"},{"name":"ASSET_NAME","value":"[Sample]ReportName"},{"name":"OWNER_EMAIL","value":"foo@bar.com"},{"name":"ASSET_TYPE","value":"REPORT"},
           {"name":"VISIBILITY","value":"PEOPLE_WITHIN_DOMAIN_WITH_LINK"},{"name":"PARENT_WORKSPACE_ID","value":""},{"name":"CONNECTOR_TYPE","value":""},{"name":"DISTRIBUTION_CONTENT_NAME","value":"[Sample]ReportName"},
           {"name":"DISTRIBUTION_CONTENT_OWNER_EMAIL","value":"foo@bar.com"},{"name":"DISTRIBUTION_CONTENT_ID","value":"abc-123"},{"name":"DISTRIBUTION_CONTENT_TYPE","value":"SCHEDULE"}]}]}]}
+  - path: /bigquery/v2/projects/1234567890000/jobs
+    methods: ['POST']
+    request_headers:
+      - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "bigquery#job",
+            "etag": "zgooZ+v7kxN/GisZIXCg2g==",
+            "id": "1234567890000:US.job_AbcDeFTD3ygPaDMXO1xxxx",
+            "selfLink": "https://bigquery.googleapis.com/bigquery/v2/projects/1234567890000/jobs/job_AbcDeFTD3ygPaDMXO1xxxx?location=US",
+            "user_email": "example@elastic.com",
+            "configuration": {
+              "query": {
+                "destinationTable": {
+                  "projectId": "1234567890000",
+                  "datasetId": "_a6b6162f4ebef61627f8c1d8a802449cxxxxxxxx",
+                  "tableId": "abcde_bzYpfAmojS4Fx4KZNjcriO3BKjcZKf2Jcxxxxxxxx"
+                },
+                "writeDisposition": "WRITE_TRUNCATE",
+                "priority": "INTERACTIVE",
+                "useLegacySql": false
+              },
+              "jobType": "QUERY"
+            },
+            "jobReference": {
+              "projectId": "1234567890000",
+              "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
+              "location": "US"
+            },
+            "statistics": {
+              "creationTime": "1750398653507",
+              "startTime": "1750398653699",
+              "query": {
+                "statementType": "SELECT"
+              }
+            },
+            "status": {
+              "state": "RUNNING"
+            },
+            "principal_subject": "user:example@elastic.com",
+            "jobCreationReason": {
+              "code": "REQUESTED"
+            }
+          }
+          `}}
+  - path: /bigquery/v2/projects/1234567890000/jobs/job_AbcDeFTD3ygPaDMXO1xxxx
+    methods: ['GET']
+    request_headers:
+      - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "bigquery#job",
+            "etag": "a1CbPBrasIpwqP6rpz/p/w==",
+            "id": "1234567890000:US.job_AbcDeFTD3ygPaDMXO1xxxx",
+            "configuration": {},
+            "jobReference": {
+              "projectId": "1234567890000",
+              "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
+              "location": "US"
+            },
+            "statistics": {},
+            "status": {
+              "state": "DONE"
+            },
+            "jobCreationReason": {
+              "code": "REQUESTED"
+            }
+          }
+          `}}
+  - path: /bigquery/v2/projects/1234567890000/queries/job_AbcDeFTD3ygPaDMXO1xxxx
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-3
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "bigquery#getQueryResultsResponse",
+            "etag": "qCjm0W1TI+8BPLuiAEuzJw==",
+            "schema": {
+              "fields": [
+                {
+                  "name": "email",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_name",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_type",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "ip_address",
+                  "type": "BYTES",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "time_usec",
+                  "type": "INTEGER",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_info",
+                  "type": "RECORD",
+                  "mode": "NULLABLE",
+                  "fields": [
+                    {
+                      "name": "timestamp_usec",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "elapsed_time_usec",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "success",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "mail_event_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    }
+                  ]
+                },
+                {
+                  "name": "message_info",
+                  "type": "RECORD",
+                  "mode": "NULLABLE",
+                  "fields": [
+                    {
+                      "name": "action_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "rfc2822_message_id",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "subject",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "payload_size",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "source",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_displayname",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "destination",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "selector",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_signature_verification_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_decryption_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_parsing_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_extraction_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rcpt_response",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "flattened_destinations",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "description",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_spam",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_policy_check_for_sender",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "num_message_attachments",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "connection_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "client_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "failed_smtp_out_connect_ip",
+                          "type": "STRING",
+                          "mode": "REPEATED"
+                        },
+                        {
+                          "name": "smtp_tls_state",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_reply_code",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_user_agent_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "is_intra_domain",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dmarc_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dmarc_published_domain",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "client_host_zone",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_geo_country",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "authenticated_domain",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "is_internal",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dkim_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "spf_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "message_set",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "smime_content_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "link_domain",
+                      "type": "STRING",
+                      "mode": "REPEATED"
+                    },
+                    {
+                      "name": "spam_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "disposition",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "classification_reason",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_whitelist_entry",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "jobReference": {
+              "projectId": "1234567890000",
+              "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
+              "location": "US"
+            },
+            "totalRows": "3",
+            "rows": [
+              {
+                "f": [
+                  {
+                    "v": "contact@elastic.com"
+                  },
+                  {
+                    "v": "delivery"
+                  },
+                  {
+                    "v": "delivery_type"
+                  },
+                  {
+                    "v": "MjE2LjE2MC44My41Ng=="
+                  },
+                  {
+                    "v": "1746050656256093"
+                  },
+                  {
+                    "v": {
+                      "f": [
+                        {
+                          "v": "1746050656256093"
+                        },
+                        {
+                          "v": "1589050"
+                        },
+                        {
+                          "v": "true"
+                        },
+                        {
+                          "v": "2"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "v": {
+                      "f": [
+                        {
+                          "v": "3"
+                        },
+                        {
+                          "v": "<12345627134207078908@example.com>"
+                        },
+                        {
+                          "v": "[Billing and Service Notice] Google Workspace service and pricing updates"
+                        },
+                        {
+                          "v": "33237"
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "smtp-inbound"
+                              },
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "The Google Workspace Team"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "contact@elastic.com"
+                                  },
+                                  {
+                                    "v": "gmail-ui"
+                                  },
+                                  {
+                                    "v": ""
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": "gmail-ui::contact@elastic.com"
+                        },
+                        {
+                          "v": ""
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": []
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": "0"
+                              },
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": "true"
+                              },
+                              {
+                                "v": "google.com"
+                              },
+                              {
+                                "v": "google.com"
+                              },
+                              {
+                                "v": "US"
+                              },
+                              {
+                                "v": [
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "google.com"
+                                        },
+                                        {
+                                          "v": "2"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "6"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "1"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": "true"
+                              },
+                              {
+                                "v": "true"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "9"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "22"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "15"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "27"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "11"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "1"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": "c.gle"
+                            },
+                            {
+                              "v": "google.com"
+                            }
+                          ]
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": ""
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
+            "totalBytesProcessed": "32209830",
+            "jobComplete": true,
+            "cacheHit": false
+          }
+          `}}
+  - path: /bigquery/v2/projects/1234567890000/queries/job_AbcDeFTD3ygPaDMXO1xxxx
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "bigquery#getQueryResultsResponse",
+            "pageToken": "page-3",
+            "etag": "bxeBhKu3omfxB9AEbVSYKw==",
+            "schema": {
+              "fields": [
+                {
+                  "name": "email",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_name",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_type",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "ip_address",
+                  "type": "BYTES",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "time_usec",
+                  "type": "INTEGER",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_info",
+                  "type": "RECORD",
+                  "mode": "NULLABLE",
+                  "fields": [
+                    {
+                      "name": "timestamp_usec",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "elapsed_time_usec",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "success",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "mail_event_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    }
+                  ]
+                },
+                {
+                  "name": "message_info",
+                  "type": "RECORD",
+                  "mode": "NULLABLE",
+                  "fields": [
+                    {
+                      "name": "action_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "rfc2822_message_id",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "subject",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "payload_size",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "source",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_displayname",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "destination",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "selector",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_signature_verification_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_decryption_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_parsing_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_extraction_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rcpt_response",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "flattened_destinations",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "description",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_spam",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_policy_check_for_sender",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "num_message_attachments",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "connection_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "client_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "failed_smtp_out_connect_ip",
+                          "type": "STRING",
+                          "mode": "REPEATED"
+                        },
+                        {
+                          "name": "smtp_tls_state",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_reply_code",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_user_agent_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "is_intra_domain",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "authenticated_domain",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "is_internal",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dkim_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "spf_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "message_set",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "smime_content_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "link_domain",
+                      "type": "STRING",
+                      "mode": "REPEATED"
+                    }
+                  ]
+                }
+              ]
+            },
+            "jobReference": {
+              "projectId": "1234567890000",
+              "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
+              "location": "US"
+            },
+            "totalRows": "3",
+            "rows": [
+              {
+                "f": [
+                  {
+                    "v": "contact@elastic.com"
+                  },
+                  {
+                    "v": "delivery"
+                  },
+                  {
+                    "v": "delivery_type"
+                  },
+                  {
+                    "v": "MjE2LjE2MC44My41Ng=="
+                  },
+                  {
+                    "v": "1746050656067743"
+                  },
+                  {
+                    "v": {
+                      "f": [
+                        {
+                          "v": "1746050656067743"
+                        },
+                        {
+                          "v": "187337"
+                        },
+                        {
+                          "v": "true"
+                        },
+                        {
+                          "v": "0"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "v": {
+                      "f": [
+                        {
+                          "v": "2"
+                        },
+                        {
+                          "v": "<12345627134207078908@example.com>"
+                        },
+                        {
+                          "v": "[Billing and Service Notice] Google Workspace service and pricing updates"
+                        },
+                        {
+                          "v": "33237"
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "smtp-inbound"
+                              },
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "The Google Workspace Team"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "contact@elastic.com"
+                                  },
+                                  {
+                                    "v": "gmail-ui"
+                                  },
+                                  {
+                                    "v": ""
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": "gmail-ui::contact@elastic.com"
+                        },
+                        {
+                          "v": ""
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": []
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": "0"
+                              },
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": [
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "google.com"
+                                        },
+                                        {
+                                          "v": "2"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "6"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "1"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": "true"
+                              },
+                              {
+                                "v": "true"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "9"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "22"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "15"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "27"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "11"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "1"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": []
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
+            "totalBytesProcessed": "32209830",
+            "jobComplete": true,
+            "cacheHit": false
+          }
+          `}}
+  - path: /bigquery/v2/projects/1234567890000/queries/job_AbcDeFTD3ygPaDMXO1xxxx
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "bigquery#getQueryResultsResponse",
+            "pageToken": "page-2",
+            "etag": "QhRBxxhNAyd0hjg9eVoJ6g==",
+            "schema": {
+              "fields": [
+                {
+                  "name": "email",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_name",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_type",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "ip_address",
+                  "type": "BYTES",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "time_usec",
+                  "type": "INTEGER",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_info",
+                  "type": "RECORD",
+                  "mode": "NULLABLE",
+                  "fields": [
+                    {
+                      "name": "timestamp_usec",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "elapsed_time_usec",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "success",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "mail_event_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    }
+                  ]
+                },
+                {
+                  "name": "message_info",
+                  "type": "RECORD",
+                  "mode": "NULLABLE",
+                  "fields": [
+                    {
+                      "name": "action_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "rfc2822_message_id",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "subject",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "payload_size",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "source",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_displayname",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "destination",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "selector",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_signature_verification_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_decryption_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_parsing_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_extraction_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rcpt_response",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "flattened_destinations",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "description",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_spam",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_policy_check_for_sender",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "num_message_attachments",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "connection_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "client_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_in_connect_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "failed_smtp_out_connect_ip",
+                          "type": "STRING",
+                          "mode": "REPEATED"
+                        },
+                        {
+                          "name": "smtp_tls_state",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_reply_code",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_user_agent_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "is_intra_domain",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_response_reason",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "authenticated_domain",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "is_internal",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dkim_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "spf_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "message_set",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "link_domain",
+                      "type": "STRING",
+                      "mode": "REPEATED"
+                    }
+                  ]
+                }
+              ]
+            },
+            "jobReference": {
+              "projectId": "1234567890000",
+              "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
+              "location": "US"
+            },
+            "totalRows": "3",
+            "rows": [
+              {
+                "f": [
+                  {
+                    "v": "contact@elastic.com"
+                  },
+                  {
+                    "v": "delivery"
+                  },
+                  {
+                    "v": "delivery_type"
+                  },
+                  {
+                    "v": "MjE2LjE2MC44My41Ng=="
+                  },
+                  {
+                    "v": "1746050655578390"
+                  },
+                  {
+                    "v": {
+                      "f": [
+                        {
+                          "v": "1746050655578390"
+                        },
+                        {
+                          "v": "678440"
+                        },
+                        {
+                          "v": "true"
+                        },
+                        {
+                          "v": "0"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "v": {
+                      "f": [
+                        {
+                          "v": "68"
+                        },
+                        {
+                          "v": "<12345627134207078908@example.com>"
+                        },
+                        {
+                          "v": "[Billing and Service Notice] Google Workspace service and pricing updates"
+                        },
+                        {
+                          "v": "33071"
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "foo@example.com"
+                              },
+                              {
+                                "v": "smtp-inbound"
+                              },
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "The Google Workspace Team"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "contact@elastic.com"
+                                  },
+                                  {
+                                    "v": "gmail-ui"
+                                  },
+                                  {
+                                    "v": "1"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": "gmail-ui::contact@elastic.com"
+                        },
+                        {
+                          "v": "250 2.0.0 OK"
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": []
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": "250"
+                              },
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": [
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "google.com"
+                                        },
+                                        {
+                                          "v": "2"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "6"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "1"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": "true"
+                              },
+                              {
+                                "v": "true"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "9"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "22"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "15"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": []
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
+            "totalBytesProcessed": "32209830",
+            "jobComplete": true,
+            "cacheHit": false
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/chat
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-3
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-03-28T07:25:22.041Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "chat",
+                          "customerId": "1"
+                      },
+                      "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A/",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "user_action",
+                              "name": "role_updated",
+                              "parameters": [
+                                  {
+                                      "name": "room_id",
+                                      "value": "1"
+                                  },
+                                  {
+                                      "name": "actor",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "target_users",
+                                      "multiValue": [
+                                          "test@elastic.com"
+                                      ]
+                                  },
+                                  {
+                                      "name": "room_name",
+                                      "value": "Demo"
+                                  },
+                                  {
+                                      "name": "external_room",
+                                      "value": "DISABLED"
+                                  },
+                                  {
+                                      "name": "actor_type",
+                                      "value": "NON_ADMIN"
+                                  },
+                                  {
+                                      "name": "target_user_role",
+                                      "value": "SPACE_MANAGER"
+                                  },
+                                  {
+                                      "name": "conversation_type",
+                                      "value": "SPACE"
+                                  },
+                                  {
+                                      "name": "conversation_ownership",
+                                      "value": "INTERNALLY_OWNED"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/chat
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "nextPageToken": "page-3",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-03-26T10:18:16.712Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "chat",
+                          "customerId": "1"
+                      },
+                      "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A/",
+                      "actor": {
+                          "callerType": "EXTERNAL_USER",
+                          "email": "foo@bar.com"
+                      },
+                      "events": [
+                          {
+                              "type": "user_action",
+                              "name": "message_deleted",
+                              "parameters": [
+                                  {
+                                      "name": "room_id",
+                                      "value": "1"
+                                  },
+                                  {
+                                      "name": "message_id",
+                                      "value": "1"
+                                  },
+                                  {
+                                      "name": "actor",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "target_users",
+                                      "multiValue": [
+                                          "test@elastic.com"
+                                      ]
+                                  },
+                                  {
+                                      "name": "retention_state",
+                                      "value": "EPHEMERAL_ONE_DAY"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/chat
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "nextPageToken": "page-2",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-03-26T05:55:02.063Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "chat",
+                          "customerId": "1"
+                      },
+                      "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A/",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "user_action",
+                              "name": "room_name_updated",
+                              "parameters": [
+                                  {
+                                      "name": "room_id",
+                                      "value": "1"
+                                  },
+                                  {
+                                      "name": "actor",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "room_name",
+                                      "value": "TEST3"
+                                  },
+                                  {
+                                      "name": "external_room",
+                                      "value": "DISABLED"
+                                  },
+                                  {
+                                      "name": "actor_type",
+                                      "value": "NON_ADMIN"
+                                  },
+                                  {
+                                      "name": "conversation_type",
+                                      "value": "SPACE"
+                                  },
+                                  {
+                                      "name": "conversation_ownership",
+                                      "value": "INTERNALLY_OWNED"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
   - path: /admin/reports/v1/activity/users/all/applications/calendar
     methods: ['GET']
     query_params:
@@ -632,10 +2639,803 @@ rules:
               ]
           }
           `}}
+  - path: /admin/reports/v1/activity/users/all/applications/vault
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-3
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "etag": "\"XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/xYYCFdXy_Pq8xoPdSCk-Cb0wbOo\"",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-04-10T19:06:06.187Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "vault",
+                          "customerId": "1"
+                      },
+                      "etag": "XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/9-plyixf2zhrQhgHCQ7-_gbusr4",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "user_action",
+                              "name": "export",
+                              "parameters": [
+                                  {
+                                      "name": "matter_id",
+                                      "value": "78504485-73d5-4b01-ae1a-63ebc1ae66eb"
+                                  },
+                                  {
+                                      "name": "additional_details",
+                                      "value": "export_name: \"Export\"\nquery: \"( from:google.com )\"\ntype: \"EMAIL\"\nexport_format: MBOX\ndata_region: \"United States\"\nshow_locker_content: true\nuse_improved_export: true\nexport_linked_drive_files: true\n"
+                                  },
+                                  {
+                                      "name": "query",
+                                      "value": "mode: All data, type: Mail, terms: from:google.com, Time zone: America/Los_Angeles, "
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/vault
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "etag": "\"XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/xYYCFdXy_Pq8xoPdSCk-Cb0wbOo\"",
+              "nextPageToken": "page-3",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-04-10T19:05:54.239Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "vault",
+                          "customerId": "1"
+                      },
+                      "etag": "XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/Q7hVUBizRQv7zoBIeuCO0g3UUmw",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "user_action",
+                              "name": "search",
+                              "parameters": [
+                                  {
+                                      "name": "matter_id",
+                                      "value": "78504485-73d5-4b01-ae1a-63ebc1ae66eb"
+                                  },
+                                  {
+                                      "name": "organizational_unit_name",
+                                      "value": "Google"
+                                  },
+                                  {
+                                      "name": "additional_details",
+                                      "value": "query: \"from:google.com\"\ntype: \"EMAIL\"\n"
+                                  },
+                                  {
+                                      "name": "query",
+                                      "value": "mode: All data, type: Mail, terms: from:(email_address_1 OR email_address_2) AND to:(email_address_1 OR email_address_2), Time zone: America/Los_Angeles, "
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/vault
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "etag": "\"XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/xYYCFdXy_Pq8xoPdSCk-Cb0wbOo\"",
+              "nextPageToken": "page-2",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-04-10T19:05:24.881Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "vault",
+                          "customerId": "1"
+                      },
+                      "etag": "XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/77VsZvNcux1EnUIu_SyN08-cHo8",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "user_action",
+                              "name": "view_per_matter_litigation_hold_report",
+                              "parameters": [
+                                  {
+                                      "name": "matter_id",
+                                      "value": "78504485-73d5-4b01-ae1a-63ebc1ae66eb"
+                                  },
+                                  {
+                                      "name": "resource_name",
+                                      "value": "0"
+                                  },
+                                  {
+                                      "name": "additional_details",
+                                      "value": "matter_name: \"Demo\"\n"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/meet
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-3
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-04-11T09:34:45.696Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "meet",
+                          "customerId": "1"
+                      },
+                      "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "call",
+                              "name": "call_ended",
+                              "parameters": [
+                                  {
+                                      "name": "meeting_code",
+                                      "value": "NTBTYDTXBE"
+                                  },
+                                  {
+                                      "name": "conference_id",
+                                      "value": "-PeisjX_5iUtKPuGffkJDaBcdEfgh"
+                                  },
+                                  {
+                                      "name": "organizer_email",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "is_external",
+                                      "boolValue": false
+                                  },
+                                  {
+                                      "name": "endpoint_id",
+                                      "value": "boq_hlane_tapUd4RgwzE"
+                                  },
+                                  {
+                                      "name": "device_type",
+                                      "value": "web"
+                                  },
+                                  {
+                                      "name": "product_type",
+                                      "value": "meet"
+                                  },
+                                  {
+                                      "name": "display_name",
+                                      "value": "Richard Roe"
+                                  },
+                                  {
+                                      "name": "location_country",
+                                      "value": "BT"
+                                  },
+                                  {
+                                      "name": "location_region",
+                                      "value": "Thimphu"
+                                  },
+                                  {
+                                      "name": "identifier",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "identifier_type",
+                                      "value": "email_address"
+                                  },
+                                  {
+                                      "name": "end_of_call_rating",
+                                      "intValue": "4"
+                                  },
+                                  {
+                                      "name": "start_timestamp_seconds",
+                                      "intValue": "1744363322"
+                                  },
+                                  {
+                                      "name": "duration_seconds",
+                                      "intValue": "762"
+                                  },
+                                  {
+                                      "name": "ip_address",
+                                      "value": "67.43.156.13"
+                                  },
+                                  {
+                                      "name": "network_rtt_msec_mean",
+                                      "intValue": "15"
+                                  },
+                                  {
+                                      "name": "network_recv_jitter_msec_mean",
+                                      "intValue": "2"
+                                  },
+                                  {
+                                      "name": "network_recv_jitter_msec_max",
+                                      "intValue": "2"
+                                  },
+                                  {
+                                      "name": "network_send_jitter_msec_mean",
+                                      "intValue": "2"
+                                  },
+                                  {
+                                      "name": "network_estimated_upload_kbps_mean",
+                                      "intValue": "9"
+                                  },
+                                  {
+                                      "name": "network_estimated_download_kbps_mean",
+                                      "intValue": "1"
+                                  },
+                                  {
+                                      "name": "audio_recv_seconds",
+                                      "intValue": "20"
+                                  },
+                                  {
+                                      "name": "audio_send_seconds",
+                                      "intValue": "22"
+                                  },
+                                  {
+                                      "name": "audio_send_bitrate_kbps_mean",
+                                      "intValue": "3"
+                                  },
+                                  {
+                                      "name": "audio_recv_packet_loss_max",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "audio_recv_packet_loss_mean",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "audio_send_packet_loss_max",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "audio_send_packet_loss_mean",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "video_recv_seconds",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "video_send_seconds",
+                                      "intValue": "11"
+                                  },
+                                  {
+                                      "name": "video_send_bitrate_kbps_mean",
+                                      "intValue": "173"
+                                  },
+                                  {
+                                      "name": "video_send_packet_loss_max",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "video_send_packet_loss_mean",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "video_send_fps_mean",
+                                      "intValue": "28"
+                                  },
+                                  {
+                                      "name": "video_send_long_side_median_pixels",
+                                      "intValue": "320"
+                                  },
+                                  {
+                                      "name": "video_send_short_side_median_pixels",
+                                      "intValue": "180"
+                                  },
+                                  {
+                                      "name": "network_congestion",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "screencast_recv_seconds",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "screencast_send_seconds",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "network_transport_protocol",
+                                      "value": "udp"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/meet
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "nextPageToken": "page-3",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-04-11T09:23:00.703Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "meet",
+                          "customerId": "1"
+                      },
+                      "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "conference_action",
+                              "name": "invitation_sent",
+                              "parameters": [
+                                  {
+                                      "name": "is_external",
+                                      "boolValue": false
+                                  },
+                                  {
+                                      "name": "meeting_code",
+                                      "value": "NTBTYDTXBE"
+                                  },
+                                  {
+                                      "name": "conference_id",
+                                      "value": "-PeisjX_5iUtKPuGffkJDaBcdEfgh"
+                                  },
+                                  {
+                                      "name": "action_time",
+                                      "value": "2025-04-11T09:23:00.703059Z"
+                                  },
+                                  {
+                                      "name": "target_user_count",
+                                      "intValue": "1"
+                                  },
+                                  {
+                                      "name": "identifier",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "identifier_type",
+                                      "value": "email_address"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/meet
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "nextPageToken": "page-2",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-04-11T09:38:26.272Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "meet",
+                          "customerId": "1"
+                      },
+                      "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A",
+                      "actor": {
+                          "callerType": "KEY",
+                          "key": "HANGOUTS_EXTERNAL_OR_ANONYMOUS"
+                      },
+                      "events": [
+                          {
+                              "type": "call",
+                              "name": "call_ended",
+                              "parameters": [
+                                  {
+                                      "name": "meeting_code",
+                                      "value": "NTBTYDTXBE"
+                                  },
+                                  {
+                                      "name": "conference_id",
+                                      "value": "-PeisjX_5iUtKPuGffkJDaBcdEfgh"
+                                  },
+                                  {
+                                      "name": "organizer_email",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "is_external",
+                                      "boolValue": true
+                                  },
+                                  {
+                                      "name": "endpoint_id",
+                                      "value": "boq_hlane_wD4dy81PI9s"
+                                  },
+                                  {
+                                      "name": "device_type",
+                                      "value": "web"
+                                  },
+                                  {
+                                      "name": "product_type",
+                                      "value": "meet"
+                                  },
+                                  {
+                                      "name": "display_name",
+                                      "value": "John Doe"
+                                  },
+                                  {
+                                      "name": "identifier",
+                                      "value": "test@example.com"
+                                  },
+                                  {
+                                      "name": "identifier_type",
+                                      "value": "email_address"
+                                  },
+                                  {
+                                      "name": "start_timestamp_seconds",
+                                      "intValue": "1744363391"
+                                  },
+                                  {
+                                      "name": "duration_seconds",
+                                      "intValue": "914"
+                                  },
+                                  {
+                                      "name": "network_rtt_msec_mean",
+                                      "intValue": "20"
+                                  },
+                                  {
+                                      "name": "network_recv_jitter_msec_mean",
+                                      "intValue": "3"
+                                  },
+                                  {
+                                      "name": "network_recv_jitter_msec_max",
+                                      "intValue": "3"
+                                  },
+                                  {
+                                      "name": "network_send_jitter_msec_mean",
+                                      "intValue": "1"
+                                  },
+                                  {
+                                      "name": "network_estimated_upload_kbps_mean",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "network_estimated_download_kbps_mean",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "audio_recv_seconds",
+                                      "intValue": "20"
+                                  },
+                                  {
+                                      "name": "audio_send_seconds",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "audio_send_bitrate_kbps_mean",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "audio_recv_packet_loss_max",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "audio_recv_packet_loss_mean",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "audio_send_packet_loss_max",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "audio_send_packet_loss_mean",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "video_recv_seconds",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "video_send_seconds",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "network_congestion",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "screencast_recv_seconds",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "screencast_send_seconds",
+                                      "intValue": "0"
+                                  },
+                                  {
+                                      "name": "network_transport_protocol",
+                                      "value": "udp"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/keep
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-3
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-03-27T12:46:57.714Z",
+                          "uniqueQualifier": "0",
+                          "applicationName": "keep",
+                          "customerId": "1"
+                      },
+                      "etag": "abcdefgh-SHfJfeOMlTPu983WfVweBonaAPdmU",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "user_action",
+                              "name": "modified_acl",
+                              "parameters": [
+                                  {
+                                      "name": "owner_email",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "note_name",
+                                      "value": "https://keep.googleapis.com/v1/notes/abc-xyz"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/keep
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "nextPageToken": "page-3",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-03-27T12:46:29.430Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "keep",
+                          "customerId": "1"
+                      },
+                      "etag": "abcdefgh-SHfJfeOMlTPu983WfVweBonaAPdmU",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "user_action",
+                              "name": "deleted_attachment",
+                              "parameters": [
+                                  {
+                                      "name": "owner_email",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "note_name",
+                                      "value": "https://keep.googleapis.com/v1/notes/abc-xyz"
+                                  },
+                                  {
+                                      "name": "attachment_name",
+                                      "value": "https://keep.googleapis.com/v1/notes/abc-xyz/attachments/abcdefgh"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/keep
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "nextPageToken": "page-2",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2025-03-27T12:45:08.310Z",
+                          "uniqueQualifier": "0",
+                          "applicationName": "keep",
+                          "customerId": "1"
+                      },
+                      "etag": "abcdefgh-SHfJfeOMlTPu983WfVweBonaAPdmU",
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@bar.com",
+                          "profileId": "1"
+                      },
+                      "events": [
+                          {
+                              "type": "user_action",
+                              "name": "uploaded_attachment",
+                              "parameters": [
+                                  {
+                                      "name": "owner_email",
+                                      "value": "foo@bar.com"
+                                  },
+                                  {
+                                      "name": "note_name",
+                                      "value": "https://keep.googleapis.com/v1/notes/abc-xyz"
+                                  },
+                                  {
+                                      "name": "attachment_name",
+                                      "value": "https://keep.googleapis.com/v1/notes/abc-xyz/attachments/abcdefgh"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
   - path: /admin/reports/v1/activity/users/all/applications/drive
     methods: [GET]
     query_params:
       startTime: "{startTime:2022-05-04.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -658,6 +3458,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -730,6 +3531,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:2022-05-04.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -747,6 +3549,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -780,6 +3583,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:2022-05-04.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -797,6 +3601,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -820,6 +3625,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:2021-10-02.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -838,6 +3644,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -856,6 +3663,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:2020-10-02.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -872,6 +3680,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -889,6 +3698,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:2020-10-02.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -905,6 +3715,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -921,6 +3732,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -937,6 +3749,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -953,6 +3766,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -969,6 +3783,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -985,6 +3800,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"
@@ -1001,6 +3817,7 @@ rules:
     methods: [GET]
     query_params:
       startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
     request_headers:
       Accept:
         - "application/json"

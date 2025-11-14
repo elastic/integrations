@@ -1,4 +1,13 @@
-# Custom Logs Package
+# Custom Logs (Deprecated) Package
+
+**This package is deprecated, please use the Custom Logs (Filestream) package instead.**
+
+WARNING: Migrating from the "Custom Logs (Deprecated)" to "Custom Logs
+(Filestream)" will cause files to be re-ingested because the state is not migrated.
+
+In future releases it's expected to have an automated way to migrate the state. However, this is not possible at the moment.
+
+The current best option for minimizing the data duplication while migrating to "Custom Logs (Filestream)" is to use the 'Ignore Older' or 'Exclude Files' options.
 
 The **Custom Logs** package is used to ingest arbitrary log files and parse their contents using [Ingest Pipelines](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html). Follow the steps below to set up and use this package.
 

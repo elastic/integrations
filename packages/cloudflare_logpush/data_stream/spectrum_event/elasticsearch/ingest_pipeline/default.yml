@@ -64,6 +64,12 @@ processors:
       tag: painless_connect_timestamp_to_milli
       if: ctx.json?.ConnectTimestamp != null
       source: |
+        if (ctx.json.ConnectTimestamp == "0" || 
+            ctx.json.ConnectTimestamp == 0 ||
+            ctx.json.ConnectTimestamp == "") {
+          ctx.json.ConnectTimestamp = null;
+          return;
+        }
         try {
           long t;
           if (ctx.json.ConnectTimestamp instanceof String) {
@@ -82,7 +88,7 @@ processors:
         catch (Exception e) {}
   - date:
       field: json.ConnectTimestamp
-      if: ctx.json?.ConnectTimestamp != null && ctx.json.ConnectTimestamp != ''
+      if: ctx.json?.ConnectTimestamp != null
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -105,6 +111,12 @@ processors:
       tag: painless_disconnect_timestamp_to_milli
       if: ctx.json?.DisconnectTimestamp != null
       source: |
+        if (ctx.json?.DisconnectTimestamp == "0" || 
+            ctx.json?.DisconnectTimestamp == 0 || 
+            ctx.json?.DisconnectTimestamp == "") {
+          ctx.json.DisconnectTimestamp = null;
+          return;
+        }
         try {
           long t;
           if (ctx.json.DisconnectTimestamp instanceof String) {
@@ -123,7 +135,7 @@ processors:
         catch (Exception e) {}
   - date:
       field: json.DisconnectTimestamp
-      if: ctx.json?.DisconnectTimestamp != null && ctx.json.DisconnectTimestamp != ''
+      if: ctx.json?.DisconnectTimestamp != null
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX

@@ -1,0 +1,34 @@
+{
+  "id": "elastic-agent-high-pipeline-queue",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Elastic Agent] High pipeline queue",
+    "tags": ["Elastic Agent", "Pipeline and Queues"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 1,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-elastic_agent.*beat-default, *:metrics-elastic_agent.*beat-default*\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\" AND agent.name NOT LIKE \"*agentless*\"\n| STATS pipeline_queue_pct = MAX(beat.stats.libbeat.pipeline.queue.filled.pct) * 100 BY elastic_agent.id, component.id\n| WHERE pipeline_queue_pct >= 90"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

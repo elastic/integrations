@@ -43,11 +43,13 @@ response.pagination:
       target: body.query
       value: "query fetchRepoAlerts ($org: String!, $repo:String!, $cursor:String!) { repository(owner: $org, name: $repo) { vulnerabilityAlerts(first: 100, after: $cursor) {  nodes { createdAt dependabotUpdate { error { body errorType title } pullRequest { createdAt closed closedAt merged mergedAt number url title } } dependencyScope dismissReason dismissedAt dismisser { login url } fixedAt number repository { description isInOrganization isPrivate name owner { login url } url } securityAdvisory { classification cvss { score vectorString } cwes(first:100) { nodes { cweId description name } } description ghsaId identifiers { type value } origin permalink references { url } publishedAt severity summary updatedAt withdrawnAt } securityVulnerability { firstPatchedVersion { identifier } package { ecosystem name } severity updatedAt vulnerableVersionRange } state vulnerableManifestPath vulnerableManifestFilename vulnerableRequirements } pageInfo { hasNextPage endCursor } } } }"
       fail_on_template_error: true
+      do_not_log_failure: true
       
   - set:
       target: body.variables
       value: "{\"org\": \"{{owner}}\", \"repo\": \"{{repo}}\", \"cursor\": \"[[ .last_response.body.data.repository.vulnerabilityAlerts.pageInfo.endCursor ]]\"}"
       fail_on_template_error: true
+      do_not_log_failure: true
 {{else}}
 request.body:
   query:
@@ -71,11 +73,13 @@ response.pagination:
       target: body.query
       value: "query fetchRepoAlerts ($org: String!, $cursor:String!) { organization(login: $org) { repositories(first: 10, after: $cursor) { nodes { vulnerabilityAlerts(first: 100) {  nodes { createdAt dependabotUpdate { error { body errorType title } pullRequest { createdAt closed closedAt merged mergedAt number url title } } dependencyScope dismissReason dismissedAt dismisser { login url } fixedAt number repository { description isInOrganization isPrivate name owner { login url } url } securityAdvisory { classification cvss { score vectorString } cwes(first:2) { nodes { cweId description name } } description ghsaId identifiers { type value } origin permalink references { url } publishedAt severity summary updatedAt withdrawnAt } securityVulnerability { firstPatchedVersion { identifier } package { ecosystem name } severity updatedAt vulnerableVersionRange } state vulnerableManifestPath vulnerableManifestFilename vulnerableRequirements } pageInfo { hasNextPage endCursor } } } pageInfo { hasNextPage endCursor } } } }"
       fail_on_template_error: true
+      do_not_log_failure: true
       
   - set:
       target: body.variables
       value: "{\"org\": \"{{owner}}\", \"cursor\": \"[[ .last_response.body.data.organization.repositories.pageInfo.endCursor ]]\"}"
       fail_on_template_error: true
+      do_not_log_failure: true
 
 {{/if}}
   

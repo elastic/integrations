@@ -1,0 +1,623 @@
+---
+description: Pipeline for processing Google Vault audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.16.0
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Google Workspace
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Vault
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_flatten_event_parameters
+      if: ctx.json?.events?.parameters instanceof List
+      description: Script to flatten the event parameters.
+      source: >
+        ctx.google_workspace = ctx.google_workspace ?: [:];
+        ctx.google_workspace.vault = ctx.google_workspace.vault ?: [:];
+        for (def param : ctx.json.events.parameters) {
+          if (param.name == null) {
+            continue;
+          }
+          def lw_case_name = param.name.toLowerCase();
+          if (param.value != null) {
+            ctx.google_workspace.vault[lw_case_name] = param.value;
+          } else if (param.boolValue != null) {
+            ctx.google_workspace.vault[lw_case_name] = param.boolValue;
+          } else if (param.intValue != null) {
+            ctx.google_workspace.vault[lw_case_name] = param.intValue;
+          } else if (param.multiValue != null) {
+            ctx.google_workspace.vault[lw_case_name] = param.multiValue;
+          } else if (param.multiIntValue != null) {
+            ctx.google_workspace.vault[lw_case_name] = param.multiIntValue;
+          } else if (param.multiBoolValue != null) {
+            ctx.google_workspace.vault[lw_case_name] = param.multiBoolValue;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json.events.parameters
+      ignore_missing: true
+  - rename:
+      field: json.events.name
+      tag: rename_json_events_name
+      target_field: google_workspace.vault.name
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - script:
+      description: Set event category based on event name.
+      if: ctx.google_workspace?.vault?.name != null
+      tag: set_event_category_from_vault_name
+      lang: painless
+      params:
+        add_collaborator_begin: iam
+        add_collaborator_end: iam
+        add_litigation_hold_begin: configuration
+        add_litigation_hold_end: configuration
+        add_preservation_rule_begin: configuration
+        add_preservation_rule_end: configuration
+        add_retention_rule_begin: configuration
+        add_retention_rule_end: configuration
+        cancel_accelerated_deletion_begin: configuration
+        cancel_accelerated_deletion_end: configuration
+        close_investigation_begin: configuration
+        close_investigation_end: configuration
+        convert_saved_query_to_collection_begin: configuration
+        convert_saved_query_to_collection_end: configuration
+        create_accelerated_deletion_begin: configuration
+        create_accelerated_deletion_end: configuration
+        create_export_begin: configuration
+        create_export_end: configuration
+        create_investigation_begin: configuration
+        create_investigation_end: configuration
+        create_saved_query_begin: configuration
+        create_saved_query_end: configuration
+        delete_export_begin: configuration
+        delete_export_end: configuration
+        delete_export_fail: configuration
+        delete_investigation_begin: configuration
+        delete_investigation_end: configuration
+        delete_preservation_rule_begin: configuration
+        delete_preservation_rule_end: configuration
+        delete_retention_rule_begin: configuration
+        delete_retention_rule_end: configuration
+        delete_saved_query_begin: configuration
+        delete_saved_query_end: configuration
+        deletion_search: configuration
+        download_cross_matter_litigation_hold_report: configuration
+        download_per_matter_litigation_hold_report: configuration
+        modify_default_retention_period_begin: configuration
+        modify_default_retention_period_end: configuration
+        obsolete_api_exports_list: configuration
+        obsolete_api_holds_insert: configuration
+        obsolete_api_holds_list: configuration
+        obsolete_api_matters_delete: configuration
+        obsolete_api_matters_get: configuration
+        obsolete_api_matters_insert: configuration
+        obsolete_api_matters_list: configuration
+        obsolete_api_matters_update: configuration
+        obsolete_preview_retention_rule_count: configuration
+        preview_retention_rule: configuration
+        remove_collaborator_begin: iam
+        remove_collaborator_end: iam
+        remove_litigation_hold_begin: configuration
+        remove_litigation_hold_end: configuration
+        reopen_investigation_begin: configuration
+        reopen_investigation_end: configuration
+        restore_investigation_begin: configuration
+        restore_investigation_end: configuration
+        update_investigation_details_begin: configuration
+        update_investigation_details_end: configuration
+        update_preservation_rule_add_holds_begin: configuration
+        update_preservation_rule_add_holds_end: configuration
+        update_preservation_rule_query_begin: configuration
+        update_preservation_rule_query_end: configuration
+        update_preservation_rule_remove_holds_begin: configuration
+        update_preservation_rule_remove_holds_end: configuration
+        update_retention_rule_begin: configuration
+        update_retention_rule_end: configuration
+        update_retention_settings: configuration
+        update_saved_query_details_begin: configuration
+        update_saved_query_details_end: configuration
+        view_cross_matter_litigation_hold_report: configuration
+        view_custodian_litigation_hold_report: configuration
+        view_investigation: configuration
+        view_matter_audit_log: configuration
+        view_per_matter_litigation_hold_report: configuration
+        view_retention_policy: configuration
+        view_retention_settings: configuration
+        view_system_audit_log: configuration
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def category = [];
+        category.add(params.get(ctx.google_workspace.vault.name));
+        ctx.event.category = category;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Set event type based on event name.
+      if: ctx.google_workspace?.vault?.name != null
+      tag: set_event_type_from_vault_name
+      lang: painless
+      params:
+        add_collaborator_begin: info
+        add_collaborator_end: info
+        add_litigation_hold_begin: info
+        add_litigation_hold_end: info
+        add_preservation_rule_begin: info
+        add_preservation_rule_end: info
+        add_retention_rule_begin: info
+        add_retention_rule_end: info
+        cancel_accelerated_deletion_begin: deletion
+        cancel_accelerated_deletion_end: deletion
+        close_investigation_begin: change
+        close_investigation_end: change
+        convert_saved_query_to_collection_begin: change
+        convert_saved_query_to_collection_end: change
+        create_accelerated_deletion_begin: creation
+        create_accelerated_deletion_end: creation
+        create_export_begin: creation
+        create_export_end: creation
+        create_investigation_begin: creation
+        create_investigation_end: creation
+        create_saved_query_begin: creation
+        create_saved_query_end: creation
+        delete_export_begin: deletion
+        delete_export_end: deletion
+        delete_export_fail: info
+        delete_investigation_begin: deletion
+        delete_investigation_end: deletion
+        delete_preservation_rule_begin: deletion
+        delete_preservation_rule_end: deletion
+        delete_retention_rule_begin: deletion
+        delete_retention_rule_end: deletion
+        delete_saved_query_begin: deletion
+        delete_saved_query_end: deletion
+        deletion_search: deletion
+        download_count_per_account_csv: info
+        download_cross_matter_litigation_hold_report: info
+        download_per_matter_litigation_hold_report: info
+        export: info
+        export_file_download: info
+        get_count_operation: info
+        legacy_export_download: info
+        modify_default_retention_period_begin: change
+        modify_default_retention_period_end: change
+        obsolete_api_exports_list: change
+        obsolete_api_holds_insert: change
+        obsolete_api_holds_list: change
+        obsolete_api_matters_delete: change
+        obsolete_api_matters_get: change
+        obsolete_api_matters_insert: change
+        obsolete_api_matters_list: change
+        obsolete_api_matters_update: change
+        obsolete_preview_retention_rule_count: change
+        preview_retention_rule: info
+        remove_collaborator_begin: info
+        remove_collaborator_end: info
+        remove_litigation_hold_begin: info
+        remove_litigation_hold_end: info
+        reopen_investigation_begin: change
+        reopen_investigation_end: change
+        restore_investigation_begin: change
+        restore_investigation_end: change
+        search: info
+        search_count: info
+        update_investigation_details_begin: change
+        update_investigation_details_end: change
+        update_preservation_rule_add_holds_begin: change
+        update_preservation_rule_add_holds_end: change
+        update_preservation_rule_query_begin: change
+        update_preservation_rule_query_end: change
+        update_preservation_rule_remove_holds_begin: change
+        update_preservation_rule_remove_holds_end: change
+        update_retention_rule_begin: change
+        update_retention_rule_end: change
+        update_retention_settings: change
+        update_saved_query_details_begin: change
+        update_saved_query_details_end: change
+        view_cross_matter_litigation_hold_report: access
+        view_custodian_litigation_hold_report: access
+        view_document: access
+        view_document_information: access
+        view_external_document: access
+        view_investigation: access
+        view_matter_audit_log: access
+        view_per_matter_litigation_hold_report: access
+        view_retention_policy: access
+        view_retention_settings: access
+        view_system_audit_log: access
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def type = [];
+        type.add(params.get(ctx.google_workspace.vault.name));
+        ctx.event.type = type;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.kind
+      tag: rename_json_kind
+      target_field: google_workspace.kind
+      ignore_missing: true
+  - rename: 
+      field: json.ownerDomain
+      target_field: google_workspace.organization.domain
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      tag: rename_json_etag
+      target_field: google_workspace.etag
+      ignore_missing: true
+  - rename:
+      field: json.actor.callerType
+      tag: rename_actor_callerType
+      target_field: google_workspace.actor.caller_type
+      ignore_missing: true
+  - rename:
+      field: json.actor.email
+      tag: rename_actor_email
+      target_field: google_workspace.actor.email
+      ignore_missing: true
+  - set:
+      field: source.user.email
+      tag: set_source_user_email_from_actor_email
+      copy_from: google_workspace.actor.email
+      ignore_empty_value: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_actor_email
+      copy_from: google_workspace.actor.email
+      ignore_empty_value: true
+  - dissect:
+      field: source.user.email
+      tag: dissect_user_email
+      if: ctx.source?.user?.email != null && ctx.source.user.email.contains('@')
+      pattern: '%{}@%{source.user.domain}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.actor.key
+      tag: rename_actor_key
+      target_field: google_workspace.actor.key
+      ignore_missing: true
+  - rename:
+      field: json.actor.profileId
+      tag: rename_actor_profileId
+      target_field: google_workspace.actor.profile_id
+      ignore_missing: true
+  - set:
+      field: source.user.id
+      tag: set_source_user_id_from_actor_profile_id
+      copy_from: google_workspace.actor.profile_id
+      ignore_empty_value: true
+  - set:
+      field: user
+      tag: set_user_from_source_user
+      copy_from: source.user
+      ignore_empty_value: true
+  - rename:
+      field: json.id.applicationName
+      tag: rename_id_applicationName
+      target_field: google_workspace.id.application_name
+      ignore_missing: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_id_application_name
+      copy_from: google_workspace.id.application_name
+      ignore_empty_value: true
+  - rename:
+      field: json.id.customerId
+      tag: rename_id_customerId
+      target_field: google_workspace.id.customer_id
+      ignore_missing: true
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_customerId
+      copy_from: google_workspace.id.customer_id
+      ignore_empty_value: true
+  - date:
+      field: json.id.time
+      tag: date_id_time
+      target_field: google_workspace.id.time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.id?.time != null && ctx.json.id.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_id_time
+      copy_from: google_workspace.id.time
+      ignore_empty_value: true
+  - rename:
+      field: json.id.uniqueQualifier
+      tag: rename_id_uniqueQualifier
+      target_field: google_workspace.id.unique_qualifier
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_id_unique_qualifier
+      copy_from: google_workspace.id.unique_qualifier
+      ignore_empty_value: true
+  - convert:
+      field: json.ipAddress
+      tag: convert_ipAddress_to_ip
+      target_field: google_workspace.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ipAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_google_workspace_ip_address
+      copy_from: google_workspace.ip_address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_geo_from_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      tag: set_source_as_from_source_ip
+      database_file: GeoLite2-ASN.mmdb
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: json.events.type
+      tag: rename_json_events_type
+      target_field: google_workspace.vault.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_name
+      copy_from: google_workspace.vault.name
+      ignore_empty_value: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: '_'
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.target.email
+      tag: set_user_target_email_from_vault_target_user
+      copy_from: google_workspace.vault.target_user
+      ignore_empty_value: true
+  - set:
+      field: url.full
+      tag: set_url_full_from_vault_resource_url
+      copy_from: google_workspace.vault.resource_url
+      ignore_empty_value: true
+  - rename:
+      field: google_workspace.vault.query
+      tag: rename_vault_query
+      target_field: google_workspace.vault.query_raw
+      ignore_missing: true
+  - kv:
+      field: google_workspace.vault.query_raw
+      description: Parse Vault query
+      tag: kv_vault_query_raw
+      field_split: ', '
+      value_split: ': '
+      target_field: google_workspace.vault.query
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.vault.query.Time zone
+      tag: rename_vault_query_time_zone
+      target_field: google_workspace.vault.query.time_zone
+      ignore_missing: true
+  - rename:
+      field: google_workspace.vault.additional_details
+      tag: rename_vault_additional_details
+      target_field: google_workspace.vault.additional_details_raw
+      ignore_missing: true
+  - kv:
+      field: google_workspace.vault.additional_details_raw
+      description: Parse additional details
+      tag: kv_vault_additional_details_raw
+      field_split: '\n'
+      value_split: ': '
+      trim_value: "\\s\""
+      target_field: google_workspace.vault.additional_details
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.vault.additional_details.export_linked_drive_files
+      tag: convert_export_linked_drive_files_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.vault.additional_details.show_locker_content
+      tag: convert_show_locker_content_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.vault.additional_details.use_improved_export
+      tag: convert_use_improved_export_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_actor_email_into_related_user
+      value: '{{{google_workspace.actor.email}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.actor?.email != null
+  - append:
+      field: related.user
+      tag: append_target_user_into_related_user
+      value: '{{{google_workspace.vault.target_user}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.vault?.target_user != null
+  - append:
+      field: related.ip
+      tag: append_ip_address_into_related_ip
+      value: '{{{google_workspace.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.ip_address != null
+  - remove:
+      field:
+        - google_workspace.actor.email
+        - google_workspace.actor.profile_id
+        - google_workspace.id.application_name
+        - google_workspace.id.customer_id
+        - google_workspace.id.time
+        - google_workspace.id.unique_qualifier
+        - google_workspace.ip_address
+        - google_workspace.vault.resource_url
+        - google_workspace.vault.target_user
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

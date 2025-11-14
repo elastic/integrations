@@ -355,6 +355,22 @@ An example event for `log` looks as following:
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
+| tls.client.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, this should be encoded in base 16 and formatted without colons and uppercase characters. | keyword |
+| tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| tls.client.x509.subject.country | List of country \(C) code | keyword |
+| tls.client.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
+| tls.client.x509.subject.locality | List of locality names (L) | keyword |
+| tls.client.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| tls.client.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| tls.client.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, this should be encoded in base 16 and formatted without colons and uppercase characters. | keyword |
+| tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| tls.server.x509.subject.country | List of country \(C) code | keyword |
+| tls.server.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
+| tls.server.x509.subject.locality | List of locality names (L) | keyword |
+| tls.server.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| tls.server.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| tls.server.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |

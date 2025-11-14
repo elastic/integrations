@@ -41,6 +41,56 @@ processors:
         - error
       if: "ctx?.cef?.extensions?.sourceAddress == null || ctx?.cef?.extensions?.destinationAddress == null"
 
+  # normalize user fields
+  - rename:
+      field: source.user.name
+      target_field: source.user.email
+      tag: rename_source_user_email
+      if: ctx.source?.user?.name != null && ctx.source.user.name.indexOf("@") > 0
+  - dissect:
+      field: source.user.email
+      pattern: '%{source.user.name}@%{source.user.domain}'
+      tag: dissect_source_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.source?.user?.name == null
+  - append:
+      field: related.user
+      value: '{{{source.user.name}}}'
+      if: ctx.source?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{source.user.email}}}'
+      if: ctx.source?.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: destination.user.name
+      target_field: destination.user.email
+      tag: rename_destination_user_email
+      if: ctx.destination?.user?.name != null && ctx.destination.user.name.indexOf("@") > 0
+  - dissect:
+      field: destination.user.email
+      pattern: '%{destination.user.name}@%{destination.user.domain}'
+      tag: dissect_destination_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.destination?.user?.name == null
+  - append:
+      field: related.user
+      value: '{{{destination.user.name}}}'
+      if: ctx.destination?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{destination.user.email}}}'
+      if: ctx.destination?.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+
 on_failure:
   - append:
       field: error.message

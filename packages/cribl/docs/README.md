@@ -42,6 +42,6 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
     1. Set **Cloud Id** for the Cloud destination or **Bulk API URLs** for the Elasticsearch destination to point to your Elastic cluster.
 
-    2. Set **Index or Data Stream** to `logs-cribl-default`.
+    2. Set **Index or Data Stream** to `logs-cribl-default` for log-type events or to `metrics-cribl-default` for metric-type events.
 
     3. **API key** should be a Base64 encoded Elastic API key, which you can create in Kibana by following the instructions under **Management** > **Stack Management** > **Security** > **API Keys**. If you are using an API key with “Restrict privileges”, be sure to review the Indices privileges to provide at least "auto_configure" and "write" permissions for the logs-* index, which you will be using for these Fleet integration data streams.

@@ -9,13 +9,13 @@
           description: A unique identifier for an individual message within a threat (i.e email campaign).
         - name: abx_portal_url
           type: keyword
-          description: The URL at which the specific message details are viewable in Abnormal Security's Portal web interface.
+          description: The URL at which the specific message details are viewable in Abnormal AI's Portal web interface.
         - name: attachment_count
           type: long
           description: Number of attachments in email (only available for IESS customers).
         - name: attachment_names
           type: keyword
-          description: List of attachment names, if any.
+          description: List of attachment names, if any. Attachments retrieved from the attachments endpoint are appended to this field if enrichment is enabled.
         - name: attack
           type: group
           fields:
@@ -54,6 +54,25 @@
         - name: is_read
           type: boolean
           description: Whether an email has been read.
+        - name: links
+          type: nested
+          description: Details of the links that are embedded in the email messages of a threat. Obtained from the links endpoint if enrichment is enabled.
+          fields:
+            - name: display_text
+              type: keyword
+              description: The link's display text.
+            - name: domain
+              type: keyword
+              description: The domain name of the link.
+            - name: source
+              type: keyword
+              description: The location in the email where the link may be found.
+            - name: type
+              type: keyword
+              description: The type of link in the email.
+            - name: url
+              type: keyword
+              description: The URL of the link.
         - name: post_remediated
           type: boolean
           description: Indicates whether Abnormal remediated the campaign at a later time, after landing in the user's Inbox. Note``:`` Abnormal has retained this field and the autoRemediated field to support prior integrations, but in newly created integrations, you should capture this information from the remediationStatus field.

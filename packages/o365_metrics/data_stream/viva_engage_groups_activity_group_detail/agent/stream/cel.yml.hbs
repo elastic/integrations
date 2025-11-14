@@ -14,6 +14,9 @@ resource.ssl:
 {{#if resource_timeout}}
 resource.timeout: {{resource_timeout}}
 {{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
 resource.url: {{url}}
 {{#if resource_retry_max_attempts}}
 resource.retry.max_attempts: {{resource_retry_max_attempts}}
@@ -168,7 +171,7 @@ program: |
                   "error": {
                     "code": string(resp.StatusCode),
                     "id": string(resp.Status),
-                    "message": "GET " + state.path + ": " + (
+                    "message": "GET " + state.type_to_api_map[work_list[0].type] + ": " + (
                       size(resp.Body) != 0 ?
                         string(resp.Body)
                       :

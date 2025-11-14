@@ -24,45 +24,29 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 
 ### Agent-based deployment
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-#### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
 
-### To collect data from the Google SecOps API:
+### Collect data from the Google SecOps API
 
-- Create Google SecOps service account [Steps to create](https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount).
-- **Chronicle API** must be enabled.
+1. Create Google SecOps service account [Steps to create](https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount).
 
-### To enable the Chronicle API:
+**Chronicle API** must be enabled.
 
-- Log in to the  "https://console.cloud.google.com/"  using valid credentials.
-- Navigate to the ‘Chronicle API’
-- Click `Enabale`
+### Enable the Chronicle API
 
-### To Update the Permission of Service Account
-- Open GCP Console, Then go to IAM.
-- In View By Main Tab > Click GRANT ACCESS.
-- Add Service Account name in New Principals.
-- In Assign Role, Select Owner.
-- Click Save
+1. Log in to the  "https://console.cloud.google.com/"  using valid credentials.
+2. Navigate to the **Chronicle API**.
+3. Click **Enable**.
+
+### Update the Permission of Service Account
+
+1. Open GCP Console, and go to IAM.
+2. In **View By Main Tab**, click **GRANT ACCESS**.
+3. Add Service Account name in **New Principals**.
+4. In **Assign Role**, select **Owner**.
+5. Click **Save**.
 
 This integration will make use of the following *oauth2 scope*:
 
@@ -75,7 +59,7 @@ If installing in GCP-Cloud environment, credentials are not necessary but make s
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana navigate to Management > Integrations.
+1. In the top search bar in Kibana, search for **Integrations**.
 2. In "Search for integrations" top bar, search for `Google SecOps`.
 3. Select the "Google SecOps" integration from the search results.
 4. Select "Add Google SecOps" to add the integration.

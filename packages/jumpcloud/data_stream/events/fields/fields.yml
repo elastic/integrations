@@ -11,90 +11,17 @@
           fields:
             - name: display_label
               type: keyword
+            - name: display_name
+              type: keyword
             - name: id
               type: keyword
             - name: name
               type: keyword
+            - name: package_manager
+              type: keyword
+            - name: sso_type
+              type: keyword
             - name: sso_url
-              type: keyword
-        - name: attr
-          type: keyword
-        - name: auth_method
-          type: keyword
-        - name: base
-          type: keyword
-        - name: changes
-          type: flattened
-        - name: client_ip
-          type: keyword
-        - name: connection_id
-          type: keyword
-        - name: deref
-          type: long
-        - name: dn
-          type: keyword
-        - name: error_code
-          type: long
-        - name: error_message
-          type: keyword
-        - name: event_type
-          type: keyword
-        - name: filter
-          type: keyword
-        - name: id
-          type: keyword
-        - name: idp_initiated
-          type: boolean
-        - name: mech
-          type: keyword
-        - name: message
-          type: keyword
-        - name: mfa
-          type: boolean
-        - name: number_of_results
-          type: long
-        - name: operation_number
-          type: long
-        - name: operation_type
-          type: keyword
-        - name: organization
-          type: keyword
-        - name: process_name
-          type: keyword
-        - name: provider
-          type: keyword
-        - name: scope
-          type: long
-        - name: start_tls
-          type: boolean
-        - name: service
-          type: keyword
-        - name: src_ip
-          type: keyword
-        - name: sso_token_success
-          type: boolean
-        - name: success
-          type: boolean
-        - name: system_timestamp
-          type: keyword
-        - name: timestamp
-          type: keyword
-        - name: tls_established
-          type: boolean
-        - name: username
-          type: keyword
-        - name: resource
-          type: group
-          fields:
-            - name: email_type
-              type: keyword
-            - name: id
-              type: keyword
-            - name: recipient_email
-              type: keyword
-            - name: type
-              type: keyword
-            - name: username
               type: keyword
         - name: association
           type: group
@@ -124,53 +51,40 @@
                       type: keyword
             - name: op
               type: keyword
-        - name: auth_meta
-          type: group
-          fields:
-            - name: auth_methods
-              type: group
-              fields:
-                - name: password
-                  type: group
-                  fields:
-                    - name: success
-                      type: boolean
+        - name: attr
+          type: keyword
         - name: auth_context
           type: group
           fields:
-            - name: policies_applied
-              type: group
-              fields:
-                - name: id
-                  type: keyword
-                - name: name
-                  type: keyword
-                - name: metadata
-                  type: group
-                  fields:
-                    - name: action
-                      type: keyword
-                    - name: resource_type
-                      type: keyword
             - name: auth_methods
               type: group
               fields:
-                - name: jumpcloud_protect
-                  type: group
-                  fields:
-                    - name: success
-                      type: boolean
                 - name: duo
                   type: group
                   fields:
                     - name: success
                       type: boolean
-                - name: totp
+                - name: jumpcloud_go
+                  type: group
+                  fields:
+                    - name: success
+                      type: boolean
+                - name: jumpcloud_go_uv
+                  type: group
+                  fields:
+                    - name: success
+                      type: boolean
+                - name: jumpcloud_protect
                   type: group
                   fields:
                     - name: success
                       type: boolean
                 - name: password
+                  type: group
+                  fields:
+                    - name: success
+                      type: boolean
+                - name: totp
                   type: group
                   fields:
                     - name: success
@@ -218,6 +132,115 @@
                   type: keyword
                 - name: username
                   type: keyword
+            - name: policies_applied
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                - name: metadata
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                    - name: resource_type
+                      type: keyword
+                - name: name
+                  type: keyword
+            - name: system
+              type: group
+              fields:
+                - name: displayName
+                  type: keyword
+                - name: hostname
+                  type: keyword
+                - name: id
+                  type: keyword
+                - name: os
+                  type: keyword
+                - name: version
+                  type: keyword
+        - name: auth_meta
+          type: group
+          fields:
+            - name: auth_methods
+              type: group
+              fields:
+                - name: password
+                  type: group
+                  fields:
+                    - name: success
+                      type: boolean
+        - name: auth_method
+          type: keyword
+        - name: available_os_updates
+          type: group
+          fields:
+            - name: allows_install_later
+              type: boolean
+            - name: download_size
+              type: long
+            - name: human_readable_name
+              type: keyword
+            - name: human_readable_name_locale
+              type: keyword
+            - name: install_size
+              type: long
+            - name: is_config_data_update
+              type: boolean
+            - name: is_critical
+              type: boolean
+            - name: is_firmware_update
+              type: boolean
+            - name: is_major_os_update
+              type: boolean
+            - name: metadata_url
+              type: keyword
+            - name: product_key
+              type: keyword
+            - name: requires_bootstrap_token
+              type: boolean
+            - name: restart_required
+              type: boolean
+            - name: version
+              type: keyword
+        - name: base
+          type: keyword
+        - name: changes
+          type: flattened
+        - name: client_ip
+          type: keyword
+        - name: command
+          type: group
+          fields:
+            - name: force
+              type: boolean
+            - name: items
+              type: keyword
+            - name: managed_apps_only
+              type: boolean
+            - name: payload
+              type: keyword
+              ignore_above: 4096
+            - name: queries
+              type: keyword
+            - name: request_type
+              type: keyword
+        - name: command_uuid
+          type: keyword
+        - name: connection_id
+          type: keyword
+        - name: deref
+          type: long
+        - name: dn
+          type: keyword
+        - name: error_code
+          type: long
+        - name: error_message
+          type: keyword
+        - name: event_type
+          type: keyword
+        - name: filter
+          type: keyword
         - name: geoip
           type: group
           fields:
@@ -235,9 +258,15 @@
               type: keyword
             - name: timezone
               type: keyword
+        - name: id
+          type: keyword
+        - name: idp_initiated
+          type: boolean
         - name: initiated_by
           type: group
           fields:
+            - name: administrator
+              type: boolean
             - name: email
               type: keyword
             - name: id
@@ -246,11 +275,187 @@
               type: keyword
             - name: username
               type: keyword
+        - name: mdm_device_id
+          type: keyword
+        - name: mdm_device_manager_id
+          type: keyword
+        - name: mdm_type
+          type: keyword
+        - name: mech
+          type: keyword
+        - name: message
+          type: keyword
+        - name: mfa
+          type: boolean
         - name: mfa_meta
           type: group
           fields:
             - name: type
               type: keyword
+        - name: number_of_results
+          type: long
+        - name: operation_number
+          type: long
+        - name: operation_type
+          type: keyword
+        - name: organization
+          type: keyword
+        - name: os_meta_family
+          type: keyword
+        - name: previous_state
+          type: keyword
+        - name: process_name
+          type: keyword
+        - name: profile_list
+          type: group
+          fields:
+            - name: has_removal_passcode
+              type: boolean
+            - name: is_encrypted
+              type: boolean
+            - name: is_managed
+              type: boolean
+            - name: payload_content
+              type: group
+              fields:
+                - name: payload_description
+                  type: keyword
+                - name: payload_display_name
+                  type: keyword
+                - name: payload_identifier
+                  type: keyword
+                - name: payload_organization
+                  type: keyword
+                - name: payload_type
+                  type: keyword
+                - name: payload_uuid
+                  type: keyword
+                - name: payload_version
+                  type: float
+            - name: payload_description
+              type: keyword
+            - name: payload_display_name
+              type: keyword
+            - name: payload_identifier
+              type: keyword
+            - name: payload_organization
+              type: keyword
+            - name: payload_removal_disallowed
+              type: boolean
+            - name: payload_uuid
+              type: keyword
+            - name: payload_version
+              type: float
+            - name: payload_verion
+              type: float
+            - name: signer_certificates
+              type: keyword
+              ignore_above: 4096
+        - name: provider
+          type: keyword
+        - name: query_responses
+          type: group
+          fields:
+            - name: available_device_capacity
+              type: long
+            - name: device_capacity
+              type: long
+            - name: device_name
+              type: keyword
+            - name: is_supervised
+              type: boolean
+            - name: model_name
+              type: keyword
+            - name: os_version
+              type: keyword
+            - name: product_name
+              type: keyword
+            - name: wifi_mac
+              type: keyword
+        - name: repeat_count
+          type: long
+        - name: request_type
+          type: keyword
+        - name: resource
+          type: group
+          fields:
+            - name: application_type
+              type: keyword
+            - name: displayLabel
+              type: keyword
+            - name: displayName
+              type: keyword
+            - name: display_name
+              type: keyword
+            - name: email_type
+              type: keyword
+            - name: enterprise_id
+              type: keyword
+            - name: hostname
+              type: keyword
+            - name: id
+              type: keyword
+            - name: install_type
+              type: keyword
+            - name: name
+              type: keyword
+            - name: package_manager
+              type: keyword
+            - name: policy_id
+              type: keyword
+            - name: policy_name
+              type: keyword
+            - name: policy_template_id
+              type: keyword
+            - name: policy_template_name
+              type: keyword
+            - name: recipient_email
+              type: keyword
+            - name: runtime_permissions
+              type: keyword
+            - name: type
+              type: keyword
+            - name: update_mode
+              type: keyword
+            - name: username
+              type: keyword
+        - name: scan_initiated
+          type: boolean
+        - name: scope
+          type: long
+        - name: security_info
+          type: group
+          fields:
+            - name: management_status
+              type: group
+              fields:
+                - name: enrolled_via_dep
+                  type: boolean
+                - name: is_activation_lock_manageable
+                  type: boolean
+                - name: is_user_enrollment
+                  type: boolean
+                - name: user_approved_enrollment
+                  type: boolean
+            - name: secure_boot
+              type: group
+              fields:
+                - name: secure_boot_level
+                  type: keyword
+        - name: service
+          type: keyword
+        - name: src_ip
+          type: keyword
+        - name: start_tls
+          type: boolean
+        - name: state
+          type: keyword
+        - name: status
+          type: keyword
+        - name: success
+          type: boolean
+        - name: sso_token_success
+          type: boolean
         - name: system
           type: group
           fields:
@@ -260,6 +465,17 @@
               type: keyword
             - name: id
               type: keyword
+        - name: system_timestamp
+          type: keyword
+        - name: target_resource
+          type: group
+          fields:
+            - name: type
+              type: keyword
+        - name: timestamp
+          type: keyword
+        - name: tls_established
+          type: boolean
         - name: useragent
           type: group
           fields:
@@ -270,10 +486,6 @@
             - name: minor
               type: keyword
             - name: name
-              type: keyword
-            - name: patch
-              type: keyword
-            - name: version
               type: keyword
             - name: os
               type: keyword
@@ -289,5 +501,11 @@
               type: keyword
             - name: os_version
               type: keyword
+            - name: patch
+              type: keyword
+            - name: version
+              type: keyword
+        - name: username
+          type: keyword
         - name: version
           type: keyword

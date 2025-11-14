@@ -63,8 +63,18 @@ processors:
             field: ses.reg_key_result.last_write
             ignore_missing: true
   - set:
+      field: registry.path
+      tag: set_registry_path_from_reg_value_path
+      copy_from: ses.reg_value.path
+      ignore_empty_value: true
+  - set:
       field: registry.value
-      tag: set_registry_value_from_reg_value_data
+      tag: set_registry_value_from_reg_value_name
+      copy_from: ses.reg_value.name
+      ignore_empty_value: true
+  - set:
+      field: registry.data.bytes
+      tag: set_registry_data_bytes_from_reg_value_data
       copy_from: ses.reg_value.data
       ignore_empty_value: true
   - convert:
@@ -121,6 +131,12 @@ processors:
         - remove:
             field: ses.reg_value.type_id
             ignore_missing: true
+  - append:
+      field: registry.data.bytes
+      tag: append_registry_data_bytes_from_reg_value_result_data
+      value: '{{{ses.reg_value_result.data}}}'
+      if: ctx.ses?.reg_value_result?.data != null && ctx.ses.reg_value_result.data != ''
+      allow_duplicates: false
   - convert:
       field: ses.reg_value_result.is_default_value
       tag: convert_reg_value_result_is_default_value_to_boolean

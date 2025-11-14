@@ -172,7 +172,7 @@ TYCHON checks local browser configuration settings.
 | tychon.script.type | Scanner Script Type. | keyword |
 | tychon.script.version | Scanner Script Version. | version |
 | tychon.tls.version_protocol | Protocol name and version in the original format. | keyword |
-| tychon.tychon.data.version | Data Version. | version |
+| tychon.tychon.data.version | Data Version. | keyword |
 | tychon.tychon.id | TYCHON unique host identifier. | keyword |
 
 
@@ -267,7 +267,8 @@ TYCHON connects to open ports on the computer and reports back if it is hosting 
 | tychon.script.type | Scanner Script Type. | keyword |
 | tychon.script.version | Scanner Script Version. | version |
 | tychon.server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| tychon.server.ip | The ip or domain of the site hosting the cipher | keyword |
+| tychon.server.host | The host address of the site hosting the cipher. | keyword |
+| tychon.server.ip | The IP of the site hosting the cipher. | ip |
 | tychon.server.port | Port of the server. | long |
 | tychon.service.description | The description of the service | keyword |
 | tychon.service.display_name | The friendly name of the service | keyword |

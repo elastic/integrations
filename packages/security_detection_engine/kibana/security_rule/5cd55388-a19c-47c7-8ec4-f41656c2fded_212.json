@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the PowerShell process loading the Task Scheduler COM DLL followed by an outbound RPC network connection within a short time period. This may indicate lateral movement or remote discovery via scheduled tasks.",
+        "false_positives": [
+            "Legitimate scheduled tasks may be created during installation of new software."
+        ],
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.library-*",
+            "logs-endpoint.events.network-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Outbound Scheduled Task Activity via PowerShell",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Outbound Scheduled Task Activity via PowerShell\n\nPowerShell, a powerful scripting language in Windows, can automate tasks via the Task Scheduler. Adversaries exploit this by creating scheduled tasks to execute malicious scripts, facilitating lateral movement or remote discovery. The detection rule identifies suspicious PowerShell activity by monitoring for the Task Scheduler DLL load and subsequent outbound RPC connections, signaling potential misuse.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific host.id and process.entity_id associated with the suspicious activity.\n- Examine the process execution history on the affected host to determine if the PowerShell process (powershell.exe, pwsh.exe, or powershell_ise.exe) has executed any unexpected or unauthorized scripts.\n- Check the network logs for the host to identify any unusual or unauthorized outbound RPC connections, particularly those targeting port 135, and verify if the destination addresses are legitimate and expected.\n- Investigate the context of the taskschd.dll library load by reviewing recent scheduled tasks on the host to identify any newly created or modified tasks that could be linked to the alert.\n- Correlate the alert with other security events or logs from the same host or network segment to identify any patterns or additional indicators of compromise that may suggest lateral movement or remote discovery attempts.\n\n### False positive analysis\n\n- Legitimate administrative tasks using PowerShell may trigger the rule if they involve loading the Task Scheduler DLL and making RPC connections. To manage this, identify and whitelist specific scripts or processes that are known to perform these actions regularly.\n- Automated system maintenance or monitoring tools might also load the Task Scheduler DLL and establish RPC connections. Review these tools and exclude their process IDs or hashes from the detection rule to prevent false alerts.\n- Software updates or installations that use PowerShell scripts could mimic the behavior detected by the rule. Monitor update schedules and temporarily disable the rule during these periods if necessary, or create exceptions for known update processes.\n- Developers or IT staff using PowerShell for legitimate remote management tasks may inadvertently trigger the rule. Implement user-based exceptions for trusted personnel or restrict the rule to non-administrative accounts to reduce false positives.\n\n### Response and remediation\n\n- Isolate the affected host immediately from the network to prevent further lateral movement or data exfiltration.\n- Terminate the suspicious PowerShell process identified in the alert to stop any ongoing malicious activity.\n- Conduct a forensic analysis of the affected system to identify any additional malicious scheduled tasks or scripts and remove them.\n- Review and clean up any unauthorized scheduled tasks created on the system to ensure no persistence mechanisms remain.\n- Reset credentials for any accounts that were used or potentially compromised during the incident to prevent unauthorized access.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine the scope of the attack.\n- Implement enhanced monitoring for similar PowerShell and scheduled task activities across the network to detect and respond to future threats promptly.",
+        "query": "sequence by host.id, process.entity_id with maxspan = 5s\n [any where host.os.type == \"windows\" and (event.category == \"library\" or (event.category == \"process\" and event.action : \"Image loaded*\")) and\n  (?dll.name : \"taskschd.dll\" or file.name : \"taskschd.dll\") and process.name : (\"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\")]\n [network where host.os.type == \"windows\" and process.name : (\"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\") and destination.port == 135 and not destination.address in (\"127.0.0.1\", \"::1\")]\n",
+        "references": [
+            "https://www.volexity.com/blog/2020/12/14/dark-halo-leverages-solarwinds-compromise-to-breach-organizations/",
+            "https://www.elastic.co/security-labs/hunting-for-lateral-movement-using-event-query-language"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.address",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "dll.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5cd55388-a19c-47c7-8ec4-f41656c2fded",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.005",
+                                "name": "Scheduled Task",
+                                "reference": "https://attack.mitre.org/techniques/T1053/005/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 212
+    },
+    "id": "5cd55388-a19c-47c7-8ec4-f41656c2fded_212",
+    "type": "security-rule"
+}

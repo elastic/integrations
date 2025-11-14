@@ -84,6 +84,14 @@ streams:
         default: America/Los_Angeles
         description: >-
           By default, datetimes in the logs without a time zone will be interpreted as relative to the time zone configured in the host where the agent is running. If ingesting logs from a different time zone, use this field to set the time zone offset so that datetimes are correctly parsed. Acceptable time zone formats are: a canonical ID (e.g. "Europe/Amsterdam"), or an HH:mm differential (e.g. "-05:00") from UTC.
+      - name: query
+        type: text
+        title: Sysparm Query
+        description: >-
+          Encoded query for filtering result sets with operators like `=`, `!=`, `^`, `^OR`, `LIKE`, `ORDERBY`, `ORDERBYDESC` (e.g. `active=true^ORDERBYname`). Note: Avoid using the timestamp field in the query, as it may affect pagination and cursor logic.
+        multi: false
+        required: false
+        show_user: false
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -95,15 +103,12 @@ streams:
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
+        default: false
         multi: false
         required: false
         show_user: false
         description: >-
-          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
-          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
-          tracer will delete any stored traces.
-          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
-          for details.
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
       - name: tags
         type: text
         title: Tags

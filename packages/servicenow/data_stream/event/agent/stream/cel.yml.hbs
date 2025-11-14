@@ -21,6 +21,7 @@ state:
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
   timestamp_field: {{timestamp_field}}
+  query: {{query}}
 regexp:
   next_link: '<([^,]*)>;rel="next"'
   content: 'text/html'
@@ -34,7 +35,7 @@ program: |
           "sysparm_display_value": ["all"],
           "sysparm_exclude_reference_link": ["true"],
           "sysparm_limit": [string(state.batch_size)],
-          "sysparm_query": ["ORDERBY"+state.timestamp_field+"^"+state.timestamp_field+">"+start],
+          "sysparm_query": ["ORDERBY"+state.timestamp_field+"^"+state.timestamp_field+">"+start+(state.?query.hasValue() ? "^"+state.?query.orValue("") : "")],
         }.format_query()
       )
     )).as(resp, resp.StatusCode == 200 && (resp.Header["Content-Type"][0].re_find_submatch("content") == []) ?

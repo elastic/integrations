@@ -41,10 +41,28 @@ processors:
       field: json.Username
       target_field: user.name
       ignore_missing: true
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
   - append:
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -64,6 +82,7 @@ processors:
       target_field: client.ip
       type: ip
       ignore_missing: true
+      if: ctx.json?.ClientPublicIP != ''
       on_failure:
         - remove:
             field: json.ClientPublicIP
@@ -97,20 +116,32 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - append:
-      field: related.host
+      field: related.hosts
       value: '{{{host.domain}}}'
       if: ctx.host?.domain != null
       allow_duplicates: false
       ignore_failure: true
-  - set:
-      field: network.type
-      value: 'ipv4'
-      if: ctx.json?.IPProtocol == 4
-      ignore_failure: true
-  - set:
-      field: network.type
-      value: 'ipv6'
-      if: ctx.json?.IPProtocol == 6
+  - script:
+      if: ctx.json?.IPProtocol != null
+      params:
+        iana_numbers:
+          "0": unknown_ip_ipprotocol
+          "1": icmp
+          "2": igmp
+          "6": tcp
+          "17": udp
+          "41": ip6in4
+          "47": gre
+          "50": esp
+          "58": icmp6
+          "88": eigrp
+          "97": etherip
+          "103": pim
+          "112": vrrp
+          "132": sctp
+      source: |-
+        ctx.network = ctx.network ?: [:];
+        ctx.network.transport = params.iana_numbers[ctx.json.IPProtocol.toString()];
       ignore_failure: true
   - rename:
       field: json.Customer

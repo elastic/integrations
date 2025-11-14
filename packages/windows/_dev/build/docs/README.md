@@ -38,17 +38,6 @@ see the {{ url "getting-started-observability" "Getting started" }} guide.
 
 Note: Because the Windows integration always applies to the local server, the `hosts` config option is not needed.
 
-### Ingesting Windows Events via Splunk (Deprecated)
-
-This integration allows you to seamlessly ingest data from a Splunk Enterprise instance.
-The integration uses the {{ url "filebeat-input-httpjson" "`httpjson` input" }} in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
-The raw event is then processed via the Elastic Agent.
-You can customize both the Splunk search query and the interval between searches.
-For more information see {{ url "observability-ingest-splunk" "Ingest data from Splunk" }}.
-
-Note: This integration requires Windows Events from Splunk to be in XML format.
-To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
-
 ## Notes
 
 ### Windows Event ID clause limit

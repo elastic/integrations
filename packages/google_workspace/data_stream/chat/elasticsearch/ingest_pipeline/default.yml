@@ -1,0 +1,485 @@
+---
+description: Pipeline for processing Chat Audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.16.0
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Google Workspace
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Chat
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      description: Hashes the ID object and uses it as the document id to avoid duplicate events.
+      fields:
+        - json.id
+        - json.events
+      target_field: _id
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_to_flatten_event_parameters
+      if: ctx.json?.events?.parameters instanceof List
+      description: Script to flatten the event parameters.
+      source: >
+        ctx.google_workspace = ctx.google_workspace ?: [:];
+        ctx.google_workspace.chat = ctx.google_workspace.chat ?: [:];
+        for (def param : ctx.json.events.parameters) {
+          if (param.name == null) {
+            continue;
+          }
+          def lw_case_name = param.name.toLowerCase();
+          if (param.value != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.value;
+          } else if (param.boolValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.boolValue;
+          } else if (param.intValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.intValue;
+          } else if (param.multiValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.multiValue;
+          } else if (param.multiIntValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.multiIntValue;
+          } else if (param.multiBoolValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.multiBoolValue;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json.events.parameters
+      ignore_missing: true
+  - rename:
+      field: json.events.name
+      tag: rename_json_events_name
+      target_field: google_workspace.chat.name
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - script:
+      description: Set event category based on event name.
+      if: ctx.google_workspace?.chat?.name != null
+      tag: set_event_category_from_chat_name
+      lang: painless
+      params:
+        add_room_member: configuration
+        block_room: configuration
+        block_user: configuration
+        emoji_created: configuration
+        emoji_deleted: configuration
+        history_turned_off: configuration
+        history_turned_on: configuration
+        remove_room_member: configuration
+        room_created: configuration
+        room_deleted: configuration
+        room_details_updated: configuration
+        room_left: configuration
+        room_name_updated: configuration
+        room_unblocked: configuration
+        unread_timestamp_updated: configuration
+        user_unblocked: configuration
+        role_updated: iam
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def category = [];
+        category.add(params.get(ctx.google_workspace.chat.name));
+        ctx.event.category = category;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Set event type based on event name.
+      if: ctx.google_workspace?.chat?.name != null
+      tag: set_event_type_from_chat_name
+      lang: painless
+      params:
+        add_room_member: change
+        attachment_download: info
+        attachment_upload: info
+        block_room: change
+        block_user: change
+        conversation_read: access
+        custom_status_updated: change
+        direct_message_started: info
+        emoji_created: creation
+        emoji_deleted: deletion
+        history_turned_off: change
+        history_turned_on: change
+        invite_accept: info
+        invite_decline: info
+        invite_send: info
+        message_deleted: deletion
+        message_edited: change
+        message_posted: creation
+        message_report_resolved: change
+        message_reported: info
+        reaction_added: info
+        reaction_removed: info
+        remove_room_member: change
+        role_updated: change
+        room_created: creation
+        room_deleted: deletion
+        room_details_updated: change
+        room_left: change
+        room_name_updated: change
+        room_unblocked: change
+        unread_timestamp_updated: change
+        user_unblocked: change
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def type = [];
+        type.add(params.get(ctx.google_workspace.chat.name));
+        ctx.event.type = type;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.kind
+      tag: rename_json_kind
+      target_field: google_workspace.kind
+      ignore_missing: true
+  - rename: 
+      field: json.ownerDomain
+      target_field: google_workspace.organization.domain
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      tag: rename_json_etag
+      target_field: google_workspace.etag
+      ignore_missing: true
+  - rename:
+      field: json.actor.callerType
+      tag: rename_actor_callerType
+      target_field: google_workspace.actor.caller_type
+      ignore_missing: true
+  - rename:
+      field: json.actor.email
+      tag: rename_actor_email
+      target_field: google_workspace.actor.email
+      ignore_missing: true
+  - set:
+      field: source.user.email
+      tag: set_source_user_email_from_chat_actor
+      copy_from: google_workspace.chat.actor
+      ignore_empty_value: true
+  - set:
+      field: source.user.email
+      tag: set_source_user_email_from_actor_email
+      copy_from: google_workspace.actor.email
+      ignore_empty_value: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_source_user_email
+      copy_from: source.user.email
+      ignore_empty_value: true
+  - dissect:
+      field: source.user.email
+      tag: dissect_user_email
+      if: ctx.source?.user?.email != null && ctx.source.user.email.contains('@')
+      pattern: '%{}@%{source.user.domain}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.actor.key
+      tag: rename_actor_key
+      target_field: google_workspace.actor.key
+      ignore_missing: true
+  - rename:
+      field: json.actor.profileId
+      tag: rename_actor_profileId
+      target_field: google_workspace.actor.profile_id
+      ignore_missing: true
+  - set:
+      field: source.user.id
+      tag: set_source_user_id_from_actor_profile_id
+      copy_from: google_workspace.actor.profile_id
+      ignore_empty_value: true
+  - set:
+      field: user
+      tag: set_user_from_source_user
+      copy_from: source.user
+      ignore_empty_value: true
+  - rename:
+      field: json.id.applicationName
+      tag: rename_id_applicationName
+      target_field: google_workspace.id.application_name
+      ignore_missing: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_id_application_name
+      copy_from: google_workspace.id.application_name
+      ignore_empty_value: true
+  - rename:
+      field: json.id.customerId
+      tag: rename_id_customerId
+      target_field: google_workspace.id.customer_id
+      ignore_missing: true
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_customerId
+      copy_from: google_workspace.id.customer_id
+      ignore_empty_value: true
+  - date:
+      field: json.id.time
+      tag: date_id_time
+      target_field: google_workspace.id.time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.id?.time != null && ctx.json.id.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_id_time
+      copy_from: google_workspace.id.time
+      ignore_empty_value: true
+  - rename:
+      field: json.id.uniqueQualifier
+      tag: rename_id_uniqueQualifier
+      target_field: google_workspace.id.unique_qualifier
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_id_unique_qualifier
+      copy_from: google_workspace.id.unique_qualifier
+      ignore_empty_value: true
+  - convert:
+      field: json.ipAddress
+      tag: convert_ipAddress_to_ip
+      target_field: google_workspace.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ipAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_google_workspace_ip_address
+      copy_from: google_workspace.ip_address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_geo_from_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      tag: set_source_as_from_source_ip
+      database_file: GeoLite2-ASN.mmdb
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: json.events.type
+      tag: rename_json_events_type
+      target_field: google_workspace.chat.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_name
+      copy_from: google_workspace.chat.name
+      ignore_empty_value: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: '_'
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uri_parts:
+      field: google_workspace.chat.attachment_url
+      tag: uri_parts_chat_attachment_url
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.name
+      tag: set_file_name_from_chat_filename
+      copy_from: google_workspace.chat.filename
+      ignore_empty_value: true
+  - script:
+      tag: script_to_extract_file_extension
+      lang: painless
+      description: Extracts file extension from file name.
+      if: ctx.google_workspace?.chat?.filename != null && ctx.google_workspace.chat.filename.contains('.')
+      source: |-
+        def fileName = ctx.google_workspace.chat.filename;
+        ctx.file.extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+  - set:
+      field: user.target.email
+      tag: set_user_target_email_from_chat_target_users
+      copy_from: google_workspace.chat.target_users
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_actor_email_into_related_user
+      value: '{{{google_workspace.actor.email}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.actor?.email != null
+  - append:
+      field: related.user
+      tag: append_chat_actor_into_related_user
+      value: '{{{google_workspace.chat.actor}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.chat?.actor != null
+  - foreach:
+      field: google_workspace.chat.target_users
+      if: ctx.google_workspace?.chat?.target_users instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_chat_target_users_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_chat_attachment_hash_into_related_hash
+      value: '{{{google_workspace.chat.attachment_hash}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.chat?.attachment_hash != null
+  - append:
+      field: related.ip
+      tag: append_ip_address_into_related_ip
+      value: '{{{google_workspace.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.ip_address != null
+  - remove:
+      field:
+        - google_workspace.actor.email
+        - google_workspace.actor.profile_id
+        - google_workspace.id.application_name
+        - google_workspace.id.customer_id
+        - google_workspace.id.time
+        - google_workspace.id.unique_qualifier
+        - google_workspace.ip_address
+        - google_workspace.chat.attachment_url
+        - google_workspace.chat.filename
+        - google_workspace.chat.target_users
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

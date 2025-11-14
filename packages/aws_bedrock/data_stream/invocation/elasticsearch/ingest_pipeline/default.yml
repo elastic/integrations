@@ -314,6 +314,19 @@ processors:
         // convert the Set back to a List
         ctx.aws_bedrock.invocation.input.messages_content_kinds = new ArrayList(content_kinds_set);
   - script:
+      tag: ensure_output_body_json_object_elements
+      if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
+      lang: painless
+      source: |
+        for (int i = 0; i < ctx.aws_bedrock.invocation.output.output_body_json.length; i++) {
+          def e = ctx.aws_bedrock.invocation.output.output_body_json[i];
+          if (e instanceof Map) {
+            continue;
+          }
+          ctx.aws_bedrock.invocation.output.output_body_json[i] = [:];
+          ctx.aws_bedrock.invocation.output.output_body_json[i].value = e;
+        }
+  - script:
       tag: get_response_id_and_role_from_list
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
       lang: painless

@@ -9,10 +9,11 @@ in this integration configuration.
 
 ## Compatibility
 
-The RabbitMQ integration is fully tested with RabbitMQ 3.7.4 and it should be compatible with any version supporting
-the management plugin (which needs to be installed and enabled). Exchange dataset is also tested with 3.6.0, 3.6.5 and 3.7.14.
+The RabbitMQ integration is fully tested with RabbitMQ versions 3.7.4 and 4.1.3, and it should be compatible with any version supporting the management plugin, which must be installed and enabled. It has also been tested with 3.6.0, 3.6.5, and 3.7.14.
 
 The application logs dataset parses single file format introduced in 3.7.0.
+
+When upgrading RabbitMQ to version 4.1.3 or higher, the `/api/nodes` endpoint (from RabbitMQ's management API) no longer returns the `rabbitmq.node.queue.index.journal_write` metric in its response. This metric is used in the Kibana dashboard "Queue Index Operations [Metrics RabbitMQ]". As a result, after upgrading to 4.1.3 or higher, this metric and related visualizations in the dashboard will be missing or incomplete.
 
 ## Logs
 
@@ -50,14 +51,55 @@ An example event for `connection` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "@timestamp": "2025-08-26T18:09:07.931Z",
+    "agent": {
+        "ephemeral_id": "09ad22ab-b4f6-49fe-8ee0-2c19f96230d9",
+        "id": "ee7703ca-8eaf-4de7-b78f-4dc497599136",
+        "name": "elastic-agent-86958",
+        "type": "metricbeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "rabbitmq.connection",
+        "namespace": "22631",
+        "type": "metrics"
+    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "ee7703ca-8eaf-4de7-b78f-4dc497599136",
+        "snapshot": true,
+        "version": "8.19.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "rabbitmq.connection",
-        "duration": 374411,
+        "duration": 33026646,
+        "ingested": "2025-08-26T18:09:10Z",
         "module": "rabbitmq"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-86958",
+        "ip": [
+            "172.18.0.4",
+            "172.19.0.2"
+        ],
+        "mac": [
+            "02-42-AC-12-00-04",
+            "02-42-AC-13-00-02"
+        ],
+        "name": "elastic-agent-86958",
+        "os": {
+            "family": "",
+            "kernel": "6.8.0-50-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
     },
     "metricset": {
         "name": "connection",
@@ -65,36 +107,39 @@ An example event for `connection` looks as following:
     },
     "rabbitmq": {
         "connection": {
-            "channel_max": 65535,
-            "channels": 2,
-            "client_provided": {
-                "name": "Connection1"
-            },
+            "channel_max": 2047,
+            "channels": 1,
             "frame_max": 131072,
             "host": "::1",
-            "name": "[::1]:31153 -> [::1]:5672",
+            "name": "[::1]:48014 -> [::1]:5672",
             "octet_count": {
-                "received": 5834,
-                "sent": 5834
+                "received": 1096,
+                "sent": 610
             },
             "packet_count": {
                 "pending": 0,
-                "received": 442,
-                "sent": 422
+                "received": 17,
+                "sent": 5
             },
             "peer": {
                 "host": "::1",
-                "port": 31153
+                "port": 48014
             },
             "port": 5672,
             "state": "running",
             "type": "network"
         },
+        "node": {
+            "name": "rabbit@30ce181d6f8c"
+        },
         "vhost": "/"
     },
     "service": {
-        "address": "localhost:15672",
+        "address": "http://svc-rabbitmq:15672",
         "type": "rabbitmq"
+    },
+    "user": {
+        "name": "guest"
     }
 }
 ```
@@ -141,6 +186,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rabbitmq.connection.port | Server port. | long |  |
 | rabbitmq.connection.state | Connection state. | keyword |  |
 | rabbitmq.connection.type | Type of the connection. | keyword |  |
+| rabbitmq.node.name.text | Full text of node name. | text |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
@@ -151,14 +197,55 @@ An example event for `exchange` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:04:20.944Z",
+    "@timestamp": "2025-08-26T18:10:58.049Z",
+    "agent": {
+        "ephemeral_id": "b08e8909-719d-4db5-ba5f-bd1e6c86a791",
+        "id": "9771e1e3-16b7-4c46-9b28-534ec0e73eb8",
+        "name": "elastic-agent-77686",
+        "type": "metricbeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "rabbitmq.exchange",
+        "namespace": "70493",
+        "type": "metrics"
+    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "9771e1e3-16b7-4c46-9b28-534ec0e73eb8",
+        "snapshot": true,
+        "version": "8.19.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "rabbitmq.exchange",
-        "duration": 4078507,
+        "duration": 51754708,
+        "ingested": "2025-08-26T18:11:01Z",
         "module": "rabbitmq"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-77686",
+        "ip": [
+            "172.18.0.4",
+            "172.19.0.2"
+        ],
+        "mac": [
+            "02-42-AC-12-00-04",
+            "02-42-AC-13-00-02"
+        ],
+        "name": "elastic-agent-77686",
+        "os": {
+            "family": "",
+            "kernel": "6.8.0-50-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
     },
     "metricset": {
         "name": "exchange",
@@ -166,16 +253,16 @@ An example event for `exchange` looks as following:
     },
     "rabbitmq": {
         "exchange": {
-            "arguments": {},
             "auto_delete": false,
             "durable": true,
             "internal": false,
-            "name": ""
+            "name": "amq.direct",
+            "type": "direct"
         },
         "vhost": "/"
     },
     "service": {
-        "address": "localhost:15672",
+        "address": "http://svc-rabbitmq:15672",
         "type": "rabbitmq"
     },
     "user": {
@@ -218,6 +305,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rabbitmq.exchange.messages.publish_out.count | Count of messages published "out" of an exchange, i.e. taking account of routing. | long | gauge |
 | rabbitmq.exchange.messages.publish_out.details.rate | How much the exchange publish-out count has changed per second in the most recent sampling interval. | float | gauge |
 | rabbitmq.exchange.name | The name of the queue with non-ASCII characters escaped as in C. | keyword |  |
+| rabbitmq.exchange.type | Exchange type | keyword |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
@@ -235,17 +323,65 @@ An example event for `node` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:04:20.944Z",
-    "event": {
+    "@timestamp": "2025-08-26T18:12:57.452Z",
+    "agent": {
+        "ephemeral_id": "46a61744-d3d2-422d-95a9-73933bb8f12f",
+        "id": "4a9c0c10-0aa9-436a-b9b8-6d3514ad9641",
+        "name": "elastic-agent-11360",
+        "type": "metricbeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
         "dataset": "rabbitmq.node",
-        "duration": 115000,
+        "namespace": "52382",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "4a9c0c10-0aa9-436a-b9b8-6d3514ad9641",
+        "snapshot": true,
+        "version": "8.19.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "rabbitmq.node",
+        "duration": 33323315,
+        "ingested": "2025-08-26T18:13:00Z",
         "module": "rabbitmq"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-11360",
+        "ip": [
+            "172.18.0.4",
+            "172.19.0.2"
+        ],
+        "mac": [
+            "02-42-AC-12-00-04",
+            "02-42-AC-13-00-02"
+        ],
+        "name": "elastic-agent-11360",
+        "os": {
+            "family": "",
+            "kernel": "6.8.0-50-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "metricset": {
+        "name": "node",
+        "period": 10000
     },
     "rabbitmq": {
         "node": {
             "disk": {
                 "free": {
-                    "bytes": 485213712384,
+                    "bytes": 93638361088,
                     "limit": {
                         "bytes": 50000000
                     }
@@ -253,34 +389,26 @@ An example event for `node` looks as following:
             },
             "fd": {
                 "total": 1048576,
-                "used": 54
+                "used": 39
             },
             "gc": {
                 "num": {
-                    "count": 5724
+                    "count": 4940
                 },
                 "reclaimed": {
-                    "bytes": 294021640
+                    "bytes": 309189656
                 }
             },
             "io": {
-                "file_handle": {
-                    "open_attempt": {
-                        "avg": {
-                            "ms": 0
-                        },
-                        "count": 10
-                    }
-                },
                 "read": {
                     "avg": {
                         "ms": 0
                     },
-                    "bytes": 1,
-                    "count": 1
+                    "bytes": 0,
+                    "count": 0
                 },
                 "reopen": {
-                    "count": 1
+                    "count": 0
                 },
                 "seek": {
                     "avg": {
@@ -304,10 +432,10 @@ An example event for `node` looks as following:
             },
             "mem": {
                 "limit": {
-                    "bytes": 13340778496
+                    "bytes": 10038944563
                 },
                 "used": {
-                    "bytes": 71448312
+                    "bytes": 114167808
                 }
             },
             "mnesia": {
@@ -318,7 +446,7 @@ An example event for `node` looks as following:
                 },
                 "ram": {
                     "tx": {
-                        "count": 43
+                        "count": 0
                     }
                 }
             },
@@ -330,17 +458,14 @@ An example event for `node` looks as following:
                     "count": 0
                 }
             },
-            "name": "rabbit@my-rabbit",
+            "name": "rabbit@a87cd3ee0de5",
             "proc": {
                 "total": 1048576,
-                "used": 234
+                "used": 425
             },
-            "processors": 12,
+            "processors": 2,
             "queue": {
                 "index": {
-                    "journal_write": {
-                        "count": 0
-                    },
                     "read": {
                         "count": 0
                     },
@@ -350,18 +475,18 @@ An example event for `node` looks as following:
                 }
             },
             "run": {
-                "queue": 0
+                "queue": 1
             },
             "socket": {
-                "total": 943626,
+                "total": 0,
                 "used": 0
             },
             "type": "disc",
-            "uptime": 155275
+            "uptime": 16604
         }
     },
     "service": {
-        "address": "localhost:15672",
+        "address": "http://svc-rabbitmq:15672",
         "type": "rabbitmq"
     }
 }
@@ -440,50 +565,91 @@ An example event for `queue` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:15:10.955Z",
+    "@timestamp": "2025-08-26T18:14:49.823Z",
+    "agent": {
+        "ephemeral_id": "d0178958-586b-45be-94b5-ca8ca6deb52e",
+        "id": "ac6fe429-8182-4af1-ba7a-d67efbba9d64",
+        "name": "elastic-agent-17784",
+        "type": "metricbeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "rabbitmq.queue",
+        "namespace": "34902",
+        "type": "metrics"
+    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "ac6fe429-8182-4af1-ba7a-d67efbba9d64",
+        "snapshot": true,
+        "version": "8.19.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "rabbitmq.queue",
-        "duration": 5860529,
+        "duration": 48359382,
+        "ingested": "2025-08-26T18:14:52Z",
         "module": "rabbitmq"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-17784",
+        "ip": [
+            "172.18.0.4",
+            "172.19.0.2"
+        ],
+        "mac": [
+            "02-42-AC-12-00-04",
+            "02-42-AC-13-00-02"
+        ],
+        "name": "elastic-agent-17784",
+        "os": {
+            "family": "",
+            "kernel": "6.8.0-50-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
     },
     "metricset": {
         "name": "queue",
         "period": 10000
     },
     "rabbitmq": {
+        "node": {
+            "name": "rabbit@d3c2a8612fdf"
+        },
         "queue": {
-            "arguments": {},
             "auto_delete": false,
             "consumers": {
                 "count": 0,
-                "utilisation": {}
-            },
-            "disk": {
-                "reads": {},
-                "writes": {}
+                "utilisation": {
+                    "pct": 0
+                }
             },
             "durable": true,
             "exclusive": false,
             "memory": {
-                "bytes": 14000
+                "bytes": 68392
             },
             "messages": {
                 "persistent": {
                     "count": 0
                 },
                 "ready": {
-                    "count": 0,
+                    "count": 16,
                     "details": {
-                        "rate": 0
+                        "rate": 1
                     }
                 },
                 "total": {
-                    "count": 0,
+                    "count": 16,
                     "details": {
-                        "rate": 0
+                        "rate": 1
                     }
                 },
                 "unacknowledged": {
@@ -493,13 +659,13 @@ An example event for `queue` looks as following:
                     }
                 }
             },
-            "name": "NameofQueue1",
+            "name": "test-queue",
             "state": "running"
         },
         "vhost": "/"
     },
     "service": {
-        "address": "localhost:15672",
+        "address": "http://svc-rabbitmq:15672",
         "type": "rabbitmq"
     }
 }
@@ -531,6 +697,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
+| rabbitmq.node.name.text | Full text of node name. | text |  |
 | rabbitmq.queue.arguments.max_priority | Maximum number of priority levels for the queue to support. | long | gauge |
 | rabbitmq.queue.auto_delete | Whether the queue will be deleted automatically when no longer used. | boolean |  |
 | rabbitmq.queue.consumers.count | Number of consumers. | long | gauge |

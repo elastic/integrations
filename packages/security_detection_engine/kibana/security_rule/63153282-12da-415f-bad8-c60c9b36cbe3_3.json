@@ -1,0 +1,123 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule identifies processes that are backgrounded by an unusual parent process. This behavior may indicate a process attempting to evade detection by hiding its parent process.",
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-endpoint.events.process*",
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Process Backgrounded by Unusual Parent",
+        "new_terms_fields": [
+            "process.parent.name"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Process Backgrounded by Unusual Parent\n\nIn Linux environments, shell processes like bash or zsh can be backgrounded using the '&' operator, allowing them to run independently of the terminal. Adversaries exploit this by launching scripts with unusual parent processes to evade detection. The detection rule identifies such anomalies by monitoring process start events with specific shell invocations and backgrounding indicators, flagging potential evasion attempts.\n\n### Possible investigation steps\n\n- Review the process start event details to identify the parent process and assess its legitimacy. Pay attention to the process.name and process.args fields to understand the context of the command executed.\n- Examine the command line arguments (process.args) for any suspicious patterns or commands that could indicate malicious activity, especially focusing on the use of the '&' operator which backgrounds the process.\n- Check the user account associated with the process to determine if it is a known and trusted user. Investigate any anomalies in user behavior or unexpected user accounts.\n- Correlate the event with other logs or alerts from the same host to identify any related suspicious activities or patterns, such as other unusual process executions or network connections.\n- Investigate the parent process's history and behavior to determine if it has been involved in other suspicious activities or if it has been compromised.\n- Consult threat intelligence sources or databases to see if the command or behavior matches known attack patterns or indicators of compromise (IOCs).\n\n### False positive analysis\n\n- Routine administrative scripts may trigger this rule if they are executed with backgrounding by system administrators. To manage this, identify and whitelist known administrative scripts that are frequently used in your environment.\n- Automated maintenance tasks or cron jobs that use shell scripts with backgrounding can also be flagged. Review and exclude these tasks by adding exceptions for specific scripts or processes that are verified as non-threatening.\n- Development environments where developers frequently test scripts in the background might cause false positives. Consider creating exceptions for specific user accounts or directories where development activities are known to occur.\n- Monitoring tools or agents that use shell scripts to perform checks or gather data in the background could be mistakenly identified. Verify these tools and exclude their processes from the rule to prevent unnecessary alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent potential lateral movement by the adversary.\n- Terminate the suspicious backgrounded process and its parent process to halt any ongoing malicious activity.\n- Conduct a thorough review of the affected system's process tree to identify any additional suspicious or unauthorized processes that may have been spawned.\n- Analyze the command history and script files associated with the unusual parent process to understand the scope and intent of the activity.\n- Restore the system from a known good backup if any malicious modifications or persistence mechanisms are identified.\n- Update and patch the system to close any vulnerabilities that may have been exploited by the adversary.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n",
+        "query": "event.category:process and host.os.type:linux and event.type:start and\nevent.action:(ProcessRollup2 or exec or exec_event or start) and\nprocess.name:(bash or csh or dash or fish or ksh or sh or tcsh or zsh) and\nprocess.args:(-c and *&)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "63153282-12da-415f-bad8-c60c9b36cbe3",
+        "setup": "## Setup\n\nThis rule requires data coming in from one of the following integrations:\n- Elastic Defend\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n### Auditbeat Setup\nAuditbeat is a lightweight shipper that you can install on your servers to audit the activities of users and processes on your systems. For example, you can use Auditbeat to collect and centralize audit events from the Linux Audit Framework. You can also use Auditbeat to detect changes to critical files, like binaries and configuration files, and identify potential security policy violations.\n\n#### The following steps should be executed in order to add the Auditbeat on a Linux System:\n- Elastic provides repositories available for APT and YUM-based distributions. Note that we provide binary packages, but no source packages.\n- To install the APT and YUM repositories follow the setup instructions in this [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setup-repositories.html).\n- To run Auditbeat on Docker follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-docker.html).\n- To run Auditbeat on Kubernetes follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-kubernetes.html).\n- For complete \u201cSetup and Run Auditbeat\u201d information refer to the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setting-up-and-running.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Persistence",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 3
+    },
+    "id": "63153282-12da-415f-bad8-c60c9b36cbe3_3",
+    "type": "security-rule"
+}

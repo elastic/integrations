@@ -75,15 +75,32 @@ processors:
       field: response.username
       target_field: user.name
       ignore_missing: true
-  - append:
-      field: related.ip
-      value: '{{{client.ip}}}'
-      if: ctx.client?.ip != null
-      allow_duplicates: false
+  - rename:
+       field: user.name
+       target_field: user.email
+       tag: rename_user_email
+       if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
   - append:
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
       allow_duplicates: false
   - append:
       field: related.user

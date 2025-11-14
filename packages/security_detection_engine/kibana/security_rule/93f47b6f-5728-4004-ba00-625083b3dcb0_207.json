@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Adversaries may modify the standard authentication module for persistence via patching the normal authorization process or modifying the login configuration to allow unauthorized access or elevate privileges.",
+        "false_positives": [
+            "Trusted system module updates or allowed Pluggable Authentication Module (PAM) daemon configuration changes."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "auditbeat-*",
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Modification of Standard Authentication Module or Configuration",
+        "new_terms_fields": [
+            "host.id",
+            "process.executable",
+            "file.path"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Modification of Standard Authentication Module or Configuration\n\nAuthentication modules, such as PAM (Pluggable Authentication Modules), are crucial for managing user authentication in Linux and macOS environments. Adversaries may exploit these by altering module files or configurations to gain unauthorized access or escalate privileges. The detection rule identifies suspicious changes to these modules, excluding legitimate processes and paths, to flag potential unauthorized modifications.\n\n### Possible investigation steps\n\n- Review the specific file that triggered the alert by examining the file.name and file.path fields to determine if it is a known authentication module or configuration file.\n- Investigate the process that made the change by analyzing the process.executable field to identify if it is a legitimate process or potentially malicious.\n- Check the process.name field to see if the process is one of the excluded legitimate processes, which might indicate a false positive.\n- Look into recent system changes or updates that might have affected authentication modules, focusing on the time frame around the alert.\n- Correlate the alert with other security events or logs to identify any related suspicious activities or patterns, such as unauthorized access attempts or privilege escalation.\n- Verify the integrity of the affected authentication module or configuration file by comparing it with a known good version or using file integrity monitoring tools.\n\n### False positive analysis\n\n- Package management operations such as updates or installations can trigger false positives. Exclude processes like yum, dnf, rpm, and dpkg from the detection rule to prevent these benign activities from being flagged.\n- System maintenance tasks often involve legitimate changes to authentication modules. Exclude processes like authconfig, pam-auth-update, and pam-config to avoid false alerts during routine maintenance.\n- Development and testing environments may frequently modify authentication modules for testing purposes. Consider excluding paths like /tmp/snap.rootfs_*/pam_*.so and /tmp/newroot/lib/*/pam_*.so to reduce noise from these environments.\n- Backup and synchronization tools such as rsync can cause false positives when they interact with authentication module files. Exclude rsync from the detection rule to prevent these non-threatening activities from being flagged.\n- Containerized environments may have different paths and processes that interact with authentication modules. Exclude processes like containerd and paths like /tmp/newroot/usr/lib64/security/pam_*.so to account for these variations.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Conduct a thorough review of the modified authentication module or configuration file to identify unauthorized changes and revert them to their original state using a known good backup.\n- Reset passwords for all user accounts on the affected system, prioritizing accounts with elevated privileges, to mitigate potential credential compromise.\n- Perform a comprehensive scan of the system for additional indicators of compromise, such as unauthorized user accounts or scheduled tasks, and remove any malicious artifacts found.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if other systems may be affected.\n- Implement enhanced monitoring on the affected system and similar environments to detect any future unauthorized modifications to authentication modules or configurations.\n- Review and update access controls and authentication policies to strengthen security measures and reduce the risk of similar attacks in the future.",
+        "query": "event.category:file and event.type:change and\n  (file.name:pam_*.so or file.path:(/etc/pam.d/* or /private/etc/pam.d/* or /usr/lib64/security/*)) and\n  process.executable:\n    (* and\n      not\n      (\n        /usr/libexec/packagekitd or\n        /usr/bin/vim or\n        /usr/libexec/xpcproxy or\n        /usr/bin/bsdtar or\n        /usr/local/bin/brew or\n        \"/System/Library/PrivateFrameworks/PackageKit.framework/Versions/A/XPCServices/package_script_service.xpc/Contents/MacOS/package_script_service\"\n      )\n    ) and\n  not file.path:\n         (\n           /tmp/snap.rootfs_*/pam_*.so or\n           /tmp/newroot/lib/*/pam_*.so or\n           /private/var/folders/*/T/com.apple.fileprovider.ArchiveService/TemporaryItems/*/lib/security/pam_*.so or\n           /tmp/newroot/usr/lib64/security/pam_*.so\n         ) and\n  not process.name:\n         (\n           yum or dnf or rsync or platform-python or authconfig or rpm or pdkg or apk or dnf-automatic or btrfs or\n           dpkg or pam-auth-update or steam or platform-python3.6 or pam-config or microdnf or yum_install or yum-cron or\n           systemd or containerd or pacman\n         )\n",
+        "references": [
+            "https://github.com/zephrax/linux-pam-backdoor",
+            "https://github.com/eurialo/pambd",
+            "http://0x90909090.blogspot.com/2016/06/creating-backdoor-in-pam-in-5-line-of.html",
+            "https://www.trendmicro.com/en_us/research/19/i/skidmap-linux-malware-uses-rootkit-capabilities-to-hide-cryptocurrency-mining-payload.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "93f47b6f-5728-4004-ba00-625083b3dcb0",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 207
+    },
+    "id": "93f47b6f-5728-4004-ba00-625083b3dcb0_207",
+    "type": "security-rule"
+}

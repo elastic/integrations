@@ -17,17 +17,25 @@ request.method: "GET"
 request.transforms:
   - set:
       target: url.params.stream_position
-      value: '[[.cursor.next_stream_position]]'
+      value: '[[if index .cursor "next_stream_position"]][[toInt .cursor.next_stream_position]][[else]][[0]][[end]]'
 {{#if stream_type}}
   - set:
       target: url.params.stream_type
       value: "{{stream_type}}"
 {{/if}}
+  - set:
+      target: url.params.limit
+      value: '{{limit}}'
 response.decode_as: application/json
 response.split:
   target: body.entries
   type: array
   keep_parent: false
+response.pagination:
+  - set:
+      target: url.params.stream_position
+      value: '[[ if and (index .last_response.body "next_stream_position") (ge (len .last_response.body.entries) {{limit}}) ]][[toInt .last_response.body.next_stream_position]][[end]]'
+      fail_on_template_error: true
 cursor:
   next_stream_position:
     value: '[[.last_response.body.next_stream_position]]'

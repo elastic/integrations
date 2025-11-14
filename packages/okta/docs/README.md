@@ -58,11 +58,11 @@ An example event for `system` looks as following:
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {
-        "ephemeral_id": "2314526d-0d90-4c35-ba8f-5a48507e7dac",
-        "id": "4bff512b-da80-4d11-9e9c-477b723e11d4",
-        "name": "elastic-agent-20826",
+        "ephemeral_id": "f0fa8393-26a1-453e-96fe-212743206a30",
+        "id": "da1b4fd1-cf45-42bc-8036-09da5b16e085",
+        "name": "elastic-agent-91674",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.18.1"
     },
     "client": {
         "geo": {
@@ -76,6 +76,7 @@ An example event for `system` looks as following:
         },
         "ip": "108.255.197.247",
         "user": {
+            "email": "xxxxxx@elastic.co",
             "full_name": "xxxxxx",
             "id": "00u1abvz4pYqdM8ms4x6",
             "name": "xxxxxx@elastic.co"
@@ -83,16 +84,16 @@ An example event for `system` looks as following:
     },
     "data_stream": {
         "dataset": "okta.system",
-        "namespace": "54167",
+        "namespace": "58099",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4bff512b-da80-4d11-9e9c-477b723e11d4",
+        "id": "da1b4fd1-cf45-42bc-8036-09da5b16e085",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.18.1"
     },
     "event": {
         "action": "user.session.start",
@@ -101,10 +102,10 @@ An example event for `system` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2025-04-03T02:49:51.730Z",
+        "created": "2025-06-04T15:16:49.436Z",
         "dataset": "okta.system",
         "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
-        "ingested": "2025-04-03T02:49:52Z",
+        "ingested": "2025-06-04T15:16:50Z",
         "kind": "event",
         "original": "{\"actor\":{\"alternateId\":\"xxxxxx@elastic.co\",\"detailEntry\":null,\"displayName\":\"xxxxxx\",\"id\":\"00u1abvz4pYqdM8ms4x6\",\"type\":\"User\"},\"authenticationContext\":{\"authenticationProvider\":null,\"authenticationStep\":0,\"credentialProvider\":null,\"credentialType\":null,\"externalSessionId\":\"102bZDNFfWaQSyEZQuDgWt-uQ\",\"interface\":null,\"issuer\":null},\"client\":{\"device\":\"Computer\",\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"id\":null,\"ipAddress\":\"108.255.197.247\",\"userAgent\":{\"browser\":\"FIREFOX\",\"os\":\"Mac OS X\",\"rawUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0\"},\"zone\":\"null\"},\"debugContext\":{\"debugData\":{\"deviceFingerprint\":\"541daf91d15bef64a7e08c946fd9a9d0\",\"requestId\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"requestUri\":\"/api/v1/authn\",\"threatSuspected\":\"false\",\"url\":\"/api/v1/authn?\"}},\"displayMessage\":\"User login to Okta\",\"eventType\":\"user.session.start\",\"legacyEventType\":\"core.user_auth.login_success\",\"outcome\":{\"reason\":null,\"result\":\"SUCCESS\"},\"published\":\"2020-02-14T20:18:57.718Z\",\"request\":{\"ipChain\":[{\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"ip\":\"108.255.197.247\",\"source\":null,\"version\":\"V4\"}]},\"securityContext\":{\"asNumber\":null,\"asOrg\":null,\"domain\":null,\"isProxy\":null,\"isp\":null},\"severity\":\"INFO\",\"target\":null,\"transaction\":{\"detail\":{},\"id\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"type\":\"WEB\"},\"uuid\":\"3aeede38-4f67-11ea-abd3-1f5d113f2546\",\"version\":\"0\"}",
         "outcome": "success",
@@ -112,6 +113,9 @@ An example event for `system` looks as following:
             "start",
             "info"
         ]
+    },
+    "host": {
+        "name": "svc-okta-oauth2"
     },
     "input": {
         "type": "httpjson"
@@ -194,6 +198,7 @@ An example event for `system` looks as following:
     "source": {
         "ip": "108.255.197.247",
         "user": {
+            "email": "xxxxxx@elastic.co",
             "full_name": "xxxxxx",
             "id": "00u1abvz4pYqdM8ms4x6",
             "name": "xxxxxx@elastic.co"
@@ -205,6 +210,7 @@ An example event for `system` looks as following:
         "okta-system"
     ],
     "user": {
+        "email": "xxxxxx@elastic.co",
         "full_name": "xxxxxx",
         "name": "xxxxxx@elastic.co"
     },
@@ -243,22 +249,25 @@ An example event for `system` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | okta.actor.alternate_id | Alternate identifier of the actor. | keyword |
 | okta.actor.display_name | Display name of the actor. | keyword |
+| okta.actor.display_name.text | Multi-field of `okta.actor.display_name`. | match_only_text |
 | okta.actor.id | Identifier of the actor. | keyword |
 | okta.actor.type | Type of the actor. | keyword |
 | okta.authentication_context.authentication_provider | The information about the authentication provider. Must be one of OKTA_AUTHENTICATION_PROVIDER, ACTIVE_DIRECTORY, LDAP, FEDERATION, SOCIAL, FACTOR_PROVIDER. | keyword |
 | okta.authentication_context.authentication_step | The authentication step. | integer |
 | okta.authentication_context.credential_provider | The information about credential provider. Must be one of OKTA_CREDENTIAL_PROVIDER, RSA, SYMANTEC, GOOGLE, DUO, YUBIKEY. | keyword |
 | okta.authentication_context.credential_type | The information about credential type. Must be one of OTP, SMS, PASSWORD, ASSERTION, IWA, EMAIL, OAUTH2, JWT, CERTIFICATE, PRE_SHARED_SYMMETRIC_KEY, OKTA_CLIENT_SESSION, DEVICE_UDID. | keyword |
-| okta.authentication_context.external_session_id | The session identifer of the external session if any. | keyword |
+| okta.authentication_context.external_session_id | The session identifier of the external session if any. | keyword |
 | okta.authentication_context.interface | The interface used. e.g., Outlook, Office365, wsTrust | keyword |
 | okta.authentication_context.issuer.id | The identifier of the issuer. | keyword |
 | okta.authentication_context.issuer.type | The type of the issuer. | keyword |
+| okta.authentication_context.root_session_id | The session identifier of the root if any. | keyword |
 | okta.client.device | The information of the client device. | keyword |
 | okta.client.id | The identifier of the client. | keyword |
 | okta.client.ip | The IP address of the client. | ip |
 | okta.client.user_agent.browser | The browser informaton of the client. | keyword |
 | okta.client.user_agent.os | The OS informaton. | keyword |
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
+| okta.client.user_agent.raw_user_agent.text | Multi-field of `okta.client.user_agent.raw_user_agent`. | match_only_text |
 | okta.client.zone | The zone information of the client. | keyword |
 | okta.debug_context.debug_data |  | object |
 | okta.debug_context.debug_data.authnRequestId | The authorization request ID. | keyword |
@@ -309,6 +318,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |
 | okta.debug_context.debug_data.tunnels |  | object |
 | okta.debug_context.debug_data.url | The URL. | keyword |
+| okta.debug_context.debug_data.url.text | Multi-field of `okta.debug_context.debug_data.url`. | match_only_text |
 | okta.device.device_integrator |  | flattened |
 | okta.device.disk_encryption_type | The value of the device profile’s disk encryption type. One of "NONE", "FULL", "USER", "ALL_INTERNAL_VOLUMES" or "SYSTEM_VOLUME". | keyword |
 | okta.device.id | Identifier of the device. | keyword |
@@ -338,6 +348,7 @@ An example event for `system` looks as following:
 | okta.target.id | The ID of the target. | keyword |
 | okta.target.type | The type of target. | keyword |
 | okta.transaction.detail.request_api_token_id | ID of the API token used in a request. | keyword |
+| okta.transaction.detail.root_api_token_id | ID of the root API token. | keyword |
 | okta.transaction.id | Identifier of the transaction. | keyword |
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |

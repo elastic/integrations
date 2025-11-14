@@ -1,0 +1,28 @@
+metricsets:
+  - vertexai_logs
+period: {{period}}
+project_id: !!str {{project_id}}
+table_id: {{table_id}}
+{{#if time_lookback_hours}}
+time_lookback_hours: {{time_lookback_hours}}
+{{/if}}
+{{#if credential_file_path}}
+credential_file_path: {{credential_file_path}}
+{{/if}}
+{{#if credentials_json}}
+credentials_json: '{{credentials_json}}'
+{{/if}}
+exclude_labels: {{exclude_labels}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+{{processors}}
+{{/if}}
