@@ -10,16 +10,16 @@
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 15,
+      "timeWindowSize": 5,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// Alert triggers when the latency is greater than or equal to recommended threshold value {5 secs} within the look back time window.\n// The alert is grouped by statement user_id and host name.\n// You can adjust the threshold value by modifying the avg_query_time value in the WHERE clause, which is specified in milliseconds. \n FROM metrics-postgresql.statement-default\n| STATS avg_query_time=avg(postgresql.statement.query.time.mean.ms) by host.name, postgresql.statement.user.id\n| WHERE avg_query_time >= 5000"
+        "esql": "// Alert when PostgreSQL query mean latency exceeds 5 seconds within the look back time window.\n// The alert is grouped by statement user_id, query_id and host name.\n// You can adjust the threshold value by modifying the mean_query_time value in the WHERE clause, which is specified in milliseconds.\nFROM metrics-postgresql.statement-default\n| KEEP postgresql.statement.query.time.mean.ms, host.name, postgresql.statement.user.id, postgresql.statement.query.id, @timestamp\n| WHERE postgresql.statement.query.id IS NOT NULL\n| STATS mean_query_time = MAX(postgresql.statement.query.time.mean.ms) BY host.name, postgresql.statement.user.id, postgresql.statement.query.id\n| WHERE mean_query_time >= 5000\n| EVAL mean_query_time = ROUND(mean_query_time, 2)\n| SORT mean_query_time DESC\n| LIMIT 100"
       },
       "groupBy": "row",
       "timeField": "@timestamp"
     },
     "alertDelay": {
-      "active": 1
+      "active": 3
     }
   },
   "managed": true,
