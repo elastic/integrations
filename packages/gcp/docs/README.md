@@ -224,11 +224,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| actor.entity.id | ID or multiple IDs of the entity performing the action described by the event. | keyword |
+| actor.entity.id | [Deprecated] This field is maintained for backward compatibility. Use type-specific fields instead: user.entity.id for user accounts, service.entity.id for service accounts and GCP services, host.entity.id for compute instances, or entity.id for other types. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| entity.id | Generic entity identifier for principals that don't fit into specific categories (user, service, host). Used as a fallback for unknown or miscellaneous entity types like GitHub repo references. | keyword |
+| entity.target.id | Generic entity identifier for targets that don't fit into specific categories. Used for projects, zones, and other miscellaneous GCP resources. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | gcp.audit.access.caller_ip_geo.region_code |  | keyword |
@@ -302,12 +304,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.source.vpc.subnetwork_name | Subnetwork on which the VM is operating. | keyword |
 | gcp.source.vpc.vpc_name | VPC on which the VM is operating. | keyword |
 | host.containerized | If the host is a container. | boolean |
+| host.entity.id | Unique identifier for Compute Engine instances acting as principals in GCP audit events. Contains instance resource paths. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| host.target.entity.id | Unique identifier for compute resources targeted by GCP audit events. Includes Compute Engine instance IDs and resource paths. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | related.entity | A collection of all entity identifiers associated with the document. If the document  contains multiple entities, identifiers for each will be included. Example identifiers include (but not limited to) cloud resource IDs, email addresses, and hostnames. | keyword |
-| target.entity.id | ID or multiple IDs of the entity targeted by the action described by the event. | keyword |
+| service.entity.id | Unique identifier for service accounts and GCP services acting as principals. Contains serviceAccount: prefixed values, \*.iam.gserviceaccount.com addresses, and \*.googleapis.com services. | keyword |
+| service.target.entity.id | Unique identifier for GCP service resources targeted by audit events. Includes Cloud Storage buckets, Cloud Functions, BigQuery datasets, Compute Engine resources, networking components, and other GCP services. | keyword |
+| target.entity.id | [Deprecated] This field is maintained for backward compatibility. Use type-specific fields instead: user.target.entity.id for IAM principals, service.target.entity.id for GCP service resources, host.target.entity.id for compute instances, or entity.target.id for other types. | keyword |
+| user.entity.id | Unique identifier for user accounts acting as principals in GCP audit events. Contains email addresses and user: prefixed identifiers. | keyword |
+| user.target.entity.id | Unique identifier for IAM principals targeted by GCP audit events. Includes service accounts, users, and groups. | keyword |
 
 
 An example event for `audit` looks as following:
