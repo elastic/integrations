@@ -1,0 +1,1 @@
+# OTel To ECS Adapter
