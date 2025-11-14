@@ -1,16 +1,43 @@
 > ⚠️ **IMPORTANT**
->
-> This package is *deprecated* and is not supported for installation in Elastic Cloud Serverless.
+> This integration is **deprecated**. Netscout Arbor Peakflow SP is no longer supported. This package should not be used for new deployments and is provided for historical reference only.
 
-# Netscout integration
+# Arbor Peakflow SP Logs (Deprecated) Integration for Elastic
 
-This integration is for [Netscout](https://www.netscout.com/product/arbor-sightline) device's logs. It includes the following
-datasets for receiving logs over syslog or read from a file:
+## Overview
 
-- `sightline` dataset: supports Arbor Peakflow SP logs.
+This integration for Netscout Arbor Peakflow SP is **deprecated** and no longer supported. It was designed to collect logs from Netscout Arbor Peakflow SP devices.
 
-### Sightline
+### Compatibility
 
-The `sightline` dataset collects Arbor Peakflow SP logs.
+As this product is no longer supported, compatibility information is not available.
 
-{{fields "sightline"}}
+## What data does this integration collect?
+
+This integration collects logs from the Netscout Arbor Peakflow SP `sightline` data stream. These logs were typically collected via syslog (UDP/TCP) or from log files.
+
+## How do I deploy this integration?
+
+This integration is deprecated and should not be deployed. The following information is for reference purposes only.
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Onboard / configure
+
+Configuration instructions are not provided as this integration is deprecated.
+
+## Reference
+
+### sightline
+
+The `sightline` data stream was designed to collect Arbor Peakflow SP logs.
+
+#### sightline fields
+
+{{ fields "sightline" }}
+
+### Inputs used
+{{ inputDocs }}

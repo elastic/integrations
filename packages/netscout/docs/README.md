@@ -1,17 +1,41 @@
 > ⚠️ **IMPORTANT**
->
-> This package is *deprecated* and is not supported for installation in Elastic Cloud Serverless.
+> This integration is **deprecated**. Netscout Arbor Peakflow SP is no longer supported. This package should not be used for new deployments and is provided for historical reference only.
 
-# Netscout integration
+# Arbor Peakflow SP Logs (Deprecated) Integration for Elastic
 
-This integration is for [Netscout](https://www.netscout.com/product/arbor-sightline) device's logs. It includes the following
-datasets for receiving logs over syslog or read from a file:
+## Overview
 
-- `sightline` dataset: supports Arbor Peakflow SP logs.
+This integration for Netscout Arbor Peakflow SP is **deprecated** and no longer supported. It was designed to collect logs from Netscout Arbor Peakflow SP devices.
 
-### Sightline
+### Compatibility
 
-The `sightline` dataset collects Arbor Peakflow SP logs.
+As this product is no longer supported, compatibility information is not available.
+
+## What data does this integration collect?
+
+This integration collects logs from the Netscout Arbor Peakflow SP `sightline` data stream. These logs were typically collected via syslog (UDP/TCP) or from log files.
+
+## How do I deploy this integration?
+
+This integration is deprecated and should not be deployed. The following information is for reference purposes only.
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Onboard / configure
+
+Configuration instructions are not provided as this integration is deprecated.
+
+## Reference
+
+### sightline
+
+The `sightline` data stream was designed to collect Arbor Peakflow SP logs.
+
+#### sightline fields
 
 **Exported fields**
 
@@ -827,4 +851,84 @@ The `sightline` dataset collects Arbor Peakflow SP logs.
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
+
+
+### Inputs used
+These inputs can be used with this integration:
+<details>
+<summary>logfile</summary>
+
+## Setup
+For more details about the logfile input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-log).
+
+### Collecting logs from logfile
+
+To collect logs via logfile, select **Collect logs via the logfile input** and configure the following parameter:
+
+- Paths: List of glob-based paths to crawl and fetch log files from. Supports glob patterns like
+  `/var/log/*.log` or `/var/log/*/*.log` for subfolder matching. Each file found starts a
+  separate harvester.
+</details>
+<details>
+<summary>tcp</summary>
+
+## Setup
+
+For more details about the TCP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp).
+
+### Collecting logs from TCP
+
+To collect logs via TCP, select **Collect logs via TCP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of incoming messages
+- Max Connections - Maximum number of concurrent connections
+- Timeout - How long to wait for data before closing idle connections
+- Line Delimiter - Character(s) that separate log messages
+
+## SSL/TLS Configuration
+
+To enable encrypted connections, configure the following SSL settings:
+
+**SSL Settings:**
+- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
+- Certificate Key - Path to the private key file (`.key`)
+- Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
+- Client Authentication - Require client certificates (`none`, `optional`, or `required`)
+- Supported Protocols - TLS versions to support (e.g., `TLSv1.2`, `TLSv1.3`)
+
+**Example SSL Configuration:**
+```yaml
+ssl.enabled: true
+ssl.certificate: "/path/to/server.crt"
+ssl.key: "/path/to/server.key"
+ssl.certificate_authorities: ["/path/to/ca.crt"]
+ssl.client_authentication: "optional"
+```
+</details>
+<details>
+<summary>udp</summary>
+
+## Setup
+
+For more details about the UDP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp).
+
+### Collecting logs from UDP
+
+To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of UDP packets to accept (default: 10KB, max: 64KB)
+- Read Buffer - UDP socket read buffer size for handling bursts of messages
+- Read Timeout - How long to wait for incoming packets before checking for shutdown
+</details>
 
