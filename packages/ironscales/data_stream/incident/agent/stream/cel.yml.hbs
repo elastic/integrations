@@ -1,0 +1,257 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  api_token: {{api_token}}
+  company_id: !!str {{company_id}}
+  page_size: {{page_size}}
+redact:
+  fields:
+    - api_token
+program: |
+  (has(state.?next.jwt_token) ?
+    {
+      "next": {
+        "jwt_token": state.next.jwt_token
+      }
+    }
+  :
+    post_request(
+      state.url.trim_right("/") + "/appapi/get-token/", "application/json", {
+        "key": state.api_token,
+        "scopes": ["company.all"]
+      }.encode_json()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "next": {
+          "jwt_token": body.jwt
+        }
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST: "+ state.url.trim_right("/") + "/appapi/get-token/: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "next": {},
+        "worklist": {},
+        "want_more": false
+      }
+    )
+  ).as(token,
+    state.with(
+      !has(token.?next.jwt_token) ? token // Early exit due to failure
+      :
+        state.?worklist.incidents[0].hasValue() ?
+          {
+            "next":{
+              "jwt_token": token.next.jwt_token,
+              ?"page": state.?next.page
+            }
+          }
+        :
+          request(
+            "GET",
+            state.url.trim_right("/") + "/appapi/incident/" + state.company_id + "/list/?" + {
+              ?"page": state.?next.page.optMap(v,[string(v)]),
+              "items_per_page": [string(state.page_size)]
+            }.format_query()
+          ).with({
+            "Header": {
+              "Authorization": ["Bearer " + token.next.jwt_token],
+            }
+          }).do_request().as(resp, resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body, {
+
+              // Build worklist
+              "worklist": body,
+              "next": {
+                "jwt_token": token.next.jwt_token,
+                ?"page": int(body.page) < int(body.total_pages) ? optional.of(int(body.page) + 1) : optional.none(),
+              }
+            })
+          :
+            // Generate a new token if expired; otherwise, report an error
+            resp.StatusCode == 403 ?
+              resp.Body.decode_json().as(body,
+                has(body.detail) && body.detail.to_lower().contains_substr("jwt expired") ?
+                  {
+                    // Add placeholder to trigger the next iteration; will be removed later in the pipeline
+                    "events": [{"message": "empty_events_placeholder"}],
+                    "next": {
+                      ?"page": state.?next.page,
+                    },
+                    "worklist": state.?worklist.orValue({}),
+                    "want_more": true
+                  }
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET " + state.url.trim_right("/") + "/appapi/incident/" + state.company_id + "/list/: " + (
+                          size(resp.Body) != 0 ?
+                            string(resp.Body)
+                          :
+                            string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                        ),
+                      },
+                    },
+                    "next": {},
+                    "worklist": {},
+                    "want_more": false,
+                  }
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET " + state.url.trim_right("/") + "/appapi/incident/" + state.company_id + "/list/: " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    ),
+                  },
+                },
+                "next": {},
+                "worklist": {},
+                "want_more": false,
+              }
+          )
+    )
+  ).as(work,
+    state.with(
+      !has(work.?next.jwt_token) ? work : // Exit early due to failure
+        work.?worklist.incidents[0].hasValue() ?
+          request(
+            "GET",
+            state.url.trim_right("/") + "/appapi/incident/" + state.company_id + "/details/" + string(int(work.worklist.incidents[0].incidentID))
+          ).with({
+            "Header": {
+              "Authorization": ["Bearer " + work.next.jwt_token],
+            }
+          }).do_request().as(resp, resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body, {
+
+              // Enrich incidents with details
+              "events": [{
+                "message" : work.worklist.incidents[0].with(
+                  body.with({
+                      ?"detailed_classification": has(body.classification) ? optional.of(body.classification) : optional.none()
+                  }).drop("classification")
+                ).encode_json()
+              }],
+              "worklist": (tail(work.worklist.incidents)[?0].hasValue()) ? work.worklist.with({ "incidents": tail(work.worklist.incidents) }) : {},
+              "next": {
+                "jwt_token": work.next.jwt_token,
+                ?"page": work.?next.page,
+              },
+              "want_more": tail(work.worklist.incidents)[?0].hasValue() || int(work.worklist.page) != int(work.worklist.total_pages)
+            })
+          :
+            // Generate a new token if expired; otherwise, report an error
+            resp.StatusCode == 403 ?
+              resp.Body.decode_json().as(body,
+                has(body.detail) && body.detail.to_lower().contains_substr("jwt expired") ?
+                  {
+                    // Add placeholder to trigger the next iteration; will be removed later in the pipeline
+                    "events": [{"message": "empty_events_placeholder"}],
+                    "next": {
+                      ?"page": work.?next.page
+                    },
+                    "worklist": work.?worklist.orValue({}),
+                    "want_more": true
+                  }
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET " + state.url.trim_right("/") + "/appapi/incident/" + state.company_id + "/details/" + string(int(work.worklist.incidents[0].incidentID)) + ": " + (
+                          size(resp.Body) != 0 ?
+                            string(resp.Body)
+                          :
+                            string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                        ),
+                      },
+                    },
+                    "next": {},
+                    "worklist": {},
+                    "want_more": false,
+                  }
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET " + state.url.trim_right("/") + "/appapi/incident/" + state.company_id + "/details/" + string(int(work.worklist.incidents[0].incidentID)) + ": " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    ),
+                  },
+                },
+                "next": {},
+                "worklist": {},
+                "want_more": false,
+              }
+          )
+        :
+          {
+            "events": [],
+            "next": {},
+            "worklist": {},
+            "want_more": false
+          }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

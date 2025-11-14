@@ -1,0 +1,735 @@
+---
+description: Pipeline for processing incident logs.
+processors:
+  - drop:
+      tag: drop_empty_events_placeholder
+      if: ctx.message == 'empty_events_placeholder'
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 9.2.0
+  - terminate:
+      description: error message set and no data to process.
+      tag: terminate_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+
+  # remove agentless metadata
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+
+  # parse the event JSON
+  - rename:
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      tag: remove_message
+      if: ctx.event?.original != null
+      field: message
+      ignore_missing: true
+  - json:
+      tag: json_event_original_into_json
+      field: event.original
+      target_field: json
+
+  # Set event.* fields
+  - set:
+      tag: set_event_kind_1
+      field: event.kind
+      value: event
+
+  # rename to snake case
+  - script:
+      description: Convert camelCase to snake_case.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        // Helper function to convert camelCase to snake_case
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && Character.isLowerCase(str.charAt(i - 1))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        // Recursive function to handle nested fields
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            // Convert each key in the map
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            // If it's a list, process each item recursively
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        // Apply the conversion
+        ctx.ironscales = ctx.ironscales ?: [:];
+        if (ctx.json != null) {
+          ctx.ironscales.incident = convertToSnakeCase(ctx.json);
+        }
+        // Remove json field
+        ctx.remove('json');
+
+  # Date processors
+  - date:
+      tag: date_ironscales_incident_created_into_ironscales_incident_created
+      if: ctx.ironscales?.incident?.created != null && ctx.ironscales.incident.created != ''
+      field: ironscales.incident.created
+      target_field: ironscales.incident.created
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'
+        - yyyy-MM-dd'T'HH:mm:ss'Z'
+      on_failure:
+        - remove:
+            tag: remove_01
+            field: ironscales.incident.created
+        - append:
+            tag: append_error_message_01
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ironscales_incident_first_challenged_date_into_ironscales_incident_first_challenged_date
+      if: ctx.ironscales?.incident?.first_challenged_date != null && ctx.ironscales.incident.first_challenged_date != ''
+      field: ironscales.incident.first_challenged_date
+      target_field: ironscales.incident.first_challenged_date
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'
+        - yyyy-MM-dd'T'HH:mm:ss'Z'
+      on_failure:
+        - remove:
+            tag: remove_02
+            field: ironscales.incident.first_challenged_date
+        - append:
+            tag: append_error_message_02
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ironscales_incident_latest_email_date_into_ironscales_incident_latest_email_date
+      if: ctx.ironscales?.incident?.latest_email_date != null && ctx.ironscales.incident.latest_email_date != ''
+      field: ironscales.incident.latest_email_date
+      target_field: ironscales.incident.latest_email_date
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'
+        - yyyy-MM-dd'T'HH:mm:ss'Z'
+      on_failure:
+        - remove:
+            tag: remove_03
+            field: ironscales.incident.latest_email_date
+        - append:
+            tag: append_error_message_03
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ironscales_incident_first_reported_date_into_ironscales_incident_first_reported_date
+      if: ctx.ironscales?.incident?.first_reported_date != null && ctx.ironscales.incident.first_reported_date != ''
+      field: ironscales.incident.first_reported_date
+      target_field: ironscales.incident.first_reported_date
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'
+        - yyyy-MM-dd'T'HH:mm:ss'Z'
+      on_failure:
+        - remove:
+            tag: remove_04
+            field: ironscales.incident.first_reported_date
+        - append:
+            tag: append_error_message_04
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Long Processors
+  - convert:
+      tag: convert_ironscales_incident_links_count_to_long
+      field: ironscales.incident.links_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_05
+            field: ironscales.incident.links_count
+        - append:
+            tag: append_error_message_05
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_attachments_count_to_long
+      field: ironscales.incident.attachments_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_06
+            field: ironscales.incident.attachments_count
+        - append:
+            tag: append_error_message_06
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_affected_mailboxes_count_to_long
+      field: ironscales.incident.affected_mailboxes_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_07
+            field: ironscales.incident.affected_mailboxes_count
+        - append:
+            tag: append_error_message_07
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_comments_count_to_long
+      field: ironscales.incident.comments_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_08
+            field: ironscales.incident.comments_count
+        - append:
+            tag: append_error_message_08
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_release_request_count_to_long
+      field: ironscales.incident.release_request_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_09
+            field: ironscales.incident.release_request_count
+        - append:
+            tag: append_error_message_09
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_federation_companies_affected_to_long
+      field: ironscales.incident.federation.companies_affected
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_10
+            field: ironscales.incident.federation.companies_affected
+        - append:
+            tag: append_error_message_10
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_federation_companies_marked_phishing_to_long
+      field: ironscales.incident.federation.companies_marked_phishing
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_11
+            field: ironscales.incident.federation.companies_marked_phishing
+        - append:
+            tag: append_error_message_11
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_federation_companies_marked_spam_to_long
+      field: ironscales.incident.federation.companies_marked_spam
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_12
+            field: ironscales.incident.federation.companies_marked_spam
+        - append:
+            tag: append_error_message_12
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_federation_companies_marked_fp_to_long
+      field: ironscales.incident.federation.companies_marked_fp
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_13
+            field: ironscales.incident.federation.companies_marked_fp
+        - append:
+            tag: append_error_message_13
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_federation_companies_unclassified_to_long
+      field: ironscales.incident.federation.companies_unclassified
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_14
+            field: ironscales.incident.federation.companies_unclassified
+        - append:
+            tag: append_error_message_14
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ironscales_incident_attachments_1
+      if: ctx.ironscales?.incident?.attachments instanceof List
+      field: ironscales.incident.attachments
+      processor:
+        convert:
+          tag: convert__ingest__value_file_size_to_long
+          field: _ingest._value.file_size
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_15
+                field: _ingest._value.file_size
+            - append:
+                tag: append_error_message_15
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ironscales_incident_related_incidents
+      if: ctx.ironscales?.incident?.related_incidents instanceof List
+      field: ironscales.incident.related_incidents
+      processor:
+        convert:
+          tag: convert__ingest__value_to_long
+          field: _ingest._value
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_16
+                field: _ingest._value
+            - append:
+                tag: append_error_message_16
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Double Processors
+  - convert:
+      tag: convert_ironscales_incident_themis_proba_to_double
+      field: ironscales.incident.themis_proba
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_17
+            field: ironscales.incident.themis_proba
+        - append:
+            tag: append_error_message_17
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_federation_phishing_ratio_to_double
+      field: ironscales.incident.federation.phishing_ratio
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_18
+            field: ironscales.incident.federation.phishing_ratio
+        - append:
+            tag: append_error_message_18
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Boolean Processors
+  - convert:
+      tag: convert_ironscales_incident_sender_is_internal_to_boolean
+      field: ironscales.incident.sender_is_internal
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_19
+            field: ironscales.incident.sender_is_internal
+        - append:
+            tag: append_error_message_19
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_ironscales_incident_reported_by_end_user_to_boolean
+      field: ironscales.incident.reported_by_end_user
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_20
+            field: ironscales.incident.reported_by_end_user
+        - append:
+            tag: append_error_message_20
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to String Processors
+  - convert:
+      tag: convert_ironscales_incident_incident_id_to_string
+      field: ironscales.incident.incident_id
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_ironscales_incident_company_id_to_string
+      field: ironscales.incident.company_id
+      type: string
+      ignore_missing: true
+
+  # Convert to IP
+  - convert:
+      tag: convert_ironscales_incident_mail_server_ip_to_ip
+      if: ctx.ironscales?.incident?.mail_server?.ip != ''
+      field: ironscales.incident.mail_server.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_21
+            field: ironscales.incident.mail_server.ip
+        - append:
+            tag: append_error_message_21
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ironscales_incident_reports_1
+      if: ctx.ironscales?.incident?.reports instanceof List
+      field: ironscales.incident.reports
+      processor:
+        convert:
+          tag: convert__ingest__value_mail_server_ip_to_ip
+          field: _ingest._value.mail_server.ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_22
+                field: _ingest._value.mail_server.ip
+            - append:
+                tag: append_error_message_22
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Map custom fields to corresponding ECS and related fields.
+  - set:
+      tag: set_event_id
+      field: event.id
+      copy_from: ironscales.incident.incident_id
+      ignore_empty_value: true
+  - set:
+      tag: set_email_subject
+      field: email.subject
+      copy_from: ironscales.incident.email_subject
+      ignore_empty_value: true
+  - set:
+      tag: set_user_name
+      field: user.name
+      copy_from: ironscales.incident.assignee
+      ignore_empty_value: true
+  - set:
+      tag: set_event_created
+      field: event.created
+      copy_from: ironscales.incident.created
+      ignore_empty_value: true
+  - set:
+      tag: set_organization_id
+      field: organization.id
+      copy_from: ironscales.incident.company_id
+      ignore_empty_value: true
+  - set:
+      tag: set_organization_name
+      field: organization.name
+      copy_from: ironscales.incident.company_name
+      ignore_empty_value: true
+  - set:
+      tag: set_host_domain
+      field: host.domain
+      copy_from: ironscales.incident.mail_server.host
+      ignore_empty_value: true
+  - append:
+      tag: append_email_to_address
+      if: ctx.ironscales?.incident?.recipient_email != null
+      field: email.to.address
+      value: '{{{ironscales.incident.recipient_email}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_email_from_address
+      if: ctx.ironscales?.incident?.sender_email != null
+      field: email.from.address
+      value: '{{{ironscales.incident.sender_email}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_email_reply_to_address
+      if: ctx.ironscales?.incident?.reply_to != null
+      field: email.reply_to.address
+      value: '{{{ironscales.incident.reply_to}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_host_ip
+      if: ctx.ironscales?.incident?.mail_server?.ip != null
+      field: host.ip
+      value: '{{{ironscales.incident.mail_server.ip}}}'
+      allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ironscales_incident_links_1
+      if: ctx.ironscales?.incident?.links instanceof List
+      field: ironscales.incident.links
+      processor:
+        append:
+          tag: append_url_full
+          field: url.full
+          value: '{{{_ingest._value.url}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ironscales_incident_attachments_2
+      if: ctx.ironscales?.incident?.attachments instanceof List
+      field: ironscales.incident.attachments
+      processor:
+        append:
+          tag: append_email_attachments_file_name
+          field: email.attachments.file.name
+          value: '{{{_ingest._value.file_name}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ironscales_incident_attachments_3
+      if: ctx.ironscales?.incident?.attachments instanceof List
+      field: ironscales.incident.attachments
+      processor:
+        append:
+          tag: append_email_attachments_file_hash_md5
+          field: email.attachments.file.hash.md5
+          value: '{{{_ingest._value.md5}}}'
+          allow_duplicates: false
+  - append:
+      tag: append_related_user_01
+      if: ctx.ironscales?.incident?.recipient_email != null
+      field: related.user
+      value: '{{{ironscales.incident.recipient_email}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_02
+      if: ctx.ironscales?.incident?.recipient_name != null
+      field: related.user
+      value: '{{{ironscales.incident.recipient_name}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_03
+      if: ctx.ironscales?.incident?.assignee != null
+      field: related.user
+      value: '{{{ironscales.incident.assignee}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_04
+      if: ctx.ironscales?.incident?.sender_name != null
+      field: related.user
+      value: '{{{ironscales.incident.sender_name}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_05
+      if: ctx.ironscales?.incident?.sender_email != null
+      field: related.user
+      value: '{{{ironscales.incident.sender_email}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_06
+      if: ctx.ironscales?.incident?.resolved_by != null
+      field: related.user
+      value: '{{{ironscales.incident.resolved_by}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_07
+      if: ctx.ironscales?.incident?.reply_to != null
+      field: related.user
+      value: '{{{ironscales.incident.reply_to}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_08
+      if: ctx.ironscales?.incident?.reporter_name != null
+      field: related.user
+      value: '{{{ironscales.incident.reporter_name}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_1
+      if: ctx.ironscales?.incident?.mail_server?.host != null
+      field: related.hosts
+      value: '{{{ironscales.incident.mail_server.host}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_1
+      if: ctx.ironscales?.incident?.mail_server?.ip != null
+      field: related.ip
+      value: '{{{ironscales.incident.mail_server.ip}}}'
+      allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ironscales_incident_reports_2
+      if: ctx.ironscales?.incident?.reports instanceof List
+      field: ironscales.incident.reports
+      processor:
+        append:
+          tag: append_related_user_09
+          field: related.user
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ironscales_incident_reports_3
+      if: ctx.ironscales?.incident?.reports instanceof List
+      field: ironscales.incident.reports
+      processor:
+        append:
+          tag: append_related_user_10
+          field: related.user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ironscales_incident_reports_4
+      if: ctx.ironscales?.incident?.reports instanceof List
+      field: ironscales.incident.reports
+      processor:
+        append:
+          tag: append_related_user_11
+          field: related.user
+          value: '{{{_ingest._value.sender_email}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ironscales_incident_reports_5
+      if: ctx.ironscales?.incident?.reports instanceof List
+      field: ironscales.incident.reports
+      processor:
+        append:
+          tag: append_related_hosts_2
+          field: related.hosts
+          value: '{{{_ingest._value.mail_server.host}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ironscales_incident_reports_6
+      if: ctx.ironscales?.incident?.reports instanceof List
+      field: ironscales.incident.reports
+      processor:
+        append:
+          tag: append_related_ip_2
+          field: related.ip
+          value: '{{{_ingest._value.mail_server.ip}}}'
+          allow_duplicates: false
+
+  # Remove Duplicate Custom Field if preserve_duplicate_custom_fields are not enabled
+  - foreach:
+      tag: foreach_of_ironscales_incident_links_2
+      if: ctx.ironscales?.incident?.links instanceof List && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field: ironscales.incident.links
+      processor:
+        remove:
+          tag: remove_custom_duplicate_fields_from_ironscales_incident_links_array
+          field: _ingest._value.url
+          ignore_missing: true
+  - foreach:
+      tag: foreach_of_ironscales_incident_attachments_4
+      if: ctx.ironscales?.incident?.attachments instanceof List && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field: ironscales.incident.attachments
+      processor:
+        remove:
+          tag: remove_custom_duplicate_fields_from_ironscales_incident_attachments_array
+          field:
+            - _ingest._value.file_name
+            - _ingest._value.md5
+          ignore_missing: true
+  - remove:
+      tag: remove_custom_duplicate_fields
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - ironscales.incident.incident_id
+        - ironscales.incident.email_subject
+        - ironscales.incident.recipient_email
+        - ironscales.incident.assignee
+        - ironscales.incident.sender_email
+        - ironscales.incident.created
+        - ironscales.incident.company_id
+        - ironscales.incident.company_name
+        - ironscales.incident.reply_to
+        - ironscales.incident.mail_server.host
+        - ironscales.incident.mail_server.ip
+      ignore_missing: true
+
+  # Remove `ironscales.incident.affected_mailbox_count` as it is same as `ironscales.incident.affected_mailboxes_count`
+  - remove:
+      tag: remove_23
+      field: ironscales.incident.affected_mailbox_count
+      ignore_missing: true
+
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+        map.values().removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        void handleList(List list) {
+        list.removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        handleMap(ctx);
+  - set:
+      tag: set_event_kind_2
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_1
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message_23
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_3
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_2
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
