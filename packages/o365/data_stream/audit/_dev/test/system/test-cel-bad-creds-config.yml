@@ -1,5 +1,5 @@
 input: cel
-service: o365-cel
+service: o365mock-cel-bad-creds
 vars: ~
 policy_template: o365
 data_stream:
@@ -10,11 +10,14 @@ data_stream:
     client_id: test-cel-client-id
     client_secret: test-cel-client-secret
     azure_tenant_id: test-cel-tenant-id
-    content_types: "Audit.SharePoint, Audit.TypeRequiringAdditionalPermissions, Audit.General"
+    content_types: "Audit.TypeRequiringAdditionalPermissions, Audit.General"
     initial_interval: 12h
+    interval: 1000h
     enable_request_tracer: true
 assert:
-  hit_count: 1
+  hit_count: 2
+  # one error message for the 401 when subscribing to Audit.TypeRequiringAdditionalPermissions
+  # one event sucessfully ingested from Audit.General
 skip:
   reason: "Negative testing in system tests is not currently possible"
   link: https://github.com/elastic/elastic-package/issues/2800
