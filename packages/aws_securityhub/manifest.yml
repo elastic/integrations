@@ -1,0 +1,131 @@
+format_version: 3.5.0
+name: aws_securityhub
+title: "AWS Security Hub"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: Collect logs from AWS Security Hub with Elastic Agent.
+type: integration
+categories:
+  - aws
+  - security
+  - cloudsecurity_cdr
+  - vulnerability_workflow
+conditions:
+  kibana:
+    version: "^9.3.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_securityhub.svg
+    title: AWS Security Hub logo
+    size: 33x39
+    type: image/svg+xml
+policy_templates:
+  - name: aws_securityhub
+    title: AWS Security Hub logs
+    description: Collect AWS Security Hub logs.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    inputs:
+      - type: cel
+        title: Collect AWS Security Hub logs via API
+        description: Collecting AWS Security Hub logs via API.
+        vars:
+          - name: access_key_id
+            type: password
+            title: Access Key ID
+            multi: false
+            required: false
+            show_user: true
+            description: First part of access key. This parameter along with the secret_access_key parameter is required if we are not providing shared_credential_file.
+            secret: true
+          - name: secret_access_key
+            type: password
+            title: Secret Access Key
+            multi: false
+            required: false
+            show_user: true
+            description: Second part of access key. This parameter along with the access_key_id parameter is required if we are not providing shared_credential_file.
+            secret: true
+          - name: session_token
+            type: password
+            title: Session Token
+            multi: false
+            required: false
+            show_user: true
+            description: Required when using temporary security credentials.
+            secret: true
+          - name: shared_credential_file
+            type: text
+            title: Shared Credential File
+            multi: false
+            required: false
+            show_user: false
+            description: Directory of the shared credentials file. This parameter is required if we are not providing value for the parameters - secret_access_key and access_key_id.
+          - name: credential_profile_name
+            type: text
+            title: Credential Profile Name
+            multi: false
+            required: false
+            show_user: false
+            description: Profile name in shared credentials file.
+          - name: role_arn
+            type: text
+            title: Role ARN
+            multi: false
+            required: false
+            show_user: false
+            description: AWS IAM Role to assume.
+          - name: external_id
+            type: text
+            title: External ID
+            multi: false
+            required: false
+            show_user: false
+            description: External ID to use when assuming a role in another account, see [the AWS documentation for use of external IDs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-service-integrations
+  type: elastic

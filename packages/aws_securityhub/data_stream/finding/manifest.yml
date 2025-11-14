@@ -1,0 +1,123 @@
+title: Finding
+type: logs
+elasticsearch:
+  index_template:
+    settings:
+      index:
+        mapping:
+          total_fields:
+            limit: 2000
+streams:
+  - input: cel
+    title: Finding
+    description: Collecting findings via API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: aws_region
+        type: text
+        title: AWS Region
+        description: AWS Region.
+        multi: false
+        required: true
+        show_user: true
+      - name: tld
+        type: text
+        title: Top Level Domain
+        multi: false
+        required: true
+        show_user: false
+        default: amazonaws.com
+      - name: initial_interval
+        type: duration
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        max_duration: 2160h
+        description: How far back to pull the findings from AWS Security Hub API. Supported units for this parameter are h/m/s.
+      - name: interval
+        type: duration
+        title: Interval
+        description: Duration between requests to the AWS Security Hub API. Supported units for this parameter are h/m/s.
+        default: 1h
+        max_duration: 24h
+        multi: false
+        required: true
+        show_user: true
+      - name: batch_size
+        type: text
+        title: Batch Size
+        multi: false
+        required: true
+        show_user: false
+        description: Batch size for the response of the AWS Security Hub API. The maximum batch size supported for finding is 100.
+        default: 100
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: resource_rate_limit_limit
+        type: text
+        title: Resource Rate Limit
+        description: The value of the response that specifies the maximum overall resource request rate. This controls the polling frequency.
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_rate_limit_burst
+        type: integer
+        title: Resource Rate Limit Burst
+        description: The maximum burst size. Burst is the maximum number of resource requests that can be made above the overall rate limit.
+        show_user: false
+        multi: false
+        required: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+          for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - aws_securityhub-finding
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve aws_securityhub.finding fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.

@@ -1,0 +1,2072 @@
+---
+description: Pipeline for processing findings.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.2.0
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  # parse the event JSON
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: aws_securityhub.finding
+  - script:
+      description: Recursively traverses the aws_securityhub.finding object to convert suspected timestamps to milliseconds.
+      tag: convert_timestamps_to_milliseconds
+      lang: painless
+      if: ctx.aws_securityhub?.finding != null
+      source: >-
+        def convertToMilliseconds(long timestamp) {
+          if ((long)1e19 - 1 < timestamp) {
+            throw new IllegalArgumentException("Timestamp format not recognized: " + timestamp);
+          } else if ((long)1e16 - 1 < timestamp) {
+            return timestamp / 1000000;  // Convert nanoseconds to milliseconds
+          } else if ((long)1e13 - 1 < timestamp) {
+            return timestamp / 1000;  // Convert microseconds to milliseconds
+          } else if ((long)1e10 - 1 < timestamp) {
+            return timestamp;  // Already in milliseconds, no conversion needed
+          } else {
+            return timestamp * 1000;  // Convert seconds to milliseconds
+          }
+        }
+
+        def processFields(Map fields) {
+          if (fields == null) {
+            return null;
+          }
+          for (entry in fields.entrySet()) {
+            def fieldName = entry.getKey();
+            def fieldValue = entry.getValue();
+            // Check if the field is a nested object (Map)
+            if (fieldValue instanceof Map) {
+              // Recursively process nested objects
+              processFields((Map) fieldValue);
+            } else if (fieldName.endsWith('time') || fieldName.endsWith('_time')) {
+              // If the field name ends with "time" or "_time" and is a number, convert it
+              if (fieldValue instanceof Number) {
+                fields[fieldName] = convertToMilliseconds(((Number) fieldValue).longValue());
+              }
+            }
+          }
+          return null;
+        }
+        processFields(ctx.aws_securityhub.finding);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  
+  - convert:
+      field: aws_securityhub.finding.action_id
+      tag: convert_action_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.activity_id
+      tag: convert_activity_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.anomaly_analyses
+      if: ctx.aws_securityhub?.finding?.anomaly_analyses instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.anomalies
+          ignore_missing: true
+          processor:
+            foreach:
+              field: _ingest._value.observations
+              ignore_missing: true
+              processor:
+                convert:
+                  field: _ingest._value.count
+                  tag: convert_anomaly_analyses_anomalies_observations_count_to_long
+                  type: long
+                  ignore_missing: true
+                  on_failure:
+                    - remove:
+                        field: _ingest._value.count
+                        ignore_missing: true
+                    - append:
+                        field: error.message
+                        value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.anomaly_analyses
+      if: ctx.aws_securityhub?.finding?.anomaly_analyses instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.baselines
+          ignore_missing: true
+          processor:
+            foreach:
+              field: _ingest._value.observations
+              ignore_missing: true
+              processor:
+                convert:
+                  field: _ingest._value.count
+                  tag: convert_anomaly_analyses_baselines_observations_count_to_long
+                  type: long
+                  ignore_missing: true
+                  on_failure:
+                    - remove:
+                        field: _ingest._value.count
+                        ignore_missing: true
+                    - append:
+                        field: error.message
+                        value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.api.response.code
+      tag: convert_api_response_code_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.api.response.code
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      field: aws_securityhub.finding.api.request.data
+      if: ctx.aws_securityhub?.finding?.api?.request?.data instanceof String
+      on_failure:
+        - rename:
+            field: aws_securityhub.finding.api.request.data
+            target_field: aws_securityhub.finding.api.request.data.value
+  - rename:
+      field: aws_securityhub.finding.api.request.data
+      target_field: aws_securityhub.finding.api.request.data.value
+      if: ctx.aws_securityhub?.finding?.api?.request?.data != null && !(ctx.aws_securityhub.finding.api.request.data instanceof Map)
+  - json:
+      field: aws_securityhub.finding.api.response.data
+      if: ctx.aws_securityhub?.finding?.api?.response?.data instanceof String
+      on_failure:
+        - rename:
+            field: aws_securityhub.finding.api.response.data
+            target_field: aws_securityhub.finding.api.response.data.value
+  - rename:
+      field: aws_securityhub.finding.api.response.data
+      target_field: aws_securityhub.finding.api.response.data.value
+      if: ctx.aws_securityhub?.finding?.api?.response?.data != null && !(ctx.aws_securityhub.finding.api.response.data instanceof Map)
+  - convert:
+      field: aws_securityhub.finding.assignee.account.type_id
+      tag: convert_assignee_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.assignee.has_mfa
+      tag: convert_finding_assignee_has_mfa_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.has_mfa
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.created_time_dt
+      tag: date_assignee_ldap_person_created_time_dt
+      target_field: aws_securityhub.finding.assignee.ldap_person.created_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.created_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.created_time
+      tag: date_assignee_ldap_person_created_time
+      target_field: aws_securityhub.finding.assignee.ldap_person.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.created_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.created_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.deleted_time_dt
+      tag: date_assignee_ldap_person_deleted_time_dt
+      target_field: aws_securityhub.finding.assignee.ldap_person.deleted_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.deleted_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.deleted_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.deleted_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.deleted_time
+      tag: date_assignee_ldap_person_deleted_time
+      target_field: aws_securityhub.finding.assignee.ldap_person.deleted_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.deleted_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.deleted_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.deleted_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.hire_time_dt
+      tag: date_assignee_ldap_person_hire_time_dt
+      target_field: aws_securityhub.finding.assignee.ldap_person.hire_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.hire_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.hire_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.hire_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.hire_time
+      tag: date_assignee_ldap_person_hire_time
+      target_field: aws_securityhub.finding.assignee.ldap_person.hire_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.hire_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.hire_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.hire_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.last_login_time_dt
+      tag: date_assignee_ldap_person_last_login_time_dt
+      target_field: aws_securityhub.finding.assignee.ldap_person.last_login_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.last_login_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.last_login_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.last_login_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.last_login_time
+      tag: date_assignee_ldap_person_last_login_time
+      target_field: aws_securityhub.finding.assignee.ldap_person.last_login_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.last_login_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.last_login_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.last_login_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.leave_time_dt
+      tag: date_assignee_ldap_person_leave_time_dt
+      target_field: aws_securityhub.finding.assignee.ldap_person.leave_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.leave_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.leave_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.leave_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.leave_time
+      tag: date_assignee_ldap_person_leave_time
+      target_field: aws_securityhub.finding.assignee.ldap_person.leave_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.leave_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.leave_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.leave_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.modified_time_dt
+      tag: date_assignee_ldap_person_modified_time_dt
+      target_field: aws_securityhub.finding.assignee.ldap_person.modified_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.modified_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.modified_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.modified_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.assignee.ldap_person.modified_time
+      tag: date_assignee_ldap_person_modified_time
+      target_field: aws_securityhub.finding.assignee.ldap_person.modified_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.modified_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.modified_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.ldap_person.modified_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.assignee.risk_level_id
+      tag: convert_assignee_risk_level_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.assignee.risk_score
+      tag: convert_finding_assignee_risk_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.assignee.risk_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.assignee.type_id
+      tag: convert_assignee_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.category_uid
+      tag: convert_category_uid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.class_uid
+      tag: convert_class_uid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.cloud.account.type_id
+      tag: convert_cloud_account_type_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.compliance.assessments
+      if: ctx.aws_securityhub?.finding?.compliance?.assessments instanceof List
+      processor:
+        convert:
+          field: _ingest._value.meets_criteria
+          tag: convert_compliance_assessments_meets_criteria_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.meets_criteria
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.compliance.assessments
+      if: ctx.aws_securityhub?.finding?.compliance?.assessments instanceof List
+      processor:
+        convert:
+          field: _ingest._value.policy.is_applied
+          tag: convert_compliance_assessments_policy_is_applied_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.policy.is_applied
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.compliance.checks
+      if: ctx.aws_securityhub?.finding?.compliance?.checks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.severity_id
+          tag: convert_compliance_checks_severity_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.compliance.checks
+      if: ctx.aws_securityhub?.finding?.compliance?.checks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.status_id
+          tag: convert_compliance_checks_status_id_to_string
+          type: string
+          ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.compliance.status_id
+      tag: convert_compliance_status_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.confidence_id
+      tag: convert_confidence_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.confidence_score
+      tag: convert_finding_confidence_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.confidence_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.count
+      tag: convert_finding_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.disposition_id
+      tag: convert_disposition_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.duration
+      tag: convert_duration_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.duration
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.end_time_dt
+      tag: date_end_time_dt
+      target_field: aws_securityhub.finding.end_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.end_time_dt != null && ctx.aws_securityhub.finding.end_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.end_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.end_time
+      tag: date_end_time
+      target_field: aws_securityhub.finding.end_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.end_time != null && ctx.aws_securityhub.finding.end_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.end_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.enrichments
+      if: ctx.aws_securityhub?.finding?.enrichments instanceof List
+      processor:
+        convert:
+          field: _ingest._value.reputation.base_score
+          tag: convert_enrichments_reputation_base_score_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.reputation.base_score
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.enrichments
+      if: ctx.aws_securityhub?.finding?.enrichments instanceof List
+      processor:
+        convert:
+          field: _ingest._value.reputation.score_id
+          tag: convert_enrichments_reputation_score_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.enrichments
+      if: ctx.aws_securityhub?.finding?.enrichments instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_time_dt
+          tag: date_enrichments_created_time_dt
+          target_field: _ingest._value.created_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.reputation.base_score
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.enrichments
+      if: ctx.aws_securityhub?.finding?.enrichments instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_time
+          tag: date_enrichments_created_time
+          target_field: _ingest._value.created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.reputation.base_score
+                ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.firewall_rule.duration
+      tag: convert_finding_firewall_rule_duration_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.firewall_rule.duration
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.firewall_rule.rate_limit
+      tag: convert_finding_firewall_rule_rate_limit_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.firewall_rule.rate_limit
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.impact_id
+      tag: convert_finding_impact_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.impact_score
+      tag: convert_finding_impact_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.impact_score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.is_alert
+      tag: convert_finding_is_alert_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.is_alert
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.is_suspected_breach
+      tag: convert_finding_is_suspected_breach_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.is_suspected_breach
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.malware_scan_info.end_time_dt
+      tag: date_malware_scan_info_end_time_dt
+      target_field: aws_securityhub.finding.malware_scan_info.end_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.malware_scan_info?.end_time_dt != null && ctx.aws_securityhub.finding.malware_scan_info.end_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.malware_scan_info.end_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.malware_scan_info.end_time
+      tag: date_malware_scan_info_end_time
+      target_field: aws_securityhub.finding.malware_scan_info.end_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.malware_scan_info?.end_time != null && ctx.aws_securityhub.finding.malware_scan_info.end_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.malware_scan_info.end_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.malware_scan_info.num_files
+      tag: convert_finding_malware_scan_info_num_files_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.malware_scan_info.num_files
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.malware_scan_info.num_infected
+      tag: convert_finding_malware_scan_info_num_infected_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.malware_scan_info.num_infected
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.malware_scan_info.num_volumes
+      tag: convert_finding_malware_scan_info_num_volumes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.malware_scan_info.num_volumes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.malware_scan_info.size
+      tag: convert_finding_malware_scan_info_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.malware_scan_info.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.malware_scan_info.start_time_dt
+      tag: date_malware_scan_info_start_time_dt
+      target_field: aws_securityhub.finding.malware_scan_info.start_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.malware_scan_info?.start_time_dt != null && ctx.aws_securityhub.finding.malware_scan_info.start_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.malware_scan_info.start_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.malware_scan_info.start_time
+      tag: date_malware_scan_info_start_time
+      target_field: aws_securityhub.finding.malware_scan_info.start_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.malware_scan_info?.start_time != null && ctx.aws_securityhub.finding.malware_scan_info.start_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.malware_scan_info.start_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.malware_scan_info.type_id
+      tag: convert_finding_malware_scan_info_type_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.malware_scan_info.unique_malware_count
+      tag: convert_finding_malware_scan_info_unique_malware_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.malware_scan_info.unique_malware_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.observables
+      if: ctx.aws_securityhub?.finding?.observables instanceof List
+      processor:
+        convert:
+          field: _ingest._value.reputation.base_score
+          tag: convert_finding_observables_reputation_base_score_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.reputation.base_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.observables
+      if: ctx.aws_securityhub?.finding?.observables instanceof List
+      processor:
+        convert:
+          field: _ingest._value.reputation.score_id
+          tag: convert_finding_observables_reputation_score_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.observables
+      if: ctx.aws_securityhub?.finding?.observables instanceof List
+      processor:
+        convert:
+          field: _ingest._value.type_id
+          tag: convert_finding_observables_type_id_to_string
+          type: string
+          ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.policy.is_applied
+      tag: convert_finding_policy_is_applied_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.policy.is_applied
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.priority_id
+      tag: convert_finding_priority_id_to_string
+      type: string
+      ignore_missing: true
+  - json:
+      field: aws_securityhub.finding.raw_data
+      if: ctx.aws_securityhub?.finding?.raw_data instanceof String
+      tag: json_decoding_raw_data
+      on_failure:
+        - rename:
+            field: aws_securityhub.finding.raw_data
+            target_field: aws_securityhub.finding.raw_data_keyword
+            ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.raw_data_size
+      tag: convert_finding_raw_data_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.raw_data_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.remediation.kb_article_list
+      if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_time_dt
+          tag: date_remediation_kb_article_list_created_time_dt
+          target_field: _ingest._value.created_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.created_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.remediation.kb_article_list
+      if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_time
+          tag: date_remediation_kb_article_list_created_time
+          target_field: _ingest._value.created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.created_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.remediation.kb_article_list
+      if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
+      processor:
+        convert:
+          field: _ingest._value.install_state_id
+          tag: convert_remediation_kb_article_list_install_state_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.remediation.kb_article_list
+      if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_superseded
+          tag: convert_remediation_kb_article_list_is_superseded_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_superseded
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.remediation.kb_article_list
+      if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
+      processor:
+        convert:
+          field: _ingest._value.size
+          tag: convert_remediation_kb_article_list_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.risk_level_id
+      tag: convert_finding_risk_level_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.risk_score
+      tag: convert_finding_risk_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.risk_score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.severity_id
+      tag: convert_finding_severity_id_to_string
+      type: string
+      ignore_missing: true
+  - date:
+      field: aws_securityhub.finding.start_time_dt
+      tag: date_finding_start_time_dt
+      target_field: aws_securityhub.finding.start_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.start_time_dt != null && ctx.aws_securityhub.finding.start_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.start_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.start_time
+      tag: date_start_time
+      target_field: aws_securityhub.finding.start_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.start_time != null && ctx.aws_securityhub.finding.start_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.start_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.status_id
+      tag: convert_finding_status_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.tickets
+      if: ctx.aws_securityhub?.finding?.tickets instanceof List
+      processor:
+        convert:
+          field: _ingest._value.type_id
+          tag: convert_tickets_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.tickets
+      if: ctx.aws_securityhub?.finding?.tickets instanceof List
+      processor:
+        convert:
+          field: _ingest._value.status_id
+          tag: convert_tickets_status_id_to_string
+          type: string
+          ignore_missing: true
+  - date:
+      field: aws_securityhub.finding.time_dt
+      tag: date_finding_time_dt
+      target_field: aws_securityhub.finding.time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.time_dt != null && ctx.aws_securityhub.finding.time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.time
+      tag: date_finding_time
+      target_field: aws_securityhub.finding.time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.time != null && ctx.aws_securityhub.finding.time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.timezone_offset
+      tag: convert_finding_timezone_offset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.timezone_offset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.type_uid
+      tag: convert_finding_type_uid_to_string
+      type: string
+      ignore_missing: true
+  - json:
+      field: aws_securityhub.finding.unmapped
+      if: ctx.aws_securityhub?.finding?.unmapped instanceof String
+      on_failure:
+        - rename:
+            field: aws_securityhub.finding.unmapped
+            target_field: aws_securityhub.finding.unmapped.value
+  - rename:
+      field: aws_securityhub.finding.unmapped
+      target_field: aws_securityhub.finding.unmapped.value
+      if: ctx.aws_securityhub?.finding?.unmapped != null && !(ctx.aws_securityhub.finding.unmapped instanceof Map)
+  - convert:
+      field: aws_securityhub.finding.vendor_attributes.severity_id
+      tag: convert_finding_vendor_attributes_severity_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.verdict_id
+      tag: convert_finding_verdict_id_to_string
+      type: string
+      ignore_missing: true
+
+
+  # convert values
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_actor" }}'
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2003','2004','2006'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.actor != null
+      tag: pipeline_object_actor
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_attack" }}'
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2003','2004','2006'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.attacks instanceof List
+      tag: pipeline_object_attack
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_device" }}'
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2003','2004','2006'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.device != null
+      tag: pipeline_object_device
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_evidence" }}'
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2003','2004'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.evidences instanceof List
+      tag: pipeline_object_device
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_finding" }}'
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2003','2004','2006'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.finding_info != null
+      tag: pipeline_object_finding
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_malware" }}'
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2003','2004','2006'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.malware instanceof List
+      tag: pipeline_object_malware
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_osint" }}'
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2003','2004','2006'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.osint instanceof List
+      tag: pipeline_object_osint
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_resources" }}'
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2003','2004','2006'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.resources instanceof List
+      tag: pipeline_object_resources
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_vulnerabilities" }}'
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2004'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.vulnerabilities instanceof List
+      tag: pipeline_object_vulnerabilities
+      ignore_missing_pipeline: true
+
+# populate ECS fields
+
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_finding_info_modified_time_dt
+      copy_from: aws_securityhub.finding.finding_info.modified_time_dt
+      ignore_empty_value: true
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_finding_info_modified_time
+      copy_from: aws_securityhub.finding.finding_info.modified_time
+      ignore_empty_value: true
+      if: ctx['@timestamp'] == null
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2003','2004','2006'].contains(ctx.aws_securityhub.finding.class_uid)
+      value: alert
+  - append:
+      field: event.category
+      tag: append_vulnerability_into_event_category
+      value: vulnerability
+      allow_duplicates: false
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002'].contains(ctx.aws_securityhub.finding.class_uid)
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      allow_duplicates: false
+  - set:
+      field: event.action
+      tag: set_event_action_from_activity_name
+      copy_from: aws_securityhub.finding.activity_name
+      ignore_empty_value: true
+  - set:
+      field: event.end
+      tag: set_event_end_from_end_time_dt
+      copy_from: aws_securityhub.finding.end_time_dt
+      ignore_empty_value: true
+  - set:
+      field: event.end
+      tag: set_event_end_from_end_time
+      copy_from: aws_securityhub.finding.end_time
+      ignore_empty_value: true
+      if: ctx.event?.end == null
+  - script:
+      description: Convert duration from milliseconds to nanoseconds.
+      tag: script_duration_ms_to_ns
+      lang: painless
+      if: ctx.aws_securityhub?.finding?.duration != null
+      source: >-
+        ctx.event.duration = ctx.aws_securityhub.finding.duration * 1000000;
+  - set:
+      field: event.id
+      tag: set_event_id_from_finding_info_uid
+      copy_from: aws_securityhub.finding.finding_info.uid
+      ignore_empty_value: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_metadata_log_provider
+      copy_from: aws_securityhub.finding.metadata.log_provider
+      ignore_empty_value: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_metadata_product_vendor_name
+      copy_from: aws_securityhub.finding.metadata.product.vendor_name
+      ignore_empty_value: true
+      if: ctx.aws_securityhub?.finding?.metadata?.log_provider == null
+  - set:
+      field: event.sequence
+      tag: set_event_sequence
+      copy_from: aws_securityhub.finding.metadata.sequence
+      ignore_empty_value: true
+  - set:
+      field: event.start
+      tag: set_event_start_from_start_time_dt
+      copy_from: aws_securityhub.finding.start_time_dt
+      ignore_empty_value: true
+  - set:
+      field: event.start
+      tag: set_event_start_from_start_time
+      copy_from: aws_securityhub.finding.start_time
+      ignore_empty_value: true
+      if: ctx.event?.start == null
+  - set:
+      field: event.created
+      tag: set_event_created_from_time_dt
+      copy_from: aws_securityhub.finding.time_dt
+      ignore_empty_value: true
+  - set:
+      field: event.created
+      tag: set_event_created_from_time
+      copy_from: aws_securityhub.finding.time
+      ignore_empty_value: true
+      if: ctx.event?.created == null
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_unknown
+      value: unknown
+      if: ctx.aws_securityhub?.finding?.status_id != null && ['0', '1', '2'].contains(ctx.aws_securityhub.finding.status_id)
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.aws_securityhub?.finding?.status_id != null && ['3', '4'].contains(ctx.aws_securityhub.finding.status_id)
+  
+  - script:
+      description: Extract ECS fields from aws.securityhub_findings.resources.
+      tag: script_extract_fields_from_resource
+      lang: painless
+      if: ctx.aws_securityhub?.finding?.resources instanceof List && ctx.aws_securityhub.finding.resources.size() > 0
+      source: |-
+        // Arrays won't work in general in current UI of Cloud Security Posture workflow. In AWS SecurityHub, a finding may contain multiple resources, but rarely.
+        // When a finding has single-resource, we extract ECS fields as single-value so that the Findings UI behaves as expected for almost all cases.
+        // But in the rare multi-resource case, we extract the ECS fields from the primary resource. 
+        
+        def res;
+
+        if (ctx.aws_securityhub.finding.resources.size() == 1) {
+          res = ctx.aws_securityhub.finding.resources[0];
+        } else {
+          for (def resource: ctx.aws_securityhub.finding.resources) {
+            if (resource.labels?.contains('primary_resource') == true) {
+              res = resource;
+              break;
+            }
+          }
+        }
+
+        // Define fields to be extracted. 
+        ctx.resource = ctx.resource ?: [:];
+        ctx.user = ctx.user ?: [:];
+        ctx.group = ctx.group ?: [:];
+        ctx.host = ctx.host ?: [:];
+        ctx.host.ip = ctx.host.ip ?: [];
+        ctx.orchestrator = ctx.orchestrator ?: [:];
+        ctx.orchestrator.cluster = ctx.orchestrator.cluster ?: [:];
+        ctx.cloud = ctx.cloud ?: [:];
+        ctx.cloud.instance = ctx.cloud.instance ?: [:];
+        ctx.cloud.service = ctx.cloud.service ?: [:];
+        ctx.cloud.machine = ctx.cloud.machine ?: [:];
+
+        // Extract resource field
+        ctx.resource.type = res.type;
+        ctx.resource.id = res.uid;
+        if (res.tags instanceof List) {
+          for (def tag: res.tags) {
+            if (tag.name == 'Name') {
+              ctx.resource.name = tag.value;
+              break;
+            }
+          }
+        }
+
+        // Extract ECS user field
+        if (res.type == 'AWS::IAM::User') {
+          ctx.user.id = res.uid;
+        }
+
+        // Extract ECS group field
+        if (res.type == 'AWS::IAM::Group') {
+          ctx.group.id = res.uid;
+        }
+
+        // Extract ECS host field
+        if (res.type == 'AWS::EC2::Instance' && res.uid != null) {
+          ctx.host.id = res.uid;
+        }
+        if (res.type == 'AWS::EC2::Instance' && res.tags instanceof List) {
+          for (def tag: res.tags) {
+            if (tag.name == 'Name') {
+              ctx.host.name = tag.value;
+            }
+          }
+        }
+        if (res.type == 'AWS::EC2::Instance' && res.data?.awsEc2InstanceDetails?.type != null) {
+          ctx.host.type = res.data.awsEc2InstanceDetails.type;
+        }
+        if (res.type == 'AWS::EC2::Instance' && res.data?.awsEc2InstanceDetails?.ipV4Addresses instanceof List) {
+          for (def ipv4: res.data.awsEc2InstanceDetails.ipV4Addresses) {
+            if (ipv4 instanceof String) {
+              ctx.host.ip.add(ipv4);
+            }
+          }
+        }
+        if (res.type == 'AWS::EC2::Instance' && res.data?.awsEc2InstanceDetails?.ipV6Addresses instanceof List) {
+          for (def ipv6: res.data.awsEc2InstanceDetails.ipV6Addresses) {
+            if (ipv6 instanceof String) {
+              ctx.host.ip.add(ipv6);
+            }
+          }
+        }
+
+        // Extract ECS orchestrator field
+        if (res.tags instanceof List) {
+          for (def tag: res.tags) {
+            if (tag.name == 'aws:eks:cluster-name') {
+              ctx.orchestrator.cluster.name = tag.value;
+            }
+          }
+        }
+        if (res.type == 'AWS::EKS::Cluster') {
+          ctx.orchestrator.cluster.id = res.uid;
+          ctx.orchestrator.type = 'kubernetes';
+        }
+
+        // Extract ECS cloud field
+        ctx.cloud.region = res.region;
+        ctx.cloud.service.name = res.type;
+        if (res.type == 'AWS::EC2::Instance' && res.data?.awsEc2InstanceDetails?.type != null) {
+          ctx.cloud.machine.type = res.data.awsEc2InstanceDetails.type;
+        }
+        if (res.type == 'AWS::EC2::Instance') {
+          ctx.cloud.instance.id = res.uid;
+          ctx.cloud.instance.name = res.name;
+        }
+
+        // Convert key:value tags into object for better searchability.
+        for (def resource: ctx.aws_securityhub.finding.resources) {
+          if (resource.tags instanceof List) {
+            def tags = [:];
+            for (def tag: resource.tags) {
+              tags[tag.name] = tag.value;
+            }
+            resource.tags = tags;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  
+  # cloud.*
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_uid_from_finding_cloud_account_uid
+      copy_from: aws_securityhub.finding.cloud.account.uid
+      ignore_empty_value: true
+  - set:
+      field: cloud.account.name
+      tag: set_cloud_account_name_from_finding_cloud_account_name
+      copy_from: aws_securityhub.finding.cloud.account.name
+      ignore_empty_value: true
+  - set:
+      field: cloud.availability_zone
+      tag: set_cloud_availability_zone_from_finding_cloud_zone
+      copy_from: aws_securityhub.finding.cloud.zone
+      ignore_empty_value: true
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_to_aws
+      value: aws
+      if: ctx.aws_securityhub?.finding?.cloud?.provider != null && ctx.aws_securityhub.finding.cloud.provider.toLowerCase().contains('aws')
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_to_azure
+      value: azure
+      if: ctx.aws_securityhub?.finding?.cloud?.provider != null && ctx.aws_securityhub.finding.cloud.provider.toLowerCase().contains('azure')
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_to_gcp
+      value: gcp
+      if: ctx.aws_securityhub?.finding?.cloud?.provider != null && ctx.aws_securityhub.finding.cloud.provider.toLowerCase().contains('gcp')
+  - set:
+      field: cloud.region
+      tag: set_cloud_region_from_finding_cloud_region
+      copy_from: aws_securityhub.finding.cloud.region
+      ignore_empty_value: true
+      if: ctx.cloud?.region == null
+
+  # organization.*
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_metadata_product_vendor_name
+      copy_from: aws_securityhub.finding.metadata.product.vendor_name
+      ignore_empty_value: true
+  
+  # observer.*
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: AWS Security Hub
+  
+  # rule.*
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_metadata_product_feature_uid
+      copy_from: aws_securityhub.finding.metadata.product.feature.uid
+      ignore_empty_value: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_finding_compliance_control
+      copy_from: aws_securityhub.finding.compliance.control
+      ignore_empty_value: true
+      if: ctx.rule?.id == null
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_finding_info_title
+      copy_from: aws_securityhub.finding.finding_info.title
+      ignore_empty_value: true
+  - set:
+      field: rule.description
+      tag: set_rule_description_from_finding_info_desc
+      copy_from: aws_securityhub.finding.finding_info.desc
+      ignore_empty_value: true
+  - set:
+      field: rule.ruleset
+      tag: set_rule_ruleset_from_finding_compliance_requirements
+      copy_from: aws_securityhub.finding.compliance.requirements
+      ignore_empty_value: true
+  - script:
+      description: Map rule.remediation and rule.reference field.
+      tag: script_map_rule_remediation_and_rule_reference_field
+      lang: painless
+      source: |-
+        ctx.rule = ctx.rule ?: [:];
+
+        def remediation = ctx.aws_securityhub?.finding?.remediation;
+        if (remediation == null && ctx.aws_securityhub?.finding?.vulnerabilities instanceof List && ctx.aws_securityhub.finding.vulnerabilities.size() > 0) {
+          remediation = ctx.aws_securityhub.finding.vulnerabilities[0].remediation;
+        }
+
+        def desc = remediation?.desc;
+        if (remediation?.references instanceof List) {
+          for (def ref: remediation.references) {
+            desc += '\\r\\n' + ref;
+          }
+        }
+
+        ctx.rule.remediation = desc;
+        ctx.rule.reference = remediation?.references;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  
+  # result.*
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_unknown
+      value: unknown
+      if: ctx.aws_securityhub?.finding?.compliance?.status_id == '0' || ctx.aws_securityhub?.finding?.compliance?.status_id == '2'
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_passed
+      value: passed
+      if: ctx.aws_securityhub?.finding?.compliance?.status_id == '1'
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_failed
+      value: failed
+      if: ctx.aws_securityhub?.finding?.compliance?.status_id == '3'
+    
+  # url.*
+  - set:
+      field: url.full
+      tag: set_url_full_from_finding_info_src_url
+      copy_from: aws_securityhub.finding.finding_info.src_url
+      ignore_empty_value: true
+  
+  # vulnerability.*, package.*
+  - script:
+      description: Extract fields from aws.securityhub_findings.vulnerabilities with single vulnerability.
+      tag: script_extract_fields_from_vulnerability
+      lang: painless
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List && ctx.aws_securityhub.finding.vulnerabilities.size() > 0
+      source: |-
+        def vuln = ctx.aws_securityhub.finding.vulnerabilities[0];
+        
+        // Define fields to be extracted. 
+        ctx.package = ctx.package ?: [:];
+        ctx.package.name = ctx.package.name ?: [];
+        ctx.package.version = ctx.package.version ?: [];
+        ctx.package.fixed_version = ctx.package.fixed_version ?: [];
+        ctx.vulnerability = ctx.vulnerability ?: [:];
+        ctx.vulnerability.scanner = ctx.vulnerability.scanner ?: [:];
+        ctx.vulnerability.score = ctx.vulnerability.score ?: [:];
+        
+        if (vuln.affected_packages instanceof List) {
+          for (def pkg: vuln.affected_packages) {
+            if (pkg.name != null) {
+              ctx.package.name.add(pkg.name);
+            }
+            if (pkg.version != null) {
+              ctx.package.version.add(pkg.version);
+            }
+            if (pkg.fixed_in_version != null) {
+              ctx.package.fixed_version.add(pkg.fixed_in_version);
+            }
+          }
+        }
+        
+        ctx.vulnerability.description = vuln.cve?.desc;
+        ctx.vulnerability.id = vuln.cve?.uid;
+        ctx.vulnerability.reference = vuln.references;
+        ctx.vulnerability.published_date = vuln.cve?.created_time_dt;
+        if (ctx.vulnerability.published_date == null) {
+          ctx.vulnerability.published_date = vuln.cve?.created_time;
+        }
+        
+        if (vuln.cve?.uid != null) {
+          String[] tokenList = vuln.cve.uid.splitOnToken("-");
+          ctx.vulnerability.enumeration = tokenList[0];
+          if (tokenList[0] == 'CVE') {
+            ctx.vulnerability.cve = vuln.cve.uid;
+          }
+        }
+        
+        if (vuln.cve?.cvss instanceof List && vuln.cve.cvss.size() > 0) {
+          def cvss = vuln.cve.cvss[0];
+          ctx.vulnerability.score.base = cvss.base_score;
+          ctx.vulnerability.score.version = cvss.version;
+          ctx.vulnerability.classification = 'CVSS';
+          if (cvss.severity == 'NONE') {
+            ctx.vulnerability.severity = 'None';
+          } else if (cvss.severity == 'LOW') {
+            ctx.vulnerability.severity = 'Low';
+          } else if (cvss.severity == 'MEDIUM') {
+            ctx.vulnerability.severity = 'Medium';
+          } else if (cvss.severity == 'HIGH') {
+            ctx.vulnerability.severity = 'High';
+          } else if (cvss.severity == 'CRITICAL') {
+            ctx.vulnerability.severity = 'Critical';
+          }
+        }
+        
+        if (ctx.aws_securityhub.finding.finding_info?.title != null) {
+          ctx.vulnerability.title = ctx.aws_securityhub.finding.finding_info.title;
+        }
+        if (ctx.aws_securityhub.finding.metadata?.product?.name != null) {
+          ctx.vulnerability.scanner.vendor = ctx.aws_securityhub.finding.metadata.product.name;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Script to set event.severity and vulnerability.severity.
+      tag: set_event_severity_and_vulnerability_severity
+      if: ctx.aws_securityhub?.finding?.severity_id instanceof String
+      source: |-
+        String severity = ctx.aws_securityhub.finding.severity_id;
+        String vulnerability_severity;
+        if (severity == "1" || severity == "2") { // Informational and Low
+          ctx.event.severity = 21;
+          vulnerability_severity = 'Low';
+        } else if (severity == "3") { // Medium
+          ctx.event.severity = 47;
+          vulnerability_severity = 'Medium';
+        } else if (severity == "4") { // High
+          ctx.event.severity = 73;
+          vulnerability_severity = 'High';
+        } else if (severity == "5" || severity == "6") { // Critical and Fatal
+          ctx.event.severity = 99;
+          vulnerability_severity = 'Critical';
+        }
+        ctx.vulnerability = ctx.vulnerability ?: [:];
+        if (ctx.aws_securityhub?.finding?.vulnerabilities instanceof List && ctx.aws_securityhub.finding.vulnerabilities.size() > 0) {
+          ctx.vulnerability.severity = vulnerability_severity;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # related.*
+  - append:
+      field: related.user
+      tag: append_actor_process_auid_to_related_user
+      value: '{{{aws_securityhub.finding.actor.process.auid}}}'
+      if: ctx.aws_securityhub?.finding?.actor?.process?.auid != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_process_euid_to_related_user
+      value: '{{{aws_securityhub.finding.actor.process.euid}}}'
+      if: ctx.aws_securityhub?.finding?.actor?.process?.euid != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_user_display_name_to_related_user
+      value: '{{{aws_securityhub.finding.actor.user.display_name}}}'
+      if: ctx.aws_securityhub?.finding?.actor?.user?.display_name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_user_email_addr_to_related_user
+      value: '{{{aws_securityhub.finding.actor.user.email_addr}}}'
+      if: ctx.aws_securityhub?.finding?.actor?.user?.email_addr != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_user_forward_addr_to_related_user
+      value: '{{{aws_securityhub.finding.actor.user.forward_addr}}}'
+      if: ctx.aws_securityhub?.finding?.actor?.user?.forward_addr != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_user_full_name_to_related_user
+      value: '{{{aws_securityhub.finding.actor.user.full_name}}}'
+      if: ctx.aws_securityhub?.finding?.actor?.user?.full_name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_user_name_to_related_user
+      value: '{{{aws_securityhub.finding.actor.user.name}}}'
+      if: ctx.aws_securityhub?.finding?.actor?.user?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_user_uid_to_related_user
+      value: '{{{aws_securityhub.finding.actor.user.uid}}}'
+      if: ctx.aws_securityhub?.finding?.actor?.user?.uid != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_user_uid_alt_to_related_user
+      value: '{{{aws_securityhub.finding.actor.user.uid_alt}}}'
+      if: ctx.aws_securityhub?.finding?.actor?.user?.uid_alt != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_assignee_display_name_to_related_user
+      value: '{{{aws_securityhub.finding.assignee.display_name}}}'
+      if: ctx.aws_securityhub?.finding?.assignee?.display_name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_assignee_email_addr_to_related_user
+      value: '{{{aws_securityhub.finding.assignee.email_addr}}}'
+      if: ctx.aws_securityhub?.finding?.assignee?.email_addr != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_assignee_forward_addr_to_related_user
+      value: '{{{aws_securityhub.finding.assignee.forward_addr}}}'
+      if: ctx.aws_securityhub?.finding?.assignee?.forward_addr != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_assignee_full_name_to_related_user
+      value: '{{{aws_securityhub.finding.assignee.full_name}}}'
+      if: ctx.aws_securityhub?.finding?.assignee?.full_name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_assignee_name_to_related_user
+      value: '{{{aws_securityhub.finding.assignee.name}}}'
+      if: ctx.aws_securityhub?.finding?.assignee?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_assignee_uid_to_related_user
+      value: '{{{aws_securityhub.finding.assignee.uid}}}'
+      if: ctx.aws_securityhub?.finding?.assignee?.uid != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_assignee_uid_alt_to_related_user
+      value: '{{{aws_securityhub.finding.assignee.uid_alt}}}'
+      if: ctx.aws_securityhub?.finding?.assignee?.uid_alt != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_device_domain_to_related_hosts
+      value: '{{{aws_securityhub.finding.device.domain}}}'
+      if: ctx.aws_securityhub?.finding?.device?.domain != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_device_hostname_to_related_hosts
+      value: '{{{aws_securityhub.finding.device.hostname}}}'
+      if: ctx.aws_securityhub?.finding?.device?.hostname != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_device_instance_uid_to_related_hosts
+      value: '{{{aws_securityhub.finding.device.instance_uid}}}'
+      if: ctx.aws_securityhub?.finding?.device?.instance_uid != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      tag: append_device_ip_to_related_ip
+      value: '{{{aws_securityhub.finding.device.ip}}}'
+      if: ctx.aws_securityhub?.finding?.device?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_device_name_to_related_hosts
+      value: '{{{aws_securityhub.finding.device.name}}}'
+      if: ctx.aws_securityhub?.finding?.device?.name != null
+      allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.device.network_interfaces
+      if: ctx.aws_securityhub?.finding?.device?.network_interfaces instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_device_network_interfaces_hostname_to_related_hosts
+          value: '{{{_ingest._value.hostname}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.device.network_interfaces
+      if: ctx.aws_securityhub?.finding?.device?.network_interfaces instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_device_network_interfaces_ip_to_related_ip
+          value: '{{{_ingest._value.ip}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_device_owner_display_name_to_related_user
+      value: '{{{aws_securityhub.finding.device.owner.display_name}}}'
+      if: ctx.aws_securityhub?.finding?.device?.owner?.display_name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_device_owner_email_addr_to_related_user
+      value: '{{{aws_securityhub.finding.device.owner.email_addr}}}'
+      if: ctx.aws_securityhub?.finding?.device?.owner?.email_addr != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_device_owner_forward_addr_to_related_user
+      value: '{{{aws_securityhub.finding.device.owner.forward_addr}}}'
+      if: ctx.aws_securityhub?.finding?.device?.owner?.forward_addr != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_device_owner_full_name_to_related_user
+      value: '{{{aws_securityhub.finding.device.owner.full_name}}}'
+      if: ctx.aws_securityhub?.finding?.device?.owner?.full_name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_device_owner_name_to_related_user
+      value: '{{{aws_securityhub.finding.device.owner.name}}}'
+      if: ctx.aws_securityhub?.finding?.device?.owner?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_device_owner_uid_to_related_user
+      value: '{{{aws_securityhub.finding.device.owner.uid}}}'
+      if: ctx.aws_securityhub?.finding?.device?.owner?.uid != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_device_owner_uid_alt_to_related_user
+      value: '{{{aws_securityhub.finding.device.owner.uid_alt}}}'
+      if: ctx.aws_securityhub?.finding?.device?.owner?.uid_alt != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_device_uid_to_related_hosts
+      value: '{{{aws_securityhub.finding.device.uid}}}'
+      if: ctx.aws_securityhub?.finding?.device?.uid != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_device_uid_alt_to_related_hosts
+      value: '{{{aws_securityhub.finding.device.uid_alt}}}'
+      if: ctx.aws_securityhub?.finding?.device?.uid_alt != null
+      allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_osint_creator_display_name_to_related_user
+          value: '{{{_ingest._value.creator.display_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_osint_creator_email_addr_to_related_user
+          value: '{{{_ingest._value.creator.email_addr}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_osint_creator_forward_addr_to_related_user
+          value: '{{{_ingest._value.creator.forward_addr}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_osint_creator_full_name_to_related_user
+          value: '{{{_ingest._value.creator.full_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_osint_creator_name_to_related_user
+          value: '{{{_ingest._value.creator.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_osint_creator_uid_to_related_user
+          value: '{{{_ingest._value.creator.uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_osint_creator_uid_alt_to_related_user
+          value: '{{{_ingest._value.creator.uid_alt}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_osint_whois_email_addr_to_related_user
+          value: '{{{_ingest._value.whois.email_addr}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_osint_whois_domain_to_related_hosts
+          value: '{{{_ingest._value.whois.domain}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      description: Script to add related.* from osint.
+      tag: set_related_fields_from_osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      source: |-
+        ctx.related = ctx.related ?: [:];
+        ctx.related.ip = ctx.related.ip ?: [];
+        ctx.related.hosts = ctx.related.hosts ?: [];
+        ctx.related.hash = ctx.related.hash ?: [];
+        for (def o: ctx.aws_securityhub.finding.osint) {
+          if (o.type_id == '1') { // IP Address
+            ctx.related.ip.add(o.value);
+          } else if (o.type_id == '2' || o.type_id == '3') { // Domain, Hostname
+            ctx.related.hosts.add(o.value);
+          } else if (o.type_id == '4') { // Hash
+            ctx.related.hash.add(o.value);
+          } else if (o.type_id == '9') { // Email Address
+            ctx.related.user.add(o.value);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_resources_hostname_to_related_hosts
+          value: '{{{_ingest._value.hostname}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_resources_ip_to_related_ip
+          value: '{{{_ingest._value.ip}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_display_name_to_related_user
+          value: '{{{_ingest._value.owner.display_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_email_addr_to_related_user
+          value: '{{{_ingest._value.owner.email_addr}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_forward_addr_to_related_user
+          value: '{{{_ingest._value.owner.forward_addr}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_full_name_to_related_user
+          value: '{{{_ingest._value.owner.full_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_name_to_related_user
+          value: '{{{_ingest._value.owner.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_uid_to_related_user
+          value: '{{{_ingest._value.owner.uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_resources_owner_uid_alt_to_related_user
+          value: '{{{_ingest._value.owner.uid_alt}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.data.awsEc2InstanceDetails.ipV4Addresses
+          ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              tag: append_resources_data_awsEc2InstanceDetails_ipV4Addresses_to_related_ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.data.awsEc2InstanceDetails.ipV6Addresses
+          ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              tag: append_resources_data_awsEc2InstanceDetails_ipV6Addresses_to_related_ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+
+  - remove:
+      field:
+        - aws_securityhub.finding.activity_name
+        - aws_securityhub.finding.finding_info.uid
+        - aws_securityhub.finding.metadata.sequence
+        - aws_securityhub.finding.start_time_dt
+        - aws_securityhub.finding.end_time_dt
+        - aws_securityhub.finding.finding_info.modified_time_dt
+        - aws_securityhub.finding.metadata.log_provider
+        - aws_securityhub.finding.time_dt
+        - aws_securityhub.finding.cloud.account.uid
+        - aws_securityhub.finding.cloud.account.name
+        - aws_securityhub.finding.cloud.zone
+        - aws_securityhub.finding.metadata.product.vendor_name
+        - aws_securityhub.finding.metadata.product.feature.uid
+        - aws_securityhub.finding.finding_info.title
+        - aws_securityhub.finding.finding_info.desc
+        - aws_securityhub.finding.compliance.requirements
+        - aws_securityhub.finding.finding_info.src_url
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+
+  # Cleanup
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
