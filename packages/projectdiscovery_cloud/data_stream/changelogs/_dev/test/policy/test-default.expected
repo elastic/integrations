@@ -1,0 +1,102 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: projectdiscovery_cloud
+      name: test-default-projectdiscovery_cloud
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: projectdiscovery_cloud.changelogs
+          interval: 24h
+          program: |-
+            state.with(
+              {
+                "base": state.url.trim_right("/") + "/v1/scans/vuln/changelogs",
+                "q": {
+                  "limit": [string(state.batch_size)],
+                  "offset": [string(state.offset)],
+                  "event_type": ["vuln_status"],
+                  "sort_desc": ["created_at"],
+                  ?"time": (state.time_window != "") ?
+                    optional.of([string(state.time_window)])
+                  :
+                    optional.none(),
+                },
+              }.as(p,
+                request(
+                  "GET",
+                  p.base + "?" + p.q.format_query()
+                ).with(
+                  {
+                    "Header": {
+                      "X-API-Key": [string(state.api_key)],
+                      "X-Team-Id": [string(state.team_id)],
+                    },
+                  }
+                ).do_request().as(resp,
+                  (resp.StatusCode == 200) ?
+                    bytes(resp.Body).decode_json().as(body,
+                      {
+                        "events": has(body.data) ?
+                          body.data.map(e, {"message": e.encode_json()})
+                        :
+                          [],
+                        "offset": has(body.data) ?
+                          (state.offset + body.data.size())
+                        :
+                          state.offset,
+                        "want_more": has(body.data) && body.data.size() == int(state.batch_size),
+                      }
+                    )
+                  :
+                    {
+                      "events": [],
+                      "error": {"message": "HTTP " + string(resp.StatusCode) + " " + string(resp.Body)},
+                      "want_more": false,
+                    }
+                )
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_key
+                - team_id
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://api.projectdiscovery.io
+          state:
+            api_key: null
+            batch_size: 100
+            offset: 0
+            team_id: null
+            time_window: 7d
+            url: https://api.projectdiscovery.io
+          tags:
+            - projectdiscovery-cloud
+            - vulnerability
+            - changelogs
+            - forwarded
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-projectdiscovery_cloud.changelogs-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
