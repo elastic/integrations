@@ -10,16 +10,16 @@
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 15,
+      "timeWindowSize": 10,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// Alert triggers when the used_logspace exceeds the recommended threshold value {90} within the look back time window.\n// The alert is grouped by Server Name.\n// You can adjust the threshold value by modifying the used_logspace in the WHERE clause. \n FROM metrics-microsoft_sqlserver.transaction_log-default\n| STATS used_logspace=MAX(mssql.metrics.used_log_space_pct) * 100\n by mssql.metrics.server_name\n| WHERE used_logspace > 90"
+        "esql": "// Alert triggers when the used_log_space_pct exceeds the recommended threshold value {90%} within the look back time window.\n// The alert is grouped by Server Name.\n// You can adjust the threshold value by modifying the used_log_space in the WHERE clause.\nFROM metrics-microsoft_sqlserver.transaction_log-default\n| KEEP mssql.metrics.used_log_space_pct, mssql.metrics.server_name, @timestamp\n| WHERE mssql.metrics.used_log_space_pct IS NOT NULL\n| STATS used_log_space = MAX(mssql.metrics.used_log_space_pct) * 100 BY mssql.metrics.server_name\n| WHERE used_log_space > 90\n| EVAL used_log_space = ROUND(used_log_space, 2)\n| SORT used_log_space DESC"
       },
       "groupBy": "row",
       "timeField": "@timestamp"
     },
     "alertDelay": {
-      "active": 1
+      "active": 3
     }
   },
   "managed": true,
