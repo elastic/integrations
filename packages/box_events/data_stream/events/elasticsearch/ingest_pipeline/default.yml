@@ -817,15 +817,6 @@ processors:
           if (ctx.related.ip == null) {
             ctx.related.ip = new ArrayList();
           }
-          if (ctx.related.description == null) {
-            ctx.related.description = new ArrayList();
-          }
-          if (ctx.related.location == null) {
-            ctx.related.location = new ArrayList();
-          }
-          if (ctx.related.indicator_type == null) {
-            ctx.related.indicator_type = new ArrayList();
-          }
         }
 #
   - script:
@@ -865,9 +856,6 @@ processors:
               indicator.indicator.put("type","user-account");    
               ctx.threat.enrichments.add(indicator);
               ctx.related.ip.add(geo.ip);
-              ctx.related.location.add(geo.location);
-              ctx.related.description.add(indicator.indicator.description);
-              ctx.related.indicator_type.add(indicator.indicator.type);
             }
           }
         }
@@ -911,9 +899,6 @@ processors:
           }  
           ctx.threat.enrichments.add(indicator);
           ctx.related.ip.add(geo.ip);
-          ctx.related.location.add(geo.location);
-          ctx.related.description.add(indicator.indicator.description);
-          ctx.related.indicator_type.add(indicator.indicator.type);
         }
   - script:
       description: Unpack Anomalous Download properties
@@ -944,8 +929,6 @@ processors:
             indicator.indicator.type = "file";
             ctx.threat.enrichments.add(indicator);
             ctx.related.ip.add(ip.ip);
-            ctx.related.description.add(indicator.indicator.description);
-            ctx.related.indicator_type.add(indicator.indicator.type);
           }
         }
   - script:
@@ -979,10 +962,8 @@ processors:
           ctx.threat.indicator.last_seen = ctx.box.additional_details.shield_alert.malware_info.last_seen;
           ctx.threat.indicator.reference = ctx.box.additional_details.shield_alert.malware_info.detail_link;
           ctx.related.ip.add(ctx.threat.indicator.ip);
-          ctx.related.description.add(ctx.threat.indicator.description);
         }
         ctx.threat.indicator.type = "software";
-        ctx.related.indicator_type.add(ctx.threat.indicator.type);
   - date:
       field: threat.indicator.first_seen
       tag: date_threat_indicator_first_seen
@@ -1070,24 +1051,9 @@ processors:
             .collect(Collectors.toList());
         }
         if (ctx.related != null) {
-          if (ctx.related.description != null) {
-            ctx.related.description = ctx.related.description.stream()
-              .distinct()
-              .collect(Collectors.toList());
-          }
-          if (ctx.related.indicator_type != null) {
-            ctx.related.indicator_type = ctx.related.indicator_type.stream()
-              .distinct()
-              .collect(Collectors.toList());
-          }
           if (ctx.related.ip != null) {
             ctx.related.ip = ctx.related.ip.stream()
               .filter(Objects::nonNull)
-              .distinct()
-              .collect(Collectors.toList());
-          }
-          if (ctx.related.location != null) {
-            ctx.related.location = ctx.related.location.stream()
               .distinct()
               .collect(Collectors.toList());
           }
@@ -1244,42 +1210,6 @@ processors:
       field: threat.indicator.ip
       target_field: threat.indicator.geo
       ignore_missing: true
-  - script:
-      description: Initialize related.geo prior to geoip
-      lang: painless
-      source: |
-        if (ctx.related?.ip != null) {
-          ctx.related.geo = new ArrayList();
-          for (ip in ctx.related.ip) {
-            Map geo = new HashMap();
-            geo.put("ip",ip);
-            ctx.related.geo.add(geo);
-          }
-        }
-  - foreach:
-      field: related.geo
-      ignore_missing: true
-      processor:
-        geoip:
-          field: "_ingest._value.ip"
-          target_field: "_ingest._value.location"
-          ignore_missing: true
-  - script:
-      description: Collate derived locations to related.location
-      lang: painless
-      source: |
-        if (ctx.related?.geo != null) {
-          ctx.related.location = new ArrayList();
-          for (geo in ctx.related.geo) {
-            if (geo.location != null) {
-              ctx.related.location.add(geo.location.location);
-            }
-          }
-        }
-  - remove:
-      field: "related.geo"   
-      ignore_failure: true
-      ignore_missing: true      
 # AS look-ups on enrichments within Array
   - foreach:
       field: threat.enrichments
