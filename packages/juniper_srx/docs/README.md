@@ -181,7 +181,7 @@ For help with Elastic ingest tools, see [Common problems](https://www.elastic.co
 *   **Check Junos OS Version**: Confirm you are running Junos OS 19.x or later.
 *   **Preserve Original Event**: Enable the `preserve_original_event` option in the integration settings to capture the raw log message in the `event.original` field for inspection.
 
-## Scaling
+## Performance and scaling
 
 For high-volume environments, you can scale horizontally by sending logs from multiple SRX devices to a load-balanced pool of Elastic Agents.
 
