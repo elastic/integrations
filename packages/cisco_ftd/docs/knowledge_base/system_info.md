@@ -24,12 +24,12 @@
 
 ## Compatibility
 - Compatible with Cisco Firepower Threat Defense (FTD) devices
-- Supports syslog message collection via TCP, UDP, or logfile input
+- Supports syslog message collection using TCP, UDP, or logfile input
 - Tested with various Cisco Firepower device models and FTD software versions
 - Requires Elastic Stack version ^8.11.0 || ^9.0.0
 
 ## Scaling and Performance
-- Supports high-volume syslog ingestion via TCP and UDP inputs
+- Supports high-volume syslog ingestion using TCP and UDP inputs
 - Can handle multiple concurrent connections when using TCP input
 - UDP input provides low-latency log collection suitable for high-throughput environments
 - Logfile input allows reading from local log files for batch processing or archival data
@@ -79,7 +79,7 @@
 
 ### Logfile Input Configuration
 1. Ensure FTD device is configured to write logs to a file system accessible by Elastic Agent
-2. Identify the log file path(s) on the system (e.g., `/var/log/cisco-ftd.log`)
+2. Identify the log file path(s) on the system (for example, `/var/log/cisco-ftd.log`)
 3. Ensure Elastic Agent has read permissions for the log file(s)
 4. Configure log rotation if needed to prevent disk space issues
 
@@ -115,7 +115,7 @@ Note: Cisco provides a range of Firepower devices, which may have different conf
    - Check the agent logs for any connection errors
 
 2. **Trigger Test Events**:
-   - Generate test network traffic through the FTD device (e.g., web browsing, file download)
+   - Generate test network traffic through the FTD device (for example, web browsing, file download)
    - Or trigger a security event by accessing a known malicious URL or downloading a test file
    - Verify the FTD device is sending syslog messages (check FTD logs or management interface)
 
@@ -161,7 +161,7 @@ Note: Cisco provides a range of Firepower devices, which may have different conf
 **Issue**: Incorrect timezone in events
 - **Solution**:
   - Configure the `tz_offset` parameter in the integration settings
-  - Use IANA timezone format (e.g., "America/New_York") or offset format (e.g., "+0500")
+  - Use IANA timezone format (for example, "America/New_York") or offset format (for example, "+0500")
   - Verify FTD device timezone settings match your configuration
 
 **Issue**: Network direction not correctly identified
@@ -203,7 +203,7 @@ Note: Cisco provides a range of Firepower devices, which may have different conf
 
 ## Vendor Resources
 - [Cisco Secure Firewall Management Center Examples](https://www.cisco.com/c/en/us/support/security/defense-center/products-configuration-examples-list.html)
-- [Configure Logging on FTD via FMC](https://www.cisco.com/c/en/us/support/docs/security/firepower-ngfw/200479-Configure-Logging-on-FTD-via-FMC.html)
+- [Configure Logging on FTD through FMC](https://www.cisco.com/c/en/us/support/docs/security/firepower-ngfw/200479-Configure-Logging-on-FTD-via-FMC.html)
 - [Configure FMC to Send Audit Logs to a Syslog Server](https://www.cisco.com/c/en/us/support/docs/security/secure-firewall-management-center/221019-configure-fmc-to-send-audit-logs-to-a-sy.html)
 
 # Documentation sites
