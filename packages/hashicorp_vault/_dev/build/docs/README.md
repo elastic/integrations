@@ -1,137 +1,244 @@
-# Hashicorp Vault
+# Hashicorp Vault Integration for Elastic
 
-This integration collects logs and metrics from Hashicorp Vault. There are
-three data streams:
+## Overview
 
-- audit - Audit logs from file or TCP socket.
-- log - Operation log from file.
-- metrics - Telemetry data from the /sys/metrics API.
+The Hashicorp Vault integration for Elastic enables you to collect logs and metrics from Hashicorp Vault. This allows you to ingest audit logs for security monitoring, collect operational logs for troubleshooting, and gather metrics to monitor the overall health and performance of your Vault servers.
 
-## Compatibility
+This integration facilitates the following use cases:
+- **Security Monitoring and Auditing**: Track all access to secrets, who accessed them, and when, providing a detailed audit trail for compliance and security investigations.
+- **Operational Monitoring**: Monitor Vault server health, performance, and operational status to identify issues before they impact production.
+- **Access Pattern Analysis**: Analyze patterns in secret access to identify potential security threats or unusual behavior.
+- **Compliance Reporting**: Generate reports from audit logs to demonstrate compliance with security policies and regulatory requirements.
+- **Performance Optimization**: Track metrics to understand Vault usage patterns and optimize resource allocation.
+- **Secret Lifecycle Management**: Monitor secret creation, access, renewal, and revocation activities across your organization.
 
-This integration has been tested with Vault 1.11.
+### Compatibility
 
-## Audit Logs
+This integration has been tested with HashiCorp Vault 1.11.
+It requires Elastic Stack version 8.12.0 or higher.
 
-Vault audit logs provide a detailed accounting of who accessed or modified what
-secrets. The logs do not contain the actual secret values (for strings), but
-instead contain the value hashed with a salt using HMAC-SHA256. Hashes can be
-compared to values by using the
-[`/sys/audit-hash`](https://www.vaultproject.io/api/system/audit-hash.html) API.
+## What data does this integration collect?
 
-In order to use this integration for audit logs you must configure Vault
-to use a [`file` audit device](https://www.vaultproject.io/docs/audit/file)
-or [`socket` audit device](https://www.vaultproject.io/docs/audit/socket). The
-file audit device provides the strongest delivery guarantees.
+This integration collects the following types of data from HashiCorp Vault:
 
-### File audit device requirements
+- **Audit Logs** (`hashicorp_vault.audit`): Detailed records of all requests and responses to Vault APIs, including authentication attempts, secret access, policy changes, and administrative operations. Audit logs contain HMAC-SHA256 hashed values of secrets and can be collected via file or TCP socket.
+- **Operational Logs** (`hashicorp_vault.log`): JSON-formatted operational logs from the Vault server, including startup messages, configuration changes, errors, warnings, and general operational events.
+- **Metrics** (`hashicorp_vault.metrics`): Prometheus-formatted telemetry data from the `/v1/sys/metrics` API endpoint, including performance counters, gauges, and system health indicators.
 
-- Create a directory for audit logs on each Vault server host.
+## What do I need to use this integration?
 
-```
-mkdir /var/log/vault
-```
+### Vendor Prerequisites
 
-- Enable the file audit device.
+- **For Audit Log Collection (File)**: A file audit device must be enabled with write permissions to a directory accessible by Vault.
+- **For Audit Log Collection (Socket)**: A socket audit device can be configured to stream logs to a TCP endpoint where Elastic Agent is listening.
+- **For Operational Log Collection**: Vault must be configured to output logs in JSON format (`log_format = "json"`) and the log file must be accessible by Elastic Agent.
+- **For Metrics Collection**:
+    - The Vault telemetry endpoint must be enabled.
+    - A Vault token with read access to the `/sys/metrics` API endpoint.
+    - The Elastic Agent must have network access to the Vault API endpoint.
 
-```
-vault audit enable file file_path=/var/log/vault/audit.json
-```
+### Elastic Prerequisites
 
-- Configure log rotation for the audit log. The exact steps may vary by OS.
-This example uses `logrotate` to call `systemctl reload` on the
-[Vault service](https://learn.hashicorp.com/tutorials/vault/deployment-guide#step-3-configure-systemd)
-which sends the process a SIGHUP signal. The SIGHUP signal causes Vault to start
-writing to a new log file.
+- Elastic Stack version 8.12.0 or higher.
+- Elastic Agent installed and enrolled in Fleet.
 
-```
-tee /etc/logrotate.d/vault <<'EOF'
-/var/log/vault/audit.json {
-    rotate 7
-    daily
-    compress
-    delaycompress
-    missingok
-    notifempty
-    extension json
-    dateext
-    dateformat %Y-%m-%d.
-    postrotate
-        /bin/systemctl reload vault || true
-    endscript
-}
-EOF
-```
+## How do I deploy this integration?
 
-### Socket audit device requirements
+### Vendor Setup
 
-To enable the socket audit device in Vault you should first enable this
-integration because Vault will test that it can connect to the TCP socket.
+#### Setting up Audit Logs (File Audit Device)
 
-- Add this integration and enable audit log collection via TCP. If Vault will
-be connecting remotely set the listen address to 0.0.0.0.
+1.  Create a directory for audit logs on each Vault server:
 
-- Configure the socket audit device to stream logs to this integration.
-Substitute in the IP address of the Elastic Agent to which you are sending the
-audit logs.
+    `mkdir /var/log/vault`
 
-```
-vault audit enable socket address=${ELASTIC_AGENT_IP}:9007 socket_type=tcp
-```
+2.  Enable the file audit device in Vault:
+
+    `vault audit enable file file_path=/var/log/vault/audit.json`
+
+3.  Configure log rotation to prevent disk space issues. The following is an example using `logrotate`:
+    ```bash
+    tee /etc/logrotate.d/vault <<'EOF'
+    /var/log/vault/audit.json {
+        rotate 7
+        daily
+        compress
+        delaycompress
+        missingok
+        notifempty
+        extension json
+        dateext
+        dateformat %Y-%m-%d.
+        postrotate
+            /bin/systemctl reload vault || true
+        endscript
+    }
+    EOF
+    ```
+
+#### Setting up Audit Logs (Socket Audit Device)
+
+> **Warning: Risk of Unresponsive Vault with TCP Socket Audit Devices**
+>
+> If a TCP socket audit log destination (like the Elastic Agent) becomes unavailable, Vault may block and stop processing all requests until the connection is restored. This can lead to a service outage.
+>
+> To mitigate this risk, HashiCorp strongly recommends that a socket audit device is configured as a secondary device, alongside a primary, non-socket audit device (like the `file` audit device). For more details, see the official documentation on [Blocked Audit Devices](https://developer.hashicorp.com/vault/docs/audit/socket#configuration).
+
+1.  Note the IP address and port where Elastic Agent will be listening (e.g., port `9007`).
+2.  **Important**: Configure and deploy the integration in Kibana *before* enabling the socket device in Vault, as Vault will immediately test the connection.
+3.  Enable the socket audit device in Vault, substituting the IP of your Elastic Agent:
+
+    `vault audit enable socket address=${ELASTIC_AGENT_IP}:9007 socket_type=tcp`
+
+#### Setting up Operational Logs
+
+Add the following line to your Vault configuration file to enable JSON-formatted logs. Ensure the log output is directed to a file that Elastic Agent can read.
+
+`log_format = "json"`
+
+#### Setting up Metrics
+
+1.  Configure Vault telemetry in your Vault configuration file:
+    ```hcl
+    telemetry {
+      disable_hostname = true
+      enable_hostname_label = true
+    }
+    ```
+    Restart the Vault server after saving this file.
+
+2.  Create a Vault policy file that grants read access to the metrics endpoint.
+    ```hcl
+    path "sys/metrics" {
+      capabilities = ["read"]
+    }
+    ```
+
+3.  Apply the policy.
+
+    `vault policy write read-metrics metrics-policy.hcl`
+
+4.  Create a Vault token with this policy:
+
+    `vault token create -policy="read-metrics" -display-name="elastic-agent-token"`
+
+    Save the token value, it will be needed to complete configuring the integration in Kibana.
+
+### Onboard / configure in Kibana
+
+1.  In Kibana, navigate to **Management > Integrations**.
+2.  Search for "HashiCorp Vault" and select the integration.
+3.  Click **Add HashiCorp Vault**.
+4.  Configure the integration based on your data collection needs:
+
+    **For Audit Logs (File)**:
+    - Enable the "Logs from file" --> "Audit logs (file audit device)" input.
+    - Specify the file path (default: `/var/log/vault/audit*.json*`).
+
+
+    **For Audit Logs (TCP Socket)**:
+    - Enable the "Logs from TCP socket" input.
+    - Configure the `Listen Address` (default: `localhost`) and `Listen Port` (default: `9007`).
+    - If Vault connects from a different host, set the Listen Address to `0.0.0.0`.
+
+
+    **For Operational Logs**:
+    - Enable the "Logs from file" --> "Operation logs" input.
+    - Specify the log file path (default: `/var/log/vault/log*.json*`).
+
+
+    **For Metrics**:
+    - Enable the "Metrics" input.
+    - Enter the Vault host URL under `Hosts` (default: `http://localhost:8200`).
+    - Provide the `Vault Token` created earlier.
+    - Adjust the collection `Period` if needed (default: `30s`).
+
+5.  Click **Save and continue** to deploy the integration policy to your Elastic Agents.
+
+### Validation
+
+1.  **Check Agent Status**: In Fleet, verify that the Elastic Agent shows a "Healthy" status.
+2.  **Verify Data Ingestion**:
+    - Navigate to **Discover** in Kibana.
+    - Select the appropriate data view (`logs-hashicorp_vault.audit-*`, `logs-hashicorp_vault.log-*`, or `metrics-hashicorp_vault.metrics-*`).
+    - Confirm that events are appearing with recent timestamps.
+3.  **View Dashboards**:
+    - Navigate to **Dashboards**.
+    - Search for "Hashicorp Vault" to find the pre-built dashboards.
+    - Verify that data is populating the dashboard panels.
+
+## Performance and scaling
+
+- **Audit Log Performance**: Vault's file audit device provides the strongest delivery guarantees. When using this method, ensure adequate disk I/O capacity, as Vault will block operations if it cannot write audit logs.
+- **TCP Socket Considerations**: When using the socket audit device for real-time log streaming, be aware that Vault operations will be blocked if the TCP connection to the Elastic Agent is unavailable. To mitigate this risk, HashiCorp recommends running a socket audit device as a secondary device alongside a primary file audit device.
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Common Configuration Issues
+
+- **Vault is Unresponsive or Stops Accepting Requests**:
+    - If Vault stops responding to requests, you may have a blocked audit device. This can happen if a TCP socket destination is unavailable or a file audit device cannot write to disk. Review Vault's operational logs for errors related to audit logging. For more information on identifying and resolving this, see the [Blocked Audit Device Behavior](https://developer.hashicorp.com/vault/tutorials/monitoring/blocked-audit-devices#blocked-audit-device-behavior) tutorial.
+- **No Data Collected**:
+    - Verify Elastic Agent is healthy in Fleet.
+    - Ensure the user running Elastic Agent has read permissions on log files.
+    - Double-check that the configured file paths in the integration policy match the actual log file locations.
+    - For operational logs, confirm Vault is configured with `log_format = "json"`.
+- **TCP Socket Connection Fails**:
+    - Verify network connectivity between Vault and the Elastic Agent host.
+    - Check that firewall rules allow TCP connections on the configured port.
+    - If Vault is remote, ensure the listen address is set to `0.0.0.0` in the integration policy.
+- **Metrics Not Collected**:
+    - Verify the Vault token is valid, has not expired, and has read permissions for the `/sys/metrics` endpoint.
+    - Confirm Vault's telemetry configuration includes `disable_hostname = true`.
+
+### Vendor Resources
+
+- [HashiCorp Vault Audit Devices](https://developer.hashicorp.com/vault/docs/audit)
+- [HashiCorp Vault File Audit Device](https://developer.hashicorp.com/vault/docs/audit/file)
+- [HashiCorp Vault Telemetry Configuration](https://developer.hashicorp.com/vault/docs/configuration/telemetry)
+- [HashiCorp Vault Troubleshooting](https://developer.hashicorp.com/vault/docs/troubleshoot)
+
+## Reference
+
+### audit
+
+The `audit` data stream collects audit logs from the file or socket audit devices.
+
+#### audit fields
+
+{{ fields "audit" }}
+
+#### audit sample event
 
 {{event "audit"}}
 
-{{fields "audit"}}
+### log
 
-## Operational Logs
+The `log` data stream collects operational logs from Vault's standard log file.
 
-Vault outputs its logs to stdout. In order to use the package to collect the
-operational log you will need to direct its output to a file.
+#### log fields
 
-This table shows how the Vault field names are mapped in events. The remaining
-structured data fields (indicated by the `*`) are placed under
-`hashicorp_vault.log` which is mapped as `flattened` to allow for arbitrary
-fields without causing mapping explosions or type conflicts.
+{{ fields "log" }}
 
-| Original Field 	| Package Field         	|
-|----------------	|-----------------------	|
-| `@timestamp`   	| `@timestamp`          	|
-| `@module`      	| `log.logger`          	|
-| `@level`       	| `log.level`           	|
-| `@message`     	| `message`             	|
-| `*`            	| `hashicorp_vault.log` 	|
-
-### Requirements
-
-By default, Vault uses its `standard` log output as opposed to `json`. Please
-enable the JSON output in order to have the log data in a structured format. In
-a config file for Vault add the following:
-
-```hcl
-log_format = "json"
-```
+#### log sample event
 
 {{event "log"}}
 
-{{fields "log"}}
+### metrics
 
-## Metrics
+The `metrics` data stream collects Prometheus-formatted metrics from the Vault telemetry endpoint.
 
-Vault can provide [telemetry](https://www.vaultproject.io/docs/configuration/telemetry)
-information in the form of Prometheus metrics. You can verify that metrics are
-enabled by making an HTTP request to
-`http://vault_server:8200/v1/sys/metrics?format=prometheus` on your Vault server.
+#### metrics fields
 
-### Requirements
+{{ fields "metrics" }}
 
-You must configure the Vault prometheus endpoint to disable the hostname
-prefixing. It's recommended to also enable the hostname label.
+### Inputs used
+{{ inputDocs }}
 
-```hcl
-telemetry {
-  disable_hostname = true
-  enable_hostname_label = true
-}
-```
-
-{{fields "metrics"}}
+### API usage
+These APIs are used with this integration:
+* **`/v1/sys/metrics`**: Used to collect Prometheus-formatted telemetry data. See the [HashiCorp Vault Metrics API documentation](https://developer.hashicorp.com/vault/api-docs/system/metrics) for more information.
