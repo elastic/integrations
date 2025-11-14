@@ -15,7 +15,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 **Note**: 
  - It is recommended to use AWS SQS for Amazon GuardDuty.
- - When using the Amazon GuardDuty API to collect logs, there is a known issue where data duplication can occur due to certain API limitations.
+ - When using the Amazon GuardDuty API to collect logs, data duplication can occur due to limitations with the current input.
 
 ### Agentless Enabled Integration
 
