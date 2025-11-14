@@ -1,0 +1,182 @@
+title: Collect unified logs from macOS.
+type: logs
+streams:
+  - input: unifiedlogs
+    title: macOS unified logs
+    description: Collect macOS unified logs.
+    template_path: unifiedlogs.yml.hbs
+    enabled: false
+    vars:
+      - name: predicate
+        type: text
+        title: Predicate
+        description: |
+          Filters messages using the provided predicate based on NSPredicate.
+          A compound predicate or multiple predicates can be provided as a list.
+
+          For detailed information on the use of predicate based filtering,
+          please refer to the https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html[Predicate Programming Guide].
+        multi: true
+        show_user: true
+      - name: authentication
+        type: bool
+        title: Authentication
+        description: |
+          Collect authentication logs.
+        show_user: true
+      - name: user_and_account_management
+        type: bool
+        title: User & Account management
+        description: |
+          Collect user and account management logs.
+        show_user: true
+      - name: process_execution_monitoring
+        type: bool
+        title: Process execution monitoring
+        description: |
+          Collect process execution monitoring logs.
+        show_user: true
+      - name: network_activity
+        type: bool
+        title: Network activity
+        description: |
+          Collect network activity logs.
+        show_user: true
+      - name: file_reads_writes
+        type: bool
+        title: File reads/writes
+        description: |
+          Collect file reads/writes logs.
+        show_user: true
+      - name: system_changes
+        type: bool
+        title: System changes
+        description: |
+          Collect system changes logs.
+        show_user: true
+      - name: advanced_monitoring
+        type: bool
+        title: Advanced monitoring
+        description: |
+          Collect advanced monitoring logs.
+        show_user: true
+      - name: start
+        type: text
+        title: Start date
+        description: |
+          Shows content starting from the provided date.
+          The following date/time formats are accepted:
+          `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DD HH:MM:SSZZZZZ`.
+        show_user: false
+      - name: end
+        type: text
+        title: End date
+        description: |
+          Shows content up to the provided date.
+          The following date/time formats are accepted:
+          `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DD HH:MM:SSZZZZZ`.
+        show_user: false
+      - name: process
+        type: text
+        title: Process
+        description: |
+          A list of the processes on which to operate. It accepts a PID or process name.
+        multi: true
+        show_user: false
+      - name: source
+        type: bool
+        title: Include source
+        description: |
+          Include symbol names and source line numbers for messages, if available.
+        show_user: false
+      - name: info
+        type: bool
+        title: Include info
+        description: |
+          Disable or enable info level messages.
+        show_user: false
+      - name: debug
+        type: bool
+        title: Include debug
+        description: |
+          Disable or enable debug level messages.
+        show_user: false
+      - name: backtrace
+        type: bool
+        title: Include backtrace
+        description: |
+          Disable or enable backtrace level messages.
+        show_user: false
+      - name: signpost
+        type: bool
+        title: Include signpost
+        description: |
+          Disable or enable signpost level messages.
+        show_user: false
+      - name: unreliable
+        type: bool
+        title: Annotate unreliable
+        description: |
+          Annotate events with whether the log was emitted unreliably.
+        show_user: false
+      - name: mach_continuous_time
+        type: bool
+        title: Use mach continuous time
+        description: |
+          Use mach continuous time timestamps rather than walltime.
+        show_user: false
+      - name: backfill
+        type: bool
+        title: Must backfill
+        description: |
+          If set to true the input will process all available logs since the beginning
+          of time the first time it starts.
+        show_user: false
+      - name: archive_file
+        type: text
+        title: Archive file
+        description: |
+          Display events stored in the given archive.
+          The archive must be a valid log archive bundle with the suffix `.logarchive`.
+        show_user: false
+      - name: trace_file
+        type: text
+        title: Trace file
+        description: |
+          Display events stored in the given `.tracev3` file.
+          In order to be decoded, the file must be contained within a valid `.logarchive`.
+        show_user: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field event.original.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data-stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - macos-unified_log
+      - name: preserve_duplicate_custom_fields
+        required: false
+        title: Preserve duplicate custom fields
+        description: Preserve macos.unified_log fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.
