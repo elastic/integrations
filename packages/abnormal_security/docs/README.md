@@ -219,22 +219,22 @@ An example event for `ai_security_mailbox_not_analyzed` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "835b49c2-b5f8-4cd3-9915-0257c60f59ad",
-        "id": "129fb3a1-34d7-4b0f-8248-d13d3a7d46f6",
-        "name": "elastic-agent-18300",
+        "ephemeral_id": "ea5725c7-abdf-4082-aa3f-38a44243aced",
+        "id": "bde1501c-c6c1-49fe-9125-c805f917c934",
+        "name": "elastic-agent-45073",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.ai_security_mailbox_not_analyzed",
-        "namespace": "26882",
+        "namespace": "98484",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "129fb3a1-34d7-4b0f-8248-d13d3a7d46f6",
+        "id": "bde1501c-c6c1-49fe-9125-c805f917c934",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -253,7 +253,7 @@ An example event for `ai_security_mailbox_not_analyzed` looks as following:
         ],
         "dataset": "abnormal_security.ai_security_mailbox_not_analyzed",
         "id": "-1234567891234567891",
-        "ingested": "2025-09-16T10:25:44Z",
+        "ingested": "2025-10-30T07:35:02Z",
         "kind": "event",
         "original": "{\"abx_message_id\":-1234567891234567891,\"not_analyzed_reason\":\"PHISHING_SIMULATION\",\"recipient\":{\"email\":\"phishing@test.com\",\"name\":\"Phishing Test\"},\"reported_datetime\":\"2025-03-04T17:03:55Z\",\"reporter\":{\"email\":\"info@test.com\",\"name\":\"Info Test\"},\"subject\":\"Fwd: Forwarded email\"}",
         "reason": "PHISHING_SIMULATION",
