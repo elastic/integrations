@@ -195,7 +195,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 -   [Fortinet Documentation Library](https://docs.fortinet.com/)
 -   [FortiGate Administration Guide](https://docs.fortinet.com/product/fortigate)
 
-## Scaling
+## Performance and Scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation. A common approach for large-scale syslog collection is to place a load balancer or a dedicated syslog collector like Logstash between the FortiGate devices and the Elastic Agents.
 
