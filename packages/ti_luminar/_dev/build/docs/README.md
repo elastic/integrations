@@ -1,6 +1,6 @@
 # Luminar Intelligence integration
 
-This integration connects with the [Luminar Threat Intelligence](https://www.cognyte.com/) TAXII version 2 server.
+This integration connects with the [Luminar Threat Intelligence](https://www.cognyte.com/solutions/external-threat-intelligence/) TAXII version 2 server.
 It includes the following datasets for retrieving logs:
 
 | Dataset | Luminar Collection name |
@@ -70,7 +70,7 @@ refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-a
 2. In "Search for integrations" search bar, type Luminar Threat Intelligence.
 3. Click on the "Luminar Threat Intelligence" integration from the search results.
 4. Click on the "Add Luminar Threat Intelligence" button to add the integration.
-5. Configure all required integration parameters, including accountId, clientId, clientSecret that you have received from Luminar during onboarding process. For more information, please visit [Luminar Threat Intelligence](https://www.cognyte.com/) page.
+5. Configure all required integration parameters, including accountId, clientId, clientSecret that you have received from Luminar during onboarding process. For more information, please visit [Luminar Threat Intelligence](https://www.cognyte.com/solutions/external-threat-intelligence/) page.
 6. Enable data streams you are interested in and have access to.
 7. Save the integration.
 
