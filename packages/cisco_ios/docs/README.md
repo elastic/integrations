@@ -2,80 +2,81 @@
 
 ## Overview
 
-The Cisco IOS integration for Elastic collects logs from Cisco IOS devices, enabling real-time visibility into network activity, security events, and operational health. This integration facilitates network security monitoring, compliance reporting, and troubleshooting by parsing and visualizing syslog messages from Cisco routers and switches.
+The Cisco IOS integration for Elastic collects logs from your Cisco IOS devices, enabling you to gain real-time visibility into network activity, security events, and the operational health of your network infrastructure. By parsing and visualizing syslog messages from your Cisco routers and switches, this integration helps with network security monitoring, compliance reporting, and troubleshooting.
 
 ### How it works
 
-This integration receives syslog messages from Cisco IOS devices through the Elastic Agent. It can be configured to listen for logs over TCP or UDP, or to read them directly from a log file. The Elastic Agent processes these logs, parsing them into structured fields, and securely sends them to your Elastic deployment for analysis and visualization.
+This integration works by receiving syslog messages from your Cisco IOS devices via the Elastic Agent. You can configure the integration to listen for these logs over TCP or UDP, or to read them directly from a log file. After receiving the logs, the Elastic Agent processes and parses them into structured fields, then securely sends them to your Elastic deployment for analysis, visualization, and alerting.
 
 ### Compatibility
 
-This integration is compatible with a wide range of Cisco devices running Cisco IOS software, including routers and switches.
+This integration is designed for a wide range of Cisco devices running Cisco IOS software, including routers and switches.
 
 **Elastic Stack Requirements:**
-- Elastic Stack version 8.11.0 or higher
+*   Elastic Stack version 8.11.0 or higher
+*   Kibana version 8.11.0 or higher
 
 ## What data does this integration collect?
 
-The Cisco IOS integration collects various types of log messages, including:
+The Cisco IOS integration collects various types of log messages, which are parsed into detailed, structured fields. The data collected includes:
 
-*   **System Messages**: Captures administrative actions, configuration changes, and system restarts.
-*   **Security Events**: Monitors for access control list (ACL) violations, authentication failures, and other security-related events.
-*   **Network Events**: Tracks interface status changes (up/down), routing protocol updates, and other network-related messages.
-*   **Traffic Logs**: Collects data on IPv4 and IPv6 traffic, including source/destination IP addresses and ports.
+*   **System Messages**: Captures key administrative actions, configuration changes, and system restarts.
+*   **Security Events**: Monitors for access control list (ACL) denials and permits, authentication failures, and other critical security-related events.
+*   **Network Events**: Tracks important network state changes, such as interface status (up/down), routing protocol updates, and other network messages.
+*   **Traffic Logs**: Collects data on IPv4 and IPv6 traffic, including source and destination IP addresses and ports.
 *   **Protocol-specific Messages**: Logs events related to protocols like ICMP, TCP, UDP, and IGMP.
 
 ### Supported use cases
 
-*   **Network Security Monitoring**: Actively monitor network device logs for security threats like unauthorized access attempts and ACL violations.
-*   **Compliance Reporting**: Collect and archive logs to meet regulatory compliance requirements (e.g., PCI DSS, SOX).
-*   **Network Operations Management**: Gain visibility into the health and status of network devices, track configuration changes, and monitor system events.
+By collecting and analyzing this data, you can support several key operational and security use cases:
+
+*   **Network Security Monitoring**: Actively monitor your network device logs for security threats like unauthorized access attempts and ACL violations.
+*   **Compliance Reporting**: Collect and archive logs to help you meet regulatory compliance requirements such as PCI DSS or SOX.
+*   **Network Operations Management**: Gain deep visibility into the health and status of your network devices, track configuration changes, and monitor system events to ensure stability.
 *   **Troubleshooting**: Quickly diagnose and resolve network issues, hardware failures, and configuration problems by analyzing detailed device logs.
 
 ## What do I need to use this integration?
 
 ### Vendor Prerequisites
 
-*   A Cisco IOS device with network connectivity to the host running the Elastic Agent.
-*   Administrative access to the Cisco device to configure syslog settings.
-*   **Important**: Timestamps must be enabled on the Cisco IOS device, as they are not on by default. Use the command `service timestamps log datetime`.
+*   A Cisco IOS device that has network connectivity to the host running the Elastic Agent.
+*   Administrative access to the Cisco device to configure its syslog settings.
+*   **Important**: You must enable timestamps on your Cisco IOS device, as they are not enabled by default. Use the command `service timestamps log datetime`.
 
 ### Elastic Prerequisites
 
-*   Elastic Agent must be installed on a host that can receive syslog messages from your Cisco devices.
-*   The host running the Elastic Agent must have the specified listening port (e.g., 9002) open and accessible from the Cisco devices.
-*   Firewall rules must be configured to allow syslog traffic from your network devices to the Elastic Agent host.
+*   The Elastic Agent must be installed on a host that can receive syslog messages from your Cisco devices.
+*   The host running the Elastic Agent must have the specified listening port (the default is 9002) open and accessible from the Cisco devices.
+*   Your firewall rules must be configured to allow syslog traffic from your network devices to the Elastic Agent host.
 
 ## How do I deploy this integration?
 
 ### Agent-based deployment
 
-Elastic Agent is required to stream data from the syslog receiver or log file and ship it to Elastic, where the events will be processed by the integration's ingest pipelines. You can install only one Elastic Agent per host. For detailed instructions, see the Elastic Agent [installation guide](docs-content://reference/fleet/install-elastic-agents.md).
+The Elastic Agent is required to stream data from the syslog receiver or log file and send it to Elastic, where the events will be processed by the integration's ingest pipelines. You only need to install one Elastic Agent per host. For detailed instructions, refer to the Elastic Agent [installation guide](docs-content://reference/fleet/install-elastic-agents.md).
 
-### Onboard / configure
-
-#### 1. Configure Syslog on Cisco IOS Devices
+### Set up steps in Cisco IOS
 
 Log into your Cisco IOS device to perform the following steps.
 
-1.  **Enable Timestamp Logging (Required)**:
-    This ensures that logs have the correct timestamp.
+1.  **Enable Timestamp Logging (Required)**
+    This step is critical to ensure that all logs are correctly time-stamped.
     ```shell
     configure terminal
     service timestamps log datetime
     exit
     ```
 
-2.  **Enable Sequence Numbers (Optional)**:
-    This adds a sequence number to each log message, which populates the `event.sequence` field.
+2.  **Enable Sequence Numbers (Optional)**
+    This adds a sequence number to each log message, which populates the `event.sequence` field in Elastic.
     ```shell
     configure terminal
     service sequence-numbers
     exit
     ```
 
-3.  **Configure Syslog Destination**:
-    Point your Cisco device to the Elastic Agent's IP address and port. Replace `<ELASTIC_AGENT_IP>` with the actual IP address of your agent host.
+3.  **Configure Syslog Destination**
+    Configure your Cisco device to send logs to the Elastic Agent's IP address and port. Replace `<ELASTIC_AGENT_IP>` with the actual IP address of your agent host.
 
     *   **For UDP**:
         ```shell
@@ -90,136 +91,97 @@ Log into your Cisco IOS device to perform the following steps.
         exit
         ```
 
-4.  **Set Logging Severity Level (Optional)**:
-    Adjust the logging level to control the verbosity of the logs. `informational` (level 6) is a common choice.
+4.  **Set Logging Severity Level (Optional)**
+    You can adjust the logging level to control the verbosity of the logs. `informational` (level 6) is a common choice for comprehensive visibility.
     ```shell
     configure terminal
     logging trap informational
     exit
     ```
 
-5.  **Save Configuration**:
+5.  **Save Your Configuration**
     ```shell
     write memory
     ```
 
-For more details, refer to [Cisco's System Message Logging documentation](https://www.cisco.com/c/en/us/td/docs/routers/access/wireless/software/guide/SysMsgLogging.html).
+For more detailed information, you can refer to [Cisco's System Message Logging documentation](https://www.cisco.com/c/en/us/td/docs/routers/access/wireless/software/guide/SysMsgLogging.html).
 
-#### 2. Add and Configure the Integration in Kibana
+### Set up steps in Kibana
 
 1.  In Kibana, navigate to **Management → Integrations**.
-2.  Search for "Cisco IOS" and click on it.
+2.  In the search bar, type "Cisco IOS" and select the integration.
 3.  Click **Add Cisco IOS**.
-4.  Provide a descriptive **Integration name**.
-5.  Choose your desired **Input Type** (TCP, UDP, or Log file) and configure its settings.
+4.  Configure the integration by providing a name and selecting your desired input type (TCP, UDP, or Log file).
 
-##### TCP Input Configuration
+#### TCP Input Configuration
+Collect logs using a TCP syslog listener.
 
-Collect logs via a TCP syslog listener.
-
-**Basic Options**
-
-| Setting | Description | Default Value |
+| Setting | Description | Default |
 |---|---|---|
-| **Host to listen on** | The IP address or hostname for the Elastic Agent to listen on. Use `0.0.0.0` to listen on all interfaces or `localhost` for local-only. | `localhost` |
-| **Syslog Port** | The port for the Elastic Agent to listen on for syslog messages. Must match the port configured on the Cisco device. | `9002` |
-| **Preserve original event** | If enabled, the original, raw log message is stored in the `event.original` field. | `false` |
+| **Host to listen on** | The IP address or hostname for the Elastic Agent to listen on. Use `0.0.0.0` to listen on all available network interfaces. | `localhost` |
+| **Syslog Port** | The port for the Elastic Agent to listen on. This must match the port you configured on your Cisco device. | `9002` |
+| **Preserve original event** | If enabled, the original raw log message is stored in the `event.original` field. | `false` |
 
-**Advanced Options**
+#### UDP Input Configuration
+Collect logs using a UDP syslog listener.
 
-| Setting | Description | Default Value |
+| Setting | Description | Default |
 |---|---|---|
-| **Timezone** | The IANA time zone or time offset (e.g., `+0200`) to use when parsing timestamps that do not include a timezone. | `UTC` |
-| **Timezone Map** | A map of timezone abbreviations (e.g., AEST) to their corresponding IANA timezone names (e.g., Australia/Sydney). | (empty) |
-| **SSL Configuration** | Configuration for SSL/TLS settings. See [SSL documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for details. | (empty) |
-| **Custom TCP Options** | Advanced TCP settings such as `max_connections`, `framing`, and `line_delimiter`. See the [Filebeat TCP input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-tcp.html) for details. | (empty) |
-| **Processors** | Processors to apply to the data before it is sent to Elasticsearch. See the [Processors documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details. | (empty) |
+| **Host to listen on** | The IP address or hostname for the Elastic Agent to listen on. Use `0.0.0.0` to listen on all available network interfaces. | `localhost` |
+| **Syslog Port** | The port for the Elastic Agent to listen on. This must match the port you configured on your Cisco device. | `9002` |
+| **Preserve original event** | If enabled, the original raw log message is stored in the `event.original` field. | `false` |
 
-##### UDP Input Configuration
+#### Log File Input Configuration
+Collect logs directly from one or more log files.
 
-Collect logs via a UDP syslog listener.
-
-**Basic Options**
-
-| Setting | Description | Default Value |
+| Setting | Description | Default |
 |---|---|---|
-| **Host to listen on** | The IP address or hostname for the Elastic Agent to listen on. Use `0.0.0.0` to listen on all interfaces or `localhost` for local-only. | `localhost` |
-| **Syslog Port** | The port for the Elastic Agent to listen on for syslog messages. Must match the port configured on the Cisco device. | `9002` |
-| **Preserve original event** | If enabled, the original, raw log message is stored in the `event.original` field. | `false` |
+| **Paths** | A list of file paths to monitor for new logs. Wildcards are supported (for example, `/var/log/cisco-*.log`). | `/var/log/cisco-ios.log` |
+| **Preserve original event** | If enabled, the original raw log message is stored in the `event.original` field. | `false` |
 
-**Advanced Options**
+After configuring the input, select an **Agent policy**. The Elastic Agent must be running on a host that is accessible to your Cisco devices. Click **Save and continue** to save your configuration and deploy the changes.
 
-| Setting | Description | Default Value |
-|---|---|---|
-| **Timezone** | The IANA time zone or time offset (e.g., `+0200`) to use when parsing timestamps that do not include a timezone. | `UTC` |
-| **Timezone Map** | A map of timezone abbreviations (e.g., AEST) to their corresponding IANA timezone names (e.g., Australia/Sydney). | (empty) |
-| **Custom UDP Options** | Advanced UDP settings such as `read_buffer`, `max_message_size`, and `timeout`. See the [Filebeat UDP input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-udp.html) for details. | (empty) |
-| **Processors** | Processors to apply to the data before it is sent to Elasticsearch. See the [Processors documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details. | (empty) |
+## Validation
 
-##### Log File Input Configuration
+1.  **Verify on the Cisco Device**
+    *   Trigger a log event on your Cisco device, for example, by entering and exiting configuration mode.
+    *   Run the `show logging` command to confirm that logs are being generated and sent to the correct destination.
 
-Collect logs from one or more log files.
-
-**Basic Options**
-
-| Setting | Description | Default Value |
-|---|---|---|
-| **Paths** | A list of file paths to monitor for logs. Wildcards are supported (e.g., `/var/log/cisco-*.log`). | `/var/log/cisco-ios.log` |
-| **Preserve original event** | If enabled, the original, raw log message is stored in the `event.original` field. | `false` |
-
-**Advanced Options**
-
-| Setting | Description | Default Value |
-|---|---|---|
-| **Timezone** | The IANA time zone or time offset (e.g., `+0200`) to use when parsing timestamps that do not include a timezone. | `UTC` |
-| **Timezone Map** | A map of timezone abbreviations (e.g., AEST) to their corresponding IANA timezone names (e.g., Australia/Sydney). | (empty) |
-| **Processors** | Processors to apply to the data before it is sent to Elasticsearch. See the [Processors documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details. | (empty) |
-
-6.  Select an **Agent policy**. The Elastic Agent must be running on a host that is accessible to your Cisco devices.
-7.  Click **Save and continue** to save your configuration and deploy the changes to the specified agent policy.
-
-### Validation
-
-1.  **Verify Logs on Cisco Device**:
-    *   Trigger a log event, for example, by entering and exiting configuration mode.
-    *   Run `show logging` on the Cisco device to confirm that logs are being generated and sent.
-
-2.  **Check Data in Kibana**:
-    *   Navigate to **Analytics → Discover**.
+2.  **Check Data in Kibana**
+    *   In Kibana, navigate to the **Discover** tab.
     *   Select the `logs-cisco_ios.log-*` data view.
     *   Verify that log events from your device are appearing. Check that key fields like `@timestamp`, `observer.vendor`, `cisco.ios.facility`, and `message` are correctly populated.
 
 ## Troubleshooting
 
-For help with Elastic ingest tools, see [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+For help with Elastic ingest tools, refer to the [common problems documentation](https://www.elastic.com/docs/troubleshoot/ingest/fleet/common-problems).
 
-**Issue: No data in Kibana**
-*   Verify network connectivity between the Cisco device and the Elastic Agent host.
-*   Check that firewall rules on the agent host and any network firewalls allow traffic on the configured syslog port.
-*   Confirm the Elastic Agent is running (`elastic-agent status`) and check its logs for errors.
-*   Ensure the listening port in the integration settings matches the destination port configured on the Cisco device.
+**Issue: No data is appearing in Kibana**
+*   **Solutions**:
+    *   Verify the network connectivity between your Cisco device and the Elastic Agent host.
+    *   Check that any firewall rules on the agent host or network firewalls allow traffic on the configured syslog port.
+    *   Confirm that the Elastic Agent is running by executing `elastic-agent status` on its host, and check its logs for any errors.
+    *   Ensure the listening port in the integration settings in Kibana perfectly matches the destination port configured on your Cisco device.
 
-**Issue: Incorrect timestamps**
-*   Confirm that `service timestamps log datetime` is configured on the Cisco IOS device.
-*   In the integration's advanced settings, ensure the correct **Timezone** is configured (default is UTC).
+**Issue: Timestamps are not parsing correctly**
+*   **Solutions**:
+    *   Confirm that `service timestamps log datetime` is configured on your Cisco IOS device. This is a required step.
+    *   In the integration's advanced settings in Kibana, ensure the correct **Timezone** is configured (the default is UTC).
 
 ## Performance and scaling
 
-The performance and scaling of the Cisco IOS integration depend on several factors, including the volume of logs generated by your network devices, the resources allocated to the Elastic Agent, and the network protocol used for syslog collection.
+The performance and scaling of this integration depend on the volume of logs your network devices generate, the resources allocated to the Elastic Agent, and the network protocol you use. For high-volume environments, consider these strategies:
 
-### Scaling for High-Volume Environments
+*   **Load Balancing**: Place a load balancer (such as Nginx or F5) between your Cisco devices and a pool of Elastic Agents to distribute the syslog traffic evenly. This prevents any single agent from becoming a performance bottleneck.
+*   **Dedicated Hosts**: Run the Elastic Agent on dedicated hosts to ensure it has sufficient CPU and memory resources.
 
-For environments with a large number of devices or high log throughput, consider the following strategies:
-
-*   **Load Balancing**: Place a load balancer (e.g., F5, Nginx) between your Cisco devices and a pool of Elastic Agents. This distributes the syslog traffic evenly, preventing any single agent from becoming a bottleneck.
-*   **Dedicated Hosts**: Run the Elastic Agent on a dedicated host or a group of hosts to ensure it has sufficient resources and is not competing with other applications.
-*   **Multiple Integration Instances**: If you have geographically distributed datacenters or logically separated networks, you can configure multiple instances of the Cisco IOS integration, each with its own agent policy and dedicated agent(s). This can help isolate traffic and improve manageability.
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.com/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
 
 ### log
 
-The `log` data stream provides logs from Cisco IOS.
+The `log` data stream collects logs from Cisco IOS.
 
 #### log fields
 
