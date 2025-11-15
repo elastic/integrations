@@ -4,6 +4,13 @@
 
 The Juniper SRX integration for Elastic collects logs from Juniper SRX devices, enabling real-time visibility into network security, traffic patterns, and threat detection. By parsing and visualizing syslog data, this integration helps security and network operations teams to monitor firewall events, detect threats, and ensure compliance.
 
+This integration facilitates:
+- Network Security Monitoring
+- Threat Detection and Response
+- Compliance and Auditing
+- Unified Threat Management (UTM) Monitoring
+- Security Intelligence Analysis
+
 ### Compatibility
 
 This integration is compatible with Juniper SRX series firewalls running Junos OS version 19.x or later. Supported models range from branch office devices to data center appliances.
@@ -12,7 +19,7 @@ This integration is compatible with Elastic Stack version 8.11.0 or higher.
 
 ### How it works
 
-The integration collects logs sent from Juniper SRX devices via the syslog protocol. Elastic Agent listens for these syslog messages on a configured TCP or UDP port, or reads them from a log file. The agent processes and parses the incoming logs, enriching them with additional metadata before sending them to Elasticsearch for indexing and analysis.
+The integration collects logs sent from Juniper SRX devices via the syslog protocol. Elastic Agent listens for these syslog messages on a configured TCP or UDP port, or reads them from a log file. The agent processes and parses the incoming logs in the required `structured-data + brief` format, enriching them with additional metadata before sending them to Elasticsearch for indexing and analysis.
 
 ## What data does this integration collect?
 
@@ -28,9 +35,9 @@ The Juniper SRX integration collects the following log types from SRX devices:
 
 All logs must be sent in the `structured-data + brief` syslog format.
 
-### Supported use cases
+## Supported use cases
 
-This integration enables the following use cases:
+The Juniper SRX integration enables the following use cases:
 
 - **Network Security Monitoring**: Monitor firewall events including session creation, closure, and denial to track network traffic patterns and identify potential security issues.
 - **Threat Detection and Response**: Collect and analyze intrusion detection (IDS), intrusion prevention (IDP), and advanced anti-malware (AAMW) events to detect and respond to security threats in real-time.
@@ -52,22 +59,23 @@ This integration enables the following use cases:
 
 Elastic Agent must be installed to stream data from the syslog receiver or log file to Elastic. You can install only one Elastic Agent per host. For more details, see the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/install-elastic-agents.html).
 
-### Onboard / configure
+### Set up steps in Juniper SRX
 
-#### 1. Configure Syslog on Juniper SRX
+#### Configure Syslog on Juniper SRX
 
 First, configure your Juniper SRX device to send logs to the Elastic Agent.
 
 1.  Access the SRX device Command Line Interface (CLI) via SSH or a console connection.
 
 2.  Enter configuration mode:
-
-    `configure`
+    ```
+    configure
+    ```
 
 3.  Enable structured data format for syslog messages. This is required for the integration to correctly parse the logs.
-
-    `set system syslog structured-data`
-
+    ```
+    set system syslog structured-data
+    ```
 
 4.  Configure the Elastic Agent host as the syslog destination. Replace `<ELASTIC_AGENT_IP>` and `<PORT>` with the IP address and port where the Elastic Agent is listening (e.g., `9006`).
     ```
@@ -76,8 +84,9 @@ First, configure your Juniper SRX device to send logs to the Elastic Agent.
     ```
 
 5.  To forward all system logs, use the following command:
-
-    `set system syslog host <ELASTIC_AGENT_IP> any any`
+    ```
+    set system syslog host <ELASTIC_AGENT_IP> any any
+    ```
 
 6.  Enable security log streaming and set the format to `sd-syslog`.
     ```
@@ -89,12 +98,13 @@ First, configure your Juniper SRX device to send logs to the Elastic Agent.
     *Note: Replace `<stream-name>` with a descriptive name for your log stream.*
 
 7.  Commit the changes to apply the new configuration.
+    ```
+    commit
+    ```
 
-    `commit`
+For more detailed instructions, refer to the Juniper Knowledge Base article [KB16502](https://kb.juniper.net/InfoCenter/index?page=content&id=kb16502) on configuring system logging.
 
-For more details, refer to the Juniper Knowledge Base article [KB16502](https://kb.juniper.net/InfoCenter/index?page=content&id=kb16502).
-
-#### 2. Configure the Integration in Kibana
+### Set up steps in Kibana
 
 1.  In Kibana, navigate to **Management → Integrations**.
 2.  Search for "Juniper SRX" and select the integration.
@@ -102,8 +112,8 @@ For more details, refer to the Juniper Knowledge Base article [KB16502](https://
 4.  Configure the integration settings. Provide a descriptive **Integration name**.
 5.  Choose the **Input type** for collecting logs. The available options are detailed below.
 
-##### UDP Input
-Collects logs via a UDP syslog listener. This protocol can be suitable for high-volume environments where some packet loss is acceptable.
+#### UDP Input
+Collects logs via a UDP syslog listener. This protocol is recommended for high-volume environments where some packet loss is acceptable.
 
 **Basic Options**
 
@@ -121,7 +131,7 @@ Collects logs via a UDP syslog listener. This protocol can be suitable for high-
 | `timeout`                 | The read timeout for the UDP socket.                                                              | `5m`                   |
 | `preserve_original_event` | If enabled, the original raw log message is stored in the `event.original` field.                 | `false`                |
 
-##### TCP Input
+#### TCP Input
 Collects logs via a TCP syslog listener. This protocol provides reliable, ordered delivery and is suitable for environments where log loss is not acceptable.
 
 **Basic Options**
@@ -140,7 +150,7 @@ Collects logs via a TCP syslog listener. This protocol provides reliable, ordere
 | SSL Settings              | Configuration for TLS/SSL encryption if required.                                                 | Disabled               |
 | `preserve_original_event` | If enabled, the original raw log message is stored in the `event.original` field.                 | `false`                |
 
-##### File Input
+#### File Input
 Collects logs from files on the host where the Elastic Agent is running.
 
 **Basic Options**
@@ -160,11 +170,16 @@ Collects logs from files on the host where the Elastic Agent is running.
 
 ### Validation
 
-1.  Generate some network traffic that will be logged by the SRX firewall.
-2.  In Kibana, navigate to the **Discover** tab.
-3.  Select the appropriate data view (e.g., `logs-juniper_srx.log-*`).
-4.  Filter the data for `data_stream.dataset: "juniper_srx.log"`.
-5.  Verify that log events from your SRX device are appearing. You can test specific log types by filtering on the `juniper.srx.tag` field, for example, `juniper.srx.tag: RT_FLOW_SESSION_CREATE`.
+1.  Generate test traffic on the SRX device to create log events (e.g., initiate a network connection, access a website through the firewall).
+2.  In Kibana, navigate to **Fleet → Agents** and verify the agent status is "Healthy".
+3.  Navigate to **Discover**.
+4.  Select the data view for `logs-*` or create one for `logs-juniper_srx.log-*`.
+5.  Filter the data for `data_stream.dataset: "juniper_srx.log"`.
+6.  Verify that log events from your SRX device are appearing with recent timestamps.
+7.  Test specific log types using filters. For example:
+    *   For RT_FLOW logs: `juniper.srx.tag: RT_FLOW_SESSION_CREATE`
+    *   For RT_IDS logs: `juniper.srx.tag: RT_SCREEN_*`
+    *   For RT_UTM logs: `juniper.srx.tag: WEBFILTER_URL_*`
 
 ## Troubleshooting
 
@@ -176,8 +191,8 @@ For help with Elastic ingest tools, see [Common problems](https://www.elastic.co
 *   **Confirm SRX Configuration**: Use `show configuration system syslog` on the SRX device to verify the settings are correct.
 *   **Check Agent Logs**: Review the Elastic Agent logs for any connection errors or parsing issues.
 
-**Issue: Events are not parsed correctly.**
-*   **Verify Syslog Format**: Ensure the log format on the SRX device is set to `structured-data + brief`. Custom log formats may not parse correctly.
+**Issue: Events are not parsed correctly or have ingestion errors.**
+*   **Verify Syslog Format**: Ensure the log format on the SRX device is set to `structured-data + brief` and the syslog format is `Default`. Custom log formats may not parse correctly.
 *   **Check Junos OS Version**: Confirm you are running Junos OS 19.x or later.
 *   **Preserve Original Event**: Enable the `preserve_original_event` option in the integration settings to capture the raw log message in the `event.original` field for inspection.
 
@@ -185,9 +200,8 @@ For help with Elastic ingest tools, see [Common problems](https://www.elastic.co
 
 For high-volume environments, you can scale horizontally by sending logs from multiple SRX devices to a load-balanced pool of Elastic Agents.
 
-*   **UDP Input**: When using UDP, consider increasing the agent's read buffer size (`read_buffer`) and max message size (`max_message_size`) under the advanced options to handle large log volumes and prevent message loss. The default read buffer is 100MiB and the max message size is 50KiB.
-*   **TCP Input**: TCP provides reliable, ordered delivery and is suitable for environments where log loss is not acceptable.
-*   **Network**: Ensure adequate network bandwidth is available between the SRX devices and the Elastic Agents. A dedicated management network is recommended.
+*   **UDP Input**: When using UDP, consider increasing the agent's read buffer size (`read_buffer`) and max message size (`max_message_size`) under the advanced options to handle large log volumes and prevent message loss.
+*   **Network**: Ensure adequate network bandwidth is available between the SRX devices and the Elastic Agents. A dedicated management network is recommended for production environments.
 
 For more information on scaling, see the [Ingest Architectures](https://www.elastic.co/guide/en/ingest/current/ingest-reference-architectures.html) documentation.
 
@@ -213,3 +227,4 @@ The `log` data stream collects and parses log messages from Juniper SRX devices.
 *   [Juniper SRX Series Documentation](https://www.juniper.net/documentation/en_US/release-independent/junos/information-products/pathway-pages/srx-series/product/)
 *   [KB16502: SRX Getting Started - Configure System Logging](https://kb.juniper.net/InfoCenter/index?page=content&id=kb16502)
 *   [JunOS Structured Data Configuration](https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/structured-data-edit-system.html)
+*   [Juniper Security Logging and Reporting](https://www.juniper.net/documentation/us/en/software/junos/network-mgmt/topics/topic-map/security-log-reporting.html)
