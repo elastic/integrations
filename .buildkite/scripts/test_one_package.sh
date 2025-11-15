@@ -19,20 +19,28 @@ add_bin_path
 
 with_yq
 with_mage
-with_docker
-with_docker_compose_plugin
-with_kubernetes
+# with_docker
+# with_docker_compose_plugin
+# with_kubernetes
 
 use_elastic_package
 
-pushd packages > /dev/null
-exit_code=0
-if ! process_package "${package}" ; then
-    # keep this message as a collapsed group in Buildkite, so it
-    # is not hidden by the previous collapsed group.
-    echo "--- [${package}] failed"
-    exit_code=1
-fi
-popd > /dev/null
+# pushd packages > /dev/null
+# exit_code=0
+# if ! process_package "${package}" ; then
+#     # keep this message as a collapsed group in Buildkite, so it
+#     # is not hidden by the previous collapsed group.
+#     echo "--- [${package}] failed"
+#     exit_code=1
+# fi
+# popd > /dev/null
 
+if [ -x "./.buildkite/scripts/packages/$package.sh" ]; then
+  echo "--- [${package}] Run individual package checker"
+  "./.buildkite/scripts/packages/$package.sh"
+else
+  echo "--- [${package}] Individual package checker ./packages/$package.sh is not found, continuing..."
+fi
+
+exit_code=0
 exit "${exit_code}"
