@@ -75,25 +75,55 @@
             "searchSourceJSON": {
                 "filter": [
                     {
+                        "meta": {
+                            "type": "combined",
+                            "relation": "OR",
+                            "params": [
+                                {
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "aws_bedrock_agentcore.metrics"
+                                        }
+                                    },
+                                    "meta": {
+                                        "field": "data_stream.dataset",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "aws_bedrock_agentcore.metrics"
+                                        },
+                                        "type": "phrase",
+                                        "index": "metrics-*",
+                                        "disabled": false
+                                    }
+                                },
+                                {
+                                    "meta": {
+                                        "negate": false,
+                                        "index": "metrics-*",
+                                        "key": "data_stream.dataset",
+                                        "field": "data_stream.dataset",
+                                        "params": {
+                                            "query": "aws_bedrock_agentcore.runtime_application_logs"
+                                        },
+                                        "type": "phrase",
+                                        "disabled": false
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "aws_bedrock_agentcore.runtime_application_logs"
+                                        }
+                                    }
+                                }
+                            ],
+                            "disabled": false,
+                            "negate": false,
+                            "alias": "Dataset filter",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index"
+                        },
+                        "query": {},
                         "$state": {
                             "store": "appState"
-                        },
-                        "meta": {
-                            "alias": "Dataset filter",
-                            "disabled": false,
-                            "field": "data_stream.dataset",
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
-                            "negate": false,
-                            "params": {
-                                "query": "aws_bedrock_agentcore.metrics"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "aws_bedrock_agentcore.metrics"
-                            }
                         }
                     }
                 ],
@@ -112,6 +142,76 @@
         },
         "panelsJSON": [
             {
+                "type": "links",
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
+                                "id": "46c7c425-6940-4e8a-861d-bdf5ae62a7d7",
+                                "label": "Agentcore runtime",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
+                                "id": "9933e526-6f82-4771-ac36-12c31ea3fd01",
+                                "label": "Gateway",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
+                                "id": "2d7432d1-9823-43ad-a9da-396068481c5f",
+                                "label": "Memory",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 2,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
+                                "id": "c997665a-658e-4fae-b2a4-b253ebd05a46",
+                                "label": "Identity",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 3,
+                                "type": "dashboardLink"
+                            }
+                        ],
+                        "title": "Agentcore panel links"
+                    },
+                    "hidePanelTitles": true,
+                    "title": "Agentcore panel links"
+                },
+                "panelIndex": "f79bfdf0-2baf-44e8-b8ac-4052a10908f0",
+                "gridData": {
+                    "i": "f79bfdf0-2baf-44e8-b8ac-4052a10908f0",
+                    "y": 0,
+                    "x": 0,
+                    "w": 48,
+                    "h": 4
+                }
+            },
+            {
+                "type": "visualization",
                 "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
@@ -140,17 +240,17 @@
                         "uiState": {}
                     }
                 },
+                "panelIndex": "57d3c328-d5ea-47eb-8285-0c67bc24e59f",
                 "gridData": {
-                    "h": 12,
-                    "i": "7d314d62-423a-453a-8037-57391582ac4b",
-                    "w": 12,
+                    "i": "57d3c328-d5ea-47eb-8285-0c67bc24e59f",
+                    "y": 4,
                     "x": 0,
-                    "y": 4
-                },
-                "panelIndex": "7d314d62-423a-453a-8037-57391582ac4b",
-                "type": "visualization"
+                    "w": 12,
+                    "h": 12
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -253,17 +353,17 @@
                     "syncTooltips": false,
                     "title": "Invocations"
                 },
+                "panelIndex": "2c6b2b3f-1e6b-4a0a-8f4c-e31c9ed40c94",
                 "gridData": {
-                    "h": 6,
-                    "i": "aadd7196-6fb4-4a7e-8d90-3107d7e60a59",
-                    "w": 8,
+                    "i": "2c6b2b3f-1e6b-4a0a-8f4c-e31c9ed40c94",
+                    "y": 4,
                     "x": 12,
-                    "y": 4
-                },
-                "panelIndex": "aadd7196-6fb4-4a7e-8d90-3107d7e60a59",
-                "type": "lens"
+                    "w": 8,
+                    "h": 6
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -419,17 +519,17 @@
                     "syncTooltips": false,
                     "title": "Invocations"
                 },
+                "panelIndex": "09a25f12-17ed-4072-967b-e30117b0f299",
                 "gridData": {
-                    "h": 12,
-                    "i": "2ae8d46d-fa7f-4363-8476-4279cb46f327",
-                    "w": 14,
+                    "i": "09a25f12-17ed-4072-967b-e30117b0f299",
+                    "y": 4,
                     "x": 20,
-                    "y": 4
-                },
-                "panelIndex": "2ae8d46d-fa7f-4363-8476-4279cb46f327",
-                "type": "lens"
+                    "w": 14,
+                    "h": 12
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -595,17 +695,17 @@
                     "syncTooltips": false,
                     "title": "Sessions"
                 },
+                "panelIndex": "48f61146-c1b2-4985-9265-a86edf447630",
                 "gridData": {
-                    "h": 12,
-                    "i": "e2751137-7fab-4555-ae04-f24b7b986c75",
-                    "w": 14,
+                    "i": "48f61146-c1b2-4985-9265-a86edf447630",
+                    "y": 4,
                     "x": 34,
-                    "y": 4
-                },
-                "panelIndex": "e2751137-7fab-4555-ae04-f24b7b986c75",
-                "type": "lens"
+                    "w": 14,
+                    "h": 12
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -708,86 +808,848 @@
                     "syncTooltips": false,
                     "title": "Sessions"
                 },
+                "panelIndex": "4999c7d7-7eaf-4478-b45a-4a1e62a82eeb",
                 "gridData": {
-                    "h": 6,
-                    "i": "c11c3c68-aa0d-4e9f-ab8c-08b67d4b2fa9",
-                    "w": 8,
+                    "i": "4999c7d7-7eaf-4478-b45a-4a1e62a82eeb",
+                    "y": 10,
                     "x": 12,
-                    "y": 10
-                },
-                "panelIndex": "c11c3c68-aa0d-4e9f-ab8c-08b67d4b2fa9",
-                "type": "lens"
+                    "w": 8,
+                    "h": 6
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "Logs Overview",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-aws_bedrock_agentcore.runtime_application_logs-default |\nKEEP gen_ai.response.timestamp, gen_ai.request.id, aws_bedrock_agentcore.runtime_application_logs.resource_arn, trace.id, session.id\n| SORT gen_ai.response.timestamp desc\n| RENAME gen_ai.request.id AS `Request ID`, session.id as `Session ID`, trace.id as `Trace ID`, gen_ai.response.timestamp as `Time`, aws_bedrock_agentcore.runtime_application_logs.resource_arn as `Resource ARN`"
+                    },
                     "attributes": {
-                        "layout": "horizontal",
-                        "links": [
-                            {
-                                "destinationRefName": "link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
-                                "id": "46c7c425-6940-4e8a-861d-bdf5ae62a7d7",
-                                "label": "Agentcore runtime",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 0,
-                                "type": "dashboardLink"
+                        "title": "Table Time & Request ID & Resource ARN & Trace ID & Session ID",
+                        "references": [],
+                        "state": {
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "d6fb17c7-e3f4-48ad-b86a-c62f4d108a10": {
+                                            "index": "840dc00d90e0cb0f19f52fcd03c115341d02482231833d5487b35b9a5ed8b7de",
+                                            "query": {
+                                                "esql": "FROM logs-aws_bedrock_agentcore.runtime_application_logs-default |\nKEEP gen_ai.response.timestamp, gen_ai.request.id, aws_bedrock_agentcore.runtime_application_logs.resource_arn, trace.id, session.id\n| SORT gen_ai.response.timestamp desc\n| RENAME gen_ai.request.id AS `Request ID`, session.id as `Session ID`, trace.id as `Trace ID`, gen_ai.response.timestamp as `Time`, aws_bedrock_agentcore.runtime_application_logs.resource_arn as `Resource ARN`"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "columnId": "Time",
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "columnId": "Request ID",
+                                                    "fieldName": "Request ID",
+                                                    "label": "Request ID",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "string",
+                                                        "esType": "keyword"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "columnId": "Resource ARN",
+                                                    "fieldName": "Resource ARN",
+                                                    "label": "Resource ARN",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "string",
+                                                        "esType": "keyword"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "columnId": "Trace ID",
+                                                    "fieldName": "Trace ID",
+                                                    "label": "Trace ID",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "string",
+                                                        "esType": "keyword"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "columnId": "Session ID",
+                                                    "fieldName": "Session ID",
+                                                    "label": "Session ID",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "string",
+                                                        "esType": "keyword"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    },
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "840dc00d90e0cb0f19f52fcd03c115341d02482231833d5487b35b9a5ed8b7de",
+                                            "title": "logs-aws_bedrock_agentcore.runtime_application_logs-default",
+                                            "timeField": "@timestamp"
+                                        }
+                                    ]
+                                }
                             },
-                            {
-                                "destinationRefName": "link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
-                                "id": "9933e526-6f82-4771-ac36-12c31ea3fd01",
-                                "label": "Gateway",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 1,
-                                "type": "dashboardLink"
+                            "filters": [],
+                            "query": {
+                                "esql": "FROM logs-aws_bedrock_agentcore.runtime_application_logs-default |\nKEEP gen_ai.response.timestamp, gen_ai.request.id, aws_bedrock_agentcore.runtime_application_logs.resource_arn, trace.id, session.id\n| SORT gen_ai.response.timestamp desc\n| RENAME gen_ai.request.id AS `Request ID`, session.id as `Session ID`, trace.id as `Trace ID`, gen_ai.response.timestamp as `Time`, aws_bedrock_agentcore.runtime_application_logs.resource_arn as `Resource ARN`"
                             },
-                            {
-                                "destinationRefName": "link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
-                                "id": "2d7432d1-9823-43ad-a9da-396068481c5f",
-                                "label": "Memory",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 2,
-                                "type": "dashboardLink"
+                            "visualization": {
+                                "layerId": "d6fb17c7-e3f4-48ad-b86a-c62f4d108a10",
+                                "layerType": "data",
+                                "columns": [
+                                    {
+                                        "columnId": "Time"
+                                    },
+                                    {
+                                        "columnId": "Request ID"
+                                    },
+                                    {
+                                        "columnId": "Resource ARN"
+                                    },
+                                    {
+                                        "columnId": "Trace ID"
+                                    },
+                                    {
+                                        "columnId": "Session ID"
+                                    }
+                                ]
                             },
+                            "adHocDataViews": {
+                                "840dc00d90e0cb0f19f52fcd03c115341d02482231833d5487b35b9a5ed8b7de": {
+                                    "id": "840dc00d90e0cb0f19f52fcd03c115341d02482231833d5487b35b9a5ed8b7de",
+                                    "title": "logs-aws_bedrock_agentcore.runtime_application_logs-default",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "type": "esql",
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "allowNoIndex": false,
+                                    "name": "logs-aws_bedrock_agentcore.runtime_application_logs-default",
+                                    "allowHidden": false
+                                }
+                            },
+                            "needsRefresh": false
+                        },
+                        "visualizationType": "lnsDatatable"
+                    }
+                },
+                "panelIndex": "cdde3d79-5931-4327-8486-67bdaae594b5",
+                "gridData": {
+                    "i": "cdde3d79-5931-4327-8486-67bdaae594b5",
+                    "y": 20,
+                    "x": 0,
+                    "w": 48,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "Requests by Resource ARN",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    },
+                    "attributes": {
+                        "title": "",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
                             {
-                                "destinationRefName": "link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
-                                "id": "c997665a-658e-4fae-b2a4-b253ebd05a46",
-                                "label": "Identity",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 3,
-                                "type": "dashboardLink"
+                                "type": "index-pattern",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cdb0f58f-0473-4d00-bb9c-4c52ff1126c0"
                             }
                         ],
-                        "title": "Agentcore panel links"
-                    },
-                    "hidePanelTitles": true,
-                    "title": "Agentcore panel links"
+                        "state": {
+                            "visualization": {
+                                "title": "Empty XY chart",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "preferredSeriesType": "line",
+                                "layers": [
+                                    {
+                                        "layerId": "cdb0f58f-0473-4d00-bb9c-4c52ff1126c0",
+                                        "accessors": [
+                                            "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                        ],
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "default",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "xAccessor": "acc686e9-8e1c-4a92-b774-275a346faddd",
+                                        "splitAccessor": "4db23471-97a2-4941-86b8-2717819ba285"
+                                    }
+                                ]
+                            },
+                            "query": {
+                                "query": "",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "cdb0f58f-0473-4d00-bb9c-4c52ff1126c0": {
+                                            "columns": {
+                                                "acc686e9-8e1c-4a92-b774-275a346faddd": {
+                                                    "label": "gen_ai.response.timestamp",
+                                                    "dataType": "date",
+                                                    "operationType": "date_histogram",
+                                                    "sourceField": "gen_ai.response.timestamp",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "interval": "auto",
+                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false
+                                                    }
+                                                },
+                                                "4db23471-97a2-4941-86b8-2717819ba285": {
+                                                    "label": "Top 10 values of aws_bedrock_agentcore.runtime_application_logs.resource_arn",
+                                                    "dataType": "string",
+                                                    "operationType": "terms",
+                                                    "sourceField": "aws_bedrock_agentcore.runtime_application_logs.resource_arn",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false
+                                                    }
+                                                },
+                                                "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0": {
+                                                    "label": "Requests",
+                                                    "dataType": "number",
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "customLabel": true
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "4db23471-97a2-4941-86b8-2717819ba285",
+                                                "acc686e9-8e1c-4a92-b774-275a346faddd",
+                                                "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                            ],
+                                            "sampling": 1,
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    }
                 },
+                "panelIndex": "68198c81-44ce-4c4b-af54-83c29e5a2155",
                 "gridData": {
-                    "h": 4,
-                    "i": "30a1bf21-9d4f-4d46-b680-9d6881933679",
-                    "w": 48,
+                    "i": "68198c81-44ce-4c4b-af54-83c29e5a2155",
+                    "y": 35,
                     "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "30a1bf21-9d4f-4d46-b680-9d6881933679",
-                "type": "links"
+                    "w": 24,
+                    "h": 15
+                }
             },
             {
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "Requests by Session ID",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    },
+                    "attributes": {
+                        "title": "",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cdb0f58f-0473-4d00-bb9c-4c52ff1126c0"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "title": "Empty XY chart",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "preferredSeriesType": "line",
+                                "layers": [
+                                    {
+                                        "layerId": "cdb0f58f-0473-4d00-bb9c-4c52ff1126c0",
+                                        "accessors": [
+                                            "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                        ],
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "default",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "xAccessor": "acc686e9-8e1c-4a92-b774-275a346faddd",
+                                        "splitAccessor": "4db23471-97a2-4941-86b8-2717819ba285"
+                                    }
+                                ]
+                            },
+                            "query": {
+                                "query": "",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "cdb0f58f-0473-4d00-bb9c-4c52ff1126c0": {
+                                            "columns": {
+                                                "acc686e9-8e1c-4a92-b774-275a346faddd": {
+                                                    "label": "gen_ai.response.timestamp",
+                                                    "dataType": "date",
+                                                    "operationType": "date_histogram",
+                                                    "sourceField": "gen_ai.response.timestamp",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "interval": "auto",
+                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false
+                                                    }
+                                                },
+                                                "4db23471-97a2-4941-86b8-2717819ba285": {
+                                                    "label": "Top 10 values of session.id",
+                                                    "dataType": "string",
+                                                    "operationType": "terms",
+                                                    "sourceField": "session.id",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false,
+                                                        "secondaryFields": []
+                                                    }
+                                                },
+                                                "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0": {
+                                                    "label": "Requests",
+                                                    "dataType": "number",
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "customLabel": true
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "4db23471-97a2-4941-86b8-2717819ba285",
+                                                "acc686e9-8e1c-4a92-b774-275a346faddd",
+                                                "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                            ],
+                                            "sampling": 1,
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
+                                        }
+                                    },
+                                    "currentIndexPatternId": "logs-*"
+                                },
+                                "indexpattern": {
+                                    "layers": {},
+                                    "currentIndexPatternId": "logs-*"
+                                },
+                                "textBased": {
+                                    "layers": {},
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "title": "logs-*",
+                                            "timeField": "@timestamp"
+                                        }
+                                    ]
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    }
+                },
+                "panelIndex": "9e7bc9e0-9e1b-4d60-8e68-97333d5335b2",
+                "gridData": {
+                    "i": "9e7bc9e0-9e1b-4d60-8e68-97333d5335b2",
+                    "y": 35,
+                    "x": 24,
+                    "w": 24,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "Requests by Request ID",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    },
+                    "attributes": {
+                        "title": "",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cdb0f58f-0473-4d00-bb9c-4c52ff1126c0"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "title": "Empty XY chart",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "preferredSeriesType": "line",
+                                "layers": [
+                                    {
+                                        "layerId": "cdb0f58f-0473-4d00-bb9c-4c52ff1126c0",
+                                        "accessors": [
+                                            "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                        ],
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "default",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "xAccessor": "acc686e9-8e1c-4a92-b774-275a346faddd",
+                                        "splitAccessor": "4db23471-97a2-4941-86b8-2717819ba285"
+                                    }
+                                ]
+                            },
+                            "query": {
+                                "query": "",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "cdb0f58f-0473-4d00-bb9c-4c52ff1126c0": {
+                                            "columns": {
+                                                "acc686e9-8e1c-4a92-b774-275a346faddd": {
+                                                    "label": "gen_ai.response.timestamp",
+                                                    "dataType": "date",
+                                                    "operationType": "date_histogram",
+                                                    "sourceField": "gen_ai.response.timestamp",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "interval": "auto",
+                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false
+                                                    }
+                                                },
+                                                "4db23471-97a2-4941-86b8-2717819ba285": {
+                                                    "label": "Top 10 values of gen_ai.request.id",
+                                                    "dataType": "string",
+                                                    "operationType": "terms",
+                                                    "sourceField": "gen_ai.request.id",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false,
+                                                        "secondaryFields": []
+                                                    }
+                                                },
+                                                "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0": {
+                                                    "label": "Requests",
+                                                    "dataType": "number",
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "customLabel": true
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "4db23471-97a2-4941-86b8-2717819ba285",
+                                                "acc686e9-8e1c-4a92-b774-275a346faddd",
+                                                "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                            ],
+                                            "sampling": 1,
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
+                                        }
+                                    },
+                                    "currentIndexPatternId": "logs-*"
+                                },
+                                "indexpattern": {
+                                    "layers": {},
+                                    "currentIndexPatternId": "logs-*"
+                                },
+                                "textBased": {
+                                    "layers": {},
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "title": "logs-*",
+                                            "timeField": "@timestamp"
+                                        }
+                                    ]
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    }
+                },
+                "panelIndex": "1f6f31ba-c8fd-40a1-aa52-8bbc67ed9661",
+                "gridData": {
+                    "i": "1f6f31ba-c8fd-40a1-aa52-8bbc67ed9661",
+                    "y": 50,
+                    "x": 0,
+                    "w": 24,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "Requests by Trace ID",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    },
+                    "attributes": {
+                        "title": "",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "type": "index-pattern",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cdb0f58f-0473-4d00-bb9c-4c52ff1126c0"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "title": "Empty XY chart",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "preferredSeriesType": "line",
+                                "layers": [
+                                    {
+                                        "layerId": "cdb0f58f-0473-4d00-bb9c-4c52ff1126c0",
+                                        "accessors": [
+                                            "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                        ],
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "default",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "xAccessor": "acc686e9-8e1c-4a92-b774-275a346faddd",
+                                        "splitAccessor": "4db23471-97a2-4941-86b8-2717819ba285"
+                                    }
+                                ]
+                            },
+                            "query": {
+                                "query": "",
+                                "language": "kuery"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "cdb0f58f-0473-4d00-bb9c-4c52ff1126c0": {
+                                            "columns": {
+                                                "acc686e9-8e1c-4a92-b774-275a346faddd": {
+                                                    "label": "gen_ai.response.timestamp",
+                                                    "dataType": "date",
+                                                    "operationType": "date_histogram",
+                                                    "sourceField": "gen_ai.response.timestamp",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "interval": "auto",
+                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false
+                                                    }
+                                                },
+                                                "4db23471-97a2-4941-86b8-2717819ba285": {
+                                                    "label": "Top 10 values of trace.id",
+                                                    "dataType": "string",
+                                                    "operationType": "terms",
+                                                    "sourceField": "trace.id",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false,
+                                                        "secondaryFields": []
+                                                    }
+                                                },
+                                                "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0": {
+                                                    "label": "Requests",
+                                                    "dataType": "number",
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "customLabel": true
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "4db23471-97a2-4941-86b8-2717819ba285",
+                                                "acc686e9-8e1c-4a92-b774-275a346faddd",
+                                                "4e162fd5-5e8c-424e-b17d-5a7a1fd955a0"
+                                            ],
+                                            "sampling": 1,
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
+                                        }
+                                    },
+                                    "currentIndexPatternId": "logs-*"
+                                },
+                                "indexpattern": {
+                                    "layers": {},
+                                    "currentIndexPatternId": "logs-*"
+                                },
+                                "textBased": {
+                                    "layers": {},
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "title": "logs-*",
+                                            "timeField": "@timestamp"
+                                        }
+                                    ]
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    }
+                },
+                "panelIndex": "d23ddac4-1e96-4fc3-a78f-5077b9504633",
+                "gridData": {
+                    "i": "d23ddac4-1e96-4fc3-a78f-5077b9504633",
+                    "y": 50,
+                    "x": 24,
+                    "w": 24,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -921,18 +1783,18 @@
                     "syncTooltips": false,
                     "title": "Top 10 endpoints by invocation count"
                 },
+                "panelIndex": "760e6432-fadf-41d3-a776-20b2a350b0a0",
                 "gridData": {
-                    "h": 12,
-                    "i": "d0ca343e-1fd4-428c-88a4-aa0a791e6744",
-                    "sectionId": "aebe0fdf-4f5f-4da1-b6ac-60d465852045",
-                    "w": 12,
+                    "i": "760e6432-fadf-41d3-a776-20b2a350b0a0",
+                    "y": 0,
                     "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "d0ca343e-1fd4-428c-88a4-aa0a791e6744",
-                "type": "lens"
+                    "w": 12,
+                    "h": 12,
+                    "sectionId": "c64aba3d-354c-4273-9e0b-2bbad56335ca"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -1125,18 +1987,18 @@
                     "syncTooltips": false,
                     "title": "Invocations"
                 },
+                "panelIndex": "b33e740a-2af5-4dbc-b6b7-2ccc06f39d4c",
                 "gridData": {
-                    "h": 12,
-                    "i": "080f90a7-5247-4728-86ca-c68d3179186b",
-                    "sectionId": "aebe0fdf-4f5f-4da1-b6ac-60d465852045",
-                    "w": 36,
+                    "i": "b33e740a-2af5-4dbc-b6b7-2ccc06f39d4c",
+                    "y": 0,
                     "x": 12,
-                    "y": 0
-                },
-                "panelIndex": "080f90a7-5247-4728-86ca-c68d3179186b",
-                "type": "lens"
+                    "w": 36,
+                    "h": 12,
+                    "sectionId": "c64aba3d-354c-4273-9e0b-2bbad56335ca"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -1270,18 +2132,18 @@
                     "syncTooltips": false,
                     "title": "Top 10 endpoints by session count"
                 },
+                "panelIndex": "e68603d1-5ca2-415f-bb23-7f04ae78d705",
                 "gridData": {
-                    "h": 12,
-                    "i": "96474e64-27ae-453b-a84d-063d38dafe5f",
-                    "sectionId": "aebe0fdf-4f5f-4da1-b6ac-60d465852045",
-                    "w": 12,
+                    "i": "e68603d1-5ca2-415f-bb23-7f04ae78d705",
+                    "y": 12,
                     "x": 0,
-                    "y": 12
-                },
-                "panelIndex": "96474e64-27ae-453b-a84d-063d38dafe5f",
-                "type": "lens"
+                    "w": 12,
+                    "h": 12,
+                    "sectionId": "c64aba3d-354c-4273-9e0b-2bbad56335ca"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -1474,18 +2336,18 @@
                     "syncTooltips": false,
                     "title": "Sessions"
                 },
+                "panelIndex": "bb402cc5-9548-4f1b-b1e9-63d425b940b5",
                 "gridData": {
-                    "h": 12,
-                    "i": "26219654-d077-4956-a6a2-0d6e345ad586",
-                    "sectionId": "aebe0fdf-4f5f-4da1-b6ac-60d465852045",
-                    "w": 36,
+                    "i": "bb402cc5-9548-4f1b-b1e9-63d425b940b5",
+                    "y": 12,
                     "x": 12,
-                    "y": 12
-                },
-                "panelIndex": "26219654-d077-4956-a6a2-0d6e345ad586",
-                "type": "lens"
+                    "w": 36,
+                    "h": 12,
+                    "sectionId": "c64aba3d-354c-4273-9e0b-2bbad56335ca"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -1588,18 +2450,18 @@
                     "syncTooltips": false,
                     "title": "System errors"
                 },
+                "panelIndex": "b03e79bc-4005-4fed-978a-fd1ec18f6fd8",
                 "gridData": {
-                    "h": 6,
-                    "i": "9dffebad-d6d1-4712-9c99-3ca0c4ba0061",
-                    "sectionId": "69f923d8-1a74-4c59-808c-2c954eaf0ab4",
-                    "w": 6,
+                    "i": "b03e79bc-4005-4fed-978a-fd1ec18f6fd8",
+                    "y": 0,
                     "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "9dffebad-d6d1-4712-9c99-3ca0c4ba0061",
-                "type": "lens"
+                    "w": 6,
+                    "h": 6,
+                    "sectionId": "6dd027f4-2ce8-41e2-a22b-483c0f02ee22"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -1702,18 +2564,18 @@
                     "syncTooltips": false,
                     "title": "User errors"
                 },
+                "panelIndex": "e2569eed-dc76-40bb-9aec-8f79e3dcadf0",
                 "gridData": {
-                    "h": 6,
-                    "i": "8f85d150-b259-4bd9-9173-10ce8b3aaaa7",
-                    "sectionId": "69f923d8-1a74-4c59-808c-2c954eaf0ab4",
-                    "w": 6,
+                    "i": "e2569eed-dc76-40bb-9aec-8f79e3dcadf0",
+                    "y": 0,
                     "x": 6,
-                    "y": 0
-                },
-                "panelIndex": "8f85d150-b259-4bd9-9173-10ce8b3aaaa7",
-                "type": "lens"
+                    "w": 6,
+                    "h": 6,
+                    "sectionId": "6dd027f4-2ce8-41e2-a22b-483c0f02ee22"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -1816,18 +2678,18 @@
                     "syncTooltips": false,
                     "title": "Errors"
                 },
+                "panelIndex": "d8dbb4e8-0e92-4dd3-8913-75b63ed43cdc",
                 "gridData": {
-                    "h": 6,
-                    "i": "ab73b86a-4229-4c2b-aced-22af9cdd1188",
-                    "sectionId": "69f923d8-1a74-4c59-808c-2c954eaf0ab4",
-                    "w": 12,
+                    "i": "d8dbb4e8-0e92-4dd3-8913-75b63ed43cdc",
+                    "y": 6,
                     "x": 0,
-                    "y": 6
-                },
-                "panelIndex": "ab73b86a-4229-4c2b-aced-22af9cdd1188",
-                "type": "lens"
+                    "w": 12,
+                    "h": 6,
+                    "sectionId": "6dd027f4-2ce8-41e2-a22b-483c0f02ee22"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -2075,18 +2937,18 @@
                     "syncTooltips": false,
                     "title": "Error breakdown: Total vs System vs User"
                 },
+                "panelIndex": "d5d0f155-a37c-4056-939a-7c67a3008b59",
                 "gridData": {
-                    "h": 12,
-                    "i": "727b3ebc-dea1-4e45-a0eb-1c9dc1d29f7f",
-                    "sectionId": "69f923d8-1a74-4c59-808c-2c954eaf0ab4",
-                    "w": 36,
+                    "i": "d5d0f155-a37c-4056-939a-7c67a3008b59",
+                    "y": 0,
                     "x": 12,
-                    "y": 0
-                },
-                "panelIndex": "727b3ebc-dea1-4e45-a0eb-1c9dc1d29f7f",
-                "type": "lens"
+                    "w": 36,
+                    "h": 12,
+                    "sectionId": "6dd027f4-2ce8-41e2-a22b-483c0f02ee22"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -2189,18 +3051,18 @@
                     "syncTooltips": false,
                     "title": "Throttles"
                 },
+                "panelIndex": "d5b9c931-df77-4bca-9b85-ca86cdd3c43b",
                 "gridData": {
-                    "h": 6,
-                    "i": "3f2657ef-22b1-46fd-9bba-a8ccff593254",
-                    "sectionId": "7d2dff4c-0862-4583-a2d2-1afdf6eedd73",
-                    "w": 6,
+                    "i": "d5b9c931-df77-4bca-9b85-ca86cdd3c43b",
+                    "y": 0,
                     "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "3f2657ef-22b1-46fd-9bba-a8ccff593254",
-                "type": "lens"
+                    "w": 6,
+                    "h": 6,
+                    "sectionId": "25bf1918-1813-4544-a21f-d9e2274bfa83"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -2304,18 +3166,18 @@
                     "syncTooltips": false,
                     "title": "Latency"
                 },
+                "panelIndex": "cdc29095-590c-4b7e-a3c0-abf80bbc317a",
                 "gridData": {
-                    "h": 6,
-                    "i": "e5bee5ac-f3fd-44e6-b7d5-70c3aa4e4155",
-                    "sectionId": "7d2dff4c-0862-4583-a2d2-1afdf6eedd73",
-                    "w": 6,
+                    "i": "cdc29095-590c-4b7e-a3c0-abf80bbc317a",
+                    "y": 0,
                     "x": 6,
-                    "y": 0
-                },
-                "panelIndex": "e5bee5ac-f3fd-44e6-b7d5-70c3aa4e4155",
-                "type": "lens"
+                    "w": 6,
+                    "h": 6,
+                    "sectionId": "25bf1918-1813-4544-a21f-d9e2274bfa83"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -2419,18 +3281,18 @@
                     "syncTooltips": false,
                     "title": "Duration"
                 },
+                "panelIndex": "0206ea37-8ac1-4b35-bfd2-edada210ae6f",
                 "gridData": {
-                    "h": 6,
-                    "i": "e2b31c20-0bfd-4f9f-8182-27cbb6485b3e",
-                    "sectionId": "7d2dff4c-0862-4583-a2d2-1afdf6eedd73",
-                    "w": 12,
+                    "i": "0206ea37-8ac1-4b35-bfd2-edada210ae6f",
+                    "y": 6,
                     "x": 0,
-                    "y": 6
-                },
-                "panelIndex": "e2b31c20-0bfd-4f9f-8182-27cbb6485b3e",
-                "type": "lens"
+                    "w": 12,
+                    "h": 6,
+                    "sectionId": "25bf1918-1813-4544-a21f-d9e2274bfa83"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
@@ -2647,42 +3509,49 @@
                     "syncTooltips": false,
                     "title": "Latency vs Duration"
                 },
+                "panelIndex": "595c7c2b-1cc5-4011-b55a-6b9b1e7934aa",
                 "gridData": {
-                    "h": 12,
-                    "i": "6bf5132a-a4a0-4b97-9e61-3f3cac82b962",
-                    "sectionId": "7d2dff4c-0862-4583-a2d2-1afdf6eedd73",
-                    "w": 36,
+                    "i": "595c7c2b-1cc5-4011-b55a-6b9b1e7934aa",
+                    "y": 0,
                     "x": 12,
-                    "y": 0
-                },
-                "panelIndex": "6bf5132a-a4a0-4b97-9e61-3f3cac82b962",
-                "type": "lens"
+                    "w": 36,
+                    "h": 12,
+                    "sectionId": "25bf1918-1813-4544-a21f-d9e2274bfa83"
+                }
             }
         ],
         "sections": [
             {
                 "collapsed": false,
+                "title": "Invocation & session details",
                 "gridData": {
-                    "i": "aebe0fdf-4f5f-4da1-b6ac-60d465852045",
+                    "i": "c64aba3d-354c-4273-9e0b-2bbad56335ca",
                     "y": 16
-                },
-                "title": "Invocation \u0026 session details"
+                }
             },
             {
                 "collapsed": false,
+                "title": "Errors",
                 "gridData": {
-                    "i": "69f923d8-1a74-4c59-808c-2c954eaf0ab4",
+                    "i": "6dd027f4-2ce8-41e2-a22b-483c0f02ee22",
                     "y": 17
-                },
-                "title": "Errors"
+                }
             },
             {
                 "collapsed": false,
+                "title": "Performance",
                 "gridData": {
-                    "i": "7d2dff4c-0862-4583-a2d2-1afdf6eedd73",
+                    "i": "25bf1918-1813-4544-a21f-d9e2274bfa83",
                     "y": 18
-                },
-                "title": "Performance"
+                }
+            },
+            {
+                "collapsed": false,
+                "title": "Runtime logs",
+                "gridData": {
+                    "i": "91cc8264-6673-4775-ae21-bb828c0abf53",
+                    "y": 19
+                }
             }
         ],
         "timeRestore": false,
@@ -2695,129 +3564,149 @@
     "managed": false,
     "references": [
         {
-            "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "d0ca343e-1fd4-428c-88a4-aa0a791e6744:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "080f90a7-5247-4728-86ca-c68d3179186b:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "96474e64-27ae-453b-a84d-063d38dafe5f:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "26219654-d077-4956-a6a2-0d6e345ad586:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "9dffebad-d6d1-4712-9c99-3ca0c4ba0061:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "8f85d150-b259-4bd9-9173-10ce8b3aaaa7:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "ab73b86a-4229-4c2b-aced-22af9cdd1188:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "727b3ebc-dea1-4e45-a0eb-1c9dc1d29f7f:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "3f2657ef-22b1-46fd-9bba-a8ccff593254:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "e5bee5ac-f3fd-44e6-b7d5-70c3aa4e4155:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "e2b31c20-0bfd-4f9f-8182-27cbb6485b3e:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "6bf5132a-a4a0-4b97-9e61-3f3cac82b962:indexpattern-datasource-layer-803e06f8-1631-453d-91f0-77761a084eed",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "aadd7196-6fb4-4a7e-8d90-3107d7e60a59:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "2ae8d46d-fa7f-4363-8476-4279cb46f327:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "e2751137-7fab-4555-ae04-f24b7b986c75:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "c11c3c68-aa0d-4e9f-ab8c-08b67d4b2fa9:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
+            "type": "index-pattern",
+            "id": "metrics-*"
         },
         {
             "id": "aws_bedrock_agentcore-3235ab43-8fa0-47f5-9590-b8d7451a4c92",
-            "name": "30a1bf21-9d4f-4d46-b680-9d6881933679:link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
+            "name": "f79bfdf0-2baf-44e8-b8ac-4052a10908f0:link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
             "type": "dashboard"
         },
         {
             "id": "aws_bedrock_agentcore-b113ff26-879e-4ea2-b0ac-993b98ed06c4",
-            "name": "30a1bf21-9d4f-4d46-b680-9d6881933679:link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
+            "name": "f79bfdf0-2baf-44e8-b8ac-4052a10908f0:link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
             "type": "dashboard"
         },
         {
             "id": "aws_bedrock_agentcore-1f2ef1c3-afab-4b23-9e8b-b966f2fe40d2",
-            "name": "30a1bf21-9d4f-4d46-b680-9d6881933679:link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
+            "name": "f79bfdf0-2baf-44e8-b8ac-4052a10908f0:link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
             "type": "dashboard"
         },
         {
             "id": "aws_bedrock_agentcore-b2372a13-4d94-43ec-8623-6c8d226dd071",
-            "name": "30a1bf21-9d4f-4d46-b680-9d6881933679:link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
+            "name": "f79bfdf0-2baf-44e8-b8ac-4052a10908f0:link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
             "type": "dashboard"
         },
         {
             "id": "metrics-*",
+            "name": "2c6b2b3f-1e6b-4a0a-8f4c-e31c9ed40c94:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "09a25f12-17ed-4072-967b-e30117b0f299:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "48f61146-c1b2-4985-9265-a86edf447630:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4999c7d7-7eaf-4478-b45a-4a1e62a82eeb:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "760e6432-fadf-41d3-a776-20b2a350b0a0:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b33e740a-2af5-4dbc-b6b7-2ccc06f39d4c:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e68603d1-5ca2-415f-bb23-7f04ae78d705:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "bb402cc5-9548-4f1b-b1e9-63d425b940b5:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b03e79bc-4005-4fed-978a-fd1ec18f6fd8:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e2569eed-dc76-40bb-9aec-8f79e3dcadf0:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d8dbb4e8-0e92-4dd3-8913-75b63ed43cdc:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d5d0f155-a37c-4056-939a-7c67a3008b59:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d5b9c931-df77-4bca-9b85-ca86cdd3c43b:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "cdc29095-590c-4b7e-a3c0-abf80bbc317a:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "0206ea37-8ac1-4b35-bfd2-edada210ae6f:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "595c7c2b-1cc5-4011-b55a-6b9b1e7934aa:indexpattern-datasource-layer-803e06f8-1631-453d-91f0-77761a084eed",
+            "type": "index-pattern"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "68198c81-44ce-4c4b-af54-83c29e5a2155:indexpattern-datasource-layer-cdb0f58f-0473-4d00-bb9c-4c52ff1126c0"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "9e7bc9e0-9e1b-4d60-8e68-97333d5335b2:indexpattern-datasource-layer-cdb0f58f-0473-4d00-bb9c-4c52ff1126c0"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "1f6f31ba-c8fd-40a1-aa52-8bbc67ed9661:indexpattern-datasource-layer-cdb0f58f-0473-4d00-bb9c-4c52ff1126c0"
+        },
+        {
+            "type": "index-pattern",
+            "id": "logs-*",
+            "name": "d23ddac4-1e96-4fc3-a78f-5077b9504633:indexpattern-datasource-layer-cdb0f58f-0473-4d00-bb9c-4c52ff1126c0"
+        },
+        {
             "name": "controlGroup_47bca488-ee32-47c1-9111-24b1e5aae881:optionsListDataView",
-            "type": "index-pattern"
+            "type": "index-pattern",
+            "id": "metrics-*"
         },
         {
-            "id": "metrics-*",
             "name": "controlGroup_1128cc90-b5dc-4106-b2d1-1ab1f8189e68:optionsListDataView",
-            "type": "index-pattern"
+            "type": "index-pattern",
+            "id": "metrics-*"
         },
         {
-            "id": "metrics-*",
             "name": "controlGroup_5325fef4-c75f-41dc-9ef3-76c031a0d84b:optionsListDataView",
-            "type": "index-pattern"
+            "type": "index-pattern",
+            "id": "metrics-*"
         },
         {
-            "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
+            "type": "index-pattern",
+            "id": "metrics-*"
         }
     ],
     "type": "dashboard",
