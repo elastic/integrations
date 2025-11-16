@@ -53,6 +53,81 @@ processors:
       lang: painless
       tag: script_append_related_entity
       if: ctx.json?.eventName != null && ctx.tags != null && ctx.tags.contains('actor_target_mapping')
+      params:
+        # Static resource type classifications (evaluated once at pipeline compilation)
+        userResourceTypes:
+          'user': true
+          'role': true
+          'assumed-role': true
+          'federated-user': true
+          'instance-profile': true
+          'mfa': true
+          'serialNumber': true
+        hostResourceTypes:
+          'instance': true
+          'volume': true
+          'snapshot': true
+          'image': true
+        serviceResourceTypes:
+          'stack': true
+          'stack-set': true
+          'trail': true
+          'configuration-recorder': true
+          'file-system': true
+          'mount-target': true
+          'rule': true
+          'detector': true
+          'key': true
+          'function': true
+          'log-group': true
+          'log-stream': true
+          'alarm': true
+          'db': true
+          'cluster': true
+          'global-cluster': true
+          'trust-anchor': true
+          'resolver-query-log-config': true
+          'secret': true
+          'parameter': true
+          'document': true
+          'session': true
+          'webacl': true
+          'rulegroup': true
+          'ipset': true
+          'topic': true
+          'model': true
+          'loadbalancer': true
+          'table': true
+          'group': true
+          'policy': true
+          'security-group': true
+          'network-interface': true
+          'vpc': true
+          'subnet': true
+          'network-acl': true
+          'dhcp-options': true
+        hostIdPrefixes:
+          'i-': true
+          'vol-': true
+          'snap-': true
+          'ami-': true
+        serviceIdPrefixes:
+          'sg-': true
+          'sgr-': true
+          'eni-': true
+          'vpc-': true
+          'subnet-': true
+          'acl-': true
+          'rtb-': true
+          'igw-': true
+          'nat-': true
+          'vpce-': true
+          'tgw-': true
+          'pcx-': true
+        userIdentityTypes:
+          'IAMUser': true
+          'Root': true
+          'AssumedRole': true
       on_failure:
         - append:
             field: tags
@@ -765,83 +840,6 @@ processors:
           // Always set the legacy target.entity.id for backward compatibility
           field("target.entity.id").set(enrichCtx.target);
           
-          // Define resource type classifications
-          def userResourceTypes = new HashSet();
-          userResourceTypes.add('user');
-          userResourceTypes.add('role');
-          userResourceTypes.add('assumed-role');
-          userResourceTypes.add('federated-user');
-          userResourceTypes.add('instance-profile');
-          userResourceTypes.add('mfa');
-          userResourceTypes.add('serialNumber');
-          
-          def hostResourceTypes = new HashSet();
-          hostResourceTypes.add('instance');
-          hostResourceTypes.add('volume');
-          hostResourceTypes.add('snapshot');
-          hostResourceTypes.add('image');
-          
-          def serviceResourceTypes = new HashSet();
-          serviceResourceTypes.add('stack');
-          serviceResourceTypes.add('stack-set');
-          serviceResourceTypes.add('trail');
-          serviceResourceTypes.add('configuration-recorder');
-          serviceResourceTypes.add('file-system');
-          serviceResourceTypes.add('mount-target');
-          serviceResourceTypes.add('rule');
-          serviceResourceTypes.add('detector');
-          serviceResourceTypes.add('key');
-          serviceResourceTypes.add('function');
-          serviceResourceTypes.add('log-group');
-          serviceResourceTypes.add('log-stream');
-          serviceResourceTypes.add('alarm');
-          serviceResourceTypes.add('db');
-          serviceResourceTypes.add('cluster');
-          serviceResourceTypes.add('global-cluster');
-          serviceResourceTypes.add('trust-anchor');
-          serviceResourceTypes.add('resolver-query-log-config');
-          serviceResourceTypes.add('secret');
-          serviceResourceTypes.add('parameter');
-          serviceResourceTypes.add('document');
-          serviceResourceTypes.add('session');
-          serviceResourceTypes.add('webacl');
-          serviceResourceTypes.add('rulegroup');
-          serviceResourceTypes.add('ipset');
-          serviceResourceTypes.add('topic');
-          serviceResourceTypes.add('model');
-          serviceResourceTypes.add('loadbalancer');
-          serviceResourceTypes.add('table');
-          serviceResourceTypes.add('group');
-          serviceResourceTypes.add('policy');
-          serviceResourceTypes.add('security-group');
-          serviceResourceTypes.add('network-interface');
-          serviceResourceTypes.add('vpc');
-          serviceResourceTypes.add('subnet');
-          serviceResourceTypes.add('network-acl');
-          serviceResourceTypes.add('dhcp-options');
-          
-          // Simple ID prefixes for host resources
-          def hostIdPrefixes = new HashSet();
-          hostIdPrefixes.add('i-');
-          hostIdPrefixes.add('vol-');
-          hostIdPrefixes.add('snap-');
-          hostIdPrefixes.add('ami-');
-          
-          // Simple ID prefixes for service resources
-          def serviceIdPrefixes = new HashSet();
-          serviceIdPrefixes.add('sg-');
-          serviceIdPrefixes.add('sgr-');
-          serviceIdPrefixes.add('eni-');
-          serviceIdPrefixes.add('vpc-');
-          serviceIdPrefixes.add('subnet-');
-          serviceIdPrefixes.add('acl-');
-          serviceIdPrefixes.add('rtb-');
-          serviceIdPrefixes.add('igw-');
-          serviceIdPrefixes.add('nat-');
-          serviceIdPrefixes.add('vpce-');
-          serviceIdPrefixes.add('tgw-');
-          serviceIdPrefixes.add('pcx-');
-          
           def userTargets = new TreeSet();
           def hostTargets = new TreeSet();
           def serviceTargets = new TreeSet();
@@ -870,13 +868,13 @@ processors:
                 }
                 
                 // Classify based on resource type
-                if (userResourceTypes.contains(resourceType)) {
+                if (params.userResourceTypes.containsKey(resourceType)) {
                   userTargets.add(target);
                   classified = true;
-                } else if (hostResourceTypes.contains(resourceType)) {
+                } else if (params.hostResourceTypes.containsKey(resourceType)) {
                   hostTargets.add(target);
                   classified = true;
-                } else if (serviceResourceTypes.contains(resourceType)) {
+                } else if (params.serviceResourceTypes.containsKey(resourceType)) {
                   serviceTargets.add(target);
                   classified = true;
                 } else if (parts[2] == "s3") {
@@ -894,7 +892,7 @@ processors:
                 classified = true;
               } else {
                 // Check host ID prefixes
-                for (def prefix : hostIdPrefixes) {
+                for (def prefix : params.hostIdPrefixes.keySet()) {
                   if (target.startsWith(prefix)) {
                     hostTargets.add(target);
                     classified = true;
@@ -904,7 +902,7 @@ processors:
                 
                 // Check service ID prefixes if not yet classified
                 if (!classified) {
-                  for (def prefix : serviceIdPrefixes) {
+                  for (def prefix : params.serviceIdPrefixes.keySet()) {
                     if (target.startsWith(prefix)) {
                       serviceTargets.add(target);
                       classified = true;
@@ -947,17 +945,11 @@ processors:
           String actorStr = enrichCtx.actor.toString();
           boolean classified = false;
           
-          // User types that map directly to user entity
-          def userIdentityTypes = new HashSet();
-          userIdentityTypes.add('IAMUser');
-          userIdentityTypes.add('Root');
-          userIdentityTypes.add('AssumedRole');
-          
           // Check userType first (most reliable indicator)
           if (userType == "AWSService") {
             field("service.entity.id").set([ enrichCtx.actor ]);
             classified = true;
-          } else if (userIdentityTypes.contains(userType)) {
+          } else if (params.userIdentityTypes.containsKey(userType)) {
             field("user.entity.id").set([ enrichCtx.actor ]);
             classified = true;
           }
