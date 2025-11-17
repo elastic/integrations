@@ -344,15 +344,20 @@ policy_templates:
         default: false
         show_user: false
         description: |
-          When enabled, files will be removed after they have been
-          read until the End-Of-File (EOF) and all events have been
-          published to the output.
+          When enabled, files will be removed once the reader has been
+          closed (due to inactivity or EOF), all events have been
+          published to the output and the grace period has expired.
+          Refer to [Filebeat
+          documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-filestream#filebeat-input-filestream-delete-options)
+          for details.
       - name: delete_grace_period
+        title: Grace period for deleting files
         type: text
         show_user: false
         description: |
           An interval to wait after the file is closed and all events
-          have been published before trying to remove it.
+          have been published before trying to remove it. The default
+          is `30m`.
 
           E.g: "30m", Valid time units are "ns", "us" (or "µs"), "ms",
           "s", "m", "h".
