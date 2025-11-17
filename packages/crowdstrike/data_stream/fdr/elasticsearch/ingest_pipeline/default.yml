@@ -1616,9 +1616,9 @@ processors:
           kind: alert
           outcome: success
         SuspiciousPrivilegedProcessHandle:
-          category: [ malware, process ]
+          category: [ process ]
           type: [ info ]
-          kind: alert
+          kind: event
         SuspiciousRegAsepUpdate:
           category: [ malware, registry, configuration ]
           type: [ change, info ]
@@ -3411,6 +3411,19 @@ processors:
       tag: split_crowdstrike_gradnparentprocessPatternidlist
       separator: ','
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: set_browser_extension_install_method_value
+      if: ctx.crowdstrike?.BrowserExtensionInstallMethod != null
+      params:
+        '0': UNIDENTIFIED
+        '1': BROWSER
+        '2': WEBSTORE
+        '3': GPO
+        '4': SIDELOADED
+        '5': WEBSTORE_3RD_PARTY
+      source: |-
+        ctx.crowdstrike.BrowserExtensionInstallMethod = params[ctx.crowdstrike.BrowserExtensionInstallMethod];
   - json:
       field: crowdstrike.ResourceAttributes
       tag: json_crowdstrike_ResourceAttributes
