@@ -204,91 +204,90 @@ An example event for `runtime_application` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-03-15T09:27:18.543Z",
+    "awscloudwatch": {
+        "log_group": "arn:aws:logs:us-east-1:627286350132:log-group:/aws/vendedlogs/bedrock-agentcore/runtime/APPLICATION_LOGS/claudeserver-CdBoW2FLP0",
+        "ingestion_time": "2025-11-04T09:49:45.000Z",
+        "log_stream": "BedrockAgentCoreRuntime_ApplicationLogs"
+    },
     "agent": {
-        "ephemeral_id": "f8a9c21d-3b4e-4f92-a1c7-9d2e4f6b8a3c",
-        "id": "2c4d6e8f-9a1b-4c3d-8e2f-7a9b3c5d1e6f",
         "name": "docker-fleet-agent",
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
         "type": "filebeat",
-        "version": "9.1.0"
-    },
-    "aws": {
-        "cloudwatch": {
-            "ingestion_time": "2025-03-15T09:31:45.892Z",
-            "log_group": "arn:aws:logs:eu-west-2:892547316820:log-group:/aws/vendedlogs/bedrock-agentcore/runtime/APPLICATION_LOGS/claudeserver-Xy7Mn5TqR3",
-            "log_stream": "BedrockAgentCoreRuntime_ApplicationLogs"
-        }
-    },
-    "aws_bedrock_agentcore": {
-        "runtime_application_logs": {
-            "request_payload": {
-                "prompt": "What are the best practices for database optimization?"
-            },
-            "resource_arn": "arn:aws:bedrock-agentcore:eu-west-2:892547316820:runtime/claudeserver-Xy7Mn5TqR3"
-        }
-    },
-    "cloud": {
-        "account": {
-            "id": "892547316820"
-        },
-        "provider": "aws",
-        "region": "eu-west-2",
-        "service": {
-            "name": "bedrock-agentcore"
-        }
-    },
-    "data_stream": {
-        "dataset": "aws_bedrock_agentcore.runtime_application_logs",
-        "namespace": "default",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "2c4d6e8f-9a1b-4c3d-8e2f-7a9b3c5d1e6f",
-        "snapshot": false,
-        "version": "9.1.0"
-    },
-    "event": {
-        "action": "InvokeAgentRuntime",
-        "agent_id_status": "verified",
-        "dataset": "aws_bedrock_agentcore.runtime_application_logs",
-        "id": "78456123890742158963247856912345678901234567890123456789",
-        "ingested": "2025-11-12T15:42:19Z",
-        "outcome": "success"
-    },
-    "gen_ai": {
-        "request": {
-            "id": "78456123890742158963247856912345678901234567890123456789"
-        },
-        "response": {
-            "timestamp": "2025-03-15T09:27:18.543Z"
-        },
-        "system": "aws"
-    },
-    "input": {
-        "type": "aws-cloudwatch"
+        "ephemeral_id": "d5a1fd3e-1411-4730-8b9a-e237d8000186",
+        "version": "8.19.0"
     },
     "log": {
         "file": {
-            "path": "arn:aws:logs:eu-west-2:892547316820:log-group:/aws/vendedlogs/bedrock-agentcore/runtime/APPLICATION_LOGS/claudeserver-Xy7Mn5TqR3/BedrockAgentCoreRuntime_ApplicationLogs"
+            "path": "arn:aws:logs:us-east-1:627286350132:log-group:/aws/vendedlogs/bedrock-agentcore/runtime/APPLICATION_LOGS/claudeserver-CdBoW2FLP0/BedrockAgentCoreRuntime_ApplicationLogs"
         }
     },
-    "service": {
-        "name": "AgentCoreCodeRuntime"
-    },
-    "session": {
-        "id": "d4e7f2a8-9c3b-42e1-b5d6-8f3a7e9c2b4d"
-    },
-    "span": {
-        "id": "a3b8c4d9e2f71856"
+    "elastic_agent": {
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
+        "version": "8.19.0",
+        "snapshot": false
     },
     "tags": [
         "forwarded"
     ],
+    "cloud": {
+        "provider": "aws",
+        "service": {
+            "name": "bedrock-agentcore"
+        },
+        "region": "us-east-1",
+        "account": {
+            "id": "627286350134"
+        }
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "gen_ai": {
+        "system": "aws_bedrock_agentcore",
+        "provider": {
+            "name": "aws"
+        },
+        "conversation_id": "0a6a8cc0-42ac-4e2c-adee-c3cbb81d2e87",
+        "operation": {
+            "name": "InvokeAgentRuntime"
+        }
+    },
     "trace": {
-        "id": "4f8a2e9c3d7b1f5e6a8c4b9d2e7f3a1c"
+        "id": "6909cc3835755ae933e4c5fc38d249a2"
+    },
+    "@timestamp": "2025-11-04T09:49:45.198Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "aws_bedrock_agentcore.runtime_application_logs"
+    },
+    "service": {
+        "name": "AgentCoreCodeRuntime"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-11-17T12:27:05Z",
+        "id": "39299483435865920498526836744670895669942873429125169152",
+        "dataset": "aws_bedrock_agentcore.runtime_application_logs",
+        "outcome": "success"
+    },
+    "aws.cloudwatch": {
+        "log_group": "arn:aws:logs:us-east-1:627286350137:log-group:/aws/vendedlogs/bedrock-agentcore/runtime/APPLICATION_LOGS/claudeserver-CdBoW2FLP1",
+        "ingestion_time": "2025-11-04T09:49:45.955Z",
+        "log_stream": "BedrockAgentCoreRuntime_ApplicationLogs"
+    },
+    "aws": {
+        "bedrock_agentcore": {
+            "account_id": "627286350137",
+            "resource_arn": "arn:aws:bedrock-agentcore:us-east-1:627286350137:runtime/claudeserver-CdBoW2FLP1",
+            "request_id": "816db982-a20b-46e6-9615-8a9fe544485e"
+        }
+    },
+    "span": {
+        "id": "015d756c7d9bf372"
     }
 }
 ```
@@ -297,16 +296,21 @@ An example event for `runtime_application` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.bedrock_agentcore.account_id | ID of the account. | keyword |
+| aws.bedrock_agentcore.request_id | ID of the request. | keyword |
+| aws.bedrock_agentcore.resource_arn | The Amazon Resource Name (ARN) of the AgentCore runtime resource. | keyword |
 | aws.cloudwatch.message | CloudWatch log message. | text |
-| aws_bedrock_agentcore.runtime_application_logs.request_payload.prompt | The user prompt sent to the AgentCore runtime. | text |
-| aws_bedrock_agentcore.runtime_application_logs.request_payload.prompt_hash | Hash of the user prompt for deduplication purposes. | text |
-| aws_bedrock_agentcore.runtime_application_logs.resource_arn | The Amazon Resource Name (ARN) of the AgentCore runtime resource. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gen_ai.conversation_id | ID of the conversation. | keyword |
+| gen_ai.operation.name | Name of the operation. | keyword |
+| gen_ai.prompt | The user prompt sent to the AgentCore runtime. | text |
+| gen_ai.prompt_hash | Hash of the user prompt for deduplication purposes. | text |
+| gen_ai.provider.name | Name of the provider. | keyword |
 | gen_ai.request.id | Unique identifier for the request. | keyword |
 | gen_ai.response.timestamp | Timestamp when the response was received. | date |
 | gen_ai.system | Name of the AI system (aws). | keyword |

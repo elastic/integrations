@@ -17,7 +17,7 @@ processors:
   # Parse JSON if the log comes as a string
   - json:
       field: event.original
-      target_field: aws_bedrock_agentcore.runtime_application_logs
+      target_field: aws.bedrock_agentcore
       if: 'ctx.event?.original != null'
       ignore_failure: true
       
@@ -34,74 +34,63 @@ processors:
   - set:
       field: cloud.provider
       value: aws
+
+  - set:
+      field: gen_ai.provider.name
+      value: aws
       
   # Process timestamp
   - date:
-      field: aws_bedrock_agentcore.runtime_application_logs.event_timestamp
+      field: aws.bedrock_agentcore.event_timestamp
       target_field: "@timestamp"
       formats:
         - UNIX_MS
       ignore_failure: true
       
   # Map fields to ECS
+  - set:
+      field: cloud.account.id
+      copy_from: aws.bedrock_agentcore.account_id
+      ignore_empty_value: true
+      
   - rename:
-      field: aws_bedrock_agentcore.runtime_application_logs.account_id
-      target_field: cloud.account.id
+      field: aws.bedrock_agentcore.operation
+      target_field: gen_ai.operation.name
+      ignore_missing: true
+
+  - rename:
+      field: aws.bedrock_agentcore.request_payload.prompt
+      target_field: gen_ai.prompt
       ignore_missing: true
       
   - rename:
-      field: aws_bedrock_agentcore.runtime_application_logs.operation
-      target_field: event.action
-      ignore_missing: true
-      
-  - rename:
-      field: aws_bedrock_agentcore.runtime_application_logs.request_id
-      target_field: gen_ai.request.id
-      ignore_missing: true
-      
-  - rename:
-      field: aws_bedrock_agentcore.runtime_application_logs.service_name
+      field: aws.bedrock_agentcore.service_name
       target_field: service.name
       ignore_missing: true
       
   # Set trace context
   - rename:
-      field: aws_bedrock_agentcore.runtime_application_logs.trace_id
+      field: aws.bedrock_agentcore.trace_id
       target_field: trace.id
       ignore_missing: true
       
   - rename:
-      field: aws_bedrock_agentcore.runtime_application_logs.span_id
+      field: aws.bedrock_agentcore.span_id
       target_field: span.id
       ignore_missing: true
       
   # Set gen_ai fields for consistency
   - set:
       field: gen_ai.system
-      value: aws
-
-  - set:
-      field: gen_ai.response.timestamp
-      copy_from: '@timestamp'
-      
-  - set:
-      field: gen_ai.request.model.type
-      value: agentcore
-      if: ctx.aws_bedrock?.agentcore?.runtime_name != null
-      
-  - set:
-      field: gen_ai.request.id
-      copy_from: event.id
-      ignore_empty_value: true
-      ignore_failure: true
+      value: aws_bedrock_agentcore
       
   # Handle session information
   - rename:
-      field: aws_bedrock_agentcore.runtime_application_logs.session_id
-      target_field: session.id
+      field: aws.bedrock_agentcore.session_id
+      target_field: gen_ai.conversation_id
       ignore_missing: true
   - rename:
-      field: aws_bedrock_agentcore.runtime_application_logs.region
+      field: aws.bedrock_agentcore.region
       target_field: cloud.region
       ignore_missing: true
       
@@ -120,11 +109,11 @@ processors:
   - script:
       description: Truncate large prompts and store hash
       lang: painless
-      if: ctx.aws_bedrock_agentcore.runtime_application_logs?.request_payload?.prompt != null && ctx.aws_bedrock_agentcore.runtime_application_logs?.request_payload?.prompt instanceof String
+      if: ctx.gen_ai?.prompt != null && ctx.gen_ai?.prompt instanceof String
       source: |
-        if (ctx.aws_bedrock_agentcore.runtime_application_logs.request_payload.prompt.length() > 32766) {
-          ctx.aws_bedrock_agentcore.runtime_application_logs.request_payload.prompt_hash = ctx.aws_bedrock_agentcore.runtime_application_logs.request_payload.prompt.sha1(); 
-          ctx.aws_bedrock_agentcore.runtime_application_logs.request_payload.remove("prompt");
+        if (ctx.gen_ai.prompt.length() > 32766) {
+          ctx.gen_ai.prompt_hash = ctx.gen_ai.prompt.sha1(); 
+          ctx.gen_ai.remove("prompt");
         }
       ignore_failure: true
       
@@ -150,7 +139,7 @@ processors:
   # Clean up temporary fields
   - remove:
       field:
-        - aws_bedrock_agentcore.runtime_application_logs.event_timestamp
+        - aws.bedrock_agentcore.event_timestamp
       ignore_missing: true
       if: ctx['@timestamp'] != null
       
