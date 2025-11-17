@@ -213,9 +213,13 @@ An example event for `web` looks as following:
 | menlo.web.casb_profile_type | Menlo CASB profile type (sanctioned/unsanctioned/unclassified) | keyword |
 | menlo.web.casb_risk_score | Menlo risk score for application (0-10) | keyword |
 | menlo.web.categories | Category Rules Category type classification | keyword |
+| menlo.web.conn_id | Menlo Connection ID | keyword |
 | menlo.web.content_type | Page type | keyword |
 | menlo.web.has_password | Presence of password in form POST request | boolean |
 | menlo.web.is_iframe | Is inline frame (iframe) element | boolean |
+| menlo.web.proxy_event_detail | Menlo Proxy Event Detail | keyword |
+| menlo.web.proxy_event_type | Menlo Proxy Event Type | keyword |
+| menlo.web.req_id | Menlo Request ID | keyword |
 | menlo.web.request_type | Request type | keyword |
 | menlo.web.risk_score | Risk calculated for URL | keyword |
 | menlo.web.sbox | Sandbox Inspection Result | keyword |
