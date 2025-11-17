@@ -56,56 +56,101 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-30T09:18:05.475Z",
+    "@timestamp": "2025-06-24T05:16:10.082Z",
     "agent": {
-        "ephemeral_id": "54f22388-40a1-419e-91a1-206585ad0aa0",
-        "id": "74bc8c8b-cd00-4a4e-8457-41b9fc85489e",
-        "name": "elastic-agent-35074",
+        "ephemeral_id": "158b1ab5-1d8f-40df-a960-73d24cffa507",
+        "id": "c509a40e-38fb-4be5-8e70-ba382ce8eff0",
+        "name": "elastic-agent-58660",
         "type": "metricbeat",
-        "version": "8.16.0"
+        "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "nvidia_gpu.stats",
-        "namespace": "46457",
+        "namespace": "52265",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "74bc8c8b-cd00-4a4e-8457-41b9fc85489e",
+        "id": "c509a40e-38fb-4be5-8e70-ba382ce8eff0",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nvidia_gpu.stats",
-        "duration": 4476867,
-        "ingested": "2025-10-30T09:18:08Z",
+        "duration": 3737970,
+        "ingested": "2025-06-24T05:16:13Z",
         "module": "prometheus"
     },
     "gpu": {
-        "labels": {
-            "job": "prometheus"
+        "clock": {
+            "mem_frequency": 405,
+            "streaming_multiprocessor_frequency": 300
         },
-        "up": "1"
+        "labels": {
+            "device": "nvidia0",
+            "driver_version": "525.105.17",
+            "gpu": "0",
+            "hostname": "924e17218b6f",
+            "job": "prometheus",
+            "model_name": "Tesla T4",
+            "pci_bus_id": "00000000:00:04.0",
+            "uuid": "GPU-2492e3fa-2252-1730-0d1a-8d12ab32cdf0"
+        },
+        "license_vgpu_status": 0,
+        "memory": {
+            "framebuffer": {
+                "free_size": 14923,
+                "used_size": 5
+            }
+        },
+        "nvlink": {
+            "bandwidth_total": 0
+        },
+        "pcie": {
+            "replay": 0
+        },
+        "power": {
+            "energy_consumption_total": 27649212030,
+            "usage": 12.239
+        },
+        "temperature": {
+            "gpu": 36,
+            "memory": 0
+        },
+        "utilization": {
+            "decoder": {
+                "pct": 0
+            },
+            "encoder": {
+                "pct": 0
+            },
+            "gpu": {
+                "pct": 0
+            },
+            "memory_copy": {
+                "pct": 0
+            }
+        }
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-35074",
+        "hostname": "elastic-agent-58660",
         "ip": [
-            "192.168.251.5",
-            "192.168.252.2"
+            "172.18.0.7",
+            "192.168.32.2"
         ],
         "mac": [
-            "02-42-C0-A8-FB-05",
-            "02-42-C0-A8-FC-02"
+            "A6-27-18-C5-0D-F0",
+            "EA-10-B8-A2-8C-94"
         ],
-        "name": "elastic-agent-35074",
+        "name": "elastic-agent-58660",
         "os": {
             "family": "",
-            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
