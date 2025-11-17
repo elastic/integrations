@@ -319,3 +319,4 @@ An example event for `runtime_application` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset | long |
 | session.id |  | keyword |
+
