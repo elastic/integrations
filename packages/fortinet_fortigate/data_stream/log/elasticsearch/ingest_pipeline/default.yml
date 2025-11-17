@@ -34,7 +34,7 @@ processors:
   - gsub:
       tag: gsub_syslog5424_msg_b526c35d
       field: syslog5424_msg
-      pattern: "[\u0000-\u001F\u007F]"
+      pattern: "[\x00-\x1f\x7f]"
       replacement: ""
   - script:
       tag: script_2073fe5f
@@ -805,6 +805,12 @@ processors:
         - fortinet.firewall.time
         - fortinet.firewall.duration
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
@@ -816,3 +822,7 @@ on_failure:
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
