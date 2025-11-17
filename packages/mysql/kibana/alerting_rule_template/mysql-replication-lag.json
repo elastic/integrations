@@ -13,7 +13,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for seconds behind source is > 10, and the alerting rule is grouped by host name and channel name. You can adjust the threshold value by modifying the secondsbehind value in the WHERE clause, which is specified in seconds.\nFROM metrics-mysql.replica_status-default\n| STATS secondsbehind=max(mysql.replica_status.seconds_behind_source) by host.name, mysql.replica_status.channel.name\n| WHERE secondsbehind > 10"
+        "esql": "// Alert triggers when the p95 query latency exceeds the recommended threshold value of 500 milliseconds within the look back time window. The alerting rule is grouped by host name, query id and schema name. You can adjust the threshold value by modifying the p95_ms value in the WHERE clause, which is specified in milliseconds.\nFROM metrics-mysql.performance-default\n| WHERE `mysql.performance.events_statements.quantile.95` IS NOT NULL\n| STATS p95_ms = max(`mysql.performance.events_statements.quantile.95`/1e9) BY host.name, mysql.performance.events_statements.query_id, mysql.performance.events_statements.schemaname\n| WHERE p95_ms > 500"
       },
       "groupBy": "row",
       "timeField": "@timestamp"

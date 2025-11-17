@@ -13,7 +13,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "esqlQuery": {
-        "esql": "// The recommended threshold value for connected status is != ON, and the alerting rule is grouped by host name. You can adjust the threshold value by modifying the statuses value in the WHERE clause.\nFROM metrics-mysql.galera_status-default\n| STATS statuses = VALUES(mysql.galera_status.connected) BY host.name\n| WHERE \"ON\" != statuses"
+        "esql": "// Alert triggers when the Galera cluster connection status is not ON for any host within the look back time window. The recommended threshold value for connected status is != \"ON\", and the alerting rule is grouped by host name. You can adjust the threshold value by modifying the statuses value in the WHERE clause.\nFROM metrics-mysql.galera_status-default\n| WHERE mysql.galera_status.connected IS NOT NULL\n| STATS statuses = VALUES(mysql.galera_status.connected) BY host.name\n| WHERE statuses != \"ON\""
       },
       "groupBy": "row",
       "timeField": "@timestamp"
