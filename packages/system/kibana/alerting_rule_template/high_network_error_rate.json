@@ -1,0 +1,28 @@
+{
+  "id": "high_network_error_rate",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[System] High Network Error Rate",
+    "tags": ["System"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert when network interfaces show sustained error rates (>5 errors/sec or >0.5% of packets).\n// Excludes loopback/container interfaces, enforces minimum traffic, and clamps counter resets.\n// Tune thresholds in the final WHERE clause for your environment.\nFROM metrics-system.network-*\n| WHERE @timestamp >= NOW() - 5 MINUTES\n  AND system.network.name NOT RLIKE \"^(lo|docker|veth|br-)\"\n| STATS\n    in_error_delta = MAX(system.network.in.errors) - MIN(system.network.in.errors),\n    out_error_delta = MAX(system.network.out.errors) - MIN(system.network.out.errors),\n    in_packet_delta = MAX(system.network.in.packets) - MIN(system.network.in.packets),\n    out_packet_delta = MAX(system.network.out.packets) - MIN(system.network.out.packets),\n    first_ts = MIN(@timestamp),\n    last_ts = MAX(@timestamp)\n  BY host.name, system.network.name\n| EVAL elapsed_sec = TO_DOUBLE(TO_LONG(last_ts) - TO_LONG(first_ts)) / 1000\n| WHERE elapsed_sec >= 60\n| EVAL in_error_delta = CASE(in_error_delta >= 0, in_error_delta, 0)\n| EVAL out_error_delta = CASE(out_error_delta >= 0, out_error_delta, 0)\n| EVAL in_packet_delta = CASE(in_packet_delta >= 0, in_packet_delta, 0)\n| EVAL out_packet_delta = CASE(out_packet_delta >= 0, out_packet_delta, 0)\n| EVAL total_packets = in_packet_delta + out_packet_delta\n| WHERE total_packets >= 1000\n| EVAL in_error_rate = CASE(elapsed_sec > 0, in_error_delta / elapsed_sec, 0.0)\n| EVAL out_error_rate = CASE(elapsed_sec > 0, out_error_delta / elapsed_sec, 0.0)\n| EVAL in_error_pct = CASE(in_packet_delta > 100, 100.0 * in_error_delta / TO_DOUBLE(in_packet_delta), 0.0)\n| EVAL out_error_pct = CASE(out_packet_delta > 100, 100.0 * out_error_delta / TO_DOUBLE(out_packet_delta), 0.0)\n| WHERE in_error_rate > 5\n    OR out_error_rate > 5\n    OR in_error_pct > 0.5\n    OR out_error_pct > 0.5"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 3
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
