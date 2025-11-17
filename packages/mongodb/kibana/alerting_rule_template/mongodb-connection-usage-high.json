@@ -4,8 +4,7 @@
     "attributes": {
         "name": "[MongoDB Availability] High connection usage",
         "tags": [
-            "MongoDB",
-            "Availability"
+            "MongoDB"
         ],
         "ruleTypeId": ".es-query",
         "schedule": {
@@ -16,7 +15,7 @@
             "timeWindowSize": 5,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "FROM metrics-mongodb.status-default\n| WHERE @timestamp >= NOW() - 5 MINUTES\n| STATS current_conn=AVG(mongodb.status.connections.current),\n        available_conn=AVG(mongodb.status.connections.available) BY service.address\n| EVAL total_conn = current_conn + available_conn\n| WHERE total_conn > 0\n| EVAL connection_usage_pct = (current_conn / total_conn) * 100\n| WHERE connection_usage_pct > 80"
+                "esql": "// Alert when current connections exceed 80% of total available capacity.\n// Aggregates average current/available connections per service.address.\nFROM metrics-mongodb.status-*\n| WHERE @timestamp >= NOW() - 5 MINUTES\n| STATS current_conn=AVG(mongodb.status.connections.current),\n        available_conn=AVG(mongodb.status.connections.available) BY service.address\n| EVAL total_conn = current_conn + available_conn\n| WHERE total_conn > 0\n| EVAL connection_usage_pct = (current_conn / total_conn) * 100\n| WHERE connection_usage_pct > 80"
             },
             "groupBy": "row",
             "termSize": 5,
@@ -30,4 +29,3 @@
     "coreMigrationVersion": "8.8.0",
     "typeMigrationVersion": "10.1.0"
 }
-

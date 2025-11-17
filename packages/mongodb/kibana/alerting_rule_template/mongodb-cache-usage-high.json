@@ -4,8 +4,7 @@
     "attributes": {
         "name": "[MongoDB Resources] WiredTiger cache pressure",
         "tags": [
-            "MongoDB",
-            "Resources"
+            "MongoDB"
         ],
         "ruleTypeId": ".es-query",
         "schedule": {
@@ -16,7 +15,7 @@
             "timeWindowSize": 5,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "FROM metrics-mongodb.status-default\n| WHERE @timestamp >= NOW() - 5 MINUTES\n| STATS cache_used=AVG(mongodb.status.wired_tiger.cache.used.bytes),\n        cache_max=AVG(mongodb.status.wired_tiger.cache.maximum.bytes) BY service.address\n| WHERE cache_max > 0\n| EVAL cache_usage_pct = (cache_used / cache_max) * 100\n| WHERE cache_usage_pct > 85"
+                "esql": "// Alert when WiredTiger cache utilization exceeds 85% over 5 minutes.\n// Aggregates per instance (service.address) using averaged cache stats.\nFROM metrics-mongodb.status-*\n| WHERE @timestamp >= NOW() - 5 MINUTES\n| STATS cache_used=AVG(mongodb.status.wired_tiger.cache.used.bytes),\n        cache_max=AVG(mongodb.status.wired_tiger.cache.maximum.bytes) BY service.address\n| WHERE cache_max > 0\n| EVAL cache_usage_pct = (cache_used / cache_max) * 100\n| WHERE cache_usage_pct > 85"
             },
             "groupBy": "row",
             "termSize": 5,
@@ -30,4 +29,3 @@
     "coreMigrationVersion": "8.8.0",
     "typeMigrationVersion": "10.1.0"
 }
-
