@@ -2,29 +2,36 @@
 description: Pipeline for Fortinet FortiManager.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: 8.17.0
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - grok:
+      tag: grok_event_original_d813f65a
       field: event.original
       ecs_compatibility: v1
       patterns:
         - "^(?:<%{NUMBER:fortimanager.log.priority_number:long}>)?%{GREEDYDATA:syslog5424_sd}$"
   - gsub:
+      tag: gsub_syslog5424_sd_756bcbdd
       field: syslog5424_sd
-      pattern: "[\u0000-\u001F\u007F]"
+      pattern: "[\x00-\x1f\x7f]"
       replacement: ""
   - script:
+      tag: script_da23a97d
       lang: painless
       if: ctx.syslog5424_sd != null
       description: |
@@ -70,6 +77,7 @@ processors:
         }
         ctx._temp = map;
   - script:
+      tag: script_39b078f1
       lang: painless
       source: |
         def fw = ctx._temp;
@@ -79,114 +87,142 @@ processors:
             fw.entrySet().removeIf(entry -> entry.getValue() == "N/A" || pat.matcher(entry.getKey()).find());
         }
   - rename:
+      tag: rename__temp_changes_to_fortimanager_log_changes_e2c4b352
       field: _temp.changes
       target_field: fortimanager.log.changes
       ignore_missing: true
   - rename:
+      tag: rename__temp_pri_to_fortimanager_log_pri_9f5f7a6a
       field: _temp.pri
       target_field: fortimanager.log.pri
       ignore_missing: true
   - rename:
+      tag: rename__temp_intfname_to_fortimanager_log_intfname_fb41e0b6
       field: _temp.intfname
       target_field: fortimanager.log.intfname
       ignore_missing: true
   - rename:
+      tag: rename__temp_importance_to_fortimanager_log_importance_ea6e492a
       field: _temp.importance
       target_field: fortimanager.log.importance
       ignore_missing: true
   - rename:
+      tag: rename__temp_function_to_fortimanager_log_function_6c1c1fa2
       field: _temp.function
       target_field: fortimanager.log.function
       ignore_missing: true
   - rename:
+      tag: rename__temp_detail_to_fortimanager_log_detail_98343360
       field: _temp.detail
       target_field: fortimanager.log.detail
       ignore_missing: true
   - rename:
+      tag: rename__temp_desc_to_fortimanager_log_desc_3e7ff1f4
       field: _temp.desc
       target_field: fortimanager.log.desc
       ignore_missing: true
   - rename:
+      tag: rename__temp_dbver_to_fortimanager_log_db_ver_ea239a4a
       field: _temp.dbver
       target_field: fortimanager.log.db.ver
       ignore_missing: true
   - rename:
+      tag: rename__temp_app_to_fortimanager_log_app_9351428e
       field: _temp.app
       target_field: fortimanager.log.app
       ignore_missing: true
   - rename:
+      tag: rename__temp_bid_to_fortimanager_log_bid_a16f0ada
       field: _temp.bid
       target_field: fortimanager.log.bid
       ignore_missing: true
   - rename:
+      tag: rename__temp_profname_to_fortimanager_log_prof_name_b3c4a00f
       field: _temp.profname
       target_field: fortimanager.log.prof_name
       ignore_missing: true
   - rename:
+      tag: rename__temp_epid_to_fortimanager_log_epid_f77bc522
       field: _temp.epid
       target_field: fortimanager.log.epid
       ignore_missing: true
   - rename:
+      tag: rename__temp_dstepid_to_fortimanager_log_dste_pid_7db969ca
       field: _temp.dstepid
       target_field: fortimanager.log.dste.pid
       ignore_missing: true
   - rename:
+      tag: rename__temp_dsteuid_to_fortimanager_log_dste_uid_18ed0b60
       field: _temp.dsteuid
       target_field: fortimanager.log.dste.uid
       ignore_missing: true
   - rename:
+      tag: rename__temp_id_to_fortimanager_log_event_id_0e020bc6
       field: _temp.id
       target_field: fortimanager.log.event.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_event_type_to_fortimanager_log_event_type_32df04b5
       field: _temp.event_type
       target_field: fortimanager.log.event.type
       ignore_missing: true
   - set:
+      tag: set_event_id_cc760d10
       field: event.id
       copy_from: fortimanager.log.event.id
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_userid_to_fortimanager_log_user_id_163a612e
       field: _temp.userid
       target_field: fortimanager.log.user.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_user_to_fortimanager_log_user_name_e16f2fc3
       field: _temp.user
       target_field: fortimanager.log.user.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_user_type_to_fortimanager_log_user_type_4d030b7b
       field: _temp.user_type
       target_field: fortimanager.log.user.type
       ignore_missing: true
   - rename:
+      tag: rename__temp_userfrom_to_fortimanager_log_user_from_33519492
       field: _temp.userfrom
       target_field: fortimanager.log.user.from
       ignore_missing: true
   - set:
+      tag: set_user_name_f1afb3f2
       field: user.name
       copy_from: fortimanager.log.user.name
       ignore_empty_value: true
   - set:
+      tag: set_user_id_10fbfb46
       field: user.id
       copy_from: fortimanager.log.user.id
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_dmstate_to_fortimanager_log_dm_state_146325cd
       field: _temp.dmstate
       target_field: fortimanager.log.dm_state
       ignore_missing: true
   - rename:
+      tag: rename__temp_dvid_to_fortimanager_log_dvid_7a64e4cc
       field: _temp.dvid
       target_field: fortimanager.log.dvid
       ignore_missing: true
   - rename:
+      tag: rename__temp_dvmdb_obj_to_fortimanager_log_dvmdb_obj_317c6b6a
       field: _temp.dvmdb_obj
       target_field: fortimanager.log.dvmdb_obj
       ignore_missing: true
   - rename:
+      tag: rename__temp_fips_err_to_fortimanager_log_fips_err_a0904599
       field: _temp.fips_err
       target_field: fortimanager.log.fips.err
       ignore_missing: true
   - rename:
+      tag: rename__temp_fips_method_to_fortimanager_log_fips_method_81a0d477
       field: _temp.fips_method
       target_field: fortimanager.log.fips.method
       ignore_missing: true
@@ -199,13 +235,16 @@ processors:
       if: ctx._temp?.module != ''
       on_failure:
         - append:
+            tag: append_error_message_776eeb14
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_metafield_to_fortimanager_log_meta_field_name_e50e3112
       field: _temp.metafield
       target_field: fortimanager.log.meta_field.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_metafield_stat_to_fortimanager_log_meta_field_stat_08a4b1ba
       field: _temp.metafield_stat
       target_field: fortimanager.log.meta_field.stat
       ignore_missing: true
@@ -218,17 +257,21 @@ processors:
       if: ctx._temp?.metafield_leng != ''
       on_failure:
         - append:
+            tag: append_error_message_28623f34
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_pkg_to_fortimanager_log_pkg_name_93026ff1
       field: _temp.pkg
       target_field: fortimanager.log.pkg.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_pkgadom_to_fortimanager_log_pkg_adom_d63658ce
       field: _temp.pkgadom
       target_field: fortimanager.log.pkg.adom
       ignore_missing: true
   - rename:
+      tag: rename__temp_pkgname_to_fortimanager_log_pkg_name_b38a6532
       field: _temp.pkgname
       target_field: fortimanager.log.pkg.name
       ignore_missing: true
@@ -241,29 +284,36 @@ processors:
       if: ctx._temp?.pkg_oid != ''
       on_failure:
         - append:
+            tag: append_error_message_141d94b3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_ppkgname_to_fortimanager_log_pkg_gname_203419fb
       field: _temp.ppkgname
       target_field: fortimanager.log.pkg.gname
       ignore_missing: true
   - rename:
+      tag: rename__temp_vd_to_fortimanager_log_vdom_6acbac72
       field: _temp.vd
       target_field: fortimanager.log.vdom
       ignore_missing: true
   - rename:
+      tag: rename__temp_adminprof_to_fortimanager_log_admin_prof_e3699f87
       field: _temp.adminprof
       target_field: fortimanager.log.admin_prof
       ignore_missing: true
   - rename:
+      tag: rename__temp_oper_stat_to_fortimanager_log_operstat_2a06f12f
       field: _temp.oper_stat
       target_field: fortimanager.log.operstat
       ignore_missing: true
   - rename:
+      tag: rename__temp_uploading_oper_to_fortimanager_log_uploading_oper_e5bc745f
       field: _temp.uploading_oper
       target_field: fortimanager.log.uploading.oper
       ignore_missing: true
   - rename:
+      tag: rename__temp_uploading_server_type_to_fortimanager_log_uploading_server_type_9f03a639
       field: _temp.uploading_server_type
       target_field: fortimanager.log.uploading.server_type
       ignore_missing: true
@@ -276,6 +326,7 @@ processors:
       if: ctx._temp?.uploading_pid != ''
       on_failure:
         - append:
+            tag: append_error_message_5b2e1b37
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -287,6 +338,7 @@ processors:
       if: ctx._temp?.uploading_cur_number != ''
       on_failure:
         - append:
+            tag: append_error_message_81112bf1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -298,13 +350,16 @@ processors:
       if: ctx._temp?.uploading_max_allowed != ''
       on_failure:
         - append:
+            tag: append_error_message_cd1a9e43
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_adom_to_fortimanager_log_adom_name_9bdbb657
       field: _temp.adom
       target_field: fortimanager.log.adom.name
       ignore_missing: true
   - set:
+      tag: set_user_domain_dcca61c9
       field: user.domain
       copy_from: fortimanager.log.adom.name
       ignore_empty_value: true
@@ -317,21 +372,26 @@ processors:
       if: ctx._temp?.adom_oid != ''
       on_failure:
         - append:
+            tag: append_error_message_f90fd175
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_adomlock_to_fortimanager_log_adom_lock_92abd4fe
       field: _temp.adomlock
       target_field: fortimanager.log.adom.lock
       ignore_missing: true
   - rename:
+      tag: rename__temp_dbstatus_to_fortimanager_log_db_status_1d6d5184
       field: _temp.dbstatus
       target_field: fortimanager.log.db.status
       ignore_missing: true
   - rename:
+      tag: rename__temp_disk_stat_before_to_fortimanager_log_disk_status_before_6da8f40c
       field: _temp.disk_stat_before
       target_field: fortimanager.log.disk.status.before
       ignore_missing: true
   - rename:
+      tag: rename__temp_disk_stat_current_to_fortimanager_log_disk_status_current_9b47d0ac
       field: _temp.disk_stat_current
       target_field: fortimanager.log.disk.status.current
       ignore_missing: true
@@ -344,89 +404,111 @@ processors:
       if: ctx._temp?.disk_label != ''
       on_failure:
         - append:
+            tag: append_error_message_71ef2f4b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_log_id_to_fortimanager_log_id_89bfcd0f
       field: _temp.log_id
       target_field: fortimanager.log.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_peer_to_fortimanager_log_peer_e2dcbab2
       field: _temp.peer
       target_field: fortimanager.log.peer
       ignore_missing: true
   - rename:
+      tag: rename__temp_performed_on_to_fortimanager_log_performed_on_e6b5840a
       field: _temp.performed_on
       target_field: fortimanager.log.performed_on
       ignore_missing: true
   - rename:
+      tag: rename__temp_log_path_to_fortimanager_log_path_f97e903b
       field: _temp.log_path
       target_field: fortimanager.log.path
       ignore_missing: true
   - rename:
+      tag: rename__temp_logdev_id_to_fortimanager_log_device_log_id_c75ddc61
       field: _temp.logdev_id
       target_field: fortimanager.log.device_log.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_logdev_last_logging_to_fortimanager_log_device_log_last_logging_c5925051
       field: _temp.logdev_last_logging
       target_field: fortimanager.log.device_log.last_logging
       ignore_missing: true
   - rename:
+      tag: rename__temp_logdev_name_to_fortimanager_log_device_log_name_39014d2d
       field: _temp.logdev_name
       target_field: fortimanager.log.device_log.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_logdev_offline_duration_to_fortimanager_log_device_log_offline_duration_176c8a9d
       field: _temp.logdev_offline_duration
       target_field: fortimanager.log.device_log.offline_duration
       ignore_missing: true
   - rename:
+      tag: rename__temp_package_to_fortimanager_log_package_name_c2f56ecd
       field: _temp.package
       target_field: fortimanager.log.package.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_package_desc_to_fortimanager_log_package_desc_8773affb
       field: _temp.package_desc
       target_field: fortimanager.log.package.desc
       ignore_missing: true
   - rename:
+      tag: rename__temp_package_type_to_fortimanager_log_package_type_476bf86d
       field: _temp.package_type
       target_field: fortimanager.log.package.type
       ignore_missing: true
   - rename:
+      tag: rename__temp_logid_to_fortimanager_log_id_1016c252
       field: _temp.logid
       target_field: fortimanager.log.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_pty_err_to_fortimanager_log_pty_err_ce716ea1
       field: _temp.pty_err
       target_field: fortimanager.log.pty.err
       ignore_missing: true
   - rename:
+      tag: rename__temp_pty_oper_to_fortimanager_log_pty_oper_767499df
       field: _temp.pty_oper
       target_field: fortimanager.log.pty.oper
       ignore_missing: true
   - rename:
+      tag: rename__temp_pty_sess_to_fortimanager_log_pty_sess_437c4b3b
       field: _temp.pty_sess
       target_field: fortimanager.log.pty.sess
       ignore_missing: true
   - rename:
+      tag: rename__temp_pty_step_to_fortimanager_log_pty_step_2aa6849f
       field: _temp.pty_step
       target_field: fortimanager.log.pty.step
       ignore_missing: true
   - rename:
+      tag: rename__temp_raid_stat_before_to_fortimanager_log_raid_state_before_584d14c2
       field: _temp.raid_stat_before
       target_field: fortimanager.log.raid_state.before
       ignore_missing: true
   - rename:
+      tag: rename__temp_raid_stat_current_to_fortimanager_log_raid_state_current_eea04798
       field: _temp.raid_stat_current
       target_field: fortimanager.log.raid_state.current
       ignore_missing: true
   - rename:
+      tag: rename__temp_remote_filename_to_fortimanager_log_remote_filename_32f59a07
       field: _temp.remote_filename
       target_field: fortimanager.log.remote.filename
       ignore_missing: true
   - rename:
+      tag: rename__temp_remote_host_to_fortimanager_log_remote_host_e1d0a787
       field: _temp.remote_host
       target_field: fortimanager.log.remote.host
       ignore_missing: true
   - rename:
+      tag: rename__temp_remote_path_to_fortimanager_log_remote_path_2123dddb
       field: _temp.remote_path
       target_field: fortimanager.log.remote.path
       ignore_missing: true
@@ -439,14 +521,17 @@ processors:
       if: ctx._temp?.remote_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_b6a8ed39
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_ce53e544
       field: related.ip
       value: '{{{fortimanager.log.remote.ip}}}'
       if: ctx._temp?.remote?.ip != null
       allow_duplicates: false
   - set:
+      tag: set_source_ip_78e33e51
       field: source.ip
       copy_from: fortimanager.log.remote.ip
       ignore_empty_value: true
@@ -459,49 +544,61 @@ processors:
       if: ctx._temp?.remote_port != ''
       on_failure:
         - append:
+            tag: append_error_message_0853f12d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_port_2aa16f31
       field: source.port
       copy_from: fortimanager.log.remote.port
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_sensor_name_to_fortimanager_log_sensor_name_f0fdeb53
       field: _temp.sensor_name
       target_field: fortimanager.log.sensor.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_sensor_st_to_fortimanager_log_sensor_st_59601413
       field: _temp.sensor_st
       target_field: fortimanager.log.sensor.st
       ignore_missing: true
   - rename:
+      tag: rename__temp_sensor_val_to_fortimanager_log_sensor_val_366e50e1
       field: _temp.sensor_val
       target_field: fortimanager.log.sensor.val
       ignore_missing: true
   - rename:
+      tag: rename__temp_upgrade_adom_to_fortimanager_log_upgrade_adom_14f5ec5f
       field: _temp.upgrade_adom
       target_field: fortimanager.log.upgrade.adom
       ignore_missing: true
   - rename:
+      tag: rename__temp_upgrade_from_to_fortimanager_log_upgrade_from_23039871
       field: _temp.upgrade_from
       target_field: fortimanager.log.upgrade.from
       ignore_missing: true
   - rename:
+      tag: rename__temp_upgrade_to_to_fortimanager_log_upgrade_to_bca638b3
       field: _temp.upgrade_to
       target_field: fortimanager.log.upgrade.to
       ignore_missing: true
   - rename:
+      tag: rename__temp_runfrom_to_fortimanager_log_run_from_1092f471
       field: _temp.runfrom
       target_field: fortimanager.log.run_from
       ignore_missing: true
   - rename:
+      tag: rename__temp_devname_to_fortimanager_log_dev_name_f8bd7326
       field: _temp.devname
       target_field: fortimanager.log.dev.name
       ignore_missing: true
   - set:
+      tag: set_host_hostname_c61492f5
       field: host.hostname
       copy_from: fortimanager.log.dev.name
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_devid_to_fortimanager_log_dev_id_172e9e26
       field: _temp.devid
       target_field: fortimanager.log.dev.id
       ignore_missing: true
@@ -514,13 +611,16 @@ processors:
       if: ctx._temp?.dev_oid != ''
       on_failure:
         - append:
+            tag: append_error_message_c6d98517
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_devlog_to_fortimanager_log_dev_log_bc47b43a
       field: _temp.devlog
       target_field: fortimanager.log.dev.log
       ignore_missing: true
   - rename:
+      tag: rename__temp_devgrps_to_fortimanager_log_dev_grps_7925fb58
       field: _temp.devgrps
       target_field: fortimanager.log.dev.grps
       ignore_missing: true
@@ -533,6 +633,7 @@ processors:
       if: ctx._temp?.session_id != ''
       on_failure:
         - append:
+            tag: append_error_message_d6ceeea2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -544,6 +645,7 @@ processors:
       if: ctx._temp?.revision != ''
       on_failure:
         - append:
+            tag: append_error_message_63c539dc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -555,6 +657,7 @@ processors:
       if: ctx._temp?.setup != ''
       on_failure:
         - append:
+            tag: append_error_message_ccad515c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -566,6 +669,7 @@ processors:
       if: ctx._temp?.valid != ''
       on_failure:
         - append:
+            tag: append_error_message_cfa73528
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -577,6 +681,7 @@ processors:
       if: ctx._temp?.rate != ''
       on_failure:
         - append:
+            tag: append_error_message_0a6d5014
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -588,6 +693,7 @@ processors:
       if: ctx._temp?.logratelimit != ''
       on_failure:
         - append:
+            tag: append_error_message_b8eae793
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -599,6 +705,7 @@ processors:
       if: ctx._temp?.logratepeak != ''
       on_failure:
         - append:
+            tag: append_error_message_dd369bbd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -610,46 +717,57 @@ processors:
       if: ctx._temp?.memusage != ''
       on_failure:
         - append:
+            tag: append_error_message_d31e06d7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_device_to_fortimanager_log_device_name_f9b0aa85
       field: _temp.device
       target_field: fortimanager.log.device.name
       ignore_missing: true
   - set:
+      tag: set_observer_name_7f80cb7e
       field: observer.name
       copy_from: fortimanager.log.device.name
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_device_id_to_fortimanager_log_device_id_cdcc4c67
       field: _temp.device_id
       target_field: fortimanager.log.device.id
       ignore_missing: true
   - set:
+      tag: set_device_id_dca5453a
       field: device.id
       copy_from: fortimanager.log.device.id
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_action_to_fortimanager_log_action_3335dfde
       field: _temp.action
       target_field: fortimanager.log.action
       ignore_missing: true
   - set:
+      tag: set_event_action_79378658
       field: event.action
       copy_from: fortimanager.log.action
       ignore_empty_value: true
   - set:
+      tag: set_event_timezone_85841de5
       field: event.timezone
       copy_from: _temp.tz
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_ca923905
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
   - rename:
+      tag: rename__temp_msg_to_fortimanager_log_msg_1c77d2fa
       field: _temp.msg
       target_field: fortimanager.log.msg
       ignore_missing: true
   - set:
+      tag: set_message_4a89d190
       field: message
       copy_from: fortimanager.log.msg
       ignore_empty_value: true
@@ -662,13 +780,16 @@ processors:
       if: ctx._temp?.pid != ''
       on_failure:
         - append:
+            tag: append_error_message_909c7df8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_pid_f5a88df7
       field: process.pid
       copy_from: fortimanager.log.pid
       ignore_empty_value: true
   - script:
+      tag: script_3e7401ef
       lang: painless
       description: Combines date, time, and timezone fields together.
       source: >-
@@ -683,6 +804,7 @@ processors:
       if: ctx._temp?.date != null && ctx._temp.date != ''
       on_failure:
         - append:
+            tag: append_error_message_67f51193
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -694,117 +816,146 @@ processors:
       if: ctx._temp?.date != null && ctx._temp.date != ''
       on_failure:
         - append:
+            tag: append_error_message_2f1fe3ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_extrainfo_to_fortimanager_log_extra_info_30ed9ebd
       field: _temp.extrainfo
       target_field: fortimanager.log.extra_info
       ignore_missing: true
   - rename:
+      tag: rename__temp_newname_to_fortimanager_log_new_name_a15f039e
       field: _temp.newname
       target_field: fortimanager.log.new.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_new_version_to_fortimanager_log_new_version_e829b779
       field: _temp.new_version
       target_field: fortimanager.log.new.version
       ignore_missing: true
   - rename:
+      tag: rename__temp_new_value_to_fortimanager_log_new_value_cdb48e39
       field: _temp.new_value
       target_field: fortimanager.log.new.value
       ignore_missing: true
   - rename:
+      tag: rename__temp_instpkg_to_fortimanager_log_inst_pkg_8171e9ac
       field: _temp.instpkg
       target_field: fortimanager.log.inst.pkg
       ignore_missing: true
   - rename:
+      tag: rename__temp_inst_dev_to_fortimanager_log_inst_dev_873e9895
       field: _temp.inst_dev
       target_field: fortimanager.log.inst.dev
       ignore_missing: true
   - rename:
+      tag: rename__temp_inst_adom_to_fortimanager_log_inst_adom_ca91765f
       field: _temp.inst_adom
       target_field: fortimanager.log.inst.adom
       ignore_missing: true
   - rename:
+      tag: rename__temp_certname_to_fortimanager_log_cert_name_013c122c
       field: _temp.certname
       target_field: fortimanager.log.cert.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_certtype_to_fortimanager_log_cert_type_2b2e55d4
       field: _temp.certtype
       target_field: fortimanager.log.cert.type
       ignore_missing: true
   - rename:
+      tag: rename__temp_attrname_to_fortimanager_log_attribute_name_a5541390
       field: _temp.attrname
       target_field: fortimanager.log.attribute_name
       ignore_missing: true
   - rename:
+      tag: rename__temp_authmsg_to_fortimanager_log_auth_msg_db5e9601
       field: _temp.authmsg
       target_field: fortimanager.log.auth_msg
       ignore_missing: true
   - rename:
+      tag: rename__temp_object_to_fortimanager_log_object_6b4a27f8
       field: _temp.object
       target_field: fortimanager.log.object
       ignore_missing: true
   - rename:
+      tag: rename__temp_offline_stat_to_fortimanager_log_offline_stat_0f862662
       field: _temp.offline_stat
       target_field: fortimanager.log.offline_stat
       ignore_missing: true
   - rename:
+      tag: rename__temp_old_value_to_fortimanager_log_old_value_3dbf2b46
       field: _temp.old_value
       target_field: fortimanager.log.old_value
       ignore_missing: true
   - rename:
+      tag: rename__temp_pre_version_to_fortimanager_log_pre_version_19cc1f4a
       field: _temp.pre_version
       target_field: fortimanager.log.pre_version
       ignore_missing: true
   - rename:
+      tag: rename__temp_operation_to_fortimanager_log_operation_49d6c27e
       field: _temp.operation
       target_field: fortimanager.log.operation
       ignore_missing: true
   - rename:
+      tag: rename__temp_objattr_to_fortimanager_log_obj_attr_7f16c0c2
       field: _temp.objattr
       target_field: fortimanager.log.obj.attr
       ignore_missing: true
   - rename:
+      tag: rename__temp_objname_to_fortimanager_log_obj_name_0ff1e5d2
       field: _temp.objname
       target_field: fortimanager.log.obj.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_objtype_to_fortimanager_log_obj_type_ac245dd4
       field: _temp.objtype
       target_field: fortimanager.log.obj.type
       ignore_missing: true
   - rename:
+      tag: rename__temp_path_to_fortimanager_log_obj_path_a5467d67
       field: _temp.path
       target_field: fortimanager.log.obj.path
       ignore_missing: true
   - rename:
+      tag: rename__temp_level_to_fortimanager_log_level_28444a22
       field: _temp.level
       target_field: fortimanager.log.level
       ignore_missing: true
   - set:
+      tag: set_log_level_7f0b6a32
       field: log.level
       copy_from: fortimanager.log.level
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_file_to_fortimanager_log_file_2d332cde
       field: _temp.file
       target_field: fortimanager.log.file
       ignore_missing: true
   - set:
+      tag: set_file_name_771a82d9
       field: file.name
       copy_from: fortimanager.log.file
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_confstatus_to_fortimanager_log_conf_status_773aaeb5
       field: _temp.confstatus
       target_field: fortimanager.log.conf_status
       ignore_missing: true
   - rename:
+      tag: rename__temp_constmsg_to_fortimanager_log_const_msg_8cc0cfd1
       field: _temp.constmsg
       target_field: fortimanager.log.const_msg
       ignore_missing: true
   - rename:
+      tag: rename__temp_euid_to_fortimanager_log_euid_ecc91c3c
       field: _temp.euid
       target_field: fortimanager.log.euid
       ignore_missing: true
   - rename:
+      tag: rename__temp_error_to_fortimanager_log_error_1041cebe
       field: _temp.error
       target_field: fortimanager.log.error
       ignore_missing: true
@@ -817,161 +968,176 @@ processors:
       if: ctx._temp?.errcode != ''
       on_failure:
         - append:
+            tag: append_error_message_48f204cb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_error_code_1f3fbc74
       field: error.code
       copy_from: fortimanager.log.err_code
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_connect_status_to_fortimanager_log_connect_status_c24239e4
       field: _temp.connect_status
       target_field: fortimanager.log.connect_status
       ignore_missing: true
   - rename:
+      tag: rename__temp_condition_to_fortimanager_log_condition_b151cc4e
       field: _temp.condition
       target_field: fortimanager.log.condition
       ignore_missing: true
   - rename:
+      tag: rename__temp_comment_to_fortimanager_log_comment_0aecce36
       field: _temp.comment
       target_field: fortimanager.log.comment
       ignore_missing: true
   - rename:
+      tag: rename__temp_cmd_from_to_fortimanager_log_cmd_from_e1b21590
       field: _temp.cmd_from
       target_field: fortimanager.log.cmd_from
       ignore_missing: true
   - rename:
+      tag: rename__temp_cli_act_to_fortimanager_log_cli_act_472b132e
       field: _temp.cli_act
       target_field: fortimanager.log.cli_act
       ignore_missing: true
   - rename:
+      tag: rename__temp_cause_to_fortimanager_log_cause_9bd04f62
       field: _temp.cause
       target_field: fortimanager.log.cause
       ignore_missing: true
   - rename:
+      tag: rename__temp_category_to_fortimanager_log_category_26e0ae32
       field: _temp.category
       target_field: fortimanager.log.category
       ignore_missing: true
   - rename:
+      tag: rename__temp_zip_path_to_fortimanager_log_zip_path_70406240
       field: _temp.zip_path
       target_field: fortimanager.log.zip_path
       ignore_missing: true
   - rename:
+       tag: rename__temp_whitelist_size_to_fortimanager_log_whitelist_size_14c6c360
        field: _temp.whitelist_size
        target_field: fortimanager.log.whitelist_size
        ignore_missing: true
   - rename:
-       field: _temp.zip_path
-       target_field: fortimanager.log.zip_path
-       ignore_missing: true
-  - rename:
+       tag: rename__temp_version_to_fortimanager_log_version_0541ac12
        field: _temp.version
        target_field: fortimanager.log.version
        ignore_missing: true
   - rename:
-       field: _temp.version
-       target_field: fortimanager.log.version
-       ignore_missing: true
-  - rename:
+       tag: rename__temp_vdoms_to_fortimanager_log_vdoms_8daf78c2
        field: _temp.vdoms
        target_field: fortimanager.log.vdoms
        ignore_missing: true
   - rename:
+       tag: rename__temp_vdom_to_fortimanager_log_vdom_492a7c02
        field: _temp.vdom
        target_field: fortimanager.log.vdom
        ignore_missing: true
   - rename:
+       tag: rename__temp_ustr_to_fortimanager_log_ustr_91d5f202
        field: _temp.ustr
        target_field: fortimanager.log.ustr
        ignore_missing: true
   - rename:
+       tag: rename__temp_type_to_fortimanager_log_type_2be45ae2
        field: _temp.type
        target_field: fortimanager.log.type
        ignore_missing: true
   - rename:
-       field: _temp.type
-       target_field: fortimanager.log.type
-       ignore_missing: true
-  - rename:
+       tag: rename__temp_url_to_fortimanager_log_url_cfaa73ba
        field: _temp.url
        target_field: fortimanager.log.url
        ignore_missing: true
   - rename:
+       tag: rename__temp_upg_act_to_fortimanager_log_upg_act_ca1e9dee
        field: _temp.upg_act
        target_field: fortimanager.log.upg_act
        ignore_missing: true
   - rename:
+       tag: rename__temp_uid_to_fortimanager_log_uid_856f1896
        field: _temp.uid
        target_field: fortimanager.log.uid
        ignore_missing: true
   - rename:
+       tag: rename__temp_upddb_ver_to_fortimanager_log_upddb_ver_ee7f8dda
        field: _temp.upddb_ver
        target_field: fortimanager.log.upddb_ver
        ignore_missing: true
   - rename:
+       tag: rename__temp_to_version_to_fortimanager_log_to_version_e1fe6746
        field: _temp.to_version
        target_field: fortimanager.log.to_version
        ignore_missing: true
   - rename:
+       tag: rename__temp_to_release_to_fortimanager_log_to_release_26e23174
        field: _temp.to_release
        target_field: fortimanager.log.to_release
        ignore_missing: true
   - rename:
+       tag: rename__temp_title_to_fortimanager_log_title_e36c6bce
        field: _temp.title
        target_field: fortimanager.log.title
        ignore_missing: true
   - rename:
-       field: _temp.title
-       target_field: fortimanager.log.title
-       ignore_missing: true
-  - rename:
+       tag: rename__temp_sw_version_to_fortimanager_log_sw_version_67311968
        field: _temp.sw_version
        target_field: fortimanager.log.sw_version
        ignore_missing: true
   - rename:
+       tag: rename__temp_subtype_to_fortimanager_log_subtype_36bf99ae
        field: _temp.subtype
        target_field: fortimanager.log.subtype
        ignore_missing: true
   - rename:
+       tag: rename__temp_status_to_fortimanager_log_status_917bb32a
        field: _temp.status
        target_field: fortimanager.log.status
        ignore_missing: true
   - rename:
+       tag: rename__temp_state_to_fortimanager_log_state_0a94e36e
        field: _temp.state
        target_field: fortimanager.log.state
        ignore_missing: true
   - rename:
+       tag: rename__temp_shutdown_reason_to_fortimanager_log_shutdown_reason_df162872
        field: _temp.shutdown_reason
        target_field: fortimanager.log.shutdown_reason
        ignore_missing: true
   - rename:
-       field: _temp.state
-       target_field: fortimanager.log.state
-       ignore_missing: true
-  - rename:
+       tag: rename__temp_service_to_fortimanager_log_service_df95468e
        field: _temp.service
        target_field: fortimanager.log.service
        ignore_missing: true
   - rename:
+       tag: rename__temp_serial_to_fortimanager_log_serial_f1e966a2
        field: _temp.serial
        target_field: fortimanager.log.serial
        ignore_missing: true
   - rename:
+       tag: rename__temp_script_to_fortimanager_log_script_898e8e5c
        field: _temp.script
        target_field: fortimanager.log.script
        ignore_missing: true
   - rename:
+       tag: rename__temp_rundb_ver_to_fortimanager_log_rundb_ver_9f174d12
        field: _temp.rundb_ver
        target_field: fortimanager.log.rundb_ver
        ignore_missing: true
   - rename:
+       tag: rename__temp_result_to_fortimanager_log_result_50021d48
        field: _temp.result
        target_field: fortimanager.log.result
        ignore_missing: true
   - rename:
+      tag: rename__temp_reboot_reason_to_fortimanager_log_reboot_reason_6ce329a2
       field: _temp.reboot_reason
       target_field: fortimanager.log.reboot_reason
       ignore_missing: true
   - rename:
+      tag: rename__temp_protocol_to_fortimanager_log_protocol_60ff314a
       field: _temp.protocol
       target_field: fortimanager.log.protocol
       ignore_missing: true
@@ -984,17 +1150,21 @@ processors:
       if: ctx._temp?.srcip != ''
       on_failure:
         - append:
+            tag: append_error_message_c0e99428
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_ip_85ff9577
       field: source.ip
       copy_from: fortimanager.log.srcip
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_srcname_to_fortimanager_log_srcname_b58cd27e
       field: _temp.srcname
       target_field: fortimanager.log.srcname
       ignore_missing: true
   - set:
+      tag: set_source_address_4e544c26
       field: source.address
       copy_from: fortimanager.log.srcname
       ignore_empty_value: true
@@ -1007,9 +1177,11 @@ processors:
       if: ctx._temp?.srcport != ''
       on_failure:
         - append:
+            tag: append_error_message_2af06185
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_port_3089d4c7
       field: source.port
       copy_from: fortimanager.log.srcport
       ignore_empty_value: true
@@ -1022,33 +1194,41 @@ processors:
       if: ctx._temp?.dstip != ''
       on_failure:
         - append:
+            tag: append_error_message_3f856bdc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_destination_ip_68c319b5
       field: destination.ip
       copy_from: fortimanager.log.dstip
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_dstname_to_fortimanager_log_dstname_1617ef22
       field: _temp.dstname
       target_field: fortimanager.log.dstname
       ignore_missing: true
   - set:
+      tag: set_destination_address_70335e80
       field: destination.address
       copy_from: fortimanager.log.dstname
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_dstcountry_to_fortimanager_log_dstcountry_21dbef08
       field: _temp.dstcountry
       target_field: fortimanager.log.dstcountry
       ignore_missing: true
   - set:
+      tag: set_destination_geo_country_name_61d4381c
       field: destination.geo.country_name
       copy_from: fortimanager.log.dstcountry
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_unauthuser_to_fortimanager_log_unauthuser_67b40726
       field: _temp.unauthuser
       target_field: fortimanager.log.unauthuser
       ignore_missing: true
   - set:
+      tag: set_user_name_4390f24c
       field: user.name
       copy_from: fortimanager.log.unauthuser
       ignore_empty_value: true
@@ -1061,9 +1241,11 @@ processors:
       if: ctx._temp?.sentbyte != ''
       on_failure:
         - append:
+            tag: append_error_message_b21f8b03
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_bytes_df8989a6
       field: source.bytes
       copy_from: fortimanager.log.sentbyte
       ignore_empty_value: true
@@ -1076,41 +1258,51 @@ processors:
       if: ctx._temp?.rcvdbyte != ''
       on_failure:
         - append:
+            tag: append_error_message_d1950c8f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_destination_bytes_f80b7804
       field: destination.bytes
       copy_from: fortimanager.log.rcvdbyte
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_osname_to_fortimanager_log_osname_52f0e284
       field: _temp.osname
       target_field: fortimanager.log.osname
       ignore_missing: true
   - set:
+      tag: set_os_name_ea7f6724
       field: os.name
       copy_from: fortimanager.log.osname
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_direction_to_fortimanager_log_direction_f9cebeea
       field: _temp.direction
       target_field: fortimanager.log.direction
       ignore_missing: true
   - set:
+      tag: set_network_direction_77083bde
       field: network.direction
       copy_from: fortimanager.log.direction
       ignore_empty_value: true
   - set:
+      tag: set_network_direction_cd0a6b2a
       field: network.direction
       value: inbound
       if: ctx.network?.direction == "incoming"
   - set:
+      tag: set_network_direction_a3958939
       field: network.direction
       value: outbound
       if: ctx.network?.direction == "outgoing"
   - rename:
+      tag: rename__temp_crlevel_to_fortimanager_log_crlevel_b1ad410a
       field: _temp.crlevel
       target_field: fortimanager.log.crlevel
       ignore_missing: true
   - set:
+      tag: set_risk_static_level_9d9bbe3d
       field: risk.static_level
       copy_from: fortimanager.log.crlevel
       ignore_empty_value: true
@@ -1123,29 +1315,36 @@ processors:
       if: ctx._temp?.crscore != ''
       on_failure:
         - append:
+            tag: append_error_message_a7e4bb01
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_risk_static_score_norm_5cd21b42
       field: risk.static_score_norm
       copy_from: fortimanager.log.crscore
       ignore_empty_value: true
   - rename:
+      tag: rename__temp_apprisk_to_fortimanager_log_apprisk_1ee434a2
       field: _temp.apprisk
       target_field: fortimanager.log.apprisk
       ignore_missing: true
   - rename:
+      tag: rename__temp_appcat_to_fortimanager_log_appcat_04c5a1d4
       field: _temp.appcat
       target_field: fortimanager.log.appcat
       ignore_missing: true
   - set:
+      tag: set_rule_category_a59da295
       field: rule.category
       copy_from: fortimanager.log.appcat
       ignore_empty_value: true
   - set:
+      tag: set_network_transport_d4ba446d
       field: network.transport
       copy_from: fortimanager.log.protocol
       ignore_empty_value: true
   - lowercase:
+      tag: lowercase_network_transport_bc8c1c12
       field: network.transport
       ignore_missing: true
   - convert:
@@ -1157,29 +1356,35 @@ processors:
       if: ctx._temp?.address != ''
       on_failure:
         - append:
+            tag: append_error_message_79589d10
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_3e9017fb
       field: related.ip
       value: '{{{fortimanager.log.address}}}'
       if: ctx._temp?.address != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_45d9c089
       field: related.user
       value: '{{{user.domain}}}'
       if: ctx.user?.domain != null
       allow_duplicates: false
   - set:
+      tag: set_observer_serial_number_08e7f996
       field: observer.serial_number
       copy_from: fortimanager.log.serial
       ignore_empty_value: true
@@ -1193,9 +1398,11 @@ processors:
       if: ctx._temp?.end_time != null && ctx._temp.end_time != ''
       on_failure:
         - append:
+            tag: append_error_message_85b54cfc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_end_5548ecd6
       field: event.end
       copy_from: fortimanager.log.end_time
       ignore_empty_value: true
@@ -1208,9 +1415,11 @@ processors:
       if: ctx._temp?.start_time != null && ctx._temp.start_time != ''
       on_failure:
         - append:
+            tag: append_error_message_a809298b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_start_f496f724
       field: event.start
       copy_from: fortimanager.log.start_time
       ignore_empty_value: true
@@ -1224,6 +1433,7 @@ processors:
       if: ctx._temp?.itime != null && ctx._temp.itime != ''
       on_failure:
         - append:
+            tag: append_error_message_a9a6fa5b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1235,6 +1445,7 @@ processors:
       if: ctx._temp?.use_mb != ''
       on_failure:
         - append:
+            tag: append_error_message_3668a682
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1247,17 +1458,21 @@ processors:
       if: ctx._temp?.expiration != null && ctx._temp.expiration != ''
       on_failure:
         - append:
+            tag: append_error_message_169f4fe2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename__temp_lickey_type_to_fortimanager_log_lickey_type_7ee3ba62
       field: _temp.lickey_type
       target_field: fortimanager.log.lickey_type
       ignore_missing: true
   - rename:
+      tag: rename__temp_lnk_path_to_fortimanager_log_lnk_path_30db1c58
       field: _temp.lnk_path
       target_field: fortimanager.log.lnk_path
       ignore_missing: true
   - rename:
+      tag: rename__temp_local_file_to_fortimanager_log_local_file_b3c02eea
       field: _temp.local_file
       target_field: fortimanager.log.local_file
       ignore_missing: true
@@ -1270,6 +1485,7 @@ processors:
       if: ctx._temp?.license_type != ''
       on_failure:
         - append:
+            tag: append_error_message_516174f0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1281,6 +1497,7 @@ processors:
       if: ctx._temp?.quota != ''
       on_failure:
         - append:
+            tag: append_error_message_e7bf35a8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1292,6 +1509,7 @@ processors:
       if: ctx._temp?.percent != ''
       on_failure:
         - append:
+            tag: append_error_message_2cc5a80c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1303,6 +1521,7 @@ processors:
       if: ctx._temp?.capacity != ''
       on_failure:
         - append:
+            tag: append_error_message_57fa0b60
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1314,6 +1533,7 @@ processors:
       if: ctx._temp?.cpuusage != ''
       on_failure:
         - append:
+            tag: append_error_message_b75588c3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1325,6 +1545,7 @@ processors:
       if: ctx._temp?.lograte != ''
       on_failure:
         - append:
+            tag: append_error_message_be7607f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1336,6 +1557,7 @@ processors:
       if: ctx._temp?.log_size != ''
       on_failure:
         - append:
+            tag: append_error_message_ae05d3ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1347,6 +1569,7 @@ processors:
       if: ctx._temp?.max_mb != ''
       on_failure:
         - append:
+            tag: append_error_message_5aa0e9a0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1358,6 +1581,7 @@ processors:
       if: ctx._temp?.msgrate != ''
       on_failure:
         - append:
+            tag: append_error_message_21df3d77
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1369,6 +1593,7 @@ processors:
       if: ctx._temp?.rolling_cur_number != ''
       on_failure:
         - append:
+            tag: append_error_message_a1cf0f85
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1380,6 +1605,7 @@ processors:
       if: ctx._temp?.rolling_max_allowed != ''
       on_failure:
         - append:
+            tag: append_error_message_e208b727
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1391,9 +1617,11 @@ processors:
       if: ctx._temp?.to_build != ''
       on_failure:
         - append:
+            tag: append_error_message_b264d914
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_eec1c3ae
       if: "ctx.fortimanager?.log?.subtype != null"
       lang: painless
       description: Adding data to the product field on the basis of event subtype.
@@ -1407,12 +1635,14 @@ processors:
           ctx.fortimanager.log.product = "fortianalyzer";
         }
   - remove:
+      tag: remove_623dc767
       field:
         - temp
         - _temp
         - syslog5424_sd
       ignore_missing: true
   - remove:
+      tag: remove_3460c02f
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - fortimanager.log.action
@@ -1450,6 +1680,7 @@ processors:
         - fortimanager.log.user.name
       ignore_missing: true
   - script:
+      tag: script_06971239
       lang: painless
       source: |-
         boolean drop(Object object) {
@@ -1467,13 +1698,28 @@ processors:
         drop(ctx);
       description: Drops null/empty values recursively.
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
