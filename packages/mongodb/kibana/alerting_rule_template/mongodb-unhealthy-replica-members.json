@@ -15,7 +15,7 @@
             "timeWindowSize": 5,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert when replica sets report unhealthy members during the window.\n// Groups by data_stream.namespace and set name for clarity.\nFROM metrics-mongodb.replstatus-*\n| WHERE @timestamp >= NOW() - 5 MINUTES\n| STATS unhealthy_members=MAX(mongodb.replstatus.members.unhealthy.count) BY data_stream.namespace, mongodb.replstatus.set_name\n| WHERE unhealthy_members > 0"
+                "esql": "// Alert when replica sets report unhealthy members during the window.\n// Groups by data_stream.namespace and set name for clarity.\nFROM metrics-mongodb.replstatus-*\n| STATS unhealthy_members=MAX(mongodb.replstatus.members.unhealthy.count) BY data_stream.namespace, mongodb.replstatus.set_name\n| WHERE unhealthy_members > 0"
             },
             "groupBy": "row",
             "termSize": 5,
