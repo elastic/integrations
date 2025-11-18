@@ -10,6 +10,9 @@ receivers:
 {{#if enable_traces }}
 processors:
   elasticapm: {}
+
+connectors:
+  elasticapm: {}
 {{/if}}
 
 service:
@@ -28,4 +31,9 @@ service:
       traces:
         receivers: [otlp]
         processors: [elasticapm]
+        exporters: [elasticapm]
+
+      metrics/aggregated-metrics:
+        receivers: [elasticapm]
+        processors: []
     {{/if}}
