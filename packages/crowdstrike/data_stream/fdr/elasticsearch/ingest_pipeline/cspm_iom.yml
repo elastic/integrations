@@ -199,7 +199,7 @@ processors:
       tag: rename_policy_statement_to_message
       target_field: message
       ignore_missing: true
-  # CloudSecurityIOMEvaluation events contains ruleName
+  # CloudSecurityIOMEvaluation events use `ruleName`
   - set:
       field: message
       tag: set_message_from_crowdstrike_ruleName
@@ -253,7 +253,7 @@ processors:
       value: '{{{crowdstrike.threat.technique.reference}}}'
       if: ctx.crowdstrike?.threat?.technique?.reference != null
       allow_duplicates: false
-  # CloudSecurityIOMEvaluation contains resource.cloudProvider, other contains cloudplatform
+  # CloudSecurityIOMEvaluation events use `resource.cloudProvider`, IOM events use `cloudplatform`
   - rename:
       field: crowdstrike.cloudplatform
       tag: rename_cloudplatform
@@ -265,7 +265,7 @@ processors:
       target_field: cloud.provider
       if: ctx.cloud?.provider == null
       ignore_missing: true
-  # CloudSecurityIOMEvaluation contains ruleId, other contains policy_id
+  # CloudSecurityIOMEvaluation events use `ruleId`, IOM events use `policy_id`
   - rename:
       field: crowdstrike.policy_id
       tag: rename_policy_id
@@ -288,7 +288,7 @@ processors:
       tag: rename_CloudService
       target_field: cloud.service.name
       ignore_missing: true
-  # CloudSecurityIOMEvaluation contains resource.accountId, other contains AccountId
+  # CloudSecurityIOMEvaluation events use `resource.accountId`, IOM events use `AccountId`
   - rename:
       field: crowdstrike.AccountId
       tag: rename_AccountId
@@ -300,7 +300,7 @@ processors:
       target_field: cloud.account.id
       if: ctx.cloud?.account?.id == null
       ignore_missing: true
-  # CloudSecurityIOMEvaluation contains resource.region, other contains region
+  # CloudSecurityIOMEvaluation events use `resource.region`, IOM events use `region`
   - rename:
       field: crowdstrike.region
       tag: rename_crowdstrike_region
@@ -313,7 +313,7 @@ processors:
       if: ctx.cloud?.region == null
       ignore_missing: true
   # Override severity set in default.yml
-  # as Cloud Security has a different range.
+  # as cloud security events use a different severity range.
   - script:
       lang: painless
       tag: set_severity_name_from_crowdstrike_Severity
@@ -345,7 +345,6 @@ processors:
           ctx.event.severity = 99;
         }
 
-  # General processing
   - script:
       tag: parse_all_benchmark_ids_to_list
       description: Parse all benchmark IDs and create a list.
