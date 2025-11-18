@@ -56,6 +56,112 @@ program: |
         "first": state.page_size,
         "orderBy": "modified",
         "orderMode": "asc",
+        "filters": {
+          "mode": "and",
+          "filters": (
+            // Define all possible filters with their configurations
+            [
+              {
+                "condition": true,  // Always include entity_type filter
+                "key": "entity_type",
+                "values": ["Indicator"],
+                "operator": "eq"
+              },
+              {
+                "condition": has(state.pattern_types) && size(state.pattern_types) > 0,
+                "key": "pattern_type",
+                "values": state.?pattern_types.orValue([]),
+                "operator": "eq",
+                "mode": "or"
+              },
+              {
+                "condition": has(state.indicator_types) && size(state.indicator_types) > 0,
+                "key": "indicator_types",
+                "values": state.?indicator_types.orValue([]),
+                "operator": "eq",
+                "mode": "or"
+              },
+              {
+                "condition": has(state.revoked) && state.revoked != "",
+                "key": "revoked",
+                "values": [string(state.?revoked.orValue(""))],
+                "operator": "eq"
+              },
+              {
+                "condition": has(state.valid_from_start) && state.valid_from_start != null,
+                "key": "valid_from",
+                "values": [state.?valid_from_start.orValue("")],
+                "operator": "gte"
+              },
+              {
+                "condition": has(state.valid_until_end) && state.valid_until_end != null,
+                "key": "valid_until",
+                "values": [state.?valid_until_end.orValue("")],
+                "operator": "lte"
+              },
+              {
+                "condition": has(state.label_ids) && size(state.label_ids) > 0,
+                "key": "objectLabel",
+                "values": state.?label_ids.orValue([]),
+                "operator": "eq",
+                "mode": "or"
+              },
+              {
+                "condition": has(state.confidence_min) && state.confidence_min != null,
+                "key": "confidence",
+                "values": [string(state.?confidence_min.orValue(0))],
+                "operator": "gte"
+              },
+              {
+                "condition": has(state.author_ids) && size(state.author_ids) > 0,
+                "key": "createdBy",
+                "values": state.?author_ids.orValue([]),
+                "operator": "eq",
+                "mode": "or"
+              },
+              {
+                "condition": has(state.creator_ids) && size(state.creator_ids) > 0,
+                "key": "creator_id",
+                "values": state.?creator_ids.orValue([]),
+                "operator": "eq",
+                "mode": "or"
+              },
+              {
+                "condition": has(state.created_after) && state.created_after != null,
+                "key": "created",
+                "values": [state.?created_after.orValue("")],
+                "operator": "gt"
+              },
+              {
+                "condition": has(state.last_modified) && state.last_modified != null,
+                "key": "updated_at",
+                "values": [state.?last_modified.orValue("")],
+                "operator": "gt"
+              },
+              {
+                "condition": !has(state.last_modified) && has(state.modified_after) && state.modified_after != null,
+                "key": "updated_at",
+                "values": [state.?modified_after.orValue("")],
+                "operator": "gt"
+              },
+              {
+                "condition": has(state.marking_ids) && size(state.marking_ids) > 0,
+                "key": "objectMarking",
+                "values": state.?marking_ids.orValue([]),
+                "operator": "eq",
+                "mode": "or"
+              }
+            ]
+            // Filter to only include filters where condition is true
+            // and map to create the final filter objects (removing the condition field)
+            .map(f, f.condition, {
+              "key": f.key,
+              "values": f.values,
+              "operator": f.operator
+            }.with(has(f.mode) ? {"mode": f.mode} : {}))
+          ),
+          "filterGroups": []
+        }
       }
     }.encode_json()
   }).do_request().as(resp,
@@ -65,7 +171,8 @@ program: |
           "events": [{
             "error": { "message": body.errors.map(e, e.message) },
             "event": { "original": body.encode_json() }
-          }]
+          }],
+          "last_modified": state.?last_modified.orValue(null)
         })
       :
         state.with({
@@ -77,9 +184,13 @@ program: |
           )),
           "want_more": body.data.indicators.pageInfo.hasNextPage,
           "cursor": { "value": body.data.indicators.pageInfo.endCursor },
+          "last_modified": has(body.data.indicators.edges) && body.data.indicators.edges.size() > 0 ?
+            body.data.indicators.edges.map(e, timestamp(e.node.modified)).max()
+          :
+            state.?last_modified.orValue(null)
         })
+      )
     )
-  )
 redact:
   fields:
     - api_key
@@ -88,12 +199,52 @@ state:
   page_size: {{page_size}}
   preserve_original_event: {{preserve_original_event}}
   want_more: false
+  # Track last modified timestamp to avoid re-fetching
+  last_modified: null
+  # Filter configuration
+{{#if pattern_types}}
+  pattern_types: {{pattern_types}}
+{{/if}}
+{{#if indicator_types}}
+  indicator_types: {{indicator_types}}
+{{/if}}
+{{#if revoked}}
+  revoked: {{revoked}}
+{{/if}}
+{{#if valid_from_start}}
+  valid_from_start: {{valid_from_start}}
+{{/if}}
+{{#if valid_until_end}}
+  valid_until_end: {{valid_until_end}}
+{{/if}}
+{{#if label_ids}}
+  label_ids: {{label_ids}}
+{{/if}}
+{{#if confidence_min}}
+  confidence_min: {{confidence_min}}
+{{/if}}
+{{#if author_ids}}
+  author_ids: {{author_ids}}
+{{/if}}
+{{#if creator_ids}}
+  creator_ids: {{creator_ids}}
+{{/if}}
+{{#if created_after}}
+  created_after: {{created_after}}
+{{/if}}
+{{#if modified_after}}
+  modified_after: {{modified_after}}
+{{/if}}
+{{#if marking_ids}}
+  marking_ids: {{marking_ids}}
+{{/if}}
   # How to work with this API: https://docs.opencti.io/latest/deployment/integrations/#graphql-api
   # Relevant schema source: https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/schema/opencti.graphql
   query: |
 
     query IndicatorsLinesPaginationQuery(
       $search: String
+      $filters: FilterGroup
       $first: Int!
       $after: ID
       $orderBy: IndicatorsOrdering
@@ -101,6 +252,7 @@ state:
     ) {
       indicators(
         search: $search
+        filters: $filters
         first: $first
         after: $after
         orderBy: $orderBy
