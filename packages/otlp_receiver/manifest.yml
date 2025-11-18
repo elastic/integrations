@@ -1,0 +1,47 @@
+format_version: 3.5.2
+name: otlp_receiver
+title: "OTLP Receiver"
+version: 0.0.1
+source:
+  license: "Apache-2.0"
+description: "OpenTelemetry Protocol (OTLP) Receiver Input"
+type: input
+categories:
+  - monitoring
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/opentelemetry-icon-color.svg
+    title: OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: otlp_receiver
+    input: otelcol
+    type: logs
+    title: OTLP Receiver
+    description: Receiver OTLP
+    template_path: input.yml.hbs
+    vars:
+      - name: listen_address_http
+        type: text
+        title: HTTP Listen Address
+        description: |
+          Bind address for the HTTP listener. Use 0.0.0.0:4317 to listen on all interfaces.
+        required: true
+        show_user: true
+        default: "0.0.0.0:4317"
+      - name: listen_address_grpc
+        type: text
+        title: gRPC Listen Address
+        description: |
+          Bind address for the gRPC listener. Use 0.0.0.0:4318 to listen on all interfaces.
+        required: true
+        show_user: true
+        default: "0.0.0.0:4318"
+owner:
+  github: elastic/integrations
+  type: elastic
