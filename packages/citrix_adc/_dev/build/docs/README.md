@@ -1,166 +1,132 @@
-# Citrix ADC Integration
+# Citrix ADC Integration for Elastic
 
 ## Overview
 
-The Citrix ADC integration allows you to monitor your Citrix ADC instance. Citrix ADC is an application delivery controller that performs application-specific traffic analysis to intelligently distribute, optimize, and secure Layer 4 - Layer 7 (L4–L7) network traffic for web applications.
+The Citrix ADC integration for Elastic allows you to collect logs and metrics from your Citrix ADC instances. Citrix ADC is an application delivery controller that performs application-specific traffic analysis to intelligently distribute, optimize, and secure Layer 4-Layer 7 (L4-L7) network traffic for web applications.
 
-The Citrix Web App Firewall prevents security breaches, data loss, and possible unauthorized modifications to websites that access sensitive business or customer information. It does so by filtering both requests and responses, examining them for evidence of malicious activity, and blocking requests that exhibit such activity. Your site is protected not only from common types of attacks, but also from new, as yet unknown attacks. In addition to protecting web servers and websites from unauthorized access, the Web App Firewall protects against vulnerabilities in legacy CGI code or scripts, web frameworks, web server software, and other underlying operating systems.
+This integration enables you to monitor the health and performance of your Citrix ADC appliances, providing visibility into network traffic, system resources, and security events. By collecting and analyzing this data, you can troubleshoot issues, optimize performance, and enhance the security of your application delivery infrastructure.
 
-Use the Citrix ADC integration to:
+### Compatibility
 
-Collect metrics related to the interface, lbvserver, service, system, vpn and logs.
-Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+This integration has been tested with Citrix ADC versions 13.0, 13.1 and 14.1.
 
-As an example, you can use the data from this integration to understand the load of the virtual servers, client-server connections, requests and responses across the Citrix ADC.
+### How it works
 
-## Data streams
+This integration uses two methods to collect data:
+*   **Metrics**: The integration polls the Citrix ADC NITRO REST API to collect metrics about the system, interfaces, load balancing, services, and VPN.
+*   **Logs**: The integration can receive syslog messages from Citrix ADC over TCP or UDP, or read them from a log file.
 
-The Citrix ADC integration collects metrics data.
+## What data does this integration collect?
 
-Metrics give you insight into the statistics of the Citrix ADC. Metrics data streams collected by the Citrix ADC integration include [interface](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/interface/), [lbvserver](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/lb/lbvserver/), [service](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/basic/service/), [system](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/system/system/) and [vpn](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/vpn/vpn/), so that the user could monitor and troubleshoot the performance of the Citrix ADC instances.
+The Citrix ADC integration collects both logs and metrics.
 
-**Log** is used to retrieve Citrix Netscaler logs. See more details in the documentation [here](https://developer-docs.netscaler.com/en-us/netscaler-syslog-message-reference/current-release).
+**Metrics** data streams provide insights into the performance and health of the Citrix ADC appliance. The collected metrics include:
+*   **Interface**: Statistics for network interfaces, including inbound/outbound packets and errors.
+*   **Load Balancing Virtual Server (lbvserver)**: Metrics for load balancing virtual servers, such as client connections, requests, and responses.
+*   **Service**: Data for individual services, including throughput and transactions.
+*   **System**: System-level metrics like CPU utilization, memory usage, and management IP information.
+*   **VPN**: VPN-related metrics, including active sessions and throughput.
 
-**NOTE:** You can monitor metrics and logs inside the ingested documents for Citrix ADC in the `logs-*` index pattern from `Discover`.
+**Logs** provide detailed records of events and activities on the Citrix ADC, which are essential for security monitoring and troubleshooting.
 
-## Compatibility
+### Supported use cases
 
-This integration has been tested against Citrix ADC `v13.0`, `v13.1` and `v14.1`.
+By using this integration, you can:
+*   Monitor the overall health and performance of your Citrix ADC appliances.
+*   Analyze traffic patterns and identify potential bottlenecks.
+*   Troubleshoot application delivery issues by correlating logs and metrics.
+*   Enhance security by monitoring for suspicious activity and policy violations.
+*   Create custom dashboards and alerts to meet your specific monitoring needs.
 
-## Requirements
+## What do I need to use this integration?
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). 
+*   **Elastic Agent**: An Elastic Agent must be installed on a host that can access the Citrix ADC appliance. For more details, see the [Elastic Agent installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+*   **Citrix ADC Credentials**: For collecting metrics, you will need the hostname (or IP address) and administrator credentials for the Citrix ADC instance. The host configuration should be in the format `http[s]://<hostname>[:<port>]`.
+*   **Network Access**: If collecting logs via syslog, the Elastic Agent host must be reachable from the Citrix ADC appliance on the configured syslog port.
 
-The minimum **Kibana version** required is **8.12.0**.  
+## How do I deploy this integration?
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+### Onboard / configure
 
-To ingest data from Citrix ADC, you must know the host(s) and the administrator credentials for the Citrix ADC instance.
+#### Configure Citrix ADC to send logs
 
-Host Configuration Format: `http[s]://<hostname>:<port>`
-Example Host Configuration: `http://example.com:9090`
+You can configure your Citrix ADC appliance to send logs to the Elastic Agent via syslog. It is recommended to use the CEF log format for better parsing and compatibility.
 
-## Setup
-  
-For step-by-step instructions on how to set up an integration, check the [quick start](integrations://docs/extend/quick-start.md).
+1.  **Enable CEF Logging**:
+    *   In the Citrix ADC GUI, navigate to **Security** > **Application Firewall**.
+    *   Click on **Change Engine Settings**.
+    *   Enable **CEF Logging**.
 
-**NOTE:** It is recommended to configure the application firewall to enable CEF-formatted logs.
+2.  **Configure a Syslog Action and Policy**:
+    *   Navigate to **System** > **Auditing** > **Syslog**.
+    *   On the **Servers** tab, click **Add** to create a new syslog server entry. Enter the IP address and port of your Elastic Agent. Select the desired protocol (TCP or UDP).
+    *   On the **Policies** tab, click **Add** to create a new syslog policy. Define the policy to capture the desired log messages and associate it with the syslog server action you just created.
+    *   For more detailed instructions, refer to the official Citrix documentation on [configuring audit logging](https://docs.netscaler.com/en-us/citrix-adc/current-release/system/audit-logging/configuring-audit-logging.html#configuring-audit-log-action). Using RFC 5424 compliant syslog messages is recommended if your NetScaler version supports it.
 
-### Configure CEF format
+#### Enable the integration in Elastic
 
-1. Navigate to **Security** the NetScaler GUI.
-2. Click **Application Firewall** node.
-3. Select Change Engine Settings.
-4. Enable CEF Logging.
+1.  In Kibana, navigate to **Management** > **Integrations**.
+2.  In the search bar, type **Citrix ADC**.
+3.  Select the **Citrix ADC** integration and add it.
+4.  Configure the integration with the appropriate settings for collecting logs and/or metrics.
+    *   For **metrics**, provide the Citrix ADC hostname, username, and password.
+    *   For **logs**, configure the appropriate input (TCP, UDP, or log file) to match your Citrix ADC configuration.
+5.  Save the integration to begin collecting data.
 
-### Configure Syslog format
+### Validation
 
-You can use the Citrix WAF GUI to configure syslog servers and WAF message types to be sent to the syslog servers. Refer to [How to Send Application Firewall Messages to a Separate Syslog Server](https://support.citrix.com/s/article/CTX138973-how-to-send-application-firewall-messages-to-a-separate-syslog-server) and [How to Send NetScaler Application Firewall Logs to Syslog Server and NS.log](https://support.citrix.com/s/article/CTX483235-send-logs-to-external-syslog-server?language=en_US) for details.
+After configuring the integration, you can validate that data is being collected by navigating to the **Assets** tab within the Citrix ADC integration in Kibana. You should see dashboards populated with data from your Citrix ADC appliance. You can also use the **Discover** app in Kibana to query the `logs-citrix_adc.*` and `metrics-citrix_adc.*` data streams.
 
-**NOTE:** Using RFC 5424 compliant syslog messages is recommended when using syslog, if supported by NetScaler. Support for RFC 5424 was added in NetScaler 14.1. Refer to [Configuring audit log action](https://docs.netscaler.com/en-us/citrix-adc/current-release/system/audit-logging/configuring-audit-logging.html#configuring-audit-log-action).
+## Troubleshooting
 
-## Validation
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
-After the integration is successfully configured, click the Assets tab of the Citrix ADC Integration to display a list of available dashboards. The dashboard for your configured datastream should be populated with the required data.
+*   **Dummy Values**: It is possible that for some fields, Citrix ADC sets dummy values. For example, a field `cpuusagepcnt` (`citrix_adc.system.cpu.utilization.pct`) might be set to `4294967295`. If you encounter this, please reach out to the Citrix ADC support team.
+*   **Type Conflicts**: If you see a type conflict for the `host.ip` field in the `logs-*` data view, you may need to reindex the `interface`, `lbvserver`, `service`, `system`, and `vpn` data stream indices.
 
-### Enable the integration in Elastic
-
-1. In Kibana navigate to **Management** > **Integrations**.
-2. In the search bar, type **Citrix ADC**.
-3. Select the **Citrix ADC** integration and add it.
-4. While adding the integration, if you want to collect logs via logfile, keep **Collect logs from Citrix ADC via file** toggle on and then configure following parameters:
-   - Paths
-
-   or if you want to collect logs via TCP, keep **Collect logs from Citrix ADC via TCP** toggle on and then configure following parameters:
-   - Listen Address
-   - Listen Port
-
-   or if you want to collect logs via UDP, keep **Collect logs from Citrix ADC via UDP** toggle on and and then configure following parameters:
-   - Listen Address
-   - Listen Port
-5. Save the integration.
-
-### Troubleshooting
-
-#### Dummy values
-
-It is possible that for some fields, Citrix ADC sets dummy values. For example, a field `cpuusagepcnt` is represented by `citrix_adc.system.cpu.utilization.pct`. `cpuusagepcnt` is set to `4294967295` for some [instances](https://github.com/citrix/citrix-adc-metrics-exporter/issues/44). If you also encounter it for some fields, reach out to the [Citrix ADC support team](https://support.citrix.com/plp/products/citrix_adc/tabs/popular-solutions).
-
-#### Type conflicts
-
-If `host.ip` is shown conflicted under ``logs-*`` data view, this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Interface``, ``LBVserver``, ``Service``, ``System``, and ``VPN`` data stream's indices.
-
-## Metrics reference
+## Reference
 
 ### Interface
-
-This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts. `interface` data stream collects metrics related to id, state, inbound packets, outbound packets and received packets.
-
-{{event "interface"}}
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+This is the `interface` data stream. It collects metrics related to network interfaces on the Citrix ADC.
 
 {{fields "interface"}}
 
-### Load Balancing Virtual Server
+{{event "interface"}}
 
-This is the `lbvserver` data stream. The load balancing server is logically located between the client and the server farm, and manages traffic flow to the servers in the server farm. `lbvserver` data stream collects metrics related to name, state, client connections, requests and responses.
-
-{{event "lbvserver"}}
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+### Load Balancing Virtual Server (lbvserver)
+This is the `lbvserver` data stream. It collects metrics related to the performance of load balancing virtual servers.
 
 {{fields "lbvserver"}}
 
-### Service
+{{event "lbvserver"}}
 
-This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources. `service` data stream collects metrics related to name, IP address, port, throughput and transactions.
+### Log
+This is the `log` data stream. It collects logs sent from the Citrix ADC, typically via syslog.
 
-{{event "service"}}
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-{{fields "service"}}
-
-### System
-
-This is the `system` data stream. With the help of the system endpoint, metrics like memory in use, total system memory, CPU count can be collected along with other statistics for system resources.
-
-{{event "system"}}
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-{{fields "system"}}
-
-### VPN
-
-This is the `vpn` data stream. Citrix VPN is the add-on that provides full Secure Sockets Layer (SSL) virtual private network (VPN) capabilities to Citrix Gateway, allowing users to access remote applications on internal networks securely. `vpn` data stream collects metrics like CPS, ICA license, client-server requests, file system and sockets.
-
-{{event "vpn"}}
-
-**ECS Field Reference**
-
-Check this [reference document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for more information on ECS fields.
-
-{{fields "vpn"}}
-
-### Logs
-
-The `citrix_adc.log` dataset provides events from the configured syslog server.
+{{fields "log"}}
 
 {{event "log"}}
 
-**ECS Field Reference**
+### Service
+This is the `service` data stream. It collects metrics for individual services configured on the Citrix ADC.
 
-Check this [reference document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for more information on ECS fields.
+{{fields "service"}}
 
-{{fields "log"}}
+{{event "service"}}
+
+### System
+This is the `system` data stream. It collects system-level metrics such as CPU and memory utilization.
+
+{{fields "system"}}
+
+{{event "system"}}
+
+### VPN
+This is the `vpn` data stream. It collects metrics related to VPN activity on the Citrix ADC.
+
+{{fields "vpn"}}
+
+{{event "vpn"}}
+
+### Inputs used
+{{ inputDocs }}

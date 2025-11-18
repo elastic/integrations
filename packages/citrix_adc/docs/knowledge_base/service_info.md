@@ -15,7 +15,6 @@
 
 ## Compatibility
 - Tested against Citrix ADC versions `v13.0`, `v13.1`, and `v14.1`.
-- Minimum Kibana version: `8.13.0`.
 - Elastic Agent is required. Elasticsearch and Kibana can be Elastic Cloud or self-managed.
 
 ## Scaling and Performance
@@ -53,16 +52,8 @@
 1. In Kibana, go to Management > Integrations.
 2. Search for “Citrix ADC”.
 3. Select the Citrix ADC integration and add it.
-4. Choose how to collect logs and configure parameters:
-   - File: set Paths.
-   - TCP: set Listen Address and Listen Port.
-   - UDP: set Listen Address and Listen Port.
-5. Save the integration.
-6. Note: It is recommended to enable CEF logging on the application firewall.
-
-# Validation Steps
-- After configuration, open the Citrix ADC integration’s Assets tab to view the available dashboards; they should populate with data for the configured datasets.
-- While adding the integration, if you want to collect logs via logfile, keep Collect logs from Citrix ADC via file toggle on and then configure following parameters:
+4. Choose how to collect logs and configure parameters.
+  If you want to collect logs via logfile, keep Collect logs from Citrix ADC via file toggle on and then configure following parameters:
     - Paths
   or if you want to collect logs via TCP, keep Collect logs from Citrix ADC via TCP toggle on and then configure following parameters:
     - Listen Address
@@ -70,6 +61,11 @@
   or if you want to collect logs via UDP, keep Collect logs from Citrix ADC via UDP toggle on and and then configure following parameters:
     - Listen Address
     - Listen Port
+5. Save the integration.
+6. Note: It is recommended to enable CEF logging on the application firewall.
+
+# Validation Steps
+- After configuration, open the Citrix ADC integration’s Assets tab to view the available dashboards; they should populate with data for the configured datasets.
 - You can also verify metrics and logs in Discover under the `logs-*` data view.
 
 # Troubleshooting
@@ -101,4 +97,3 @@ If host.ip is shown conflicted under logs-* data view, this issue can be solved 
 
 # Documentation sites
 - Elastic ECS Field Reference: [link](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
-- Citrix ADC integration README in this package for examples, exported fields, and setup notes.
