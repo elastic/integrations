@@ -214,11 +214,6 @@ An example event for `runtime_application` looks as following:
 
 ```json
 {
-    "awscloudwatch": {
-        "log_group": "arn:aws:logs:us-east-1:627286350132:log-group:/aws/vendedlogs/bedrock-agentcore/runtime/APPLICATION_LOGS/claudeserver-CdBoW2FLP0",
-        "ingestion_time": "2025-11-04T09:49:45.000Z",
-        "log_stream": "BedrockAgentCoreRuntime_ApplicationLogs"
-    },
     "agent": {
         "name": "docker-fleet-agent",
         "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
@@ -283,11 +278,6 @@ An example event for `runtime_application` looks as following:
         "id": "39299483435865920498526836744670895669942873429125169152",
         "dataset": "aws_bedrock_agentcore.runtime_application_logs",
         "outcome": "success"
-    },
-    "aws.cloudwatch": {
-        "log_group": "arn:aws:logs:us-east-1:627286350137:log-group:/aws/vendedlogs/bedrock-agentcore/runtime/APPLICATION_LOGS/claudeserver-CdBoW2FLP1",
-        "ingestion_time": "2025-11-04T09:49:45.955Z",
-        "log_stream": "BedrockAgentCoreRuntime_ApplicationLogs"
     },
     "aws": {
         "bedrock_agentcore": {
