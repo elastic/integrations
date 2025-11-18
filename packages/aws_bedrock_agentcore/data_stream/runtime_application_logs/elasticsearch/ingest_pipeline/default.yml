@@ -87,7 +87,7 @@ processors:
   # Handle session information
   - rename:
       field: aws.bedrock_agentcore.session_id
-      target_field: gen_ai.conversation_id
+      target_field: gen_ai.conversation.id
       ignore_missing: true
   - rename:
       field: aws.bedrock_agentcore.region
@@ -112,7 +112,7 @@ processors:
       if: ctx.gen_ai?.prompt != null && ctx.gen_ai?.prompt instanceof String
       source: |
         if (ctx.gen_ai.prompt.length() > 32766) {
-          ctx.gen_ai.prompt_hash = ctx.gen_ai.prompt.sha1(); 
+          ctx.aws.bedrock_agentcore.prompt_hash = ctx.gen_ai.prompt.sha1(); 
           ctx.gen_ai.remove("prompt");
         }
       ignore_failure: true
@@ -155,12 +155,9 @@ processors:
       ignore_failure: true
 
 on_failure:
-  - set:
+   - set:
       field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.outcome
       value: failure

@@ -35,6 +35,17 @@ For more details about these requirements, check the [AWS integration documentat
 * You can install only one Elastic Agent per host.
 * Elastic Agent is required to collect metrics from CloudWatch and ship the data to Elastic, where the events will then be processed through the integration's ingest pipelines.
 
+### How to find the `log_group_arn` (for log-based datasets)
+
+Some datasets in this integration require the ARN of the CloudWatch log group where your AgentCore logs are stored. You can find it by:
+
+- Opening CloudWatch in the AWS Console
+- Going to Logs > Log groups
+- Selecting the log group used by your AgentCore deployment
+- Copying the Log group ARN shown
+
+You can then use this ARN when configuring any log-based dataset.
+
 ## Setup
 
 To use the Amazon Bedrock AgentCore metrics, ensure your agents are deployed and running. The integration will automatically collect metrics from the AWS/Bedrock-AgentCore CloudWatch namespace. For enhanced observability, enable detailed monitoring and logging for your AgentCore resources.
