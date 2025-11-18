@@ -7,6 +7,11 @@ receivers:
       http:
         endpoint: "{{listen_address_http}}"
 
+{{#if enable_traces }}
+processors:
+  elasticapm: {}
+{{/if}}
+
 service:
   pipelines:
     {{#if enable_logs }}
@@ -22,5 +27,5 @@ service:
     {{#if enable_traces }}
       traces:
         receivers: [otlp]
-        processors: []
+        processors: [elasticapm]
     {{/if}}
