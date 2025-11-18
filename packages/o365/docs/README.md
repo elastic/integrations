@@ -103,9 +103,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "1a113c10-1571-4770-9c2d-30c715d0a227",
-        "id": "ab5a3956-93e0-40d7-964e-c9086e7f2ac5",
-        "name": "elastic-agent-93263",
+        "ephemeral_id": "1e6cffaf-771a-42b4-bcf7-8108ae25bcba",
+        "id": "f75bde9e-cd69-4647-8611-adefb0db9fc6",
+        "name": "elastic-agent-32331",
         "type": "filebeat",
         "version": "8.19.7"
     },
@@ -115,14 +115,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "o365.audit",
-        "namespace": "22243",
+        "namespace": "82083",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ab5a3956-93e0-40d7-964e-c9086e7f2ac5",
+        "id": "f75bde9e-cd69-4647-8611-adefb0db9fc6",
         "snapshot": true,
         "version": "8.19.7"
     },
@@ -135,9 +135,9 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2025-11-14T11:14:20Z",
+        "ingested": "2025-11-18T09:53:50Z",
         "kind": "event",
-        "original": "{\"ClientIP\":\"213.97.47.133\",\"CorrelationId\":\"622b339f-4000-a000-f25f-92b3478c7a25\",\"CreationTime\":\"2020-02-07T16:43:53\",\"CustomUniqueId\":true,\"EventSource\":\"SharePoint\",\"Id\":\"99d005e6-a4c6-46fd-117c-08d7abeceab5\",\"ItemType\":\"Page\",\"ListItemUniqueId\":\"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\",\"ObjectId\":\"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\",\"Operation\":\"PageViewed\",\"OrganizationId\":\"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\",\"RecordType\":4,\"Site\":\"d5180cfc-3479-44d6-b410-8c985ac894e3\",\"UserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\",\"UserId\":\"asr@testsiem.onmicrosoft.com\",\"UserKey\":\"i:0h.f|membership|1003200096971f55@live.com\",\"UserType\":0,\"Version\":1,\"WebId\":\"8c5c94bb-8396-470c-87d7-8999f440cd30\",\"Workload\":\"OneDrive\"}",
+        "original": "{\"ClientIP\":\"213.97.47.133\",\"CorrelationId\":\"622b339f-4000-a000-f25f-92b3478c7a25\",\"CreationTime\":\"2020-02-07T16:43:53\",\"CustomUniqueId\":true,\"EventSource\":\"SharePoint\",\"ExtendedProperties\":[{\"Name\":\"additionalDetails\",\"Value\":\"{\\\"DeviceId\\\":\\\"62eedfc0-b73c-206c-a59d-16457c7ebcd8\\\",\\\"DeviceOSType\\\":\\\"Linux\\\",\\\"DeviceTrustType\\\":\\\"\\\"}\"}],\"Id\":\"99d005e6-a4c6-46fd-117c-08d7abeceab5\",\"ItemType\":\"Page\",\"ListItemUniqueId\":\"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\",\"ObjectId\":\"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\",\"Operation\":\"PageViewed\",\"OrganizationId\":\"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\",\"RecordType\":4,\"Site\":\"d5180cfc-3479-44d6-b410-8c985ac894e3\",\"UserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\",\"UserId\":\"asr@testsiem.onmicrosoft.com\",\"UserKey\":\"i:0h.f|membership|1003200096971f55@live.com\",\"UserType\":0,\"Version\":1,\"WebId\":\"8c5c94bb-8396-470c-87d7-8999f440cd30\",\"Workload\":\"OneDrive\"}",
         "outcome": "success",
         "provider": "OneDrive",
         "type": [
@@ -160,6 +160,12 @@ An example event for `audit` looks as following:
             "CreationTime": "2020-02-07T16:43:53",
             "CustomUniqueId": true,
             "EventSource": "SharePoint",
+            "ExtendedProperties": {
+                "additionalDetails": {
+                    "DeviceId": "62eedfc0-b73c-206c-a59d-16457c7ebcd8",
+                    "DeviceOSType": "Linux"
+                }
+            },
             "ItemType": "Page",
             "ListItemUniqueId": "59a8433d-9bb8-cfef-6edc-4c0fc8b86875",
             "ObjectId": "https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx",
@@ -377,7 +383,7 @@ An example event for `audit` looks as following:
 | o365.audit.Experience |  | keyword |
 | o365.audit.ExtendedProperties.\* |  | object |
 | o365.audit.ExtendedProperties.RequestType |  | keyword |
-| o365.audit.ExtendedProperties.additionalDetails_value |  | object |
+| o365.audit.ExtendedProperties.additionalDetails |  | object |
 | o365.audit.ExternalAccess |  | boolean |
 | o365.audit.FileExtension |  | keyword |
 | o365.audit.FileSize |  | keyword |

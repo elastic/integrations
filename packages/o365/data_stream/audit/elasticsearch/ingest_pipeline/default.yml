@@ -1781,9 +1781,11 @@ processors:
   - json:
       tag: json-extract-stringly-ExtendedProperties-additionalDetails
       field: o365audit.ExtendedProperties.additionalDetails
-      target_field: o365audit.ExtendedProperties.additionalDetails_value
       if: ctx.o365audit?.ExtendedProperties?.additionalDetails instanceof String
       on_failure:
+        - remove:
+            field: o365audit.ExtendedProperties.additionalDetails
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
