@@ -331,18 +331,21 @@ processors:
         }
   - script:
       lang: painless
+      tag: set_event_severity_from_severity_name
       if: ctx.crowdstrike?.SeverityName instanceof String && ctx.crowdstrike.SeverityName != ''
       source: |-
         ctx.event = ctx.event ?: [:];
-        String name = ctx.crowdstrike.SeverityName;
-        if (name.equalsIgnoreCase("low") || name.equalsIgnoreCase("info") || name.equalsIgnoreCase("informational")) {
-          ctx.event.severity = 21;
-        } else if (name.equalsIgnoreCase("medium")) {
-          ctx.event.severity = 47;
-        } else if (name.equalsIgnoreCase("high")) {
-          ctx.event.severity = 73;
-        } else if (name.equalsIgnoreCase("critical")) {
-          ctx.event.severity = 99;
+        def severityScores = [
+          'low': 21,
+          'info': 21,
+          'informational': 21,
+          'medium': 47,
+          'high': 73,
+          'critical': 99
+        ];
+        Integer score = severityScores[ctx.crowdstrike.SeverityName.toLowerCase()];
+        if (score != null) {
+          ctx.event.severity = score;
         }
 
   - script:
