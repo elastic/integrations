@@ -1,17 +1,36 @@
-# SentinelOne
+# SentinelOne Integration for Elastic
+
+## Overview
 
 The [SentinelOne](https://www.sentinelone.com/) integration collects and parses data from SentinelOne REST APIs. This integration also offers the capability to perform response actions on SentinelOne hosts directly through the Elastic Security interface (introduced with v8.12.0). Additional configuration is required; for detailed guidance, refer to [documentation](https://www.elastic.co/guide/en/security/current/response-actions-config.html).
 
-## Agentless Enabled Integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
-
-## Compatibility
+### Compatibility
 
 This module has been tested against `SentinelOne Management Console API version 2.1`.
 
-## API token
+### How it works
+
+This integration periodically queries the SentinelOne REST API to retrieve Activity, Agent, Alert, Application, Application Risk, Group, Threat and Threat Event logs.
+
+## What data does this integration collect?
+
+This integration collects log messages of the following types:
+
+- `Activity`: Captures general actions or events occurring within the SentinelOne environment, such as policy updates or administrative operations.
+- `Agent`: Provides details about endpoint agents, including their status, configuration, and activity on protected devices.
+- `Alert`: Represents security notifications triggered by detected suspicious or malicious activity requiring attention.
+- `Application`: Logs information about installed or executed applications identified on endpoints.
+- `Application Risk`: Assesses and records the risk level or reputation of discovered applications based on behavior and source.
+- `Group`: Contains configuration and status information for endpoint groups within a site or tenant.
+- `Threat`: Logs confirmed malicious detections, such as malware, exploits, or ransomware identified by SentinelOne.
+- `Threat Event`: Provides detailed event-level information related to a specific threat, including process, file, and network indicators.
+
+### Supported use cases
+Integrating SentinelOne Activity, Agent, Alert, Application, Application Risk, Group, Threat, and Threat Event logs with Elastic SIEM provides centralized visibility across endpoint operations and security events. Dashboards deliver insights into agent status, detections, application behavior, and threat lifecycle, helping SOC teams quickly identify malicious activity, enforce policy compliance, and accelerate investigation and response efforts.
+
+## What do I need to use this integration?
+
+### From SentinelOne
 
 To collect data from SentinelOne APIs, you must have an API token. To create an API token, follow these steps:
 
@@ -36,10 +55,25 @@ To collect data from SentinelOne APIs, you must have an API token. To create an 
 | Application Risk  | Applications -> viewRisks       |
 | Group             | Groups -> view                  |
 | Threat            | Threats -> view                 |
+| Threat Event      | Threats -> view                 |
 
 ## Note
 
 The **alert** data stream depends on STAR Custom Rules. STAR Custom Rules are supported in Cloud environments, but are not supported in on-premises environments. Because of this, the **alert** data stream is not supported in on-premises environments.
+
+## How do I deploy this integration?
+
+This integration supports both Elastic Agentless-based and Agent-based installations.
+
+### Agentless-based installation
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Troubleshooting
 
@@ -47,18 +81,37 @@ The **alert** data stream depends on STAR Custom Rules. STAR Custom Rules are su
   - For console users, the default expiration time limit is 30 days.
   - For service users, the expiration time limit is the same as the duration specified while generating the API token.
 
-## Alert severity mapping
+## Setup
 
-The values used in `event.severity` are consistent with Elastic Detection Rules.
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **SentinelOne**.
+3. Select the **SentinelOne** integration from the search results.
+4. Select **Add SentinelOne** to add the integration.
+5. Enable and configure only the collection methods which you will use.
 
-| Severity Name | `event.severity` |
-|---------------|:----------------:|
-| Low           | 21               |
-| Medium        | 47               |
-| High          | 73               |
-| Critical      | 99               |
+    * To **Collect SentinelOne logs via API**, you'll need to:
 
-## Logs
+        - Configure **URL** and **API Token**.
+        - Enable/Disable the required datasets.
+        - For each dataset, adjust the integration configuration parameters if required, including the Interval, Preserve original event etc. to enable data collection.
+
+6. Select **Save and continue** to save the integration.
+
+### Validation
+
+#### Dashboards populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **SentinelOne**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### Logs reference
 
 ### activity
 
@@ -1783,4 +1836,352 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.whitening_option | Whitening options. | keyword |
 | sentinel_one.threat_classification.name |  | keyword |
 | sentinel_one.threat_classification.source |  | keyword |
+
+
+### threat event
+
+This is the `threat event` dataset.
+
+An example event for `threat_event` looks as following:
+
+```json
+{
+    "@timestamp": "2025-10-22T11:30:00.000Z",
+    "agent": {
+        "ephemeral_id": "cb480124-a03c-47cc-9451-f52e3e80bc47",
+        "id": "0d5383c7-da8f-4e33-a9c8-ea303876fbd9",
+        "name": "elastic-agent-26678",
+        "type": "filebeat",
+        "version": "8.18.7"
+    },
+    "data_stream": {
+        "dataset": "sentinel_one.threat_event",
+        "namespace": "82630",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": "89.160.20.128",
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "0d5383c7-da8f-4e33-a9c8-ea303876fbd9",
+        "snapshot": false,
+        "version": "8.18.7"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "created": "2025-10-22T11:30:00.000Z",
+        "dataset": "sentinel_one.threat_event",
+        "id": "id_004",
+        "ingested": "2025-10-27T07:44:21Z",
+        "kind": "event",
+        "original": "{\"activeContentFileId\":\"fileid_004\",\"activeContentHash\":\"hash_004\",\"activeContentPath\":\"D:\\\\content\\\\file4\",\"agentDomain\":\"domain4\",\"agentGroupId\":\"group_04\",\"agentId\":\"agent_004\",\"agentInfected\":false,\"agentIp\":\"89.160.20.156\",\"agentIsActive\":true,\"agentIsDecommissioned\":false,\"agentMachineType\":\"x64\",\"agentName\":\"Agent_4\",\"agentNetworkStatus\":\"online\",\"agentOs\":\"Windows 10\",\"agentUuid\":\"uuid_004\",\"agentVersion\":\"1.3.0\",\"connectionStatus\":\"active\",\"createdAt\":\"2025-10-22T11:30:00Z\",\"direction\":\"outbound\",\"dnsRequest\":\"google.com\",\"dnsResponse\":\"8.8.8.8\",\"dstIp\":\"89.160.20.128\",\"dstPort\":443,\"eventType\":\"network\",\"fileFullName\":\"C:\\\\Program Files\\\\Chrome\\\\chrome.exe\",\"fileId\":\"file_004\",\"fileMd5\":\"md5_004\",\"fileSha1\":\"sha1_004\",\"fileSha256\":\"sha256_004\",\"fileSize\":\"4096\",\"fileType\":\"exe\",\"hasActiveContent\":false,\"id\":\"id_004\",\"indicatorCategory\":\"spyware\",\"indicatorDescription\":\"tracking software\",\"indicatorMetadata\":\"meta4\",\"indicatorName\":\"Spyware4\",\"loginsBaseType\":\"domain\",\"loginsUserName\":\"user_login4\",\"md5\":\"md5_sample4\",\"networkMethod\":\"GET\",\"networkSource\":\"WAN\",\"networkUrl\":\"https://google.com\",\"objectType\":\"process\",\"oldFileMd5\":\"old_md54\",\"oldFileName\":\"chrome_old.exe\",\"oldFileSha1\":\"old_sha14\",\"oldFileSha256\":\"old_sha2564\",\"parentPid\":\"4001\",\"parentProcessGroupId\":\"group_parent_04\",\"parentProcessIsMalicious\":false,\"parentProcessName\":\"explorer.exe\",\"parentProcessUniqueKey\":\"unique_parent_004\",\"pid\":\"4567\",\"processCmd\":\"chrome.exe --new-tab\",\"processDisplayName\":\"Google Chrome\",\"processGroupId\":\"group_04\",\"processImagePath\":\"C:\\\\Program Files\\\\Chrome\\\\chrome.exe\",\"processImageSha1Hash\":\"sha1_process4\",\"processIntegrityLevel\":\"medium\",\"processIsMalicious\":false,\"processIsRedirectedCommandProcessor\":\"false\",\"processIsWow64\":\"false\",\"processName\":\"chrome.exe\",\"processRoot\":\"C:\\\\\",\"processSessionId\":\"session_004\",\"processStartTime\":\"2025-10-22T11:00:00Z\",\"processSubSystem\":\"subsystem4\",\"processUniqueKey\":\"unique_004\",\"processUserName\":\"user4\",\"protocol\":\"TCP\",\"publisher\":\"Google\",\"registryClassification\":\"application\",\"registryId\":\"reg_004\",\"registryPath\":\"HKCU\\\\Software\\\\Test4\",\"relatedToThreat\":false,\"rpid\":\"rpid_004\",\"sha1\":\"sha1_sample4\",\"sha256\":\"sha256_sample4\",\"signatureSignedInvalidReason\":\"None\",\"signedStatus\":\"Signed\",\"siteId\":\"site_004\",\"siteName\":\"SiteD\",\"srcIp\":\"127.0.0.1\",\"srcPort\":34567,\"storyline\":\"storyline4\",\"taskName\":\"task4\",\"taskPath\":\"C:\\\\Tasks\\\\task4\",\"threatStatus\":\"clean\",\"tid\":\"tid_004\",\"trueContext\":\"context4\",\"user\":\"user4\",\"verifiedStatus\":\"Verified\"}"
+    },
+    "file": {
+        "hash": {
+            "md5": "md5_004",
+            "sha1": "sha1_004",
+            "sha256": "sha256_004"
+        },
+        "name": "C:\\Program Files\\Chrome\\chrome.exe",
+        "size": 4096,
+        "type": "exe"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "network": {
+        "transport": "tcp"
+    },
+    "process": {
+        "command_line": "chrome.exe --new-tab",
+        "executable": "C:\\Program Files\\Chrome\\chrome.exe",
+        "hash": {
+            "sha1": "sha1_process4"
+        },
+        "name": "chrome.exe",
+        "parent": {
+            "name": "explorer.exe",
+            "pid": 4001
+        },
+        "pid": 4567,
+        "start": "2025-10-22T11:00:00.000Z",
+        "user": {
+            "name": "user4"
+        }
+    },
+    "registry": {
+        "path": "HKCU\\Software\\Test4"
+    },
+    "related": {
+        "hash": [
+            "sha1_004",
+            "sha256_004",
+            "md5_004",
+            "sha1_process4"
+        ],
+        "ip": [
+            "89.160.20.156",
+            "127.0.0.1",
+            "89.160.20.128"
+        ],
+        "user": [
+            "user_login4",
+            "user4"
+        ]
+    },
+    "sentinel_one": {
+        "threat_event": {
+            "active_content": {
+                "file_id": "fileid_004",
+                "hash": "hash_004",
+                "path": "D:\\content\\file4"
+            },
+            "agent": {
+                "domain": "domain4",
+                "group_id": "group_04",
+                "id": "agent_004",
+                "infected": false,
+                "ip": "89.160.20.156",
+                "is_active": true,
+                "is_decommissioned": false,
+                "machine_type": "x64",
+                "name": "Agent_4",
+                "network_status": "online",
+                "os": "Windows 10",
+                "uuid": "uuid_004",
+                "version": "1.3.0"
+            },
+            "connection_status": "active",
+            "created_at": "2025-10-22T11:30:00.000Z",
+            "direction": "outbound",
+            "dns_request": "google.com",
+            "dns_response": "8.8.8.8",
+            "dst": {
+                "ip": "89.160.20.128",
+                "port": 443
+            },
+            "event_type": "network",
+            "file": {
+                "full_name": "C:\\Program Files\\Chrome\\chrome.exe",
+                "id": "file_004",
+                "md5": "md5_004",
+                "sha1": "sha1_004",
+                "sha256": "sha256_004",
+                "size": "4096",
+                "type": "exe"
+            },
+            "has_active_content": false,
+            "id": "id_004",
+            "indicator": {
+                "category": "spyware",
+                "description": "tracking software",
+                "metadata": "meta4",
+                "name": "Spyware4"
+            },
+            "logins_base_type": "domain",
+            "logins_user_name": "user_login4",
+            "md5": "md5_sample4",
+            "network": {
+                "method": "GET",
+                "source": "WAN",
+                "url": "https://google.com"
+            },
+            "object_type": "process",
+            "old_file": {
+                "md5": "old_md54",
+                "name": "chrome_old.exe",
+                "sha1": "old_sha14",
+                "sha256": "old_sha2564"
+            },
+            "parent_pid": "4001",
+            "parent_process": {
+                "group_id": "group_parent_04",
+                "is_malicious": false,
+                "name": "explorer.exe",
+                "unique_key": "unique_parent_004"
+            },
+            "pid": "4567",
+            "process": {
+                "cmd": "chrome.exe --new-tab",
+                "display_name": "Google Chrome",
+                "group_id": "group_04",
+                "image_path": "C:\\Program Files\\Chrome\\chrome.exe",
+                "image_sha1_hash": "sha1_process4",
+                "integrity_level": "medium",
+                "is_malicious": false,
+                "is_redirected_command_processor": "false",
+                "is_wow64": "false",
+                "name": "chrome.exe",
+                "root": "C:\\",
+                "session_id": "session_004",
+                "start_time": "2025-10-22T11:00:00.000Z",
+                "sub_system": "subsystem4",
+                "unique_key": "unique_004",
+                "user_name": "user4"
+            },
+            "protocol": "TCP",
+            "publisher": "Google",
+            "registry": {
+                "classification": "application",
+                "id": "reg_004",
+                "path": "HKCU\\Software\\Test4"
+            },
+            "related_to_threat": false,
+            "rpid": "rpid_004",
+            "sha1": "sha1_sample4",
+            "sha256": "sha256_sample4",
+            "signature_signed_invalid_reason": "None",
+            "signed_status": "Signed",
+            "site": {
+                "id": "site_004",
+                "name": "SiteD"
+            },
+            "src": {
+                "ip": "127.0.0.1",
+                "port": 34567
+            },
+            "storyline": "storyline4",
+            "task_name": "task4",
+            "task_path": "C:\\Tasks\\task4",
+            "threat_status": "clean",
+            "tid": "tid_004",
+            "true_context": "context4",
+            "user": "user4",
+            "verified_status": "Verified"
+        }
+    },
+    "source": {
+        "ip": "127.0.0.1",
+        "port": 34567
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "sentinel_one-threat_event"
+    ],
+    "threat": {
+        "indicator": {
+            "description": "tracking software",
+            "name": "Spyware4"
+        }
+    },
+    "url": {
+        "full": "https://google.com"
+    },
+    "user": {
+        "name": "user4"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| sentinel_one.threat_event.active_content.file_id |  | keyword |
+| sentinel_one.threat_event.active_content.hash |  | keyword |
+| sentinel_one.threat_event.active_content.path |  | keyword |
+| sentinel_one.threat_event.agent.domain |  | keyword |
+| sentinel_one.threat_event.agent.group_id |  | keyword |
+| sentinel_one.threat_event.agent.id |  | keyword |
+| sentinel_one.threat_event.agent.infected |  | boolean |
+| sentinel_one.threat_event.agent.ip |  | ip |
+| sentinel_one.threat_event.agent.is_active |  | boolean |
+| sentinel_one.threat_event.agent.is_decommissioned |  | boolean |
+| sentinel_one.threat_event.agent.machine_type |  | keyword |
+| sentinel_one.threat_event.agent.name |  | keyword |
+| sentinel_one.threat_event.agent.network_status |  | keyword |
+| sentinel_one.threat_event.agent.os |  | keyword |
+| sentinel_one.threat_event.agent.uuid |  | keyword |
+| sentinel_one.threat_event.agent.version |  | keyword |
+| sentinel_one.threat_event.connection_status |  | keyword |
+| sentinel_one.threat_event.created_at |  | date |
+| sentinel_one.threat_event.direction |  | keyword |
+| sentinel_one.threat_event.dns_request |  | keyword |
+| sentinel_one.threat_event.dns_response |  | keyword |
+| sentinel_one.threat_event.dst.ip |  | ip |
+| sentinel_one.threat_event.dst.port |  | long |
+| sentinel_one.threat_event.event_type |  | keyword |
+| sentinel_one.threat_event.file.full_name |  | keyword |
+| sentinel_one.threat_event.file.id |  | keyword |
+| sentinel_one.threat_event.file.md5 |  | keyword |
+| sentinel_one.threat_event.file.sha1 |  | keyword |
+| sentinel_one.threat_event.file.sha256 |  | keyword |
+| sentinel_one.threat_event.file.size |  | keyword |
+| sentinel_one.threat_event.file.type |  | keyword |
+| sentinel_one.threat_event.has_active_content |  | boolean |
+| sentinel_one.threat_event.id |  | keyword |
+| sentinel_one.threat_event.indicator.category |  | keyword |
+| sentinel_one.threat_event.indicator.description |  | keyword |
+| sentinel_one.threat_event.indicator.metadata |  | keyword |
+| sentinel_one.threat_event.indicator.name |  | keyword |
+| sentinel_one.threat_event.logins_base_type |  | keyword |
+| sentinel_one.threat_event.logins_user_name |  | keyword |
+| sentinel_one.threat_event.md5 |  | keyword |
+| sentinel_one.threat_event.network.method |  | keyword |
+| sentinel_one.threat_event.network.source |  | keyword |
+| sentinel_one.threat_event.network.url |  | keyword |
+| sentinel_one.threat_event.object_type |  | keyword |
+| sentinel_one.threat_event.old_file.md5 |  | keyword |
+| sentinel_one.threat_event.old_file.name |  | keyword |
+| sentinel_one.threat_event.old_file.sha1 |  | keyword |
+| sentinel_one.threat_event.old_file.sha256 |  | keyword |
+| sentinel_one.threat_event.parent_pid |  | keyword |
+| sentinel_one.threat_event.parent_process.group_id |  | keyword |
+| sentinel_one.threat_event.parent_process.is_malicious |  | boolean |
+| sentinel_one.threat_event.parent_process.name |  | keyword |
+| sentinel_one.threat_event.parent_process.unique_key |  | keyword |
+| sentinel_one.threat_event.pid |  | keyword |
+| sentinel_one.threat_event.process.cmd |  | keyword |
+| sentinel_one.threat_event.process.display_name |  | keyword |
+| sentinel_one.threat_event.process.group_id |  | keyword |
+| sentinel_one.threat_event.process.image_path |  | keyword |
+| sentinel_one.threat_event.process.image_sha1_hash |  | keyword |
+| sentinel_one.threat_event.process.integrity_level |  | keyword |
+| sentinel_one.threat_event.process.is_malicious |  | boolean |
+| sentinel_one.threat_event.process.is_redirected_command_processor |  | keyword |
+| sentinel_one.threat_event.process.is_wow64 |  | keyword |
+| sentinel_one.threat_event.process.name |  | keyword |
+| sentinel_one.threat_event.process.root |  | keyword |
+| sentinel_one.threat_event.process.session_id |  | keyword |
+| sentinel_one.threat_event.process.start_time |  | date |
+| sentinel_one.threat_event.process.sub_system |  | keyword |
+| sentinel_one.threat_event.process.unique_key |  | keyword |
+| sentinel_one.threat_event.process.user_name |  | keyword |
+| sentinel_one.threat_event.protocol |  | keyword |
+| sentinel_one.threat_event.publisher |  | keyword |
+| sentinel_one.threat_event.registry.classification |  | keyword |
+| sentinel_one.threat_event.registry.id |  | keyword |
+| sentinel_one.threat_event.registry.path |  | keyword |
+| sentinel_one.threat_event.related_to_threat |  | boolean |
+| sentinel_one.threat_event.rpid |  | keyword |
+| sentinel_one.threat_event.sha1 |  | keyword |
+| sentinel_one.threat_event.sha256 |  | keyword |
+| sentinel_one.threat_event.signature_signed_invalid_reason |  | keyword |
+| sentinel_one.threat_event.signed_status |  | keyword |
+| sentinel_one.threat_event.site.id |  | keyword |
+| sentinel_one.threat_event.site.name |  | keyword |
+| sentinel_one.threat_event.src.ip |  | ip |
+| sentinel_one.threat_event.src.port |  | long |
+| sentinel_one.threat_event.storyline |  | keyword |
+| sentinel_one.threat_event.task_name |  | keyword |
+| sentinel_one.threat_event.task_path |  | keyword |
+| sentinel_one.threat_event.threat_status |  | keyword |
+| sentinel_one.threat_event.tid |  | keyword |
+| sentinel_one.threat_event.true_context |  | keyword |
+| sentinel_one.threat_event.user |  | keyword |
+| sentinel_one.threat_event.verified_status |  | keyword |
 
