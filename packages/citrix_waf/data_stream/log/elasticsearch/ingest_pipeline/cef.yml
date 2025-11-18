@@ -2,103 +2,124 @@
 description: Pipeline for Citrix CEF messages
 processors:
   - set:
+      tag: set_citrix_cef_format_41a175e5
       field: citrix.cef_format
       value: true
   # https://docs.citrix.com/en-us/citrix-adc/downloads/cef-log-components.pdf
   - dissect:
+      tag: dissect_citrix_detail_51e6b372
       field: citrix.detail
       pattern: "CEF:%{citrix.cef_version}|%{citrix.device_vendor}|%{citrix.device_product}|%{citrix.device_version}|%{citrix.device_event_class_id}|%{citrix.name}|%{event.severity}|%{citrix.extended.message}"
   - kv:
+      tag: kv_citrix_extended_message_to_citrix_extended_kv_93498010
       field: citrix.extended.message
       target_field: citrix.extended_kv
       field_split: ' (?=[a-zA-Z][a-zA-Z0-9]*=)'
       value_split: '='
       ignore_missing: true
   - remove:
+      tag: remove_citrix_extended_9f808877
       field: citrix.extended
       if: ctx.citrix?.extended_kv != null
-  
+
   # https://docs.citrix.com/en-us/citrix-adc/current-release/application-firewall/logs.html#common-event-format-cef-logs
   - convert:
+      tag: convert_citrix_extended_kv_src_to_source_ip_1ed5ca12
       # src – source IP address
       field: citrix.extended_kv.src
       target_field: source.ip
       type: ip
       ignore_missing: true
   - remove:
+      tag: remove_citrix_extended_kv_src_4cf6d8b4
       field: citrix.extended_kv.src
       ignore_missing: true
   - convert:
+      tag: convert_citrix_extended_kv_spt_to_source_port_c3c90d76
       # spt – source port number
       field: citrix.extended_kv.spt
       target_field: source.port
       type: long
       ignore_missing: true
   - remove:
+      tag: remove_citrix_extended_kv_spt_e2e36761
       field: citrix.extended_kv.spt
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_method_to_http_request_method_58f6232d
       # method – Method (for example GET/POST)
       field: citrix.extended_kv.method
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_request_to_url_original_e21816b5
       # request – request URL
       field: citrix.extended_kv.request
       target_field: url.original
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_act_to_event_action_13c00860
       # action (for example blocked, transformed)
       field: citrix.extended_kv.act
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_msg_to_message_5eef7c54
       # message (Message regarding the observed security check violation)
       field: citrix.extended_kv.msg
       target_field: message
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_cn1_to_event_id_32caf115
       # event ID
       field: citrix.extended_kv.cn1
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_cn2_to_http_request_id_1f5832ff
       # HTTP Transaction ID
       field: citrix.extended_kv.cn2
       target_field: http.request.id
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_cs1_to_citrix_profile_name_328b1267
       # profile name
       field: citrix.extended_kv.cs1
       target_field: citrix.profile_name
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_cs2_to_citrix_ppe_id_35020cfe
       # PPE ID (for example PPE1)
       field: citrix.extended_kv.cs2
       target_field: citrix.ppe_id
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_cs3_to_citrix_session_id_d998f936
       # Session ID
       field: citrix.extended_kv.cs3
       target_field: citrix.session_id
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_cs4_to_citrix_severity_e4f324aa
       # Severity (for example INFO, ALERT)
       field: citrix.extended_kv.cs4
       target_field: citrix.severity
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_cs5_to_citrix_event_year_5cd62f04
       # event year
       field: citrix.extended_kv.cs5
       target_field: citrix.event_year
       ignore_missing: true
   - rename:
+      tag: rename_citrix_extended_kv_cs6_to_citrix_signature_violation_category_9f949ebc
       # Signature Violation Category
       field: citrix.extended_kv.cs6
       target_field: citrix.signature_violation_category
       ignore_missing: true
-  
+
   - rename:
+      tag: rename_citrix_extended_kv_to_citrix_extended_2223d100
       field: citrix.extended_kv
       target_field: citrix.extended
       ignore_missing: true
@@ -109,4 +130,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
