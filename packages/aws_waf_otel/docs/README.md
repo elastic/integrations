@@ -17,7 +17,7 @@ From the AWS side, to collect WAF logs, you need:
 
 ## How do I deploy this integration?
 
-For step-by-step instructions on how to set up an EDOT Cloud Forwarder for AWS, see the
+For step-by-step instructions on how to set up an EDOT Cloud Forwarder for AWS, refer to the
 [EDOT Cloud Forwarder for AWS](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) guide.
 
 ## Logs Reference
