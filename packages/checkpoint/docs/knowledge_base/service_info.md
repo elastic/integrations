@@ -133,6 +133,7 @@ After configuring both the Check Point Log Exporter and the Elastic Agent integr
 
 - Check the Elastic Agent logs for any specific error messages related to log processing, parsing failures, or communication with Elasticsearch.
 - In Kibana Discover, look for documents with an `error.message` field set, which can indicate issues during ingestion or processing.
+- In some instances firewall events may have the same Checkpoint `loguid` and arrive during the same timestamp resulting in a fingerprint collision. To avoid this [enable semi-unified logging](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Appendix.htm?TocPath=Log%20Exporter%7C_____9) in the Checkpoint dashboard.
 
 ## API Authentication Errors
 
