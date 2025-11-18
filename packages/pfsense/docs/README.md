@@ -1,87 +1,144 @@
 # pfSense Integration for Elastic
 
 ## Overview
-The pfSense integration for Elastic enables the collection of logs from pfSense and OPNsense firewalls. It parses logs received over the network via syslog (UDP, TCP, or TLS), providing visibility into network traffic, security events, and system health.
 
-This integration facilitates real-time monitoring and analysis of firewall activity, helping with threat detection and network troubleshooting.
+The pfSense integration enables you to collect and parse logs from pfSense and OPNsense firewalls. By ingesting these logs into the Elastic Stack, you can monitor network traffic, analyze security events, and gain comprehensive visibility into your network's health and security. This integration supports log collection over syslog, making it easy to centralize firewall data for analysis and visualization.
+
+This integration facilitates:
+
+- Monitoring firewall accept/deny events.
+- Analyzing VPN, DHCP, and DNS activity.
+- Auditing system and authentication events.
+- Visualizing network traffic through pre-built dashboards.
+
+### Compatibility
+
+This integration is compatible with recent versions of pfSense and OPNsense. It requires Elastic Stack version 8.11.0 or higher.
 
 ### How it works
-The integration works by receiving syslog data streams from pfSense or OPNsense devices. Elastic Agent listens on a configured network port (UDP, TCP, or TLS), receives the logs, processes them through its ingest pipelines to parse and structure the data, and then securely sends the data to Elasticsearch for indexing and analysis.
+
+The pfSense integration works by collecting logs sent from pfSense or OPNsense devices via the syslog protocol. An Elastic Agent is set up on a host designated as a syslog receiver. The firewall is then configured to forward its logs to this agent. The agent processes and forwards the data to your Elastic deployment, where it is parsed, indexed, and made available for analysis in Kibana. The integration supports both UDP and TCP for log transport.
 
 ## What data does this integration collect?
-The pfSense integration collects and parses the following types of logs:
-* Firewall
-* Unbound (DNS)
-* DHCP Daemon
-* OpenVPN
-* IPsec
-* HAProxy
-* Squid (Web Proxy)
-* PHP-FPM (Authentication events)
 
-**Note:** The HAProxy dashboards are compatible with the official HAProxy integration. For the best experience, it is recommended to also install the HAProxy integration assets. All other log types not listed above will be dropped.
+This integration collects several types of logs from pfSense and OPNsense, providing a broad view of network and system activity. The supported log types include:
+
+- **Firewall**: Logs detailing traffic allowed or blocked by firewall rules.
+- **Unbound**: DNS resolver logs.
+- **DHCP Daemon**: Logs related to DHCP lease assignments and requests.
+- **OpenVPN**: Virtual Private Network connection and status logs.
+- **IPsec**: IP security protocol logs for VPN tunnels.
+- **HAProxy**: High-availability and load balancer logs.
+- **Squid**: Web proxy access and system logs.
+- **PHP-FPM**: Logs related to user authentication events in the web interface.
+
+Logs that do not match these types will be dropped by the integration's ingest pipeline.
 
 ## What do I need to use this integration?
-You need an installed Elastic Agent to act as the collection point for the syslog data.
+
+- A pfSense or OPNsense firewall with administrative access to configure log forwarding.
+- Network connectivity between the firewall and the Elastic Agent host.
+- An installed Elastic Agent to receive the syslog data.
 
 ## How do I deploy this integration?
 
 ### Agent-based deployment
 
-Elastic Agent must be installed to stream data from the syslog receiver and ship it to Elastic. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/install-elastic-agents.html).
+Elastic Agent must be installed on a host that will receive the syslog data from your pfSense or OPNsense device. For detailed installation instructions, refer to the Elastic Agent [installation guide](docs-content://reference/fleet/install-elastic-agents.md). Only one Elastic Agent is needed per host.
 
-### Onboard / configure
+### Set up steps in pfSense
 
-Follow the steps below to configure your pfSense or OPNsense device to send logs to the Elastic Agent.
+1.  Log in to the pfSense web interface.
+2.  Navigate to **Status > System Logs**, and then click the **Settings** tab.
+3.  Scroll to the bottom and check the **Enable Remote Logging** box.
+4.  In the **Remote log servers** field, enter the IP address and port of your Elastic Agent host (e.g., `192.168.1.10:9001`).
+5.  Under **Remote Syslog Contents**, you have two options:
+    - **Syslog format (Recommended)**: Check the box for **Syslog format**. This format provides the firewall hostname and proper timezone information in the logs.
+    - **BSD format**: If you use the default BSD format, you must configure the **Timezone Offset** setting in the integration policy in Kibana to ensure timestamps are parsed correctly.
+6.  Select the logs you wish to forward. To capture logs from packages like HAProxy or Squid, you must select the **Everything** option.
+7.  Click **Save**.
 
-#### pfSense Setup
+For more details, refer to the [official pfSense documentation](https://docs.netgate.com/pfsense/en/latest/monitoring/logs/settings.html).
 
-1.  In the pfSense web interface, navigate to **Status > System Logs**, and then click on the **Settings** tab.
-2.  Scroll to the bottom and check the **Enable Remote Logging** box.
-3.  (Optional) Select a specific source interface to use for log forwarding under **Source Address**.
-4.  In the **Remote log servers** field, enter the IP address and port of your Elastic Agent (e.g., `192.168.100.50:9001`).
-5.  Under **Remote Syslog Contents**, select the logs you wish to forward.
-    *   To collect logs from packages like HAProxy or Squid, you must select **Everything**.
-    *   For standard logs, you can select individual services like Firewall, DHCP, OpenVPN, etc.
+### Set up steps in OPNsense
 
-#### OPNsense Setup
+1.  Log in to the OPNsense web interface.
+2.  Navigate to **System > Settings > Logging / Targets**.
+3.  Click the **+** (Add) icon to create a new logging target.
+4.  Configure the settings as follows:
+    - **Transport**: Choose the desired transport protocol (UDP, TCP).
+    - **Applications**: Leave empty to send all logs, or select the specific applications you want to monitor.
+    - **Hostname**: Enter the IP address of the Elastic Agent host.
+    - **Port**: Enter the port number the agent is listening on.
+    - **Certificate**: (For TLS only) Select the appropriate client certificate.
+    - **Description**: Add a descriptive name, such as "Syslog to Elastic".
+5.  Click **Save**.
 
-1.  In the OPNsense web interface, navigate to **System > Settings > Logging / Targets**.
-2.  Click the **Add** button (plus icon) to create a new logging target.
-3.  Configure the target with the following settings:
-    *   **Transport**: UDP, TCP, or TLS, matching your Elastic Agent input configuration.
-    *   **Applications**: Leave empty to forward all logs, or select specific applications.
-    *   **Levels & Facilities**: Leave with "Nothing Selected".
-    *   **Hostname**: The IP address of your Elastic Agent.
-    *   **Port**: The port your Elastic Agent is listening on.
-    *   **Certificate**: (For TLS only) Select the appropriate client certificate.
-    *   **Description**: A descriptive name, e.g., "Syslog to Elastic".
-4.  Click **Save**.
+### Set up steps in Kibana
 
-**Important Configuration Note:**
+1.  In Kibana, navigate to **Management > Integrations**.
+2.  Search for "pfSense" and select the integration.
+3.  Click **Add pfSense**.
+4.  Configure the integration by selecting an input type and providing the necessary settings. The module is configured by default to use the `UDP` input on port `9001`.
 
-The pfSense integration supports both the BSD logging format (default on pfSense) and the standard Syslog format (RFC 5424, an option on pfSense).
+#### UDP Input Configuration
 
-The **Syslog format is highly recommended** as it provides the firewall's hostname and includes proper timezone information in the timestamps.
+This input collects logs over a UDP socket.
 
-If you must use the BSD format, you **must** configure the `Timezone Offset` setting in the integration policy. If you do not, timestamps will default to the timezone of the Elastic Agent, which may be incorrect. For more details, see the pfSense [log settings documentation](https://docs.netgate.com/pfsense/en/latest/monitoring/logs/settings.html).
+| Setting | Description |
+|---|---|
+| **Syslog Host** | The bind address for the UDP listener (e.g., `0.0.0.0` to listen on all interfaces). |
+| **Syslog Port** | The UDP port to listen on (e.g., `9001`). |
+| **Internal Networks** | A list of your internal IP subnets. Supports CIDR notation and named ranges like `private`. |
+| **Timezone Offset** | If using BSD format logs, set the timezone offset (e.g., `-05:00` or `EST`) to correctly parse timestamps. Defaults to the agent's local timezone. |
+| **Preserve original event** | If checked, a raw copy of the original log is stored in the `event.original` field. |
+
+#### TCP Input Configuration
+
+This input collects logs over a TCP socket.
+
+| Setting | Description |
+|---|---|
+| **Syslog Host** | The bind address for the TCP listener (e.g., `0.0.0.0`). |
+| **Syslog Port** | The TCP port to listen on (e.g., `9001`). |
+| **Internal Networks** | A list of your internal IP subnets. |
+| **Timezone Offset** | If using BSD format logs, set the timezone offset to correctly parse timestamps. |
+| **SSL Configuration** | Configure SSL options for encrypted communication. See the [SSL documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details. |
+| **Preserve original event** | If checked, a raw copy of the original log is stored in the `event.original` field. |
+
+After configuring the input, assign the integration to an agent policy and click **Save and continue**.
 
 ### Validation
 
-1.  On a host connected to the pfSense network, generate traffic that will trigger a firewall log event. For example, attempt a connection that you know will be blocked by a firewall rule.
-2.  Check the pfSense system logs to confirm that new event data is being written. In the pfSense web interface, navigate to **Status > System Logs > Firewall**.
-3.  In Kibana, navigate to the **Discover** tab or open the pre-built **Firewall - Dashboard [pfSense]** dashboard.
-4.  Filter for pfSense data by using the KQL query `event.dataset : "pfsense.log"`.
-5.  Verify that new log events from the pfSense host are appearing. You should see logs corresponding to the traffic you generated.
+1.  First, verify on your pfSense or OPNsense device that logs are being actively sent to the configured Elastic Agent host.
+2.  In Kibana, navigate to **Discover**.
+3.  In the search bar, enter `data_stream.dataset: "pfsense.log"` and check for incoming documents.
+4.  Verify that events are appearing with recent timestamps.
+5.  Navigate to **Dashboard** and search for the pfSense dashboards to see if the visualizations are populated with data.
 
-A huge thanks to [a3ilson](https://github.com/a3ilson) for the https://github.com/pfelk/pfelk repo, which is the foundation for the majority of the grok patterns and dashboards in this integration.
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+- **No data is being collected**:
+  - Verify network connectivity between the firewall and the Elastic Agent host.
+  - Ensure there are no firewalls or network ACLs blocking the syslog port.
+  - Confirm that the listening port in the integration policy matches the destination port on the firewall.
+- **Incorrect Timestamps**:
+  - If using the default BSD log format from pfSense, ensure the **Timezone Offset** is correctly configured in the integration settings in Kibana. The recommended solution is to switch to the **Syslog format** on the pfSense device.
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
 
 ### log
-The `log` data stream contains all log types collected from the pfSense or OPNsense device.
+
+The `log` data stream collects and parses all supported log types from the pfSense or OPNsense firewall.
 
 #### log fields
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -347,6 +404,7 @@ The `log` data stream contains all log types collected from the pfSense or OPNse
 
 
 #### log sample event
+
 An example event for `log` looks as following:
 
 ```json
@@ -491,6 +549,7 @@ An example event for `log` looks as following:
 ```
 
 ### Inputs used
+
 These inputs can be used with this integration:
 <details>
 <summary>tcp</summary>
