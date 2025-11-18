@@ -37,13 +37,6 @@ Suricata's performance is highly dependent on the hardware it runs on, the volum
 
    ```yaml
    outputs:
-     # a line based alerts log similar to Snort's fast.log
-     - fast:
-         enabled: yes
-         filename: fast.log
-         append: yes
-         #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
-
      # Extensible Event Format (nicknamed EVE) event log in JSON format
      - eve-log:
          enabled: yes
