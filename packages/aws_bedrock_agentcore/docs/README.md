@@ -317,10 +317,10 @@ An example event for `runtime_application` looks as following:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| gen_ai.conversation.id | ID of the conversation. | keyword |
+| gen_ai.conversation.id | Unique identifier for the conversation or session. | keyword |
 | gen_ai.operation.name | Name of the operation. | keyword |
 | gen_ai.prompt | The user prompt sent to the AgentCore runtime. | text |
-| gen_ai.provider.name | Name of the provider. | keyword |
+| gen_ai.provider.name | Name of the AI provider or vendor. | keyword |
 | gen_ai.request.id | Unique identifier for the request. | keyword |
 | gen_ai.system | Name of the AI system (aws). | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -328,5 +328,5 @@ An example event for `runtime_application` looks as following:
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset | long |
-| session.id |  | keyword |
+| session.id | Identifier for the session. | keyword |
 
