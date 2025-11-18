@@ -11,8 +11,10 @@ receivers:
 processors:
   elasticapm: {}
 
+{{#if enable_aggregated_metrics }}
 connectors:
   elasticapm: {}
+{{/if}}
 {{/if}}
 
 service:
@@ -31,9 +33,13 @@ service:
       traces:
         receivers: [otlp]
         processors: [elasticapm]
+    {{#if enable_aggregated_metrics }}
         exporters: [elasticapm]
+    {{/if}}
 
+    {{#if enable_aggregated_metrics }}
       metrics/aggregated-metrics:
         receivers: [elasticapm]
         processors: []
+    {{/if}}
     {{/if}}
