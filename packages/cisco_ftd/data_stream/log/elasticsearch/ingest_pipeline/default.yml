@@ -1433,6 +1433,15 @@ processors:
         DstPort:
           target: dst_port
           ecs: [destination.port]
+        DestinationIP_DynamicAttribute:
+          target: destination_ip_dynamic_attribute
+          id: ["430002", "430003"]
+        DestinationSecurityGroup:
+          target: destination_security_group
+          id: ["430002", "430003"]
+        DestinationSecurityGroupTag:
+          target: destination_security_group_tag
+          id: ["430002", "430003"]
         EgressInterface:
           target: egress_interface
           id: ["430001", "430002", "430003"]
@@ -1648,6 +1657,15 @@ processors:
         SperoDisposition:
           target: spero_disposition
           id: ["430004", "430005"]
+        SourceSecurityGroup:
+          target: source_security_group
+          id: ["430002", "430003"]
+        SourceSecurityGroupTag:
+          target: source_security_group_tag
+          id: ["430002", "430003"]
+        SourceSecurityGroupType:
+          target: source_security_group_type
+          id: ["430002", "430003"]
         SrcIP:
           target: src_ip
           ecs: [source.address]
@@ -1738,6 +1756,9 @@ processors:
                                     'dns_record_type',
                                     'dns_response_type',
                                     'dns_ttl',
+                                    'destination_ip_dynamic_attribute',
+                                    'destination_security_group',
+                                    'destination_security_group_tag',
                                     'dst_ip',
                                     'dst_port',
                                     'egress_interface',
@@ -1768,6 +1789,9 @@ processors:
                                     'responder_bytes',
                                     'responder_packets',
                                     'sha_disposition',
+                                    'source_security_group',
+                                    'source_security_group_tag',
+                                    'source_security_group_type',
                                     'spero_disposition',
                                     'src_ip',
                                     'src_port',
@@ -3149,6 +3173,12 @@ processors:
       tag: community_id_99f56bc8
       ignore_missing: true
       ignore_failure: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   # Copy any fields under _temp_.cisco to its final destination. Those can help
   # with diagnosing the failure.
@@ -3172,3 +3202,7 @@ on_failure:
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
