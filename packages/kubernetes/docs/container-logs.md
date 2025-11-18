@@ -41,7 +41,7 @@ Customization can happen at:
 
 ### Set at pod definition time
 
-Here is an example of a Nginx deployment where we set both `elastic.co/dataset` and `elastic.co/namespace` annotations to route the container logs to specific datasets and namespace, respectively.
+Here is an example of an Nginx deployment where we set both `elastic.co/dataset` and `elastic.co/namespace` annotations to route the container logs to specific datasets and namespace, respectively.
 
 ```yaml
 # nginx-deployment.yaml
