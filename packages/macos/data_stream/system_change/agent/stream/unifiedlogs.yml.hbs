@@ -1,0 +1,48 @@
+predicate:
+- 'subsystem == "com.apple.security" OR subsystem == "com.apple.systempolicy" OR subsystem == "com.apple.installer" OR process == "Installer" OR process == "softwareupdated" OR eventMessage CONTAINS[c] "removed package" OR eventMessage CONTAINS[c] "forget package"'
+{{#each predicate as |p|}}
+- {{p}}
+{{/each}}
+{{#if start}}
+start: {{start}}
+{{/if}}
+{{#if end}}
+end: {{end}}
+{{/if}}
+{{#if process}}
+process:
+{{#each process as |p|}}
+- {{p}}
+{{/each}}
+{{/if}}
+source: {{source}}
+info: {{info}}
+debug: {{debug}}
+backtrace: {{backtrace}}
+signpost: {{signpost}}
+unreliable: {{unreliable}}
+mach_continuous_time: {{mach_continuous_time}}
+backfill: {{backfill}}
+{{#if archive_file}}
+archive_file: {{archive_file}}
+{{/if}}
+{{#if trace_file}}
+trace_file: {{trace_file}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

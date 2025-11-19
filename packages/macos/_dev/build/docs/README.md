@@ -132,9 +132,29 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
-#### Unified logs
+### Authentication
 
-{{fields "unified_log"}}
+{{fields "authentication"}}
+
+### File Read/Write
+
+{{fields "file_read_write"}}
+
+### Network Activity
+
+{{fields "network_activity"}}
+
+### Process Execution Monitoring
+
+{{fields "process_execution_monitoring"}}
+
+### System Change
+
+{{fields "system_change"}}
+
+### User and Account Management
+
+{{fields "user_and_account_management"}}
 
 ### Inputs used
 

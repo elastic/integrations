@@ -132,7 +132,7 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
-#### Unified logs
+### Authentication
 
 **Exported fields**
 
@@ -146,146 +146,682 @@ For more information on architectures that can be used for scaling this integrat
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| macos.unified_log.activity_identifier |  | keyword |
-| macos.unified_log.backtrace.frames.image.offset |  | keyword |
-| macos.unified_log.backtrace.frames.image.uuid |  | keyword |
-| macos.unified_log.boot_uuid |  | keyword |
-| macos.unified_log.category |  | keyword |
-| macos.unified_log.event.category |  | keyword |
-| macos.unified_log.event.message.account_id |  | keyword |
-| macos.unified_log.event.message.accurate_ecn_client |  | keyword |
-| macos.unified_log.event.message.accurate_ecn_server |  | keyword |
-| macos.unified_log.event.message.ack |  | keyword |
-| macos.unified_log.event.message.acks_compressed |  | long |
-| macos.unified_log.event.message.acks_delayed |  | long |
-| macos.unified_log.event.message.alpn |  | keyword |
-| macos.unified_log.event.message.attribution |  | keyword |
-| macos.unified_log.event.message.base_rtt_ms |  | keyword |
-| macos.unified_log.event.message.bundle_id |  | keyword |
-| macos.unified_log.event.message.bytes_in |  | long |
-| macos.unified_log.event.message.bytes_out |  | long |
-| macos.unified_log.event.message.cache_hit |  | boolean |
-| macos.unified_log.event.message.cipher_suite |  | keyword |
-| macos.unified_log.event.message.client_ip |  | ip |
-| macos.unified_log.event.message.client_port |  | long |
-| macos.unified_log.event.message.connection |  | long |
-| macos.unified_log.event.message.connection_detail |  | keyword |
-| macos.unified_log.event.message.connection_duration_ms |  | long |
-| macos.unified_log.event.message.connection_id |  | keyword |
-| macos.unified_log.event.message.connection_identifier |  | keyword |
-| macos.unified_log.event.message.connection_time |  | keyword |
-| macos.unified_log.event.message.connection_uuid |  | keyword |
-| macos.unified_log.event.message.delayed_acks_sent |  | long |
-| macos.unified_log.event.message.description |  | keyword |
-| macos.unified_log.event.message.dest_port |  | long |
-| macos.unified_log.event.message.direct_logout_type |  | long |
-| macos.unified_log.event.message.dns_duration |  | keyword |
-| macos.unified_log.event.message.dns_start |  | keyword |
-| macos.unified_log.event.message.domain_lookup_duration_ms |  | long |
-| macos.unified_log.event.message.duration |  | keyword |
-| macos.unified_log.event.message.ecn_acked |  | long |
-| macos.unified_log.event.message.ecn_in |  | long |
-| macos.unified_log.event.message.ecn_lost |  | long |
-| macos.unified_log.event.message.ecn_marked |  | long |
-| macos.unified_log.event.message.ecn_miss |  | long |
-| macos.unified_log.event.message.ecn_out |  | long |
-| macos.unified_log.event.message.ecn_sent |  | long |
-| macos.unified_log.event.message.expected_workload |  | keyword |
-| macos.unified_log.event.message.false_started |  | boolean |
-| macos.unified_log.event.message.flags |  | keyword |
-| macos.unified_log.event.message.flight_time |  | keyword |
-| macos.unified_log.event.message.group |  | keyword |
-| macos.unified_log.event.message.group_id |  | keyword |
-| macos.unified_log.event.message.guest_account |  | long |
-| macos.unified_log.event.message.home_directory_path |  | keyword |
-| macos.unified_log.event.message.hostname |  | keyword |
-| macos.unified_log.event.message.hostname_port |  | long |
-| macos.unified_log.event.message.init_flag |  | long |
-| macos.unified_log.event.message.interface |  | keyword |
-| macos.unified_log.event.message.listener |  | boolean |
-| macos.unified_log.event.message.mach |  | boolean |
-| macos.unified_log.event.message.name |  | keyword |
-| macos.unified_log.event.message.ocsp_received |  | boolean |
-| macos.unified_log.event.message.offered_ticket |  | boolean |
-| macos.unified_log.event.message.out_of_order_bytes |  | long |
-| macos.unified_log.event.message.packets_in |  | long |
-| macos.unified_log.event.message.packets_out |  | long |
-| macos.unified_log.event.message.pake |  | keyword |
-| macos.unified_log.event.message.path_status |  | keyword |
-| macos.unified_log.event.message.peer |  | boolean |
-| macos.unified_log.event.message.pid |  | long |
-| macos.unified_log.event.message.privacy_stance |  | keyword |
-| macos.unified_log.event.message.private_relay |  | boolean |
-| macos.unified_log.event.message.protocol |  | keyword |
-| macos.unified_log.event.message.rd_t_in |  | long |
-| macos.unified_log.event.message.rd_t_out |  | long |
-| macos.unified_log.event.message.read_stalls |  | long |
-| macos.unified_log.event.message.request_bytes |  | long |
-| macos.unified_log.event.message.request_duration_ms |  | long |
-| macos.unified_log.event.message.request_start_ms |  | long |
-| macos.unified_log.event.message.response_bytes |  | long |
-| macos.unified_log.event.message.response_duration_ms |  | long |
-| macos.unified_log.event.message.response_start_ms |  | long |
-| macos.unified_log.event.message.response_status |  | long |
-| macos.unified_log.event.message.resumed |  | boolean |
-| macos.unified_log.event.message.retransmitted_bytes |  | long |
-| macos.unified_log.event.message.rtt |  | keyword |
-| macos.unified_log.event.message.rtt_cache |  | keyword |
-| macos.unified_log.event.message.rtt_nc_ms |  | keyword |
-| macos.unified_log.event.message.rtt_updates |  | long |
-| macos.unified_log.event.message.rtt_var_ms |  | keyword |
-| macos.unified_log.event.message.rtt_var_nc_ms |  | keyword |
-| macos.unified_log.event.message.sct_received |  | boolean |
-| macos.unified_log.event.message.secure_connection_duration_ms |  | long |
-| macos.unified_log.event.message.seq |  | keyword |
-| macos.unified_log.event.message.server_id |  | keyword |
-| macos.unified_log.event.message.server_port |  | long |
-| macos.unified_log.event.message.session_agent_pid |  | keyword |
-| macos.unified_log.event.message.session_uuid |  | keyword |
-| macos.unified_log.event.message.signature_alg |  | keyword |
-| macos.unified_log.event.message.src_port |  | long |
-| macos.unified_log.event.message.state |  | keyword |
-| macos.unified_log.event.message.syns |  | long |
-| macos.unified_log.event.message.task_uid |  | keyword |
-| macos.unified_log.event.message.tcp_duration |  | keyword |
-| macos.unified_log.event.message.tcp_start |  | keyword |
-| macos.unified_log.event.message.tfo_in |  | long |
-| macos.unified_log.event.message.tfo_miss |  | long |
-| macos.unified_log.event.message.tfo_out |  | long |
-| macos.unified_log.event.message.timestamp_enabled |  | long |
-| macos.unified_log.event.message.tls_duration |  | keyword |
-| macos.unified_log.event.message.tls_version |  | keyword |
-| macos.unified_log.event.message.traffic_class |  | keyword |
-| macos.unified_log.event.message.transaction_duration_ms |  | long |
-| macos.unified_log.event.message.tso_enabled |  | long |
-| macos.unified_log.event.message.url |  | keyword |
-| macos.unified_log.event.message.url_hash |  | keyword |
-| macos.unified_log.event.message.user.guid |  | keyword |
-| macos.unified_log.event.message.user.id |  | keyword |
-| macos.unified_log.event.message.user.long_name |  | keyword |
-| macos.unified_log.event.message.user.name |  | keyword |
-| macos.unified_log.event.message.win |  | keyword |
-| macos.unified_log.event.message.wr_t_in |  | long |
-| macos.unified_log.event.message.wr_t_out |  | long |
-| macos.unified_log.event.message.write_stalls |  | long |
-| macos.unified_log.event.type |  | keyword |
-| macos.unified_log.format_string |  | keyword |
-| macos.unified_log.mach_timestamp |  | double |
-| macos.unified_log.message_type |  | keyword |
-| macos.unified_log.parent_activity_identifier |  | keyword |
-| macos.unified_log.process.id |  | long |
-| macos.unified_log.process.image_path |  | keyword |
-| macos.unified_log.process.image_uuid |  | keyword |
-| macos.unified_log.sender.image_path |  | keyword |
-| macos.unified_log.sender.image_uuid |  | keyword |
-| macos.unified_log.sender.program_counter |  | long |
-| macos.unified_log.source |  | keyword |
-| macos.unified_log.subsystem |  | keyword |
-| macos.unified_log.thread_id |  | long |
-| macos.unified_log.timestamp |  | date |
-| macos.unified_log.timezone_name |  | keyword |
-| macos.unified_log.trace_id |  | keyword |
-| macos.unified_log.user_id |  | keyword |
+| macos.activity_identifier |  | keyword |
+| macos.backtrace.frames.image.offset |  | keyword |
+| macos.backtrace.frames.image.uuid |  | keyword |
+| macos.boot_uuid |  | keyword |
+| macos.category |  | keyword |
+| macos.event.category |  | keyword |
+| macos.event.message.account_id |  | keyword |
+| macos.event.message.accurate_ecn_client |  | keyword |
+| macos.event.message.accurate_ecn_server |  | keyword |
+| macos.event.message.ack |  | keyword |
+| macos.event.message.acks_compressed |  | long |
+| macos.event.message.acks_delayed |  | long |
+| macos.event.message.alpn |  | keyword |
+| macos.event.message.attribution |  | keyword |
+| macos.event.message.base_rtt_ms |  | keyword |
+| macos.event.message.bundle_id |  | keyword |
+| macos.event.message.bytes_in |  | long |
+| macos.event.message.bytes_out |  | long |
+| macos.event.message.cache_hit |  | boolean |
+| macos.event.message.cipher_suite |  | keyword |
+| macos.event.message.client_ip |  | ip |
+| macos.event.message.client_port |  | long |
+| macos.event.message.connection |  | long |
+| macos.event.message.connection_detail |  | keyword |
+| macos.event.message.connection_duration_ms |  | long |
+| macos.event.message.connection_id |  | keyword |
+| macos.event.message.connection_identifier |  | keyword |
+| macos.event.message.connection_time |  | keyword |
+| macos.event.message.connection_uuid |  | keyword |
+| macos.event.message.delayed_acks_sent |  | long |
+| macos.event.message.description |  | keyword |
+| macos.event.message.dest_port |  | long |
+| macos.event.message.direct_logout_type |  | long |
+| macos.event.message.dns_duration |  | keyword |
+| macos.event.message.dns_start |  | keyword |
+| macos.event.message.domain_lookup_duration_ms |  | long |
+| macos.event.message.duration |  | keyword |
+| macos.event.message.ecn_acked |  | long |
+| macos.event.message.ecn_in |  | long |
+| macos.event.message.ecn_lost |  | long |
+| macos.event.message.ecn_marked |  | long |
+| macos.event.message.ecn_miss |  | long |
+| macos.event.message.ecn_out |  | long |
+| macos.event.message.ecn_sent |  | long |
+| macos.event.message.expected_workload |  | keyword |
+| macos.event.message.false_started |  | boolean |
+| macos.event.message.flags |  | keyword |
+| macos.event.message.flight_time |  | keyword |
+| macos.event.message.group |  | keyword |
+| macos.event.message.group_id |  | keyword |
+| macos.event.message.guest_account |  | long |
+| macos.event.message.home_directory_path |  | keyword |
+| macos.event.message.hostname |  | keyword |
+| macos.event.message.hostname_port |  | long |
+| macos.event.message.init_flag |  | long |
+| macos.event.message.interface |  | keyword |
+| macos.event.message.listener |  | boolean |
+| macos.event.message.mach |  | boolean |
+| macos.event.message.name |  | keyword |
+| macos.event.message.ocsp_received |  | boolean |
+| macos.event.message.offered_ticket |  | boolean |
+| macos.event.message.out_of_order_bytes |  | long |
+| macos.event.message.packets_in |  | long |
+| macos.event.message.packets_out |  | long |
+| macos.event.message.pake |  | keyword |
+| macos.event.message.path_status |  | keyword |
+| macos.event.message.peer |  | boolean |
+| macos.event.message.pid |  | long |
+| macos.event.message.privacy_stance |  | keyword |
+| macos.event.message.private_relay |  | boolean |
+| macos.event.message.protocol |  | keyword |
+| macos.event.message.rd_t_in |  | long |
+| macos.event.message.rd_t_out |  | long |
+| macos.event.message.read_stalls |  | long |
+| macos.event.message.request_bytes |  | long |
+| macos.event.message.request_duration_ms |  | long |
+| macos.event.message.request_start_ms |  | long |
+| macos.event.message.response_bytes |  | long |
+| macos.event.message.response_duration_ms |  | long |
+| macos.event.message.response_start_ms |  | long |
+| macos.event.message.response_status |  | long |
+| macos.event.message.resumed |  | boolean |
+| macos.event.message.retransmitted_bytes |  | long |
+| macos.event.message.rtt |  | keyword |
+| macos.event.message.rtt_cache |  | keyword |
+| macos.event.message.rtt_nc_ms |  | keyword |
+| macos.event.message.rtt_updates |  | long |
+| macos.event.message.rtt_var_ms |  | keyword |
+| macos.event.message.rtt_var_nc_ms |  | keyword |
+| macos.event.message.sct_received |  | boolean |
+| macos.event.message.secure_connection_duration_ms |  | long |
+| macos.event.message.seq |  | keyword |
+| macos.event.message.server_id |  | keyword |
+| macos.event.message.server_port |  | long |
+| macos.event.message.session_agent_pid |  | keyword |
+| macos.event.message.session_uuid |  | keyword |
+| macos.event.message.signature_alg |  | keyword |
+| macos.event.message.src_port |  | long |
+| macos.event.message.state |  | keyword |
+| macos.event.message.syns |  | long |
+| macos.event.message.task_uid |  | keyword |
+| macos.event.message.tcp_duration |  | keyword |
+| macos.event.message.tcp_start |  | keyword |
+| macos.event.message.tfo_in |  | long |
+| macos.event.message.tfo_miss |  | long |
+| macos.event.message.tfo_out |  | long |
+| macos.event.message.timestamp_enabled |  | long |
+| macos.event.message.tls_duration |  | keyword |
+| macos.event.message.tls_version |  | keyword |
+| macos.event.message.traffic_class |  | keyword |
+| macos.event.message.transaction_duration_ms |  | long |
+| macos.event.message.tso_enabled |  | long |
+| macos.event.message.url |  | keyword |
+| macos.event.message.url_hash |  | keyword |
+| macos.event.message.user.guid |  | keyword |
+| macos.event.message.user.id |  | keyword |
+| macos.event.message.user.long_name |  | keyword |
+| macos.event.message.user.name |  | keyword |
+| macos.event.message.win |  | keyword |
+| macos.event.message.wr_t_in |  | long |
+| macos.event.message.wr_t_out |  | long |
+| macos.event.message.write_stalls |  | long |
+| macos.event.type |  | keyword |
+| macos.format_string |  | keyword |
+| macos.mach_timestamp |  | double |
+| macos.message_type |  | keyword |
+| macos.parent_activity_identifier |  | keyword |
+| macos.process.id |  | long |
+| macos.process.image_path |  | keyword |
+| macos.process.image_uuid |  | keyword |
+| macos.sender.image_path |  | keyword |
+| macos.sender.image_uuid |  | keyword |
+| macos.sender.program_counter |  | long |
+| macos.source |  | keyword |
+| macos.subsystem |  | keyword |
+| macos.thread_id |  | long |
+| macos.timestamp |  | date |
+| macos.timezone_name |  | keyword |
+| macos.trace_id |  | keyword |
+| macos.user_id |  | keyword |
+
+
+### File Read/Write
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| macos.activity_identifier |  | keyword |
+| macos.backtrace.frames.image.offset |  | keyword |
+| macos.backtrace.frames.image.uuid |  | keyword |
+| macos.boot_uuid |  | keyword |
+| macos.category |  | keyword |
+| macos.event.category |  | keyword |
+| macos.event.message.description |  | keyword |
+| macos.event.type |  | keyword |
+| macos.format_string |  | keyword |
+| macos.mach_timestamp |  | double |
+| macos.message_type |  | keyword |
+| macos.parent_activity_identifier |  | keyword |
+| macos.process.id |  | long |
+| macos.process.image_path |  | keyword |
+| macos.process.image_uuid |  | keyword |
+| macos.sender.image_path |  | keyword |
+| macos.sender.image_uuid |  | keyword |
+| macos.sender.program_counter |  | long |
+| macos.source |  | keyword |
+| macos.subsystem |  | keyword |
+| macos.thread_id |  | long |
+| macos.timestamp |  | date |
+| macos.timezone_name |  | keyword |
+| macos.trace_id |  | keyword |
+| macos.user_id |  | keyword |
+
+
+### Network Activity
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| macos.activity_identifier |  | keyword |
+| macos.backtrace.frames.image.offset |  | keyword |
+| macos.backtrace.frames.image.uuid |  | keyword |
+| macos.boot_uuid |  | keyword |
+| macos.category |  | keyword |
+| macos.event.category |  | keyword |
+| macos.event.message.account_id |  | keyword |
+| macos.event.message.accurate_ecn_client |  | keyword |
+| macos.event.message.accurate_ecn_server |  | keyword |
+| macos.event.message.ack |  | keyword |
+| macos.event.message.acks_compressed |  | long |
+| macos.event.message.acks_delayed |  | long |
+| macos.event.message.alpn |  | keyword |
+| macos.event.message.attribution |  | keyword |
+| macos.event.message.base_rtt_ms |  | keyword |
+| macos.event.message.bundle_id |  | keyword |
+| macos.event.message.bytes_in |  | long |
+| macos.event.message.bytes_out |  | long |
+| macos.event.message.cache_hit |  | boolean |
+| macos.event.message.cipher_suite |  | keyword |
+| macos.event.message.client_ip |  | ip |
+| macos.event.message.client_port |  | long |
+| macos.event.message.connection |  | long |
+| macos.event.message.connection_detail |  | keyword |
+| macos.event.message.connection_duration_ms |  | long |
+| macos.event.message.connection_id |  | keyword |
+| macos.event.message.connection_identifier |  | keyword |
+| macos.event.message.connection_time |  | keyword |
+| macos.event.message.connection_uuid |  | keyword |
+| macos.event.message.delayed_acks_sent |  | long |
+| macos.event.message.description |  | keyword |
+| macos.event.message.dest_port |  | long |
+| macos.event.message.dns_duration |  | keyword |
+| macos.event.message.dns_start |  | keyword |
+| macos.event.message.domain_lookup_duration_ms |  | long |
+| macos.event.message.duration |  | keyword |
+| macos.event.message.ecn_acked |  | long |
+| macos.event.message.ecn_in |  | long |
+| macos.event.message.ecn_lost |  | long |
+| macos.event.message.ecn_marked |  | long |
+| macos.event.message.ecn_miss |  | long |
+| macos.event.message.ecn_out |  | long |
+| macos.event.message.ecn_sent |  | long |
+| macos.event.message.expected_workload |  | keyword |
+| macos.event.message.false_started |  | boolean |
+| macos.event.message.flags |  | keyword |
+| macos.event.message.flight_time |  | keyword |
+| macos.event.message.group |  | keyword |
+| macos.event.message.hostname |  | keyword |
+| macos.event.message.hostname_port |  | long |
+| macos.event.message.init_flag |  | long |
+| macos.event.message.interface |  | keyword |
+| macos.event.message.listener |  | boolean |
+| macos.event.message.mach |  | boolean |
+| macos.event.message.name |  | keyword |
+| macos.event.message.ocsp_received |  | boolean |
+| macos.event.message.offered_ticket |  | boolean |
+| macos.event.message.out_of_order_bytes |  | long |
+| macos.event.message.packets_in |  | long |
+| macos.event.message.packets_out |  | long |
+| macos.event.message.pake |  | keyword |
+| macos.event.message.path_status |  | keyword |
+| macos.event.message.peer |  | boolean |
+| macos.event.message.pid |  | long |
+| macos.event.message.privacy_stance |  | keyword |
+| macos.event.message.private_relay |  | boolean |
+| macos.event.message.protocol |  | keyword |
+| macos.event.message.rcv_nxt |  | keyword |
+| macos.event.message.rd_t_in |  | long |
+| macos.event.message.rd_t_out |  | long |
+| macos.event.message.read_stalls |  | long |
+| macos.event.message.request_bytes |  | long |
+| macos.event.message.request_duration_ms |  | long |
+| macos.event.message.request_start_ms |  | long |
+| macos.event.message.response_bytes |  | long |
+| macos.event.message.response_duration_ms |  | long |
+| macos.event.message.response_start_ms |  | long |
+| macos.event.message.response_status |  | long |
+| macos.event.message.resumed |  | boolean |
+| macos.event.message.retransmitted_bytes |  | long |
+| macos.event.message.rtt |  | keyword |
+| macos.event.message.rtt_cache |  | keyword |
+| macos.event.message.rtt_nc_ms |  | keyword |
+| macos.event.message.rtt_updates |  | long |
+| macos.event.message.rtt_var_ms |  | keyword |
+| macos.event.message.rtt_var_nc_ms |  | keyword |
+| macos.event.message.sct_received |  | boolean |
+| macos.event.message.secure_connection_duration_ms |  | long |
+| macos.event.message.seq |  | keyword |
+| macos.event.message.server_id |  | keyword |
+| macos.event.message.server_port |  | long |
+| macos.event.message.session_uuid |  | keyword |
+| macos.event.message.signature_alg |  | keyword |
+| macos.event.message.snd_una |  | keyword |
+| macos.event.message.src_port |  | long |
+| macos.event.message.state |  | keyword |
+| macos.event.message.syns |  | long |
+| macos.event.message.task_uid |  | keyword |
+| macos.event.message.tcp_duration |  | keyword |
+| macos.event.message.tcp_start |  | keyword |
+| macos.event.message.tfo_in |  | long |
+| macos.event.message.tfo_miss |  | long |
+| macos.event.message.tfo_out |  | long |
+| macos.event.message.timestamp_enabled |  | long |
+| macos.event.message.tls_duration |  | keyword |
+| macos.event.message.tls_version |  | keyword |
+| macos.event.message.traffic_class |  | keyword |
+| macos.event.message.transaction_duration_ms |  | long |
+| macos.event.message.tso_enabled |  | long |
+| macos.event.message.url |  | keyword |
+| macos.event.message.url_hash |  | keyword |
+| macos.event.message.win |  | keyword |
+| macos.event.message.wr_t_in |  | long |
+| macos.event.message.wr_t_out |  | long |
+| macos.event.message.write_stalls |  | long |
+| macos.event.type |  | keyword |
+| macos.format_string |  | keyword |
+| macos.mach_timestamp |  | double |
+| macos.message_type |  | keyword |
+| macos.parent_activity_identifier |  | keyword |
+| macos.process.id |  | long |
+| macos.process.image_path |  | keyword |
+| macos.process.image_uuid |  | keyword |
+| macos.sender.image_path |  | keyword |
+| macos.sender.image_uuid |  | keyword |
+| macos.sender.program_counter |  | long |
+| macos.source |  | keyword |
+| macos.subsystem |  | keyword |
+| macos.thread_id |  | long |
+| macos.timestamp |  | date |
+| macos.timezone_name |  | keyword |
+| macos.trace_id |  | keyword |
+| macos.user_id |  | keyword |
+
+
+### Process Execution Monitoring
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| macos.activity_identifier |  | keyword |
+| macos.backtrace.frames.image.offset |  | keyword |
+| macos.backtrace.frames.image.uuid |  | keyword |
+| macos.boot_uuid |  | keyword |
+| macos.category |  | keyword |
+| macos.event.category |  | keyword |
+| macos.event.message.description |  | keyword |
+| macos.event.type |  | keyword |
+| macos.format_string |  | keyword |
+| macos.mach_timestamp |  | double |
+| macos.message_type |  | keyword |
+| macos.parent_activity_identifier |  | keyword |
+| macos.process.id |  | long |
+| macos.process.image_path |  | keyword |
+| macos.process.image_uuid |  | keyword |
+| macos.sender.image_path |  | keyword |
+| macos.sender.image_uuid |  | keyword |
+| macos.sender.program_counter |  | long |
+| macos.source |  | keyword |
+| macos.subsystem |  | keyword |
+| macos.thread_id |  | long |
+| macos.timestamp |  | date |
+| macos.timezone_name |  | keyword |
+| macos.trace_id |  | keyword |
+| macos.user_id |  | keyword |
+
+
+### System Change
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| macos.activity_identifier |  | keyword |
+| macos.backtrace.frames.image.offset |  | keyword |
+| macos.backtrace.frames.image.uuid |  | keyword |
+| macos.boot_uuid |  | keyword |
+| macos.category |  | keyword |
+| macos.event.category |  | keyword |
+| macos.event.message.account_id |  | keyword |
+| macos.event.message.accurate_ecn_client |  | keyword |
+| macos.event.message.accurate_ecn_server |  | keyword |
+| macos.event.message.ack |  | keyword |
+| macos.event.message.acks_compressed |  | long |
+| macos.event.message.acks_delayed |  | long |
+| macos.event.message.alpn |  | keyword |
+| macos.event.message.attribution |  | keyword |
+| macos.event.message.base_rtt_ms |  | keyword |
+| macos.event.message.bundle_id |  | keyword |
+| macos.event.message.bytes_in |  | long |
+| macos.event.message.bytes_out |  | long |
+| macos.event.message.cache_hit |  | boolean |
+| macos.event.message.cipher_suite |  | keyword |
+| macos.event.message.client_ip |  | ip |
+| macos.event.message.client_port |  | long |
+| macos.event.message.connection |  | long |
+| macos.event.message.connection_detail |  | keyword |
+| macos.event.message.connection_duration_ms |  | long |
+| macos.event.message.connection_id |  | keyword |
+| macos.event.message.connection_identifier |  | keyword |
+| macos.event.message.connection_time |  | keyword |
+| macos.event.message.connection_uuid |  | keyword |
+| macos.event.message.delayed_acks_sent |  | long |
+| macos.event.message.description |  | keyword |
+| macos.event.message.dest_port |  | long |
+| macos.event.message.dns_duration |  | keyword |
+| macos.event.message.dns_start |  | keyword |
+| macos.event.message.domain_lookup_duration_ms |  | long |
+| macos.event.message.duration |  | keyword |
+| macos.event.message.ecn_acked |  | long |
+| macos.event.message.ecn_in |  | long |
+| macos.event.message.ecn_lost |  | long |
+| macos.event.message.ecn_marked |  | long |
+| macos.event.message.ecn_miss |  | long |
+| macos.event.message.ecn_out |  | long |
+| macos.event.message.ecn_sent |  | long |
+| macos.event.message.expected_workload |  | keyword |
+| macos.event.message.false_started |  | boolean |
+| macos.event.message.flags |  | keyword |
+| macos.event.message.flight_time |  | keyword |
+| macos.event.message.group |  | keyword |
+| macos.event.message.hostname |  | keyword |
+| macos.event.message.hostname_port |  | long |
+| macos.event.message.init_flag |  | long |
+| macos.event.message.interface |  | keyword |
+| macos.event.message.listener |  | boolean |
+| macos.event.message.mach |  | boolean |
+| macos.event.message.name |  | keyword |
+| macos.event.message.ocsp_received |  | boolean |
+| macos.event.message.offered_ticket |  | boolean |
+| macos.event.message.out_of_order_bytes |  | long |
+| macos.event.message.packets_in |  | long |
+| macos.event.message.packets_out |  | long |
+| macos.event.message.pake |  | keyword |
+| macos.event.message.path_status |  | keyword |
+| macos.event.message.peer |  | boolean |
+| macos.event.message.pid |  | long |
+| macos.event.message.privacy_stance |  | keyword |
+| macos.event.message.private_relay |  | boolean |
+| macos.event.message.protocol |  | keyword |
+| macos.event.message.rcv_nxt |  | keyword |
+| macos.event.message.rd_t_in |  | long |
+| macos.event.message.rd_t_out |  | long |
+| macos.event.message.read_stalls |  | long |
+| macos.event.message.request_bytes |  | long |
+| macos.event.message.request_duration_ms |  | long |
+| macos.event.message.request_start_ms |  | long |
+| macos.event.message.response_bytes |  | long |
+| macos.event.message.response_duration_ms |  | long |
+| macos.event.message.response_start_ms |  | long |
+| macos.event.message.response_status |  | long |
+| macos.event.message.resumed |  | boolean |
+| macos.event.message.retransmitted_bytes |  | long |
+| macos.event.message.rtt |  | keyword |
+| macos.event.message.rtt_cache |  | keyword |
+| macos.event.message.rtt_nc_ms |  | keyword |
+| macos.event.message.rtt_updates |  | long |
+| macos.event.message.rtt_var_ms |  | keyword |
+| macos.event.message.rtt_var_nc_ms |  | keyword |
+| macos.event.message.sct_received |  | boolean |
+| macos.event.message.secure_connection_duration_ms |  | long |
+| macos.event.message.seq |  | keyword |
+| macos.event.message.server_id |  | keyword |
+| macos.event.message.server_port |  | long |
+| macos.event.message.session_uuid |  | keyword |
+| macos.event.message.signature_alg |  | keyword |
+| macos.event.message.snd_una |  | keyword |
+| macos.event.message.src_port |  | long |
+| macos.event.message.state |  | keyword |
+| macos.event.message.syns |  | long |
+| macos.event.message.task_uid |  | keyword |
+| macos.event.message.tcp_duration |  | keyword |
+| macos.event.message.tcp_start |  | keyword |
+| macos.event.message.tfo_in |  | long |
+| macos.event.message.tfo_miss |  | long |
+| macos.event.message.tfo_out |  | long |
+| macos.event.message.timestamp_enabled |  | long |
+| macos.event.message.tls_duration |  | keyword |
+| macos.event.message.tls_version |  | keyword |
+| macos.event.message.traffic_class |  | keyword |
+| macos.event.message.transaction_duration_ms |  | long |
+| macos.event.message.tso_enabled |  | long |
+| macos.event.message.url |  | keyword |
+| macos.event.message.url_hash |  | keyword |
+| macos.event.message.win |  | keyword |
+| macos.event.message.wr_t_in |  | long |
+| macos.event.message.wr_t_out |  | long |
+| macos.event.message.write_stalls |  | long |
+| macos.event.type |  | keyword |
+| macos.format_string |  | keyword |
+| macos.mach_timestamp |  | double |
+| macos.message_type |  | keyword |
+| macos.parent_activity_identifier |  | keyword |
+| macos.process.id |  | long |
+| macos.process.image_path |  | keyword |
+| macos.process.image_uuid |  | keyword |
+| macos.sender.image_path |  | keyword |
+| macos.sender.image_uuid |  | keyword |
+| macos.sender.program_counter |  | long |
+| macos.source |  | keyword |
+| macos.subsystem |  | keyword |
+| macos.thread_id |  | long |
+| macos.timestamp |  | date |
+| macos.timezone_name |  | keyword |
+| macos.trace_id |  | keyword |
+| macos.user_id |  | keyword |
+
+
+### User and Account Management
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| macos.activity_identifier |  | keyword |
+| macos.backtrace.frames.image.offset |  | keyword |
+| macos.backtrace.frames.image.uuid |  | keyword |
+| macos.boot_uuid |  | keyword |
+| macos.category |  | keyword |
+| macos.event.category |  | keyword |
+| macos.event.message.account_id |  | keyword |
+| macos.event.message.accurate_ecn_client |  | keyword |
+| macos.event.message.accurate_ecn_server |  | keyword |
+| macos.event.message.ack |  | keyword |
+| macos.event.message.acks_compressed |  | long |
+| macos.event.message.acks_delayed |  | long |
+| macos.event.message.alpn |  | keyword |
+| macos.event.message.attribution |  | keyword |
+| macos.event.message.base_rtt_ms |  | keyword |
+| macos.event.message.bundle_id |  | keyword |
+| macos.event.message.bytes_in |  | long |
+| macos.event.message.bytes_out |  | long |
+| macos.event.message.cache_hit |  | boolean |
+| macos.event.message.cipher_suite |  | keyword |
+| macos.event.message.client_ip |  | ip |
+| macos.event.message.client_port |  | long |
+| macos.event.message.connection |  | long |
+| macos.event.message.connection_detail |  | keyword |
+| macos.event.message.connection_duration_ms |  | long |
+| macos.event.message.connection_id |  | keyword |
+| macos.event.message.connection_identifier |  | keyword |
+| macos.event.message.connection_time |  | keyword |
+| macos.event.message.connection_uuid |  | keyword |
+| macos.event.message.delayed_acks_sent |  | long |
+| macos.event.message.description |  | keyword |
+| macos.event.message.dest_port |  | long |
+| macos.event.message.direct_logout_type |  | long |
+| macos.event.message.dns_duration |  | keyword |
+| macos.event.message.dns_start |  | keyword |
+| macos.event.message.domain_lookup_duration_ms |  | long |
+| macos.event.message.duration |  | keyword |
+| macos.event.message.ecn_acked |  | long |
+| macos.event.message.ecn_in |  | long |
+| macos.event.message.ecn_lost |  | long |
+| macos.event.message.ecn_marked |  | long |
+| macos.event.message.ecn_miss |  | long |
+| macos.event.message.ecn_out |  | long |
+| macos.event.message.ecn_sent |  | long |
+| macos.event.message.expected_workload |  | keyword |
+| macos.event.message.false_started |  | boolean |
+| macos.event.message.flags |  | keyword |
+| macos.event.message.flight_time |  | keyword |
+| macos.event.message.group |  | keyword |
+| macos.event.message.group_id |  | keyword |
+| macos.event.message.guest_account |  | long |
+| macos.event.message.home_directory_path |  | keyword |
+| macos.event.message.hostname |  | keyword |
+| macos.event.message.hostname_port |  | long |
+| macos.event.message.init_flag |  | long |
+| macos.event.message.interface |  | keyword |
+| macos.event.message.listener |  | boolean |
+| macos.event.message.mach |  | boolean |
+| macos.event.message.name |  | keyword |
+| macos.event.message.ocsp_received |  | boolean |
+| macos.event.message.offered_ticket |  | boolean |
+| macos.event.message.out_of_order_bytes |  | long |
+| macos.event.message.packets_in |  | long |
+| macos.event.message.packets_out |  | long |
+| macos.event.message.pake |  | keyword |
+| macos.event.message.path_status |  | keyword |
+| macos.event.message.peer |  | boolean |
+| macos.event.message.pid |  | long |
+| macos.event.message.privacy_stance |  | keyword |
+| macos.event.message.private_relay |  | boolean |
+| macos.event.message.protocol |  | keyword |
+| macos.event.message.rd_t_in |  | long |
+| macos.event.message.rd_t_out |  | long |
+| macos.event.message.read_stalls |  | long |
+| macos.event.message.request_bytes |  | long |
+| macos.event.message.request_duration_ms |  | long |
+| macos.event.message.request_start_ms |  | long |
+| macos.event.message.response_bytes |  | long |
+| macos.event.message.response_duration_ms |  | long |
+| macos.event.message.response_start_ms |  | long |
+| macos.event.message.response_status |  | long |
+| macos.event.message.resumed |  | boolean |
+| macos.event.message.retransmitted_bytes |  | long |
+| macos.event.message.rtt |  | keyword |
+| macos.event.message.rtt_cache |  | keyword |
+| macos.event.message.rtt_nc_ms |  | keyword |
+| macos.event.message.rtt_updates |  | long |
+| macos.event.message.rtt_var_ms |  | keyword |
+| macos.event.message.rtt_var_nc_ms |  | keyword |
+| macos.event.message.sct_received |  | boolean |
+| macos.event.message.secure_connection_duration_ms |  | long |
+| macos.event.message.seq |  | keyword |
+| macos.event.message.server_id |  | keyword |
+| macos.event.message.server_port |  | long |
+| macos.event.message.session_agent_pid |  | keyword |
+| macos.event.message.session_uuid |  | keyword |
+| macos.event.message.signature_alg |  | keyword |
+| macos.event.message.src_port |  | long |
+| macos.event.message.state |  | keyword |
+| macos.event.message.syns |  | long |
+| macos.event.message.task_uid |  | keyword |
+| macos.event.message.tcp_duration |  | keyword |
+| macos.event.message.tcp_start |  | keyword |
+| macos.event.message.tfo_in |  | long |
+| macos.event.message.tfo_miss |  | long |
+| macos.event.message.tfo_out |  | long |
+| macos.event.message.timestamp_enabled |  | long |
+| macos.event.message.tls_duration |  | keyword |
+| macos.event.message.tls_version |  | keyword |
+| macos.event.message.traffic_class |  | keyword |
+| macos.event.message.transaction_duration_ms |  | long |
+| macos.event.message.tso_enabled |  | long |
+| macos.event.message.url |  | keyword |
+| macos.event.message.url_hash |  | keyword |
+| macos.event.message.user.guid |  | keyword |
+| macos.event.message.user.id |  | keyword |
+| macos.event.message.user.long_name |  | keyword |
+| macos.event.message.user.name |  | keyword |
+| macos.event.message.win |  | keyword |
+| macos.event.message.wr_t_in |  | long |
+| macos.event.message.wr_t_out |  | long |
+| macos.event.message.write_stalls |  | long |
+| macos.event.type |  | keyword |
+| macos.format_string |  | keyword |
+| macos.mach_timestamp |  | double |
+| macos.message_type |  | keyword |
+| macos.parent_activity_identifier |  | keyword |
+| macos.process.id |  | long |
+| macos.process.image_path |  | keyword |
+| macos.process.image_uuid |  | keyword |
+| macos.sender.image_path |  | keyword |
+| macos.sender.image_uuid |  | keyword |
+| macos.sender.program_counter |  | long |
+| macos.source |  | keyword |
+| macos.subsystem |  | keyword |
+| macos.thread_id |  | long |
+| macos.timestamp |  | date |
+| macos.timezone_name |  | keyword |
+| macos.trace_id |  | keyword |
+| macos.user_id |  | keyword |
 
 
 ### Inputs used
