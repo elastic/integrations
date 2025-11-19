@@ -252,7 +252,9 @@ An example event for `runtime_application` looks as following:
         "provider": {
             "name": "aws"
         },
-        "conversation_id": "0a6a8cc0-42ac-4e2c-adee-c3cbb81d2e87",
+        "conversation": {
+            "id": "0a6a8cc0-42ac-4e2c-adee-c3cbb81d2e87"
+        },
         "operation": {
             "name": "InvokeAgentRuntime"
         }
