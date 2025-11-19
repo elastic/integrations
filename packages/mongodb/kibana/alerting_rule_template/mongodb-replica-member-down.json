@@ -15,7 +15,7 @@
             "timeWindowSize": 5,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert when replica sets report members in the down state within the configured time window.\n// Groups by data_stream.namespace and set name to isolate environments.\nFROM metrics-mongodb.replstatus-*\n| STATS members_down=MAX(mongodb.replstatus.members.down.count) BY data_stream.namespace, mongodb.replstatus.set_name\n| WHERE members_down > 0"
+                "esql": "// Alert when replica sets report members in the down state within the configured time window.\n// Groups by replica set name to isolate environments.\nFROM metrics-mongodb.replstatus-*\n| STATS members_down=MAX(mongodb.replstatus.members.down.count) BY mongodb.replstatus.set_name\n| WHERE members_down > 0"
             },
             "groupBy": "row",
             "termSize": 5,
