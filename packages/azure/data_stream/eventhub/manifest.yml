@@ -74,6 +74,104 @@ streams:
         type: bool
         multi: false
         default: false
+
+      #
+      # Processor v2 only settings
+      #
+      - name: processor_version
+        type: select
+        title: Processor version
+        multi: false
+        required: false
+        show_user: false
+        default: v1
+        options:
+          - text: v1
+            value: v1
+          - text: v2
+            value: v2
+        description: "The processor version that the integration should use. Possible values are `v1` and `v2` (preview). \nThe v2 event hub processor is in preview, so using the v1 processor is recommended for typical use cases.\nDefault is `v1`."
+      - name: processor_update_interval
+        type: text
+        title: Processor update interval
+        multi: false
+        required: false
+        show_user: false
+        default: 10s
+        description: >-
+          (Processor v2 only) How often the processor should attempt to claim partitions.
+
+          Default is `10` seconds.
+      - name: processor_start_position
+        type: select
+        title: Processor start position
+        multi: false
+        required: false
+        show_user: false
+        default: earliest
+        options:
+          - text: earliest
+            value: earliest
+          - text: latest
+            value: latest
+        description: >-
+          (Processor v2 only) Controls from what position in the event hub the processor should start processing messages for all partitions.
+
+          Possible values are `earliest` and `latest`.
+
+          `earliest` starts processing messages from the last checkpoint, or the beginning of the event hub if no checkpoint is available.
+
+          `latest` starts processing messages from the the latest event in the event hub and continues to process new events as they arrive.
+
+          Default is `earliest`.
+      - name: partition_receive_timeout
+        type: text
+        title: Partition receive timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 5s
+        description: >-
+          (Processor v2 only) Maximum time to wait before processing the messages received from the event hub.
+
+          The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first.
+
+          Default is `5` seconds.
+      - name: partition_receive_count
+        type: text
+        title: Partition receive count
+        multi: false
+        required: false
+        show_user: false
+        default: 100
+        description: >-
+          (Processor v2 only) Maximum number of messages from the event hub to wait for before processing them.
+
+          The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first.
+
+          Default is `100` messages.
+      - name: migrate_checkpoint
+        type: bool
+        title: Migrate checkpoint information
+        multi: false
+        required: false
+        show_user: false
+        default: true
+        description: >-
+          (Processor v2 only) Flag to control if the processor should perform  the checkpoint information migration from processor v1 to v2 at startup.
+
+          The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+
+          Default is `false`, which means the processor will not perform the checkpoint migration.
+      - name: endpoint_suffix
+        type: text
+        default: core.windows.net
+        required: true
+        title: Storage account endpoint suffix
+        show_user: false
+        description: >-
+          (Processor v2 only) Override the default storage account endpoint suffix.
+
 # Ensures agents have permissions to write data to `logs-*-*`
 elasticsearch:
   dynamic_dataset: true
