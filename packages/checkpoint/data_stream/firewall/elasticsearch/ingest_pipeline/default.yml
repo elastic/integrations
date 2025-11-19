@@ -2,6 +2,7 @@
 description: Pipeline for parsing checkpoint firewall logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
@@ -16,18 +17,18 @@ processors:
       field: event.original
       tag: "grok_syslog_line"
       patterns:
-        - '%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP}|-)
-          +(?:%{SYSLOG5424PRINTASCII:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII:syslog5424_app})
-          +(-|%{SYSLOG5424PRINTASCII:syslog5424_proc}) +(?::-|%{SYSLOG5424PRINTASCII:syslog5424_msgid})
-          +\[%{GREEDYDATA:syslog5424_sd}\]'
+        - '%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP}|-) +(?:%{SYSLOG5424PRINTASCII:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII:syslog5424_app}) +(-|%{SYSLOG5424PRINTASCII:syslog5424_proc}) +(?::-|%{SYSLOG5424PRINTASCII:syslog5424_msgid}) +\[%{GREEDYDATA:syslog5424_sd}\]'
+
       pattern_definitions:
         TIMESTAMP: "%{TIMESTAMP_ISO8601:syslog5424_ts}(?:-?%{ISO8601_TIMEZONE:_temp_.tz})?"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?"
       on_failure:
         - append:
+            tag: append_error_message_69be271a
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
+            tag: fail_25aa32ed
             message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - kv:
       tag: "kv_syslog_structured_semicolon_colon"
@@ -49,11 +50,14 @@ processors:
         - update_service
       on_failure:
         - append:
+            tag: append_error_message_d95b7025
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
+            tag: fail_10e1b036
             message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
+      tag: grok_syslog5424_sd_71bdffb9
       field: syslog5424_sd
       if: ctx.checkpoint == null
       patterns:
@@ -83,11 +87,14 @@ processors:
         - ROW_END
       on_failure:
         - append:
+            tag: append_error_message_1545156f
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
+            tag: fail_8d2bf3c8
             message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - foreach:
+      tag: foreach_checkpoint_5ec1a483
       field: checkpoint
       ignore_missing: true
       ignore_failure: true
@@ -95,6 +102,7 @@ processors:
         lowercase:
           field: "_ingest._key"
   - remove:
+      tag: remove_58f25033
       field:
         - syslog5424_sd
         - syslog5424_app
@@ -106,48 +114,58 @@ processors:
         - host
       ignore_missing: true
   - rename:
+      tag: rename_@timestamp_to_event_created_d44f61ca
       field: "@timestamp"
       target_field: "event.created"
       ignore_missing: true
   # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
   - set:
+      tag: set__temp__tz_aad5b1e3
       field: _temp_.tz
       value: UTC
       if: ctx._temp_?.tz == 'Z'
   - set:
+      tag: set__temp__tz_f9f73f5a
       field: _temp_.tz
       copy_from: _conf.tz_offset
       override: false
       if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
   - set:
+      tag: set__temp__tz_c02c1420
       field: _temp_.tz
       copy_from: event.timezone
       override: false
       if: ctx.event?.timezone != null
   - set:
+      tag: set__temp__tz_11a55a67
       field: _temp_.tz
       value: UTC
       override: false
   - set:
+      tag: set_event_timezone_035b9b5e
       field: event.timezone
       copy_from: _temp_.tz
   - gsub:
+      tag: gsub_event_timezone_a832fb8b
       field: event.timezone
       pattern: '([+-][0-9]{2})([0-9]{2})'
       replacement: '$1:$2'
       ignore_missing: true
   - gsub:
+      tag: gsub_event_timezone_3865278c
       field: event.timezone
       pattern: '([+-])([0-9]):?([0-9]{2})'
       replacement: '$10$2:$3'
       ignore_missing: true
   - date:
+      tag: date_syslog5424_ts_a23f7813
       field: "syslog5424_ts"
       timezone: "{{{ event.timezone }}}"
       formats: ["ISO8601", "UNIX"]
       if: "ctx.checkpoint?.time == null"
       on_failure:
         - remove:
+            tag: remove_event_timezone_2443fee3
             field: event.timezone
             ignore_missing: true
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
@@ -157,19 +175,23 @@ processors:
             formats: ["ISO8601", "UNIX"]
             on_failure:
               - append:
+                  tag: append_error_message_ea2b6860
                   field: error.message
                   value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
               - fail:
+                  tag: fail_a0671c65
                   message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   # Some log events lack loguid and time, so to avoid potential
   # collisions hash the complete line in those rare cases.
   - fingerprint:
+      tag: fingerprint_8ae007da
       if: ctx.checkpoint?.loguid == null && ctx.checkpoint?.time == null
       fields:
         - event.original
       target_field: "_id"
       ignore_missing: true
   - fingerprint:
+      tag: fingerprint_93b78c95
       if: ctx._id == null
       fields:
         - '@timestamp'
@@ -180,86 +202,104 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - append:
+      tag: append_event_category_50e341d3
       field: event.category
       value: network
       if: "!['Log In','Log Out'].contains(ctx.checkpoint?.operation) && !['Log In','Log Out'].contains(ctx.checkpoint?.action)"
       allow_duplicates: false
   - set:
+      tag: set_observer_vendor_922d3f8e
       field: observer.vendor
       value: Checkpoint
   - set:
+      tag: set_observer_type_816af994
       field: observer.type
       value: firewall
       if: ctx.checkpoint?.type == null
   - set:
+      tag: set_observer_product_dc0f4418
       field: observer.product
       value: "{{{checkpoint.product}}}"
       ignore_empty_value: true
   - rename:
+      tag: rename_checkpoint_src_to_source_ip_bfdf2c76
       field: checkpoint.src
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_client_ip_to_source_ip_f3f03701
       field: checkpoint.client_ip
       target_field: source.ip
       ignore_missing: true
       if: ctx.source?.ip == null
   - rename:
+      tag: rename_checkpoint_xlatesrc_to_source_nat_ip_f6f5035e
       field: checkpoint.xlatesrc
       target_field: source.nat.ip
       if: "ctx.checkpoint?.xlatesrc != '0.0.0.0' && ctx.checkpoint?.xlatesrc != ''"
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_dst_to_destination_ip_f4f6180c
       field: checkpoint.dst
       target_field: destination.ip
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_xlatedst_to_destination_nat_ip_1628dbae
       field: checkpoint.xlatedst
       target_field: destination.nat.ip
       if: "ctx.checkpoint?.xlatedst != '0.0.0.0' && ctx.checkpoint?.xlatedst != ''"
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_uid_to_source_user_id_01e2c781
       field: checkpoint.uid
       target_field: source.user.id
       ignore_missing: true
   - set:
+      tag: set_source_user_name_276eacf0
       field: source.user.name
       copy_from: checkpoint.src_user_name
       ignore_empty_value: true
   - set:
+      tag: set_source_user_name_d2cd1e3b
       field: source.user.name
       copy_from: checkpoint.administrator
       if: ctx.source?.user?.name == null
       ignore_empty_value: true
   - set:
+      tag: set_user_name_9961f466
       field: user.name
       copy_from: checkpoint.user
       if: ctx.user?.name == null
       ignore_empty_value: true
   - convert:
+      tag: convert_checkpoint_failed_login_factor_num_919842ca
       field: checkpoint.failed_login_factor_num
       type: long
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_checkpoint_client_outbound_packets_to_source_packets_a18a0bc2
       field: checkpoint.client_outbound_packets
       target_field: source.packets
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_server_outbound_packets_to_destination_packets_497d7c1d
       field: checkpoint.server_outbound_packets
       target_field: destination.packets
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_client_outbound_bytes_to_source_bytes_10c14c56
       field: checkpoint.client_outbound_bytes
       target_field: source.bytes
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_sent_byte_to_source_bytes_011924f1
       field: checkpoint.sent_byte
       target_field: source.bytes
       type: long
@@ -267,12 +307,14 @@ processors:
       ignore_missing: true
       if: ctx.source?.bytes == null
   - convert:
+      tag: convert_checkpoint_server_outbound_bytes_to_destination_bytes_b0f08165
       field: checkpoint.server_outbound_bytes
       target_field: destination.bytes
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_received_bytes_to_destination_bytes_1b6c97af
       field: checkpoint.received_bytes
       target_field: destination.bytes
       type: long
@@ -280,6 +322,7 @@ processors:
       ignore_missing: true
       if: ctx.destination?.bytes == null
   - convert:
+      tag: convert_checkpoint_service_to_destination_port_42ab3ea9
       field: checkpoint.service
       target_field: destination.port
       type: long
@@ -287,6 +330,7 @@ processors:
       ignore_missing: true
       if: "ctx.checkpoint?.service != '4294967295'"
   - convert:
+      tag: convert_checkpoint_xlatedport_to_destination_nat_port_b4e4e773
       field: checkpoint.xlatedport
       target_field: destination.nat.port
       type: long
@@ -294,12 +338,14 @@ processors:
       ignore_missing: true
       if: "ctx.checkpoint?.xlatedport != '0'"
   - convert:
+      tag: convert_checkpoint_s_port_to_source_port_08f33001
       field: checkpoint.s_port
       target_field: source.port
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_xlatesport_to_source_nat_port_ca26389c
       field: checkpoint.xlatesport
       target_field: source.nat.port
       type: long
@@ -307,136 +353,165 @@ processors:
       ignore_missing: true
       if: "ctx.checkpoint?.xlatesport != '0'"
   - rename:
+      tag: rename_checkpoint_mac_source_address_to_source_mac_343fe304
       field: checkpoint.mac_source_address
       target_field: source.mac
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_src_machine_name_to_source_domain_a8f250bf
       field: checkpoint.src_machine_name
       target_field: source.domain
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_destination_dns_hostname_to_destination_domain_05db2d1c
       field: checkpoint.destination_dns_hostname
       target_field: destination.domain
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_dst_machine_name_to_destination_domain_5560ee0e
       field: checkpoint.dst_machine_name
       target_field: destination.domain
       if: ctx.server?.domain == null
       ignore_missing: true
   - set:
+      tag: set_destination_user_name_ccf3ca27
       field: destination.user.name
       copy_from: checkpoint.dst_user_name
       if: ctx.checkpoint?.dst_user_name != null
   - set:
+      tag: set_destination_user_domain_d38bee06
       field: destination.user.domain
       copy_from: checkpoint.dst_user_dn
       if: ctx.checkpoint?.dst_user_dn != null
   - rename:
+      tag: rename_checkpoint_src_user_group_to_source_user_group_name_55b2b8e6
       field: checkpoint.src_user_group
       target_field: source.user.group.name
       ignore_missing: true
   - append:
+      tag: append_event_category_015c8dc9
       field: event.category
       value: authentication
       if: ctx.checkpoint?.operation == 'Log In' || ctx.checkpoint?.operation == 'Log Out'
       allow_duplicates: false
   - rename:
+      tag: rename_checkpoint_originsicname_to_checkpoint_origin_sic_name_a94a7856
       field: checkpoint.originsicname
       target_field: checkpoint.origin_sic_name
       ignore_missing: true
   - set:
+      tag: set_event_kind_543e5f23
       field: event.kind
       value: alert
       if: "['Prevent', 'Detect', 'Quarantine'].contains(ctx.checkpoint?.rule_action)"
   - set:
+      tag: set_event_kind_31b9e9ac
       field: event.kind
       value: event
       if: ctx.event?.kind == null
   - set:
+      tag: set_event_outcome_e1548f1e
       field: event.outcome
       value: success
       if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action)"
   - append:
+      tag: append_event_type_c2ef1ab7
       field: event.type
       value:
         - allowed
         - connection
       if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action) && (ctx.checkpoint?.operation != 'Log In' && ctx.checkpoint?.operation != 'Log Out')"
   - set:
+      tag: set_event_outcome_5c62bf3d
       field: event.outcome
       value: success
       if: ctx.checkpoint?.audit_status == 'Success'
   - set:
+      tag: set_event_outcome_fca19c0b
       field: event.outcome
       value: failure
       if: ctx.checkpoint?.audit_status == 'Failure'
   - set:
+      tag: set_event_outcome_d309e070
       field: event.outcome
       value: success
       if: "['Drop', 'Reject', 'Block', 'Prevent'].contains(ctx.checkpoint?.rule_action)"
   - append:
+      tag: append_event_type_9006e7fa
       field: event.type
       value:
         - connection
         - denied
       if: "['Drop', 'Reject', 'Block', 'Prevent'].contains(ctx.checkpoint?.rule_action)"
   - append:
+      tag: append_event_category_560dce16
       field: event.category
       value: malware
       if: ctx.checkpoint?.malware_action != null
       allow_duplicates: false
   - append:
+      tag: append_event_category_8303940f
       field: event.category
       value: intrusion_detection
       if: "['Detect', 'Prevent'].contains(ctx.checkpoint?.rule_action)"
       allow_duplicates: false
   - set:
+      tag: set_event_outcome_7b0154c9
       field: event.outcome
       value: success
       if: ctx.checkpoint?.action == 'Log In'
   - set:
+      tag: set_event_outcome_7b9438bf
       field: event.outcome
       value: failure
       if: ctx.checkpoint?.action == 'Failed Log In'
   - set:
+      tag: set_event_outcome_a261f623
       field: event.outcome
       value: success
       if: ctx.checkpoint?.operation == 'Log Out'
       override: true
       description: "Set 'success' outcome for logoff activity."
   - set:
+      tag: set_event_outcome_a3fce610
       field: event.outcome
       value: success
       if: ctx.checkpoint?.operation == 'Log In' && (ctx.checkpoint?.audit_status == 'Success' || ctx.checkpoint?.audit_status == null)
       override: true
       description: "Set 'success' outcome by default for logon events without audit outcome set."
   - append:
+      tag: append_event_category_3d1f398d
       field: event.category
       value: authentication
       if: "['Log In', 'Failed Log In'].contains(ctx.checkpoint?.action)"
       allow_duplicates: false
   - append:
+      tag: append_event_type_3ba26ea9
       field: event.type
       value:
         - start
       allow_duplicates: false
       if: ctx.checkpoint?.action == 'Log In' || ctx.checkpoint?.operation == 'Log In'
   - append:
+      tag: append_event_type_0ee985e2
       field: event.type
       value: end
       allow_duplicates: false
       if: ctx.checkpoint?.action == 'Log Out' || ctx.checkpoint?.operation == 'Log Out'
       description: "Add 'end' categorization type for events related to log out activities."
   - set:
+      tag: set_checkpoint_action_297d8f9e
       field: checkpoint.action
       value: logged-in
       if: ctx.checkpoint?.action == 'Log In'
   - append:
+      tag: append_event_type_1e4c1f29
       field: event.type
       value: denied
       allow_duplicates: false
       if: ctx.checkpoint?.action == 'Failed Log In'
   - set:
+      tag: set_checkpoint_action_c6dfe9ca
       field: checkpoint.action
       value: logon-failed
       if: ctx.checkpoint?.action == 'Failed Log In'
@@ -452,166 +527,202 @@ processors:
       target_field: host.ip
       if: ctx.checkpoint?.host_ip != null
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
+      tag: append_related_ip_53b62ed8
       field: related.ip
       value: "{{{source.nat.ip}}}"
       allow_duplicates: false
       if: ctx.source?.nat?.ip != null
   - append:
+      tag: append_related_ip_c1a6356b
       field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
+      tag: append_related_ip_6a388074
       field: related.ip
       value: "{{{destination.nat.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.nat?.ip != null
   - append:
+      tag: append_related_hash_30ccfa66
       field: related.hash
       value: "{{{checkpoint.file_md5}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.file_md5 != null
   - append:
+      tag: append_related_hash_0f3045fe
       field: related.hash
       value: "{{{checkpoint.file_sha1}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.file_sha1 != null
   - append:
+      tag: append_related_hash_ae26b51a
       field: related.hash
       value: "{{{checkpoint.file_sha256}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.file_sha256 != null
   - rename:
+      tag: rename_checkpoint_from_to_source_user_email_42c62b1a
       field: checkpoint.from
       target_field: source.user.email
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_to_to_destination_user_email_a2aca368
       field: checkpoint.to
       target_field: destination.user.email
       ignore_missing: true
   - set:
+      tag: set_email_from_address_8409c648
       field: email.from.address
       value: ["{{{destination.user.email}}}"]
       if: "ctx?.destination?.user?.email != null"
   - set:
+      tag: set_email_to_address_a2fb0fab
       field: email.to.address
       value: ["{{{destination.user.email}}}"]
       if: "ctx?.destination?.user?.email != null"
   - append:
+      tag: append_email_from_address_ea607ddd
       field: email.from.address
       value: "{{{checkpoint.mime_from}}}"
       if: "ctx?.checkpoint?.mime_from != null"
   - append:
+      tag: append_email_to_address_3e5d0d04
       field: email.to.address
       value: "{{{checkpoint.mime_to}}}"
       if: "ctx?.checkpoint?.mime_to != null"
   - set:
+      tag: set_email_subject_d55a1a90
       field: email.subject
       copy_from: checkpoint.email_subject
       if: "ctx?.checkpoint?.email_subject != null"
   - append:
+      tag: append_email_bcc_address_5a9aa02f
       field: email.bcc.address
       value: "{{{checkpoint.bcc}}}"
       if: "ctx?.checkpoint?.bcc != null"
   - append:
+      tag: append_email_cc_address_2f77955d
       field: email.cc.address
       value: "{{{checkpoint.cc}}}"
       if: "ctx?.checkpoint?.cc != null"
   - set:
+      tag: set_email_delivery_timestamp_6f69b5fb
       field: email.delivery_timestamp
       copy_from: checkpoint.delivery_time
       if: "ctx?.checkpoint?.delivery_time != null"
   - set:
+      tag: set_email_message_id_80a4102f
       field: email.message_id
       copy_from: checkpoint.email_message_id
       if: "ctx?.checkpoint?.email_message_id != null"
   - set:
+      tag: set_email_local_id_1cb9bb37
       field: email.local_id
       copy_from: checkpoint.email_queue_id
       if: "ctx?.checkpoint?.email_queue_id != null"
   - rename:
+      tag: rename_checkpoint_usercheck_incident_uid_to_destination_user_id_b5f87427
       field: checkpoint.usercheck_incident_uid
       target_field: destination.user.id
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_service_name_to_destination_service_name_65ae0b7d
       field: checkpoint.service_name
       target_field: destination.service.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_mac_destination_address_to_destination_mac_5e761aa8
       field: checkpoint.mac_destination_address
       target_field: destination.mac
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_dns_type_to_dns_question_type_7f78e1f3
       field: checkpoint.dns_type
       target_field: dns.question.type
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_domain_name_to_dns_question_name_9ea883a6
       field: checkpoint.domain_name
       target_field: dns.question.name
       ignore_missing: true
   - rename:
+      tag: rename_dns_question_name_to_source_user_domain_e3ecb234
       field: dns.question.name
       target_field: source.user.domain
       ignore_missing: true
       if: ctx.checkpoint?.operation == 'Log Out' && ctx.source?.user?.domain == null
   - dissect:
+      tag: dissect_checkpoint_additional_info_6d81b5e1
       field: checkpoint.additional_info
       pattern: 'Administrator failed to log in: %{event.reason}'
       ignore_missing: true
       ignore_failure: true
       if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure' && (ctx.event?.reason == null || ctx.event?.reason == "")
   - rename:
+      tag: rename_checkpoint_dns_message_type_to_dns_type_81b7ee93
       field: checkpoint.dns_message_type
       target_field: dns.type
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_tid_to_dns_id_1267be4d
       field: checkpoint.tid
       target_field: dns.id
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_loguid_to_event_id_4d209f17
       field: checkpoint.loguid
       target_field: event.id
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_sequencenum_to_event_sequence_92d8572a
       field: checkpoint.sequencenum
       target_field: event.sequence
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_severity_to_event_severity_52a56fe0
       field: checkpoint.severity
       target_field: event.severity
       type: long
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_action_to_event_action_54973118
       field: checkpoint.action
       target_field: event.action
       ignore_missing: true
   - set:
+      tag: set_event_action_09190c8a
       field: event.action
       value: logon-failed
       override: true
       if: ctx.checkpoint?.operation == 'Log In' && ctx.checkpoint.audit_status == 'Failure'
       description: "Set 'logon-failed' action categorization for failed logon attempts."
   - set:
+      tag: set_event_action_de206c19
       field: event.action
       value: logged-in
       override: true
       if: ctx.checkpoint?.operation == 'Log In' && (ctx.checkpoint.audit_status == 'Success' || ctx.checkpoint.audit_status == null)
       description: "Set 'logged-in' action categorization for events related to successful logons."
   - set:
+      tag: set_event_action_c7af9176
       field: event.action
       value: logged-out
       override: true
       if: ctx.checkpoint?.operation == 'Log Out'
       description: "Set 'logged-out' action categorization for logoff events."
   - set:
+      tag: set_host_name_2f02ae09
       field: host.name
       value: '{{{ checkpoint.device_name }}}'
       override: false
@@ -619,6 +730,7 @@ processors:
       if: ctx.checkpoint?.operation == 'Log In' && ctx.observer?.product == 'Expert Shell'
       description: "Copy the device name to the host.name field for logon events in Checkpoint expert shells."
   - set:
+      tag: set_host_type_e5d9ece3
       field: host.type
       value: '{{{ checkpoint.device_type }}}'
       override: false
@@ -626,6 +738,7 @@ processors:
       if: ctx.checkpoint?.operation == 'Log In' && ctx.observer?.product == 'Expert Shell'
       description: "Copy the device type to the host.type field for logon events in Checkpoint expert shells."
   - set:
+      tag: set_source_domain_ea3510d2
       field: source.domain
       value: '{{{ checkpoint.machine }}}'
       override: false
@@ -633,174 +746,215 @@ processors:
       if: "['Log In', 'Log Out'].contains(ctx.checkpoint?.operation) && ctx.checkpoint.machine != 'localhost'"
       description: "Copy the device type to the host.type field for logon events in Checkpoint expert shells."
   - set:
+      tag: set_network_protocol_63dc000b
       field: network.protocol
       value: ssh
       override: false
       if: ctx.checkpoint?.operation == 'Log In' && ctx.observer?.product == 'Expert Shell'
       description: "Set network protocol to SSH for logon activities made with Checkpoint expert shells."
   - set:
+      tag: set_user_name_026954b6
       field: user.name
       value: '{{{ source.user.name }}}'
       override: false
       ignore_empty_value: true
   - set:
+      tag: set_user_id_cc07e8aa
       field: user.id
       value: '{{{ source.user.id }}}'
       override: false
       ignore_empty_value: true
   - set:
+      tag: set_user_group_name_9c5d2f82
       field: user.group.name
       value: '{{{ source.user.group.name }}}'
       override: false
       ignore_empty_value: true
   - set:
+      tag: set_user_email_8b122fa0
       field: user.email
       value: '{{{ source.user.email }}}'
       override: false
       ignore_empty_value: true
   - set:
+      tag: set_user_domain_8aa643b6
       field: user.domain
       value: '{{{ source.user.domain }}}'
       override: false
       ignore_empty_value: true
   - append:
+      tag: append_user_roles_61b81957
       field: user.roles
       value: administrator
       allow_duplicates: false
       if: ctx.message == 'Administrator Login' || ctx.message == 'Administrator Logout' || ctx.message == 'Administrator Expert Shell login'
       description: "Add administrator label to the user.role field for all events related to administrator logon / logoff activities."
   - set:
+      tag: set_event_code_21a0a883
       field: event.code
       value: '{{{ checkpoint.operation_number }}}'
       override: false
       ignore_empty_value: true
   - lowercase:
+      tag: lowercase_user_name_6eed8999
       field: user.name
       ignore_missing: true
   - lowercase:
+      tag: lowercase_user_id_1ebe4987
       field: user.id
       ignore_missing: true
   - lowercase:
+      tag: lowercase_user_email_75b1062e
       field: user.email
       ignore_missing: true
   - lowercase:
+      tag: lowercase_user_domain_328173b4
       field: user.domain
       ignore_missing: true
   - lowercase:
+      tag: lowercase_user_group_name_c59e6a88
       field: user.group.name
       ignore_missing: true
   - lowercase:
+      tag: lowercase_source_user_name_c82574a0
       field: source.user.name
       ignore_missing: true
   - lowercase:
+      tag: lowercase_destination_user_name_e533872f
       field: destination.user.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_packet_capture_to_event_url_d0fdb6be
       field: checkpoint.packet_capture
       target_field: event.url
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_start_time_to_event_start_0dad958c
       field: checkpoint.start_time
       target_field: event.start
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_first_detection_to_event_start_1174b06e
       field: checkpoint.first_detection
       target_field: event.start
       ignore_missing: true
       if: ctx.event?.start == null
   - rename:
+      tag: rename_checkpoint_last_detection_to_event_end_e77b2d47
       field: checkpoint.last_detection
       target_field: event.end
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_app_risk_to_event_risk_score_75222087
       field: checkpoint.app_risk
       target_field: event.risk_score
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_file_id_to_file_inode_adf9ad03
       field: checkpoint.file_id
       target_field: file.inode
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_file_type_to_file_type_9958b653
       field: checkpoint.file_type
       target_field: file.type
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_file_name_to_file_name_34146a1d
       field: checkpoint.file_name
       target_field: file.name
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_file_size_to_file_size_cedfc0cf
       field: checkpoint.file_size
       target_field: file.size
       type: long
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_file_md5_to_file_hash_md5_1c059551
       field: checkpoint.file_md5
       target_field: file.hash.md5
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_file_sha1_to_file_hash_sha1_ff6d3223
       field: checkpoint.file_sha1
       target_field: file.hash.sha1
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_file_sha256_to_file_hash_sha256_dae5a30b
       field: checkpoint.file_sha256
       target_field: file.hash.sha256
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_dlp_file_name_to_file_name_5d8f3272
       field: checkpoint.dlp_file_name
       target_field: file.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_user_group_to_group_name_44bbe46b
       field: checkpoint.user_group
       target_field: group.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_os_version_to_host_os_version_b60367b7
       field: checkpoint.os_version
       target_field: host.os.version
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_os_name_to_host_os_name_e623ef55
       field: checkpoint.os_name
       target_field: host.os.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_method_to_http_request_method_2f59b8ed
       field: checkpoint.method
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_referrer_to_http_request_referrer_885df91d
       field: checkpoint.referrer
       target_field: http.request.referrer
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_service_id_to_network_application_77041581
       field: checkpoint.service_id
       target_field: network.application
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_ifdir_to_network_direction_bcaaaeb9
       field: checkpoint.ifdir
       target_field: network.direction
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_bytes_4295fb76
       field: checkpoint.bytes
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_icmp_code_5d674373
       field: checkpoint.icmp_code
       type: long
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_checkpoint_icmp_type_41739430
       field: checkpoint.icmp_type
       type: long
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_checkpoint_bytes_to_network_bytes_75eeca56
       field: checkpoint.bytes
       target_field: network.bytes
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_proto_to_network_iana_number_dbef3161
       field: checkpoint.proto
       target_field: network.iana_number
       ignore_missing: true
   - script:
+      tag: script_d5029733
       lang: painless
       ignore_failure: true
       if: ctx?.network?.iana_number != null
@@ -836,6 +990,7 @@ processors:
             ctx.network.transport = iana_number;
         }
   - date:
+      tag: date_checkpoint_subs_exp_to_checkpoint_subs_exp_19f24900
       field: checkpoint.subs_exp
       target_field: checkpoint.subs_exp
       timezone: "{{{ event.timezone }}}"
@@ -849,7 +1004,7 @@ processors:
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - date:
-            tag: "date_utc_fallback"
+            tag: date_checkpoint_subs_exp_to_checkpoint_subs_exp_84a34f9e
             field: checkpoint.subs_exp
             target_field: checkpoint.subs_exp
             formats:
@@ -860,198 +1015,244 @@ processors:
               - UNIX
             on_failure:
               - remove:
+                  tag: remove_checkpoint_subs_exp_19a22c63
                   field: checkpoint.subs_exp
                   ignore_missing: true
   - convert:
+      tag: convert_checkpoint_packets_3af974e8
       field: checkpoint.packets
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_packets_to_network_packets_c4dea38a
       field: checkpoint.packets
       target_field: network.packets
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_layer_name_to_network_name_4d820e3c
       field: checkpoint.layer_name
       target_field: network.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_app_name_to_network_application_9c8fddd3
       field: checkpoint.app_name
       target_field: network.application
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_client_inbound_interface_to_observer_ingress_interface_name_b158291e
       field: checkpoint.client_inbound_interface
       target_field: observer.ingress.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_client_outbound_interface_to_observer_egress_interface_name_9881ab09
       field: checkpoint.client_outbound_interface
       target_field: observer.egress.interface.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_ifname_to_observer_ingress_interface_name_a9f2224c
       field: checkpoint.ifname
       target_field: observer.ingress.interface.name
       ignore_missing: true
       if: ctx.observer?.ingress?.interface?.name == null && ctx.network?.direction == 'inbound'
   - rename:
+      tag: rename_checkpoint_ifname_to_observer_egress_interface_name_b6e905eb
       field: checkpoint.ifname
       target_field: observer.egress.interface.name
       ignore_missing: true
       if: ctx.observer?.egress?.interface?.name == null && ctx.network?.direction == 'outbound'
   - rename:
+      tag: rename_checkpoint_type_to_observer_type_5dbe088e
       field: checkpoint.type
       target_field: observer.type
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_origin_to_observer_name_c3218521
       field: checkpoint.origin
       target_field: observer.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_mac_address_to__temp__observer_mac_dd3186af
       field: checkpoint.mac_address
       target_field: _temp_.observer.mac
       ignore_missing: true
   - gsub:
+      tag: gsub__temp__observer_mac_93279afd
       field: _temp_.observer.mac
       ignore_missing: true
       pattern: '[:]'
       replacement: '-'
   - uppercase:
+      tag: uppercase__temp__observer_mac_a306150b
       field: _temp_.observer.mac
       ignore_missing: true
   - append:
+      tag: append_observer_mac_eb3294f6
       value: "{{{_temp_.observer.mac}}}"
       field: observer.mac
       if: ctx._temp_?.observer?.mac != null
   - append:
+      tag: append_observer_ip_8b0aa837
       value: "{{{checkpoint.origin_ip}}}"
       field: observer.ip
       if: ctx.checkpoint?.origin_ip != null
   - append:
+      tag: append_observer_ip_f1f37abb
       value: "{{{checkpoint.endpoint_ip}}}"
       field: observer.ip
       if: ctx.checkpoint?.endpoint_ip != null && ctx.observer?.ip == null
   - rename:
+      tag: rename_checkpoint_outzone_to_observer_egress_zone_c62bcda5
       field: checkpoint.outzone
       target_field: observer.egress.zone
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_inzone_to_observer_ingress_zone_77bc696c
       field: checkpoint.inzone
       target_field: observer.ingress.zone
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_security_outzone_to_observer_egress_zone_81420046
       field: checkpoint.security_outzone
       target_field: observer.egress.zone
       ignore_missing: true
       if: ctx.observer?.egress?.zone == null
   - rename:
+      tag: rename_checkpoint_security_inzone_to_observer_ingress_zone_e15bde57
       field: checkpoint.security_inzone
       target_field: observer.ingress.zone
       ignore_missing: true
       if: ctx.observer?.ingress?.zone == null
   - rename:
+      tag: rename_checkpoint_update_version_to_observer_version_b81a7470
       field: checkpoint.update_version
       target_field: observer.version
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_process_md5_to_process_hash_md5_5ab87d57
       field: checkpoint.process_md5
       target_field: process.hash.md5
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_process_name_to_process_name_d07e35a3
       field: checkpoint.process_name
       target_field: process.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_parent_process_md5_to_process_parent_hash_md5_3696706e
       field: checkpoint.parent_process_md5
       target_field: process.parent.hash.md5
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_parent_process_name_to_process_parent_name_a9a0781e
       field: checkpoint.parent_process_name
       target_field: process.parent.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_matched_category_to_rule_category_28855d0f
       field: checkpoint.matched_category
       target_field: rule.category
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_categories_to_rule_category_0551f0ac
       field: checkpoint.categories
       target_field: rule.category
       ignore_missing: true
       if: ctx.rule?.category == null
   - rename:
+      tag: rename_checkpoint_malware_action_to_rule_description_896aa3de
       field: checkpoint.malware_action
       target_field: rule.description
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_malware_rule_id_to_rule_id_bf5500f5
       field: checkpoint.malware_rule_id
       target_field: rule.id
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_app_rule_id_to_rule_id_7a48de92
       field: checkpoint.app_rule_id
       target_field: rule.id
       ignore_missing: true
       if: ctx.rule?.id == null
   - rename:
+      tag: rename_checkpoint_objectname_to_rule_name_af6490c3
       field: checkpoint.objectname
       target_field: rule.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_rule_name_to_rule_name_8995c4d0
       field: checkpoint.rule_name
       target_field: rule.name
       ignore_missing: true
       if: ctx.rule?.name == null
   - rename:
+      tag: rename_checkpoint_malware_rule_name_to_rule_name_41fe34d4
       field: checkpoint.malware_rule_name
       target_field: rule.name
       ignore_missing: true
       if: ctx.rule?.name == null
   - rename:
+      tag: rename_checkpoint_app_rule_name_to_rule_name_70529720
       field: checkpoint.app_rule_name
       target_field: rule.name
       ignore_missing: true
       if: ctx.rule?.name == null
   - rename:
+      tag: rename_checkpoint_dlp_rule_name_to_rule_name_843a133f
       field: checkpoint.dlp_rule_name
       target_field: rule.name
       ignore_missing: true
       if: ctx.rule?.name == null
   - rename:
+      tag: rename_checkpoint_smartdefence_profile_to_rule_ruleset_b17a6f1f
       field: checkpoint.smartdefence_profile
       target_field: rule.ruleset
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_policy_to_rule_ruleset_2b62519a
       field: checkpoint.policy
       target_field: rule.ruleset
       ignore_missing: true
       if: ctx.rule?.ruleset == null
   - rename:
+      tag: rename_checkpoint_rule_uid_to_rule_uuid_14258614
       field: checkpoint.rule_uid
       target_field: rule.uuid
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_dlp_rule_uid_to_rule_uuid_b6e27bec
       field: checkpoint.dlp_rule_uid
       target_field: rule.uuid
       ignore_missing: true
       if: ctx.rule?.uuid == null
   - rename:
+      tag: rename_checkpoint_url_to_url_original_ca69061d
       field: checkpoint.url
       target_field: url.original
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_resource_to_url_original_8a64a0c0
       field: checkpoint.resource
       target_field: url.original
       ignore_missing: true
       if: ctx.url?.original == null
   - rename:
+      tag: rename_checkpoint_http_host_to_url_domain_95dc8b26
       field: checkpoint.http_host
       target_field: url.domain
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_web_client_type_to_user_agent_name_80dc6d6b
       field: checkpoint.web_client_type
       target_field: user_agent.name
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_user_agent_to_user_agent_original_9fa80091
       field: checkpoint.user_agent
       target_field: user_agent.original
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_industry_reference_to_vulnerability_id_1c90f571
       field: checkpoint.industry_reference
       target_field: vulnerability.id
       ignore_missing: true
@@ -1093,25 +1294,31 @@ processors:
         ctx.checkpoint._temp_unixms = Collections.min(zdt);
       on_failure:
         - append:
+            tag: append_error_message_4d2cc71a
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
+            tag: fail_885e5f1b
             message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - rename:
+      tag: rename_checkpoint__temp_unixms_to_@timestamp_332b0484
       field: checkpoint._temp_unixms
       target_field: "@timestamp"
       ignore_missing: true
   - date:
+      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
       field: checkpoint.lastupdatetime
       formats: ["ISO8601", "UNIX"]
       target_field: event.end
       if: "ctx.checkpoint?.lastupdatetime != null"
   - date:
+      tag: date_checkpoint_last_hit_time_to_event_end_6aeafa0a
       field: checkpoint.last_hit_time
       formats: ["ISO8601", "UNIX"]
       target_field: event.end
       if: "ctx.checkpoint?.last_hit_time != null"
   - date:
+      tag: date_checkpoint_creation_time_to_event_start_f2bceb79
       field: checkpoint.creation_time
       formats: ["ISO8601", "UNIX"]
       target_field: event.start
@@ -1123,6 +1330,7 @@ processors:
       target_field: checkpoint.login_timestamp
       if: "ctx.checkpoint?.login_timestamp != null"
   - rename:
+      tag: rename_checkpoint_duration_to_event_duration_f53d9a8c
       field: checkpoint.duration
       target_field: event.duration
       ignore_missing: true
@@ -1143,32 +1351,39 @@ processors:
       source: ctx.event.duration = ctx.event.duration * 1000000000L
       if: ctx.event?.duration != null
   - convert:
+      tag: convert_checkpoint_update_count_a59cf688
       field: checkpoint.update_count
-      type: integer
+      type: long
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_connection_count_5fd35845
       field: checkpoint.connection_count
-      type: integer
+      type: long
       ignore_missing: true
   - convert:
+      tag: convert_checkpoint_aggregated_log_count_90f87c59
       field: checkpoint.aggregated_log_count
-      type: integer
+      type: long
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_message_to_message_a921faca
       field: checkpoint.message
       target_field: message
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_reason_to_message_82a54fb3
       field: checkpoint.reason
       target_field: message
       ignore_missing: true
       if: ctx.message == null
   - rename:
+      tag: rename_checkpoint_subject_to_message_bdaa50f1
       field: checkpoint.subject
       target_field: message
       ignore_missing: true
       if: ctx.message == null
   - gsub:
+      tag: gsub_checkpoint_sys_message_d850e544
       field: checkpoint.sys_message
       pattern: ^:"
       replacement: ""
@@ -1187,16 +1402,19 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: "{{{user.id}}}"
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_user_34fcf415
       field: related.user
       value: "{{{user.email}}}"
       allow_duplicates: false
@@ -1214,16 +1432,19 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_user_bcb5a560
       field: related.user
       value: "{{{source.user.id}}}"
       allow_duplicates: false
       if: ctx.source?.user?.id != null
   - append:
+      tag: append_related_user_f745a124
       field: related.user
       value: "{{{source.user.name}}}"
       allow_duplicates: false
       if: ctx.source?.user?.name != null
   - append:
+      tag: append_related_user_443c831a
       field: related.user
       value: "{{{source.user.email}}}"
       allow_duplicates: false
@@ -1236,52 +1457,61 @@ processors:
   - dissect:
       field: destination.user.email
       pattern: '%{destination.user.name}@%{destination.user.domain}'
-      tag: dissect_source_user_email
+      tag: dissect_destination_user_email_7d6ace5b
       if: ctx.destination?.user?.name == null
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_user_8e80602e
       field: related.user
       value: "{{{destination.user.id}}}"
       allow_duplicates: false
       if: ctx.destination?.user?.id != null
   - append:
+      tag: append_related_user_8f37bc82
       field: related.user
       value: "{{{destination.user.name}}}"
       allow_duplicates: false
       if: ctx.destination?.user?.name != null
   - append:
+      tag: append_related_user_25c94580
       field: related.user
       value: "{{{destination.user.email}}}"
       allow_duplicates: false
       if: ctx.destination?.user?.email != null
 
   - script:
+      tag: script_422800ed
       lang: painless
       source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
       if: ctx?.source?.bytes != null && ctx?.destination?.bytes != null && ctx?.network?.bytes == null
       ignore_failure: true
   - script:
+      tag: script_b49b67a9
       lang: painless
       source: "ctx.network.packets = ctx.source.packets + ctx.destination.packets"
       if: ctx?.source?.packets != null && ctx?.destination?.packets != null && ctx?.network?.packets == null
       ignore_failure: true
   - rename:
+      tag: rename_checkpoint_action_reason_to_checkpoint_action_reason_msg_626dff8c
       field: checkpoint.action_reason
       target_field: checkpoint.action_reason_msg
       if: ctx.checkpoint?.action_reason != null && ctx.checkpoint?.action_reason.contains(" ")
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_0e79e8a4
       field: source.ip
       target_field: source.geo
       ignore_missing: true
       if: ctx.source?.geo == null
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_2f67bd6f
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
       if: ctx.destination?.geo == null
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -1290,6 +1520,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -1298,23 +1529,28 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   # Handle zone-based network directionality
   - set:
+      tag: set_network_direction_864f7da1
       field: network.direction
       value: inbound
       if: >
@@ -1325,6 +1561,7 @@ processors:
         ctx._temp_.external_zones.contains(ctx.observer.ingress.zone) &&
         ctx._temp_.internal_zones.contains(ctx.observer.egress.zone)
   - set:
+      tag: set_network_direction_1db73f46
       field: network.direction
       value: outbound
       if: >
@@ -1335,6 +1572,7 @@ processors:
         ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
         ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
   - set:
+      tag: set_network_direction_97faa1ef
       field: network.direction
       value: internal
       if: >
@@ -1345,6 +1583,7 @@ processors:
         ctx._temp_.internal_zones.contains(ctx.observer.egress.zone) &&
         ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
   - set:
+      tag: set_network_direction_7050bc15
       field: network.direction
       value: external
       if: >
@@ -1355,6 +1594,7 @@ processors:
         ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
         ctx._temp_.external_zones.contains(ctx.observer.ingress.zone)
   - set:
+      tag: set_network_direction_06df7053
       field: network.direction
       value: unknown
       if: >
@@ -1373,6 +1613,7 @@ processors:
           )
         )
   - remove:
+      tag: remove_485bb4f2
       field:
         - checkpoint.ifname
         - checkpoint.server_outbound_interface
@@ -1414,19 +1655,22 @@ processors:
         - _conf
       ignore_missing: true
   - rename:
+      tag: rename_checkpoint_times_to_checkpoint_time_650caa15
       field: checkpoint.times
       target_field: checkpoint.time
       ignore_missing: true
   - date:
+      tag: date_checkpoint_time_to_checkpoint_time_73bf724f
       if: ctx.checkpoint?.time != null
       field: checkpoint.time
       target_field: checkpoint.time
       formats: ["UNIX"]
       ignore_failure: true
   - script:
+      tag: script_009c1e23
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;
@@ -1440,10 +1684,24 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

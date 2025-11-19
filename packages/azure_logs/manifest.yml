@@ -1,7 +1,7 @@
 format_version: 3.3.0
 name: azure_logs
 title: "Custom Azure Logs"
-version: "0.4.0"
+version: "0.4.2"
 source:
   license: Elastic-2.0
 description: "Collect log events from Azure Event Hubs with Elastic Agent"
@@ -138,12 +138,17 @@ policy_templates:
         multi: false
         default: false
       - name: processor_version
-        type: text
+        type: select
         title: Processor version
         multi: false
         required: false
         show_user: false
         default: v1
+        options:
+          - text: v1
+            value: v1
+          - text: v2
+            value: v2
         description: "The processor version that the integration should use. Possible values are `v1` and `v2` (preview). \nThe v2 event hub processor is in preview, so using the v1 processor is recommended for typical use cases.\nDefault is `v1`."
       - name: processor_update_interval
         type: text
@@ -157,12 +162,17 @@ policy_templates:
 
           Default is `10` seconds.
       - name: processor_start_position
-        type: text
+        type: select
         title: Processor start position
         multi: false
         required: false
         show_user: false
         default: earliest
+        options:
+          - text: earliest
+            value: earliest
+          - text: latest
+            value: latest
         description: >-
           (Processor v2 only) Controls from what position in the event hub the processor should start processing messages for all partitions.
 
@@ -173,19 +183,6 @@ policy_templates:
           `latest` starts processing messages from the the latest event in the event hub and continues to process new events as they arrive.
 
           Default is `earliest`.
-      - name: migrate_checkpoint
-        type: bool
-        title: Migrate checkpoint information
-        multi: false
-        required: false
-        show_user: false
-        default: false
-        description: >-
-          (Processor v2 only) Flag to control if the processor should perform  the checkpoint information migration from processor v1 to v2 at startup.
-
-          The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
-
-          Default is `false`, which means the processor will not perform the checkpoint migration.
       - name: partition_receive_timeout
         type: text
         title: Partition receive timeout
@@ -212,6 +209,27 @@ policy_templates:
           The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first.
 
           Default is `100` messages.
+      - name: migrate_checkpoint
+        type: bool
+        title: Migrate checkpoint information
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: >-
+          (Processor v2 only) Flag to control if the processor should perform  the checkpoint information migration from processor v1 to v2 at startup.
+
+          The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+
+          Default is `false`, which means the processor will not perform the checkpoint migration.
+      - name: endpoint_suffix
+        type: text
+        default: core.windows.net
+        required: true
+        title: Storage account endpoint suffix
+        show_user: false
+        description: >-
+          (Processor v2 only) Override the default storage account endpoint suffix.
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic

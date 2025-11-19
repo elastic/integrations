@@ -1,77 +1,200 @@
-# AbuseCH integration
+# abuse.ch integration for Elastic
 
-This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes the following datasets for retrieving indicators from the AbuseCH API:
+## Overview
 
-- `url` dataset: Supports URL based indicators from AbuseCH API.
-- `ja3_fingerprints` dataset: Supports JA3 fingerprint based indicators from SSLBL AbuseCH API.
-- `malware` dataset: Supports Malware based indicators from AbuseCH API.
-- `malwarebazaar` dataset: Supports indicators from the MalwareBazaar from AbuseCH.
-- `sslblacklist` dataset: Supports SSL certificate based indicators from SSLBL AbuseCH API.
-- `threatfox` dataset: Supports indicators from AbuseCH Threat Fox API.
+The abuse.ch integration for Elastic allows you to collect logs from [abuse.ch](https://abuse.ch/), which provides actionable, community-driven threat intelligence data and helps identify, track, and mitigate malware and botnet-related cyber threats. With this integration, threat intelligence indicators can be ingested into Elastic for enhanced threat detection and event enrichment.
 
-## Note:
+### Compatibility
 
-AbuseCH requires using an `Auth Key` (API Key) in the requests for authentication.
-Requests without authentication will be denied by the API.
+The abuse.ch integration is compatible with `v1` version of abuse.ch URLhaus, MalwareBazaar, ThreatFox, and SSLBL APIs.
 
-More details on this topic can be found [here](https://abuse.ch/blog/community-first/).
+### How it works
 
-## Agentless Enabled Integration
+This integration periodically queries the abuse.ch APIs to retrieve threat intelligence indicators.
+
+## What data does this integration collect?
+
+This integration collects threat intelligence indicators into the following datasets:
+
+- `ja3_fingerprints`: Collects JA3 fingerprint based threat indicators identified by SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
+- `malware`: Collects malware payloads from URLs tracked by URLhaus via [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
+- `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `sslblacklist`: Collects SSL certificate based threat indicators blacklisted on SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
+- `threatfox`: Collects threat indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
+- `url`: Collects malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+
+### Supported use cases
+
+The abuse.ch integration brings threat intel into Elastic Security, enabling detection alerts when Indicators of Compromise (IoCs) like malicious [IPs](https://www.elastic.co/docs/reference/security/prebuilt-rules/rules/threat_intel/threat_intel_indicator_match_address), [domains](https://www.elastic.co/docs/reference/security/prebuilt-rules/rules/threat_intel/threat_intel_indicator_match_url), or [hashes](https://www.elastic.co/docs/reference/security/prebuilt-rules/rules/threat_intel/threat_intel_indicator_match_hash) match your event or alert data. This data can also support threat hunting, enrich alerts with threat context, and power dashboards to track known threats in your environment.
+
+## What do I need to use this integration?
+
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
+### From abuse.ch
+
+abuse.ch requires an `Auth Key` (API key) for request authentication. Any requests made without this key will be rejected by the abuse.ch APIs.
+
+#### Obtain `Auth Key`
+
+1. Sign up for a new account, or login into the [abuse.ch authentication portal](https://auth.abuse.ch).
+2. Connect with at least one authentication provider: Google, Github, X, or LinkedIn.
+3. Select **Save profile**.
+4. In the **Optional** section, click the **Generate Key** button to generate **Auth Key**.
+5. Copy the generated **Auth Key**.
+
+For more details, check the abuse.ch [Community First - New Authentication](https://abuse.ch/blog/community-first/) blog.
+
+## How do I deploy this integration?
+
+This integration supports both Elastic Agentless-based and Agent-based installations.
+
+#### Agentless-based installation
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-## Expiration of Indicators of Compromise (IOCs)
-All AbuseCH datasets now support indicator expiration. For `URL` dataset, a full list of active indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired indicators. The indiator match rules and dashboards are updated to list only active indicators.
-Destinations indices are aliased to `logs-ti_abusech_latest.<datastream_name>`.
+#### Agent-based installation
 
-| Source Datastream                    | Destination Index Pattern                        | Destination Alias                         |
-|:-------------------------------------|:-------------------------------------------------|-------------------------------------------|
-| `logs-ti_abusech.url-*`              | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`              |
-| `logs-ti_abusech.ja3_fingerprints-*` | `logs-ti_abusech_latest.dest_ja3_fingerprints-*` | `logs-ti_abusech_latest.ja3_fingerprints` |
-| `logs-ti_abusech.malware-*`          | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`          |
-| `logs-ti_abusech.malwarebazaar-*`    | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`    |
-| `logs-ti_abusech.sslblacklist-*`     | `logs-ti_abusech_latest.dest_sslblacklist-*`     | `logs-ti_abusech_latest.sslblacklist`     |
-| `logs-ti_abusech.threatfox-*`        | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`        |
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-### ILM Policy
-To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_abusech.<datastream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<datastream_name>-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+### Setup
 
-## Logs
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **abuse.ch**.
+3. Select the **abuse.ch** integration from the search results.
+4. Select **Add abuse.ch** to add the integration.
+5. Enable and configure only the collection methods which you will use.
 
-### URL
+    * To **Collect abuse.ch logs via API**, you'll need to:
 
-The AbuseCH URL data_stream retrieves full list of active threat intelligence indicators every interval from the Active Indicators URL database dump `https://urlhaus.abuse.ch/downloads/json/`.
+        - Configure **Auth Key**.
+        - Enable/Disable the required datasets.
+        - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
-{{fields "url"}}
+6. Select **Save and continue** to save the integration.
 
-### JA3 Fingerprint Blacklist
+### Validation
 
-The AbuseCH JA3 fingerprint blacklist data_stream retrieves malicious JA3 fingerprints identified by SSLBL from the SSLBL API endpoint `https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv`.
+#### Dashboards populated
+
+1. In Kibana, navigate to **Dashboards**.
+2. In the search bar, type **abuse.ch**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In Kibana, navigate to **Management** > **Stack Management**.
+2. Under **Data**, select **Transforms**.
+3. In the search bar, type **abuse.ch**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
+## Troubleshooting
+
+- When creating the **Auth Key** inside the [abuse.ch authentication](https://auth.abuse.ch/) portal, make sure you connect at least one additional authentication provider to ensure seemless access to the abuse.ch platform.
+- Check for captured ingestion errors inside Kibana. Ingestion errors, including API errors, are captured into `error.message` field.
+    1. Navigate to **Analytics** > **Discover**.
+    2. In **Search field names**, search and add fields `error.message` and `data_stream.dataset` into the **Discover** view. For more details on adding fields inside **Discover**, check [Discover getting started](https://www.elastic.co/docs/explore-analyze/discover/discover-get-started).
+    3. Search for the dataset(s) that are enabled by this integration. For example, in the KQL query bar, use the KQL query `data_stream.dataset: ti_abusech.url` to search on specific dataset or KQL query `data_stream.dataset: ti_abusech.*` to search on all datasets.
+    4. Search for errors that are captured into `error.message` field using KQL query `error.message: *`. You can combine queries using [KQL boolean expressions](https://www.elastic.co/docs/explore-analyze/query-filter/languages/kql#_combining_multiple_queries), such as `AND`. For example, to search for errors inside `url` dataset, you can use KQL query: `data_stream.dataset: ti_abusech.url AND error.message: *`.
+- Common API errors:
+    All the abusec.ch API errors are captured inside the `error` fields.
+    1. abuse.ch APIs return HTTP status `403 Forbidden` when the Auth Key is invalid. In such case, the `error.message` field is populated with message `query_status: unknown_auth_key` and `error.id` with `403 Forbidden`. To fix this, you need to regenerate the Auth Key in the [abuse.ch authentication portal](https://auth.abuse.ch/) and update the integration policy with newly generated Auth Key.
+    2. abuse.ch APIs return HTTP status `500 Internal Server Error` when experiencing problem on the abuse.ch service. In such case, `error.message` field is populated with message `POST:500 Internal Server Error (500)` and `error.id` with `500 Internal Server Error`. This is likely a one-off scenario and the ingestion should resume normally in the subsequent request.
+- Since this integration supports the expiration of Indicators of Compromise (IoCs) using Elastic latest transform, the threat indicators are present in both source and destination indices. While this may appear to be duplicate ingestion, it is an implementation detail necessary for properly expiring threat indicators.
+- Because the latest copy of threat indicators is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly. The ILM policies on source indices can be tuned to manage their data retention period.
+- For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+## Scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### ECS field reference
+
+#### JA3 Fingerprint Blacklist
 
 {{fields "ja3_fingerprints"}}
 
-### Malware
-
-The AbuseCH malware data_stream retrieves threat intelligence indicators from the payload API endpoint `https://urlhaus-api.abuse.ch/v1/payloads/recent/`.
+#### Malware
 
 {{fields "malware"}}
 
-### MalwareBazaar
-
-The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators from the MalwareBazaar API endpoint `https://mb-api.abuse.ch/api/v1/`.
+#### MalwareBazaar
 
 {{fields "malwarebazaar"}}
 
-### SSL Certificate Blacklist
-
-The SSL Certificate Blacklist contains SHA1 Fingerprint of all SSL certificates blacklisted on SSLBL from the SSLBL API endpoint `https://sslbl.abuse.ch/blacklist/sslblacklist.csv`.
+#### SSL Certificate Blacklist
 
 {{fields "sslblacklist"}}
 
-### Threat Fox
-
-The AbuseCH threatfox data_stream retrieves threat intelligence indicators from the Threat Fox API endpoint `https://threatfox-api.abuse.ch/api/v1/`.
+#### ThreatFox
 
 {{fields "threatfox"}}
+
+#### URL
+
+{{fields "url"}}
+
+### Example event
+
+#### JA3 Fingerprint Blacklist
+
+{{event "ja3_fingerprints"}}
+
+#### Malware
+
+{{event "malware"}}
+
+#### MalwareBazaar
+
+{{event "malwarebazaar"}}
+
+#### SSL Certificate Blacklist
+
+{{event "sslblacklist"}}
+
+#### ThreatFox
+
+{{event "threatfox"}}
+
+#### URL
+
+{{event "url"}}
+
+### Inputs used
+
+These inputs can be used in this integration:
+
+- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+
+### API usage
+
+This integration datasets use the following APIs:
+
+- `ja3_fingerprints`: [SSLBL API](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
+- `malware`: [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
+- `malwarebazaar`: [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `sslblacklist`: [SSLBL API](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
+- `threatfox`: [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
+- `url`: [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+
+### Expiration of Indicators of Compromise (IOCs)
+
+All abuse.ch datasets now support indicator expiration. For the `URL` dataset, a full list of active threat indicators are ingested at every interval. For other datasets, namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the threat indicators are expired after the duration `IOC Expiration Duration` is configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
+Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
+
+| Source Data stream                  | Destination Index Pattern                        | Destination Alias                       |
+|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
+| `logs-ti_abusech.url-*`            | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`            |
+| `logs-ti_abusech.malware-*`        | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`        |
+| `logs-ti_abusech.malwarebazaar-*`  | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`  |
+| `logs-ti_abusech.threatfox-*`      | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`      |
+
+#### ILM Policy
+
+To facilitate IoC expiration, source data stream-backed indices `.ds-logs-ti_abusech.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `5 days` from ingested date.

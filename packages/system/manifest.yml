@@ -1,14 +1,18 @@
 format_version: 3.0.2
 name: system
 title: System
-version: "2.5.2"
+version: "2.7.2"
 description: Collect system logs and metrics from your servers with Elastic Agent.
 type: integration
 categories:
   - os_system
+  # Added monitoring category as System integration collects metrics for monitoring server health
+  - monitoring
+  # Added observability category as System integration provides comprehensive visibility into host performance, resource utilization, and system state
+  - observability
 conditions:
   kibana:
-    version: "^8.18.0 || ^9.0.0"
+    version: "^9.2.0"
 screenshots:
   - src: /img/policy-and-object-monitoring-dashboard.png
     title: policy and object monitoring
@@ -56,12 +60,13 @@ policy_templates:
               to find the available keys and to
               [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions)
               on how to use the available keys in conditions. It defaults to
-              '${host.os_version} != "12 (bookworm)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023") and (${host.os_platform} != "sles" and startsWith(${host.os_version}, "15") == false)'
+              '${host.os_version} != "12 (bookworm)" and ${host.os_version} != "13 (trixie)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023") and (${host.os_platform} != "sles" and ${host.os_version} != "15 SP1" 
+              and ${host.os_version} != "15 SP2" and ${host.os_version} != "15 SP3" and ${host.os_version} != "15 SP4" and ${host.os_version} != "15 SP5" and ${host.os_version} != "15 SP6" and ${host.os_version} != "15 SP7")'
             type: text
             multi: false
             required: false
             show_user: true
-            default: ${host.os_version} != "12 (bookworm)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023") and (${host.os_platform} != "sles" and startsWith(${host.os_version}, "15") == false)
+            default: ${host.os_version} != "12 (bookworm)" and ${host.os_version} != "13 (trixie)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023") and (${host.os_platform} != "sles" and ${host.os_version} != "15 SP1" and ${host.os_version} != "15 SP2" and ${host.os_version} != "15 SP3" and ${host.os_version} != "15 SP4" and ${host.os_version} != "15 SP5" and ${host.os_version} != "15 SP6" and ${host.os_version} != "15 SP7")
       - type: journald
         title: Collect logs from System instances using Journald
         description: Collecting System auth and syslog logs using Journald
@@ -74,18 +79,19 @@ policy_templates:
               to find the available keys and to
               [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions)
               on how to use the available keys in conditions. It defaults to
-              '${host.os_version} == "12 (bookworm)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023") or (${host.os_platform} == "sles" and startsWith(${host.os_version}, "15") == true)'
+              '${host.os_version} == "12 (bookworm)" or ${host.os_version} == "13 (trixie)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023") or (${host.os_platform} == "sles" and (${host.os_version} == "15 SP1" 
+              or ${host.os_version} == "15 SP2" or ${host.os_version} == "15 SP3" or ${host.os_version} == "15 SP4" or ${host.os_version} == "15 SP5" or ${host.os_version} == "15 SP6" or ${host.os_version} == "15 SP7"))'
             type: text
             multi: false
             required: false
             show_user: true
-            default: ${host.os_version} == "12 (bookworm)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023") or (${host.os_platform} == "sles" and startsWith(${host.os_version}, "15") == true)
+            default: ${host.os_version} == "12 (bookworm)" or ${host.os_version} == "13 (trixie)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023") or (${host.os_platform} == "sles" and (${host.os_version} == "15 SP1" or ${host.os_version} == "15 SP2" or ${host.os_version} == "15 SP3" or ${host.os_version} == "15 SP4" or ${host.os_version} == "15 SP5" or ${host.os_version} == "15 SP6" or ${host.os_version} == "15 SP7"))
       - type: winlog
         title: "Collect events from the Windows event log"
         description: "Collecting events from Windows event log"
       - type: system/metrics
         title: Collect metrics from System instances
-        description: Collecting System core, CPU, diskio, entropy, filesystem, fsstat, load, memory, network, Network Summary, process, Process Summary, raid, service, socket, Socket Summary, uptime and users metrics
+        description: Collecting System core, CPU, diskio, entropy, filesystem, fsstat, load, memory, network, Network Summary, NTP, process, Process Summary, raid, service, socket, Socket Summary, uptime and users metrics
         vars:
           - name: system.hostfs
             type: text

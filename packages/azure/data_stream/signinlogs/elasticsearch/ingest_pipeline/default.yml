@@ -45,11 +45,26 @@ processors:
         ctx.azure['signinlogs'] = keysToSnakeCase(ctx.azure.signinlogs);
   - drop:
       description: Drop non-SignInLogs.
-      if: ctx?.azure?.signinlogs?.category == null || !ctx.azure.signinlogs.category.endsWith('SignInLogs')
+      if: ctx.azure?.signinlogs?.category == null || !ctx.azure.signinlogs.category.endsWith('SignInLogs')
+    # Unfortunately, some Azure services generate logs with
+    # `created_date_time` field instead of `time` field.
+    #
+    # We need to rename `created_date_time` as `time` to
+    # apply the correct timestamp processing.
+    # 
+    # Refs;
+    # - https://github.com/elastic/integrations/issues/15083  
+  - rename:
+     field: azure.signinlogs.created_date_time
+     target_field: azure.signinlogs.time
+     ignore_missing: true
+     if: ctx.azure?.signinlogs?.time == null
+     description: 'Fallback to handle special cases for log category: use `created_date_time` as `time` if `time` is not already set.'
   - date:
       field: azure.signinlogs.time
       formats:
           - ISO8601
+          - "MM/dd/yyyy h:mm:ss a"
   - remove:
       field: azure.signinlogs.time
   - rename:
@@ -116,12 +131,26 @@ processors:
   - remove:
       field: azure.signinlogs.level
       ignore_missing: true
+  - convert:
+      field: azure.signinlogs.duration_ms
+      target_field: event.duration
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx.azure?.signinlogs?.duration_ms != null && ctx.azure.signinlogs.duration_ms instanceof String"
+      description: 'Convert duration_ms to event.duration as long (if it is a string).'
   - rename:
       field: azure.signinlogs.duration_ms
       target_field: event.duration
       ignore_missing: true
+      if: "ctx.azure?.signinlogs?.duration_ms != null && !(ctx.azure.signinlogs.duration_ms instanceof String)"
+      description: 'Rename duration_ms to event.duration (if it is not a string).'
+  - remove:
+      field: azure.signinlogs.duration_ms
+      ignore_missing: true
+      description: 'Clean up duration_ms field, if it is still there after the conversion.'
   - script:
-      if: ctx?.event?.duration != null
+      if: ctx.event?.duration != null
       lang: painless
       source: ctx.event.duration = ctx.event.duration * 1000000
   - rename:

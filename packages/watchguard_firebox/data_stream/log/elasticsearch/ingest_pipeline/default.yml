@@ -76,6 +76,7 @@ processors:
         - MMM  d HH:mm:ss
       on_failure:
         - append:
+            tag: append_error_message_b0297dd5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -92,6 +93,7 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_fd3ea189
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dissect:
@@ -101,6 +103,7 @@ processors:
       pattern: 'msg_id="%{watchguard_firebox.log.msg_id}" %{watchguard_firebox.log.body}'
       ignore_failure: true
   - set:
+      tag: set_message_7d799e76
       field: message
       if: ctx.watchguard_firebox?.log?.msg_id == null
       copy_from: watchguard_firebox.log.body
@@ -4643,6 +4646,7 @@ processors:
       tag: pipeline_alarm
       on_failure:
         - append:
+            tag: append_error_message_605bff8e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -4651,6 +4655,7 @@ processors:
       tag: pipeline_event
       on_failure:
         - append:
+            tag: append_error_message_a3d465c5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -4659,6 +4664,7 @@ processors:
       tag: pipeline_diagnostic
       on_failure:
         - append:
+            tag: append_error_message_4a3507d8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
@@ -4667,6 +4673,7 @@ processors:
       tag: pipeline_traffic
       on_failure:
         - append:
+            tag: append_error_message_f41bb89e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -4705,11 +4712,24 @@ processors:
       value: pipeline_error
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

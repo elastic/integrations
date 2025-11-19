@@ -1,0 +1,341 @@
+---
+description: Pipeline for processing application logs.
+processors:
+  - drop:
+      description: Ignore retry placeholder message.
+      if: ctx.message == "retry"
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: package
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+  - rename:
+      field: json.accountName
+      tag: rename_accountName
+      target_field: sentinel_one.application.account_name
+      ignore_missing: true
+  - date:
+      field: json.applicationInstallationDate
+      tag: date_applicationInstallationDate
+      target_field: sentinel_one.application.application_installation_date
+      formats:
+        - ISO8601
+      if: ctx.json?.applicationInstallationDate != null && ctx.json.applicationInstallationDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: package.installed
+      tag: set_package_installed_from_application_application_installation_date
+      copy_from: sentinel_one.application.application_installation_date
+      ignore_empty_value: true
+  - rename:
+      field: json.applicationInstallationPath
+      tag: rename_applicationInstallationPath
+      target_field: sentinel_one.application.application_installation_path
+      ignore_missing: true
+  - rename:
+      field: json.applicationName
+      tag: rename_applicationName
+      target_field: sentinel_one.application.application_name
+      ignore_missing: true
+  - set:
+      field: package.name
+      tag: set_package_name_from_application_application_name
+      copy_from: sentinel_one.application.application_name
+      ignore_empty_value: true
+  - rename:
+      field: json.applicationVendor
+      tag: rename_applicationVendor
+      target_field: sentinel_one.application.application_vendor
+      ignore_missing: true
+  - convert:
+      field: json.applicationVersionsCount
+      tag: convert_applicationVersionsCount_to_long
+      target_field: sentinel_one.application.application_versions_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.coreCount
+      tag: convert_coreCount_to_long
+      target_field: sentinel_one.application.core_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.cpe
+      tag: rename_cpe
+      target_field: sentinel_one.application.cpe
+      ignore_missing: true
+  - convert:
+      field: json.cpuCount
+      tag: convert_cpuCount_to_long
+      target_field: sentinel_one.application.cpu_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.detectionDate
+      tag: date_detectionDate
+      target_field: sentinel_one.application.detection_date
+      formats:
+        - ISO8601
+      if: ctx.json?.detectionDate != null && ctx.json.detectionDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.endpointId
+      tag: rename_endpointId
+      target_field: sentinel_one.application.endpoint_id
+      ignore_missing: true
+  - rename:
+      field: json.endpointName
+      tag: rename_endpointName
+      target_field: sentinel_one.application.endpoint_name
+      ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_application_endpoint_name
+      copy_from: sentinel_one.application.endpoint_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - rename:
+      field: json.endpointType
+      tag: rename_endpointType
+      target_field: sentinel_one.application.endpoint_type
+      ignore_missing: true
+  - set:
+      field: host.type
+      tag: set_host_type_from_application_endpoint_type
+      copy_from: sentinel_one.application.endpoint_type
+      ignore_empty_value: true
+  - rename:
+      field: json.endpointUuid
+      tag: rename_endpointUuid
+      target_field: sentinel_one.application.endpoint_uuid
+      ignore_missing: true
+  - convert:
+      field: json.endpointsCount
+      tag: convert_endpointsCount_to_long
+      target_field: sentinel_one.application.endpoints_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.estimate
+      tag: convert_estimate_to_boolean
+      target_field: sentinel_one.application.estimate
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.fileSize
+      tag: convert_fileSize_to_long
+      target_field: sentinel_one.application.file_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: package.size
+      tag: set_package_size_from_application_file_size
+      copy_from: sentinel_one.application.file_size
+      ignore_empty_value: true
+  - rename:
+      field: json.groupName
+      tag: rename_groupName
+      target_field: sentinel_one.application.group_name
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: sentinel_one.application.id
+      ignore_missing: true
+  - rename:
+      field: json.osArch
+      tag: rename_osArch
+      target_field: sentinel_one.application.os_arch
+      ignore_missing: true
+  - rename:
+      field: json.osName
+      tag: rename_osName
+      target_field: sentinel_one.application.os_name
+      ignore_missing: true
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_from_application_os_name
+      copy_from: sentinel_one.application.os_name
+      ignore_empty_value: true
+  - rename:
+      field: json.osType
+      tag: rename_osType
+      target_field: sentinel_one.application.os_type
+      ignore_missing: true
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_from_application_os_type
+      copy_from: sentinel_one.application.os_type
+      ignore_empty_value: true
+  - rename:
+      field: json.osVersion
+      tag: rename_osVersion
+      target_field: sentinel_one.application.os_version
+      ignore_missing: true
+  - set:
+      field: host.os.full
+      tag: set_host_os_full_from_application_os_version
+      copy_from: sentinel_one.application.os_version
+      ignore_empty_value: true
+  - rename:
+      field: json.siteName
+      tag: rename_siteName
+      target_field: sentinel_one.application.site_name
+      ignore_missing: true
+  - rename:
+      field: json.version
+      tag: rename_version
+      target_field: sentinel_one.application.version
+      ignore_missing: true
+  - set:
+      field: package.version
+      tag: set_package_version_from_application_version
+      copy_from: sentinel_one.application.version
+      ignore_empty_value: true
+  - remove:
+      field:
+        - sentinel_one.application.application_installation_date
+        - sentinel_one.application.application_name
+        - sentinel_one.application.endpoint_name
+        - sentinel_one.application.endpoint_type
+        - sentinel_one.application.file_size
+        - sentinel_one.application.os_name
+        - sentinel_one.application.os_type
+        - sentinel_one.application.os_version
+        - sentinel_one.application.version
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,27 +1,30 @@
 # Cisco Umbrella Integration
 
-This integration is for [Cisco Umbrella](https://docs.umbrella.com/). It includes the following
-datasets for receiving logs from an AWS S3 bucket using an SQS notification queue and Cisco Managed S3 bucket without SQS:
+## Overview
+
+This integration is for [Cisco Umbrella](https://docs.umbrella.com/). It includes the following datasets for receiving logs from an AWS S3 bucket using an SQS notification queue and Cisco Managed S3 bucket without SQS:
 
 - `log` dataset: supports Cisco Umbrella logs.
 
-## Setup
+### Compatibility
 
-### Collect data from Cisco Umbrella
+This integration supports the log [schema version 13](https://docs.umbrella.com/umbrella-user-guide/docs/log-format-and-versioning#log-schema-versions).
 
-To start collecting logs from Cisco Umbrella, you will need to configure an S3 bucket where the logs will be exported. Depending on your setup, you can choose between a Cisco-managed or a self-managed S3 bucket. Follow the appropriate guide below to complete the setup:
+## What do I need to use this integration?
+
+To start collecting logs from Cisco Umbrella, you need to configure an S3 bucket where the logs will be exported. Depending on your setup, you can choose between a Cisco-managed or a self-managed S3 bucket.
 
 - For a Cisco-managed S3 bucket, follow these [step-by-step instructions](https://docs.umbrella.com/deployment-umbrella/docs/cisco-managed-s3-bucket).
 
 - For a self-managed S3 bucket, follow these [step-by-step instructions](https://docs.umbrella.com/deployment-umbrella/docs/setting-up-an-amazon-s3-bucket).
 
-**Note:** Make sure to disable the `Include Optional Log Headers in S3 Export` toggle to prevent optional headers from appearing in the S3 log management report. See [reference](https://docs.umbrella.com/deployment-umbrella/docs/log-formats-and-versioning#view-your-headers).
+**Note:** Make sure to disable the `Include Optional Log Headers in S3 Export` toggle to prevent optional headers from appearing in the S3 log management report. Refer to the [reference](https://docs.umbrella.com/deployment-umbrella/docs/log-formats-and-versioning#view-your-headers) documentation for details.
 
 ## Logs
 
 ### Umbrella
 
-When using Cisco Managed S3 buckets that does not use SQS there is no load balancing possibilities for multiple agents, a single agent should be configured to poll the S3 bucket for new and updated files, and the number of workers can be configured to scale vertically.
+When using Cisco Managed S3 buckets that do not use SQS; there is no load balancing for multiple agents. A single agent should be configured to poll the S3 bucket for new and updated files, and the number of workers can be configured to scale vertically.
 
 The `log` dataset collects Cisco Umbrella logs.
 
@@ -155,6 +158,7 @@ An example event for `log` looks as following:
 | cisco.umbrella.amp_disposition | The status of the files proxied and scanned by Cisco Advanced Malware Protection (AMP) as part of the Umbrella File Inspection feature; can be Clean, Malicious or Unknown. | keyword |
 | cisco.umbrella.amp_malware_name | If Malicious, the name of the malware according to AMP. | keyword |
 | cisco.umbrella.amp_score | The score of the malware from AMP. This field is not currently used and will be blank. | keyword |
+| cisco.umbrella.application_category_name | The category of the requested web application. | keyword |
 | cisco.umbrella.audit.after | The policy or setting after the change was made. | keyword |
 | cisco.umbrella.audit.after_values.\* | The individual values of the policy or setting after the change was made. | object |
 | cisco.umbrella.audit.before | The policy or setting before the change was made. | keyword |
@@ -162,32 +166,50 @@ An example event for `log` looks as following:
 | cisco.umbrella.audit.type | Where the change was made, such as settings or a policy. | keyword |
 | cisco.umbrella.av_detections | The detection name according to the antivirus engine used in file inspection. | keyword |
 | cisco.umbrella.blocked_categories | The categories that resulted in the destination being blocked. Available in version 4 and above. | keyword |
+| cisco.umbrella.casi_category_ids | The name of the Application category to which the App ID belongs. | keyword |
 | cisco.umbrella.categories | The security or content categories that the destination matches. | keyword |
 | cisco.umbrella.certificate_errors | Any certificate or protocol errors in the request. | keyword |
 | cisco.umbrella.classification | The category of attack detected by a rule that is part of a more general type of attack class, such as trojan-activity, attempted-user, and unknown. | keyword |
+| cisco.umbrella.content_category_ids | The ID of one or more content categories matched by the rule. | keyword |
+| cisco.umbrella.content_category_list_ids | The ID of one or more content category lists that include categories matched by the rule. | keyword |
 | cisco.umbrella.cves | A list of information about security vulnerabilities and exposures. | keyword |
 | cisco.umbrella.data_classification | The data classification whose data identifier matched on the violation. | keyword |
 | cisco.umbrella.data_identifier | The data identifier that matched on the request. | keyword |
 | cisco.umbrella.datacenter | The name of the Umbrella Data Center that processed the user-generated traffic. | keyword |
 | cisco.umbrella.destination_lists_id | The ID number umbrella assigns to a destination list. | keyword |
 | cisco.umbrella.dlp_status | If the request was Blocked for DLP. | keyword |
+| cisco.umbrella.egress | Indicates whether or not the egress IP was a reserved IP. | keyword |
+| cisco.umbrella.enforced_by | The Secure Access component or service that enforced the policy or control related to this event. | keyword |
 | cisco.umbrella.file_action | The action taken on a file in a remote browser isolation session. | keyword |
 | cisco.umbrella.file_label | The file name label that matched on the file properties. | keyword |
+| cisco.umbrella.first_packet_timestamp | The timestamp when the first packet of the session was received in UTC in seconds. | date |
 | cisco.umbrella.fqdns | The fully qualified domain names (FQDNs) that match the request. | keyword |
+| cisco.umbrella.ftd_enforcement_id | The unique identifier of the enforcement action taken by a Firepower Threat Defense (FTD) device integrated with Secure Access. | keyword |
+| cisco.umbrella.ftd_enforcement_name | The name or type of enforcement action taken by a FTD device integrated with Secure Access. | keyword |
 | cisco.umbrella.gid | Unique ID assigned to the part of the IPS which generated the event. | keyword |
 | cisco.umbrella.identities | An array of the different identities related to the event. | keyword |
 | cisco.umbrella.identity | The identity that made the request. An identity can be a high-level entity within your system (e.g a network) or very granular (e.g a single user) | keyword |
 | cisco.umbrella.identity_types | The type of identity that made the request. For example, Roaming Computer or Network. | keyword |
+| cisco.umbrella.ips_config_id | The IPS config type (CONFIG, PROFILE, or UNKNOWN). | keyword |
 | cisco.umbrella.isolate_action | The remote browser isolation state associated with the request. | keyword |
+| cisco.umbrella.last_packet_timestamp | The timestamp when the last packet of the session was received in UTC in seconds. | date |
 | cisco.umbrella.message | A brief description of the signature. | keyword |
+| cisco.umbrella.operation_mode | The mode of operation chosen when enabling IPS (IDS, IPS or UNKNOWN). | keyword |
 | cisco.umbrella.origin_id | The unique identity of the network tunnel. | keyword |
 | cisco.umbrella.policy_identity_type | The first identity type matched with this request. Available in version 3 and above. | keyword |
+| cisco.umbrella.policy_resource_id | The ID identifies the IPS policy resource. | keyword |
+| cisco.umbrella.posture_id | The unique ID of the endpoint posture profile. | keyword |
+| cisco.umbrella.private_app_id | The unique ID of the private resource group ID that the private resource belongs to. | keyword |
+| cisco.umbrella.private_flow | TRUE if Umbrella applied a private access rule to the user-generated traffic, and FALSE if Umbrella applied an internet access rule. | keyword |
+| cisco.umbrella.private_resource_group_name | The private resource group name if the matched rule destination was a private resource group. | keyword |
+| cisco.umbrella.private_resource_name | The name of the private resource. | keyword |
 | cisco.umbrella.puas | A list of all potentially unwanted application (PUA) results for the proxied file as returned by the antivirus scanner. | keyword |
 | cisco.umbrella.ruleset_id | The ID number assigned to the ruleset by Umbrella. | keyword |
 | cisco.umbrella.severity | The severity level of the rule, such as High, Medium, Low, and Very Low. | keyword |
 | cisco.umbrella.sha_sha256 | Hex digest of the response content. | keyword |
 | cisco.umbrella.sid | Used to uniquely identify signatures. | keyword |
 | cisco.umbrella.signature_list_id | Unique ID assigned to a Default or Custom Signature List. | keyword |
+| cisco.umbrella.traffic_source | The source of the user-generated traffic (0-Unknown, 1-VPN,2–ZTNA or 3-Network Tunnel). | keyword |
 | cisco.umbrella.warn_status | The warn page state associated with the request. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |

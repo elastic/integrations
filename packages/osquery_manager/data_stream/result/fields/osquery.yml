@@ -332,7 +332,9 @@
           norms: false
           default_field: false
     - name: app_name
-      description: windows_firewall_rules.app_name - Friendly name of the application to which the rule applies
+      description: |-
+        homebrew_packages.app_name - Name of the installed App (for Casks)
+        windows_firewall_rules.app_name - Friendly name of the application to which the rule applies
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -662,6 +664,14 @@
           default_field: false
     - name: auto_update
       description: lxd_images.auto_update - Whether the image auto-updates (1) or not (0)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: auto_updates
+      description: homebrew_packages.auto_updates - 1 if the cask auto-updates otherwise 0
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2570,6 +2580,7 @@
     - name: datetime
       description: |-
         crashes.datetime - Date/Time at which the crash occurred
+        dns_lookup_events.datetime - Event timestamp in DATETIME format
         powershell_events.datetime - System time at which the Powershell script event occurred
         process_etw_events.datetime - Event timestamp in DATETIME format
         syslog_events.datetime - Time known to syslog
@@ -3296,6 +3307,7 @@
         bpf_process_events.eid - Event ID
         bpf_socket_events.eid - Event ID
         disk_events.eid - Event ID
+        dns_lookup_events.eid - Event ID
         es_process_events.eid - Event ID
         es_process_file_events.eid - Event ID
         file_events.eid - Event ID
@@ -3349,6 +3361,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: emulated_cpu_type
+      description: system_info.emulated_cpu_type - Emulated CPU type
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: enable_admin_account
       description: security_profile_info.enable_admin_account - Determines whether the Administrator account on the local computer is enabled
@@ -4004,6 +4025,7 @@
         file.filename - Name portion of file path
         lxd_images.filename - Filename of the image file
         prefetch.filename - Executable filename.
+        recent_files.filename - The name of the file
         xprotect_entries.filename - Use this file name to match
       type: keyword
       ignore_above: 1024
@@ -6778,6 +6800,14 @@
         - name: number
           type: long
           default_field: false
+    - name: memory_inactive_file
+      description: docker_container_stats.memory_inactive_file - Memory inactive file
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: memory_limit
       description: |-
         docker_container_stats.memory_limit - Memory limit
@@ -6798,6 +6828,14 @@
           default_field: false
     - name: memory_total
       description: memory_info.memory_total - Total amount of physical RAM, in bytes
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: memory_total_inactive_file
+      description: docker_container_stats.memory_total_inactive_file - Memory total inactive file
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7222,6 +7260,7 @@
         gatekeeper_approved_apps.mtime - Last modification time
         process_events.mtime - File modification in UNIX time
         quicklook_cache.mtime - Parsed version date field
+        recent_files.mtime - Last modification time of the shortcut (usually corresponds to last opened time for the file)
         registry.mtime - timestamp of the most recent registry write
       type: keyword
       ignore_above: 1024
@@ -7237,7 +7276,7 @@
           type: long
           default_field: false
     - name: name
-      description: "acpi_tables.name - ACPI table name\nad_config.name - The macOS-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\nconnected_displays.name - The name of the display.\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\netc_protocols.name - Protocol name\netc_services.name - Service name\nfan_speed_sensors.name - Fan name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nvscode_extensions.name - Extension Name\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_search.name - The name of the item\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
+      description: "acpi_tables.name - ACPI table name\nad_config.name - The macOS-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\nconnected_displays.name - The name of the display.\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndns_lookup_events.name - Name being queried in lookup\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\netc_protocols.name - Protocol name\netc_services.name - Service name\nfan_speed_sensors.name - Fan name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\njetbrains_plugins.name - Name of the plugin (Title Case)\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nvscode_extensions.name - Extension Name\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_search.name - The name of the item\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7931,6 +7970,15 @@
           type: text
           norms: false
           default_field: false
+    - name: package_family_name
+      description: programs.package_family_name - A combination of PackageName and PublisherHash that is used to uniquely identify applications across versions and architectures.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: package_filename
       description: package_receipts.package_filename - Filename of original .pkg file
       type: keyword
@@ -8188,6 +8236,7 @@
         crontab.path - File parsed
         device_file.path - A logical path within the device node
         disk_events.path - Path of the DMG file accessed
+        dns_lookup_events.path - Path to binary of process making the lookup (sometimes unavailable for very short-lived processes)
         docker_container_fs_changes.path - FIle or directory path relative to rootfs
         docker_containers.path - Container path
         es_process_events.path - Path of executed file
@@ -8200,6 +8249,7 @@
         hash.path - Must provide a path or directory
         homebrew_packages.path - Package install path
         ie_extensions.path - Path to executable
+        jetbrains_plugins.path - The path on the filesystem for the plugin. This may be a folder or a jar filename
         kernel_extensions.path - Optional path to extension bundle
         kernel_info.path - Kernel path
         kernel_panics.path - Location of log file
@@ -8230,6 +8280,7 @@
         processes.path - Path to executed binary
         python_packages.path - Path at which this module resides
         quicklook_cache.path - Path of file
+        recent_files.path - The full path of the file
         registry.path - Full path to the value
         rpm_package_files.path - File path within the package
         safari_extensions.path - Path to the Info.plist describing the extension
@@ -8495,6 +8546,7 @@
         bpf_process_events.pid - Process ID
         bpf_socket_events.pid - Process ID
         crashes.pid - Process (or thread) ID of the crashed process
+        dns_lookup_events.pid - Process ID of process making the lookup
         docker_container_processes.pid - Process ID
         docker_containers.pid - Identifier of the initial process
         es_process_events.pid - Process (or thread) ID
@@ -9000,6 +9052,15 @@
           default_field: false
     - name: product_name
       description: tpm_info.product_name - Product name of the TPM
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: product_type
+      description: 'jetbrains_plugins.product_type - The product type (Valid values: CLion, DataGrip, GoLand, IntelliJIdea, IntelliJIdeaCommunityEdition, PhpStorm, PyCharm, PyCharmCommunityEdition, ReSharper, Rider, RubyMine, RustRover, WebStorm)'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9685,6 +9746,15 @@
           default_field: false
     - name: resource_group_name
       description: azure_instance_metadata.resource_group_name - Resource group for the VM
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: response
+      description: dns_lookup_events.response - Results returned by lookup
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10499,6 +10569,15 @@
           type: text
           norms: false
           default_field: false
+    - name: shortcut_path
+      description: recent_files.shortcut_path - Path to the shortcut where Windows stores the recent file data
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: shortcut_run
       description: file.shortcut_run - Window mode the target of the shortcut should be run in
       type: keyword
@@ -11041,6 +11120,7 @@
         carves.status - Status of the carve, can be STARTING, PENDING, SUCCESS, or FAILED
         chassis_info.status - If available, gives various operational or nonoperational statuses such as OK, Degraded, and Pred Fail.
         deb_packages.status - Package status
+        dns_lookup_events.status - Response status code
         docker_containers.status - Container status information
         kernel_modules.status - Kernel module status
         lxd_cluster_members.status - Status of the node (Online/Offline)
@@ -11440,6 +11520,15 @@
         - name: number
           type: long
           default_field: false
+    - name: symlink_target_path
+      description: file.symlink_target_path - Full path of the symlink target if any
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: syscall
       description: |-
         bpf_process_events.syscall - System call name
@@ -11637,6 +11726,7 @@
         bpf_socket_events.time - Time of execution in UNIX time
         carves.time - Time at which the carve was kicked off
         disk_events.time - Time of appearance/disappearance in UNIX time
+        dns_lookup_events.time - Event timestamp in Unix format
         docker_container_processes.time - Cumulative CPU time. [DD-]HH:MM:SS format
         es_process_events.time - Time of execution in UNIX time
         es_process_file_events.time - Time of execution in UNIX time
@@ -11681,7 +11771,9 @@
           norms: false
           default_field: false
     - name: time_windows
-      description: process_etw_events.time_windows - Event timestamp in Windows format
+      description: |-
+        dns_lookup_events.time_windows - Event timestamp in Windows format
+        process_etw_events.time_windows - Event timestamp in Windows format
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11868,6 +11960,7 @@
         disk_encryption.type - Description of cipher type and mode if available
         disk_info.type - The interface type of the disk.
         dns_cache.type - DNS record type
+        dns_lookup_events.type - DNS record type of lookup as string
         dns_resolvers.type - Address type: sortlist, nameserver, search
         docker_container_mounts.type - Type of mount (bind, volume)
         docker_container_ports.type - Protocol (tcp, udp)
@@ -11893,6 +11986,7 @@
         osquery_flags.type - Flag type
         process_etw_events.type - Event Type (ProcessStart, ProcessStop)
         process_open_pipes.type - Pipe Type: named vs unnamed/anonymous
+        recent_files.type - Display type for the file
         registry.type - Type of the registry value, or 'subkey' if item is a subkey
         routes.type - Type of route
         selinux_events.type - Event type
@@ -11914,6 +12008,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: type_id
+      description: dns_lookup_events.type_id - Integer type ID for record type
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: type_name
       description: |-
@@ -11944,6 +12046,7 @@
         file.uid - Owning user ID
         file_events.uid - Owning user ID
         firefox_addons.uid - The local user that owns the addon
+        jetbrains_plugins.uid - The local user that owns the plugin
         kernel_keys.uid - The user ID of the key owner.
         known_hosts.uid - The local user that owns the known_hosts file
         launchd_overrides.uid - User ID applied to the override, 0 applies to all
@@ -11952,6 +12055,8 @@
         process_events.uid - User ID at process start
         process_file_events.uid - The uid of the process performing the action
         processes.uid - Unsigned user ID
+        python_packages.uid - The local user that owns the python package
+        recent_files.uid - The local user ID
         safari_extensions.uid - The local user that owns the extension
         seccomp_events.uid - User ID of the user who started the analyzed process
         shell_history.uid - Shell history owner
@@ -12095,6 +12200,15 @@
           default_field: false
     - name: update_url
       description: chrome_extensions.update_url - Extension-supplied update URI
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: upgrade_code
+      description: programs.upgrade_code - Specific to MSI applications, a GUID used to identify a product suite across multiple versions.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12289,6 +12403,7 @@
     - name: username
       description: |-
         certificates.username - Username
+        dns_lookup_events.username - User rights - primary token username
         es_process_events.username - Username
         last.username - Entry username
         launchd.username - Run this daemon or agent as this username
@@ -12431,6 +12546,7 @@
         block_devices.vendor - Block device vendor string
         disk_events.vendor - Disk event vendor string
         hardware_events.vendor - Hardware device vendor
+        jetbrains_plugins.vendor - The vendor name or organization id that authored the plugin
         pci_devices.vendor - PCI Device vendor
         platform_info.vendor - Platform code vendor
         rpm_packages.vendor - Package vendor
@@ -12489,6 +12605,7 @@
         homebrew_packages.version - Current 'linked' version
         ie_extensions.version - Version of the executable
         intel_me_info.version - Intel ME version
+        jetbrains_plugins.version - Version of the plugin
         kernel_extensions.version - Extension version
         kernel_info.version - Kernel version
         npm_packages.version - Package-supplied version
@@ -12804,3 +12921,4 @@
           type: text
           norms: false
           default_field: false
+

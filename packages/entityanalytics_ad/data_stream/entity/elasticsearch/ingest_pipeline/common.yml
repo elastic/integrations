@@ -1,0 +1,163 @@
+---
+description: Pipeline for common processing of all entity type logs.
+processors:
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the activedirectory objects.
+      params:
+        "accountExpires": "account_expires"
+        "adminCount": "admin_count"
+        "badPasswordTime": "bad_password_time"
+        "badPwdCount": "bad_pwd_count"
+        "cn": "cn"
+        "codePage": "code_page"
+        "countryCode": "country_code"
+        "description": "description"
+        "distinguishedName": "distinguished_name"
+        "dNSHostName": "dns_host_name"
+        "dSCorePropagationData": "ds_core_propagation_data"
+        "groups": "groups"
+        "groupType": "group_type"
+        "instanceType": "instance_type"
+        "isCriticalSystemObject": "is_critical_system_object"
+        "lastLogoff": "last_logoff"
+        "lastLogon": "last_logon"
+        "lastLogonTimestamp": "last_logon_timestamp"
+        "logonCount": "logon_count"
+        "member": "member"
+        "memberOf": "member_of"
+        "name": "name"
+        "object_category": "object_category"
+        "objectCategory": "object_category"
+        "objectClass": "object_class"
+        "objectGUID": "object_guid"
+        "objectSid": "object_sid"
+        "operatingSystem": "operating_system"
+        "operatingSystemVersion": "operating_system_version"
+        "primaryGroupID": "primary_group_id"
+        "pwdLastSet": "pwd_last_set"
+        "sAMAccountName": "sam_account_name"
+        "sAMAccountType": "sam_account_type"
+        "servicePrincipalName": "service_principal_name"
+        "showInAdvancedViewOnly": "show_in_advanced_view_only"
+        "userAccountControl": "user_account_control"
+        "uSNChanged": "usn_changed"
+        "uSNCreated": "usn_created"
+        "whenChanged": "when_changed"
+        "whenCreated": "when_created"
+      tag: painless_to_rename_fields_under_activedirectory_groups
+      source: |
+        String hexByte(Byte b) {
+            String x = Integer.toHexString(Byte.toUnsignedInt(b));
+            if (x.length() < 2) {
+                x = "0" + x;
+            }
+            return x;
+        }
+        String guid(String text) {
+            def bytes = Base64.getDecoder().decode(text);
+            def uid = "";
+            for (int i = 3; i >= 0; i--) {
+                uid += hexByte(bytes[i]);
+            }
+            uid += "-";
+            for (int i = 5; i > 3; i--) {
+                uid += hexByte(bytes[i]);
+            }
+            uid += "-";
+            for (int i = 7; i > 5; i--) {
+                uid += hexByte(bytes[i]);
+            }
+            uid += "-";
+            for (int i = 8; i < bytes.length; i++) {
+                if (i == 10) {
+                    uid += "-";
+                }
+                uid += hexByte(bytes[i]);
+            }
+            return uid;
+        }
+        String sid(String text) {
+            def bytes = Base64.getDecoder().decode(text);
+            def uid = "S-"+Byte.toString(bytes[0])+"-";
+            int auth = 0;
+            for (int i = 2; i < 8; i++) {
+                auth |= Byte.toUnsignedInt(bytes[i])<<(8*(5-(i-2)));
+            }
+            uid += Integer.toString(auth);
+            int subauths = Byte.toUnsignedInt(bytes[1]);
+            int off = 8;
+            for (int i = 0; i < subauths; i++) {
+                int subauth = 0;
+                for (int k = 0; k < 4; k++) {
+                    subauth |= (Byte.toUnsignedInt(bytes[off+k])&0xff)<<(8*k);
+                }
+                uid += "-"+Integer.toUnsignedString(subauth);
+                off += 4;
+            }
+            return uid;
+        }
+        def renameKeys(Map src, Map keyMap) {
+          def dst = new HashMap();
+          for (def entry: src.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                dst[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = updatedList;
+              } else {
+                dst[key] = value;
+              }
+            } else {
+              if (value instanceof String) {
+                if (key == "objectGUID") {
+                  value = guid(value);
+                } else if (key == "objectSid") {
+                  value = sid(value);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = value;
+              } else {
+                dst[key] = value;
+              }
+            }
+          }
+          return dst;
+        }
+
+        ctx.activedirectory = renameKeys(ctx.activedirectory, params)
+
+  - foreach:
+      tag: foreach_group
+      field: activedirectory.groups
+      if: ctx.tags?.contains('preserve_group_member_list') != true
+      ignore_missing: true
+      processor:
+        remove:
+          tag: remove_member_list_from_group
+          description: Remove the member list because of its size and irrelevance to the user
+          field: _ingest._value.member
+          ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

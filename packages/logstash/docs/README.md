@@ -687,6 +687,8 @@ pipeline collection period, and setting it to an appropriate value.
 | logstash.pipeline.plugin.input.flow.throughput.current | throughput of this input plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.input.flow.throughput.last_1_minute | throughput of this input plugin | scaled_float |  | gauge |
 | logstash.pipeline.plugin.input.id | Id of input plugin | keyword |  |  |
+| logstash.pipeline.plugin.input.metrics.beats.current_connections | Current connections count | long |  | counter |
+| logstash.pipeline.plugin.input.metrics.beats.peak_connections | Number of peak connections | long |  | counter |
 | logstash.pipeline.plugin.input.name | Name of input plugin | keyword |  |  |
 | logstash.pipeline.plugin.input.source.column |  | keyword |  |  |
 | logstash.pipeline.plugin.input.source.id |  | keyword |  |  |

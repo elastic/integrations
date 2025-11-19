@@ -1,7 +1,7 @@
-format_version: 3.4.0
+format_version: 3.0.4
 name: statsd_input
 title: StatsD Input
-version: "0.6.0"
+version: "1.0.0"
 description: StatsD Input Package
 type: input
 categories:
@@ -41,6 +41,31 @@ policy_templates:
         required: true
         show_user: true
         default: 8125
+      - name: ttl
+        type: text
+        title: TTL
+        description: |
+          It defines how long a metric will be reported after it was last recorded. Irrespective of the given ttl, metrics will be reported at least once. A ttl of zero means metrics will never expire.
+        required: true
+        show_user: false
+        default: 30s
+      - name: statsd.mappings
+        type: yaml
+        title: StatsD metric mappings
+        description: |
+          It defines how metrics will mapped from the original metric label to the event json.
+        required: false
+        show_user: false
+        default: |
+          # - metric: 'ti_failures'
+          #   value:
+          #     field: task_failures
+          # - metric: '<job_name>_start'
+          #   labels:
+          #     - attr: job_name
+          #       field: job_name
+          #   value:
+          #     field: started
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic

@@ -31,6 +31,10 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.events == null
+      description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
+      tag: drop_empty_events
   - set:
       field: event.kind
       value: event
@@ -466,6 +470,17 @@ processors:
       tag: rename_alert_id
       target_field: google_workspace.admin.alert.id
       ignore_missing: true
+  - split:
+      tag: split_related_alert_id
+      field: google_workspace.admin.RELATED_ALERT_ID
+      target_field: google_workspace.admin.alert.related_id
+      separator: ','
+      ignore_missing: true
+      if: ctx.google_workspace?.admin?.RELATED_ALERT_ID != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: google_workspace.admin.CHART_FILTERS
       tag: rename_chart_filters
@@ -860,6 +875,7 @@ processors:
         - google_workspace.admin.END_DATE
         - google_workspace.admin.END_DATE_TIME
         - google_workspace.admin.WHITELISTED_GROUPS
+        - google_workspace.admin.RELATED_ALERT_ID
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values
