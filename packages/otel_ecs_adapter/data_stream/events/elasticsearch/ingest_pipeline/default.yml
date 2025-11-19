@@ -1,0 +1,20 @@
+---
+description: Pipeline for processing Azure Events logs
+processors:
+
+  # ------------------------------------------------------
+  # Fallback pipeline for processing logs not supported by
+  # the `azurelogs` translator.
+  # ------------------------------------------------------
+  - pipeline:
+      if: "ctx.body?.structured != null"
+      name: '{{ IngestPipeline "fallback" }}'
+      description: "Fallback pipeline for processing logs not supported by the `azurelogs` translator"
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

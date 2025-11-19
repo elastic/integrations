@@ -1,0 +1,103 @@
+---
+description: | 
+  This pipelines handles log events not fully supported by the `azurelogs`
+  translator.
+
+  The pipeline assumes that log events contain the `body.structured` field
+  are not fully supported by the `azurelogs` translator.
+
+  The pipeline adapts the unsupported log events to look like the native
+  Azure resource logs, so they can be rerouted to the Azure Logs integration.
+
+processors:
+
+  # ------------------------------------------------------
+  # Expand all fields into objects.
+  # ------------------------------------------------------
+  - dot_expander:
+      path: resource.attributes
+      field: "*"
+      if: ctx.resource?.attributes != null
+
+  - dot_expander:
+      path: body.structured
+      field: "*"
+      if: ctx.body?.structured != null
+
+  # ------------------------------------------------------
+  # Rebuild the `time` and `resourceId` fields
+  # ------------------------------------------------------
+  - set:
+      field: body.structured.time
+      copy_from: "@timestamp"
+      if: ctx.body?.structured != null
+
+  - rename:
+      ignore_missing: true
+      field: resource.attributes.cloud.resource_id
+      target_field: body.structured.resourceId
+
+  # ------------------------------------------------------
+  # Rebuild the OTel specific fields to the native Azure
+  # resource logs schema.
+  # ------------------------------------------------------
+  - rename:
+      ignore_missing: true
+      field: body.structured.operation.name
+      target_field: body.structured.operationName
+  - rename:
+      ignore_missing: true
+      field: body.structured.operation.version
+      target_field: body.structured.operationVersion
+  - rename:
+      ignore_missing: true
+      field: body.structured.correlation.id
+      target_field: body.structured.correlationId
+  - rename:
+      ignore_missing: true
+      field: body.structured.result.description
+      target_field: body.structured.resultDescription
+  - rename:
+      ignore_missing: true
+      field: body.structured.result.signature
+      target_field: body.structured.resultSignature
+  - rename:
+      ignore_missing: true
+      field: body.structured.result.type
+      target_field: body.structured.resultType
+  - rename:
+      ignore_missing: true
+      field: body.structured.tenant.id
+      target_field: body.structured.tenantId
+  - rename:
+      ignore_missing: true
+      field: body.structured.cloud.region
+      target_field: body.structured.location
+  - rename:
+      ignore_missing: true
+      field: body.structured.network.peer.address
+      target_field: body.structured.callerIpAddress
+  
+  # ------------------------------------------------------
+  # Clean up the empty OTel specific fields after renaming.
+  # ------------------------------------------------------
+  - remove:
+      field:
+        - body.structured.network
+        - body.structured.correlation
+        - body.structured.result
+        - body.structured.operation
+        - body.structured.tenant
+      ignore_missing: true
+      description: Clean up the empty OTel specific fields after renaming.
+  - remove:
+      field:
+        - resource.attributes
+      ignore_missing: true
+      description: Removes the OTel specific fields that are not supported by the ECS schema.
+
+on_failure:
+  - append:
+      field: error.message
+      value:
+        - "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
