@@ -1,0 +1,428 @@
+---
+description: Pipeline for processing Ubiquiti Unifi Network logs
+processors:
+- set:
+    field: ecs.version
+    value: '8.17.0'
+
+- set:
+    field: event.type
+    value: [info]
+
+- set:
+    field: event.kind
+    value: event
+
+### Additional Observer Fields ###
+
+- set:
+    if: ctx.observer?.vendor == null
+    field: observer.vendor
+    value: Ubiquiti
+    override: false
+
+- set:
+    if: ctx.observer?.product == null
+    field: observer.product
+    value: UniFi
+    override: false
+
+- set:
+    if: ctx.observer?.hostname == null
+    field: observer.hostname
+    copy_from: log.syslog.hostname
+    ignore_empty_value: true
+    override: false
+
+### "CEF", as produced by various UniFi OS and UniFi application components... ###
+
+- pipeline:
+    if: ctx.tags != null && ctx.tags.contains("ubnt-unifi-cef")
+    description: "Pass the event to dedicated pipeline for processing CEF logs"
+    name: '{{ IngestPipeline "cef" }}'
+
+### iptables from UniFi routers... ###
+
+- pipeline:
+    if: ctx.tags != null && ctx.tags.contains("ubnt-unifi-iptables")
+    description: "Pass the event to dedicated pipeline for processing iptables logs"
+    name: '{{ IngestPipeline "iptables" }}'
+
+### other, e.g. *nix style generic syslog stuff that spews forth from Ubiquiti equipment... ###
+
+- pipeline:
+    if: ctx.tags == null || (!(ctx.tags.contains("ubnt-unifi-cef")) && !(ctx.tags.contains("ubnt-unifi-iptables")))
+    description: "Pass the event to dedicated pipeline for processing all other log types"
+    name: '{{ IngestPipeline "other" }}'
+
+### common parsing that will(/may?) be applicable to some logs independent of type... ###
+
+- grok:
+    description: Parse Ubiquiti UniFi equipment serial number, model and version information if sent via syslog appname tag.
+    field: log.syslog.appname
+    ignore_missing: true
+    ignore_failure: true
+    patterns:
+        - '%{UBNT_UNIFI_SERIAL:observer.serial_number},%{DATA:observer.product}-%{UBNT_UNIFI_VERSION:observer.version}'
+    pattern_definitions:
+        UBNT_UNIFI_VERSION: '[0-9\.\+]{3,}'
+        UBNT_UNIFI_SERIAL: '[0-9a-f]{12,}'
+
+### fix MAC addresses ###
+
+# Format source.mac address.
+- gsub:
+    field: source.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: source.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: source.mac
+    ignore_missing: true
+
+# Format client.mac address.
+- gsub:
+    field: client.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: client.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: client.mac
+    ignore_missing: true
+
+# Format destination.mac address.
+- gsub:
+    field: destination.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: destination.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: destination.mac
+    ignore_missing: true
+
+# Format server.mac address.
+- gsub:
+    field: server.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: server.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: server.mac
+    ignore_missing: true
+
+### Observer info inference attempts if observer fields are still missing ###
+
+- grok:
+    description: "Extract observer.ip from log.source.address if available"
+    if: ctx.observer?.ip == null
+    field: log.source.address
+    patterns:
+        - '%{IP:_tmp.observer_ip}:%{POSINT}'
+        - '%{IP:_tmp.observer_ip}'
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    description: "Extract observer.ip from log.syslog.hostname if IP in place as syslog hostname"
+    if: ctx.observer?.ip == null
+    field: log.syslog.hostname
+    target_field: _tmp.observer_ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+
+- append:
+    if: ctx._tmp?.observer_ip != null
+    field: observer.ip
+    value: '{{{_tmp.observer_ip}}}'
+    allow_duplicates: false
+    media_type: text/plain
+
+- append:
+    if: ctx._tmp?.observer_ip != null
+    field: related.ip
+    value: '{{{_tmp.observer_ip}}}'
+    allow_duplicates: false
+    media_type: text/plain
+
+- set:
+    description: "Use syslog hostname as observer hostname if not already set and not an IP address"
+    if: ctx.observer?.hostname == null && ctx.log?.syslog?.hostname != ctx.observer?.ip
+    field: observer.hostname
+    copy_from: log.syslog.hostname
+    ignore_empty_value: true
+
+### Relateds ###
+
+- append:
+    if: ctx?.source?.ip != null && ctx?.source?.ip != ''
+    field: related.ip
+    allow_duplicates: false
+    value: '{{{source.ip}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.source?.nat?.ip != null && ctx?.source?.nat?.ip != ''
+    field: related.ip
+    allow_duplicates: false
+    value: '{{{source.nat.ip}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.destination?.ip != null && ctx?.destination?.ip != ''
+    field: related.ip
+    allow_duplicates: false
+    value: '{{{destination.ip}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.destination?.nat?.ip != null && ctx?.destination?.nat?.ip != ''
+    field: related.ip
+    allow_duplicates: false
+    value: '{{{destination.nat.ip}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.client?.ip != null && ctx?.client?.ip != ''
+    field: related.ip
+    allow_duplicates: false
+    value: '{{{client.ip}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.server?.ip != null && ctx?.server?.ip != ''
+    field: related.ip
+    allow_duplicates: false
+    value: '{{{server.ip}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.destination?.user?.name != null
+    field: related.user
+    value: '{{{destination.user.name}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.source?.user?.name != null && ctx?.source?.user?.name != ''
+    field: related.user
+    allow_duplicates: false
+    value: '{{{source.user.name}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.observer?.hostname != null && ctx?.observer?.hostname != ''
+    field: related.hosts
+    allow_duplicates: false
+    value: '{{{observer.hostname}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.source?.domain != null && ctx?.source?.domain != ''
+    field: related.hosts
+    allow_duplicates: false
+    value: '{{{source.domain}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.destination?.domain != null && ctx?.destination?.domain != ''
+    field: related.hosts
+    allow_duplicates: false
+    value: '{{{destination.domain}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.client?.domain != null && ctx?.client?.domain != ''
+    field: related.hosts
+    allow_duplicates: false
+    value: '{{{client.domain}}}'
+    media_type: text/plain
+
+- append:
+    if: ctx?.server?.domain != null && ctx?.server?.domain != ''
+    field: related.hosts
+    allow_duplicates: false
+    value: '{{{server.domain}}}'
+    media_type: text/plain
+
+### IP Conversion from address to ip if successful, we assume other pipelines have set the .address field and left the conversion to us here ###
+
+- convert:
+    if: ctx.source?.ip == null
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+
+- convert:
+    if: ctx.destination?.ip == null
+    field: destination.address
+    target_field: destination.ip
+    type: ip
+    ignore_missing: true
+
+- convert:
+    if: ctx.client?.ip == null
+    field: client.address
+    target_field: client.ip
+    type: ip
+    ignore_missing: true
+
+- convert:
+    if: ctx.server?.ip == null
+    field: server.address
+    target_field: server.ip
+    type: ip
+    ignore_missing: true
+
+- set:
+    if: ctx.source?.address == null
+    field: source.address
+    value: '{{{source.ip}}}'
+    ignore_empty_value: true
+
+- set:
+    if: ctx.destination?.address == null
+    field: destination.address
+    value: '{{{destination.ip}}}'
+    ignore_empty_value: true
+
+- set:
+    if: ctx.client?.address == null
+    field: client.address
+    value: '{{{client.ip}}}'
+    ignore_empty_value: true
+
+- set:
+    if: ctx.server?.address == null
+    field: server.address
+    value: '{{{server.ip}}}'
+    ignore_empty_value: true
+
+### GeoIP Enrichment ###
+
+- geoip:
+    description: "Enrich event with source IP GeoIP data"
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+
+- geoip:
+    description: "Enrich event with source IP GeoIP ASN contextual data"
+    field: source.ip
+    target_field: source.as
+    database_file: GeoLite2-ASN.mmdb
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+
+- geoip:
+    description: "Enrich event with source IP GeoIP data"
+    field: destination.ip
+    target_field: destination.geo
+    ignore_missing: true
+
+- geoip:
+    description: "Enrich event with destination IP GeoIP ASN contextual data"
+    field: destination.ip
+    target_field: destination.as
+    database_file: GeoLite2-ASN.mmdb
+    properties:
+        - asn
+        - organization_name
+    ignore_missing: true
+
+- rename:
+    field: destination.as.asn
+    target_field: destination.as.number
+    ignore_missing: true
+
+- rename:
+    field: destination.as.organization_name
+    target_field: destination.as.organization.name
+    ignore_missing: true
+
+########################################################################################################
+## Clean Up generic fields and values - the other pipelines *should* have cleaned up after themselves ##
+########################################################################################################
+
+- remove:
+    if: ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+    description: "Remove ECS mapped fields, duplicated data, and those that have no meaningful value to the events"
+    tag: remove_fields_if_not_preserve_duplicate_custom_fields
+    field:
+    - event.original
+    ignore_failure: true
+    ignore_missing: true
+
+- script:
+    description: Drops null/empty values recursively to minimise event size
+    lang: painless
+    source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+- remove:
+    description: "Remove temporary and other unnecessary fields"
+    field:
+        - _tmp
+        - _config
+    ignore_missing: true
+
+######################
+## Failure Handling ##
+######################
+
+on_failure:
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

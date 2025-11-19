@@ -1,0 +1,209 @@
+title: "Ubiquiti Unifi"
+type: logs
+streams:
+  - input: filestream
+    template_path: filestream.yml.hbs
+    title: Ubiquiti Unifi Log Files
+    description: Collect Ubiquiti Unifi logs via files
+    enabled: false
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/ubnt-*.log
+      - name: drop_noise
+        required: true
+        show_user: true
+        title: Drop generic
+        description: Drops generic events, e.g. any message that does not include CEF or iptables event content.
+        type: bool
+        multi: false
+        default: false
+      - name: drop_cef
+        required: true
+        show_user: true
+        title: Drop CEF
+        description: Drops events that include CEF format event content.
+        type: bool
+        multi: false
+        default: false
+      - name: drop_iptables
+        required: true
+        show_user: true
+        title: Drop iptables
+        description: Drops events that include iptables format event content.
+        type: bool
+        multi: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        multi: true
+        show_user: true
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
+      - name: syslog_options
+        type: yaml
+        title: Syslog Configuration
+        description: i.e. field, format, time zone, etc. See [Syslog](https://www.elastic.co/guide/en/beats/filebeat/current/syslog.html) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          field: event.original
+          overwrite_keys: false
+          ignore_failure: true
+          format: auto
+          #timezone: Local
+      - name: default_timezone
+        type: text
+        title: Default Timezone
+        description: tzdata format timezone to utilise when manual timezone override is needed. Only needed if some CEF events are sent in non-RFC syslog compliant format.
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+  - input: udp
+    template_path: udp-syslog.yml.hbs
+    title: Ubiquiti Unifi Syslog
+    description: Collect Ubiquiti Unifi logs via UDP syslog
+    enabled: true
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: |
+          Bind address for the listener. Use 0.0.0.0 to listen on all interfaces.
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: text
+        title: Listen port
+        description: |
+          Bind port for the listener.
+        required: true
+        show_user: true
+        default: 5514
+      - name: drop_noise
+        required: true
+        show_user: true
+        title: Drop generic
+        description: Drops generic events, e.g. any message that does not include CEF or iptables event content.
+        type: bool
+        multi: false
+        default: false
+      - name: drop_cef
+        required: true
+        show_user: true
+        title: Drop CEF
+        description: Drops events that include CEF format event content.
+        type: bool
+        multi: false
+        default: false
+      - name: drop_iptables
+        required: true
+        show_user: true
+        title: Drop iptables
+        description: Drops events that include iptables format event content.
+        type: bool
+        multi: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        multi: true
+        show_user: true
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
+      - name: udp_options
+        type: yaml
+        title: Custom UDP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #read_buffer: 100MiB
+          #max_message_size: 50KiB
+          #timeout: 300s
+      - name: syslog_options
+        type: yaml
+        title: Syslog Configuration
+        description: i.e. field, format, time zone, etc. See [Syslog](https://www.elastic.co/guide/en/beats/filebeat/current/syslog.html) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          field: event.original
+          overwrite_keys: false
+          ignore_failure: true
+          format: auto
+          #timezone: Local
+      - name: default_timezone
+        type: text
+        title: Default Timezone
+        description: tzdata format timezone to utilise when manual timezone override is needed. Only needed if some CEF events are sent in non-RFC syslog compliant format.
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

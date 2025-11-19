@@ -1,0 +1,192 @@
+host: {{listen_address}}:{{listen_port}}
+tags:
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+- preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag i|}}
+- {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- rename:
+    fields:
+    - {from: "message", to: "event.original"}
+- if:
+      regexp:
+          event.original: "^<[0-9]+>"
+  then:
+      - syslog: # useful for facility/severity etc... we expect the user to force the timezone if they want/need to.
+          {{syslog_options}}
+- script:
+    lang: javascript
+    id: parse_out_message
+    source: >
+        function process(event) {
+          var message = event.Get("event.original").replace(/^<[0-9]+>/g,'');
+          if (!message) {
+            return;
+          }
+
+          // The many flavours of non-syslog CEF being sent to a syslog destination...
+          // Jul  3 11:56:52 hostname CEF: 0|Ubiquiti|UniFi OS|4.3.5|
+          // Jul 03 10:03:35 2025-07-03T10:03:35.913Z hostname CEF:0|Ubiquiti|UniFi Network|9.3.29|
+          // Jul  3 01:56:54 hostname.fqdn 2025-07-03T01: 56:54.222Z hostname CEF:0|Ubiquiti|UniFi Network|9.3.29|
+
+          // Syslog message variants observed, the syslog parser should already have down something with these...
+          // <30>Jul  4 09:01:45 hostname-ap SERIALNUMBER,U6-Lite-6.7.17+15512: %{MESSAGE}%
+          // <27>hostname-switch SERIALNUMBER,USW-Flex-2.5G-8-2.1.8.971: %{MESSAGE}%
+          // <4>Jul  4 09:02:12 hostname-ap SERIALNUMBER,U7-Pro-8.0.19+16619: %{MESSAGE}%
+          // <14>Jul  4 09:00:35 hostname-router hostname-router %{MESSAGE}%
+
+          // rsyslog produced files, traditional format, we should also assume that RFC3339 format timestamps may be used.
+          // Jul  3 11:56:52 hostname CEF: 0|Ubiquiti|UniFi OS|4.3.5|
+          // Jul  3 10:03:35 2025-07-03T10:03:35.913Z hostname CEF:0|Ubiquiti|UniFi Network|9.3.29|
+          // Jul  3 01:56:54 hostname.fqdn 2025-07-03T01: 56:54.222Z hostname CEF:0|Ubiquiti|UniFi Network|9.3.29|
+          // Jul  4 09:01:45 hostname-ap SERIALNUMBER,U6-Lite-6.7.17+15512: %{MESSAGE}%
+          // Jul  3 11:56:36 hostname-switch SERIALNUMBER,USW-Flex-2.5G-8-2.1.8.971: %{MESSAGE}%
+          // Jul  4 09:02:12 hostname-ap SERIALNUMBER,U7-Pro-8.0.19+16619: %{MESSAGE}%
+          // Jul  4 09:00:35 hostname-router hostname-router %{MESSAGE}%
+
+          var parts = message.match(/^(([a-zA-Z0-9: ]+|[0-9\:\-\.TZ]+) (\S+)|([a-zA-Z0-9: ]+|[0-9\:\-\.TZ]+) ([0-9\:\-\.TZ ]+) (\S+)|([a-zA-Z0-9: ]+|[0-9\:\-\.TZ]+) (\S+) ([0-9\:\-\.TZ ]+) (\S+)) (CEF:.*)$/m);
+          // 12 parts total
+
+          if (parts && parts.length === 12) {
+            event.Tag("ubnt-unifi-cef");
+            event.Put("message", parts[11]);
+
+            if (parts[2] != null) {
+              event.Put("_tmp.timestamp1", parts[2]);
+              event.Put("log.syslog.hostname", parts[3]);
+            } else if (parts[4] != null) {
+              event.Put("_tmp.timestamp1", parts[4]);
+              event.Put("_tmp.timestamp2", parts[5].replace(/ /g,''));
+              event.Put("log.syslog.hostname", parts[6]);
+            } else if (parts[7] != null) {
+              event.Put("_tmp.timestamp1", parts[7]);
+              event.Put("log.syslog.hostname", parts[8]);
+              event.Put("_tmp.timestamp2", parts[9].replace(/ /g,''));
+              event.Put("observer.name", parts[10]);
+            }
+          } else { // did not match CEF specific regex, try more generic variants
+            parts = message.match(/^(([a-zA-Z0-9: ]+|[0-9\:\-\.TZ]+) (\S+) \3|([a-zA-Z0-9: ]+|[0-9\:\-\.TZ]+) (\S+) (\S+):|([a-zA-Z0-9: ]+|[0-9\:\-\.TZ]+) (\S+)|(\S+) (\S+):|(\S+)) (.*)$/m);
+            // 13 parts total
+
+            if (message.match(/ DESCR=\\*"/)) {
+              event.Tag("ubnt-unifi-iptables");
+            } else {
+              event.Tag("ubnt-unifi-other");
+            }
+
+            if (parts && parts.length === 13) {
+              event.Put("message", parts[12]);
+
+              if (parts[2] != null) {
+                event.Put("_tmp.timestamp1", parts[2]);
+                event.Put("log.syslog.hostname", parts[3]);
+              } else if (parts[4] != null) {
+                event.Put("_tmp.timestamp1", parts[4]);
+                event.Put("log.syslog.hostname", parts[5]);
+                event.Put("log.syslog.appname", parts[6]);
+              } else if (parts[7] != null) {
+                event.Put("_tmp.timestamp1", parts[7]);
+                event.Put("log.syslog.hostname", parts[8]);
+              } else if (parts[9] != null) {
+                event.Put("log.syslog.hostname", parts[9]);
+                event.Put("log.syslog.appname", parts[10]);
+              } else if (parts[11] != null) {
+                event.Put("log.syslog.hostname", parts[11]);
+              }
+            }
+          }
+        }
+- timestamp: # use first instance of a timestamp if available, does not indicate zone however so force use of our default timezone if set, otherwise local will be assumed
+    field: _tmp.timestamp1
+    ignore_missing: true
+    ignore_failure: false
+    layouts:
+        - 'Jan 2 15:04:05'
+        - 'Jan  2 15:04:05'
+        - 'Jan 02 15:04:05'
+        - '2006-01-02T15:04:05.000Z'
+    test:
+        - 'Mar 9 14:49:36'
+        - 'Mar  9 14:49:36'
+        - 'Mar 09 14:49:36'
+        - '2025-07-03T06:24:37.921Z'
+{{#if default_timezone}}
+    timezone: {{default_timezone}}
+{{/if}}
+- timestamp: # override the timestamp with the second instance if available, as this will be in theory the more accurate one
+    field: _tmp.timestamp2
+    ignore_missing: true
+    ignore_failure: false
+    layouts:
+        - '2006-01-02T15:04:05.000Z'
+    test:
+        - '2025-07-03T06:24:37.921Z'
+- drop_fields:
+    fields:
+       - _tmp
+    ignore_missing: true
+{{#if drop_cef}}
+- drop_event: # drop before we attempt to fix and parse CEF so we don't waste our time...
+    when:
+        contains:
+            tags: ubnt-unifi-cef
+{{/if}}
+{{^if drop_cef}}
+- if:
+    contains:
+        tags: ubnt-unifi-cef
+  then:
+    - replace:
+        description: "Fixes malformed CEF that Unifi can produce whereby a space will exist before the CEF version indicator which filebeats cef parser will not understand"
+        fields:
+        - {field: message, pattern: ' CEF:[\s\t]+([0-9]+)', replacement: ' CEF:$1'}
+        ignore_missing: true
+        fail_on_error: false
+    - replace:
+        description: "Fixes malformed CEF that Unifi can produce whereby a trailing | may be missing which filebeats cef parser requires to exist"
+        fields:
+        - {field: message, pattern: '\|Medium$', replacement: '|Medium|'}
+        ignore_missing: true
+        fail_on_error: false
+    - replace:
+        description: "Fixes malformed CEF that Unifi can produce whereby a mandatory cef field will be missing, we simply insert an extra | to create an empty mandatory field which should be acceptable to filebeat"
+        fields:
+        - {field: message, pattern: '(CEF\:0\|[^\|]*\|[^\|]*\|[^\|]*\|)([^\|]*\|[^\|]*\|msg=)', replacement: '$1|$2'}
+        ignore_missing: true
+        fail_on_error: false
+    - decode_cef:
+        field: message
+        ignore_missing: true
+        ignore_empty_values: true
+        ignore_failure: true
+{{#if default_timezone}}
+        timezone: {{default_timezone}}
+{{/if}}
+{{/if}}
+{{#if drop_iptables}}
+- drop_event:
+    when:
+        contains:
+            tags: ubnt-unifi-iptables
+{{/if}}
+{{#if drop_noise}}
+- drop_event:
+    when:
+        not:
+            or:
+            - contains:
+                tags: ubnt-unifi-cef
+            - contains:
+                tags: ubnt-unifi-iptables
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}
