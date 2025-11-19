@@ -20,35 +20,35 @@ An example event for `devices` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-15T17:22:14.486Z",
+    "@timestamp": "2025-11-19T16:29:30.984Z",
     "agent": {
-        "ephemeral_id": "669c8ad7-30a1-44e7-b154-762bd525203c",
-        "id": "7c78c30e-e265-4ce0-a1cd-3bbf6c24e1c0",
-        "name": "elastic-agent-52375",
+        "ephemeral_id": "26808a50-5696-4206-86b9-3f8f56d7dd48",
+        "id": "c17ce5b2-739e-4040-a21c-79a45b4570fe",
+        "name": "elastic-agent-89017",
         "type": "filebeat",
-        "version": "9.1.0"
+        "version": "9.2.1"
     },
     "data_stream": {
         "dataset": "netbox.devices",
-        "namespace": "30295",
+        "namespace": "89710",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7c78c30e-e265-4ce0-a1cd-3bbf6c24e1c0",
+        "id": "c17ce5b2-739e-4040-a21c-79a45b4570fe",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.2.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
-        "created": "2025-08-15T17:22:14.486Z",
+        "created": "2025-11-19T16:29:30.984Z",
         "dataset": "netbox.devices",
-        "ingested": "2025-08-15T17:22:17Z",
+        "ingested": "2025-11-19T16:29:33Z",
         "kind": "asset",
         "original": "{\"airflow\":{\"label\":\"Front to rear\",\"value\":\"front-to-rear\"},\"asset_tag\":\"WEB-001\",\"cluster\":{\"description\":\"Production web application cluster\",\"display\":\"web-cluster\",\"id\":1,\"name\":\"web-cluster\",\"url\":\"http://localhost:8000/api/virtualization/clusters/1/\"},\"comments\":\"\",\"config_context\":{\"backup_enabled\":true,\"environment\":\"production\"},\"config_template\":{\"description\":\"Standard Ubuntu web server configuration template\",\"display\":\"ubuntu-web-template\",\"id\":1,\"name\":\"ubuntu-web-template\",\"url\":\"http://localhost:8000/api/extras/config-templates/1/\"},\"console_port_count\":0,\"console_server_port_count\":0,\"created\":\"2025-08-11T14:37:28.180540Z\",\"custom_fields\":{\"maintenance_window\":\"Sunday 02:00-04:00 EST\"},\"description\":\"Primary web server for customer portal\",\"device_bay_count\":0,\"device_type\":{\"description\":\"Dell PowerEdge R740 2U Rack Server\",\"display\":\"dell poweredge r740\",\"id\":1,\"manufacturer\":{\"description\":\"\",\"display\":\"Dell\",\"id\":1,\"name\":\"Dell\",\"slug\":\"dell\",\"url\":\"http://localhost:8000/api/dcim/manufacturers/1/\"},\"model\":\"poweredge r740\",\"slug\":\"poweredge-r740\",\"url\":\"http://localhost:8000/api/dcim/device-types/1/\"},\"display\":\"web-srv-01 (WEB-001)\",\"display_url\":\"http://localhost:8000/dcim/devices/2/\",\"face\":{\"label\":\"Front\",\"value\":\"front\"},\"front_port_count\":0,\"id\":2,\"interface_count\":4,\"inventory_item_count\":0,\"last_updated\":\"2025-08-11T18:12:23.512163Z\",\"latitude\":39.0458,\"local_context_data\":{\"monitoring\":\"enabled\",\"ssl_cert\":\"wildcard.acme.com\"},\"location\":{\"_depth\":0,\"description\":\"Primary server room - Zone A\",\"display\":\"server-room-a\",\"id\":1,\"name\":\"server-room-a\",\"rack_count\":0,\"slug\":\"server-room-a\",\"url\":\"http://localhost:8000/api/dcim/locations/1/\"},\"longitude\":-76.6413,\"module_bay_count\":0,\"name\":\"web-srv-01\",\"oob_ip\":{\"address\":\"10.0.100.15/24\",\"description\":\"Out-of-band management interface\",\"display\":\"10.0.100.15/24\",\"family\":{\"label\":\"IPv4\",\"value\":4},\"id\":1,\"url\":\"http://localhost:8000/api/ipam/ip-addresses/1/\"},\"parent_device\":null,\"platform\":{\"description\":\"Ubuntu Server 22.04 LTS\",\"display\":\"ubuntu-server\",\"id\":1,\"name\":\"ubuntu-server\",\"slug\":\"ubuntu-server\",\"url\":\"http://localhost:8000/api/dcim/platforms/1/\"},\"position\":15,\"power_outlet_count\":0,\"power_port_count\":2,\"primary_ip\":{\"address\":\"10.0.1.15/24\",\"description\":\"Primary web server interface\",\"display\":\"10.0.1.15/24\",\"family\":{\"label\":\"IPv4\",\"value\":4},\"id\":1,\"url\":\"http://localhost:8000/api/ipam/ip-addresses/1/\"},\"primary_ip4\":{\"address\":\"10.0.1.15/24\",\"description\":\"Primary web server interface\",\"display\":\"10.0.1.15/24\",\"family\":{\"label\":\"IPv4\",\"value\":4},\"id\":1,\"url\":\"http://localhost:8000/api/ipam/ip-addresses/1/\"},\"primary_ip6\":null,\"rack\":{\"description\":\"42U server rack - Zone A, Row 1\",\"display\":\"rack-a01 (DC-EAST-A01)\",\"id\":1,\"name\":\"rack-a01\",\"url\":\"http://localhost:8000/api/dcim/racks/1/\"},\"rear_port_count\":0,\"role\":{\"_depth\":0,\"description\":\"\",\"display\":\"web-server\",\"id\":1,\"name\":\"web-server\",\"slug\":\"web-server\",\"url\":\"http://localhost:8000/api/dcim/device-roles/1/\"},\"serial\":\"CN7016A2B90001\",\"site\":{\"description\":\"\",\"display\":\"datacenter-east\",\"id\":1,\"name\":\"datacenter-east\",\"slug\":\"datacenter-east\",\"url\":\"http://localhost:8000/api/dcim/sites/1/\"},\"status\":{\"label\":\"Active\",\"value\":\"active\"},\"tags\":[{\"color\":\"4caf50\",\"display\":\"production\",\"display_url\":\"http://localhost:8000/extras/tags/2/\",\"id\":2,\"name\":\"production\",\"slug\":\"production\",\"url\":\"http://localhost:8000/api/extras/tags/2/\"},{\"color\":\"2196f3\",\"display\":\"web-tier\",\"display_url\":\"http://localhost:8000/extras/tags/4/\",\"id\":4,\"name\":\"web-tier\",\"slug\":\"web-tier\",\"url\":\"http://localhost:8000/api/extras/tags/4/\"},{\"color\":\"f44336\",\"display\":\"critical\",\"display_url\":\"http://localhost:8000/extras/tags/1/\",\"id\":1,\"name\":\"critical\",\"slug\":\"critical\",\"url\":\"http://localhost:8000/api/extras/tags/1/\"},{\"color\":\"ff9800\",\"display\":\"monitored\",\"display_url\":\"http://localhost:8000/extras/tags/3/\",\"id\":3,\"name\":\"monitored\",\"slug\":\"monitored\",\"url\":\"http://localhost:8000/api/extras/tags/3/\"}],\"tenant\":{\"description\":\"Acme Corporation primary tenant\",\"display\":\"acme-corp\",\"id\":1,\"name\":\"acme-corp\",\"slug\":\"acme-corp\",\"url\":\"http://localhost:8000/api/tenancy/tenants/1/\"},\"url\":\"http://localhost:8000/api/dcim/devices/2/\",\"vc_position\":1,\"vc_priority\":null,\"virtual_chassis\":{\"description\":\"\",\"display\":\"web-cluster-vc\",\"id\":1,\"master\":{\"display\":\"web-srv-01 (WEB-001)\",\"display_url\":\"http://localhost:8000/dcim/devices/2/\",\"id\":2,\"name\":\"web-srv-01\",\"url\":\"http://localhost:8000/api/dcim/devices/2/\"},\"member_count\":2,\"name\":\"web-cluster-vc\",\"url\":\"http://localhost:8000/api/dcim/virtual-chassis/1/\"}}"
     },
@@ -112,6 +112,7 @@ An example event for `devices` looks as following:
                 "value": "front"
             },
             "front_port_count": 0,
+            "id": 2,
             "interface_count": 4,
             "inventory_item_count": 0,
             "local_context_data": {
@@ -220,7 +221,6 @@ An example event for `devices` looks as following:
         },
         "display": "web-srv-01 (WEB-001)",
         "display_url": "http://localhost:8000/dcim/devices/2/",
-        "id": 2,
         "last_updated": "2025-08-11T18:12:23.512Z",
         "tags": [
             {
@@ -349,26 +349,26 @@ An example event for `devices` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
-| netbox.comments |  | text |
-| netbox.created |  | date |
-| netbox.custom_fields |  | object |
+| netbox.comments | User-provided comments for the device. | text |
+| netbox.created | The timestamp when the device was created. | date |
+| netbox.custom_fields | Custom fields configured for the device. | object |
 | netbox.device.airflow.label | The airflow label of the device. | keyword |
 | netbox.device.airflow.value | The airflow value of the device. | keyword |
 | netbox.device.asset_tag | The asset tag of the device. | keyword |
-| netbox.device.cluster.description |  | text |
-| netbox.device.cluster.display |  | keyword |
-| netbox.device.cluster.id |  | long |
-| netbox.device.cluster.name |  | keyword |
-| netbox.device.cluster.url |  | keyword |
+| netbox.device.cluster.description | The description of the cluster. | text |
+| netbox.device.cluster.display | The display name of the cluster. | keyword |
+| netbox.device.cluster.id | The unique identifier of the cluster. | long |
+| netbox.device.cluster.name | The name of the cluster. | keyword |
+| netbox.device.cluster.url | The API URL for the cluster. | keyword |
 | netbox.device.config_context | The configuration context of the device. | object |
-| netbox.device.config_template.description |  | text |
-| netbox.device.config_template.display |  | keyword |
-| netbox.device.config_template.id |  | long |
-| netbox.device.config_template.name |  | keyword |
-| netbox.device.config_template.url |  | keyword |
+| netbox.device.config_template.description | The description of the config template. | text |
+| netbox.device.config_template.display | The display name of the config template. | keyword |
+| netbox.device.config_template.id | The unique identifier of the config template. | long |
+| netbox.device.config_template.name | The name of the config template. | keyword |
+| netbox.device.config_template.url | The API URL for the config template. | keyword |
 | netbox.device.console_port_count | The number of console ports on the device. | long |
 | netbox.device.console_server_port_count | The number of console server ports on the device. | long |
-| netbox.device.coordinates |  | float |
+| netbox.device.coordinates | GPS coordinates in decimal format (longitude, latitude). | float |
 | netbox.device.description | The description of the device. | text |
 | netbox.device.device_bay_count | The number of device bays on the device. | long |
 | netbox.device.device_type.description | The description of the device type. | text |
@@ -386,6 +386,7 @@ An example event for `devices` looks as following:
 | netbox.device.face.label | The label of the device face. | keyword |
 | netbox.device.face.value | The value of the device face. | keyword |
 | netbox.device.front_port_count | The number of front ports on the device. | long |
+| netbox.device.id | The unique numeric identifier for the device. | long |
 | netbox.device.interface_count | The number of interfaces on the device. | long |
 | netbox.device.inventory_item_count | The number of inventory items associated with the device. | long |
 | netbox.device.local_context_data | The local context data of the device. | object |
@@ -399,14 +400,14 @@ An example event for `devices` looks as following:
 | netbox.device.location.url | The API URL for the location. | keyword |
 | netbox.device.module_bay_count | The number of module bays on the device. | long |
 | netbox.device.name | The name of the device. | keyword |
-| netbox.device.oob_ip.address |  | ip |
-| netbox.device.oob_ip.description |  | text |
-| netbox.device.oob_ip.display |  | keyword |
-| netbox.device.oob_ip.family.label |  | keyword |
-| netbox.device.oob_ip.family.value |  | long |
-| netbox.device.oob_ip.id |  | long |
-| netbox.device.oob_ip.name |  | keyword |
-| netbox.device.oob_ip.url |  | keyword |
+| netbox.device.oob_ip.address | The out-of-band IP address. | ip |
+| netbox.device.oob_ip.description | The description of the out-of-band IP address. | text |
+| netbox.device.oob_ip.display | The display name of the out-of-band IP address. | keyword |
+| netbox.device.oob_ip.family.label | The IP family label (IPv4 or IPv6). | keyword |
+| netbox.device.oob_ip.family.value | The IP family value (4 for IPv4, 6 for IPv6). | long |
+| netbox.device.oob_ip.id | The unique identifier of the out-of-band IP address. | long |
+| netbox.device.oob_ip.name | The name of the out-of-band IP address. | keyword |
+| netbox.device.oob_ip.url | The API URL for the out-of-band IP address. | keyword |
 | netbox.device.parent_device | The parent device identifier. | keyword |
 | netbox.device.platform.description | The description of the platform. | text |
 | netbox.device.platform.display | The display name of the platform. | keyword |
@@ -417,30 +418,30 @@ An example event for `devices` looks as following:
 | netbox.device.position | The position of the device in the rack. | long |
 | netbox.device.power_outlet_count | The number of power outlets on the device. | long |
 | netbox.device.power_port_count | The number of power ports on the device. | long |
-| netbox.device.primary_ip.address |  | ip |
-| netbox.device.primary_ip.description |  | text |
-| netbox.device.primary_ip.display |  | keyword |
-| netbox.device.primary_ip.family.label |  | keyword |
-| netbox.device.primary_ip.family.value |  | long |
-| netbox.device.primary_ip.id |  | long |
-| netbox.device.primary_ip.name |  | keyword |
-| netbox.device.primary_ip.url |  | keyword |
-| netbox.device.primary_ip4.address |  | ip |
-| netbox.device.primary_ip4.description |  | text |
-| netbox.device.primary_ip4.display |  | keyword |
-| netbox.device.primary_ip4.family.label |  | keyword |
-| netbox.device.primary_ip4.family.value |  | long |
-| netbox.device.primary_ip4.id |  | long |
-| netbox.device.primary_ip4.name |  | keyword |
-| netbox.device.primary_ip4.url |  | keyword |
-| netbox.device.primary_ip6.address |  | ip |
-| netbox.device.primary_ip6.description |  | text |
-| netbox.device.primary_ip6.display |  | keyword |
-| netbox.device.primary_ip6.family.label |  | keyword |
-| netbox.device.primary_ip6.family.value |  | long |
-| netbox.device.primary_ip6.id |  | long |
-| netbox.device.primary_ip6.name |  | keyword |
-| netbox.device.primary_ip6.url |  | keyword |
+| netbox.device.primary_ip.address | The primary IP address. | ip |
+| netbox.device.primary_ip.description | The description of the primary IP address. | text |
+| netbox.device.primary_ip.display | The display name of the primary IP address. | keyword |
+| netbox.device.primary_ip.family.label | The IP family label (IPv4 or IPv6). | keyword |
+| netbox.device.primary_ip.family.value | The IP family value (4 for IPv4, 6 for IPv6). | long |
+| netbox.device.primary_ip.id | The unique identifier of the primary IP address. | long |
+| netbox.device.primary_ip.name | The name of the primary IP address. | keyword |
+| netbox.device.primary_ip.url | The API URL for the primary IP address. | keyword |
+| netbox.device.primary_ip4.address | The primary IPv4 address. | ip |
+| netbox.device.primary_ip4.description | The description of the primary IPv4 address. | text |
+| netbox.device.primary_ip4.display | The display name of the primary IPv4 address. | keyword |
+| netbox.device.primary_ip4.family.label | The IP family label (IPv4). | keyword |
+| netbox.device.primary_ip4.family.value | The IP family value (4 for IPv4). | long |
+| netbox.device.primary_ip4.id | The unique identifier of the primary IPv4 address. | long |
+| netbox.device.primary_ip4.name | The name of the primary IPv4 address. | keyword |
+| netbox.device.primary_ip4.url | The API URL for the primary IPv4 address. | keyword |
+| netbox.device.primary_ip6.address | The primary IPv6 address. | ip |
+| netbox.device.primary_ip6.description | The description of the primary IPv6 address. | text |
+| netbox.device.primary_ip6.display | The display name of the primary IPv6 address. | keyword |
+| netbox.device.primary_ip6.family.label | The IP family label (IPv6). | keyword |
+| netbox.device.primary_ip6.family.value | The IP family value (6 for IPv6). | long |
+| netbox.device.primary_ip6.id | The unique identifier of the primary IPv6 address. | long |
+| netbox.device.primary_ip6.name | The name of the primary IPv6 address. | keyword |
+| netbox.device.primary_ip6.url | The API URL for the primary IPv6 address. | keyword |
 | netbox.device.rack.description | The description of the rack. | text |
 | netbox.device.rack.display | The display name of the rack. | keyword |
 | netbox.device.rack.id | The unique identifier of the rack. | long |
@@ -468,18 +469,17 @@ An example event for `devices` looks as following:
 | netbox.device.virtual_chassis.description | The description of the virtual chassis. | text |
 | netbox.device.virtual_chassis.display | The display name of the virtual chassis. | keyword |
 | netbox.device.virtual_chassis.id | The unique identifier of the virtual chassis. | long |
-| netbox.device.virtual_chassis.master.display |  | keyword |
-| netbox.device.virtual_chassis.master.display_url |  | keyword |
-| netbox.device.virtual_chassis.master.id |  | long |
-| netbox.device.virtual_chassis.master.name |  | keyword |
-| netbox.device.virtual_chassis.master.url |  | keyword |
-| netbox.device.virtual_chassis.member_count |  | long |
+| netbox.device.virtual_chassis.master.display | The display name of the master device. | keyword |
+| netbox.device.virtual_chassis.master.display_url | The web UI URL for the master device. | keyword |
+| netbox.device.virtual_chassis.master.id | The unique identifier of the master device. | long |
+| netbox.device.virtual_chassis.master.name | The name of the master device. | keyword |
+| netbox.device.virtual_chassis.master.url | The API URL for the master device. | keyword |
+| netbox.device.virtual_chassis.member_count | The number of members in the virtual chassis. | long |
 | netbox.device.virtual_chassis.name | The name of the virtual chassis. | keyword |
 | netbox.device.virtual_chassis.url | The API URL for the virtual chassis. | keyword |
-| netbox.display |  | keyword |
-| netbox.display_url |  | keyword |
-| netbox.id |  | long |
-| netbox.last_updated |  | date |
+| netbox.display | The display name of the device. | keyword |
+| netbox.display_url | The web UI URL for the device. | keyword |
+| netbox.last_updated | The timestamp when the device was last updated. | date |
 | netbox.tags.color | The color code of the tag. | keyword |
 | netbox.tags.display | The display name of the tag. | keyword |
 | netbox.tags.display_url | The display URL for the tag. | keyword |
@@ -493,7 +493,7 @@ An example event for `devices` looks as following:
 | netbox.tenant.name | The name of the tenant. | keyword |
 | netbox.tenant.slug | The slug of the tenant. | keyword |
 | netbox.tenant.url | The API URL for the tenant. | keyword |
-| netbox.url |  | keyword |
+| netbox.url | The API URL for the device. | keyword |
 
 
 ### IPs
@@ -504,35 +504,35 @@ An example event for `ips` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-15T17:23:03.546Z",
+    "@timestamp": "2025-11-19T16:30:17.238Z",
     "agent": {
-        "ephemeral_id": "9d1d07d0-a5cf-4188-9849-616053dda34f",
-        "id": "908031a4-0d04-4162-9276-b89c63cc3c90",
-        "name": "elastic-agent-86043",
+        "ephemeral_id": "aa94dc52-91c8-4549-a2d7-2d2c9ad0ff46",
+        "id": "edba1e8a-5a84-4b40-804b-9cb97eac5bd7",
+        "name": "elastic-agent-48422",
         "type": "filebeat",
-        "version": "9.1.0"
+        "version": "9.2.1"
     },
     "data_stream": {
         "dataset": "netbox.ips",
-        "namespace": "61778",
+        "namespace": "82567",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "908031a4-0d04-4162-9276-b89c63cc3c90",
+        "id": "edba1e8a-5a84-4b40-804b-9cb97eac5bd7",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.2.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
-        "created": "2025-08-15T17:23:03.546Z",
+        "created": "2025-11-19T16:30:17.238Z",
         "dataset": "netbox.ips",
-        "ingested": "2025-08-15T17:23:06Z",
+        "ingested": "2025-11-19T16:30:20Z",
         "kind": "asset",
         "original": "{\"address\":\"192.168.1.101/32\",\"assigned_object\":{\"_occupied\":false,\"cable\":null,\"description\":\"test-description\",\"device\":{\"description\":\"test-description\",\"display\":\"user-1-macbook-pro (tag-1234)\",\"id\":1,\"name\":\"user-1-macbook-pro\",\"url\":\"http://localhost:8000/api/dcim/devices/1/\"},\"display\":\"hello\",\"id\":2,\"name\":\"user-hello\",\"url\":\"http://localhost:8000/api/dcim/interfaces/2/\"},\"assigned_object_id\":2,\"assigned_object_type\":\"dcim.interface\",\"comments\":\"\",\"created\":\"2025-08-11T18:07:04.795476Z\",\"custom_fields\":{},\"description\":\"desc\",\"display\":\"192.168.1.101/32\",\"display_url\":\"http://localhost:8000/ipam/ip-addresses/2/\",\"dns_name\":\"hello.world\",\"family\":{\"label\":\"IPv4\",\"value\":4},\"id\":2,\"last_updated\":\"2025-08-11T18:07:04.795486Z\",\"nat_inside\":null,\"nat_outside\":[],\"role\":{\"label\":\"Secondary\",\"value\":\"secondary\"},\"status\":{\"label\":\"Active\",\"value\":\"active\"},\"tags\":[{\"color\":\"ff9800\",\"display\":\"elastic\",\"display_url\":\"http://localhost:8000/extras/tags/4/\",\"id\":4,\"name\":\"elastic\",\"slug\":\"elastic\",\"url\":\"http://localhost:8000/api/extras/tags/4/\"}],\"tenant\":{\"description\":\"first tenant\",\"display\":\"tenant-1\",\"id\":1,\"name\":\"tenant-1\",\"slug\":\"tenant-1\",\"url\":\"http://localhost:8000/api/tenancy/tenants/1/\"},\"url\":\"http://localhost:8000/api/ipam/ip-addresses/2/\",\"vrf\":{\"description\":\"asdf\",\"display\":\"test\",\"id\":1,\"name\":\"test\",\"rd\":null,\"url\":\"http://localhost:8000/api/ipam/vrfs/1/\"}}"
     },
@@ -543,7 +543,6 @@ An example event for `ips` looks as following:
         "created": "2025-08-11T18:07:04.795Z",
         "display": "192.168.1.101/32",
         "display_url": "http://localhost:8000/ipam/ip-addresses/2/",
-        "id": 2,
         "ip": {
             "address": "192.168.1.101",
             "assigned_object": {
@@ -569,6 +568,7 @@ An example event for `ips` looks as following:
                 "label": "IPv4",
                 "value": 4
             },
+            "id": 2,
             "role": {
                 "label": "Secondary",
                 "value": "secondary"
@@ -641,13 +641,12 @@ An example event for `ips` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
-| netbox.comments |  | text |
-| netbox.created |  | date |
-| netbox.custom_fields |  | object |
-| netbox.display |  | keyword |
-| netbox.display_url |  | keyword |
-| netbox.id |  | long |
-| netbox.ip.address |  | ip |
+| netbox.comments | User-provided comments for the IP address. | text |
+| netbox.created | The timestamp when the IP address was created. | date |
+| netbox.custom_fields | Custom fields configured for the IP address. | object |
+| netbox.display | The display name of the IP address. | keyword |
+| netbox.display_url | The web UI URL for the IP address. | keyword |
+| netbox.ip.address | The IP address in CIDR notation. | ip |
 | netbox.ip.assigned_object._occupied | Whether the interface is occupied. | boolean |
 | netbox.ip.assigned_object.cable | The cable connection information. | keyword |
 | netbox.ip.assigned_object.description | The description of the assigned object. | text |
@@ -660,29 +659,30 @@ An example event for `ips` looks as following:
 | netbox.ip.assigned_object.id | The unique identifier of the assigned object. | long |
 | netbox.ip.assigned_object.name | The name of the assigned object (interface). | keyword |
 | netbox.ip.assigned_object.url | The API URL for the assigned object. | keyword |
-| netbox.ip.assigned_object.virtual_machine.description |  | text |
-| netbox.ip.assigned_object.virtual_machine.display |  | keyword |
-| netbox.ip.assigned_object.virtual_machine.id |  | long |
-| netbox.ip.assigned_object.virtual_machine.name |  | keyword |
-| netbox.ip.assigned_object.virtual_machine.url |  | keyword |
+| netbox.ip.assigned_object.virtual_machine.description | The description of the virtual machine. | text |
+| netbox.ip.assigned_object.virtual_machine.display | The display name of the virtual machine. | keyword |
+| netbox.ip.assigned_object.virtual_machine.id | The unique identifier of the virtual machine. | long |
+| netbox.ip.assigned_object.virtual_machine.name | The name of the virtual machine. | keyword |
+| netbox.ip.assigned_object.virtual_machine.url | The API URL for the virtual machine. | keyword |
 | netbox.ip.assigned_object_id | The unique identifier of the assigned object. | long |
 | netbox.ip.assigned_object_type | The type of object this IP address is assigned to. | keyword |
 | netbox.ip.description | The description of the IP address. | text |
 | netbox.ip.dns_name | The DNS name associated with the IP address. | keyword |
 | netbox.ip.family.label | The IP family label (IPv4 or IPv6). | keyword |
 | netbox.ip.family.value | The IP family value (4 for IPv4, 6 for IPv6). | long |
+| netbox.ip.id | The unique numeric identifier for the IP address. | long |
 | netbox.ip.nat_inside.address |  | ip |
 | netbox.ip.nat_inside.display |  | keyword |
 | netbox.ip.nat_inside.display_url |  | keyword |
 | netbox.ip.nat_inside.family |  | long |
 | netbox.ip.nat_inside.id |  | long |
 | netbox.ip.nat_inside.url |  | keyword |
-| netbox.ip.nat_outside.address |  | ip |
-| netbox.ip.nat_outside.display |  | keyword |
-| netbox.ip.nat_outside.display_url |  | keyword |
-| netbox.ip.nat_outside.family |  | long |
-| netbox.ip.nat_outside.id |  | long |
-| netbox.ip.nat_outside.url |  | keyword |
+| netbox.ip.nat_outside.address | The NAT outside IP address. | ip |
+| netbox.ip.nat_outside.display | The display name of the NAT outside IP address. | keyword |
+| netbox.ip.nat_outside.display_url | The web UI URL for the NAT outside IP address. | keyword |
+| netbox.ip.nat_outside.family | The IP family value (4 for IPv4, 6 for IPv6). | long |
+| netbox.ip.nat_outside.id | The unique identifier of the NAT outside IP address. | long |
+| netbox.ip.nat_outside.url | The API URL for the NAT outside IP address. | keyword |
 | netbox.ip.role.label | The role label of the IP address. | keyword |
 | netbox.ip.role.value | The role value of the IP address. | keyword |
 | netbox.ip.status.label | The status label of the IP address. | keyword |
@@ -693,7 +693,7 @@ An example event for `ips` looks as following:
 | netbox.ip.vrf.name | The name of the VRF. | keyword |
 | netbox.ip.vrf.rd | The route distinguisher of the VRF. | keyword |
 | netbox.ip.vrf.url | The API URL for the VRF. | keyword |
-| netbox.last_updated |  | date |
+| netbox.last_updated | The timestamp when the IP address was last updated. | date |
 | netbox.tags.color | The color code of the tag. | keyword |
 | netbox.tags.display | The display name of the tag. | keyword |
 | netbox.tags.display_url | The display URL for the tag. | keyword |
@@ -707,5 +707,5 @@ An example event for `ips` looks as following:
 | netbox.tenant.name | The name of the tenant. | keyword |
 | netbox.tenant.slug | The slug of the tenant. | keyword |
 | netbox.tenant.url | The API URL for the tenant. | keyword |
-| netbox.url |  | keyword |
+| netbox.url | The API URL for the IP address. | keyword |
 
