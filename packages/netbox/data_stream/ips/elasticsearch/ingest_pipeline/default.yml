@@ -1,0 +1,138 @@
+---
+description: Pipeline for processing ip addresses
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      tag: remove_message
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: netbox.ip
+  - gsub:
+      field: netbox.ip.address
+      pattern: "/\\d+$"
+      replacement: ""
+  - append:
+      field: related.ip
+      value: "{{{netbox.ip.address}}}"
+      allow_duplicates: false
+  - gsub:
+      field: netbox.ip.nat_inside.address
+      pattern: "/\\d+$"
+      replacement: ""
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{netbox.ip.nat_inside.address}}}"
+      if: ctx.netbox?.ip?.nat_inside?.address != null
+      allow_duplicates: false
+  - foreach:
+      field: netbox.ip.nat_outside
+      ignore_missing: true
+      processor:
+        gsub:
+          field: _ingest._value.address
+          pattern: "/\\d+$"
+          replacement: ""
+          ignore_missing: true
+  - foreach:
+      field: netbox.ip.nat_outside
+      ignore_missing: true
+      processor:
+        append:
+          field: related.ip
+          value: "{{{_ingest._value.address}}}"
+          if: ctx._ingest?._value != null
+          allow_duplicates: false
+  - rename:
+      field: netbox.ip.url
+      target_field: netbox.url
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.display_url
+      target_field: netbox.display_url
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.display
+      target_field: netbox.display
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.comments
+      target_field: netbox.comments
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.created
+      target_field: netbox.created
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.last_updated
+      target_field: netbox.last_updated
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.custom_fields
+      target_field: netbox.custom_fields
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.tags
+      target_field: netbox.tags
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.tenant
+      target_field: netbox.tenant
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: asset
+  - append:
+      field: event.category
+      value: [configuration]
+  - date:
+      field: netbox.created
+      target_field: netbox.created
+      if: ctx.netbox?.created != null
+      formats:
+        - ISO8601
+  - date:
+      field: netbox.last_updated
+      target_field: netbox.last_updated
+      if: ctx.netbox?.last_updated != null
+      formats:
+        - ISO8601
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
