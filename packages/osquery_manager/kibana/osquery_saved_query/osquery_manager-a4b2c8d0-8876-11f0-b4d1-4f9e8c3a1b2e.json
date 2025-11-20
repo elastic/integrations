@@ -1,0 +1,57 @@
+{
+    "attributes": {
+        "created_at": "2025-11-20T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Windows Shellbags forensic analysis - tracks directories accessed via Windows Explorer for user activity investigation. Useful for identifying folder browsing history and user behavior patterns.",
+        "ecs_mapping": [
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "sid"
+                }
+            },
+            {
+                "key": "registry.hive",
+                "value": {
+                    "field": "source"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "created_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            }
+        ],
+        "id": "shellbags_windows_elastic",
+        "interval": "3600",
+        "query": "SELECT\n  sid,\n  source,\n  path,\n  modified_time,\n  created_time,\n  accessed_time,\n  mft_entry,\n  mft_sequence\nFROM shellbags\nWHERE path != '' AND path IS NOT NULL\nORDER BY modified_time DESC;",
+        "platform": "windows",
+        "updated_at": "2025-11-20T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a4b2c8d0-8876-11f0-b4d1-4f9e8c3a1b2e",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-20T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

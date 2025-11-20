@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2025-11-20
+**Total Core Artifacts**: 1 available + 38 in progress + 6 not available = 45 total variants
+**Total Queries**: 31 (1 core forensic variant + 30 additional)
+**Completion Rate**: 2.2% (1/45 core artifacts fully supported)
 
 ---
 
@@ -13,9 +13,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
-| ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
+| ✅ Available (Fully Supported) | 1     | 2.2%       |
+| ⚠️ In Progress (Needs Validation) | 38    | 84.4%      |
+| ❌ Not Available (Requires Extensions) | 6     | 13.3%      |
 
 ---
 
@@ -61,7 +61,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 18 | Registry                | ⚠️ | Win | -     | -    | registry table                                                                                                                   |
 | 19 | Shell History           | ⚠️ | Linux | -     | -    | shell_history table                                                                                                              |
 | 19a | Shell History           | ⚠️ | Mac | -     | -    | shell_history table                                                                                                              |
-| 20 | Shellbags               | ⚠️ | Win | -     | -    | shellbags table                                                                                                                  |
+| 20 | Shellbags               | ✅ | Win | shellbags_windows_elastic | [a4b2](kibana/osquery_saved_query/osquery_manager-a4b2c8d0-8876-11f0-b4d1-4f9e8c3a1b2e.json) | shellbags table - tracks directory access via Windows Explorer |
 | 21 | Tasks                   | ⚠️ | Win | -     | -    | scheduled_tasks table                                                                                                            |
 | 21a | Tasks                   | ⚠️ | Linux | -     | -    | scheduled_tasks table                                                                                                            |
 | 21b | Tasks                   | ⚠️ | Mac | -     | -    | scheduled_tasks table                                                                                                            |
@@ -169,7 +169,7 @@ While some artifacts are not directly available, the existing queries provide st
 ### User Activity
 - ⚠️ LNK files (Windows: shortcut_files, file, recent_files tables)
 - ⚠️ Shell History (Linux/Mac: shell_history table)
-- ⚠️ Shellbags (Windows: shellbags table)
+- ✅ Shellbags (Windows: shellbags table)
 - ⚠️ User Assist (Windows: userassist table)
 - ⚠️ Browser URL History (All platforms: via ATC custom tables)
 - ❌ Jumplists (Not Available - Use Shellbags + LNK Files as alternatives)
