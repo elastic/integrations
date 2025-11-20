@@ -20,6 +20,259 @@ import (
 )
 
 ////////////////////////////////////////////////////////////////////////////////
+// Main - Initialize the run state and config, start the server.
+//        Scenarios are defined here. The requested one is added to the config.
+////////////////////////////////////////////////////////////////////////////////
+
+func main() {
+	log := log.New(os.Stdout, "", log.LstdFlags|log.LUTC)
+
+	if len(os.Args) < 2 {
+		log.Printf("Usage: go run o365mock.go SCENARIONAME [SEED]")
+		os.Exit(1)
+	}
+
+	var run = run{
+		startTime:                       time.Now().UTC(),
+		servedListItemsFetchCount:       map[string]int{},
+		servedItemsExpiry:               map[string]time.Time{},
+		servedNextPageQueryRequestCount: map[string]int{},
+		minStartByType:                  map[string]time.Time{},
+		maxEndByType:                    map[string]time.Time{},
+		maxContentCreatedByType:         map[string]time.Time{},
+		subscriptionsByType:             map[string]int{},
+	}
+
+	var seed int64
+	if len(os.Args) == 3 {
+		var err error
+		seed, err = strconv.ParseInt(os.Args[2], 10, 64)
+		if err != nil {
+			log.Printf("ERROR: Couldn't parse seed value '%s'!", os.Args[2])
+			os.Exit(1)
+		}
+	}
+	if seed == 0 {
+		seed = run.startTime.UnixNano()
+	}
+	run.randomSource = rand.New(rand.NewSource(seed))
+
+	port := "9999"
+	envPort := os.Getenv("PORT")
+	if envPort != "" {
+		port = envPort
+	}
+
+	cfg := config{
+		addr:                        "0.0.0.0:" + port,
+		tenantId:                    "test-cel-tenant-id",
+		clientId:                    "test-cel-client-id",
+		clientSecret:                "test-cel-client-secret",
+		refreshToken:                "refresh_token_123",
+		accessToken:                 "someaccesstoken",
+		fetchItemPool:               fetchItemPool,
+		genericRequstLogging:        false,
+		maxGap:                      0 * time.Millisecond,
+		maxListingRange:             time.Hour + time.Millisecond,
+		checkTenantId:               true,
+		checkCredentials:            true,
+		checkAccessToken:            true,
+		checkSubscribedBeforeListed: true,
+	}
+	scenarios := map[string]scenario{
+		"cel-bad-creds": {
+			itemsByType: map[string][]listItem{
+				"Audit.General": []listItem{
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-1h", ""),
+				},
+			},
+			unauthorizedType:       "Audit.TypeRequiringAdditionalPermissions",
+			fullFetchItemsFromPool: true,
+			pageLimit:              3,
+			minFetchItems:          1,
+			maxFetchItems:          1,
+		},
+		"cel": {
+			itemsByType: map[string][]listItem{
+				"Audit.SharePoint": sortListItems(
+					makeListItems(&cfg, &run, "Audit.SharePoint", 5, 5, "-11h", "0h"),
+				),
+				"Audit.General": sortListItems(
+					makeListItems(&cfg, &run, "Audit.General", 5, 5, "-11h", "0h"),
+				),
+			},
+			fullFetchItemsFromPool:   true,
+			duplicateItemInEachFetch: true,
+			shuffleInPages:           true,
+			pageLimit:                3,
+			minFetchItems:            3,
+			maxFetchItems:            3,
+		},
+		"bit_of_recent_data": {
+			itemsByType: map[string][]listItem{
+				"Audit.AzureActiveDirectory": sortListItems([]listItem{
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-007h55m", ""),
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-007h35m", ""),
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-004h35m", ""),
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-004h55m", ""),
+				}),
+			},
+			unauthorizedType:         "Audit.NoPermissions",
+			fullFetchItemsFromPool:   false,
+			duplicateItemInEachFetch: false,
+			shuffleInPages:           false,
+			pageLimit:                math.MaxInt,
+			minFetchItems:            1,
+			maxFetchItems:            5,
+		},
+		"2_types_random_250_to_500_last_12h_pages_of_20": {
+			itemsByType: map[string][]listItem{
+				"Audit.AzureActiveDirectory": sortListItems(
+					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 250, 500, "-12h", "0h"),
+				),
+				"Audit.Exchange": sortListItems(
+					makeListItems(&cfg, &run, "Audit.Exchange", 250, 500, "-12h", "0h"),
+				),
+			},
+			fullFetchItemsFromPool:   true,
+			duplicateItemInEachFetch: false,
+			shuffleInPages:           false,
+			pageLimit:                20,
+			minFetchItems:            1,
+			maxFetchItems:            5,
+		},
+		"chunks_with_gaps_and_1_expired": {
+			itemsByType: map[string][]listItem{
+				"Audit.AzureActiveDirectory": sortListItems(slices.Concat(
+					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-11h", "-9h"),
+					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-4h", "-2h"),
+					[]listItem{makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-1h15m", "-1h")}, // expired 15 mins after creation
+					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-55m", "-30m"),
+				)),
+				"Audit.Exchange": sortListItems(slices.Concat(
+					makeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-10h", "-5h55m"),
+					makeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-5h30m", "-4h"),
+					makeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-1h55m", "-1h5m"),
+				)),
+			},
+			fullFetchItemsFromPool:   true,
+			duplicateItemInEachFetch: true,
+			shuffleInPages:           true,
+			pageLimit:                20,
+			minFetchItems:            1,
+			maxFetchItems:            5,
+		},
+	}
+
+	scenarioName := os.Args[1]
+	if _, ok := scenarios[scenarioName]; !ok {
+		names := make([]string, 0, len(scenarios))
+		for name := range scenarios {
+			names = append(names, name)
+		}
+		log.Printf("ERROR: Scenario '%s' not found! Available scenarios: %s", scenarioName, strings.Join(names, ", "))
+		os.Exit(1)
+	}
+	cfg.scenario = scenarios[scenarioName]
+
+	rerunCmd := "PORT=" + port + " go run o365mock.go " + scenarioName + " " + strconv.FormatInt(seed, 10)
+	log.Printf("RunStart StartTime=%s, scenarioName=%s, seed=%d, Addr=%s, rerun: '%s'",
+		run.startTime.Format(time.RFC3339Nano),
+		scenarioName,
+		seed,
+		cfg.addr,
+		rerunCmd,
+	)
+
+	s := newServer(&cfg, &run, log)
+	s.doRun()
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Config types
+////////////////////////////////////////////////////////////////////////////////
+
+type config struct {
+	addr                        string
+	tenantId                    string
+	clientId                    string
+	clientSecret                string
+	refreshToken                string
+	accessToken                 string
+	fetchItemPool               []fetchItem
+	scenario                    scenario
+	genericRequstLogging        bool
+	maxGap                      time.Duration
+	maxListingRange             time.Duration
+	checkTenantId               bool
+	checkCredentials            bool
+	checkAccessToken            bool
+	checkSubscribedBeforeListed bool
+}
+
+type scenario struct {
+	itemsByType              map[string][]listItem
+	unauthorizedType         string
+	pageLimit                int
+	shuffleInPages           bool
+	minFetchItems            int
+	maxFetchItems            int
+	fullFetchItemsFromPool   bool
+	duplicateItemInEachFetch bool
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Run state type
+////////////////////////////////////////////////////////////////////////////////
+
+type run struct {
+	startTime                       time.Time
+	randomSource                    *rand.Rand
+	servedListItemsFetchCount       map[string]int
+	servedFetchItemsCount           int
+	servedUniqueFetchItemsCount     int
+	servedItemsExpiry               map[string]time.Time
+	servedNextPageQueryRequestCount map[string]int
+	minStartByType                  map[string]time.Time
+	maxEndByType                    map[string]time.Time
+	maxContentCreatedByType         map[string]time.Time
+	subscriptionsByType             map[string]int
+	fetchItemPoolIndex              int
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Miscellaneous helpers
+////////////////////////////////////////////////////////////////////////////////
+
+func sortListItems(slice []listItem) []listItem {
+	slices.SortFunc(slice, func(a, b listItem) int {
+		return int(a.ContentCreated.Sub(b.ContentCreated))
+	})
+	return slice
+}
+
+func shuffleListItems(run *run, slice []listItem) []listItem {
+	run.randomSource.Shuffle(len(slice), func(i, j int) {
+		slice[i], slice[j] = slice[j], slice[i]
+	})
+	return slice
+}
+
+func randomString(run *run, n int) string {
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letters[run.randomSource.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+func randomTime(run *run, inLast time.Duration) time.Time {
+	randNanos := run.randomSource.Int63n(int64(inLast.Nanoseconds()))
+	return run.startTime.Add(-time.Duration(randNanos))
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // API response data types and helpers
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -358,259 +611,6 @@ var fetchItemPool = []fetchItem{
 		"Workload":          "Yammer",
 		"YammerNetworkId":   5846122497,
 	},
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Config types
-////////////////////////////////////////////////////////////////////////////////
-
-type config struct {
-	addr                        string
-	tenantId                    string
-	clientId                    string
-	clientSecret                string
-	refreshToken                string
-	accessToken                 string
-	fetchItemPool               []fetchItem
-	scenario                    scenario
-	genericRequstLogging        bool
-	maxGap                      time.Duration
-	maxListingRange             time.Duration
-	checkTenantId               bool
-	checkCredentials            bool
-	checkAccessToken            bool
-	checkSubscribedBeforeListed bool
-}
-
-type scenario struct {
-	itemsByType              map[string][]listItem
-	unauthorizedType         string
-	pageLimit                int
-	shuffleInPages           bool
-	minFetchItems            int
-	maxFetchItems            int
-	fullFetchItemsFromPool   bool
-	duplicateItemInEachFetch bool
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Run state type
-////////////////////////////////////////////////////////////////////////////////
-
-type run struct {
-	startTime                       time.Time
-	randomSource                    *rand.Rand
-	servedListItemsFetchCount       map[string]int
-	servedFetchItemsCount           int
-	servedUniqueFetchItemsCount     int
-	servedItemsExpiry               map[string]time.Time
-	servedNextPageQueryRequestCount map[string]int
-	minStartByType                  map[string]time.Time
-	maxEndByType                    map[string]time.Time
-	maxContentCreatedByType         map[string]time.Time
-	subscriptionsByType             map[string]int
-	fetchItemPoolIndex              int
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Main - Initialize the run state and config, start the server.
-//        Scenarios are defined here. The requested one is added to the config.
-////////////////////////////////////////////////////////////////////////////////
-
-func main() {
-	log := log.New(os.Stdout, "", log.LstdFlags|log.LUTC)
-
-	if len(os.Args) < 2 {
-		log.Printf("Usage: go run o365mock.go SCENARIONAME [SEED]")
-		os.Exit(1)
-	}
-
-	var run = run{
-		startTime:                       time.Now().UTC(),
-		servedListItemsFetchCount:       map[string]int{},
-		servedItemsExpiry:               map[string]time.Time{},
-		servedNextPageQueryRequestCount: map[string]int{},
-		minStartByType:                  map[string]time.Time{},
-		maxEndByType:                    map[string]time.Time{},
-		maxContentCreatedByType:         map[string]time.Time{},
-		subscriptionsByType:             map[string]int{},
-	}
-
-	var seed int64
-	if len(os.Args) == 3 {
-		var err error
-		seed, err = strconv.ParseInt(os.Args[2], 10, 64)
-		if err != nil {
-			log.Printf("ERROR: Couldn't parse seed value '%s'!", os.Args[2])
-			os.Exit(1)
-		}
-	}
-	if seed == 0 {
-		seed = run.startTime.UnixNano()
-	}
-	run.randomSource = rand.New(rand.NewSource(seed))
-
-	port := "9999"
-	envPort := os.Getenv("PORT")
-	if envPort != "" {
-		port = envPort
-	}
-
-	cfg := config{
-		addr:                        "0.0.0.0:" + port,
-		tenantId:                    "test-cel-tenant-id",
-		clientId:                    "test-cel-client-id",
-		clientSecret:                "test-cel-client-secret",
-		refreshToken:                "refresh_token_123",
-		accessToken:                 "someaccesstoken",
-		fetchItemPool:               fetchItemPool,
-		genericRequstLogging:        false,
-		maxGap:                      0 * time.Millisecond,
-		maxListingRange:             time.Hour + time.Millisecond,
-		checkTenantId:               true,
-		checkCredentials:            true,
-		checkAccessToken:            true,
-		checkSubscribedBeforeListed: true,
-	}
-	scenarios := map[string]scenario{
-		"cel-bad-creds": {
-			itemsByType: map[string][]listItem{
-				"Audit.General": []listItem{
-					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-1h", ""),
-				},
-			},
-			unauthorizedType:       "Audit.TypeRequiringAdditionalPermissions",
-			fullFetchItemsFromPool: true,
-			pageLimit:              3,
-			minFetchItems:          1,
-			maxFetchItems:          1,
-		},
-		"cel": {
-			itemsByType: map[string][]listItem{
-				"Audit.SharePoint": sortListItems(
-					makeListItems(&cfg, &run, "Audit.SharePoint", 5, 5, "-11h", "0h"),
-				),
-				"Audit.General": sortListItems(
-					makeListItems(&cfg, &run, "Audit.General", 5, 5, "-11h", "0h"),
-				),
-			},
-			fullFetchItemsFromPool:   true,
-			duplicateItemInEachFetch: true,
-			shuffleInPages:           true,
-			pageLimit:                3,
-			minFetchItems:            3,
-			maxFetchItems:            3,
-		},
-		"bit_of_recent_data": {
-			itemsByType: map[string][]listItem{
-				"Audit.AzureActiveDirectory": sortListItems([]listItem{
-					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-007h55m", ""),
-					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-007h35m", ""),
-					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-004h35m", ""),
-					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-004h55m", ""),
-				}),
-			},
-			unauthorizedType:         "Audit.NoPermissions",
-			fullFetchItemsFromPool:   false,
-			duplicateItemInEachFetch: false,
-			shuffleInPages:           false,
-			pageLimit:                math.MaxInt,
-			minFetchItems:            1,
-			maxFetchItems:            5,
-		},
-		"2_types_random_250_to_500_last_12h_pages_of_20": {
-			itemsByType: map[string][]listItem{
-				"Audit.AzureActiveDirectory": sortListItems(
-					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 250, 500, "-12h", "0h"),
-				),
-				"Audit.Exchange": sortListItems(
-					makeListItems(&cfg, &run, "Audit.Exchange", 250, 500, "-12h", "0h"),
-				),
-			},
-			fullFetchItemsFromPool:   true,
-			duplicateItemInEachFetch: false,
-			shuffleInPages:           false,
-			pageLimit:                20,
-			minFetchItems:            1,
-			maxFetchItems:            5,
-		},
-		"chunks_with_gaps_and_1_expired": {
-			itemsByType: map[string][]listItem{
-				"Audit.AzureActiveDirectory": sortListItems(slices.Concat(
-					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-11h", "-9h"),
-					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-4h", "-2h"),
-					[]listItem{makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-1h15m", "-1h")}, // expired 15 mins after creation
-					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-55m", "-30m"),
-				)),
-				"Audit.Exchange": sortListItems(slices.Concat(
-					makeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-10h", "-5h55m"),
-					makeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-5h30m", "-4h"),
-					makeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-1h55m", "-1h5m"),
-				)),
-			},
-			fullFetchItemsFromPool:   true,
-			duplicateItemInEachFetch: true,
-			shuffleInPages:           true,
-			pageLimit:                20,
-			minFetchItems:            1,
-			maxFetchItems:            5,
-		},
-	}
-
-	scenarioName := os.Args[1]
-	if _, ok := scenarios[scenarioName]; !ok {
-		names := make([]string, 0, len(scenarios))
-		for name := range scenarios {
-			names = append(names, name)
-		}
-		log.Printf("ERROR: Scenario '%s' not found! Available scenarios: %s", scenarioName, strings.Join(names, ", "))
-		os.Exit(1)
-	}
-	cfg.scenario = scenarios[scenarioName]
-
-	rerunCmd := "PORT=" + port + " go run o365mock.go " + scenarioName + " " + strconv.FormatInt(seed, 10)
-	log.Printf("RunStart StartTime=%s, scenarioName=%s, seed=%d, Addr=%s, rerun: '%s'",
-		run.startTime.Format(time.RFC3339Nano),
-		scenarioName,
-		seed,
-		cfg.addr,
-		rerunCmd,
-	)
-
-	s := newServer(&cfg, &run, log)
-	s.doRun()
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Miscellaneous helpers
-////////////////////////////////////////////////////////////////////////////////
-
-func sortListItems(slice []listItem) []listItem {
-	slices.SortFunc(slice, func(a, b listItem) int {
-		return int(a.ContentCreated.Sub(b.ContentCreated))
-	})
-	return slice
-}
-
-func shuffleListItems(run *run, slice []listItem) []listItem {
-	run.randomSource.Shuffle(len(slice), func(i, j int) {
-		slice[i], slice[j] = slice[j], slice[i]
-	})
-	return slice
-}
-
-func randomString(run *run, n int) string {
-	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letters[run.randomSource.Intn(len(letters))]
-	}
-	return string(b)
-}
-
-func randomTime(run *run, inLast time.Duration) time.Time {
-	randNanos := run.randomSource.Int63n(int64(inLast.Nanoseconds()))
-	return run.startTime.Add(-time.Duration(randNanos))
 }
 
 ////////////////////////////////////////////////////////////////////////////////
