@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-11-07T10:30:00.000Z",
     "created_by": "elastic",
-    "description": "Extracts Application Compatibility Cache (ShimCache) entries tracking program execution history on Windows systems. Identifies: (1) Recently executed programs based on entry order, (2) Modification timestamps for timeline analysis, (3) Execution flags (Windows 7/8 only) indicating confirmed execution. Risk Scoring: CRITICAL (70-100) - Unsigned executables from suspicious locations with recent modification times, HIGH (50-69) - Executables from temp/user directories, MEDIUM (30-49) - Unsigned executables from system paths, LOW (0-29) - Signed executables from standard locations. Covers MITRE ATT&CK: T1204 (User Execution), T1059 (Command and Scripting Interpreter), T1218 (System Binary Proxy Execution). ShimCache provides forensic evidence of program execution even when programs are no longer running or have been deleted.",
+    "description": "Extracts Application Compatibility Cache (ShimCache) entries tracking program execution history on Windows systems. Enumerates executed programs with entry order (lower = more recent), modification timestamps for timeline analysis, execution flags (Windows 7/8), file hashes, and code signatures. Detects recently executed programs, executables from suspicious locations (Temp, AppData, Downloads), unsigned/untrusted binaries, and deleted programs. ShimCache provides forensic evidence of program execution even when programs are no longer running or have been deleted. MITRE ATT&CK: T1204 (User Execution), T1059 (Command Scripting), T1218 (System Binary Proxy Execution).",
     "ecs_mapping": [
       {
         "key": "event.category",
@@ -57,18 +57,6 @@
         }
       },
       {
-        "key": "event.risk_score",
-        "value": {
-          "field": "risk_score"
-        }
-      },
-      {
-        "key": "event.severity",
-        "value": {
-          "field": "risk_level"
-        }
-      },
-      {
         "key": "tags",
         "value": {
           "value": [
@@ -77,7 +65,6 @@
             "shimcache",
             "forensics",
             "code_signing",
-            "risk_scoring",
             "windows"
           ]
         }
@@ -86,7 +73,7 @@
     "id": "appcompatcache_shimcache_windows_elastic",
     "interval": "7200",
     "platform": "windows",
-    "query": "SELECT\n  s.entry,\n  s.path,\n  s.modified_time,\n  s.execution_flag,\n  h.md5,\n  h.sha256,\n  a.subject_name,\n  a.result AS signature_status,\n  -- Risk Score Calculation (0-100)\n  (\n    -- Location-based risk (5-40 points)\n    CASE\n      WHEN s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 40\n      WHEN s.path LIKE '%\\\\AppData\\\\%' OR s.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 35\n      WHEN s.path LIKE '%\\\\Downloads\\\\%' THEN 30\n      WHEN s.path NOT LIKE 'C:\\\\Windows\\\\System32\\\\%'\n        AND s.path NOT LIKE 'C:\\\\Windows\\\\SysWOW64\\\\%'\n        AND s.path NOT LIKE 'C:\\\\Program Files%' THEN 25\n      ELSE 5\n    END\n    +\n    -- Signature-based risk (0-30 points)\n    CASE\n      WHEN a.result IS NULL OR a.result != 'trusted' THEN 30\n      ELSE 0\n    END\n    +\n    -- Recency-based risk (0-15 points)\n    CASE\n      WHEN s.entry <= 50 THEN 15\n      WHEN s.entry <= 100 THEN 10\n      WHEN s.entry <= 200 THEN 5\n      ELSE 0\n    END\n  ) AS risk_score,\n  -- Risk Level Categorization\n  CASE\n    WHEN (\n      CASE\n        WHEN s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 40\n        WHEN s.path LIKE '%\\\\AppData\\\\%' OR s.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 35\n        WHEN s.path LIKE '%\\\\Downloads\\\\%' THEN 30\n        WHEN s.path NOT LIKE 'C:\\\\Windows\\\\System32\\\\%'\n          AND s.path NOT LIKE 'C:\\\\Windows\\\\SysWOW64\\\\%'\n          AND s.path NOT LIKE 'C:\\\\Program Files%' THEN 25\n        ELSE 5\n      END\n      +\n      CASE\n        WHEN a.result IS NULL OR a.result != 'trusted' THEN 30\n        ELSE 0\n      END\n      +\n      CASE\n        WHEN s.entry <= 50 THEN 15\n        WHEN s.entry <= 100 THEN 10\n        WHEN s.entry <= 200 THEN 5\n        ELSE 0\n      END\n    ) >= 70 THEN 'CRITICAL'\n    WHEN (\n      CASE\n        WHEN s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 40\n        WHEN s.path LIKE '%\\\\AppData\\\\%' OR s.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 35\n        WHEN s.path LIKE '%\\\\Downloads\\\\%' THEN 30\n        WHEN s.path NOT LIKE 'C:\\\\Windows\\\\System32\\\\%'\n          AND s.path NOT LIKE 'C:\\\\Windows\\\\SysWOW64\\\\%'\n          AND s.path NOT LIKE 'C:\\\\Program Files%' THEN 25\n        ELSE 5\n      END\n      +\n      CASE\n        WHEN a.result IS NULL OR a.result != 'trusted' THEN 30\n        ELSE 0\n      END\n      +\n      CASE\n        WHEN s.entry <= 50 THEN 15\n        WHEN s.entry <= 100 THEN 10\n        WHEN s.entry <= 200 THEN 5\n        ELSE 0\n      END\n    ) >= 50 THEN 'HIGH'\n    WHEN (\n      CASE\n        WHEN s.path LIKE '%\\\\Temp\\\\%' OR s.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 40\n        WHEN s.path LIKE '%\\\\AppData\\\\%' OR s.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 35\n        WHEN s.path LIKE '%\\\\Downloads\\\\%' THEN 30\n        WHEN s.path NOT LIKE 'C:\\\\Windows\\\\System32\\\\%'\n          AND s.path NOT LIKE 'C:\\\\Windows\\\\SysWOW64\\\\%'\n          AND s.path NOT LIKE 'C:\\\\Program Files%' THEN 25\n        ELSE 5\n      END\n      +\n      CASE\n        WHEN a.result IS NULL OR a.result != 'trusted' THEN 30\n        ELSE 0\n      END\n      +\n      CASE\n        WHEN s.entry <= 50 THEN 15\n        WHEN s.entry <= 100 THEN 10\n        WHEN s.entry <= 200 THEN 5\n        ELSE 0\n      END\n    ) >= 30 THEN 'MEDIUM'\n    ELSE 'LOW'\n  END AS risk_level\nFROM shimcache s\nLEFT JOIN hash h\n  ON h.path = s.path\nLEFT JOIN authenticode a\n  ON a.path = s.path\nWHERE\n  s.path NOT LIKE 'C:\\\\Windows\\\\WinSxS\\\\%'\n  AND s.path NOT LIKE 'C:\\\\Windows\\\\servicing\\\\%'\n  AND s.path NOT LIKE '%\\\\WindowsApps\\\\%'\nORDER BY\n  risk_score DESC,\n  s.entry ASC\nLIMIT 500;",
+    "query": "-- Application Compatibility Cache (ShimCache) Execution Tracking\n-- Source: Native osquery table (shimcache)\n-- Focus: Program execution history with file hashes and code signatures\n-- MITRE ATT&CK: T1204 (User Execution), T1059 (Command Scripting), T1218 (System Binary Proxy Execution)\n\nWITH extracted AS (\n  SELECT\n    s.entry,\n    s.path,\n    s.modified_time,\n    s.execution_flag,\n    h.md5,\n    h.sha256,\n    a.subject_name,\n    a.result AS signature_status\n  FROM shimcache s\n  LEFT JOIN hash h ON h.path = s.path\n  LEFT JOIN authenticode a ON a.path = s.path\n  -- Filter out noisy system directories\n  WHERE s.path NOT LIKE 'C:\\\\Windows\\\\WinSxS\\\\%'\n    AND s.path NOT LIKE 'C:\\\\Windows\\\\servicing\\\\%'\n    AND s.path NOT LIKE '%\\\\WindowsApps\\\\%'\n)\n\nSELECT *\nFROM extracted\nORDER BY entry ASC;",
     "updated_at": "2025-11-07T10:30:00.000Z",
     "updated_by": "elastic"
   },
