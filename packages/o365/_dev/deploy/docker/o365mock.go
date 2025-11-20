@@ -1036,7 +1036,8 @@ func (s *Server) handleFetch(w http.ResponseWriter, r *http.Request) {
 		s.run.ServedListItemsFetchCount[contentId] += 1
 	}
 
-	if expiry, ok := s.run.ServedItemsExpiry[contentId]; !ok || expiry.Before(reqTime) || expiry.Equal(reqTime) {
+	expiry := s.run.ServedItemsExpiry[contentId]
+	if !reqTime.Before(expiry) {
 		s.log.Printf("ERROR requested expired item contentId=%s contentExpiration=%s", contentId, expiry.UTC().String())
 		s.writeJSON(w, http.StatusNotFound, nil)
 	} else {
