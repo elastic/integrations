@@ -789,7 +789,7 @@ func (s *Server) handleToken(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "bad authorization header value", http.StatusBadRequest)
 			return
 		}
-		if string(decoded) != strings.Join([]string{s.cfg.ClientId, s.cfg.ClientSecret}, ":") {
+		if string(decoded) != s.cfg.ClientId+":"+s.cfg.ClientSecret {
 			s.log.Printf("ERROR Incorrect Authorization header value for token request")
 			http.Error(w, "bad credentials in authorization header", http.StatusBadRequest)
 			return
