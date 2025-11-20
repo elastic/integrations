@@ -1,176 +1,211 @@
-# Fortinet FortiGate Integration
+# Fortinet FortiGate Firewall Logs Integration for Elastic
 
-This integration is for Fortinet FortiGate logs sent in the syslog format.
+## Overview
 
-## Compatibility
+The Fortinet FortiGate Firewall Logs integration for Elastic enables the collection of logs from Fortinet FortiGate firewalls. This allows for comprehensive security monitoring, threat detection, and network traffic analysis within the Elastic Stack. By ingesting FortiGate logs, users can gain visibility into firewall activity, monitor for security threats, audit policy compliance, and troubleshoot network issues.
+
+This integration facilitates:
+- Security monitoring and threat detection
+- Network traffic analysis and monitoring
+- Firewall policy compliance and auditing
+- Intrusion detection and prevention system (IPS) event monitoring
+- VPN connection monitoring and troubleshooting
+- Web filtering and application control monitoring
+
+### Compatibility
 
 This integration has been tested against FortiOS versions 6.x and 7.x up to 7.4.1. Newer versions are expected to work but have not been tested.
 
-## Note
+This integration is compatible with Elastic Stack version 8.11.0 or higher.
 
-- When using the TCP input, be careful with the configured TCP framing. According to the [Fortigate reference](https://docs.fortinet.com/document/fortigate/7.4.0/cli-reference/405620/config-log-syslogd-setting), framing should be set to `rfc6587` when the syslog mode is reliable.
+### How it works
 
-### Log
+This integration collects logs from FortiGate firewalls by receiving syslog data over TCP or UDP, or by reading directly from log files. An Elastic Agent is deployed on a host that is configured as a syslog receiver or has access to the log files. The agent forwards the logs to your Elastic deployment, where they can be monitored or analyzed.
 
-The `log` dataset collects Fortinet FortiGate logs.
+## What data does this integration collect?
 
-An example event for `log` looks as following:
+The Fortinet FortiGate Firewall Logs integration collects the following types of logs:
+*   **Traffic logs**: Records of firewall decisions to allow or deny traffic.
+*   **UTM (Unified Threat Management) logs**: Includes events from antivirus, web filter, application control, IPS, and DNS filter modules.
+*   **Event logs**: System-level events, high-availability (HA) events, and configuration changes.
+*   **Authentication logs**: Records of VPN, administrator, and user authentication events.
 
-```json
-{
-    "@timestamp": "2019-05-15T18:03:36.000Z",
-    "agent": {
-        "ephemeral_id": "65ad5a4b-72ad-4878-905c-6f7f2a959ee4",
-        "id": "2f63344b-97c9-4998-9535-0fc6454ddd4b",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.9.0"
-    },
-    "data_stream": {
-        "dataset": "fortinet_fortigate.log",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "destination": {
-        "as": {
-            "number": 35908
-        },
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.14",
-        "port": 443
-    },
-    "ecs": {
-        "version": "8.17.0"
-    },
-    "elastic_agent": {
-        "id": "2f63344b-97c9-4998-9535-0fc6454ddd4b",
-        "snapshot": false,
-        "version": "8.9.0"
-    },
-    "event": {
-        "action": "app-ctrl-all",
-        "agent_id_status": "verified",
-        "category": [
-            "network"
-        ],
-        "code": "1059028704",
-        "dataset": "fortinet_fortigate.log",
-        "ingested": "2023-10-26T15:15:25Z",
-        "kind": "event",
-        "original": "<190>date=2019-05-15 time=18:03:36 logid=\"1059028704\" type=\"utm\" subtype=\"app-ctrl\" eventtype=\"app-ctrl-all\" level=\"information\" vd=\"root\" eventtime=1557968615 appid=40568 srcip=10.1.100.22 dstip=67.43.156.14 srcport=50798 dstport=443 srcintf=\"port10\" srcintfrole=\"lan\" dstintf=\"port9\" dstintfrole=\"wan\" proto=6 service=\"HTTPS\" direction=\"outgoing\" policyid=1 sessionid=4414 applist=\"block-social.media\" appcat=\"Web.Client\" app=\"HTTPS.BROWSER\" action=\"pass\" hostname=\"www.dailymotion.com\" incidentserialno=1962906680 url=\"/\" msg=\"Web.Client: HTTPS.BROWSER,\" apprisk=\"medium\" scertcname=\"*.dailymotion.com\" scertissuer=\"DigiCert SHA2 High Assurance Server CA\"",
-        "outcome": "success",
-        "start": "2019-05-16T01:03:35.000Z",
-        "type": [
-            "allowed"
-        ]
-    },
-    "fortinet": {
-        "firewall": {
-            "action": "pass",
-            "appid": "40568",
-            "apprisk": "medium",
-            "dstintfrole": "wan",
-            "incidentserialno": "1962906680",
-            "sessionid": "4414",
-            "srcintfrole": "lan",
-            "subtype": "app-ctrl",
-            "type": "utm",
-            "vd": "root"
-        }
-    },
-    "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "level": "information",
-        "source": {
-            "address": "172.24.0.4:57264"
-        },
-        "syslog": {
-            "facility": {
-                "code": 23
-            },
-            "priority": 190,
-            "severity": {
-                "code": 6
-            }
-        }
-    },
-    "message": "Web.Client: HTTPS.BROWSER,",
-    "network": {
-        "application": "HTTPS.BROWSER",
-        "direction": "outbound",
-        "iana_number": "6",
-        "protocol": "https",
-        "transport": "tcp"
-    },
-    "observer": {
-        "egress": {
-            "interface": {
-                "name": "port9"
-            }
-        },
-        "ingress": {
-            "interface": {
-                "name": "port10"
-            }
-        },
-        "product": "Fortigate",
-        "type": "firewall",
-        "vendor": "Fortinet"
-    },
-    "related": {
-        "ip": [
-            "10.1.100.22",
-            "67.43.156.14"
-        ]
-    },
-    "rule": {
-        "category": "Web-Client",
-        "id": "1",
-        "ruleset": "block-social.media"
-    },
-    "source": {
-        "ip": "10.1.100.22",
-        "port": 50798
-    },
-    "tags": [
-        "preserve_original_event",
-        "fortinet-fortigate",
-        "fortinet-firewall",
-        "forwarded"
-    ],
-    "tls": {
-        "server": {
-            "issuer": "DigiCert SHA2 High Assurance Server CA",
-            "x509": {
-                "issuer": {
-                    "common_name": [
-                        "DigiCert SHA2 High Assurance Server CA"
-                    ]
-                },
-                "subject": {
-                    "common_name": [
-                        "*.dailymotion.com"
-                    ]
-                }
-            }
-        }
-    },
-    "url": {
-        "domain": "www.dailymotion.com",
-        "path": "/"
-    }
-}
-```
+### Supported use cases
+
+Integrating Fortinet FortiGate logs with Elastic provides a powerful solution for enhancing security posture and operational visibility. Key use cases include:
+- **Real-time Threat Detection**: Leverage Elastic SIEM to detect and respond to threats identified in firewall logs.
+- **Network Traffic Analysis**: Use Kibana dashboards to visualize and analyze network traffic patterns, helping to identify anomalies and optimize network performance.
+- **Compliance and Auditing**: Maintain a searchable, long-term archive of firewall logs to meet compliance requirements and conduct security audits.
+- **Incident Response**: Accelerate incident investigation by correlating firewall data with other security and observability data sources within Elastic.
+
+## What do I need to use this integration?
+
+- A FortiGate firewall with administrative access to configure syslog settings.
+- Network connectivity between the FortiGate firewall and the Elastic Agent host.
+- Elastic Stack version 8.11.0 or higher.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed on a host that will receive the syslog data or has access to the log files from the FortiGate firewall. For detailed installation instructions, refer to the Elastic Agent [installation guide](docs-content://reference/fleet/install-elastic-agents.md). Only one Elastic Agent is needed per host.
+
+### Vendor set up steps
+
+#### Syslog Configuration
+
+You can configure FortiGate to send logs to the Elastic Agent using either the GUI or the CLI.
+
+**GUI Configuration:**
+
+1.  Log in to the FortiGate web-based manager (GUI).
+2.  Navigate to **Log & Report -> Log Settings**.
+3.  Enable **Send Logs to Syslog**.
+4.  In the IP address field, enter the IP address of the host where the Elastic Agent is installed.
+5.  Click **Apply**.
+6.  Under **Log Settings**, ensure that **Event Logging** and all desired log subtypes are enabled to generate and send the necessary logs.
+
+**CLI Configuration:**
+
+1.  Log in to the FortiGate CLI.
+2.  Use the following commands to configure the syslog server settings:
+
+    ```sh
+    config log syslogd setting
+        set status enable
+        set server "<elastic_agent_ip>"
+        set port <port>  // Default syslog ports are 514 for UDP and TCP
+        // For TCP with reliable syslog mode, ensure framing is set to rfc6587
+        set mode reliable
+        set format rfc6587
+    end
+    ```
+
+3.  Configure the appropriate log types and severity levels to be sent to the syslog server. For example:
+
+    ```sh
+    config log syslogd filter
+        set severity information
+        set forward-traffic enable
+        set local-traffic enable
+        set web enable
+        set antivirus enable
+        // Enable other UTM and event logs as needed
+    end
+    ```
+
+For more detailed information, refer to the [FortiGate CLI reference](https://docs.fortinet.com/document/fortigate/7.4.0/cli-reference/405620/config-log-syslogd-setting).
+
+### Onboard / configure in Kibana
+
+1.  In Kibana, navigate to **Management > Integrations**.
+2.  Search for "Fortinet FortiGate Firewall Logs" and select the integration.
+3.  Click **Add Fortinet FortiGate Firewall Logs**.
+4.  Configure the integration by selecting an input type and providing the necessary settings. This integration supports `TCP`, `UDP`, and `Log file` inputs.
+
+#### TCP Input Configuration
+
+This input collects logs over a TCP socket.
+
+| Setting | Description |
+|---|---|
+| **Listen Address** | The bind address for the TCP listener (e.g., `localhost`, `0.0.0.0`). |
+| **Listen Port** | The TCP port number to listen on (e.g., `9004`). |
+| **Preserve original event** | If checked, a raw copy of the original log is stored in the `event.original` field. |
+
+Under **Advanced Options**, you can configure the following optional parameters:
+
+| Setting | Description |
+|---|---|
+| **Internal/External interfaces** | Define your network interfaces to correctly map network direction. |
+| **Internal networks** | Specify your internal network ranges (defaults to private address spaces). Supports CIDR notation and named ranges like `private`. |
+| **SSL Configuration** | Configure SSL options for encrypted communication. See the [SSL documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details. |
+| **Custom TCP Options** | `framing`: Specifies how messages are framed. Defaults to `rfc6587`, which is required for FortiGate's reliable syslog mode. <br> `max_message_size`: The maximum size of a log message (e.g., `50KiB`). <br> `max_connections`: The maximum number of simultaneous connections. |
+| **Timezone** | Specify an IANA timezone or offset (e.g., `+0200`) for logs with no timezone information. |
+| **Timezone Map** | A mapping of timezone strings from logs to standard IANA timezone formats. |
+| **Processors** | Add custom processors to enhance or reduce event fields before parsing. |
+
+#### UDP Input Configuration
+
+This input collects logs over a UDP socket.
+
+| Setting | Description |
+|---|---|
+| **Listen Address** | The bind address for the UDP listener (e.g., `localhost`, `0.0.0.0`). |
+| **Listen Port** | The UDP port number to listen on (e.g., `9004`). |
+| **Preserve original event** | If checked, a raw copy of the original log is stored in the `event.original` field. |
+
+Under **Advanced Options**, you can configure the following optional parameters:
+
+| Setting | Description |
+|---|---|
+| **Internal/External interfaces** | Define your network interfaces to correctly map network direction. |
+| **Internal networks** | Specify your internal network ranges (defaults to private address spaces). |
+| **Custom UDP Options** | `read_buffer`: The size of the read buffer for the UDP socket (e.g., `100MiB`). <br> `max_message_size`: The maximum size of a log message (e.g., `50KiB`). <br> `timeout`: The read timeout for the UDP socket (e.g., `300s`). |
+| **Timezone** | Specify an IANA timezone or offset (e.g., `+0200`) for logs with no timezone information. |
+| **Timezone Map** | A mapping of timezone strings from logs to standard IANA timezone formats. |
+| **Processors** | Add custom processors to enhance or reduce event fields before parsing. |
+
+#### Log file Input Configuration
+
+This input collects logs directly from log files on the host where the Elastic Agent is running.
+
+| Setting | Description |
+|---|---|
+| **Paths** | A list of file paths to monitor (e.g., `/var/log/fortinet-firewall.log`). |
+| **Preserve original event** | If checked, a raw copy of the original log is stored in the `event.original` field. |
+
+Under **Advanced Options**, you can configure the following optional parameters:
+
+| Setting | Description |
+|---|---|
+| **Internal/External interfaces** | Define your network interfaces to correctly map network direction. |
+| **Internal networks** | Specify your internal network ranges (defaults to private address spaces). |
+| **Timezone** | Specify an IANA timezone or offset (e.g., `+0200`) for logs with no timezone information. |
+| **Timezone Map** | A mapping of timezone strings from logs to standard IANA timezone formats. |
+| **Processors** | Add custom processors to enhance or reduce event fields before parsing. |
+
+After configuring the input, assign the integration to an agent policy and click **Save and continue**.
+
+### Validation
+
+1.  First, verify on the FortiGate device that logs are being actively sent to the configured Elastic Agent host.
+2.  In Kibana, navigate to **Discover**.
+3.  In the search bar, enter `data_stream.dataset: "fortinet_fortigate.log"` and check for incoming documents.
+4.  Verify that events are appearing with recent timestamps.
+5.  Navigate to **Management > Dashboards** and search for "Fortinet FortiGate Overview" to see if the visualizations are populated with data.
+6.  Generate some test traffic that would be logged by the firewall and confirm that the corresponding logs appear in Kibana.
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Common Configuration Issues
+
+-   **No data is being collected**:
+    *   Verify network connectivity (e.g., using `ping` or `netcat`) between the FortiGate firewall and the Elastic Agent host.
+    *   Ensure there are no firewalls or network ACLs blocking the syslog port.
+    *   Confirm that the listening port configured in the Elastic integration matches the destination port configured on the FortiGate device.
+-   **TCP framing issues**:
+    *   When using TCP input with reliable syslog mode, both the FortiGate configuration and the integration settings must have framing set to `rfc6587`. Mismatched framing settings will result in parsing errors or lost logs.
+
+### Vendor Resources
+
+-   [FortiGate CLI Reference - Syslog Settings](https://docs.fortinet.com/document/fortigate/7.4.0/cli-reference/405620/config-log-syslogd-setting)
+-   [Fortinet Documentation Library](https://docs.fortinet.com/)
+-   [FortiGate Administration Guide](https://docs.fortinet.com/product/fortigate)
+
+## Performance and Scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation. A common approach for large-scale syslog collection is to place a load balancer or a dedicated syslog collector like Logstash between the FortiGate devices and the Elastic Agents.
+
+## Reference
+
+### log
+
+The `log` data stream collects all log types from the FortiGate firewall, including traffic, UTM, event, and authentication logs.
+
+#### log fields
 
 **Exported fields**
 
@@ -830,3 +865,245 @@ An example event for `log` looks as following:
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm) This field must be an array. | keyword |
+
+
+#### log sample event
+
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2019-05-15T18:03:36.000Z",
+    "agent": {
+        "ephemeral_id": "65ad5a4b-72ad-4878-905c-6f7f2a959ee4",
+        "id": "2f63344b-97c9-4998-9535-0fc6454ddd4b",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.0"
+    },
+    "data_stream": {
+        "dataset": "fortinet_fortigate.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.14",
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "2f63344b-97c9-4998-9535-0fc6454ddd4b",
+        "snapshot": false,
+        "version": "8.9.0"
+    },
+    "event": {
+        "action": "app-ctrl-all",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "code": "1059028704",
+        "dataset": "fortinet_fortigate.log",
+        "ingested": "2023-10-26T15:15:25Z",
+        "kind": "event",
+        "original": "<190>date=2019-05-15 time=18:03:36 logid=\"1059028704\" type=\"utm\" subtype=\"app-ctrl\" eventtype=\"app-ctrl-all\" level=\"information\" vd=\"root\" eventtime=1557968615 appid=40568 srcip=10.1.100.22 dstip=67.43.156.14 srcport=50798 dstport=443 srcintf=\"port10\" srcintfrole=\"lan\" dstintf=\"port9\" dstintfrole=\"wan\" proto=6 service=\"HTTPS\" direction=\"outgoing\" policyid=1 sessionid=4414 applist=\"block-social.media\" appcat=\"Web.Client\" app=\"HTTPS.BROWSER\" action=\"pass\" hostname=\"www.dailymotion.com\" incidentserialno=1962906680 url=\"/\" msg=\"Web.Client: HTTPS.BROWSER,\" apprisk=\"medium\" scertcname=\"*.dailymotion.com\" scertissuer=\"DigiCert SHA2 High Assurance Server CA\"",
+        "outcome": "success",
+        "start": "2019-05-16T01:03:35.000Z",
+        "type": [
+            "allowed"
+        ]
+    },
+    "fortinet": {
+        "firewall": {
+            "action": "pass",
+            "appid": "40568",
+            "apprisk": "medium",
+            "dstintfrole": "wan",
+            "incidentserialno": "1962906680",
+            "sessionid": "4414",
+            "srcintfrole": "lan",
+            "subtype": "app-ctrl",
+            "type": "utm",
+            "vd": "root"
+        }
+    },
+    "input": {
+        "type": "tcp"
+    },
+    "log": {
+        "level": "information",
+        "source": {
+            "address": "172.24.0.4:57264"
+        },
+        "syslog": {
+            "facility": {
+                "code": 23
+            },
+            "priority": 190,
+            "severity": {
+                "code": 6
+            }
+        }
+    },
+    "message": "Web.Client: HTTPS.BROWSER,",
+    "network": {
+        "application": "HTTPS.BROWSER",
+        "direction": "outbound",
+        "iana_number": "6",
+        "protocol": "https",
+        "transport": "tcp"
+    },
+    "observer": {
+        "egress": {
+            "interface": {
+                "name": "port9"
+            }
+        },
+        "ingress": {
+            "interface": {
+                "name": "port10"
+            }
+        },
+        "product": "Fortigate",
+        "type": "firewall",
+        "vendor": "Fortinet"
+    },
+    "related": {
+        "ip": [
+            "10.1.100.22",
+            "67.43.156.14"
+        ]
+    },
+    "rule": {
+        "category": "Web-Client",
+        "id": "1",
+        "ruleset": "block-social.media"
+    },
+    "source": {
+        "ip": "10.1.100.22",
+        "port": 50798
+    },
+    "tags": [
+        "preserve_original_event",
+        "fortinet-fortigate",
+        "fortinet-firewall",
+        "forwarded"
+    ],
+    "tls": {
+        "server": {
+            "issuer": "DigiCert SHA2 High Assurance Server CA",
+            "x509": {
+                "issuer": {
+                    "common_name": [
+                        "DigiCert SHA2 High Assurance Server CA"
+                    ]
+                },
+                "subject": {
+                    "common_name": [
+                        "*.dailymotion.com"
+                    ]
+                }
+            }
+        }
+    },
+    "url": {
+        "domain": "www.dailymotion.com",
+        "path": "/"
+    }
+}
+```
+
+### Inputs used
+
+These inputs can be used with this integration:
+<details>
+<summary>logfile</summary>
+
+## Setup
+For more details about the logfile input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-log).
+
+### Collecting logs from logfile
+
+To collect logs via logfile, select **Collect logs via the logfile input** and configure the following parameter:
+
+- Paths: List of glob-based paths to crawl and fetch log files from. Supports glob patterns like
+  `/var/log/*.log` or `/var/log/*/*.log` for subfolder matching. Each file found starts a
+  separate harvester.
+</details>
+<details>
+<summary>tcp</summary>
+
+## Setup
+
+For more details about the TCP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp).
+
+### Collecting logs from TCP
+
+To collect logs via TCP, select **Collect logs via TCP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of incoming messages
+- Max Connections - Maximum number of concurrent connections
+- Timeout - How long to wait for data before closing idle connections
+- Line Delimiter - Character(s) that separate log messages
+
+## SSL/TLS Configuration
+
+To enable encrypted connections, configure the following SSL settings:
+
+**SSL Settings:**
+- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
+- Certificate Key - Path to the private key file (`.key`)
+- Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
+- Client Authentication - Require client certificates (`none`, `optional`, or `required`)
+- Supported Protocols - TLS versions to support (e.g., `TLSv1.2`, `TLSv1.3`)
+
+**Example SSL Configuration:**
+```yaml
+ssl.enabled: true
+ssl.certificate: "/path/to/server.crt"
+ssl.key: "/path/to/server.key"
+ssl.certificate_authorities: ["/path/to/ca.crt"]
+ssl.client_authentication: "optional"
+```
+</details>
+<details>
+<summary>udp</summary>
+
+## Setup
+
+For more details about the UDP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp).
+
+### Collecting logs from UDP
+
+To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of UDP packets to accept (default: 10KB, max: 64KB)
+- Read Buffer - UDP socket read buffer size for handling bursts of messages
+- Read Timeout - How long to wait for incoming packets before checking for shutdown
+</details>
+

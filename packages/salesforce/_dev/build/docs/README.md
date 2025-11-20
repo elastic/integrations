@@ -23,12 +23,12 @@ The Salesforce integration collects the following data streams:
 
 The Salesforce integration collects the following events using the Salesforce REST API:
 
-- [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm)
-- [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm)
-- [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm)
-- [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm)
-- [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm)
-- [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm)
+- [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_eventlogfile\_login.htm)
+- [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform\_events.meta/platform\_events/sforce\_api\_objects\_logineventstream.htm)
+- [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_eventlogfile\_logout.htm)
+- [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform\_events.meta/platform\_events/sforce\_api\_objects\_logouteventstream.htm)
+- [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object\_reference.meta/object\_reference/sforce\_api\_objects\_apexclass.htm)
+- [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_setupaudittrail.htm)
 
 ## Compatibility
 

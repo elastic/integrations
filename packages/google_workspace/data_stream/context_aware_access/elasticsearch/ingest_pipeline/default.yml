@@ -32,6 +32,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - drop:
+      if: ctx.json?.events == null
+      description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
+      tag: drop_empty_events
   - set:
       field: event.kind
       value: [event]

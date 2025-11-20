@@ -12,9 +12,9 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{NOTSPACE:host.domain}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+(%{IP:_tmp.host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{IP:_tmp.host.ip}\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{NOTSPACE:host.domain}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+(%{IP:_tmp.host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{IP:_tmp.host.ip}\\s+%{GREEDYDATA:message}$"
         - "^%{GREEDYDATA:message}$"
   - rename:
       field: _conf.tz_offset
@@ -33,6 +33,7 @@ processors:
         - MMM dd HH:mm:ss
         - MMM d HH:mm:ss
         - dd-MMM-yyyy HH:mm:ss.SSS
+        - ISO8601
       on_failure:
         - remove:
             field: event.created
@@ -54,6 +55,7 @@ processors:
         - MMM dd HH:mm:ss
         - MMM d HH:mm:ss
         - dd-MMM-yyyy HH:mm:ss.SSS
+        - ISO8601
       on_failure:
         - remove:
             field: event.created
@@ -89,13 +91,13 @@ processors:
   # Since logstash sets the @timestamp if not present, `override: true` is required to overwrite the value with event timestamp.
   - set:
       field: '@timestamp'
-      value: '{{{event.created}}}'
+      copy_from: event.created
       if: ctx.event?.created != null
       override: true
   # If individual pipelines has timestamp, they should take priority. This makes @timestamp < event.created conforming to ECS.
   - set:
       field: '@timestamp'
-      value: '{{{_tmp.timestamp}}}'
+      copy_from: _tmp.timestamp
       if: ctx._tmp?.timestamp != null
       override: true
   - convert:
