@@ -32,11 +32,6 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
       PUT _component_template/{COMPONENT_TEMPLATE_NAME}@custom
       {
         "template": {
-          "settings": {
-            "index": {
-              "default_pipeline": "<VERSION>-ml_pad_ingest_pipeline"
-            }
-          },
           "mappings": {
             "properties": {
               "process": {
@@ -54,14 +49,6 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
       ```
     - If the `@custom` component template already exists, you will need to edit it to add mappings for data to be properly enriched. Click the three dots next to it and select **Edit**. 
     ![Component Templates](../img/component-templates-edit.png)
-    - On the index settings step, add the following. Be sure to change `<VERSION>` to the current package version.
-      ```
-      {
-        "index": {
-          "default_pipeline": "<VERSION>-ml_pad_ingest_pipeline"
-        }
-      }
-      ```
     - Proceed to the mappings step in the UI. Click **Add Field** at the bottom of the page and create an `Object` field for `process`:
     ![Component Templates](../img/field1.png)
     - Create a property under Process for `command_line_entropy` of type `Double`. 
@@ -89,6 +76,9 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
         - Index pattern : `.ml-anomalies-shared`
         - Select **Show Advanced settings** enable **Allow hidden and system indices**
         - Custom data view ID: `.ml-anomalies-shared`
+
+    _**Warning**_: When creating the data views for the dashboards, ensure that the `Custom data view ID` is set to the value specified above and is not left empty. Omitting or misconfiguring this field may result in broken visualizations, as illustrated by the error message below.
+    ![Dashboard Error](../img/dashboard-pad-error.png)
 1. **Enabling detection rules**:  You can also enable detection rules to alert on Privileged Access activity in your environment, based on anomalies flagged by the above ML jobs. These rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Privileged Access Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
 ## Transform

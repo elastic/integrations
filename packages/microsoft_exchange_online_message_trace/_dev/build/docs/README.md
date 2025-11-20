@@ -1,7 +1,6 @@
 # Microsoft Exchange Online Message Trace
 
-This integration is for Microsoft Exchange Online Message Trace logs. It includes the following
-datasets for receiving logs over the Microsoft Exchange Online Message Trace API or read from a file:
+This integration is for Microsoft Exchange Online Message Trace logs. It includes the following datasets for receiving logs over the Microsoft Exchange Online Message Trace API or read from a file:
 
 - `log` dataset: supports Microsoft Exchange Online Message Trace logs.
 
@@ -42,7 +41,7 @@ In order to continue using the Microsoft Exchange Online Message Trace you will 
   official doc for [Getting Started with Reporting Web Service](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#get-started-with-reporting-web-service).
 
 ### NOTE
-- For configuring `Local Domains` you can check your [Microsoft Admin Exchange Center](https://admin.exchange.microsoft.com/) for the domains
+- To configure `Local Domains` you can check your [Microsoft Admin Exchange Center](https://admin.exchange.microsoft.com/) for the domains
 available in your organization. They are usually under the sections [Accepted Domains](https://admin.exchange.microsoft.com/#/accepteddomains) and [Remote Domains](https://admin.exchange.microsoft.com/#/remotedomains).
 
 - The default `Interval` is configured to `1h` and `Initial Interval` to `48h`, you can however change these to your required values. The look-back 

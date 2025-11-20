@@ -3,18 +3,22 @@ description: Pipeline for Suricata DNS Events
 
 processors:
   - set:
+      tag: set_dns_id_19b830fe
       field: dns.id
       value: '{{{suricata.eve.dns.id}}}'
       ignore_empty_value: true
   - set:
+      tag: set_dns_response_code_a915b330
       field: dns.response_code
       value: '{{{suricata.eve.dns.rcode}}}'
       ignore_empty_value: true
   - set:
+      tag: set_dns_type_4c006810
       field: dns.type
       value: '{{{suricata.eve.dns.type}}}'
       ignore_empty_value: true
   - set:
+      tag: set_dns_question_name_5c823389
       # V2 events always include the query data.
       if: >-
         ctx?.dns?.type == "query" ||
@@ -23,6 +27,7 @@ processors:
       value: '{{{suricata.eve.dns.rrname}}}'
       ignore_empty_value: true
   - set:
+      tag: set_dns_question_type_9b3bf103
       # V2 events always include the query data.
       if: >-
         ctx?.dns?.type == "query" ||
@@ -31,16 +36,19 @@ processors:
       value: '{{{suricata.eve.dns.rrtype}}}'
       ignore_empty_value: true
   - pipeline:
+      tag: pipeline_f4464a30
       if: >-
         ctx?.dns?.type == "answer" &&
         ctx?.suricata?.eve?.dns?.version == null
       name: '{{ IngestPipeline "dns-answer-v1" }}'
   - pipeline:
+      tag: pipeline_d5df79ac
       if: >-
         ctx?.dns?.type == "answer" &&
         ctx?.suricata?.eve?.dns?.version == 2
       name: '{{ IngestPipeline "dns-answer-v2" }}'
   - foreach:
+      tag: foreach_dns_resolved_ip_90d0accc
       field: dns.resolved_ip
       ignore_missing: true
       processor:
@@ -61,22 +69,27 @@ processors:
         }
         ctx.dns.question.top_level_domain = rd.substring(firstDot + 1);
   - append:
+      tag: append_dns_header_flags_96158a4b
       if: ctx?.suricata?.eve?.dns?.aa == true
       field: dns.header_flags
       value: AA
   - append:
+      tag: append_dns_header_flags_53dfc641
       if: ctx?.suricata?.eve?.dns?.tc == true
       field: dns.header_flags
       value: TC
   - append:
+      tag: append_dns_header_flags_ac59435f
       if: ctx?.suricata?.eve?.dns?.rd == true
       field: dns.header_flags
       value: RD
   - append:
+      tag: append_dns_header_flags_8f22bf39
       if: ctx?.suricata?.eve?.dns?.ra == true
       field: dns.header_flags
       value: RA
   - remove:
+      tag: remove_a51a4cd2
       field:
         - suricata.eve.dns.aa
         - suricata.eve.dns.tc
@@ -93,4 +106,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

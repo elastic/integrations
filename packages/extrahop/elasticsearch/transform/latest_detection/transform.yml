@@ -1,0 +1,33 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-extrahop.detection-*"
+dest:
+  index: "logs-extrahop_latest.dest_detection-1"
+  aliases:
+    - alias: "logs-extrahop_latest.detection"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - extrahop.detection.id
+  sort: "@timestamp"
+description: >-
+  Latest Detections from ExtraHop RevealX 360. As detections get updated, this transform stores only the latest state of each detection inside the destination index. Thus the transform's destination index contains only the latest state of the detection.
+frequency: 30s
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

@@ -1,17 +1,47 @@
+# This configuration tests the integration's httpjson configuration and exercises at least 2 periodic executions.
+#
+# First periodic execution (3 logs total):
+# - Request 1: Uses a 'since' query param generated based on the configured 'initial_interval'
+# - Request 2: Made to the previously returned 'next' Link header
+# - Then stops requesting until the next periodic interval
+#
+# Second periodic execution (1 log total):
+# - Request 3: Uses a 'since' query param that is the 'published' value from the final event returned in request 2
+#
+# Subsequent periodic execution (0 logs):
+# - Request 4+: Uses a 'since' query param that is the 'published' value from the final event returned in request 3
+#               and returns no new events so the cursor does not change.
+
 rules:
-  # New request after interval - cursor test
+  # Request 4+.
   - path: /api/v1/logs
     methods: ["GET"]
     request_headers:
       authorization: "SSWS testing"
     query_params:
-      since: "{since:2020-02-14.*}"
+      limit: "{limit:2}"
+      since: "{since:2021-02-14T22:18:51.843Z}"
     responses:
       - status_code: 200
         headers:
           Link:
-            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=1>; rel="self"'
-            - '<https://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?since={{ .request.vars.since }}>; rel="self"'
+            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=4&limit={{ .request.vars.limit }}>; rel="self"'
+            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?since={{ .request.vars.since }}&limit={{ .request.vars.limit }}>; rel="self"'
+        body: '[]'
+  # Request 3.
+  - path: /api/v1/logs
+    methods: ["GET"]
+    request_headers:
+      authorization: "SSWS testing"
+    query_params:
+      limit: "{limit:2}"
+      since: "{since:2020-02-14T20:18:57.718Z}"
+    responses:
+      - status_code: 200
+        headers:
+          Link:
+            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=4&limit={{ .request.vars.limit }}>; rel="self"'
+            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?since={{ .request.vars.since }}&limit={{ .request.vars.limit }}>; rel="self"'
         body: |-
           [
               {
@@ -102,7 +132,7 @@ rules:
                       "id": "XkccyyMli2Uay2I93ZgRzQAAB0c",
                       "type": "WEB"
                   },
-                  "uuid": "faf7398a-4f78-11ea-97fb-5925e98228bd",
+                  "uuid": "faf7398a-4f77-11ea-{{.req_num}}-000000000000",
                   "version": "0"
               }
           ]
@@ -111,106 +141,16 @@ rules:
     request_headers:
       authorization: "SSWS testing"
     query_params:
-      since: "{since:.*}"
+      limit: "{limit:2}"
+      after: "{after:2}"
     responses:
       - status_code: 200
         headers:
           Link:
-            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=1>; rel="next"'
-            - '<https://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?since={{ .request.vars.since }}>; rel="self"'
+            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=3&limit={{ .request.vars.limit }}>; rel="next"'
+            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after={{ .request.vars.after }}&limit={{ .request.vars.limit }}>; rel="self"'
         body: |-
           [
-              {
-                  "actor": {
-                      "alternateId": "xxxxxx@elastic.co",
-                      "detailEntry": null,
-                      "displayName": "xxxxxx",
-                      "id": "00u1abvz4pYqdM8ms4x6",
-                      "type": "User"
-                  },
-                  "authenticationContext": {
-                      "authenticationProvider": null,
-                      "authenticationStep": 0,
-                      "credentialProvider": null,
-                      "credentialType": null,
-                      "externalSessionId": "102nZHzd6OHSfGG51vsoc22gw",
-                      "interface": null,
-                      "issuer": null
-                  },
-                  "client": {
-                      "device": "Computer",
-                      "geographicalContext": {
-                          "city": "Dublin",
-                          "country": "United States",
-                          "geolocation": {
-                              "lat": 37.7201,
-                              "lon": -121.919
-                          },
-                          "postalCode": "94568",
-                          "state": "California"
-                      },
-                      "id": null,
-                      "ipAddress": "108.255.197.247",
-                      "userAgent": {
-                          "browser": "FIREFOX",
-                          "os": "Mac OS X",
-                          "rawUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0"
-                      },
-                      "zone": "null"
-                  },
-                  "debugContext": {
-                      "debugData": {
-                          "authnRequestId": "XkcAsWb8WjwDP76xh@1v8wAABp0",
-                          "requestId": "XkccyyMli2Uay2I93ZgRzQAAB0c",
-                          "requestUri": "/login/signout",
-                          "threatSuspected": "false",
-                          "url": "/login/signout?message=login_page_messages.session_has_expired"
-                      }
-                  },
-                  "displayMessage": "User logout from Okta",
-                  "eventType": "user.session.end",
-                  "legacyEventType": "core.user_auth.logout_success",
-                  "outcome": {
-                      "reason": null,
-                      "result": "SUCCESS"
-                  },
-                  "published": "2020-02-14T22:18:51.843Z",
-                  "request": {
-                      "ipChain": [
-                          {
-                              "geographicalContext": {
-                                  "city": "Dublin",
-                                  "country": "United States",
-                                  "geolocation": {
-                                      "lat": 37.7201,
-                                      "lon": -121.919
-                                  },
-                                  "postalCode": "94568",
-                                  "state": "California"
-                              },
-                              "ip": "108.255.197.247",
-                              "source": null,
-                              "version": "V4"
-                          }
-                      ]
-                  },
-                  "securityContext": {
-                      "asNumber": null,
-                      "asOrg": null,
-                      "domain": null,
-                      "isProxy": null,
-                      "isp": null
-                  },
-                  "severity": "INFO",
-                  "target": null,
-                  "transaction": {
-                      "detail": {},
-                      "id": "XkccyyMli2Uay2I93ZgRzQAAB0c",
-                      "type": "WEB"
-                  },
-                  "uuid": "faf7398a-4f77-11ea-97fb-5925e98228bd",
-                  "version": "0"
-              },
               {
                   "actor": {
                       "alternateId": "xxxxxx@elastic.co",
@@ -299,22 +239,24 @@ rules:
                       "id": "XkcAsWb8WjwDP76xh@1v8wAABp0",
                       "type": "WEB"
                   },
-                  "uuid": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
+                  "uuid": "3aeede38-4f67-11ea-{{.req_num}}-000000000000",
                   "version": "0"
               }
           ]
+  # Request 1.
   - path: /api/v1/logs
     methods: ["GET"]
     request_headers:
       authorization: "SSWS testing"
     query_params:
-      after: "1"
+      limit: "{limit:2}"
+      since: "{since:\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z}"
     responses:
       - status_code: 200
         headers:
           Link:
-            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=2>; rel="next"'
-            - '<https://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=1>; rel="self"'
+            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=2&limit={{ .request.vars.limit }}>; rel="next"'
+            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?since={{ .request.vars.since }}&limit={{ .request.vars.limit }}>; rel="self"'
         body: |-
           [
             {
@@ -422,39 +364,9 @@ rules:
                 "id": "XkcAsWb8WjwDP76xh@1v8wAABp0",
                 "type": "WEB"
               },
-              "uuid": "3af594f9-4f67-11ea-abd3-1f5d113f2546",
+              "uuid": "3af594f9-4f67-11ea-000{{.req_num}}-000000000000",
               "version": "0"
-            }
-          ]
-  - path: /api/v1/logs
-    methods: ["GET"]
-    request_headers:
-      authorization: "SSWS testing"
-    query_params:
-      after: "2"
-    responses:
-      - status_code: 200
-        headers:
-          Link:
-            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=2>; rel="next"'
-            - '<https://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=2>; rel="self"'
-        body: |-
-          []
-  # "null" in ipAddress
-  - path: /api/v1/logs
-    methods: ["GET"]
-    request_headers:
-      authorization: "SSWS testing"
-    query_params:
-      after: "1"
-    responses:
-      - status_code: 200
-        headers:
-          Link:
-            - '<http://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=2>; rel="next"'
-            - '<https://{{ hostname }}:{{ env "PORT" }}/api/v1/logs?after=1>; rel="self"'
-        body: |-
-          [
+            },
             {
               "actor": {
                 "alternateId": "xxxxxx@elastic.co",
@@ -560,7 +472,7 @@ rules:
                 "id": "XkcAsWb8WjwDP76xh@1v8wAABp0",
                 "type": "WEB"
               },
-              "uuid": "3af594f9-4f67-11ea-abd3-1f5d113f2546",
+              "uuid": "3af594f9-4f67-11ea-{{.req_num}}-000000000001",
               "version": "0"
             }
           ]

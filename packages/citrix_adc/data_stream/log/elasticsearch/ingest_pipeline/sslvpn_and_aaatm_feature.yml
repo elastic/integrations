@@ -75,7 +75,7 @@ processors:
       field: citrix.extended.message
       patterns:
         - '^User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"${DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
-        - '^Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - \[%{DATA}\] User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"${DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+        - '^(Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - )?(\[%{DATA}\] )?User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"${DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
 
   - grok:
       tag: grok_sslvpn_httprequest
@@ -91,7 +91,7 @@ processors:
        REQUEST_INFO: "%{WORD:citrix_adc.log.method} %{DATA:citrix_adc.log.request.path} - -"
        TIMESTAMP_TZ: "%{DATA:_tmp.timestamp} %{DATA:citrix_adc.log.timezone}"
       patterns:
-        - '^%{CONTEXT_INFO} %{TECH_SUPPORT}%{HOST_USER_GROUP} : %{VSERVER_INFO} - %{DATA:_tmp.timestamp}(?: %{WORD:citrix_adc.log.timezone})?(?: : SSO is %{WORD:citrix_adc.log.sso_status})? : %{REQUEST_INFO} ?$'
+        - '^(?:%{CONTEXT_INFO} )?%{TECH_SUPPORT}%{HOST_USER_GROUP} : %{VSERVER_INFO} - %{DATA:_tmp.timestamp}(?: %{WORD:citrix_adc.log.timezone})?(?: : (?:Message = )?SSO is %{WORD:citrix_adc.log.sso_status})? : %{REQUEST_INFO} ?$'
         - '^%{CONTEXT_INFO} %{TECH_SUPPORT}%{HOST_USER_GROUP} : %{VSERVER_INFO} - %{TIMESTAMP_TZ} %{REQUEST_INFO} ?$'
 
   - grok:
@@ -121,6 +121,7 @@ processors:
       field: citrix.extended.message
       patterns:
         - '^%{WORD:citrix_adc.log.alert_type} ?: %{WORD:citrix_adc.log.alert_level} - ClientIP %{IP:citrix_adc.log.client_ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Client_security_expression "%{DATA:citrix_adc.log.client_security_expression}" - ?$'
+        - '^CaseID: %{WORD} - Client IP %{IP:citrix_adc.log.client_ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Client_security_expression "%{GREEDYDATA:citrix_adc.log.client_security_expression}" - Client_security_check (?:"%{GREEDYDATA:citrix_adc.log.client_security_check_status}"|%{WORD:citrix_adc.log.client_security_check_status})$'
 
   - grok:
       tag: grok_sslvpn_sta_validate_resp
@@ -142,6 +143,7 @@ processors:
       field: citrix.extended.message
       patterns:
         - '^User %{USER:citrix_adc.log.user}%{SPACE}:%{SPACE}- Client%{SPACE}IP %{IP:citrix_adc.log.client_ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Client%{SPACE}security%{SPACE}check%{SPACE}Passed\(%{NUMBER:citrix_adc.log.client_security_check_status:int}\)%{SPACE}on%{SPACE}the%{SPACE}client%{SPACE}machine$'
+        - "^CaseID %{WORD}: - Client IP %{IP:citrix_adc.log.client_ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Client security check %{GREEDYDATA} EXISTS %{GREEDYDATA:citrix_adc.log.client_security_check_status} on the client machine$"
 
   - grok:
       tag: grok_sslvpn_message
@@ -160,6 +162,7 @@ processors:
       if: ctx.citrix_adc?.log?.client_ip != null && ctx.citrix_adc.log.client_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_511b37b8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -179,6 +182,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c6b59eb8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -194,6 +198,7 @@ processors:
       if: ctx.citrix_adc?.log?.destination?.ip != null && ctx.citrix_adc.log.destination.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_64d71fc8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -208,6 +213,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2f2ef7d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -228,6 +234,7 @@ processors:
       if: ctx.citrix_adc?.log?.vserver?.ip != null && ctx.citrix_adc.log.vserver.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_e1de26d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -242,6 +249,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_22cfd375
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -256,6 +264,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fc4a0dea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -271,6 +280,7 @@ processors:
       if: ctx.citrix_adc?.log?.source?.ip != null && ctx.citrix_adc.log.source.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_5cfe9f0e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -286,6 +296,7 @@ processors:
       if: ctx.citrix_adc?.log?.nat?.ip != null && ctx.citrix_adc.log.nat.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_6cf124b4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -300,6 +311,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7bbfad17
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -320,6 +332,7 @@ processors:
       if: ctx.citrix_adc?.log?.ssl_relay?.address != null && ctx.citrix_adc.log.ssl_relay.address != ''
       on_failure:
         - append:
+            tag: append_error_message_17ec69e8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -329,6 +342,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_dc4b25b3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -338,6 +352,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_01ca5790
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -347,6 +362,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c5cdd78a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -356,6 +372,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_58f671be
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -365,6 +382,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0ebbd598
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -374,6 +392,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cfd676d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -383,6 +402,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7ddce6c6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -392,6 +412,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_552c8f0e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -401,6 +422,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_710bb476
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -410,6 +432,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d43b0eb2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -419,6 +442,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1fc46a6a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -428,6 +452,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_95a06228
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -437,6 +462,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b4adc706
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -446,6 +472,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_85d25774
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -455,6 +482,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3d98b5f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -468,5 +496,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

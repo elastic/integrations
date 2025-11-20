@@ -120,29 +120,28 @@ processors:
       copy_from: winlog.user.identifier
       ignore_failure: true
       ignore_empty_value: true
-  - split:
-      field: winlog.event_data.User
-      target_field: "_temp.user_parts"
-      separator: '\\'
-      if: ctx.winlog?.event_data?.User != null
   - set:
       field: user.domain
-      value: "{{_temp.user_parts.0}}"
+      copy_from: winlog.user.domain
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
       field: user.name
-      value: "{{_temp.user_parts.1}}"
+      copy_from: winlog.user.name
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - append:
       field: related.user
       value: "{{user.name}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.user?.name != null
+  - append:
+      field: related.hosts
+      value: "{{user.domain}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.domain != null
   - split:
       field: winlog.event_data.ConnectedUser
       target_field: "_temp.connected_user_parts"
@@ -303,16 +302,6 @@ processors:
   - trim:
       field: powershell.file.script_block_text
       ignore_missing: true
-  - dissect:
-      field: powershell.file.script_block_text
-      pattern: "# SIG # Begin signature block%{powershell.file.script_block_signature}# SIG # End signature block"
-      ignore_missing: true
-      ignore_failure: true
-  - gsub:
-      field: powershell.file.script_block_signature
-      pattern: "\\n# "
-      replacement: ""
-      ignore_missing: true
   - gsub:
       field: powershell.file.script_block_text
       target_field: _temp.script_block_no_space
@@ -324,6 +313,61 @@ processors:
         - _temp.script_block_no_space
       target_field: powershell.file.script_block_hash
       ignore_missing: true
+  - gsub:
+      field: powershell.file.script_block_text
+      target_field: _temp.script_block_no_signature
+      pattern: "(?s)# SIG # Begin signature block.+"
+      replacement: ""
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      description: >
+        Compute Shannon entropy of script block text using Unicode character distribution.
+        Entropy (0-20 bits) measures randomness; surprisal_stdev measures distribution uniformity.
+      if: ctx._temp?.script_block_no_signature != null
+      source: |-
+        // Entropy Variance from: https://github.com/elastic/toutoumomoma/blob/be287c9c0d0e435572e3889a6584199983c688f0/toutoumomoma.go#L326-L363.
+        String script = ctx._temp.script_block_no_signature;
+        
+        script = java.text.Normalizer.normalize(script, java.text.Normalizer.Form.NFC);
+        
+        int n = script.codePointCount(0, script.length());
+
+        if (n == 0) {
+          return;
+        }
+
+        Map counts = script.codePoints().boxed().collect(Collectors.groupingBy(c -> c, Collectors.counting()));
+        int uniqueSymbols = counts.size();
+
+        double invLog2 = 1.0 / Math.log(2.0);
+        double entropy = 0.0;
+        double surprisalVar = 0.0;
+        double pSum = 0.0;
+
+        for (def value : counts.values()) {
+            double cnt = ((Number) value).doubleValue();
+            double p = cnt / (double) n;
+            double l2p = Math.log(p) * invLog2;
+
+            pSum += p;
+            double tmp = entropy;
+            entropy = tmp + (p / pSum) * (l2p - tmp);
+            surprisalVar += p * (l2p - tmp) * (l2p - entropy);
+        }
+        
+        surprisalVar = Math.max(0.0, surprisalVar);
+        double surprisalSd = Math.sqrt(surprisalVar);
+        double entropyBits = -entropy;
+        if (entropyBits == -0.0) {
+            entropyBits = 0.0;
+        }
+        
+        ctx.powershell.file.script_block_entropy_bits = entropyBits;
+        ctx.powershell.file.script_block_surprisal_stdev = surprisalSd;
+        ctx.powershell.file.script_block_length = n;
+        ctx.powershell.file.script_block_unique_symbols = uniqueSymbols;
 
   - split:
       description: Split Event 4103 command invocation details.

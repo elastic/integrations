@@ -13,6 +13,42 @@ processors:
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
+  # BEGIN: Temporary field renaming
+  - rename:
+      field: azureLogForwarder
+      target_field: azure_log_forwarder
+      ignore_missing: true
+      override: false
+      description: 'Renames the `azureLogForwarder` field to `azure_log_forwarder` to workaround the issue with invalid field names in the Azure Native ISV logs.'
+  - rename:
+      field: azure_log_forwarder.resourceType
+      target_field: azure_log_forwarder.resource_type
+      ignore_missing: true
+      override: false
+      description: 'Renames the `azureLogForwarder.resourceType` field to `azure_log_forwarder.resource_type` to workaround the issue with invalid field names in the Azure Native ISV logs.'
+  - rename:
+      field: azure_log_forwarder.serviceProvider
+      target_field: azure_log_forwarder.service_provider
+      ignore_missing: true
+      override: false
+      description: 'Renames the `azureLogForwarder.serviceProvider` field to `azure_log_forwarder.service_provider` to workaround the issue with invalid field names in the Azure Native ISV logs.'
+  - rename:
+      field: dataStream
+      target_field: data_stream
+      ignore_missing: true
+      override: false
+      description: 'Renames the `dataStream` field to `data_stream` to workaround the issue with invalid field names in the Azure Native ISV logs.'
+  - date:
+      field: timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      ignore_failure: true
+      description: 'Use the `timestamp` field to set the `@timestamp` field to workaround the invalid field names in the Azure Native ISV logs.'
+  - remove:
+      field: timestamp
+      ignore_missing: true
+  # END: Temporary field renaming
   - rename:
       field: message
       target_field: event.original

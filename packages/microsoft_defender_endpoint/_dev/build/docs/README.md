@@ -56,10 +56,11 @@ These values are:
 4. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
 5. Select "Save and continue" to save the integration.
 
-### Data Retention and ILM Configuration (For Vulnerability Data Stream)
-A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we’ve set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+### Data Retention and ILM Configuration
 
-> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`
+For `vulnerability` data stream, a full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we have set up an Index Lifecycle Management (ILM) policy that automatically deletes `vulnerability` data older than 7 days. This helps keep storage usage under control.
+
+> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index: `delete`, `delete_index`
 
 ## ECS mappings
 
@@ -98,6 +99,10 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 | Medium                 | 47               |
 | High                   | 73               |
 | Critical               | 99               |
+
+## Troubleshooting
+
+- Expiring SAS URLs: The option `SAS Valid Hours` in `vulnerability` data stream controls the duration that the `Shared Access Signature (SAS)` download URLs are valid for. The default value of this option is `1h` i.e., 1 hour, and the maximum allowed value is `6h` i.e., 6 hours. Increase the value of the option `SAS Valid Hours` when you see `error.message` indicates signatures are invalid, or when you notice invalid signature errors inside CEL trace logs.
 
 ## Logs Reference
 

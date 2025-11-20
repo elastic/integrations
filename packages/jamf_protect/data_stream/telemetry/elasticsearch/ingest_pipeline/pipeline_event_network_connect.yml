@@ -117,6 +117,10 @@ processors:
         allow_duplicates: false
         ignore_failure: true
     - rename:
+        field: jamf_protect.telemetry.event.network_connect.instigator.audit_token.e_username
+        target_field: process.user.name
+        ignore_missing: true
+    - rename:
         field: jamf_protect.telemetry.event.network_connect.instigator.is_platform_binary
         target_field: process.platform_binary
         ignore_missing: true
@@ -230,6 +234,10 @@ processors:
         target_field: process.parent.user.id
         type: string
         ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.network_connect.instigator.parent_audit_token.e_username
+        target_field: process.parent.user.name
+        ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.network_connect.instigator.parent_audit_token.ruid
         target_field: process.parent.real_user.id
@@ -244,6 +252,11 @@ processors:
         field: jamf_protect.telemetry.event.network_connect.instigator.parent_audit_token.signing_id
         target_field: process.parent.code_signature.signing_id
         ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.network_connect.instigator.parent_audit_token.exec_path
+        target_field: process.parent.executable
+        ignore_missing: true
+
 
 ##########################
 ## ECS Responsible Process ##
@@ -262,6 +275,10 @@ processors:
         target_field: process.responsible.user.id
         type: string
         ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.network_connect.instigator.responsible_audit_token.e_username
+        target_field: process.responsible.user.name
+        ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.network_connect.instigator.responsible_audit_token.ruid
         target_field: process.responsible.real_user.id
@@ -275,4 +292,8 @@ processors:
     - rename:
         field: jamf_protect.telemetry.event.network_connect.instigator.responsible_audit_token.signing_id
         target_field: process.responsible.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.network_connect.instigator.responsible_audit_token.exec_path
+        target_field: process.responsible.executable
         ignore_missing: true
