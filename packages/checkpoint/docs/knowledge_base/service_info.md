@@ -21,8 +21,7 @@ This integration can collect the following types of data:
 
 ## Compatibility
 
-- **Check Point**: This integration is compatible with Check Point Security Gateways and Management Servers running R80.x, R81, and R81.x versions.
-- **Elastic Stack**: Requires Kibana version 8.11.0 or later, or 9.0.0 or later.
+- **Check Point**: This integration is compatible with Check Point Security Gateways and Management Servers running R81.x versions.
 
 ## Scaling and Performance
 
@@ -92,7 +91,7 @@ _Note: Check Point's raw security event logs are typically stored in a proprieta
 4.  Configure the input types based on your vendor setup:
     - **For UDP/TCP (Syslog)**:
       - Select the **Collect Check Point firewall logs (input: tcp)** or **(input: udp)**.
-      - Specify the `Syslog Host` (IP address of the Elastic Agent where logs will be received).
+      - Specify the `Syslog Host` (The IP address or hostname for the Elastic Agent to listen on. Use `0.0.0.0` to listen on all available network interfaces.).
       - Specify the `Syslog Port` (e.g., `9001` or `514`), ensuring it matches the `Target Port` configured in your Check Point Log Exporter.
     - **For Logfile Collection**:
       - Select the **Collect Check Point firewall logs (input: logfile)**.
@@ -146,11 +145,5 @@ After configuring both the Check Point Log Exporter and the Elastic Agent integr
 - [Check Point R81 Logging and Monitoring Administration Guide - Log Exporter Configuration](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C%5F%5F%5F%5F%5F2)
 - [Check Point R81 Logging and Monitoring Administration Guide - Log Exporter Overview](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter.htm)
 - [Check Point sk122323: R80.x / R81.x Log Exporter command line utility](https://support.checkpoint.com/results/sk/sk122323)
-- [Check Point sk115015: How to collect logs from Check Point Security Management Server and Security Gateway](https://support.checkpoint.com/results/sk/sk115015)
 
 # Documentation sites
-
-- [Check Point R81 Logging and Monitoring Administration Guide - Log Exporter Configuration](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C%5F%5F%5F%5F%5F2)
-- [Check Point R81 Logging and Monitoring Administration Guide - Log Exporter Overview](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter.htm)
-- [Check Point sk122323: R80.x / R81.x Log Exporter command line utility](https://support.checkpoint.com/results/sk/sk122323)
-- [Check Point sk115015: How to collect logs from Check Point Security Management Server and Security Gateway](https://support.checkpoint.com/results/sk/sk115015)

@@ -5,6 +5,7 @@
 The Check Point integration for Elastic collects logs from Check Point Security Gateways and Management Servers. This enables comprehensive security monitoring, threat detection, and network traffic analysis within the Elastic Stack. By ingesting Check Point logs, you can gain centralized visibility into firewall traffic, security policies, VPN activity, and system health to enhance your security posture.
 
 This integration facilitates:
+
 - Centralized visibility into security policies, blocked connections, accepted connections, and VPN activity.
 - Compliance auditing and reporting by centralizing Check Point logs.
 - Enhanced threat detection and incident response capabilities through real-time log analysis.
@@ -12,9 +13,9 @@ This integration facilitates:
 
 ### Compatibility
 
-This integration is compatible with Check Point Security Gateways and Management Servers running R80.x, R81, and R81.x versions.
+This integration is compatible with Check Point Security Gateways and Management Servers running R81.x versions.
 
-This integration is compatible with Elastic Stack version 8.11.0 or higher.
+This integration is compatible with Elastic Stack versions 8.11.0 or higher.
 
 ### How it works
 
@@ -23,11 +24,12 @@ This integration collects logs from Check Point devices by receiving syslog data
 ## What data does this integration collect?
 
 The Check Point integration collects log messages of the following types:
-* Check Point Security Gateway and Management Server logs in Syslog format (firewall connections, VPN, audit, system events).
-* Check Point firewall connection logs (accept, drop, reject, etc.).
-* VPN logs.
-* SmartConsole audit logs (administrator actions on the Management Server).
-* Gaia OS system-level logs (e.g., `/var/log/messages`, `/var/log/secure`, `/var/log/dmesg`) for appliance health and activity.
+
+- Check Point Security Gateway and Management Server logs in Syslog format (firewall connections, VPN, audit, system events).
+- Check Point firewall connection logs (accept, drop, reject, etc.).
+- VPN logs.
+- SmartConsole audit logs (administrator actions on the Management Server).
+- Gaia OS system-level logs (e.g., `/var/log/messages`, `/var/log/secure`, `/var/log/dmesg`) for appliance health and activity.
 
 ### Supported use cases
 
@@ -55,7 +57,7 @@ The Check Point integration collects log messages of the following types:
 
 ### Agent-based deployment
 
-Elastic Agent must be installed on a host that will act as the syslog or log file receiver. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/install-elastic-agents.html). You can install only one Elastic Agent per host.
+Elastic Agent must be installed on a host that will act as the syslog or log file receiver. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
@@ -101,7 +103,7 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 5.  Configure the input types based on your vendor setup:
     - **For UDP/TCP (Syslog)**:
       - Select **Collect Check Point firewall logs (input: tcp)** or **(input: udp)**.
-      - Specify the `Syslog Host` (IP address of the Elastic Agent where logs will be received).
+      - Specify the `Syslog Host` (The IP address or hostname for the Elastic Agent to listen on. Use `0.0.0.0` to listen on all available network interfaces.).
       - Specify the `Syslog Port` (e.g., `9001` or `514`), ensuring it matches the `Target Port` configured in your Check Point Log Exporter.
     - **For Logfile Collection**:
       - Select **Collect Check Point firewall logs (input: logfile)**.
@@ -168,4 +170,5 @@ The `firewall` data stream provides events from Check Point devices, including f
 {{ event "firewall" }}
 
 ### Inputs used
+
 {{ inputDocs }}
