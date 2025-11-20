@@ -419,6 +419,12 @@ type Run struct {
 
 func main() {
 	log := log.New(os.Stdout, "", log.LstdFlags|log.LUTC)
+
+	if len(os.Args) < 2 {
+		log.Printf("Usage: go run o365mock.go SCENARIONAME [SEED]")
+		os.Exit(1)
+	}
+
 	var run = Run{
 		StartTime:                       time.Now().UTC(),
 		ServedListItemsFetchCount:       map[string]int{},
@@ -551,10 +557,6 @@ func main() {
 		},
 	}
 
-	if len(os.Args) < 2 {
-		log.Printf("Usage: go run o365mock.go SCENARIONAME [SEED]")
-		os.Exit(1)
-	}
 	scenarioName := os.Args[1]
 	if _, ok := scenarios[scenarioName]; !ok {
 		names := make([]string, 0, len(scenarios))
