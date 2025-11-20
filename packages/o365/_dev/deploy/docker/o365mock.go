@@ -92,7 +92,7 @@ func MakeListItem(cfg *Config, run *Run, contentType, timeOffset string, expirat
 	}
 
 	contentCreated := run.StartTime.Add(timeOffsetDuration)
-	contentExpiration := contentCreated.Add(time.Hour * 25 * 7)
+	contentExpiration := contentCreated.Add(time.Hour * 24 * 7)
 
 	if expirationOverride != "" {
 		expirationOverrideDuration, err := time.ParseDuration(expirationOverride)
