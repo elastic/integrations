@@ -1,0 +1,143 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Detects successful creation of an Amazon EC2 Traffic Mirroring session. A session copies full packets from a source Elastic Network Interface (ENI) to a mirror target (e.g., an ENI or NLB) using a mirror filter (ingress/egress rules). While used for diagnostics and NDR/IDS tooling, adversaries can abuse sessions to covertly capture and exfiltrate sensitive, potentially unencrypted, traffic from instances or subnets.",
+        "false_positives": [
+            "Traffic Mirroring may be done by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Traffic Mirroring from unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS EC2 Full Network Packet Capture Detected",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS EC2 Full Network Packet Capture Detected\n\nThis alert fires on a successful `CreateTrafficMirrorSession`, which enables full-packet Traffic Mirroring from a\nsource ENI to a mirror target under a given filter. Because sessions immediately begin sending packets once active,\ntreat unexpected creations as high priority.\n\n#### Possible investigation steps\n\n**Identify the actor and execution context**\n- **Principal**: Review `aws.cloudtrail.user_identity.arn`, `aws.cloudtrail.user_identity.type`, and\n  `aws.cloudtrail.user_identity.access_key_id` to determine who created the session (human IAM user vs. assumed role vs. automation).\n- **Caller metadata**: Check `user_agent.original`, and `source.ip` for unusual tools, hosts, or locations.\n- **Account/Region/Time**: Validate `cloud.account.id`, `cloud.region`, and `@timestamp` against change windows or tickets.\n\n**Extract the session details from the event**\n- **Request parameters**: Parse `aws.cloudtrail.request_parameters` for:\n  - `NetworkInterfaceId` (mirrored source ENI)  map to the EC2 instance and its business function.\n  - `TrafficMirrorTargetId` identify where packets are being sent (ENI vs. NLB).\n  - `TrafficMirrorFilterId` check which directions and protocols are allowed (ingress/egress, ports).\n  - `SessionNumber`, `Description`, `TagSpecifications` look for operator tags or suspicious notes.\n- **Response elements**: Use `aws.cloudtrail.response_elements` to confirm the created `TrafficMirrorSessionId` and\n  any resolved resource ARNs/IDs.\n\n**Pivot for related API calls to validate scope and intent**\nLook before and after this event (\u00b130\u201360 minutes) by the same principal / access key / source IP for:\n- **Target & Filter lifecycle**: `CreateTrafficMirrorTarget`, `CreateTrafficMirrorFilter`, `CreateTrafficMirrorFilterRule`,\n  `ModifyTrafficMirrorSession|Filter|FilterRule`, and `Delete*` calls (rapid create-modify patterns can indicate staging).\n- **Session management**: `DeleteTrafficMirrorSession` shortly after creation (test/probe), or repeated creations to different targets.\n- **Discovery/positioning**: `DescribeNetworkInterfaces`, `DescribeInstances`, `DescribeVpcs/Subnets/RouteTables` around the same time.\n- **Cross-account indicators**: creation of targets that forward to infrastructure not owned by your account (e.g., NLB in shared services).\n- **Other suspicious changes**: IAM permission changes, new access keys, or S3/SNS setup that could support exfil/ops.\n\n**Validate the mirror destination and potential data exposure**\n- If the target is an ENI: identify the owning instance/application; confirm it is an approved NDR/packet capture host.\n- If the target is an NLB target: determine where the NLB sends traffic (could be a collection point in another VPC or account).\n- Assess whether mirrored flows include plaintext protocols (internal HTTP, databases, LDAP, etc.) increasing sensitivity.\n\n### False positive analysis\n\n- **Authorized monitoring**: Approved NDR/IDS tooling or troubleshooting playbooks may legitimately create sessions.\n- **Ops/diagnostics**: Short-lived sessions during incident handling or performance analysis.\n- **Automation**: Infrastructure pipelines that stand up temporary mirroring for validation.\n\n### Response and remediation\n\n**1. Contain**\n- If unauthorized, terminate the session immediately (use the `TrafficMirrorSessionId` from `aws.cloudtrail.response_elements`)\n  and block creation permissions for the offending principal.\n- Quarantine or restrict egress from the target if you suspect it is forwarding captured traffic outside approved destinations.\n\n**2. Investigate**\n- Enumerate all active sessions in the affected account/region; verify there aren\u2019t additional rogue sessions.\n- Review related target and filter resources (and recent `Modify*` calls) to understand captured scope and recipients.\n- Trace the source ENI back to the EC2 instance and validate whether sensitive workloads were mirrored.\n\n**3. Recover & harden**\n- Remove or lock down unapproved targets/filters; enforce least privilege on `ec2:CreateTrafficMirrorSession/Target/Filter`.\n- Consider SCPs or IAM conditions limiting who/where sessions can be created (e.g., only into designated monitoring VPCs).\n- Ensure monitoring targets are controlled, logged, and not internet-reachable.\n\n**4. Improve**\n- Add correlation logic to automatically surface CreateTrafficMirrorSession alongside Create/Modify Target/Filter calls by the same actor.\n- Require tags on approved mirroring resources; alert on untagged/unticketed creations.\n- Update playbooks to include a standard validation checklist (principal, source ENI, target, filter rules, destination path).\n\n",
+        "query": "event.dataset: \"aws.cloudtrail\" and \n    event.provider: \"ec2.amazonaws.com\" and\n    event.action: \"CreateTrafficMirrorSession\" and\n    event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_TrafficMirrorSession.html",
+            "https://rhinosecuritylabs.com/aws/abusing-vpc-traffic-mirroring-in-aws/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c1812764-0788-470f-8e74-eb4a14d47573",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS EC2",
+            "Use Case: Network Security Monitoring",
+            "Tactic: Exfiltration",
+            "Tactic: Collection",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1020",
+                        "name": "Automated Exfiltration",
+                        "reference": "https://attack.mitre.org/techniques/T1020/"
+                    },
+                    {
+                        "id": "T1537",
+                        "name": "Transfer Data to Cloud Account",
+                        "reference": "https://attack.mitre.org/techniques/T1537/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1074",
+                        "name": "Data Staged",
+                        "reference": "https://attack.mitre.org/techniques/T1074/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1040",
+                        "name": "Network Sniffing",
+                        "reference": "https://attack.mitre.org/techniques/T1040/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 210
+    },
+    "id": "c1812764-0788-470f-8e74-eb4a14d47573_210",
+    "type": "security-rule"
+}
