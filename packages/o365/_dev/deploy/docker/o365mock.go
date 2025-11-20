@@ -976,14 +976,11 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	// update requested/served range
-	if _, ok := s.run.MinStartByType[contentType]; !ok {
-		s.run.MinStartByType[contentType] = startTime
-	} else if startTime.Before(s.run.MinStartByType[contentType]) {
+	minStart := s.run.MinStartByType[contentType]
+	if minStart.IsZero() || startTime.Before(minStart) {
 		s.run.MinStartByType[contentType] = startTime
 	}
-	if _, ok := s.run.MaxEndByType[contentType]; !ok {
-		s.run.MaxEndByType[contentType] = endTime
-	} else if endTime.After(s.run.MaxEndByType[contentType]) {
+	if endTime.After(s.run.MaxEndByType[contentType]) {
 		s.run.MaxEndByType[contentType] = endTime
 	}
 	if len(inPage) > 0 {
