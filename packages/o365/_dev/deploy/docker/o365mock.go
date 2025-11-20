@@ -587,14 +587,7 @@ func main() {
 
 func SortListItems(slice []ListItem) []ListItem {
 	slices.SortFunc(slice, func(a, b ListItem) int {
-		switch {
-		case a.ContentCreated.Before(b.ContentCreated):
-			return -1
-		case a.ContentCreated.After(b.ContentCreated):
-			return 1
-		default:
-			return 0
-		}
+		return int(a.ContentCreated.Sub(b.ContentCreated))
 	})
 	return slice
 }
