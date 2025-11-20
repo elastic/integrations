@@ -23,14 +23,14 @@ import (
 // API response data types and helpers
 ////////////////////////////////////////////////////////////////////////////////
 
-type TokenResponse struct {
+type tokenResponse struct {
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int64  `json:"expires_in"`
 	ExtExpiresIn int64  `json:"ext_expires_in"`
 	AccessToken  string `json:"access_token"`
 }
 
-type RefreshTokenResponse struct {
+type refreshTokenResponse struct {
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int64  `json:"expires_in"`
 	AccessToken  string `json:"access_token"`
@@ -53,7 +53,7 @@ var subscriptionAlreadyEnabledResponse = map[string]any{
 	},
 }
 
-type ListItem struct {
+type listItem struct {
 	ContentType       string    `json:"contentType"`
 	ContentId         string    `json:"contentId"`
 	ContentUri        string    `json:"contentUri"`
@@ -61,11 +61,11 @@ type ListItem struct {
 	ContentExpiration time.Time `json:"contentExpiration"`
 }
 
-type FetchItem map[string]any
+type fetchItem map[string]any
 
-func MakeListItems(cfg *Config, run *Run, contentType string, minN, maxN int, minTime, maxTime string) []ListItem {
+func makeListItems(cfg *config, run *run, contentType string, minN, maxN int, minTime, maxTime string) []listItem {
 	numMaybe := maxN - minN
-	numItems := minN + run.RandomSource.Intn(numMaybe+1)
+	numItems := minN + run.randomSource.Intn(numMaybe+1)
 
 	maxTimeDuration, err := time.ParseDuration(maxTime)
 	if err != nil {
@@ -77,21 +77,21 @@ func MakeListItems(cfg *Config, run *Run, contentType string, minN, maxN int, mi
 	}
 	possibleRange := maxTimeDuration - minTimeDuration
 
-	result := make([]ListItem, numItems)
+	result := make([]listItem, numItems)
 	for i := range numItems {
-		timeOffset := minTimeDuration + time.Duration(run.RandomSource.Int63n(int64(possibleRange)+1))
-		result[i] = MakeListItem(cfg, run, contentType, timeOffset.String(), "")
+		timeOffset := minTimeDuration + time.Duration(run.randomSource.Int63n(int64(possibleRange)+1))
+		result[i] = makeListItem(cfg, run, contentType, timeOffset.String(), "")
 	}
 	return result
 }
 
-func MakeListItem(cfg *Config, run *Run, contentType, timeOffset string, expirationOverride string) ListItem {
+func makeListItem(cfg *config, run *run, contentType, timeOffset string, expirationOverride string) listItem {
 	timeOffsetDuration, err := time.ParseDuration(timeOffset)
 	if err != nil {
 		panic(err)
 	}
 
-	contentCreated := run.StartTime.Add(timeOffsetDuration)
+	contentCreated := run.startTime.Add(timeOffsetDuration)
 	contentExpiration := contentCreated.Add(time.Hour * 24 * 7)
 
 	if expirationOverride != "" {
@@ -99,13 +99,13 @@ func MakeListItem(cfg *Config, run *Run, contentType, timeOffset string, expirat
 		if err != nil {
 			panic(err)
 		}
-		contentExpiration = run.StartTime.Add(expirationOverrideDuration)
+		contentExpiration = run.startTime.Add(expirationOverrideDuration)
 	}
 
-	contentId := RandomString(run, 12)
-	contentUri := fmt.Sprintf("http://%s/api/v1.0/%s/activity/feed/audit/%s", cfg.Addr, cfg.TenantId, contentId)
+	contentId := randomString(run, 12)
+	contentUri := fmt.Sprintf("http://%s/api/v1.0/%s/activity/feed/audit/%s", cfg.addr, cfg.tenantId, contentId)
 
-	return ListItem{
+	return listItem{
 		contentType,
 		contentId,
 		contentUri,
@@ -114,22 +114,22 @@ func MakeListItem(cfg *Config, run *Run, contentType, timeOffset string, expirat
 	}
 }
 
-func MakeFetchItems(cfg *Config, run *Run) []FetchItem {
-	numMaybe := cfg.Scenario.MaxFetchItems - cfg.Scenario.MinFetchItems
-	numItems := cfg.Scenario.MinFetchItems + run.RandomSource.Intn(numMaybe+1)
-	result := make([]FetchItem, numItems)
+func makeFetchItems(cfg *config, run *run) []fetchItem {
+	numMaybe := cfg.scenario.maxFetchItems - cfg.scenario.minFetchItems
+	numItems := cfg.scenario.minFetchItems + run.randomSource.Intn(numMaybe+1)
+	result := make([]fetchItem, numItems)
 	for i := range numItems {
-		if cfg.Scenario.FullFetchItemsFromPool {
-			result[i] = cfg.FetchItemPool[run.FetchItemPoolIndex]
-			run.FetchItemPoolIndex = (run.FetchItemPoolIndex + 1) % len(cfg.FetchItemPool)
+		if cfg.scenario.fullFetchItemsFromPool {
+			result[i] = cfg.fetchItemPool[run.fetchItemPoolIndex]
+			run.fetchItemPoolIndex = (run.fetchItemPoolIndex + 1) % len(cfg.fetchItemPool)
 		} else {
-			result[i] = FetchItem{}
+			result[i] = fetchItem{}
 		}
-		result[i]["CreationTime"] = RandomTime(run, 8*24*time.Hour).Format("2006-01-02T15:04:05")
-		result[i]["Id"] = RandomString(run, 12)
+		result[i]["CreationTime"] = randomTime(run, 8*24*time.Hour).Format("2006-01-02T15:04:05")
+		result[i]["Id"] = randomString(run, 12)
 	}
-	if cfg.Scenario.DuplicateItemInEachFetch {
-		return slices.Concat(result, []FetchItem{result[len(result)-1]})
+	if cfg.scenario.duplicateItemInEachFetch {
+		return slices.Concat(result, []fetchItem{result[len(result)-1]})
 	}
 	return result
 }
@@ -139,7 +139,7 @@ func MakeFetchItems(cfg *Config, run *Run) []FetchItem {
 //                   (CreationTime and Id will be overridden with random values)
 ////////////////////////////////////////////////////////////////////////////////
 
-var fetchItemPool = []FetchItem{
+var fetchItemPool = []fetchItem{
 	{
 		"ClientIP":         "213.97.47.133",
 		"CorrelationId":    "622b339f-4000-a000-f25f-92b3478c7a25",
@@ -364,52 +364,52 @@ var fetchItemPool = []FetchItem{
 // Config types
 ////////////////////////////////////////////////////////////////////////////////
 
-type Config struct {
-	Addr                        string
-	TenantId                    string
-	ClientId                    string
-	ClientSecret                string
-	RefreshToken                string
-	AccessToken                 string
-	FetchItemPool               []FetchItem
-	Scenario                    Scenario
-	GenericRequstLogging        bool
-	MaxGap                      time.Duration
-	MaxListingRange             time.Duration
-	CheckTenantId               bool
-	CheckCredentials            bool
-	CheckAccessToken            bool
-	CheckSubscribedBeforeListed bool
+type config struct {
+	addr                        string
+	tenantId                    string
+	clientId                    string
+	clientSecret                string
+	refreshToken                string
+	accessToken                 string
+	fetchItemPool               []fetchItem
+	scenario                    scenario
+	genericRequstLogging        bool
+	maxGap                      time.Duration
+	maxListingRange             time.Duration
+	checkTenantId               bool
+	checkCredentials            bool
+	checkAccessToken            bool
+	checkSubscribedBeforeListed bool
 }
 
-type Scenario struct {
-	ItemsByType              map[string][]ListItem
-	UnauthorizedType         string
-	PageLimit                int
-	ShuffleInPages           bool
-	MinFetchItems            int
-	MaxFetchItems            int
-	FullFetchItemsFromPool   bool
-	DuplicateItemInEachFetch bool
+type scenario struct {
+	itemsByType              map[string][]listItem
+	unauthorizedType         string
+	pageLimit                int
+	shuffleInPages           bool
+	minFetchItems            int
+	maxFetchItems            int
+	fullFetchItemsFromPool   bool
+	duplicateItemInEachFetch bool
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Run state type
 ////////////////////////////////////////////////////////////////////////////////
 
-type Run struct {
-	StartTime                       time.Time
-	RandomSource                    *rand.Rand
-	ServedListItemsFetchCount       map[string]int
-	ServedFetchItemsCount           int
-	ServedUniqueFetchItemsCount     int
-	ServedItemsExpiry               map[string]time.Time
-	ServedNextPageQueryRequestCount map[string]int
-	MinStartByType                  map[string]time.Time
-	MaxEndByType                    map[string]time.Time
-	MaxContentCreatedByType         map[string]time.Time
-	SubscriptionsByType             map[string]int
-	FetchItemPoolIndex              int
+type run struct {
+	startTime                       time.Time
+	randomSource                    *rand.Rand
+	servedListItemsFetchCount       map[string]int
+	servedFetchItemsCount           int
+	servedUniqueFetchItemsCount     int
+	servedItemsExpiry               map[string]time.Time
+	servedNextPageQueryRequestCount map[string]int
+	minStartByType                  map[string]time.Time
+	maxEndByType                    map[string]time.Time
+	maxContentCreatedByType         map[string]time.Time
+	subscriptionsByType             map[string]int
+	fetchItemPoolIndex              int
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -425,15 +425,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	var run = Run{
-		StartTime:                       time.Now().UTC(),
-		ServedListItemsFetchCount:       map[string]int{},
-		ServedItemsExpiry:               map[string]time.Time{},
-		ServedNextPageQueryRequestCount: map[string]int{},
-		MinStartByType:                  map[string]time.Time{},
-		MaxEndByType:                    map[string]time.Time{},
-		MaxContentCreatedByType:         map[string]time.Time{},
-		SubscriptionsByType:             map[string]int{},
+	var run = run{
+		startTime:                       time.Now().UTC(),
+		servedListItemsFetchCount:       map[string]int{},
+		servedItemsExpiry:               map[string]time.Time{},
+		servedNextPageQueryRequestCount: map[string]int{},
+		minStartByType:                  map[string]time.Time{},
+		maxEndByType:                    map[string]time.Time{},
+		maxContentCreatedByType:         map[string]time.Time{},
+		subscriptionsByType:             map[string]int{},
 	}
 
 	var seed int64
@@ -446,9 +446,9 @@ func main() {
 		}
 	}
 	if seed == 0 {
-		seed = run.StartTime.UnixNano()
+		seed = run.startTime.UnixNano()
 	}
-	run.RandomSource = rand.New(rand.NewSource(seed))
+	run.randomSource = rand.New(rand.NewSource(seed))
 
 	port := "9999"
 	envPort := os.Getenv("PORT")
@@ -456,104 +456,104 @@ func main() {
 		port = envPort
 	}
 
-	cfg := Config{
-		Addr:                        "0.0.0.0:" + port,
-		TenantId:                    "test-cel-tenant-id",
-		ClientId:                    "test-cel-client-id",
-		ClientSecret:                "test-cel-client-secret",
-		RefreshToken:                "refresh_token_123",
-		AccessToken:                 "someaccesstoken",
-		FetchItemPool:               fetchItemPool,
-		GenericRequstLogging:        false,
-		MaxGap:                      0 * time.Millisecond,
-		MaxListingRange:             time.Hour + time.Millisecond,
-		CheckTenantId:               true,
-		CheckCredentials:            true,
-		CheckAccessToken:            true,
-		CheckSubscribedBeforeListed: true,
+	cfg := config{
+		addr:                        "0.0.0.0:" + port,
+		tenantId:                    "test-cel-tenant-id",
+		clientId:                    "test-cel-client-id",
+		clientSecret:                "test-cel-client-secret",
+		refreshToken:                "refresh_token_123",
+		accessToken:                 "someaccesstoken",
+		fetchItemPool:               fetchItemPool,
+		genericRequstLogging:        false,
+		maxGap:                      0 * time.Millisecond,
+		maxListingRange:             time.Hour + time.Millisecond,
+		checkTenantId:               true,
+		checkCredentials:            true,
+		checkAccessToken:            true,
+		checkSubscribedBeforeListed: true,
 	}
-	scenarios := map[string]Scenario{
+	scenarios := map[string]scenario{
 		"cel-bad-creds": {
-			ItemsByType: map[string][]ListItem{
-				"Audit.General": []ListItem{
-					MakeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-1h", ""),
+			itemsByType: map[string][]listItem{
+				"Audit.General": []listItem{
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-1h", ""),
 				},
 			},
-			UnauthorizedType:       "Audit.TypeRequiringAdditionalPermissions",
-			FullFetchItemsFromPool: true,
-			PageLimit:              3,
-			MinFetchItems:          1,
-			MaxFetchItems:          1,
+			unauthorizedType:       "Audit.TypeRequiringAdditionalPermissions",
+			fullFetchItemsFromPool: true,
+			pageLimit:              3,
+			minFetchItems:          1,
+			maxFetchItems:          1,
 		},
 		"cel": {
-			ItemsByType: map[string][]ListItem{
-				"Audit.SharePoint": SortListItems(
-					MakeListItems(&cfg, &run, "Audit.SharePoint", 5, 5, "-11h", "0h"),
+			itemsByType: map[string][]listItem{
+				"Audit.SharePoint": sortListItems(
+					makeListItems(&cfg, &run, "Audit.SharePoint", 5, 5, "-11h", "0h"),
 				),
-				"Audit.General": SortListItems(
-					MakeListItems(&cfg, &run, "Audit.General", 5, 5, "-11h", "0h"),
+				"Audit.General": sortListItems(
+					makeListItems(&cfg, &run, "Audit.General", 5, 5, "-11h", "0h"),
 				),
 			},
-			FullFetchItemsFromPool:   true,
-			DuplicateItemInEachFetch: true,
-			ShuffleInPages:           true,
-			PageLimit:                3,
-			MinFetchItems:            3,
-			MaxFetchItems:            3,
+			fullFetchItemsFromPool:   true,
+			duplicateItemInEachFetch: true,
+			shuffleInPages:           true,
+			pageLimit:                3,
+			minFetchItems:            3,
+			maxFetchItems:            3,
 		},
 		"bit_of_recent_data": {
-			ItemsByType: map[string][]ListItem{
-				"Audit.AzureActiveDirectory": SortListItems([]ListItem{
-					MakeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-007h55m", ""),
-					MakeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-007h35m", ""),
-					MakeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-004h35m", ""),
-					MakeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-004h55m", ""),
+			itemsByType: map[string][]listItem{
+				"Audit.AzureActiveDirectory": sortListItems([]listItem{
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-007h55m", ""),
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-007h35m", ""),
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-004h35m", ""),
+					makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-004h55m", ""),
 				}),
 			},
-			UnauthorizedType:         "Audit.NoPermissions",
-			FullFetchItemsFromPool:   false,
-			DuplicateItemInEachFetch: false,
-			ShuffleInPages:           false,
-			PageLimit:                math.MaxInt,
-			MinFetchItems:            1,
-			MaxFetchItems:            5,
+			unauthorizedType:         "Audit.NoPermissions",
+			fullFetchItemsFromPool:   false,
+			duplicateItemInEachFetch: false,
+			shuffleInPages:           false,
+			pageLimit:                math.MaxInt,
+			minFetchItems:            1,
+			maxFetchItems:            5,
 		},
 		"2_types_random_250_to_500_last_12h_pages_of_20": {
-			ItemsByType: map[string][]ListItem{
-				"Audit.AzureActiveDirectory": SortListItems(
-					MakeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 250, 500, "-12h", "0h"),
+			itemsByType: map[string][]listItem{
+				"Audit.AzureActiveDirectory": sortListItems(
+					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 250, 500, "-12h", "0h"),
 				),
-				"Audit.Exchange": SortListItems(
-					MakeListItems(&cfg, &run, "Audit.Exchange", 250, 500, "-12h", "0h"),
+				"Audit.Exchange": sortListItems(
+					makeListItems(&cfg, &run, "Audit.Exchange", 250, 500, "-12h", "0h"),
 				),
 			},
-			FullFetchItemsFromPool:   true,
-			DuplicateItemInEachFetch: false,
-			ShuffleInPages:           false,
-			PageLimit:                20,
-			MinFetchItems:            1,
-			MaxFetchItems:            5,
+			fullFetchItemsFromPool:   true,
+			duplicateItemInEachFetch: false,
+			shuffleInPages:           false,
+			pageLimit:                20,
+			minFetchItems:            1,
+			maxFetchItems:            5,
 		},
 		"chunks_with_gaps_and_1_expired": {
-			ItemsByType: map[string][]ListItem{
-				"Audit.AzureActiveDirectory": SortListItems(slices.Concat(
-					MakeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-11h", "-9h"),
-					MakeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-4h", "-2h"),
-					[]ListItem{MakeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-1h15m", "-1h")}, // expired 15 mins after creation
-					MakeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-55m", "-30m"),
+			itemsByType: map[string][]listItem{
+				"Audit.AzureActiveDirectory": sortListItems(slices.Concat(
+					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-11h", "-9h"),
+					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-4h", "-2h"),
+					[]listItem{makeListItem(&cfg, &run, "Audit.AzureActiveDirectory", "-1h15m", "-1h")}, // expired 15 mins after creation
+					makeListItems(&cfg, &run, "Audit.AzureActiveDirectory", 100, 200, "-55m", "-30m"),
 				)),
-				"Audit.Exchange": SortListItems(slices.Concat(
-					MakeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-10h", "-5h55m"),
-					MakeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-5h30m", "-4h"),
-					MakeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-1h55m", "-1h5m"),
+				"Audit.Exchange": sortListItems(slices.Concat(
+					makeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-10h", "-5h55m"),
+					makeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-5h30m", "-4h"),
+					makeListItems(&cfg, &run, "Audit.Exchange", 100, 200, "-1h55m", "-1h5m"),
 				)),
 			},
-			FullFetchItemsFromPool:   true,
-			DuplicateItemInEachFetch: true,
-			ShuffleInPages:           true,
-			PageLimit:                20,
-			MinFetchItems:            1,
-			MaxFetchItems:            5,
+			fullFetchItemsFromPool:   true,
+			duplicateItemInEachFetch: true,
+			shuffleInPages:           true,
+			pageLimit:                20,
+			minFetchItems:            1,
+			maxFetchItems:            5,
 		},
 	}
 
@@ -566,81 +566,81 @@ func main() {
 		log.Printf("ERROR: Scenario '%s' not found! Available scenarios: %s", scenarioName, strings.Join(names, ", "))
 		os.Exit(1)
 	}
-	cfg.Scenario = scenarios[scenarioName]
+	cfg.scenario = scenarios[scenarioName]
 
 	rerunCmd := "PORT=" + port + " go run o365mock.go " + scenarioName + " " + strconv.FormatInt(seed, 10)
 	log.Printf("RunStart StartTime=%s, scenarioName=%s, seed=%d, Addr=%s, rerun: '%s'",
-		run.StartTime.Format(time.RFC3339Nano),
+		run.startTime.Format(time.RFC3339Nano),
 		scenarioName,
 		seed,
-		cfg.Addr,
+		cfg.addr,
 		rerunCmd,
 	)
 
-	s := NewServer(&cfg, &run, log)
-	s.Run()
+	s := newServer(&cfg, &run, log)
+	s.doRun()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Miscellaneous helpers
 ////////////////////////////////////////////////////////////////////////////////
 
-func SortListItems(slice []ListItem) []ListItem {
-	slices.SortFunc(slice, func(a, b ListItem) int {
+func sortListItems(slice []listItem) []listItem {
+	slices.SortFunc(slice, func(a, b listItem) int {
 		return int(a.ContentCreated.Sub(b.ContentCreated))
 	})
 	return slice
 }
 
-func ShuffleListItems(run *Run, slice []ListItem) []ListItem {
-	run.RandomSource.Shuffle(len(slice), func(i, j int) {
+func shuffleListItems(run *run, slice []listItem) []listItem {
+	run.randomSource.Shuffle(len(slice), func(i, j int) {
 		slice[i], slice[j] = slice[j], slice[i]
 	})
 	return slice
 }
 
-func RandomString(run *Run, n int) string {
+func randomString(run *run, n int) string {
 	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letters[run.RandomSource.Intn(len(letters))]
+		b[i] = letters[run.randomSource.Intn(len(letters))]
 	}
 	return string(b)
 }
 
-func RandomTime(run *Run, inLast time.Duration) time.Time {
-	randNanos := run.RandomSource.Int63n(int64(inLast.Nanoseconds()))
-	return run.StartTime.Add(-time.Duration(randNanos))
+func randomTime(run *run, inLast time.Duration) time.Time {
+	randNanos := run.randomSource.Int63n(int64(inLast.Nanoseconds()))
+	return run.startTime.Add(-time.Duration(randNanos))
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Server
 ////////////////////////////////////////////////////////////////////////////////
 
-type Server struct {
+type server struct {
 	mux    *http.ServeMux
 	log    *log.Logger
 	addr   string
 	server *http.Server
-	cfg    *Config
-	run    *Run
+	cfg    *config
+	run    *run
 }
 
-func NewServer(cfg *Config, run *Run, logger *log.Logger) *Server {
+func newServer(cfg *config, run *run, logger *log.Logger) *server {
 	if logger == nil {
 		logger = log.New(os.Stdout, "", log.LstdFlags)
 	}
 	mux := http.NewServeMux()
-	s := &Server{
+	s := &server{
 		mux:  mux,
 		log:  logger,
-		addr: cfg.Addr,
+		addr: cfg.addr,
 		run:  run,
 		cfg:  cfg,
 	}
 	s.routes()
 	s.server = &http.Server{
-		Addr:         cfg.Addr,
+		Addr:         cfg.addr,
 		Handler:      s.logRequests(mux),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -649,7 +649,7 @@ func NewServer(cfg *Config, run *Run, logger *log.Logger) *Server {
 	return s
 }
 
-func (s *Server) Run() {
+func (s *server) doRun() {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
@@ -674,7 +674,7 @@ func (s *Server) Run() {
 	s.shutdownReport()
 }
 
-func (s *Server) routes() {
+func (s *server) routes() {
 	s.mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		s.writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
@@ -684,37 +684,37 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/v1.0/{tenantId}/activity/feed/audit/{contentId}", s.handleFetch)
 }
 
-func (s *Server) shutdownReport() {
+func (s *server) shutdownReport() {
 	s.log.Printf("RunStop %s", time.Now().UTC().Format(time.RFC3339Nano))
 
 	// subscribing
-	for contentType := range s.cfg.Scenario.ItemsByType {
+	for contentType := range s.cfg.scenario.itemsByType {
 		s.log.Printf("Report subscriptions for content type %s: %d",
 			contentType,
-			s.run.SubscriptionsByType[contentType],
+			s.run.subscriptionsByType[contentType],
 		)
 	}
 
 	// requesting ranges (based on initial page of each range)
-	for contentType := range s.cfg.Scenario.ItemsByType {
+	for contentType := range s.cfg.scenario.itemsByType {
 		s.log.Printf("Report requested range spans [%s--%s] for %s",
-			s.run.MinStartByType[contentType].Format(time.RFC3339Nano),
-			s.run.MaxEndByType[contentType].Format(time.RFC3339Nano),
+			s.run.minStartByType[contentType].Format(time.RFC3339Nano),
+			s.run.maxEndByType[contentType].Format(time.RFC3339Nano),
 			contentType,
 		)
 	}
 
 	// served max times
-	for contentType := range s.cfg.Scenario.ItemsByType {
+	for contentType := range s.cfg.scenario.itemsByType {
 		s.log.Printf("Report max contentCreated value %s for %s",
-			s.run.MaxContentCreatedByType[contentType].Format(time.RFC3339Nano),
+			s.run.maxContentCreatedByType[contentType].Format(time.RFC3339Nano),
 			contentType,
 		)
 	}
 
 	// requesting next pages
 	var nextPageRequestedOnce, nextPageRequestedRepeatedly, nextPageRequestedNever int
-	for _, count := range s.run.ServedNextPageQueryRequestCount {
+	for _, count := range s.run.servedNextPageQueryRequestCount {
 		switch count {
 		case 0:
 			nextPageRequestedNever++
@@ -730,7 +730,7 @@ func (s *Server) shutdownReport() {
 
 	// fetching content
 	var fetchedOnce, fetchedRepeatedly, fetchedNever int
-	for _, count := range s.run.ServedListItemsFetchCount {
+	for _, count := range s.run.servedListItemsFetchCount {
 		switch count {
 		case 0:
 			fetchedNever++
@@ -744,20 +744,20 @@ func (s *Server) shutdownReport() {
 	s.log.Printf("Report served and fetched once: %d", fetchedOnce)
 	s.log.Printf("Report served and fetched repeatedly: %d", fetchedRepeatedly)
 
-	s.log.Printf("Report served fetch items (events): %d", s.run.ServedFetchItemsCount)
-	s.log.Printf("Report served unique fetch items (events): %d", s.run.ServedUniqueFetchItemsCount)
+	s.log.Printf("Report served fetch items (events): %d", s.run.servedFetchItemsCount)
+	s.log.Printf("Report served unique fetch items (events): %d", s.run.servedUniqueFetchItemsCount)
 }
 
-func (s *Server) logRequests(next http.Handler) http.Handler {
+func (s *server) logRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if s.cfg.GenericRequstLogging {
+		if s.cfg.genericRequstLogging {
 			s.log.Printf("Request %s %s", r.Method, r.URL)
 		}
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (s *Server) handleToken(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleToken(w http.ResponseWriter, r *http.Request) {
 	tenantId := r.PathValue("tenantId")
 	authorization := r.Header.Get("Authorization")
 	contentType := r.Header.Get("Content-Type")
@@ -779,53 +779,53 @@ func (s *Server) handleToken(w http.ResponseWriter, r *http.Request) {
 		scope,
 		refreshToken,
 	)
-	if s.cfg.CheckTenantId && tenantId != s.cfg.TenantId {
-		s.log.Printf("ERROR received tenantId %s does not match expected %s", tenantId, s.cfg.TenantId)
+	if s.cfg.checkTenantId && tenantId != s.cfg.tenantId {
+		s.log.Printf("ERROR received tenantId %s does not match expected %s", tenantId, s.cfg.tenantId)
 	}
-	if s.cfg.CheckCredentials {
+	if s.cfg.checkCredentials {
 		decoded, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(authorization, "Basic "))
 		if err != nil {
 			s.log.Printf("ERROR could not decode Authorization header value '%s'", authorization)
 			http.Error(w, "bad authorization header value", http.StatusBadRequest)
 			return
 		}
-		if string(decoded) != s.cfg.ClientId+":"+s.cfg.ClientSecret {
+		if string(decoded) != s.cfg.clientId+":"+s.cfg.clientSecret {
 			s.log.Printf("ERROR Incorrect Authorization header value for token request")
 			http.Error(w, "bad credentials in authorization header", http.StatusBadRequest)
 			return
 		}
-		if grantType == "refresh_token" && refreshToken != s.cfg.RefreshToken {
+		if grantType == "refresh_token" && refreshToken != s.cfg.refreshToken {
 			s.log.Printf("ERROR Incorrect refresh token value for token request")
 			http.Error(w, "bad refresh token value for grant type refresh_token", http.StatusBadRequest)
 			return
 		}
 	}
 	if grantType == "refresh_token" {
-		s.writeJSON(w, http.StatusOK, RefreshTokenResponse{
+		s.writeJSON(w, http.StatusOK, refreshTokenResponse{
 			TokenType:    "Bearer",
 			ExpiresIn:    3599,
-			AccessToken:  s.cfg.AccessToken,
+			AccessToken:  s.cfg.accessToken,
 			Scope:        scope,
 			RefreshToken: "somerefreshtokenvalue...",
 			IdToken:      "someidtokenvalue...",
 		})
 		return
 	}
-	s.writeJSON(w, http.StatusOK, TokenResponse{
+	s.writeJSON(w, http.StatusOK, tokenResponse{
 		TokenType:    "Bearer",
 		ExpiresIn:    3599,
 		ExtExpiresIn: 3599,
-		AccessToken:  s.cfg.AccessToken,
+		AccessToken:  s.cfg.accessToken,
 	})
 }
 
-func (s *Server) handleSubscribe(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleSubscribe(w http.ResponseWriter, r *http.Request) {
 	tenantId := r.PathValue("tenantId")
 	q := r.URL.Query()
 	contentType := q.Get("contentType")
 	var respStatus int
 	var respBody map[string]any
-	if s.run.RandomSource.Intn(2) == 0 {
+	if s.run.randomSource.Intn(2) == 0 {
 		respStatus = http.StatusOK
 		respBody = subscriptionEnabledResponse(contentType)
 	} else {
@@ -833,36 +833,36 @@ func (s *Server) handleSubscribe(w http.ResponseWriter, r *http.Request) {
 		respBody = subscriptionAlreadyEnabledResponse
 	}
 
-	if s.cfg.Scenario.UnauthorizedType != "" && contentType == s.cfg.Scenario.UnauthorizedType {
+	if s.cfg.scenario.unauthorizedType != "" && contentType == s.cfg.scenario.unauthorizedType {
 		respStatus = http.StatusUnauthorized
 		w.WriteHeader(respStatus)
 		s.log.Printf("Subscribe %s, result %d (that type was configured as unauthorized in the scenario)", contentType, respStatus)
 		return
 	}
-	if _, ok := s.cfg.Scenario.ItemsByType[contentType]; !ok {
+	if _, ok := s.cfg.scenario.itemsByType[contentType]; !ok {
 		s.log.Printf("ERROR attempted to subscribe to unknown content type %s", contentType)
 		http.NotFound(w, r)
 		return
 	}
-	s.run.SubscriptionsByType[contentType]++
+	s.run.subscriptionsByType[contentType]++
 
 	s.log.Printf("Subscribe %s, result %d",
 		contentType,
 		respStatus,
 	)
-	if s.cfg.CheckTenantId && tenantId != s.cfg.TenantId {
-		s.log.Printf("ERROR received tenantId %s does not match expected %s", tenantId, s.cfg.TenantId)
+	if s.cfg.checkTenantId && tenantId != s.cfg.tenantId {
+		s.log.Printf("ERROR received tenantId %s does not match expected %s", tenantId, s.cfg.tenantId)
 	}
-	if authorization := r.Header.Get("Authorization"); s.cfg.CheckAccessToken && authorization != "Bearer "+s.cfg.AccessToken {
+	if authorization := r.Header.Get("Authorization"); s.cfg.checkAccessToken && authorization != "Bearer "+s.cfg.accessToken {
 		s.log.Printf("ERROR received Authorization header '%s' does not match expected '%s'",
 			authorization,
-			"Bearer "+s.cfg.AccessToken,
+			"Bearer "+s.cfg.accessToken,
 		)
 	}
 	s.writeJSON(w, respStatus, respBody)
 }
 
-func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleList(w http.ResponseWriter, r *http.Request) {
 	tenantId := r.PathValue("tenantId")
 	q := r.URL.Query()
 	publisherIdentifier := q.Get("PublisherIdentifier")
@@ -885,14 +885,14 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 		numSeen = 0
 	}
 
-	items, ok := s.cfg.Scenario.ItemsByType[contentType]
+	items, ok := s.cfg.scenario.itemsByType[contentType]
 	if !ok {
 		s.log.Printf("ERROR requested unknown content type %s", contentType)
 		s.writeJSON(w, http.StatusNotFound, nil)
 		return
 	}
 
-	inRange := []ListItem{}
+	inRange := []listItem{}
 	for _, item := range items {
 		if (item.ContentCreated.Equal(startTime) || item.ContentCreated.After(startTime)) &&
 			item.ContentCreated.Before(endTime) && item.ContentCreated.Before(time.Now().UTC()) {
@@ -901,13 +901,13 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	skip := min(numSeen, len(inRange))
-	n := min(s.cfg.Scenario.PageLimit, len(inRange)-skip)
+	n := min(s.cfg.scenario.pageLimit, len(inRange)-skip)
 	newNumSeen := skip + n
 	inPage := inRange[skip:newNumSeen]
 	numRest := len(inRange) - skip - n
 
-	if s.cfg.Scenario.ShuffleInPages {
-		ShuffleListItems(s.run, inPage)
+	if s.cfg.scenario.shuffleInPages {
+		shuffleListItems(s.run, inPage)
 	}
 
 	s.log.Printf("List %s [%s--%s] (%s) nextPage=%s, returning %d, remaining %d",
@@ -923,10 +923,10 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 	if nextPage != "" {
 		// asking for a next page
 		qEncoded := q.Encode()
-		if _, ok := s.run.ServedNextPageQueryRequestCount[qEncoded]; !ok {
+		if _, ok := s.run.servedNextPageQueryRequestCount[qEncoded]; !ok {
 			s.log.Printf("ERROR asked for an unknown next page: %s", qEncoded)
 		} else {
-			s.run.ServedNextPageQueryRequestCount[qEncoded]++
+			s.run.servedNextPageQueryRequestCount[qEncoded]++
 		}
 	}
 
@@ -936,7 +936,7 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 		nextPageQ := nextPageURL.Query()
 		nextPageQ.Set("nextPage", strconv.Itoa(newNumSeen))
 		// randomly downcase endTime param
-		if s.run.RandomSource.Intn(2) == 0 {
+		if s.run.randomSource.Intn(2) == 0 {
 			endTime := nextPageQ.Get("endTime")
 			if endTime != "" {
 				nextPageQ.Set("endtime", nextPageQ.Get("endTime"))
@@ -947,41 +947,41 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 		nextPageURLFull := "http://" + r.Host + nextPageURL.RequestURI()
 		// force the non-canonical header name by avoiding http.Header.Set()
 		w.Header()["NextPageUri"] = []string{nextPageURLFull}
-		if _, ok := s.run.ServedNextPageQueryRequestCount[nextPageURL.RawQuery]; ok {
+		if _, ok := s.run.servedNextPageQueryRequestCount[nextPageURL.RawQuery]; ok {
 			s.log.Printf("ERROR already served NextPageUri: %s", nextPageURL.RawQuery)
 		} else {
-			s.run.ServedNextPageQueryRequestCount[nextPageURL.RawQuery] = 0
+			s.run.servedNextPageQueryRequestCount[nextPageURL.RawQuery] = 0
 		}
 	}
 	// make sure the host/port matches the incoming request
 	for i := range inPage {
-		inPage[i].ContentUri = strings.Replace(inPage[i].ContentUri, s.cfg.Addr, r.Host, 1)
+		inPage[i].ContentUri = strings.Replace(inPage[i].ContentUri, s.cfg.addr, r.Host, 1)
 	}
 
 	// check it's not asking for too much
 	listingRange := endTime.Sub(startTime)
-	if listingRange > s.cfg.MaxListingRange {
-		s.log.Printf("ERROR listing range of %s exceeds max of %s", listingRange, s.cfg.MaxListingRange.String())
+	if listingRange > s.cfg.maxListingRange {
+		s.log.Printf("ERROR listing range of %s exceeds max of %s", listingRange, s.cfg.maxListingRange.String())
 
 	}
 
 	// check new request range against previous range
-	if _, ok := s.run.MaxEndByType[contentType]; ok && nextPage == "" {
+	if _, ok := s.run.maxEndByType[contentType]; ok && nextPage == "" {
 		// not-initial request, initial page
-		requestGap := startTime.Sub(s.run.MaxEndByType[contentType])
-		if requestGap > s.cfg.MaxGap {
-			s.log.Printf("ERROR gap between listing ranges is %s, exceeding max of %s", requestGap.String(), s.cfg.MaxGap.String())
+		requestGap := startTime.Sub(s.run.maxEndByType[contentType])
+		if requestGap > s.cfg.maxGap {
+			s.log.Printf("ERROR gap between listing ranges is %s, exceeding max of %s", requestGap.String(), s.cfg.maxGap.String())
 		} else if requestGap < 0*time.Second {
 			s.log.Printf("WARNING overlap between listing ranges of %s", (-requestGap).String())
 		}
 	}
 	// update requested/served range
-	minStart := s.run.MinStartByType[contentType]
+	minStart := s.run.minStartByType[contentType]
 	if minStart.IsZero() || startTime.Before(minStart) {
-		s.run.MinStartByType[contentType] = startTime
+		s.run.minStartByType[contentType] = startTime
 	}
-	if endTime.After(s.run.MaxEndByType[contentType]) {
-		s.run.MaxEndByType[contentType] = endTime
+	if endTime.After(s.run.maxEndByType[contentType]) {
+		s.run.maxEndByType[contentType] = endTime
 	}
 	if len(inPage) > 0 {
 		var maxContentCreatedByType time.Time
@@ -990,64 +990,64 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 				maxContentCreatedByType = item.ContentCreated
 			}
 		}
-		if _, ok := s.run.MaxContentCreatedByType[contentType]; !ok {
-			s.run.MaxContentCreatedByType[contentType] = maxContentCreatedByType
-		} else if maxContentCreatedByType.After(s.run.MaxContentCreatedByType[contentType]) {
-			s.run.MaxContentCreatedByType[contentType] = maxContentCreatedByType
+		if _, ok := s.run.maxContentCreatedByType[contentType]; !ok {
+			s.run.maxContentCreatedByType[contentType] = maxContentCreatedByType
+		} else if maxContentCreatedByType.After(s.run.maxContentCreatedByType[contentType]) {
+			s.run.maxContentCreatedByType[contentType] = maxContentCreatedByType
 		}
 	}
 	for _, item := range inPage {
 		// check for multiple listings
-		if _, ok := s.run.ServedListItemsFetchCount[item.ContentId]; ok {
+		if _, ok := s.run.servedListItemsFetchCount[item.ContentId]; ok {
 			s.log.Printf("ERROR already listed item contentId=%s contentCreated=%s", item.ContentId, item.ContentCreated.Format(time.RFC3339Nano))
 		} else {
-			s.run.ServedListItemsFetchCount[item.ContentId] = 0
+			s.run.servedListItemsFetchCount[item.ContentId] = 0
 		}
 		// keep track of expiry times
-		s.run.ServedItemsExpiry[item.ContentId] = item.ContentExpiration
+		s.run.servedItemsExpiry[item.ContentId] = item.ContentExpiration
 	}
 	// other checks
-	if s.run.SubscriptionsByType[contentType] == 0 {
+	if s.run.subscriptionsByType[contentType] == 0 {
 		s.log.Printf("ERROR listing unsubscribed content type '%s'", contentType)
 	}
-	if s.cfg.CheckTenantId && tenantId != s.cfg.TenantId {
-		s.log.Printf("ERROR received tenantId '%s' does not match expected '%s'", tenantId, s.cfg.TenantId)
+	if s.cfg.checkTenantId && tenantId != s.cfg.tenantId {
+		s.log.Printf("ERROR received tenantId '%s' does not match expected '%s'", tenantId, s.cfg.tenantId)
 	}
-	if s.cfg.CheckTenantId && publisherIdentifier != s.cfg.TenantId {
-		s.log.Printf("ERROR received PublisherIdentifier '%s' does not match expected '%s'", publisherIdentifier, s.cfg.TenantId)
+	if s.cfg.checkTenantId && publisherIdentifier != s.cfg.tenantId {
+		s.log.Printf("ERROR received PublisherIdentifier '%s' does not match expected '%s'", publisherIdentifier, s.cfg.tenantId)
 	}
-	if authorization := r.Header.Get("Authorization"); s.cfg.CheckAccessToken && authorization != "Bearer "+s.cfg.AccessToken {
+	if authorization := r.Header.Get("Authorization"); s.cfg.checkAccessToken && authorization != "Bearer "+s.cfg.accessToken {
 		s.log.Printf("ERROR received Authorization header '%s' does not match expected '%s'",
 			authorization,
-			"Bearer "+s.cfg.AccessToken,
+			"Bearer "+s.cfg.accessToken,
 		)
 	}
 	// write response
 	s.writeJSON(w, http.StatusOK, inPage)
 }
-func (s *Server) handleFetch(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleFetch(w http.ResponseWriter, r *http.Request) {
 	tenantId := r.PathValue("tenantId")
 	contentId := r.PathValue("contentId")
 	reqTime := time.Now()
 
-	if _, ok := s.run.ServedListItemsFetchCount[contentId]; !ok {
+	if _, ok := s.run.servedListItemsFetchCount[contentId]; !ok {
 		s.log.Printf("ERROR fetching unknown item contentId=%s", contentId)
 	} else {
-		s.run.ServedListItemsFetchCount[contentId] += 1
+		s.run.servedListItemsFetchCount[contentId] += 1
 	}
 
-	expiry := s.run.ServedItemsExpiry[contentId]
+	expiry := s.run.servedItemsExpiry[contentId]
 	if !reqTime.Before(expiry) {
 		s.log.Printf("ERROR requested expired item contentId=%s contentExpiration=%s", contentId, expiry.UTC().String())
 		s.writeJSON(w, http.StatusNotFound, nil)
 	} else {
-		resp := MakeFetchItems(s.cfg, s.run)
+		resp := makeFetchItems(s.cfg, s.run)
 
 		// keep track of served events
-		s.run.ServedFetchItemsCount += len(resp)
-		s.run.ServedUniqueFetchItemsCount += len(resp)
-		if s.cfg.Scenario.DuplicateItemInEachFetch {
-			s.run.ServedUniqueFetchItemsCount--
+		s.run.servedFetchItemsCount += len(resp)
+		s.run.servedUniqueFetchItemsCount += len(resp)
+		if s.cfg.scenario.duplicateItemInEachFetch {
+			s.run.servedUniqueFetchItemsCount--
 		}
 
 		s.log.Printf("Fetch %s, length %d",
@@ -1057,19 +1057,19 @@ func (s *Server) handleFetch(w http.ResponseWriter, r *http.Request) {
 		s.writeJSON(w, http.StatusOK, resp)
 	}
 
-	if s.cfg.CheckTenantId && tenantId != s.cfg.TenantId {
-		s.log.Printf("ERROR received tenantId %s does not match expected %s", tenantId, s.cfg.TenantId)
+	if s.cfg.checkTenantId && tenantId != s.cfg.tenantId {
+		s.log.Printf("ERROR received tenantId %s does not match expected %s", tenantId, s.cfg.tenantId)
 	}
 
-	if authorization := r.Header.Get("Authorization"); s.cfg.CheckAccessToken && authorization != "Bearer "+s.cfg.AccessToken {
+	if authorization := r.Header.Get("Authorization"); s.cfg.checkAccessToken && authorization != "Bearer "+s.cfg.accessToken {
 		s.log.Printf("ERROR received Authorization header '%s' does not match expected '%s'",
 			authorization,
-			"Bearer "+s.cfg.AccessToken,
+			"Bearer "+s.cfg.accessToken,
 		)
 	}
 }
 
-func (s *Server) writeJSON(w http.ResponseWriter, status int, v any) {
+func (s *server) writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
