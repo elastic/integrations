@@ -11,7 +11,7 @@ ACTIVE_KIBANA_VERSIONS=$(curl -sL https://raw.githubusercontent.com/elastic/kiba
 echo "Active Kibana versions: $ACTIVE_KIBANA_VERSIONS"
 
 # Extract version spec from the manifest
-KIBANA_REQ=$(yq .conditions.kibana.version ./security_detection_engine/manifest.yml)
+KIBANA_REQ=$(yq .conditions.kibana.version ./packages/security_detection_engine/manifest.yml)
 echo "Kibana requirement from the security_detection_engine manifest: $KIBANA_REQ"
 
 # Dump a trivial Go program to filter by semver constrains
