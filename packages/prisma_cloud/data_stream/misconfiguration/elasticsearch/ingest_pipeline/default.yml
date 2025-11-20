@@ -1,0 +1,418 @@
+---
+description: Pipeline for processing misconfiguration logs.
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - rename:
+      field: message
+      tag: rename_message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      tag: json_message
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.category
+      tag: append_configuration_into_event_category
+      value: configuration
+  - append:
+      field: event.kind
+      tag: append_state_to_event_kind
+      value: state
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: 'Palo Alto Networks'
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: 'Prisma Cloud'
+  # Remove cloud.* fields populated by beat.
+  # These fields correspond to Prisma Cloud hosts and could be misleading.
+  - remove:
+      field: cloud
+      tag: remove_cloud_fields
+      ignore_missing: true
+      description: Remove ECS cloud fields that are populated from Elastic Agent metadata.
+  - rename:
+      field: json.accountId
+      tag: rename_accountId_to_prisma_cloud_misconfiguration_account_id
+      target_field: prisma_cloud.misconfiguration.account_id
+      ignore_missing: true
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_to_cloud_account_id
+      copy_from: prisma_cloud.misconfiguration.account_id
+      ignore_empty_value: true
+  - rename:
+      field: json.accountName
+      tag: rename_accountName_to_prisma_cloud_misconfiguration_account_name
+      target_field: prisma_cloud.misconfiguration.account_name
+      ignore_missing: true
+  - set:
+      field: cloud.account.name
+      tag: set_cloud_account_name_to_cloud_account_name
+      copy_from: prisma_cloud.misconfiguration.account_name
+      ignore_empty_value: true
+  - rename:
+      field: json.alertStatus
+      tag: rename_alertStatus_to_prisma_cloud_misconfiguration_alert_status
+      target_field: prisma_cloud.misconfiguration.alert_status
+      ignore_missing: true
+  - foreach:
+      field: prisma_cloud.misconfiguration.alert_status
+      tag: foreach_convert_alert_status_value_to_long
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_alert_status_value_to_long
+          type: long
+          on_failure:
+            - remove:
+                field: _ingest._key
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.appNames
+      tag: rename_appNames_to_prisma_cloud_misconfiguration_app_names
+      target_field: prisma_cloud.misconfiguration.app_names
+      ignore_missing: true
+  - rename:
+      field: json.assetType
+      tag: rename_assetType_to_prisma_cloud_misconfiguration_asset_type
+      target_field: prisma_cloud.misconfiguration.asset_type
+      ignore_missing: true
+  - rename:
+      field: json.cloudType
+      tag: rename_cloudType_to_prisma_cloud_misconfiguration_cloud_type
+      target_field: prisma_cloud.misconfiguration.cloud_type
+      ignore_missing: true
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_to_prisma_cloud_misconfiguration_cloud_type
+      copy_from: prisma_cloud.misconfiguration.cloud_type
+      ignore_empty_value: true
+  - lowercase:
+      field: cloud.provider
+      tag: lowercase_cloud_provider
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id_to_prisma_cloud_misconfiguration_id
+      target_field: prisma_cloud.misconfiguration.id
+      ignore_missing: true
+  - rename:
+      field: json.name
+      tag: rename_name_to_prisma_cloud_misconfiguration_name
+      target_field: prisma_cloud.misconfiguration.name
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_prisma_cloud_misconfiguration_name
+      copy_from: prisma_cloud.misconfiguration.name
+      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'AWS IAM Credential Report'
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null && ctx.user.name != ''
+  - set:
+      field: user.id
+      tag: set_user_id_from_prisma_cloud_misconfiguration_id
+      copy_from: prisma_cloud.misconfiguration.id
+      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'AWS IAM Credential Report'
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_id_into_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null && ctx.user.id != ''
+  - set:
+      field: host.name
+      tag: set_host_name_from_prisma_cloud_misconfiguration_name
+      copy_from: prisma_cloud.misconfiguration.name
+      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'EC2 Instance' || ctx.prisma_cloud?.misconfiguration?.asset_type == 'Azure Virtual Machine'
+      ignore_empty_value: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_prisma_cloud_misconfiguration_id
+      copy_from: prisma_cloud.misconfiguration.id
+      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'EC2 Instance' || ctx.prisma_cloud?.misconfiguration?.asset_type == 'Azure Virtual Machine'
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_name_into_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null && ctx.host.name != ''
+  - append:
+      field: related.hosts
+      tag: append_host_id_into_related_hosts
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      if: ctx.host?.id != null && ctx.host.id != ''
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_prisma_cloud_misconfiguration_id
+      copy_from: prisma_cloud.misconfiguration.id
+      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'EC2 Instance' || ctx.prisma_cloud?.misconfiguration?.asset_type == 'Azure Virtual Machine'
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_prisma_cloud_misconfiguration_name
+      copy_from: prisma_cloud.misconfiguration.name
+      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'EC2 Instance' || ctx.prisma_cloud?.misconfiguration?.asset_type == 'Azure Virtual Machine'
+      ignore_empty_value: true
+  - convert:
+      field: json.overallPassed
+      tag: convert_prisma_cloud_misconfiguration_overall_passed_to_boolean
+      target_field: prisma_cloud.misconfiguration.overall_passed
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.regionId
+      tag: rename_regionId_to_prisma_cloud_misconfiguration_region_id
+      target_field: prisma_cloud.misconfiguration.region_id
+      ignore_missing: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region_from_prisma_cloud_misconfiguration_region_id
+      copy_from: prisma_cloud.misconfiguration.region_id
+      ignore_empty_value: true
+  - rename:
+      field: json.regionName
+      tag: rename_regionName_to_prisma_cloud_misconfiguration_region_name
+      target_field: prisma_cloud.misconfiguration.region_name
+      ignore_missing: true
+  - convert:
+      field: json.resourceConfigJsonAvailable
+      tag: convert_prisma_cloud_misconfiguration_resource_config_json_available_to_boolean
+      target_field: prisma_cloud.misconfiguration.resource_config_json_available
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.resourceDetailsAvailable
+      tag: convert_prisma_cloud_misconfiguration_resource_details_available_to_boolean
+      target_field: prisma_cloud.misconfiguration.resource_details_available
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.rrn
+      tag: rename_rrn_to_prisma_cloud_misconfiguration_rrn
+      target_field: prisma_cloud.misconfiguration.rrn
+      ignore_missing: true
+  - set:
+      field: resource.id
+      tag: set_resource_id_from_prisma_cloud_misconfiguration_rrn
+      copy_from: prisma_cloud.misconfiguration.rrn
+      ignore_empty_value: true
+  - set:
+      field: resource.name
+      tag: set_resource_name_from_prisma_cloud_misconfiguration_name
+      copy_from: prisma_cloud.misconfiguration.name
+      ignore_empty_value: true
+  - set:
+      field: resource.type
+      tag: set_resource_type_from_prisma_cloud_misconfiguration_asset_type
+      copy_from: prisma_cloud.misconfiguration.asset_type
+      ignore_empty_value: true
+  - rename:
+      field: json.scannedPolicy
+      tag: rename_scannedPolicy_to_prisma_cloud_misconfiguration_scanned_policy
+      target_field: prisma_cloud.misconfiguration.scanned_policy
+      ignore_missing: true
+  - foreach:
+      field: prisma_cloud.misconfiguration.scanned_policy.labels
+      tag: foreach_append_prisma_cloud_misconfiguration_scanned_policy_labels_into_rule_tags
+      if: ctx.prisma_cloud?.misconfiguration?.scanned_policy?.labels instanceof List
+      processor:
+        append:
+          field: rule.tags
+          tag: append_prisma_cloud_misconfiguration_scanned_policy_labels_into_rule_tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: prisma_cloud.misconfiguration.scanned_policy.passed
+      tag: convert_prisma_cloud_misconfiguration_scanned_policy_to_boolean
+      target_field: prisma_cloud.misconfiguration.scanned_policy.passed
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: prisma_cloud.misconfiguration.scanned_policy.passed
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_to_passed
+      value: passed
+      if: ctx.prisma_cloud?.misconfiguration?.scanned_policy?.passed == true
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_to_failed
+      value: failed
+      if: ctx.prisma_cloud?.misconfiguration?.scanned_policy?.passed == false
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_to_unknown
+      value: unknown
+      if: ctx.result?.evaluation == null
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      if: ctx.prisma_cloud?.misconfiguration?.scanned_policy?.severity instanceof String && ctx.prisma_cloud.misconfiguration.scanned_policy.severity != ''
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def severityScores = [
+          'informational': 21,
+          'low': 21,
+          'medium': 47,
+          'high': 73,
+          'critical': 99
+        ];
+        Integer score = severityScores[ctx.prisma_cloud.misconfiguration.scanned_policy.severity.toLowerCase()];
+        if (score != null) {
+          ctx.event.severity = score;
+        }
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_prisma_cloud_misconfiguration_scanned_policy_name
+      copy_from: prisma_cloud.misconfiguration.scanned_policy.name
+      ignore_empty_value: true
+  - set:
+      field: rule.uuid
+      tag: set_rule_uuid_from_prisma_cloud_misconfiguration_scanned_policy_id
+      copy_from: prisma_cloud.misconfiguration.scanned_policy.id
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_resource_id_and_rule_uuid
+      value: "{{{resource.id}}}|{{{rule.uuid}}}"
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success
+      value: success
+      if: ctx.result?.evaluation == 'passed'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure
+      value: failure
+      if: ctx.result?.evaluation == 'failed'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_unknown
+      value: unknown
+      if: ctx.result?.evaluation == 'unknown'
+      ignore_empty_value: true
+  - rename:
+      field: json.unifiedAssetId
+      tag: rename_unifiedAssetId_to_prisma_cloud_misconfiguration_unified_asset_id
+      target_field: prisma_cloud.misconfiguration.unified_asset_id
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_missing: true
+      tag: remove_preserve_duplicate_custom_fields
+      field:
+        - prisma_cloud.misconfiguration.account_id
+        - prisma_cloud.misconfiguration.account_name
+        - prisma_cloud.misconfiguration.cloud_type
+        - prisma_cloud.misconfiguration.region_id
+        - prisma_cloud.misconfiguration.rrn
+        - prisma_cloud.misconfiguration.asset_type
+        - prisma_cloud.misconfiguration.scanned_policy.name
+        - prisma_cloud.misconfiguration.scanned_policy.id
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

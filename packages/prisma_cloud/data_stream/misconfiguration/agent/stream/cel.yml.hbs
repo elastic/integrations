@@ -18,6 +18,7 @@ state:
   user: {{username}}
   password: {{password}}
   batch_size: {{batch_size}}
+  want_more: false
 redact:
   fields:
     - user
@@ -52,7 +53,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "POST " + state.url.trim_right("/") + "/authenticate: " + (
+                "message": "POST " + state.url.trim_right("/") + "/login: " + (
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
@@ -87,7 +88,9 @@ program: |
       }).do_request().as(resp, resp.StatusCode == 200 ?
           resp.Body.decode_json().as(body, {
             "events": (has(body.resources) && body.resources.size() > 0 ?
-              body.resources.map(e, {
+              body.resources.map(res, 
+                res.scannedPolicies.map(sp, res.with({"scannedPolicy": sp}).drop("scannedPolicies"))
+              ).flatten().map(e, {
                 "message": e.encode_json(),
               })
             :
