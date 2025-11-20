@@ -1,0 +1,170 @@
+{
+    "attributes": {
+        "created_at": "2025-11-20T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Collect Windows LNK shortcut files from critical persistence and public locations with suspicious indicators enriched with shellbags data. Focuses on Startup folders and Public Desktop locations. Detects risky executables (cmd.exe, powershell.exe, etc.), suspicious command-line arguments (encoded commands, download cradles, UNC paths), and large LNK files. Correlates LNK targets with Windows Explorer directory access patterns from shellbags registry data. Note: Scoped to system-wide and public locations only to satisfy osquery path constraints. Best used in combination with timeline analysis and manual investigation of flagged items.",
+        "ecs_mapping": [
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "filename"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "directory"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "btime"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "mtime"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "atime"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "ctime"
+                }
+            },
+            {
+                "key": "file.type",
+                "value": {
+                    "field": "type"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.extension",
+                "value": {
+                    "field": "extension"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "shortcut_target_path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "combined_command"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "shellbags_sid"
+                }
+            },
+            {
+                "key": "registry.path",
+                "value": {
+                    "field": "shellbags_source"
+                }
+            }
+        ],
+        "id": "lnk_forensics_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Windows LNK Shortcut File Forensics with Suspicious Pattern Detection + Shellbags Enrichment\n-- Source: file table with native Windows shortcut parsing + shellbags registry data\n-- Focus: Risky executables, malicious arguments, large files, persistence mechanisms\n-- Scope: System-wide Startup folder and Public Desktop only (osquery constraint requirement)\n-- Last updated: 2025-11-20\n\nWITH lnk_files AS (\n    SELECT \n        f.path,\n        f.filename,\n        f.directory,\n        f.size,\n        f.btime,\n        f.mtime,\n        f.atime,\n        f.ctime,\n        f.type,\n        f.shortcut_target_path,\n        f.shortcut_target_type,\n        f.shortcut_target_location,\n        f.shortcut_start_in,\n        f.shortcut_run,\n        f.shortcut_comment,\n        'lnk' AS extension,\n        CASE \n            WHEN f.shortcut_target_path IS NOT NULL AND f.shortcut_comment IS NOT NULL \n            THEN f.shortcut_target_path || ' ' || f.shortcut_comment\n            WHEN f.shortcut_target_path IS NOT NULL \n            THEN f.shortcut_target_path\n            ELSE f.shortcut_comment\n        END AS combined_command\n    FROM file f\n    WHERE (\n        f.directory = 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup'\n        OR f.directory = 'C:\\Users\\Public\\Desktop'\n    )\n    AND f.filename LIKE '%.lnk'\n)\nSELECT \n    lnk.path,\n    lnk.filename,\n    lnk.directory,\n    lnk.size,\n    lnk.btime,\n    lnk.mtime,\n    lnk.atime,\n    lnk.ctime,\n    lnk.type,\n    lnk.shortcut_target_path,\n    lnk.shortcut_target_type,\n    lnk.shortcut_target_location,\n    lnk.shortcut_start_in,\n    lnk.shortcut_run,\n    lnk.shortcut_comment,\n    lnk.combined_command,\n    lnk.extension,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    sb.sid AS shellbags_sid,\n    sb.source AS shellbags_source,\n    sb.modified_time AS shellbags_modified_time,\n    sb.created_time AS shellbags_created_time,\n    sb.accessed_time AS shellbags_accessed_time,\n    sb.mft_entry AS shellbags_mft_entry,\n    CASE WHEN lnk.size > 20000 THEN 1 ELSE 0 END AS large_size_flag,\n    CASE WHEN lnk.directory LIKE '%\\Startup%' THEN 1 ELSE 0 END AS startup_persistence_flag,\n    CASE \n        WHEN lnk.shortcut_target_path LIKE '%\\cmd.exe' \n            OR lnk.shortcut_target_path LIKE '%\\powershell.exe'\n            OR lnk.shortcut_target_path LIKE '%\\cscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\rundll32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\regsvr32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\mshta.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wmic.exe'\n            OR lnk.shortcut_target_path LIKE '%\\conhost.exe'\n        THEN 1 ELSE 0 \n    END AS risky_executable_flag,\n    CASE \n        WHEN lnk.combined_command LIKE '%\\AppData\\%'\n            OR lnk.combined_command LIKE '%\\Users\\Public\\%'\n            OR lnk.combined_command LIKE '%\\Temp\\%'\n            OR lnk.combined_command LIKE '%comspec%'\n            OR lnk.combined_command LIKE '%&cd&echo%'\n            OR lnk.combined_command LIKE '% -NoP %'\n            OR lnk.combined_command LIKE '% -W Hidden %'\n            OR lnk.combined_command LIKE '% -decode %'\n            OR lnk.combined_command LIKE '% /decode %'\n            OR lnk.combined_command LIKE '% -e %JAB%'\n            OR lnk.combined_command LIKE '% -e %SUVYI%'\n            OR lnk.combined_command LIKE '% -e %SQBFAFgA%'\n            OR lnk.combined_command LIKE '% -e %aWV4I%'\n            OR lnk.combined_command LIKE '% -e %aQBlAHgA%'\n            OR lnk.combined_command LIKE '%start /b%'\n            OR lnk.combined_command LIKE '%start \\b%'\n            OR lnk.combined_command LIKE '%.downloadstring(%'\n            OR lnk.combined_command LIKE '%.downloadfile(%'\n            OR lnk.combined_command LIKE '%iex %'\n        THEN 1 ELSE 0\n    END AS suspicious_arguments_flag,\n    CASE \n        WHEN lnk.combined_command LIKE '%http://%'\n            OR lnk.combined_command LIKE '%https://%'\n            OR lnk.combined_command LIKE '%ftp://%'\n            OR lnk.combined_command LIKE '%ftps://%'\n        THEN 1 ELSE 0\n    END AS http_download_flag,\n    CASE \n        WHEN lnk.combined_command LIKE '% \\\\\\\\%'\n            OR lnk.shortcut_start_in LIKE '\\\\\\\\%'\n        THEN 1 ELSE 0\n    END AS unc_path_flag,\n    CASE \n        WHEN LENGTH(lnk.shortcut_comment) > 250 \n        THEN 1 ELSE 0\n    END AS large_arguments_flag\nFROM lnk_files lnk\nLEFT JOIN hash h ON lnk.path = h.path\nLEFT JOIN shellbags sb ON sb.path = lnk.shortcut_start_in\nWHERE (\n    lnk.size > 20000\n    OR lnk.directory LIKE '%\\Startup%'\n    OR lnk.shortcut_target_path LIKE '%\\cmd.exe'\n    OR lnk.shortcut_target_path LIKE '%\\powershell.exe'\n    OR lnk.shortcut_target_path LIKE '%\\cscript.exe'\n    OR lnk.shortcut_target_path LIKE '%\\wscript.exe'\n    OR lnk.shortcut_target_path LIKE '%\\rundll32.exe'\n    OR lnk.shortcut_target_path LIKE '%\\regsvr32.exe'\n    OR lnk.shortcut_target_path LIKE '%\\mshta.exe'\n    OR lnk.shortcut_target_path LIKE '%\\wmic.exe'\n    OR lnk.shortcut_target_path LIKE '%\\conhost.exe'\n    OR lnk.combined_command LIKE '%\\AppData\\%'\n    OR lnk.combined_command LIKE '%\\Users\\Public\\%'\n    OR lnk.combined_command LIKE '%\\Temp\\%'\n    OR lnk.combined_command LIKE '%comspec%'\n    OR lnk.combined_command LIKE '%&cd&echo%'\n    OR lnk.combined_command LIKE '% -NoP %'\n    OR lnk.combined_command LIKE '% -W Hidden %'\n    OR lnk.combined_command LIKE '% -decode %'\n    OR lnk.combined_command LIKE '% /decode %'\n    OR lnk.combined_command LIKE '% -e %JAB%'\n    OR lnk.combined_command LIKE '% -e %SUVYI%'\n    OR lnk.combined_command LIKE '% -e %SQBFAFgA%'\n    OR lnk.combined_command LIKE '% -e %aWV4I%'\n    OR lnk.combined_command LIKE '% -e %aQBlAHgA%'\n    OR lnk.combined_command LIKE '%start /b%'\n    OR lnk.combined_command LIKE '%start \\b%'\n    OR lnk.combined_command LIKE '%.downloadstring(%'\n    OR lnk.combined_command LIKE '%.downloadfile(%'\n    OR lnk.combined_command LIKE '%iex %'\n    OR lnk.combined_command LIKE '%http://%'\n    OR lnk.combined_command LIKE '%https://%'\n    OR lnk.combined_command LIKE '%ftp://%'\n    OR lnk.combined_command LIKE '%ftps://%'\n    OR lnk.combined_command LIKE '% \\\\\\\\%'\n    OR lnk.shortcut_start_in LIKE '\\\\\\\\%'\n    OR LENGTH(lnk.shortcut_comment) > 250\n)\nAND (\n    lnk.directory LIKE '%\\Startup%'\n    OR (\n        lnk.filename NOT LIKE 'Excel.lnk'\n        AND lnk.filename NOT LIKE 'Word.lnk'\n        AND lnk.filename NOT LIKE 'PowerPoint.lnk'\n        AND lnk.filename NOT LIKE 'Outlook.lnk'\n        AND lnk.filename NOT LIKE 'OneNote.lnk'\n        AND lnk.filename NOT LIKE 'Windows Media Player.lnk'\n        AND lnk.filename NOT LIKE 'Windows Explorer.lnk'\n        AND lnk.filename NOT LIKE 'Internet Explorer.lnk'\n    )\n)\nORDER BY \n    CASE WHEN lnk.directory LIKE '%\\Startup%' THEN 1 ELSE 2 END,\n    CASE \n        WHEN lnk.shortcut_target_path LIKE '%\\cmd.exe' \n            OR lnk.shortcut_target_path LIKE '%\\powershell.exe'\n            OR lnk.shortcut_target_path LIKE '%\\cscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\rundll32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\regsvr32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\mshta.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wmic.exe'\n            OR lnk.shortcut_target_path LIKE '%\\conhost.exe'\n        THEN 1 ELSE 2 \n    END,\n    lnk.mtime DESC;",
+        "updated_at": "2025-11-20T00:00:00.000Z",
+        "updated_by": "elastic",
+        "tags": [
+            "forensics",
+            "persistence",
+            "lateral-movement",
+            "user-activity",
+            "file-analysis",
+            "malware-detection",
+            "command-and-control"
+        ],
+        "mitre_attack": [
+            {
+                "id": "T1547.001",
+                "tactic": "Persistence",
+                "technique": "Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+                "reference": "https://attack.mitre.org/techniques/T1547/001/"
+            },
+            {
+                "id": "T1204.002",
+                "tactic": "Execution",
+                "technique": "User Execution: Malicious File",
+                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+            },
+            {
+                "id": "T1021",
+                "tactic": "Lateral Movement",
+                "technique": "Remote Services",
+                "reference": "https://attack.mitre.org/techniques/T1021/"
+            },
+            {
+                "id": "T1059.001",
+                "tactic": "Execution",
+                "technique": "Command and Scripting Interpreter: PowerShell",
+                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+            },
+            {
+                "id": "T1059.003",
+                "tactic": "Execution",
+                "technique": "Command and Scripting Interpreter: Windows Command Shell",
+                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+            },
+            {
+                "id": "T1105",
+                "tactic": "Command and Control",
+                "technique": "Ingress Tool Transfer",
+                "reference": "https://attack.mitre.org/techniques/T1105/"
+            }
+        ]
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-20T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

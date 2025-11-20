@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2025-11-20
+**Total Core Artifacts**: 2 available + 38 in progress + 6 not available = 46 total variants
+**Total Queries**: 31 (4 core forensic variants + 27 additional)
+**Completion Rate**: 4.3% (2/46 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 2     | 4.3%       |
+| ⚠️ In Progress (Needs Validation) | 38    | 82.6%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -36,7 +36,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 6a | Installed Services      | ⚠️ | Linux | -     | -    | systemd table                                                                                                                    |
 | 6b | Installed Services      | ⚠️ | Mac | -     | -    | launchd table                                                                                                                    |
 | 7 | Jumplists               | ❌ | Win | -     | -    | Not natively supported — PR #7260 closed due to OLE format complexity                                                            |
-| 8 | LNK files               | ⚠️ | Win | -     | -    | shortcut_files table (deprecated), file table and recent_files table is an alternative (osquery upgrade needed for recent files) |
+| 8 | LNK files               | ✅ | Win | lnk_forensics_windows_elastic | [a1b2c3d4-lnk1](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json) | Uses file table's native Windows shortcut parsing with hash and shellbags enrichment. Detects suspicious patterns: risky executables (cmd, powershell, wscript, etc.), malicious arguments (encoded commands, download cradles, temp paths, UNC paths), large files (>20KB), HTTP/HTTPS strings, and persistence locations (Startup folders). Correlates LNK targets with Windows Explorer directory access patterns from shellbags registry data to identify user interaction. Includes suspicious indicator flags and intelligent result prioritization. |
 | 9 | ARP Cache               | ⚠️ | Win | -     | -    | arp_cache table                                                                                                                  |
 | 9a | ARP Cache               | ⚠️ | Linux | -     | -    | arp_cache table                                                                                                                  |
 | 9b | ARP Cache               | ⚠️ | Mac | -     | -    | arp_cache table                                                                                                                  |
@@ -105,6 +105,7 @@ These queries existed in the original repository and provide additional coverage
 | 24 | unsigned_startup_items_vt | ✅ | Win | [b068](kibana/osquery_saved_query/osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135.json) | Unsigned startup items with VirusTotal integration |
 | 25 | unsigned_dlls_on_system_folders_vt | ✅ | Win | [63c1](kibana/osquery_saved_query/osquery_manager-63c1fe20-176f-11ed-89c6-331eb0db6d01.json) | Unsigned DLLs in system folders with VirusTotal integration |
 | 26 | executables_in_temp_folder_vt | ✅ | Win | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration |
+| 27 | lnk_forensics | ✅ | Win | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json) | LNK shortcut file forensics with suspicious pattern detection and shellbags enrichment (risky executables, malicious arguments, large files, persistence locations, directory access correlation) |
 
 **Note**: Queries with VirusTotal integration require the VirusTotal extension configured in osquery.
 
@@ -167,7 +168,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ BITS Jobs Database (Windows: via windows_eventlog)
 
 ### User Activity
-- ⚠️ LNK files (Windows: shortcut_files, file, recent_files tables)
+- ✅ LNK files (Windows: file table with native shortcut parsing + hash enrichment + shellbags correlation + suspicious pattern detection)
 - ⚠️ Shell History (Linux/Mac: shell_history table)
 - ⚠️ Shellbags (Windows: shellbags table)
 - ⚠️ User Assist (Windows: userassist table)
