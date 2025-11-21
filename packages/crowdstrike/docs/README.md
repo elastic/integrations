@@ -758,12 +758,14 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 
 #### Falcon SIEM Connector configuration file
 
-By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhoseclient.cf` provides configuration options related to the events collected by Falcon SIEM Connector.
+By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhoseclient.cfg` provides configuration options related to the events collected by Falcon SIEM Connector.
 
 Parts of the configuration file called `EventTypeCollection` and `EventSubTypeCollection` provides a list of event types that the connector should collect.
 
 Current supported event types are:
+- DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
+- EppDetectionSummaryEvent
 - IncidentSummaryEvent
 - UserActivityAuditEvent
 - AuthActivityAuditEvent
@@ -805,6 +807,7 @@ Current supported event types are:
 | crowdstrike.event.AgentId |  | keyword |
 | crowdstrike.event.AgentIdString |  | keyword |
 | crowdstrike.event.AggregateId |  | keyword |
+| crowdstrike.event.AnodeIndicators |  | nested |
 | crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
@@ -821,16 +824,27 @@ Current supported event types are:
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
 | crowdstrike.event.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
+| crowdstrike.event.ContentPatternCounts |  | nested |
+| crowdstrike.event.ContentPatterns.ConfidenceLevel |  | long |
+| crowdstrike.event.ContentPatterns.ID |  | keyword |
+| crowdstrike.event.ContentPatterns.MatchCount |  | long |
+| crowdstrike.event.ContentPatterns.Name |  | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
 | crowdstrike.event.DataDomains | Data domains of the event that was the primary indicator or created it. | keyword |
 | crowdstrike.event.Description |  | keyword |
+| crowdstrike.event.Destination |  | nested |
+| crowdstrike.event.Destination.Channel |  | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
+| crowdstrike.event.DetectionType |  | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
+| crowdstrike.event.EgressEventId |  | keyword |
+| crowdstrike.event.EgressSessionId |  | keyword |
 | crowdstrike.event.EmailAddresses | Summary list of all associated entity email addresses. | keyword |
 | crowdstrike.event.EnvironmentVariables | Provides one or more JSON objects which includes related environment variables. | nested |
+| crowdstrike.event.EventTimestamp |  | date |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
 | crowdstrike.event.ExecutablesWritten.FileName |  | keyword |
@@ -845,11 +859,18 @@ Current supported event types are:
 | crowdstrike.event.ExecutionMetadata.SearchWindowEnd |  | date |
 | crowdstrike.event.ExecutionMetadata.SearchWindowStart |  | date |
 | crowdstrike.event.FalconHostLink |  | keyword |
+| crowdstrike.event.FileCategoryCounts |  | nested |
 | crowdstrike.event.FileName |  | keyword |
 | crowdstrike.event.FilePath |  | keyword |
+| crowdstrike.event.FileType.Type.CategoryID |  | keyword |
+| crowdstrike.event.FileType.Type.CategoryName |  | keyword |
+| crowdstrike.event.FileType.Type.Description |  | keyword |
+| crowdstrike.event.FileType.Type.ID |  | keyword |
+| crowdstrike.event.FileType.Type.Name |  | keyword |
 | crowdstrike.event.FilesAccessed.FileName |  | keyword |
 | crowdstrike.event.FilesAccessed.FilePath |  | keyword |
 | crowdstrike.event.FilesAccessed.Timestamp |  | date |
+| crowdstrike.event.FilesEgressedCount |  | long |
 | crowdstrike.event.FilesWritten.FileName |  | keyword |
 | crowdstrike.event.FilesWritten.FilePath |  | keyword |
 | crowdstrike.event.FilesWritten.Timestamp |  | date |
@@ -880,6 +901,7 @@ Current supported event types are:
 | crowdstrike.event.IdpPolicyRuleTrigger | Identity Protection policy rule trigger. | keyword |
 | crowdstrike.event.IncidentType | Incident Type | keyword |
 | crowdstrike.event.Ipv | Protocol for network request. | keyword |
+| crowdstrike.event.IsClipboard |  | boolean |
 | crowdstrike.event.ItemPostedTimestamp | Time the raw intelligence was posted. | date |
 | crowdstrike.event.ItemType | Type of raw intelligence. | keyword |
 | crowdstrike.event.KeyStoreErrors | Describes a KeyStore error. | keyword |
@@ -895,6 +917,8 @@ Current supported event types are:
 | crowdstrike.event.MachineDomain | Domain for the machine associated with the detection. | keyword |
 | crowdstrike.event.MatchCount | Number of firewall rule matches. | long |
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
+| crowdstrike.event.MatchedClassification.ID |  | keyword |
+| crowdstrike.event.MatchedClassification.Name |  | keyword |
 | crowdstrike.event.MobileAppsDetails | Provides one or more JSON objects describing the related mobile applications. | nested |
 | crowdstrike.event.MobileAppsDetails.AndroidAppLabel |  | keyword |
 | crowdstrike.event.MobileAppsDetails.AndroidAppVersionName |  | keyword |
@@ -927,6 +951,7 @@ Current supported event types are:
 | crowdstrike.event.Objective | Method of detection. | keyword |
 | crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
+| crowdstrike.event.OriginWebLocations |  | flattened |
 | crowdstrike.event.ParentImageFileName | The parent image file name involved. | keyword |
 | crowdstrike.event.ParentImageFilePath |  | keyword |
 | crowdstrike.event.ParentProcessId |  | long |
@@ -968,6 +993,8 @@ Current supported event types are:
 | crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
 | crowdstrike.event.ReferrerUrl |  | keyword |
 | crowdstrike.event.Region |  | keyword |
+| crowdstrike.event.RelatedClassifications.ID |  | keyword |
+| crowdstrike.event.RelatedClassifications.Name |  | keyword |
 | crowdstrike.event.ReportFileReference |  | keyword |
 | crowdstrike.event.ReportID |  | keyword |
 | crowdstrike.event.ReportName |  | keyword |
@@ -977,9 +1004,11 @@ Current supported event types are:
 | crowdstrike.event.ResourceIdType | The type of the detected resource identifier. | keyword |
 | crowdstrike.event.ResourceName | Resource name if any. | keyword |
 | crowdstrike.event.ResourceUrl | The URL to the cloud resource. | keyword |
+| crowdstrike.event.ResponseAction |  | keyword |
 | crowdstrike.event.RootAccessIndicators | Provides one or more JSON objects which includes logs and stack traces from the suspicious source. | nested |
 | crowdstrike.event.RpcOpClassification | RPC operation type. | keyword |
 | crowdstrike.event.RuleAction | Firewall rule action. | keyword |
+| crowdstrike.event.RuleId |  | keyword |
 | crowdstrike.event.RulePriority | Priority of the monitoring rule that found the match. | keyword |
 | crowdstrike.event.SELinuxEnforcementPolicy | State of SELinux enforcement policy on an Android device. | keyword |
 | crowdstrike.event.SHA1String | SHA1 sum of the executable associated with the detection. | keyword |
@@ -1028,8 +1057,12 @@ Current supported event types are:
 | crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
 | crowdstrike.event.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
+| crowdstrike.event.UserDepartment |  | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
+| crowdstrike.event.UserMapped |  | boolean |
 | crowdstrike.event.UserName |  | keyword |
+| crowdstrike.event.UserNotified |  | boolean |
+| crowdstrike.event.UserTitle |  | keyword |
 | crowdstrike.event.UserUUID |  | keyword |
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
 | crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
@@ -1419,6 +1452,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.AllowlistingFilterId |  | keyword |
+| crowdstrike.AnodeIndicators |  | nested |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ApplicationName |  | match_only_text |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
@@ -1512,6 +1546,11 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ConnectionAddressIP6 |  | match_only_text |
 | crowdstrike.ConnectionFlags |  | keyword |
 | crowdstrike.ConnectionType |  | keyword |
+| crowdstrike.ContentPatternCounts |  | nested |
+| crowdstrike.ContentPatterns.ConfidenceLevel |  | long |
+| crowdstrike.ContentPatterns.ID |  | keyword |
+| crowdstrike.ContentPatterns.MatchCount |  | long |
+| crowdstrike.ContentPatterns.Name |  | keyword |
 | crowdstrike.ContentSHA256HashData |  | keyword |
 | crowdstrike.ContextBaseFileName |  | keyword |
 | crowdstrike.ContextImageFileName |  | keyword |
@@ -1536,9 +1575,12 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.DcNumBlockingPolicies |  | match_only_text |
 | crowdstrike.Description |  | keyword |
 | crowdstrike.DesiredAccess |  | keyword |
+| crowdstrike.Destination |  | nested |
+| crowdstrike.Destination.Channel |  | keyword |
 | crowdstrike.DetectDescription |  | keyword |
 | crowdstrike.DetectId |  | keyword |
 | crowdstrike.DetectName |  | keyword |
+| crowdstrike.DetectionType |  | keyword |
 | crowdstrike.DeviceId |  | keyword |
 | crowdstrike.DeviceMountCounter |  | long |
 | crowdstrike.DevicePropertyClassGuid |  | match_only_text |
@@ -1572,6 +1614,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.EfiVariableSetupModeAttributes |  | match_only_text |
 | crowdstrike.EfiVariableSignatureSupport |  | match_only_text |
 | crowdstrike.EfiVariableSignatureSupportAttributes |  | match_only_text |
+| crowdstrike.EgressEventId |  | keyword |
+| crowdstrike.EgressSessionId |  | keyword |
 | crowdstrike.EnabledPrivilegesBitmask |  | keyword |
 | crowdstrike.EndTime |  | date |
 | crowdstrike.Entitlements |  | keyword |
@@ -1584,6 +1628,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.EtwRawThreadId |  | long |
 | crowdstrike.EventCorrelationId |  | keyword |
 | crowdstrike.EventOrigin |  | integer |
+| crowdstrike.EventTimestamp |  | date |
 | crowdstrike.EventType |  | keyword |
 | crowdstrike.EventUUID |  | keyword |
 | crowdstrike.ExceptionAddress |  | keyword |
@@ -1608,6 +1653,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
 | crowdstrike.FileCategory |  | keyword |
+| crowdstrike.FileCategoryCounts |  | nested |
 | crowdstrike.FileContent |  | match_only_text |
 | crowdstrike.FileDeletedCount |  | long |
 | crowdstrike.FileEcpBitmask |  | keyword |
@@ -1618,12 +1664,18 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.FileSigningTime |  | keyword |
 | crowdstrike.FileSubType |  | keyword |
 | crowdstrike.FileSystemOperationType |  | keyword |
+| crowdstrike.FileType.Type.CategoryID |  | keyword |
+| crowdstrike.FileType.Type.CategoryName |  | keyword |
+| crowdstrike.FileType.Type.Description |  | keyword |
+| crowdstrike.FileType.Type.ID |  | keyword |
+| crowdstrike.FileType.Type.Name |  | keyword |
 | crowdstrike.FileVaultIsEnabled |  | match_only_text |
 | crowdstrike.FileVersion |  | keyword |
 | crowdstrike.FileWrittenFlags |  | keyword |
 | crowdstrike.FilesAccessed.FileName |  | keyword |
 | crowdstrike.FilesAccessed.FilePath |  | keyword |
 | crowdstrike.FilesAccessed.Timestamp |  | date |
+| crowdstrike.FilesEgressedCount |  | long |
 | crowdstrike.FilesWritten.FileName |  | keyword |
 | crowdstrike.FilesWritten.FilePath |  | keyword |
 | crowdstrike.FilesWritten.Timestamp |  | date |
@@ -1718,6 +1770,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.InterfaceVersion |  | keyword |
 | crowdstrike.IpEntryFlags |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
+| crowdstrike.IsClipboard |  | boolean |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsProcessInitializing |  | keyword |
@@ -1767,6 +1820,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.Malicious |  | keyword |
 | crowdstrike.ManagedPdbBuildPath |  | match_only_text |
 | crowdstrike.MappedFromUserMode |  | keyword |
+| crowdstrike.MatchedClassification.ID |  | keyword |
+| crowdstrike.MatchedClassification.Name |  | keyword |
 | crowdstrike.MaxReassemblySize |  | keyword |
 | crowdstrike.MaxRouterAdvertisementInterval |  | keyword |
 | crowdstrike.MaxThreadCount |  | long |
@@ -1855,6 +1910,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.OperStatus |  | keyword |
 | crowdstrike.OperationFlags |  | keyword |
 | crowdstrike.Options |  | keyword |
+| crowdstrike.OriginWebLocations |  | flattened |
 | crowdstrike.OriginalContentLength |  | keyword |
 | crowdstrike.OriginalEventTimeStamp |  | keyword |
 | crowdstrike.OriginalFilename |  | keyword |
@@ -1994,6 +2050,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RegStringValue |  | match_only_text |
 | crowdstrike.RegType |  | keyword |
 | crowdstrike.RegValueName |  | keyword |
+| crowdstrike.RelatedClassifications.ID |  | keyword |
+| crowdstrike.RelatedClassifications.Name |  | keyword |
 | crowdstrike.RemoteAccount |  | keyword |
 | crowdstrike.RemoteAddressMaskIP4 |  | keyword |
 | crowdstrike.RemoteAddressMaskIP6 |  | keyword |
@@ -2002,6 +2060,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RequestType |  | keyword |
 | crowdstrike.ResendToCloud |  | keyword |
 | crowdstrike.RespondingDnsServer |  | keyword |
+| crowdstrike.ResponseAction |  | keyword |
 | crowdstrike.RetransmitTime |  | keyword |
 | crowdstrike.RootPath |  | keyword |
 | crowdstrike.RouteAge |  | keyword |
@@ -2013,6 +2072,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RpcNestingLevel |  | keyword |
 | crowdstrike.RpcOpClassification |  | match_only_text |
 | crowdstrike.RpcOpNum |  | keyword |
+| crowdstrike.RuleId |  | keyword |
 | crowdstrike.RunDllInvocationCount |  | long |
 | crowdstrike.SHA1HashData |  | keyword |
 | crowdstrike.SHA1String |  | keyword |
@@ -2153,21 +2213,25 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.UnsignedModuleLoadCount |  | long |
 | crowdstrike.UploadId |  | keyword |
 | crowdstrike.User |  | keyword |
+| crowdstrike.UserDepartment |  | keyword |
 | crowdstrike.UserFlags |  | keyword |
 | crowdstrike.UserGroupsBitmask |  | keyword |
 | crowdstrike.UserLogoffType |  | keyword |
 | crowdstrike.UserLogonFlags |  | keyword |
 | crowdstrike.UserLogonFlags_decimal |  | keyword |
+| crowdstrike.UserMapped |  | boolean |
 | crowdstrike.UserMemoryAllocateExecutableCount |  | long |
 | crowdstrike.UserMemoryAllocateExecutableRemoteCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableRemoteCount |  | long |
 | crowdstrike.UserName |  | keyword |
+| crowdstrike.UserNotified |  | boolean |
 | crowdstrike.UserRid |  | keyword |
 | crowdstrike.UserSid |  | keyword |
 | crowdstrike.UserSid_readable |  | keyword |
 | crowdstrike.UserThread |  | keyword |
 | crowdstrike.UserTime |  | long |
+| crowdstrike.UserTitle |  | keyword |
 | crowdstrike.ValidLifetime |  | keyword |
 | crowdstrike.VerifiedCertificate |  | keyword |
 | crowdstrike.VersionInfo |  | match_only_text |
