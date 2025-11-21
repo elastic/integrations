@@ -398,11 +398,17 @@ func makeFetchItems(cfg *config, run *run) []fetchItem {
 
 var fetchItemPool = []fetchItem{
 	{
-		"ClientIP":         "213.97.47.133",
-		"CorrelationId":    "622b339f-4000-a000-f25f-92b3478c7a25",
-		"CreationTime":     "2020-02-07T16:43:53",
-		"CustomUniqueId":   true,
-		"EventSource":      "SharePoint",
+		"ClientIP":       "213.97.47.133",
+		"CorrelationId":  "622b339f-4000-a000-f25f-92b3478c7a25",
+		"CreationTime":   "2020-02-07T16:43:53",
+		"CustomUniqueId": true,
+		"EventSource":    "SharePoint",
+		"ExtendedProperties": []map[string]any{
+			{
+				"Name":  "additionalDetails",
+				"Value": "{\"DeviceId\":\"62eedfc0-b73c-206c-a59d-16457c7ebcd8\",\"DeviceOSType\":\"Linux\",\"DeviceTrustType\":\"\"}",
+			},
+		},
 		"Id":               "99d005e6-a4c6-46fd-117c-08d7abeceab5",
 		"ItemType":         "Page",
 		"ListItemUniqueId": "59a8433d-9bb8-cfef-6edc-4c0fc8b86875",
