@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "created_at": "2025-11-21T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detects Linux persistence via dual-detection approach: (1) User-created persistence mechanisms (systemd, cron, XDG autostart) and (2) Living off the Land (LotL) attack indicators using legitimate Linux tools. Identifies both custom persistence AND abuse of bash, curl/wget, base64 decoding, /dev/shm execution, etc. Maintains cross-distro compatibility with location-based filtering. Maps to MITRE ATT&CK T1543.002 (Systemd Service), T1053.003 (Cron), T1547.013 (XDG Autostart), T1059.004 (Unix Shell), T1105 (Ingress Tool Transfer).",
+        "ecs_mapping": [
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "args"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "mtime"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "ctime"
+                }
+            },
+            {
+                "key": "file.uid",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "file.gid",
+                "value": {
+                    "field": "gid"
+                }
+            },
+            {
+                "key": "file.mode",
+                "value": {
+                    "field": "mode"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "service.id",
+                "value": {
+                    "field": "service_id"
+                }
+            },
+            {
+                "key": "rule.category",
+                "value": {
+                    "field": "type"
+                }
+            },
+            {
+                "key": "event.outcome",
+                "value": {
+                    "field": "status"
+                }
+            },
+            {
+                "key": "registry.path",
+                "value": {
+                    "field": "source"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "field": "detection_method"
+                }
+            },
+            {
+                "key": "rule.description",
+                "value": {
+                    "field": "detection_reason"
+                }
+            }
+        ],
+        "id": "startup_items_linux_elastic",
+        "interval": "3600",
+        "platform": "linux",
+        "query": "-- Dual-detection Linux persistence query:\n-- 1. NON_WHITELISTED: User-created systemd/cron/XDG autostart (location-based filtering)\n-- 2. LOTL_INDICATOR: Living off the Land patterns (bash -c, curl | bash, base64 -d, etc.)\n-- MITRE ATT&CK: T1543.002, T1053.003, T1547.013, T1059.004, T1105\n\nWITH non_whitelisted_systemd AS (\n    SELECT\n        su.id AS name,\n        su.id AS service_id,\n        su.fragment_path AS path,\n        su.fragment_path AS source,\n        su.description AS args,\n        su.user AS username,\n        CASE\n            WHEN su.unit_file_state = 'enabled' THEN 'enabled'\n            WHEN su.unit_file_state = 'disabled' THEN 'disabled'\n            ELSE su.unit_file_state\n        END AS status,\n        'Systemd Service (Custom)' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'User-created systemd service' AS detection_reason\n    FROM systemd_units AS su\n    WHERE su.fragment_path LIKE '/etc/systemd/system/%'\n        AND su.id LIKE '%.service'\n        AND su.unit_file_state IN ('enabled', 'static', 'linked')\n        AND su.id NOT IN (\n            'ssh.service',\n            'sshd.service',\n            'cron.service',\n            'rsyslog.service',\n            'systemd-timesyncd.service',\n            'NetworkManager.service',\n            'docker.service',\n            'containerd.service',\n            'snapd.service',\n            'ufw.service',\n            'firewalld.service',\n            'auditd.service'\n        )\n        AND su.id NOT LIKE 'getty@%'\n        AND su.id NOT LIKE 'dbus-%'\n),\nnon_whitelisted_cron AS (\n    SELECT\n        SUBSTR(c.command, 1, 100) AS name,\n        '' AS service_id,\n        c.path,\n        c.path AS source,\n        c.command AS args,\n        CASE\n            WHEN c.path LIKE '/var/spool/cron/crontabs/%' THEN REPLACE(c.path, '/var/spool/cron/crontabs/', '')\n            WHEN c.path LIKE '/var/spool/cron/%' THEN REPLACE(REPLACE(c.path, '/var/spool/cron/', ''), 'crontabs/', '')\n            ELSE 'root'\n        END AS username,\n        'enabled' AS status,\n        'Cron @reboot' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'Cron @reboot job' AS detection_reason\n    FROM crontab AS c\n    WHERE c.event = '@reboot'\n),\nnon_whitelisted_xdg AS (\n    SELECT\n        REPLACE(f.filename, '.desktop', '') AS name,\n        '' AS service_id,\n        f.path,\n        f.directory AS source,\n        '' AS args,\n        SUBSTR(SUBSTR(f.path, 7), 1, INSTR(SUBSTR(f.path, 7), '/') - 1) AS username,\n        'enabled' AS status,\n        'XDG Autostart (User)' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'User-specific XDG autostart entry' AS detection_reason\n    FROM file AS f\n    WHERE f.path LIKE '/home/%/.config/autostart/%.desktop'\n),\nlotl_systemd AS (\n    SELECT\n        su.id AS name,\n        su.id AS service_id,\n        su.fragment_path AS path,\n        su.fragment_path AS source,\n        su.description AS args,\n        su.user AS username,\n        CASE\n            WHEN su.unit_file_state = 'enabled' THEN 'enabled'\n            WHEN su.unit_file_state = 'disabled' THEN 'disabled'\n            ELSE su.unit_file_state\n        END AS status,\n        'Systemd Service (LotL)' AS type,\n        'LOTL_INDICATOR' AS detection_method,\n        CASE\n            WHEN su.description LIKE '%bash -c%' OR su.description LIKE '%sh -c%' THEN 'Shell command execution via -c flag'\n            WHEN su.description LIKE '%curl%|%bash%' OR su.description LIKE '%wget%|%sh%' THEN 'Download and pipe to shell'\n            WHEN su.description LIKE '%curl%http%' OR su.description LIKE '%wget%http%' THEN 'Download utility abuse'\n            WHEN su.description LIKE '%base64 -d%' OR su.description LIKE '%base64 --decode%' THEN 'Base64 decode for obfuscation'\n            WHEN su.description LIKE '%/dev/shm/%' OR su.description LIKE '%/tmp/%' THEN 'Execution from world-writable directory'\n            WHEN su.description LIKE '%nc %' OR su.description LIKE '%netcat%' THEN 'Netcat reverse shell'\n            WHEN su.description LIKE '%/dev/tcp/%' THEN 'Bash TCP socket redirection'\n            WHEN su.description LIKE '%nohup%&%' OR su.description LIKE '%disown%' THEN 'Background process persistence'\n            WHEN su.description LIKE '%.sh%' AND su.fragment_path LIKE '/tmp/%' THEN 'Shell script from temp directory'\n            ELSE 'Unknown LotL pattern in systemd'\n        END AS detection_reason\n    FROM systemd_units AS su\n    WHERE su.fragment_path IS NOT NULL\n        AND su.id LIKE '%.service'\n        AND su.unit_file_state IN ('enabled', 'static', 'linked')\n        AND (\n            su.description LIKE '%bash -c%'\n            OR su.description LIKE '%sh -c%'\n            OR su.description LIKE '%curl%|%bash%'\n            OR su.description LIKE '%wget%|%sh%'\n            OR su.description LIKE '%curl%http%'\n            OR su.description LIKE '%wget%http%'\n            OR su.description LIKE '%base64 -d%'\n            OR su.description LIKE '%base64 --decode%'\n            OR su.description LIKE '%/dev/shm/%'\n            OR su.description LIKE '%/tmp/%'\n            OR su.description LIKE '%nc %'\n            OR su.description LIKE '%netcat%'\n            OR su.description LIKE '%/dev/tcp/%'\n            OR su.description LIKE '%nohup%&%'\n            OR su.description LIKE '%disown%'\n            OR (su.description LIKE '%.sh%' AND su.fragment_path LIKE '/tmp/%')\n        )\n),\nlotl_cron AS (\n    SELECT\n        SUBSTR(c.command, 1, 100) AS name,\n        '' AS service_id,\n        c.path,\n        c.path AS source,\n        c.command AS args,\n        CASE\n            WHEN c.path LIKE '/var/spool/cron/crontabs/%' THEN REPLACE(c.path, '/var/spool/cron/crontabs/', '')\n            WHEN c.path LIKE '/var/spool/cron/%' THEN REPLACE(REPLACE(c.path, '/var/spool/cron/', ''), 'crontabs/', '')\n            ELSE 'root'\n        END AS username,\n        'enabled' AS status,\n        'Cron (LotL)' AS type,\n        'LOTL_INDICATOR' AS detection_method,\n        CASE\n            WHEN c.command LIKE '%bash -c%' OR c.command LIKE '%sh -c%' THEN 'Shell command execution via -c flag'\n            WHEN c.command LIKE '%curl%|%bash%' OR c.command LIKE '%wget%|%sh%' THEN 'Download and pipe to shell'\n            WHEN c.command LIKE '%curl%http%' OR c.command LIKE '%wget%http%' THEN 'Download utility abuse'\n            WHEN c.command LIKE '%base64 -d%' OR c.command LIKE '%base64 --decode%' THEN 'Base64 decode for obfuscation'\n            WHEN c.command LIKE '%/dev/shm/%' OR c.command LIKE '%/tmp/%' THEN 'Execution from world-writable directory'\n            WHEN c.command LIKE '%nc %' OR c.command LIKE '%netcat%' THEN 'Netcat reverse shell'\n            WHEN c.command LIKE '%/dev/tcp/%' THEN 'Bash TCP socket redirection'\n            WHEN c.command LIKE '%nohup%&%' OR c.command LIKE '%disown%' THEN 'Background process persistence'\n            ELSE 'Unknown LotL pattern in cron'\n        END AS detection_reason\n    FROM crontab AS c\n    WHERE c.command IS NOT NULL\n        AND (\n            c.command LIKE '%bash -c%'\n            OR c.command LIKE '%sh -c%'\n            OR c.command LIKE '%curl%|%bash%'\n            OR c.command LIKE '%wget%|%sh%'\n            OR c.command LIKE '%curl%http%'\n            OR c.command LIKE '%wget%http%'\n            OR c.command LIKE '%base64 -d%'\n            OR c.command LIKE '%base64 --decode%'\n            OR c.command LIKE '%/dev/shm/%'\n            OR c.command LIKE '%/tmp/%'\n            OR c.command LIKE '%nc %'\n            OR c.command LIKE '%netcat%'\n            OR c.command LIKE '%/dev/tcp/%'\n            OR c.command LIKE '%nohup%&%'\n            OR c.command LIKE '%disown%'\n        )\n),\ncombined AS (\n    SELECT * FROM non_whitelisted_systemd\n    UNION ALL\n    SELECT * FROM non_whitelisted_cron\n    UNION ALL\n    SELECT * FROM non_whitelisted_xdg\n    UNION ALL\n    SELECT * FROM lotl_systemd\n    UNION ALL\n    SELECT * FROM lotl_cron\n)\nSELECT\n    c.name,\n    c.service_id,\n    c.path,\n    c.type,\n    c.status,\n    c.source,\n    c.args,\n    c.username,\n    c.detection_method,\n    c.detection_reason,\n    h.sha256,\n    h.sha1,\n    h.md5,\n    f.size,\n    f.mtime,\n    f.ctime,\n    f.uid,\n    f.gid,\n    f.mode\nFROM combined AS c\nLEFT JOIN hash AS h ON c.path = h.path\nLEFT JOIN file AS f ON c.path = f.path\nORDER BY\n    CASE WHEN c.detection_method = 'LOTL_INDICATOR' THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.type,\n    c.name",
+        "updated_at": "2025-11-21T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.3",
+    "id": "osquery_manager-e5f6a7b8-c9d0-23ef-4567-890123456789",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-21T00:00:00.000Z",
+    "version": "WzEwNTUzLDJd"
+}
