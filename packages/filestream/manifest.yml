@@ -3,7 +3,7 @@ name: filestream
 title: Custom Logs (Filestream)
 description: Collect log data using filestream with Elastic Agent.
 type: input
-version: 2.1.2
+version: 2.2.0
 conditions:
   kibana:
     version: "^9.2.0"
@@ -338,6 +338,30 @@ policy_templates:
         multi: false
         required: false
         show_user: true
+      - name: delete_enabled
+        type: bool
+        title: Delete files after they have been ingested
+        default: false
+        show_user: false
+        description: |
+          When enabled, files will be removed once the reader has been
+          closed (due to inactivity or EOF), all events have been
+          published to the output and the grace period has expired.
+          Refer to [Filebeat
+          documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-filestream#filebeat-input-filestream-delete-options)
+          for details.
+      - name: delete_grace_period
+        title: Grace period for deleting files
+        type: text
+        show_user: false
+        description: |
+          An interval to wait after the file is closed and all events
+          have been published before trying to remove it. The default
+          is `30m`.
+
+          E.g: "30m", Valid time units are "ns", "us" (or "µs"), "ms",
+          "s", "m", "h".
+
 owner:
   github: elastic/elastic-agent-data-plane
   type: elastic
