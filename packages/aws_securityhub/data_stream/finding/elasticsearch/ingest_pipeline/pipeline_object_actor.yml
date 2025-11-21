@@ -1,0 +1,287 @@
+---
+description: Pipeline for processing Actor object.
+# Actor object docs: https://schema.ocsf.io/1.5.0/objects/actor
+processors:
+  - convert:
+      field: aws_securityhub.finding.actor.idp.has_mfa
+      tag: convert_actor_idp_has_mfa_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.idp.has_mfa
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.idp.state_id
+      tag: convert_actor_idp_state_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.actor.process.auid
+      tag: convert_actor_process_auid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.actor.process.egid
+      tag: convert_actor_process_egid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.actor.process.euid
+      tag: convert_actor_process_euid_to_string
+      type: string
+      ignore_missing: true
+  - date:
+      field: aws_securityhub.finding.actor.process.created_time_dt
+      tag: date_actor_process_created_time_dt
+      target_field: aws_securityhub.finding.actor.process.created_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.actor?.process?.created_time_dt != null && ctx.aws_securityhub.finding.actor.process.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.process.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.actor.process.created_time
+      tag: date_actor_process_created_time
+      target_field: aws_securityhub.finding.actor.process.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.actor?.process?.created_time != null && ctx.aws_securityhub.finding.actor.process.created_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.process.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.process.integrity_id
+      tag: convert_actor_process_integrity_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.actor.process.namespace_pid
+      tag: convert_actor_process_namespace_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.process.namespace_pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.process.pid
+      tag: convert_actor_process_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.process.pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.actor.process.terminated_time_dt
+      tag: date_actor_process_terminated_time_dt
+      target_field: aws_securityhub.finding.actor.process.terminated_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.actor?.process?.terminated_time_dt != null && ctx.aws_securityhub.finding.actor.process.terminated_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.process.terminated_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.actor.process.terminated_time
+      tag: date_actor_process_terminated_time
+      target_field: aws_securityhub.finding.actor.process.terminated_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.actor?.process?.terminated_time != null && ctx.aws_securityhub.finding.actor.process.terminated_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.process.terminated_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.process.tid
+      tag: convert_actor_process_tid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.actor.session.count
+      tag: convert_actor_session_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.session.count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.actor.session.created_time_dt
+      tag: date_actor_session_created_time_dt
+      target_field: aws_securityhub.finding.actor.session.created_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.actor?.session?.created_time_dt != null && ctx.aws_securityhub.finding.actor.session.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.session.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.actor.session.created_time
+      tag: date_actor_session_created_time
+      target_field: aws_securityhub.finding.actor.session.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.actor?.session?.created_time != null && ctx.aws_securityhub.finding.actor.session.created_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.session.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.actor.session.expiration_time_dt
+      tag: date_actor_session_expiration_time_dt
+      target_field: aws_securityhub.finding.actor.session.expiration_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.actor?.session?.expiration_time_dt != null && ctx.aws_securityhub.finding.actor.session.expiration_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.session.expiration_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.actor.session.expiration_time
+      tag: date_actor_session_expiration_time
+      target_field: aws_securityhub.finding.actor.session.expiration_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.actor?.session?.expiration_time != null && ctx.aws_securityhub.finding.actor.session.expiration_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.session.expiration_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.session.is_mfa
+      tag: convert_actor_session_is_mfa_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.session.is_mfa
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.session.is_remote
+      tag: convert_actor_session_is_remote_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.session.is_remote
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.session.is_vpn
+      tag: convert_actor_session_is_vpn_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.session.is_vpn
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.user.has_mfa
+      tag: convert_actor_user_has_mfa_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.user.has_mfa
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.user.risk_level_id
+      tag: convert_actor_user_risk_level_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.actor.user.risk_score
+      tag: convert_actor_user_risk_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.actor.user.risk_score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.actor.user.type_id
+      tag: convert_actor_user_type_id_to_string
+      type: string
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
