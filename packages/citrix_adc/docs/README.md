@@ -14,6 +14,14 @@ This integration is compatible with Citrix NetScaler (ADC) versions that produce
 
 The integration collects syslog data streamed from a configured Citrix NetScaler appliance. Elastic Agent listens for these logs on a specified port, processes them using the integration's ingest pipelines to parse and structure the data, and sends the enriched events to your Elastic cluster.
 
+### Scaling and Performance
+
+To maximize performance and minimize scaling concerns, you can perform the following:
+
+* Prefer CEF logging for application firewall events; use RFC 5424-compliant syslog where supported (NetScaler 14.1+).
+* Choose the appropriate log transport (file, TCP, or UDP) based on your volume and reliability needs.
+* Use multiple Agent inputs or scale syslog receivers as ingestion volume increases.
+
 ## What data does this integration collect?
 
 The Citrix NetScaler (ADC) integration collects logs and events from the following data streams:
