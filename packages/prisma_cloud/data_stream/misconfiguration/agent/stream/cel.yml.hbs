@@ -1,0 +1,144 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  user: {{username}}
+  password: {{password}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - user
+    - password
+    - next.access_token
+program: |
+  (
+    state.want_more ?
+      state
+    :
+      // Generate auth token
+      post_request(
+        state.url.trim_right("/") + "/login",
+        "application/json",
+        {
+          "username": state.user,
+          "password": state.password,
+        }.encode_json()
+      ).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+            "next": {
+              "access_token": body.token,
+            },
+            "url": state.url,
+            "user": state.user,
+            "password": state.password,
+            "batch_size": state.batch_size,
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/authenticate: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+            "batch_size": state.batch_size,
+            "url": state.url,
+            "user": state.user,
+            "password": state.password,
+          }
+      )
+  ).as(state,
+    // Exit if there is an error
+    has(state.?events.error) ?
+    	state
+    :
+      // Fetch scan info which contains the resources with misconfiguration details
+      request("GET",
+        state.url.trim_right("/") + "/resource/scan_info?" + {
+          "scan.status": ["all"],
+          "policy.complianceStandard": ["*"],
+          "limit": [string(state.batch_size)],
+          ?"pageToken": state.?next.pageToken.optMap(v, [v]),
+        }.format_query()
+      ).with({
+        "Header":{
+          "x-redlock-auth": [state.next.access_token],
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+            "events": (has(body.resources) && body.resources.size() > 0 ?
+              body.resources.map(e, {
+                "message": e.encode_json(),
+              })
+            :
+              []
+            ),
+            "next": {
+              ?"access_token": has(body.nextPageToken) ? optional.of(state.next.access_token) : optional.none(),
+              ?"pageToken": has(body.nextPageToken) ? optional.of(body.nextPageToken) : optional.none(),
+            },
+            "batch_size": state.batch_size,
+            "url": state.url,
+            "user": state.user,
+            "password": state.password,
+            "want_more": has(body.nextPageToken),
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/resource/scan_info: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+            "batch_size": state.batch_size,
+            "url": state.url,
+            "user": state.user,
+            "password": state.password,
+          }
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
