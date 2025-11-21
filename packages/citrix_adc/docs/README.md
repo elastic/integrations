@@ -27,7 +27,7 @@ The Citrix NetScaler (ADC) integration collects logs and events from the followi
 
 ## What do I need to use this integration?
 
-*   An Elastic deployment (Elastic Cloud or self-managed).
+*   An Elastic deployment (Elastic Cloud, Serverless, or self-managed).
 *   A Citrix NetScaler (ADC) appliance configured to send syslog data to the Elastic Agent.
 *   Elastic Agent installed on a host that is reachable by the NetScaler appliance over the network.
 
@@ -36,6 +36,8 @@ The Citrix NetScaler (ADC) integration collects logs and events from the followi
 ### Agent-based deployment
 
 Elastic Agent must be installed to collect data from your NetScaler appliance. You can install only one Elastic Agent per host. Elastic Agent streams the syslog data to your Elastic cluster, where the events are processed by the integration's ingest pipelines.
+
+For detailed installation instructions, refer to the Elastic Agent [installation guide](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). Only one Elastic Agent is needed per host.
 
 ### Onboard and configure
 
@@ -53,7 +55,7 @@ Elastic Agent must be installed to collect data from your NetScaler appliance. Y
 #### Set up steps in Kibana
 
 1.  From the Kibana main menu, go to **Management** > **Integrations**.
-2.  Search for "Citrix NetScaler" and select it.
+2.  Search for "Citrix ADC" and select it.
 3.  Click **Add Citrix NetScaler (ADC)**.
 4.  Configure the integration policy:
     *   **Syslog Host**: Set to `0.0.0.0` to listen on all network interfaces of the agent host.
@@ -68,6 +70,21 @@ If you are not seeing data, verify the following:
 *   Check the Elastic Agent logs for any errors related to receiving syslog data.
 
 ## Reference
+
+### Vendor Resources
+- NetScaler Syslog Message Reference: [link](https://developer-docs.netscaler.com/en-us/netscaler-syslog-message-reference/current-release)
+- How to send WAF messages to a separate syslog server: [link](https://support.citrix.com/s/article/CTX138973-how-to-send-application-firewall-messages-to-a-separate-syslog-server)
+- How to send NetScaler Application Firewall logs to external syslog/NS.log: [link](https://support.citrix.com/s/article/CTX483235-send-logs-to-external-syslog-server?language=en_US)
+- Configuring audit log action (RFC 5424): [link](https://docs.netscaler.com/en-us/citrix-adc/current-release/system/audit-logging/configuring-audit-logging.html#configuring-audit-log-action)
+- NITRO API metrics references:
+  - Interface: [link](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/interface/)
+  - LBVserver: [link](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/lb/lbvserver/)
+  - Service: [link](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/basic/service/)
+  - System: [link](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/system/system/)
+  - VPN: [link](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/vpn/vpn/)
+
+### Documentation sites
+- Elastic ECS Field Reference: [link](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### system
 
