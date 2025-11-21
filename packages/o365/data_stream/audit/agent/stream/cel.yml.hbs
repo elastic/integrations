@@ -75,6 +75,34 @@ redact:
   fields:
     - base.tenant_id
 
+# STATE OVERVIEW
+#
+# These variables are set to direct the work of later evaluations:
+#
+# state.stopping_point:      The time just before the start of the current sequence of evaluations.
+# state.todo_types:          The current list of content types to process.
+# state.subscribed:          A map tracking which content types have been subscribed to since restart.
+# state.cursor.todo_content: A list of content items to fetch.
+# state.cursor.todo_links:   A list of listing links, either generated or received.
+# state.cursor.last_for:     A map tracking latest time considered in listings for each content type.
+#
+# LOGIC OVERVIEW
+#
+# Initializations that rewrite state and continue the evaluation:
+# - Rewrite legacy cursor data if present.
+# - Set a stopping point if absent.
+# - Generate the list of content types to process if empty.
+#
+# A check done on every evaluation:
+# - Ensure there is an active content type.
+#
+# Processing steps, only one of which will be performed per evaluation:
+# - If not subscribed to the current type, subscribe and rotate to the next type.
+# - If there is a content item ready to fetch, fetch it.
+# - If there is a prepared listing link, use it to list content items.
+# - If the current type is not up-to-date, generate a listing link for it, or
+#   if the current type is up-to-date, move to the next type, or
+#   if there are no more content types to process, stop.
 program: |-
   (
     // This exists purely to rewrite the cursor from the original list format
