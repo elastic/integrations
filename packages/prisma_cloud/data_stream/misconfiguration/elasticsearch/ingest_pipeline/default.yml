@@ -150,27 +150,9 @@ processors:
       allow_duplicates: false
       if: ctx.user?.name != null && ctx.user.name != ''
   - set:
-      field: user.id
-      tag: set_user_id_from_prisma_cloud_misconfiguration_id
-      copy_from: prisma_cloud.misconfiguration.id
-      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'AWS IAM Credential Report'
-      ignore_empty_value: true
-  - append:
-      field: related.user
-      tag: append_user_id_into_related_user
-      value: '{{{user.id}}}'
-      allow_duplicates: false
-      if: ctx.user?.id != null && ctx.user.id != ''
-  - set:
       field: host.name
       tag: set_host_name_from_prisma_cloud_misconfiguration_name
       copy_from: prisma_cloud.misconfiguration.name
-      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'EC2 Instance' || ctx.prisma_cloud?.misconfiguration?.asset_type == 'Azure Virtual Machine'
-      ignore_empty_value: true
-  - set:
-      field: host.id
-      tag: set_host_id_from_prisma_cloud_misconfiguration_id
-      copy_from: prisma_cloud.misconfiguration.id
       if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'EC2 Instance' || ctx.prisma_cloud?.misconfiguration?.asset_type == 'Azure Virtual Machine'
       ignore_empty_value: true
   - append:
@@ -179,12 +161,6 @@ processors:
       value: '{{{host.name}}}'
       allow_duplicates: false
       if: ctx.host?.name != null && ctx.host.name != ''
-  - append:
-      field: related.hosts
-      tag: append_host_id_into_related_hosts
-      value: '{{{host.id}}}'
-      allow_duplicates: false
-      if: ctx.host?.id != null && ctx.host.id != ''
   - set:
       field: cloud.instance.id
       tag: set_cloud_instance_id_from_prisma_cloud_misconfiguration_id
@@ -247,21 +223,6 @@ processors:
       tag: rename_rrn_to_prisma_cloud_misconfiguration_rrn
       target_field: prisma_cloud.misconfiguration.rrn
       ignore_missing: true
-  - set:
-      field: resource.id
-      tag: set_resource_id_from_prisma_cloud_misconfiguration_rrn
-      copy_from: prisma_cloud.misconfiguration.rrn
-      ignore_empty_value: true
-  - set:
-      field: resource.name
-      tag: set_resource_name_from_prisma_cloud_misconfiguration_name
-      copy_from: prisma_cloud.misconfiguration.name
-      ignore_empty_value: true
-  - set:
-      field: resource.type
-      tag: set_resource_type_from_prisma_cloud_misconfiguration_asset_type
-      copy_from: prisma_cloud.misconfiguration.asset_type
-      ignore_empty_value: true
   - rename:
       field: json.scannedPolicy
       tag: rename_scannedPolicy_to_prisma_cloud_misconfiguration_scanned_policy
@@ -334,6 +295,50 @@ processors:
       tag: set_rule_uuid_from_prisma_cloud_misconfiguration_scanned_policy_id
       copy_from: prisma_cloud.misconfiguration.scanned_policy.id
       ignore_empty_value: true
+  - rename:
+      field: json.unifiedAssetId
+      tag: rename_unifiedAssetId_to_prisma_cloud_misconfiguration_unified_asset_id
+      target_field: prisma_cloud.misconfiguration.unified_asset_id
+      ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_prisma_cloud_misconfiguration_unified_asset_id
+      copy_from: prisma_cloud.misconfiguration.unified_asset_id
+      ignore_empty_value: true
+      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'AWS IAM Credential Report'
+  - append:
+      field: related.user
+      tag: append_user_id_into_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null && ctx.user.id != ''
+  - set:
+      field: host.id
+      tag: set_host_id_from_prisma_cloud_misconfiguration_unified_asset_id
+      copy_from: prisma_cloud.misconfiguration.unified_asset_id
+      if: ctx.prisma_cloud?.misconfiguration?.asset_type == 'EC2 Instance' || ctx.prisma_cloud?.misconfiguration?.asset_type == 'Azure Virtual Machine'
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_id_into_related_hosts
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      if: ctx.host?.id != null && ctx.host.id != ''
+  - set:
+      field: resource.id
+      tag: set_resource_id_from_prisma_cloud_misconfiguration_unified_asset_id
+      copy_from: prisma_cloud.misconfiguration.unified_asset_id
+      ignore_empty_value: true
+  - set:
+      field: resource.name
+      tag: set_resource_name_from_prisma_cloud_misconfiguration_name
+      copy_from: prisma_cloud.misconfiguration.name
+      ignore_empty_value: true
+  - set:
+      field: resource.type
+      tag: set_resource_type_from_prisma_cloud_misconfiguration_asset_type
+      copy_from: prisma_cloud.misconfiguration.asset_type
+      ignore_empty_value: true
   - set:
       field: event.id
       tag: set_event_id_from_resource_id_and_rule_uuid
@@ -357,11 +362,6 @@ processors:
       value: unknown
       if: ctx.result?.evaluation == 'unknown'
       ignore_empty_value: true
-  - rename:
-      field: json.unifiedAssetId
-      tag: rename_unifiedAssetId_to_prisma_cloud_misconfiguration_unified_asset_id
-      target_field: prisma_cloud.misconfiguration.unified_asset_id
-      ignore_missing: true
   - remove:
       field:
         - json
@@ -375,10 +375,10 @@ processors:
         - prisma_cloud.misconfiguration.account_name
         - prisma_cloud.misconfiguration.cloud_type
         - prisma_cloud.misconfiguration.region_id
-        - prisma_cloud.misconfiguration.rrn
         - prisma_cloud.misconfiguration.asset_type
         - prisma_cloud.misconfiguration.scanned_policy.name
         - prisma_cloud.misconfiguration.scanned_policy.id
+        - prisma_cloud.misconfiguration.unified_asset_id
   - script:
       lang: painless
       description: Drops null/empty values recursively.
