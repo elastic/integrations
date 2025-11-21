@@ -1,0 +1,166 @@
+- name: proofpoint_essentials
+  type: group
+  fields:
+    - name: threat
+      type: group
+      fields:
+        - name: cc_addresses
+          type: keyword
+          description: 'A list of email addresses contained within the CC: header, excluding friendly names.'
+        - name: classification
+          type: keyword
+          description: The threat category of the malicious URL.
+        - name: click_ip
+          type: ip
+          description: The external IP address of the user who clicked on the link. If the user is behind a firewall performing network address translation, the IP address of the firewall will be shown.
+        - name: click_time
+          type: date
+          description: The time the user clicked on the URL.
+        - name: completely_rewritten
+          type: keyword
+          description: The rewrite status of the message.
+        - name: customer_eid
+          type: keyword
+          description: The customers entity ID.
+        - name: customer_name
+          type: keyword
+          description: The customer's name, as configured in Essentials.
+        - name: event_type
+          type: keyword
+        - name: from_address
+          type: keyword
+          description: 'The email address contained in the From: header, excluding friendly name.'
+        - name: guid
+          type: keyword
+          description: The ID of the message within PPS. It can be used to identify the message in PPS and is guaranteed to be unique.
+        - name: header_from
+          type: keyword
+          description: 'The full content of the From: header, including any friendly name.'
+        - name: header_reply_to
+          type: keyword
+          description: 'If present, the full content of the Reply-To: header, including any friendly names.'
+        - name: id
+          type: keyword
+          description: The unique id of the click.
+        - name: impostor_score
+          type: long
+          description: The impostor score of the message. Higher scores indicate higher certainty.
+        - name: malware_score
+          type: long
+          description: The malware score of the message. Higher scores indicate higher certainty.
+        - name: message_details_url
+          type: keyword
+          description: A permalink to the messages' details page.
+        - name: message_id
+          type: keyword
+          description: Message-ID extracted from the headers of the email message. It can be used to look up the associated message in PPS and is not unique.
+        - name: message_parts
+          type: group
+          fields:
+            - name: content_type
+              type: keyword
+              description: The true, detected Content-Type of the messagePart. This may differ from the oContentType value.
+            - name: disposition
+              type: keyword
+              description: If the value is "inline", the messagePart is a message body. If the value is "attached", the messagePart is an attachment.
+            - name: filename
+              type: keyword
+              description: The filename of the messagePart.
+            - name: md5
+              type: keyword
+              description: The MD5 hash of the messagePart contents.
+            - name: o_content_type
+              type: keyword
+              description: The declared Content-Type of the messagePart.
+            - name: sandbox_status
+              type: keyword
+              description: The verdict returned by the sandbox during the scanning process.
+            - name: sha256
+              type: keyword
+              description: The SHA256 hash of the messagePart contents.
+        - name: message_size
+          type: long
+          description: The size in bytes of the message, including headers and attachments.
+        - name: message_time
+          type: date
+          description: When the message was delivered to the user or quarantined by PPS.
+        - name: parent_eid
+          type: keyword
+          description: The parent's EID.
+        - name: parent_name
+          type: keyword
+          description: The parent's name, as configured in Essentials.
+        - name: phish_score
+          type: long
+          description: The phish score of the message. Higher scores indicate higher certainty.
+        - name: quarantine_rule
+          type: keyword
+          description: The name of the rule which quarantined the message. This appears only for messagesBlocked events.
+        - name: recipient
+          type: keyword
+          description: An array containing the email addresses of the SMTP (envelope) recipients.
+        - name: reply_to_address
+          type: keyword
+          description: 'The email address contained in the Reply-To: header, excluding friendly name.'
+        - name: sender
+          type: keyword
+          description: The email address of the SMTP (envelope) sender. The user-part is hashed. The domain-part is cleartext.
+        - name: sender_ip
+          type: ip
+          description: The IP address of the sender.
+        - name: spam_score
+          type: long
+          description: The spam score of the message. Higher scores indicate higher certainty.
+        - name: stack_name
+          type: keyword
+          description: The name of the Essentials stack which processed the message.
+        - name: subject
+          type: keyword
+          description: The subject line of the message, if available.
+        - name: threat_id
+          type: keyword
+          description: The unique identifier associated with this threat. It can be used to query the forensics and campaign endpoints.
+        - name: threat_time
+          type: date
+          description: Proofpoint identified the URL as a threat at this time.
+        - name: threat_status
+          type: keyword
+          description: The current state of the threat.
+        - name: threats_info_map
+          type: group
+          fields:
+            - name: actors
+              type: nested
+              description: An array of structures which contain details about the actors associated with a threat.
+            - name: classification
+              type: keyword
+              description: The category of threat found in the message.
+            - name: detection_type
+              type: keyword
+            - name: threat
+              type: keyword
+              description: The artifact which was condemned by Proofpoint. The malicious URL, hash of the attachment threat, or email address of the impostor sender.
+            - name: threat_id
+              type: keyword
+              description: The unique identifier associated with this threat. It can be used to query the forensics and campaign endpoints.
+            - name: threat_status
+              type: keyword
+              description: The current state of the threat.
+            - name: threat_time
+              type: date
+              description: Proofpoint assigned the threatStatus at this time.
+            - name: threat_type
+              type: keyword
+              description: Whether the threat was an attachment, URL, or message type.
+        - name: to_addresses
+          type: keyword
+          description: 'A list of email addresses contained within the To: header, excluding friendly names.'
+        - name: url
+          type: keyword
+          description: The malicious URL which was clicked.
+        - name: user_agent
+          type: keyword
+          description: The User-Agent header from the clicker's HTTP request.
+        - name: xmailer
+          type: keyword
+          description: 'The content of the X-Mailer: header, if present.'
