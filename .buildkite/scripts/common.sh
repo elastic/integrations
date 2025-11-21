@@ -728,7 +728,7 @@ is_pr_affected() {
             return 1
         fi
         if ! is_supported_capability ; then
-            echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
+            echo "[${package}] PR is not affected: capabilities not matched with the project (${SERVERLESS_PROJECT})"
             return 1
         fi
         if [[ "${package}" == "fleet_server" ]]; then
@@ -763,8 +763,17 @@ is_pr_affected() {
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
     # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|CODE_OF_CONDUCT\.md|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml))' > /dev/null; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|CODE_OF_CONDUCT\.md|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml|scripts/packages/.+\.sh))' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
+        return 0
+    fi
+    echoerr "[${package}] git-diff: check custom package checker script file (${commit_merge}..${to})"
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^\.buildkite/scripts/packages/${package}.sh" > /dev/null; then
+        echo "[${package}] PR is affected: found package checker script changes"
         return 0
     fi
     echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
