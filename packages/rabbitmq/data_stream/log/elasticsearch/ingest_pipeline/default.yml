@@ -13,28 +13,61 @@ processors:
   - set:
       field: event.type
       value: ["info"]
+  # Try to parse as JSON log first
+  - json:
+      field: message
+      target_field: rabbitmq.log.json
+      ignore_failure: true
+  # If JSON parsing succeeded, copy fields to ECS fields
+  - set:
+      field: event.original
+      value: "{{message}}"
+      if: "ctx.rabbitmq?.log?.json != null"
+  - set:
+      field: log.level
+      value: "{{rabbitmq.log.json.level}}"
+      if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.level != null"
+  - set:
+      field: rabbitmq.log.pid
+      value: "{{rabbitmq.log.json.pid}}"
+      if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.pid != null"
+  - set:
+      field: rabbitmq.log.domain
+      value: "{{rabbitmq.log.json.domain}}"
+      if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.domain != null"
+  - set:
+      field: message
+      value: "{{rabbitmq.log.json.msg}}"
+      if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.msg != null"
+  - date:
+      if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.time != null"
+      field: rabbitmq.log.json.time
+      target_field: "@timestamp"
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+  # If not JSON, fall back to text parsing
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
-      if: 'ctx.event?.original == null'
+      if: 'ctx.event?.original == null && ctx.rabbitmq?.log?.json == null'
   - grok:
       field: event.original
       pattern_definitions:
         GREEDYMULTILINE: "(.|\n)*"
         ERL_PID: "\\<%{INT}+\\.%{INT}+\\.%{INT}+\\>"
       patterns:
-      - "%{TIMESTAMP_ISO8601:timestamp} \\[%{WORD:log.level}\\] %{ERL_PID:rabbitmq.log.pid}
-        %{GREEDYMULTILINE:message}"
+      - "%{TIMESTAMP_ISO8601:timestamp} \\[%{WORD:log.level}\\] %{ERL_PID:rabbitmq.log.pid} %{GREEDYMULTILINE:message}"
       ignore_missing: true
+      if: "ctx.rabbitmq?.log?.json == null"
   - date:
-      if: "ctx.event.timezone == null"
+      if: "ctx.event.timezone == null && ctx.rabbitmq?.log?.json == null"
       field: timestamp
       target_field: "@timestamp"
       formats:
       - yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
   - date:
-      if: "ctx.event.timezone != null"
+      if: "ctx.event.timezone != null && ctx.rabbitmq?.log?.json == null"
       field: "timestamp"
       target_field: "@timestamp"
       timezone: "{{ event.timezone }}"
@@ -43,6 +76,8 @@ processors:
   - remove:
       field:
         - timestamp
+        - rabbitmq.log.json
+      ignore_missing: true
 on_failure:
 - set:
     field: error.message
