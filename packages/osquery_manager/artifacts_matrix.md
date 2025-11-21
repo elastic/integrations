@@ -2,9 +2,9 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
+**Last Updated**: 2025-11-21
 **Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
+**Total Queries**: 32 (4 core forensic variants + 28 additional)
 **Completion Rate**: 2.2% (1/46 core artifacts fully supported)
 
 ---
@@ -110,6 +110,30 @@ These queries existed in the original repository and provide additional coverage
 
 ---
 
+## Security Detection Queries (Threat Hunting & Persistence)
+
+Advanced threat detection queries using dual-detection methodology (NON_WHITELISTED + LOTL_INDICATOR) to identify suspicious persistence mechanisms and Living off the Land (LotL) attack patterns. These queries are optimized for Elastic Security and map to MITRE ATT&CK techniques.
+
+| # | Query | ✓ | OS | File | MITRE ATT&CK | Description |
+|:-:|-------|:-:|:--:|:----:|--------------|-------------|
+| 1 | scheduled_tasks_windows_elastic | ✅ | Win | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-e5f6-7890-abcd-ef1234567890.json) | T1053.005, T1059.001, T1105 | Detects suspicious Windows scheduled tasks using path-based whitelist filtering and LotL patterns (PowerShell -e, certutil, wscript, etc.) |
+| 2 | crontab_linux_elastic | ✅ | Linux | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-8901-bcde-f12345678901.json) | T1053.003, T1059.004, T1105 | Detects suspicious Linux cron jobs using system directory filtering and LotL patterns (curl\|bash, nc -e, base64 -d, etc.) |
+| 3 | launchd_macos_elastic | ✅ | Mac | [c3d4](kibana/osquery_saved_query/osquery_manager-c3d4e5f6-a7b8-9012-cdef-012345678902.json) | T1543.001, T1543.004, T1059.004, T1105, T1547.011 | Detects suspicious macOS Launch Agents/Daemons using code signature filtering and LotL patterns (curl, osascript, bash -c, base64 -D, etc.) |
+
+**Detection Methodology**:
+- **NON_WHITELISTED**: Flags items not in known-good allowlist (system paths, Apple/vendor signatures, package managers, maintenance tasks)
+- **LOTL_INDICATOR**: Detects Living off the Land attack patterns (abuse of legitimate OS tools)
+- **Combined Detection**: One row per item with aggregated detection reasons, prioritizing LOTL indicators
+- **ECS Mapping**: Full Elastic Common Schema field mappings for integration with Elastic Security
+- **macOS-Specific**: Final WHERE clause filters by LOTL OR unsigned OR non-Apple signed binaries to reduce noise
+
+**Platform Coverage**:
+- ✅ Windows: scheduled_tasks (done)
+- ✅ Linux: crontab (done)
+- ✅ macOS: launchd (done)
+
+---
+
 ## Not Available Artifacts
 
 The following artifacts cannot be queried with standard osquery and require extensions or are not yet supported:
@@ -165,6 +189,10 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
 - ⚠️ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
 - ⚠️ BITS Jobs Database (Windows: via windows_eventlog)
+- ✅ Advanced Threat Detection (Security Detection Queries section):
+  - Windows Scheduled Tasks (T1053.005, T1059.001, T1105)
+  - Linux Cron Jobs (T1053.003, T1059.004, T1105)
+  - macOS Launch Agents/Daemons (T1543.001, T1543.004, T1059.004, T1105, T1547.011)
 
 ### User Activity
 - ⚠️ LNK files (Windows: shortcut_files, file, recent_files tables)

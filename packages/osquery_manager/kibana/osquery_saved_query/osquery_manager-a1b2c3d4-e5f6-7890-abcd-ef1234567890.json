@@ -1,0 +1,123 @@
+{
+    "attributes": {
+        "created_at": "2025-11-21T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detects suspicious Windows scheduled tasks using dual-detection approach: (1) Non-whitelisted tasks not in known-good allowlist and (2) Living off the Land (LotL) attack indicators. Identifies both unsigned/unknown tasks AND abuse of legitimate Windows tools (powershell -e, certutil, wscript, etc.) for persistence, privilege escalation, and lateral movement. Uses path-based whitelist filtering to auto-exclude legitimate Microsoft Windows tasks from System32/SysWOW64 and known-good third-party updaters, while flagging suspicious patterns regardless of code signature. Note: This query is Windows-only (scheduled_tasks table). For Linux persistence, use separate queries with crontab table. For macOS persistence, use separate queries with launchd table. This query provides a live snapshot of currently configured tasks (not historical event log data). Maps to MITRE ATT&CK T1053.005 (Scheduled Task/Job: Scheduled Task), T1059.001 (PowerShell), T1105 (Ingress Tool Transfer).",
+        "ecs_mapping": [
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "action"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "action"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "mtime"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "ctime"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "directory"
+                }
+            },
+            {
+                "key": "rule.category",
+                "value": {
+                    "field": "type"
+                }
+            },
+            {
+                "key": "event.outcome",
+                "value": {
+                    "field": "state"
+                }
+            },
+            {
+                "key": "code_signature.subject_name",
+                "value": {
+                    "field": "subject_name"
+                }
+            },
+            {
+                "key": "code_signature.status",
+                "value": {
+                    "field": "signature_result"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "field": "detection_method"
+                }
+            },
+            {
+                "key": "rule.description",
+                "value": {
+                    "field": "detection_reason"
+                }
+            }
+        ],
+        "id": "scheduled_tasks_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Detects suspicious scheduled tasks via whitelist and LotL patterns\n-- MITRE: T1053.005, T1059.001, T1105\n\nWITH non_whitelisted AS (\n    SELECT \n        st.name,\n        st.action,\n        st.path,\n        st.enabled,\n        st.state,\n        st.hidden,\n        st.last_run_time,\n        st.next_run_time,\n        st.last_run_message,\n        1 AS is_non_whitelisted,\n        0 AS is_lotl\n    FROM scheduled_tasks AS st\n    WHERE st.name IS NOT NULL\n        AND st.name != ''\n        AND st.action IS NOT NULL\n        AND st.action != ''\n        -- Whitelist: Microsoft system tasks from System32/SysWOW64\n        AND NOT (\n            (st.path LIKE '\\Microsoft\\Windows\\%' OR st.path LIKE '\\Microsoft\\Office\\%' OR st.path LIKE '\\Microsoft\\XblGameSave\\%')\n            AND (\n                LOWER(st.action) LIKE '%systemroot%\\system32\\%'\n                OR LOWER(st.action) LIKE '%windir%\\system32\\%'\n                OR LOWER(st.action) LIKE 'c:\\windows\\system32\\%'\n                OR LOWER(st.action) LIKE '%systemroot%\\syswow64\\%'\n                OR LOWER(st.action) LIKE '%windir%\\syswow64\\%'\n                OR LOWER(st.action) LIKE 'c:\\windows\\syswow64\\%'\n                OR LOWER(st.action) LIKE '%programfiles%\\windows defender\\%'\n                OR LOWER(st.action) LIKE 'c:\\program files\\windows defender\\%'\n                OR LOWER(st.action) LIKE '%program files%\\microsoft office\\%'\n                OR LOWER(st.action) LIKE 'c:\\program files\\microsoft office\\%'\n                OR LOWER(st.action) LIKE 'c:\\program files (x86)\\microsoft office\\%'\n            )\n        )\n        -- Whitelist: Defender tasks from legitimate ProgramData\n        AND NOT (\n            st.path LIKE '\\Microsoft\\Windows\\Windows Defender\\%'\n            AND (\n                LOWER(st.action) LIKE 'c:\\programdata\\microsoft\\windows defender\\%'\n                OR LOWER(st.action) LIKE '%\\programdata\\microsoft\\windows defender\\%'\n                OR LOWER(st.action) LIKE '%\\program files\\windows defender\\%'\n            )\n        )\n        -- Whitelist: Edge Update tasks\n        AND NOT (\n            st.path LIKE '\\MicrosoftEdgeUpdate%'\n            OR (st.path LIKE '%EdgeUpdate%' AND st.action LIKE '%Microsoft\\EdgeUpdate\\%')\n        )\n        -- Whitelist: Common Windows executables for Microsoft tasks\n        AND NOT (\n            st.path LIKE '\\Microsoft\\Windows\\%'\n            AND (\n                LOWER(st.action) LIKE 'sc.exe %'\n                OR LOWER(st.action) LIKE 'btudtask.exe%'\n                OR LOWER(st.action) LIKE 'schtasks.exe%'\n                OR LOWER(st.action) LIKE '%wmpnscfg.exe%'\n            )\n        )\n        -- Whitelist: Windows subsystem tasks\n        AND NOT (\n            st.path LIKE '%\\Bluetooth\\%'\n            OR st.path LIKE '%\\UPnP\\%'\n            OR st.path LIKE '%\\UsageAndQualityInsights\\%'\n            OR st.path LIKE '%\\Diagnosis\\%'\n            OR st.path LIKE '%\\UpdateOrchestrator\\%'\n            OR st.path LIKE '%\\WindowsUpdate\\%'\n            OR st.path LIKE '%\\Defrag\\%'\n            OR st.path LIKE '%\\Application Experience\\%'\n            OR st.path LIKE '%\\Location\\%'\n            OR st.path LIKE '%\\Sysmain\\%'\n            OR st.path LIKE '%\\ApplicationData\\%'\n            OR st.path LIKE '%\\DUSM\\%'\n            OR st.path LIKE '%\\capabilityaccessmanager\\%'\n            OR st.path LIKE '%\\AppxDeploymentClient\\%'\n            OR st.path LIKE '%\\Windows Media Sharing\\%'\n        )\n        -- Whitelist: Known-good third-party updaters (Google, Adobe, OneDrive)\n        AND NOT (\n            st.path LIKE '%\\Google\\Update%'\n            AND st.action LIKE '%Google\\Update\\%'\n        )\n        AND NOT (\n            st.path LIKE '%\\Adobe\\%'\n            AND st.action LIKE '%Adobe%'\n        )\n        AND NOT (\n            st.path LIKE '%OneDrive%'\n        )\n),\nlotl_indicators AS (\n    SELECT \n        st.name,\n        st.action,\n        st.path,\n        st.enabled,\n        st.state,\n        st.hidden,\n        st.last_run_time,\n        st.next_run_time,\n        st.last_run_message,\n        0 AS is_non_whitelisted,\n        1 AS is_lotl,\n        CASE\n            WHEN st.action LIKE '%powershell% -e%' OR st.action LIKE '% -enc %' OR st.action LIKE '% -EncodedCommand %' THEN 'PowerShell base64 encoded command'\n            WHEN st.action LIKE '%Invoke-WebRequest%' OR st.action LIKE '%IWR %' OR st.action LIKE '%Invoke-RestMethod%' THEN 'PowerShell download cradle'\n            WHEN st.action LIKE '%-ExecutionPolicy Bypass%' OR st.action LIKE '%-ep bypass%' THEN 'PowerShell execution policy bypass'\n            WHEN st.action LIKE '%-w hidden%' OR st.action LIKE '%-windowstyle hidden%' THEN 'PowerShell hidden window'\n            WHEN st.action LIKE '%IEX(%' OR st.action LIKE '%Invoke-Expression%' THEN 'PowerShell obfuscated command'\n            WHEN st.action LIKE '%[Convert]::FromBase64String%' THEN 'PowerShell base64 decode obfuscation'\n            WHEN st.action LIKE '%certutil% -urlcache%' OR st.action LIKE '%certutil% -f%' THEN 'CertUtil download abuse'\n            WHEN st.action LIKE '%bitsadmin% /transfer%' THEN 'BITSAdmin download abuse'\n            WHEN (st.action LIKE '%C:\\Users\\Public\\%' OR st.action LIKE '%C:\\ProgramData\\%') AND st.action NOT LIKE '%\\ProgramData\\Microsoft\\Windows Defender\\%' THEN 'Suspicious file path (writable by low-priv users)'\n            WHEN st.action LIKE '%\\Temp\\%' OR st.action LIKE '%\\AppData\\Local\\Temp\\%' THEN 'Execution from Temp directory'\n            WHEN st.action LIKE '%wscript.exe%' OR st.action LIKE '%cscript.exe%' THEN 'Windows Script Host abuse'\n            WHEN st.action LIKE '%mshta.exe%' THEN 'MSHTA.exe abuse'\n            WHEN st.action LIKE '%.hta%' OR st.action LIKE '%.vbs%' OR st.action LIKE '%.js%' THEN 'Script file execution'\n            WHEN (st.action LIKE '%regsvr32%' OR st.action LIKE '%rundll32%') AND st.path NOT LIKE '\\Microsoft\\Windows\\%' THEN 'Proxy execution via regsvr32/rundll32'\n            WHEN st.action LIKE '%msiexec%' THEN 'MSI package execution'\n            WHEN st.hidden = 1 AND st.enabled = 1\n                AND st.path NOT LIKE '\\Microsoft\\Windows\\%'\n                AND st.path NOT LIKE '\\Microsoft\\Office\\%'\n                AND st.path NOT LIKE '\\Microsoft\\XblGameSave\\%'\n                AND st.path NOT LIKE '\\Microsoft\\EdgeUpdate\\%'\n                AND st.path NOT LIKE '\\MicrosoftEdgeUpdate%'\n                AND st.path NOT LIKE '%OneDrive%'\n            THEN 'Hidden and enabled scheduled task'\n            ELSE 'Unknown LotL pattern'\n        END AS lotl_reason\n    FROM scheduled_tasks AS st\n    WHERE st.name IS NOT NULL\n        AND st.name != ''\n        AND st.action IS NOT NULL\n        AND st.action != ''\n        AND (\n            st.action LIKE '%powershell% -e%'\n            OR st.action LIKE '% -enc %'\n            OR st.action LIKE '% -EncodedCommand %'\n            OR st.action LIKE '%Invoke-WebRequest%'\n            OR st.action LIKE '%IWR %'\n            OR st.action LIKE '%Invoke-RestMethod%'\n            OR st.action LIKE '%-ExecutionPolicy Bypass%'\n            OR st.action LIKE '%-ep bypass%'\n            OR st.action LIKE '%-w hidden%'\n            OR st.action LIKE '%-windowstyle hidden%'\n            OR st.action LIKE '%IEX(%'\n            OR st.action LIKE '%Invoke-Expression%'\n            OR st.action LIKE '%[Convert]::FromBase64String%'\n            OR st.action LIKE '%certutil% -urlcache%'\n            OR st.action LIKE '%certutil% -f%'\n            OR st.action LIKE '%bitsadmin% /transfer%'\n            OR (st.action LIKE '%C:\\Users\\Public\\%' AND st.action NOT LIKE '%\\ProgramData\\Microsoft\\Windows Defender\\%')\n            OR (st.action LIKE '%C:\\ProgramData\\%' AND st.action NOT LIKE '%\\ProgramData\\Microsoft\\Windows Defender\\%')\n            OR st.action LIKE '%\\Temp\\%'\n            OR st.action LIKE '%\\AppData\\Local\\Temp\\%'\n            OR st.action LIKE '%wscript.exe%'\n            OR st.action LIKE '%cscript.exe%'\n            OR st.action LIKE '%mshta.exe%'\n            OR st.action LIKE '%.hta%'\n            OR st.action LIKE '%.vbs%'\n            OR st.action LIKE '%.js%'\n            OR (st.action LIKE '%regsvr32%' AND st.path NOT LIKE '\\Microsoft\\Windows\\%')\n            OR (st.action LIKE '%rundll32%' AND st.path NOT LIKE '\\Microsoft\\Windows\\%')\n            OR st.action LIKE '%msiexec%'\n            OR (\n                st.hidden = 1 AND st.enabled = 1\n                AND st.path NOT LIKE '\\Microsoft\\Windows\\%'\n                AND st.path NOT LIKE '\\Microsoft\\Office\\%'\n                AND st.path NOT LIKE '\\Microsoft\\XblGameSave\\%'\n                AND st.path NOT LIKE '\\Microsoft\\EdgeUpdate\\%'\n                AND st.path NOT LIKE '\\MicrosoftEdgeUpdate%'\n                AND st.path NOT LIKE '%OneDrive%'\n            )\n        )\n),\ncombined AS (\n    SELECT \n        st.name,\n        st.action,\n        st.path,\n        st.enabled,\n        st.state,\n        st.hidden,\n        st.last_run_time,\n        st.next_run_time,\n        st.last_run_message,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'Scheduled Task (LotL)'\n            ELSE 'Scheduled Task'\n        END AS type,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN 'LOTL_INDICATOR + NON_WHITELISTED'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'LOTL_INDICATOR'\n            ELSE 'NON_WHITELISTED'\n        END AS detection_method,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN MAX(li.lotl_reason) || ' + Not in known-good allowlist'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN MAX(li.lotl_reason)\n            ELSE 'Scheduled task not in known-good allowlist'\n        END AS detection_reason\n    FROM scheduled_tasks AS st\n    LEFT JOIN non_whitelisted AS nw ON st.name = nw.name AND st.path = nw.path AND st.action = nw.action\n    LEFT JOIN lotl_indicators AS li ON st.name = li.name AND st.path = li.path AND st.action = li.action\n    WHERE COALESCE(nw.is_non_whitelisted, 0) = 1 OR COALESCE(li.is_lotl, 0) = 1\n    GROUP BY st.name, st.path, st.action, st.enabled, st.state, st.hidden, st.last_run_time, st.next_run_time, st.last_run_message\n)\nSELECT \n    c.name,\n    c.action,\n    c.path,\n    c.type,\n    c.enabled,\n    c.state,\n    c.hidden,\n    c.last_run_time,\n    c.next_run_time,\n    c.last_run_message,\n    c.detection_method,\n    c.detection_reason,\n    a.subject_name,\n    a.result AS signature_result,\n    h.sha256,\n    h.sha1,\n    h.md5,\n    f.size,\n    f.mtime,\n    f.ctime,\n    f.directory\nFROM combined AS c\nLEFT JOIN authenticode AS a ON c.action = a.path\nLEFT JOIN hash AS h ON c.action = h.path\nLEFT JOIN file AS f ON c.action = f.path\nORDER BY \n    CASE WHEN c.detection_method LIKE 'LOTL_INDICATOR%' THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.hidden DESC,\n    c.name",
+        "updated_at": "2025-11-21T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-21T00:00:00.000Z",
+    "version": "WzEwNTUzLDJd"
+}
