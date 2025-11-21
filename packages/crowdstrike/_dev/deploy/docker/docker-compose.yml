@@ -26,6 +26,21 @@ services:
       - http-server
       - --addr=:8090
       - --config=/files/config-host.yml
+  crowdstrike-govcloud-host:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: api.laggar.gcw.crowdstrike.com
+    ports:
+      - 443
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '443'
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/files/config-host.yml
+      - --tls-cert=/files/host-certificate.crt
+      - --tls-key=/files/host-private.key
   crowdstrike-vulnerability:
     image: docker.elastic.co/observability/stream:v0.18.0
     hostname: crowdstrike-vulnerability
