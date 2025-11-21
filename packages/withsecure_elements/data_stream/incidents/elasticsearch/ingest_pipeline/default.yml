@@ -89,27 +89,23 @@ processors:
   - script:
       lang: painless
       tag: normalize_incident_severity
-      if: ctx.withsecure_elements?.incidents?.severity != null
+      if: ctx.withsecure_elements?.incidents?.riskLevel != null
       source: >
-        def severityValue = ctx.withsecure_elements.incidents.severity;
-        if (severityValue == null) return;
-        if (severityValue instanceof Number) {
-          ctx.event.severity = ((Number) severityValue).intValue();
+        def riskLevelValue = ctx.withsecure_elements.incidents.riskLevel;
+        if (riskLevelValue == null) return;
+        if (riskLevelValue instanceof Number) {
+          ctx.event.severity = ((Number) riskLevelValue).intValue();
           return;
         }
-        def normalized = severityValue.toString().toLowerCase();
-        Map mapping = [
-          'informational': 0,
-          'info'         : 0,
-          'low'          : 1,
-          'medium'       : 2,
-          'moderate'     : 2,
-          'high'         : 3,
-          'severe'       : 4,
-          'critical'     : 5
-        ];
-        if (mapping.containsKey(normalized)) {
-          ctx.event.severity = mapping.get(normalized);
+        def normalized = riskLevelValue.toString().toLowerCase();
+        if (normalized == 'info' || normalized == 'low') {
+          ctx.event.severity = 21;
+        } else if (normalized == 'medium') {
+          ctx.event.severity = 47;
+        } else if (normalized == 'high') {
+          ctx.event.severity = 73;
+        } else if (normalized == 'severe') {
+          ctx.event.severity = 99;
         }
 
   # Set timestamps
