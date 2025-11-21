@@ -1,0 +1,675 @@
+---
+description: Pipeline for processing threat logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.2.0
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  # parse the event JSON
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+
+  # rename to snake case
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      description: Convert camelCase to snake_case.
+      source: |
+        // Helper function to convert camelCase to snake_case
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+
+        // Recursive function to handle nested fields
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            // Convert each key in the map
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              // Skip fields that contain '@' in their name
+              if (!entry.getKey().contains("@")) {
+                String newKey = camelToSnake(entry.getKey());
+                newObj[newKey] = convertToSnakeCase(entry.getValue());
+              }
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            // If it's a list, process each item recursively
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+
+        // Apply the conversion
+        ctx.proofpoint_essentials = ctx.proofpoint_essentials ?: [:];
+        if (ctx.json != null) {
+          ctx.proofpoint_essentials.threat = convertToSnakeCase(ctx.json);
+        }
+
+  # convert values
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+      ignore_missing: true
+  - convert:
+      field: proofpoint_essentials.threat.click_ip
+      tag: convert_click_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.proofpoint_essentials?.threat?.click_ip != ''
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.click_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: proofpoint_essentials.threat.click_time
+      tag: date_click_time
+      target_field: proofpoint_essentials.threat.click_time
+      formats:
+        - ISO8601
+      if: ctx.proofpoint_essentials?.threat?.click_time != null && ctx.proofpoint_essentials.threat.click_time != ''
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.click_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: proofpoint_essentials.threat.impostor_score
+      tag: convert_impostor_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.impostor_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: proofpoint_essentials.threat.malware_score
+      tag: convert_malware_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.malware_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: proofpoint_essentials.threat.message_size
+      tag: convert_message_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.message_size
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: proofpoint_essentials.threat.message_time
+      tag: date_message_time
+      target_field: proofpoint_essentials.threat.message_time
+      formats:
+        - ISO8601
+      if: ctx.proofpoint_essentials?.threat?.message_time != null && ctx.proofpoint_essentials.threat.message_time != ''
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.message_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: proofpoint_essentials.threat.phish_score
+      tag: convert_phish_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.phish_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: proofpoint_essentials.threat.sender_ip
+      tag: convert_sender_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.proofpoint_essentials?.threat?.sender_ip != ''
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.sender_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: proofpoint_essentials.threat.spam_score
+      tag: convert_spam_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.spam_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: proofpoint_essentials.threat.threat_time
+      tag: date_threat_time
+      target_field: proofpoint_essentials.threat.threat_time
+      formats:
+        - ISO8601
+      if: ctx.proofpoint_essentials?.threat?.threat_time != null && ctx.proofpoint_essentials.threat.threat_time != ''
+      on_failure:
+        - remove:
+            field: proofpoint_essentials.threat.threat_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: proofpoint_essentials.threat.threats_info_map
+      if: ctx.proofpoint_essentials?.threat?.threats_info_map instanceof List
+      processor:
+        date:
+          field: _ingest._value.threat_time
+          tag: date_threats_info_map_threat_time
+          target_field: _ingest._value.threat_time
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.threat_time
+  - gsub:
+      field: proofpoint_essentials.threat.message_id
+      pattern: '<|>'
+      replacement: ''
+      ignore_missing: true
+
+  # populate ECS fields
+
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_click_time
+      copy_from: proofpoint_essentials.threat.click_time
+      ignore_empty_value: true
+      if: ctx.proofpoint_essentials?.threat?.event_type == 'clicks_blocked' || ctx.proofpoint_essentials?.threat?.event_type == 'clicks_permitted'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_message_time
+      copy_from: proofpoint_essentials.threat.message_time
+      ignore_empty_value: true
+      if: ctx.proofpoint_essentials?.threat?.event_type == 'messages_blocked' || ctx.proofpoint_essentials?.threat?.event_type == 'messages_delivered'
+  - script:
+      lang: painless
+      description: Set the @timestamp to the maximum of message_time/click_time and threat_time.
+      tag: timestamp-is-maximum
+      if: ctx['@timestamp'] != null
+      source: |
+        def ts = Instant.parse(ctx['@timestamp']);
+        if (ctx.proofpoint_essentials?.threat?.event_type == 'messages_blocked' || ctx.proofpoint_essentials?.threat?.event_type == 'messages_delivered') {
+          if (ctx.proofpoint_essentials.threat.threats_info_map instanceof List) {
+            for (item in ctx.proofpoint_essentials.threat.threats_info_map) {
+              if (item?.threat_time instanceof String && Instant.parse(item.threat_time).isAfter(ts)) {
+                ctx['@timestamp'] = item.threat_time;
+              }
+            }
+          }
+        }
+        if (ctx.proofpoint_essentials?.threat?.event_type == 'clicks_blocked' || ctx.proofpoint_essentials?.threat?.event_type == 'clicks_permitted') {
+          if (ctx.proofpoint_essentials.threat.threat_time instanceof String && Instant.parse(ctx.proofpoint_essentials.threat.threat_time).isAfter(ts)) {
+            ctx['@timestamp'] = ctx.proofpoint_essentials.threat.threat_time;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_email_into_event_category
+      value: email
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      field: event.action
+      tag: set_event_action_to_denied
+      value: denied
+      if: ctx.proofpoint_essentials?.threat?.event_type == 'clicks_blocked' || ctx.proofpoint_essentials?.threat?.event_type == 'messages_blocked'
+  - set:
+      field: event.action
+      tag: set_event_action_to_allowed
+      value: allowed
+      if: ctx.proofpoint_essentials?.threat?.event_type == 'clicks_permitted' || ctx.proofpoint_essentials?.threat?.event_type == 'messages_delivered'
+  - set:
+      field: event.id
+      tag: set_event_id_from_id
+      copy_from: proofpoint_essentials.threat.id
+      if: ctx.proofpoint_essentials?.threat?.event_type == 'clicks_blocked' || ctx.proofpoint_essentials?.threat?.event_type == 'clicks_permitted'
+  - set:
+      field: event.id
+      tag: set_event_id_from_guid
+      copy_from: proofpoint_essentials.threat.guid
+      if: ctx.proofpoint_essentials?.threat?.event_type == 'messages_blocked' || ctx.proofpoint_essentials?.threat?.event_type == 'messages_delivered'
+  - set:
+      field: event.reference
+      tag: set_event_reference_from_message_details_url
+      copy_from: proofpoint_essentials.threat.message_details_url
+      ignore_empty_value: true
+
+  # observer.*
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Proofpoint
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Proofpoint Essentials
+  
+  # destination.*
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_click_ip
+      copy_from: proofpoint_essentials.threat.click_ip
+      ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_ip
+      ignore_missing: true
+
+  # email.*
+  - set:
+      field: email.cc.address
+      tag: set_email_cc_address_from_cc_addresses
+      copy_from: proofpoint_essentials.threat.cc_addresses
+      ignore_empty_value: true
+  - append:
+      field: email.from.address
+      tag: append_from_address_into_email_from_address
+      value: '{{{proofpoint_essentials.threat.from_address}}}'
+      allow_duplicates: false
+      if: ctx.proofpoint_essentials?.threat?.from_address != null
+  - append:
+      field: email.from.address
+      tag: append_sender_into_email_from_address
+      value: '{{{proofpoint_essentials.threat.sender}}}'
+      allow_duplicates: false
+      if: ctx.proofpoint_essentials?.threat?.sender != null && ctx.email?.from?.address == null
+  - set:
+      field: email.message_id
+      tag: set_email_message_id_from_message_id
+      copy_from: proofpoint_essentials.threat.message_id
+      ignore_empty_value: true
+  - foreach:
+      field: proofpoint_essentials.threat.recipient
+      if: ctx.proofpoint_essentials?.threat?.recipient instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_recipient_to_email_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: email.to.address
+      tag: append_recipient_into_email_to_address_1
+      value: '{{{proofpoint_essentials.threat.recipient}}}'
+      allow_duplicates: false
+      if: ctx.proofpoint_essentials?.threat?.recipient instanceof String
+  - set:
+      field: email.reply_to.address
+      tag: set_email_reply_to_address_from_reply_to_address
+      copy_from: proofpoint_essentials.threat.reply_to_address
+      ignore_empty_value: true
+  - set:
+      field: email.sender.address
+      tag: set_email_sender_address_from_sender
+      copy_from: proofpoint_essentials.threat.sender
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_subject
+      copy_from: proofpoint_essentials.threat.subject
+      ignore_empty_value: true
+  - set:
+      field: email.x_mailer
+      tag: set_email_x_mailer_from_xmailer
+      copy_from: proofpoint_essentials.threat.xmailer
+      ignore_empty_value: true
+  - foreach:
+      field: proofpoint_essentials.threat.to_addresses
+      if: ctx.proofpoint_essentials?.threat?.to_addresses instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_to_addresses_to_email_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      description: Map email.attachments from message_parts.
+      tag: script_map_email_attachments
+      if: ctx.proofpoint_essentials?.threat?.message_parts instanceof List
+      source: |
+        ctx.email = ctx.email ?: [:];
+        ctx.email.attachments = ctx.email.attachments ?: [];
+        for (attachment in ctx.proofpoint_essentials.threat.message_parts) {
+          if (attachment.disposition == 'attached') {
+            def o = [:];
+            o.file = [:];
+            o.file.hash = [:];
+            o.file.hash.md5 = attachment.md5;
+            o.file.hash.sha256 = attachment.sha256;
+            o.file.name = attachment.filename;
+            o.file.mime_type = attachment.content_type;
+            ctx.email.attachments.add(o);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  
+  # rule.*
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_quarantine_rule
+      copy_from: proofpoint_essentials.threat.quarantine_rule
+      ignore_empty_value: true
+  
+  # source.*
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_sender_ip
+      copy_from: proofpoint_essentials.threat.sender_ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
+  
+  # threat.*
+  - set:
+      field: threat.indicator.url.original
+      tag: set_threat_indicator_url_original_from_url
+      copy_from: proofpoint_essentials.threat.url
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_url
+      copy_from: proofpoint_essentials.threat.url
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_url
+      value: url
+      if: ctx.threat?.indicator?.url?.original != null
+  - set:
+      field: threat.indicator.last_seen
+      tag: set_threat_indicator_last_seen_from_threat_time
+      copy_from: proofpoint_essentials.threat.threat_time
+      ignore_empty_value: true
+  - script:
+      description: Map threat.indicator.* from threats_info_map field.
+      lang: painless
+      tag: script_map_threat_indicator
+      if: ctx.proofpoint_essentials?.threat?.threats_info_map instanceof List
+      source: |
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
+        ctx.threat.indicator.name = ctx.threat.indicator.name ?: [];
+        ctx.threat.indicator.type = ctx.threat.indicator.type ?: [];
+        ctx.threat.indicator.email = ctx.threat.indicator.email ?: [:];
+        ctx.threat.indicator.email.address = ctx.threat.indicator.email.address ?: [];
+        ctx.threat.indicator.url = ctx.threat.indicator.url ?: [:];
+        ctx.threat.indicator.url.original = ctx.threat.indicator.url.original ?: [];
+        ctx.related = ctx.related ?: [:];
+        ctx.related.hash = ctx.related.hash ?: [];
+        ctx.related.user = ctx.related.user ?: [];
+        for (artifact in ctx.proofpoint_essentials.threat.threats_info_map) {
+          if (artifact.threat != null) {
+
+            // if artifact is hash of the attachment threat
+            if (artifact.threat.length() == 64) {
+              def str = artifact.threat.toLowerCase();
+              def hash_pattern = /^[0-9a-f]{64}$/;
+              if (hash_pattern.matcher(str).matches() && !ctx.related.hash.contains(str)) {
+                ctx.related.hash.add(str);
+              }
+            }
+
+            // if artifact is email address of the impostor sender
+            def email_pattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            if (email_pattern.matcher(artifact.threat).matches() && !ctx.related.user.contains(artifact.threat)) {
+              ctx.threat.indicator.email.address.add(artifact.threat);
+              ctx.threat.indicator.type.add('email-addr');
+              ctx.related.user.add(artifact.threat);
+            }
+
+            // else artifact is malicious url
+            if (artifact.threat_type != null && artifact.threat_type == 'URL') {
+              ctx.threat.indicator.url.original.add(artifact.threat);
+              ctx.threat.indicator.type.add('url'); 
+            }
+
+            ctx.threat.indicator.name.add(artifact.threat);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # user_agent.*
+  - user_agent:
+      field: proofpoint_essentials.threat.user_agent
+      tag: user_agent_threat_user_agent
+      ignore_missing: true
+  
+  # related.*
+  - append:
+      field: related.user
+      tag: append_from_address_to_related_user
+      value: '{{{proofpoint_essentials.threat.from_address}}}'
+      allow_duplicates: false
+      if: ctx.proofpoint_essentials?.threat?.from_address != null
+  - append:
+      field: related.user
+      tag: append_sender_to_related_user
+      value: '{{{proofpoint_essentials.threat.sender}}}'
+      allow_duplicates: false
+      if: ctx.proofpoint_essentials?.threat?.sender != null
+  - foreach:
+      field: proofpoint_essentials.threat.message_parts
+      if: ctx.proofpoint_essentials?.threat?.message_parts instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_message_parts_md5_to_related_hash
+          value: '{{{_ingest._value.md5}}}'
+          allow_duplicates: false
+  - foreach:
+      field: proofpoint_essentials.threat.message_parts
+      if: ctx.proofpoint_essentials?.threat?.message_parts instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_message_parts_sha256_to_related_hash
+          value: '{{{_ingest._value.sha256}}}'
+          allow_duplicates: false
+  - foreach:
+      field: proofpoint_essentials.threat.recipient
+      if: ctx.proofpoint_essentials?.threat?.recipient instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_recipient_to_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false  
+  - append:
+      field: related.user
+      tag: append_reply_to_address_to_related_user
+      value: '{{{proofpoint_essentials.threat.reply_to_address}}}'
+      allow_duplicates: false
+      if: ctx.proofpoint_essentials?.threat?.reply_to_address != null
+  - append:
+      field: related.ip
+      tag: append_sender_ip_to_related_ip
+      value: '{{{proofpoint_essentials.threat.sender_ip}}}'
+      allow_duplicates: false
+      if: ctx.proofpoint_essentials?.threat?.sender_ip != null
+  - foreach:
+      field: proofpoint_essentials.threat.to_addresses
+      if: ctx.proofpoint_essentials?.threat?.to_addresses instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_to_addresses_to_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.ip
+      tag: append_click_ip_to_related_ip
+      value: '{{{proofpoint_essentials.threat.click_ip}}}'
+      allow_duplicates: false
+      if: ctx.proofpoint_essentials?.threat?.click_ip != null
+
+  # Cleanup
+  - remove:
+      field:
+        - json
+      tag: remove_json_field
+      ignore_missing: true
+  - remove:
+      field:
+        - proofpoint_essentials.threat.message_details_url
+        - proofpoint_essentials.threat.click_ip
+        - proofpoint_essentials.threat.cc_addresses
+        - proofpoint_essentials.threat.from_address
+        - proofpoint_essentials.threat.message_id
+        - proofpoint_essentials.threat.recipient
+        - proofpoint_essentials.threat.reply_to_address
+        - proofpoint_essentials.threat.sender
+        - proofpoint_essentials.threat.sender_ip
+        - proofpoint_essentials.threat.subject
+        - proofpoint_essentials.threat.xmailer
+        - proofpoint_essentials.threat.to_addresses
+        - proofpoint_essentials.threat.quarantine_rule
+        - proofpoint_essentials.threat.url
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
