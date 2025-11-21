@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
+**Last Updated**: 2025-11-21
+**Total Core Artifacts**: 2 available + 38 in progress + 6 not available = 46 total variants
 **Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Completion Rate**: 4.3% (2/46 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 2     | 4.3%       |
+| ⚠️ In Progress (Needs Validation) | 38    | 82.6%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -53,7 +53,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 14 | Persistence             | ⚠️ | Win | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
 | 14a | Persistence             | ⚠️ | Linux | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
 | 14b | Persistence             | ⚠️ | Mac | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
-| 15 | PowerShell History      | ⚠️ | Win | -     | -    | powershell_events table                                                                                                          |
+| 15 | PowerShell History      | ✅ | Win | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-e5f6-11ed-8f39-bf9c07530bbb.json) | powershell_events | Comprehensive PowerShell forensic monitoring (Event IDs 4103, 4104, 4688) for fileless malware detection |
 | 16 | Prefetch Files          | ⚠️ | Win | -     | -    | prefetch table                                                                                                                   |
 | 17 | Process Listing         | ⚠️ | Win | -     | -    | processes table                                                                                                                  |
 | 17a | Process Listing         | ⚠️ | Linux | -     | -    | processes table                                                                                                                  |
