@@ -1,0 +1,28 @@
+{
+  "id": "memory_grants_pending",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MicrosoftSQL Server] Memory Grants Pending above threshold",
+    "tags": ["MicrosoftSQL Server"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the memory_grants_pending exceeds the recommended threshold value {5} within the look back time window.\n// The alert is grouped by Server Name.\n// You can adjust the threshold value by modifying the memory_grants_pending in the WHERE clause.\nFROM metrics-microsoft_sqlserver.performance-default\n| KEEP mssql.metrics.memory_grants_pending, mssql.metrics.server_name, @timestamp\n| WHERE mssql.metrics.memory_grants_pending IS NOT NULL\n| STATS memory_grants_pending = MAX(mssql.metrics.memory_grants_pending) BY mssql.metrics.server_name\n| WHERE memory_grants_pending > 5\n| SORT memory_grants_pending DESC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
