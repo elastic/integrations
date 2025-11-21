@@ -1,0 +1,28 @@
+{
+  "id": "azure_ai_foundry-latency-spike",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Azure AI Foundry] Latency high",
+    "tags": ["Azure AI Foundry"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the response latency exceeds the recommended threshold value {5000ms} within the look back time window.\n// The alert is grouped by Model Deployment Name.\n// You can adjust the threshold value by modifying the time_to_response in the WHERE clause, which is specified in milliseconds.\nFROM metrics-azure.ai_foundry-default\n| KEEP azure.ai_foundry.time_to_response.avg, azure.dimensions.model_deployment_name, @timestamp\n| WHERE azure.dimensions.model_deployment_name IS NOT NULL\n| STATS time_to_response = MAX(azure.ai_foundry.time_to_response.avg) BY azure.dimensions.model_deployment_name\n| WHERE time_to_response > 5000\n| EVAL time_to_response = ROUND(time_to_response, 2)\n| SORT time_to_response DESC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
