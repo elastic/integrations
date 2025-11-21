@@ -69,7 +69,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.agentDetectionInfo.siteId
-      target_field: sentinel_one.alert.agent.site_id
+      target_field: sentinel_one.site.id
       ignore_missing: true
   - rename:
       field: json.agentDetectionInfo.uuid
@@ -807,6 +807,10 @@ processors:
       field: json.targetProcessInfo.tgtFilePath
       target_field: sentinel_one.alert.target.process.file.path
       ignore_missing: true
+  - set:
+      field: file.path
+      copy_from: sentinel_one.alert.target.process.file.path
+      ignore_empty_value: true
   - remove:
       field: json
   - script:
