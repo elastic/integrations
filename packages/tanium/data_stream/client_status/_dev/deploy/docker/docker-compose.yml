@@ -1,0 +1,18 @@
+version: "2.3"
+services:
+  tanium-tcp-client_status:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9082 -p=tcp
+      /sample_logs/client_status.log
+  tanium-client_status-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9088/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/client_status.log

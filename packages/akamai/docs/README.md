@@ -62,6 +62,9 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -76,11 +79,11 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2016-08-11T13:45:33.026Z",
     "agent": {
-        "ephemeral_id": "9bba2ff8-f15b-4c09-8ac9-60ee0045a851",
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "0141275b-4c93-4f80-af66-e78e49d1ac2b",
+        "id": "9f1b0ff2-268e-45b7-a318-b5ac07ed663d",
+        "name": "elastic-agent-37151",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.13.0"
     },
     "akamai": {
         "siem": {
@@ -176,31 +179,43 @@ An example event for `siem` looks as following:
         },
         "ip": "89.160.20.156"
     },
+    "cloud": {
+        "provider": "google cloud"
+    },
     "data_stream": {
         "dataset": "akamai.siem",
-        "namespace": "ep",
+        "namespace": "23956",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "9f1b0ff2-268e-45b7-a318-b5ac07ed663d",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2023-05-09T21:06:11.267Z",
         "dataset": "akamai.siem",
         "id": "2ab418ac8515f33",
-        "ingested": "2023-05-09T21:06:12Z",
+        "ingested": "2025-10-08T10:34:19Z",
         "kind": "event",
-        "original": "{\"attackData\":{\"clientIP\":\"89.160.20.156\",\"configId\":\"6724\",\"policyId\":\"scoe_5426\",\"ruleActions\":\"QUxFUlQ;REVOWQ==\",\"ruleData\":\"YWxlcnQo;Y3VybA==\",\"ruleMessages\":\"Q3Jvc3Mtc2l0ZSBTY3 JpcHRpbmcgKFhTUykgQXR0YWNr; UmVxdWVzdCBJbmRpY2F0ZXMgYW4 gYXV0b21hdGVkIHByb2 dyYW0gZXhwbG9yZWQgdGhlIHNpdGU=\",\"ruleSelectors\":\"QVJHUzph;UkVRVUVTVF9IRU FERVJTOlVzZXItQWdlbnQ=\",\"ruleTags\":\"V0VCX0FUVEFDSy9YU1M=;QV VUT01BVElPTi9NSVND\",\"ruleVersions\":\";\",\"rules\":\"OTUwMDA0;OTkwMDEx\"},\"botData\":{\"botScore\":\"100\",\"responseSegment\":\"3\"},\"clientData\":{\"appBundleId\":\"com.mydomain.myapp\",\"appVersion\":\"1.23\",\"sdkVersion\":\"4.7.1\",\"telemetryType\":\"2\"},\"format\":\"json\",\"geo\":{\"asn\":\"12271\",\"city\":\"NEWYORK\",\"continent\":\"NA\",\"country\":\"US\",\"regionCode\":\"NY\"},\"httpMessage\":{\"bytes\":\"34523\",\"host\":\"www.example.com\",\"method\":\"POST\",\"path\":\"/examples/1/\",\"port\":\"80\",\"protocol\":\"http/2\",\"query\":\"a%3D..%2F..%2F..%2Fetc%2Fpasswd\",\"requestHeaders\":\"User-Agent%3a%20BOT%2f0.1%20(BOT%20for%20JCE)%0d%0aAccept%3a%20text%2fhtml,application%2fxhtml+xml\",\"requestId\":\"2ab418ac8515f33\",\"responseHeaders\":\"Server%3a%20AkamaiGHost%0d%0aMime-Version%3a%201.0%0d%0aContent-Type%3a%20text%2fhtml\",\"start\":\"1470923133.026\",\"status\":\"301\",\"tls\":\"TLSv1.2\"},\"type\":\"akamai_siem\",\"userRiskData\":{\"allow\":\"0\",\"general\":\"duc_1h:10|duc_1d:30\",\"risk\":\"udfp:1325gdg4g4343g/M|unp:74256/H\",\"score\":\"75\",\"status\":\"0\",\"trust\":\"ugp:US\",\"uuid\":\"964d54b7-0821-413a-a4d6-8131770ec8d5\"},\"version\":\"1.0\"}",
         "start": "2016-08-11T13:45:33.026Z"
+    },
+    "gcs": {
+        "storage": {
+            "bucket": {
+                "name": "testbucket"
+            },
+            "object": {
+                "content_type": "application/x-ndjson",
+                "name": "siem.log"
+            }
+        }
     },
     "http": {
         "request": {
@@ -214,7 +229,13 @@ An example event for `siem` looks as following:
         "version": "2"
     },
     "input": {
-        "type": "httpjson"
+        "type": "gcs"
+    },
+    "log": {
+        "file": {
+            "path": "gs://testbucket/siem.log"
+        },
+        "offset": 0
     },
     "network": {
         "protocol": "http",
@@ -252,9 +273,8 @@ An example event for `siem` looks as following:
         "ip": "89.160.20.156"
     },
     "tags": [
-        "akamai-siem",
         "forwarded",
-        "preserve_original_event"
+        "akamai-siem"
     ],
     "tls": {
         "version": "1.2",
