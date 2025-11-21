@@ -1,118 +1,119 @@
-# Snort Integration
+# Snort Integration for Elastic
 
-This integration is for [Snort](https://www.snort.org/). 
+## Overview
 
-## Compatibility
+The Snort integration for Elastic collects logs from Snort, a leading open-source Intrusion Prevention System (IPS). It allows for the monitoring of network traffic in real-time to detect security threats, policy violations, and unauthorized access attempts. By collecting and analyzing Snort logs, this integration provides crucial insights for threat detection, network traffic analysis, and compliance monitoring.
 
-This module has been developed against Snort v2.9 and v3, but is expected to work
-with other versions of Snort. This package is designed to read from the PFsense CSV output,
-the Alert Fast output either via reading a local logfile or receiving messages via syslog and the Snort 3 JSON log file.
+This integration facilitates:
+- Real-time visibility into network activity and potential threats.
+- Enhanced security operations through detailed alert analysis.
+- Forensic analysis and performance monitoring by capturing network packets.
 
-## Log
+### Compatibility
 
-An example event for `log` looks as following:
+This integration has been developed against Snort v2.9 and v3, but is expected to work with other versions. It supports logs from various operating systems where Snort can be installed, including multiple Linux distributions, BSD variants (OpenBSD, FreeBSD, NetBSD), Solaris, macOS, and others.
 
-```json
-{
-    "@timestamp": "2022-09-05T16:02:55.000-05:00",
-    "agent": {
-        "ephemeral_id": "3ada3cc1-9563-4aa5-880e-585d87fc6adf",
-        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.2.0"
-    },
-    "data_stream": {
-        "dataset": "snort.log",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "destination": {
-        "address": "175.16.199.1",
-        "geo": {
-            "city_name": "Changchun",
-            "continent_name": "Asia",
-            "country_iso_code": "CN",
-            "country_name": "China",
-            "location": {
-                "lat": 43.88,
-                "lon": 125.3228
-            },
-            "region_iso_code": "CN-22",
-            "region_name": "Jilin Sheng"
-        },
-        "ip": "175.16.199.1"
-    },
-    "ecs": {
-        "version": "8.17.0"
-    },
-    "elastic_agent": {
-        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
-        "snapshot": false,
-        "version": "8.2.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "network"
-        ],
-        "created": "2022-09-05T16:02:55.000-05:00",
-        "dataset": "snort.log",
-        "ingested": "2022-05-09T16:00:09Z",
-        "kind": "alert",
-        "original": "Sep  5 16:02:55 dev snort: [1:1000015:0] Pinging... [Classification: Misc activity] [Priority: 3] {ICMP} 10.50.10.88 -> 175.16.199.1",
-        "severity": 3,
-        "timezone": "-05:00"
-    },
-    "input": {
-        "type": "udp"
-    },
-    "log": {
-        "source": {
-            "address": "172.18.0.4:54924"
-        }
-    },
-    "network": {
-        "community_id": "1:AwywM3uuS+luH6U/hUKtj2x2LWU=",
-        "direction": "outbound",
-        "transport": "icmp",
-        "type": "ipv4"
-    },
-    "observer": {
-        "name": "dev",
-        "product": "ids",
-        "type": "ids",
-        "vendor": "snort"
-    },
-    "process": {
-        "name": "snort"
-    },
-    "related": {
-        "ip": [
-            "10.50.10.88",
-            "175.16.199.1"
-        ]
-    },
-    "rule": {
-        "category": "Misc activity",
-        "description": "Pinging...",
-        "id": "1000015",
-        "version": "0"
-    },
-    "snort": {
-        "gid": 1
-    },
-    "source": {
-        "address": "10.50.10.88",
-        "ip": "10.50.10.88"
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "snort.log"
-    ]
-}
-```
+The following log formats are supported:
+- PFsense CSV output
+- Alert Fast output (from logfile or syslog)
+- Snort 3 JSON log file
+
+This integration is compatible with Elastic Stack versions `^8.11.0 || ^9.0.0`.
+
+### How it works
+
+The integration collects logs from Snort instances in two ways:
+1.  **Log file monitoring**: The Elastic Agent can be configured to read logs directly from Snort's output log files.
+2.  **Syslog**: Snort can be configured to send logs to a syslog server, and the Elastic Agent can listen for these logs on a specified UDP port.
+
+Once collected, the logs are parsed and enriched with relevant metadata before being indexed in Elasticsearch.
+
+## What data does this integration collect?
+
+The Snort integration collects log messages containing information about network traffic, including:
+*   Network packets
+*   Alerts on suspicious activity
+*   Network session information
+*   Protocol analysis data
+
+### Supported use cases
+
+-   **Intrusion Detection System (IDS):** Monitor network traffic in real-time to detect unauthorized access attempts, policy violations, and other security threats.
+-   **Intrusion Prevention System (IPS):** Actively block detected threats to prevent potential damage to the network.
+-   **Packet Sniffing and Logging:** Capture and analyze network packets for troubleshooting, performance monitoring, and forensic analysis.
+-   **Network Traffic Analysis:** Analyze network traffic to identify malicious patterns and anomalies.
+-   **Compliance Monitoring:** Ensure adherence to security policies and regulatory requirements by detecting unauthorized access attempts and other security violations.
+
+## What do I need to use this integration?
+
+-   **Snort Installation**: A running instance of Snort is required.
+-   **Dependencies**: Ensure that required libraries, such as `libpcap`, are installed on the system running Snort.
+-   **User Privileges**: Administrative or root privileges are necessary for the installation and configuration of Snort.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed to collect logs and send them to the Elastic Stack. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+### Onboard / configure
+
+#### 1. Configure Snort
+
+1.  **Install Snort**: If not already installed, download the latest version from the [official website](https://www.snort.org/) and follow the installation instructions for your operating system.
+2.  **Configure `snort.conf`**: Edit the `snort.conf` file to set network variables, define rule paths, and configure output plugins.
+3.  **Configure Log Output**: To send logs to the Elastic Stack, configure Snort to either write to a log file or send logs via syslog.
+    *   **For log file collection**: Ensure the `output alert_fast` or other logging configurations in `snort.conf` write to a predictable file path that the Elastic Agent can access.
+    *   **For syslog collection**: Configure Snort to send logs to the host and port where the Elastic Agent is listening.
+4.  **Test Configuration**: Run Snort in test mode to validate the configuration:
+    ```
+    snort -T -c /path/to/snort.conf
+    ```
+5.  **Start Snort**: Start Snort to begin monitoring network traffic.
+
+#### 2. Configure the Elastic Integration
+
+1.  In Kibana, go to **Management > Integrations**.
+2.  Search for "Snort" and click on it.
+3.  Click **Add Snort**.
+4.  Configure the integration with the appropriate settings. Choose the input type based on your Snort configuration:
+    *   For **logfile collection**, provide the path to the Snort log file (e.g., `/var/log/snort/alert.log`).
+    *   For **syslog collection**, specify the UDP host and port the Elastic Agent should listen on.
+5.  Click **Save and continue**. This will install the necessary assets, such as dashboards and ingest pipelines, and deploy the configuration to the Elastic Agent.
+
+### Validation
+
+1.  **Generate Test Traffic**: Use a tool like `nmap` to simulate network scans or other activities that should trigger Snort alerts.
+2.  **Check Snort Logs**: Review Snort's alert logs to confirm that the test activities were detected and logged.
+3.  **Verify in Kibana**: In Kibana, navigate to the **Discover** tab and search for `data_stream.dataset: "snort.log"`. The alerts should appear in Kibana, confirming end-to-end data flow. You can also check the Snort dashboards for visualizations of the data.
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+**Common Snort Configuration Issues:**
+
+-   **Issue**: Snort fails to start due to configuration errors.
+    -   **Solution**: Run Snort in test mode (`snort -T -c /path/to/snort.conf`) to identify and resolve configuration issues.
+
+-   **Issue**: No alerts are being generated.
+    -   **Solution**: Ensure that Snort is monitoring the correct network interface and that relevant rules are enabled in your `snort.conf`.
+
+For more information, refer to the official [Snort Documentation](https://www.snort.org/documents).
+
+## Scaling
+
+For high-traffic environments, deploying Snort in a distributed architecture with multiple sensors can help balance the load and improve detection capabilities.
+
+For more information on architectures that can be used for scaling Elastic ingest, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### log
+
+The `log` data stream collects all log types from Snort.
+
+#### log fields
 
 **Exported fields**
 
@@ -246,3 +247,152 @@ An example event for `log` looks as following:
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 
+
+#### log sample event
+
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2022-09-05T16:02:55.000-05:00",
+    "agent": {
+        "ephemeral_id": "3ada3cc1-9563-4aa5-880e-585d87fc6adf",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.2.0"
+    },
+    "data_stream": {
+        "dataset": "snort.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "175.16.199.1",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "created": "2022-09-05T16:02:55.000-05:00",
+        "dataset": "snort.log",
+        "ingested": "2022-05-09T16:00:09Z",
+        "kind": "alert",
+        "original": "Sep  5 16:02:55 dev snort: [1:1000015:0] Pinging... [Classification: Misc activity] [Priority: 3] {ICMP} 10.50.10.88 -> 175.16.199.1",
+        "severity": 3,
+        "timezone": "-05:00"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.18.0.4:54924"
+        }
+    },
+    "network": {
+        "community_id": "1:AwywM3uuS+luH6U/hUKtj2x2LWU=",
+        "direction": "outbound",
+        "transport": "icmp",
+        "type": "ipv4"
+    },
+    "observer": {
+        "name": "dev",
+        "product": "ids",
+        "type": "ids",
+        "vendor": "snort"
+    },
+    "process": {
+        "name": "snort"
+    },
+    "related": {
+        "ip": [
+            "10.50.10.88",
+            "175.16.199.1"
+        ]
+    },
+    "rule": {
+        "category": "Misc activity",
+        "description": "Pinging...",
+        "id": "1000015",
+        "version": "0"
+    },
+    "snort": {
+        "gid": 1
+    },
+    "source": {
+        "address": "10.50.10.88",
+        "ip": "10.50.10.88"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "snort.log"
+    ]
+}
+```
+
+### Inputs used
+
+These inputs can be used with this integration:
+<details>
+<summary>logfile</summary>
+
+## Setup
+For more details about the logfile input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-log).
+
+### Collecting logs from logfile
+
+To collect logs via logfile, select **Collect logs via the logfile input** and configure the following parameter:
+
+- Paths: List of glob-based paths to crawl and fetch log files from. Supports glob patterns like
+  `/var/log/*.log` or `/var/log/*/*.log` for subfolder matching. Each file found starts a
+  separate harvester.
+</details>
+<details>
+<summary>udp</summary>
+
+## Setup
+
+For more details about the UDP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp).
+
+### Collecting logs from UDP
+
+To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of UDP packets to accept (default: 10KB, max: 64KB)
+- Read Buffer - UDP socket read buffer size for handling bursts of messages
+- Read Timeout - How long to wait for incoming packets before checking for shutdown
+</details>
+
+
+### API usage
+
+This integration does not use any external APIs.
