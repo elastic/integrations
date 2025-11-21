@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2025-11-21
+**Total Core Artifacts**: 3 available + 37 in progress + 6 not available = 46 total
+**Total Queries**: 30 (3 core forensic + 27 additional)
+**Completion Rate**: 6.5% (3/46 core artifacts)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 3     | 6.5%       |
+| ⚠️ In Progress (Needs Validation) | 37    | 80.4%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -50,9 +50,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 13 | Open Handles            | ❌ | Win | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
 | 13a | Open Handles            | ❌ | Linux | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
 | 13b | Open Handles            | ❌ | Mac | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
-| 14 | Persistence             | ⚠️ | Win | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
-| 14a | Persistence             | ⚠️ | Linux | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
-| 14b | Persistence             | ⚠️ | Mac | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
+| 14 | Startup Items | ✅ | Win | startup_items_windows_elastic | [d4e5](kibana/osquery_saved_query/osquery_manager-d4e5f6a7-b8c9-12de-f345-678901234567.json) | Dual-detection approach: (1) Non-whitelisted binaries, (2) LotL indicators (PowerShell -e, certutil, wscript abuse). Filters known-good tasks while flagging suspicious patterns. MITRE ATT&CK T1547.001, T1059.001, T1105 |
+| 14a | Startup Items | ✅ | Linux | startup_items_linux_elastic | [e5f6](kibana/osquery_saved_query/osquery_manager-e5f6a7b8-c9d0-23ef-4567-890123456789.json) | Dual-detection approach: (1) User-created systemd/cron/XDG autostart, (2) LotL patterns (bash -c, curl pipe bash, base64 -d). Location-based filtering for cross-distro compatibility. MITRE ATT&CK T1543.002, T1053.003, T1547.013, T1059.004, T1105 |
+| 14b | Startup Items | ✅ | Mac | startup_items_darwin_elastic | [f6a7](kibana/osquery_saved_query/osquery_manager-f6a7b8c9-d0e1-34f0-5678-901234567890.json) | Dual-detection approach: (1) Non-Apple signed LaunchAgents/Daemons, (2) LotL patterns (bash -c, curl pipe bash, osascript -e). Signature-based filtering with comprehensive LotL coverage. MITRE ATT&CK T1543.001, T1547.015, T1059.004, T1105 |
 | 15 | PowerShell History      | ⚠️ | Win | -     | -    | powershell_events table                                                                                                          |
 | 16 | Prefetch Files          | ⚠️ | Win | -     | -    | prefetch table                                                                                                                   |
 | 17 | Process Listing         | ⚠️ | Win | -     | -    | processes table                                                                                                                  |
@@ -158,8 +158,10 @@ While some artifacts are not directly available, the existing queries provide st
 - ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
 
 ### Persistence Mechanisms
+- ✅ Startup Items - Windows (Dual-detection: Non-whitelisted binaries + LotL indicators - T1547.001, T1059.001, T1105)
+- ✅ Startup Items - Linux (Dual-detection: User-created systemd/cron/XDG + LotL patterns - T1543.002, T1053.003, T1547.013, T1059.004, T1105)
+- ✅ Startup Items - macOS (Dual-detection: Non-Apple signed LaunchAgents/Daemons + LotL patterns - T1543.001, T1547.015, T1059.004, T1105)
 - ⚠️ Installed Services (All platforms: services table)
-- ⚠️ Persistence (All platforms: multiple tables)
 - ⚠️ Registry (Windows: registry table)
 - ⚠️ Tasks (All platforms: scheduled_tasks table)
 - ⚠️ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
