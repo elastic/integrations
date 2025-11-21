@@ -74,7 +74,7 @@
 It is possible that for some fields, Citrix ADC sets dummy values. For example, a field cpuusagepcnt is represented by citrix_adc.system.cpu.utilization.pct. cpuusagepcnt is set to 4294967295 for some instances. If you also encounter it for some fields, reach out to the Citrix ADC support team.
 
 ## Type conflicts
-If host.ip is shown conflicted under logs-* data view, this issue can be solved by reindexing the Interface, LBVserver, Service, System, and VPN data stream's indices.
+If `host.ip` is shown conflicted under ``logs-*`` data view, this issue can be solved by reindexing the ``Interface``, ``LBVserver``, ``Service``, ``System``, and ``VPN`` data stream's indices.
 
 ## Common Configuration Issues
 - Dashboards not populated: verify the chosen log collection method (file/TCP/UDP) is enabled and correctly configured.
