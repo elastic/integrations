@@ -1,0 +1,28 @@
+{
+  "id": "mysql-replication-lag",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MySQL Replica] Replication Lag High",
+    "tags": ["MySQL Replica"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the p95 query latency exceeds the recommended threshold value of 500 milliseconds within the look back time window. The alerting rule is grouped by host name, query id and schema name. You can adjust the threshold value by modifying the p95_ms value in the WHERE clause, which is specified in milliseconds.\nFROM metrics-mysql.performance-default\n| WHERE `mysql.performance.events_statements.quantile.95` IS NOT NULL\n| STATS p95_ms = max(`mysql.performance.events_statements.quantile.95`/1e9) BY host.name, mysql.performance.events_statements.query_id, mysql.performance.events_statements.schemaname\n| WHERE p95_ms > 500"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
