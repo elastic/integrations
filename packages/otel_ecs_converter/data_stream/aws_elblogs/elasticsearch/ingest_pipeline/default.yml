@@ -1,0 +1,85 @@
+---
+description: "Pipeline for processing sample logs"
+
+processors:
+  - dot_expander:
+      field: "*"
+      path: attributes
+  - dot_expander:
+      field: "*"
+      path: resource.attributes
+  # Common fields
+  - set:
+      field: aws.elb.type
+      copy_from: attributes.network.protocol.name
+  - set:
+      field: aws.elb.name
+      copy_from: resource.attributes.cloud.resource_id
+  - set:
+      field: source.address
+      copy_from: attributes.client.address
+  - set:
+      field: source.port
+      copy_from: attributes.client.port
+  - set:
+      field: http.request.body.bytes
+      copy_from: attributes.http.request.size
+  - set:
+      field: http.response.body.bytes
+      copy_from: attributes.http.response.size
+  - set:
+      field: source.bytes
+      copy_from: attributes.http.request.size
+  - set:
+      field: destination.bytes
+      copy_from: attributes.http.response.size
+  # todo: additional fields once upstream contribution is complete
+  # https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/43757
+  - set:
+      if: 'ctx?.attributes?.http?.request?.method != null'
+      field: http.request.method
+      copy_from: attributes.http.request.method
+  - set:
+      if: 'ctx?.attributes?.url?.full != null'
+      field: _tmp.uri_orig
+      copy_from: attributes.url.full
+  - set:
+      if: 'ctx?.attributes?.network?.protocol?.version != null'
+      field: http.version
+      copy_from: attributes.network.protocol.version
+  - set:
+      if: 'ctx?.attributes?.tls?.cipher != null'
+      field: ssl_cipher
+      copy_from: attributes.tls.cipher
+  - set:
+      if: 'ctx?.attributes?.tls?.protocol?.version != null'
+      field: ssl_protocol
+      copy_from: attributes.tls.protocol.version
+  - set:
+      if: 'ctx?.attributes?.aws?.elb?.tls?.listener?.resource_id != null'
+      field: aws.elb.listener
+      copy_from: attributes.aws.elb.tls.listener.resource_id
+  - set:
+      if: 'ctx?.attributes?.aws?.elb?.status?.code!= null'
+      field: http.response.status_code
+      copy_from: attributes.aws.elb.status.code
+  # Drop OTel attributes
+  - remove:
+      field:
+        - attributes
+        - resource.attributes
+      ignore_missing: true
+  - set:
+      field: pre_extracted
+      value: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
