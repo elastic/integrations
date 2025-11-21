@@ -114,11 +114,11 @@ These queries existed in the original repository and provide additional coverage
 
 Advanced threat detection queries using dual-detection methodology (NON_WHITELISTED + LOTL_INDICATOR) to identify suspicious persistence mechanisms and Living off the Land (LotL) attack patterns. These queries are optimized for Elastic Security and map to MITRE ATT&CK techniques.
 
-| # | Query | ✓ | OS | File | MITRE ATT&CK | Description |
-|:-:|-------|:-:|:--:|:----:|--------------|-------------|
+| # | Query                           | ✓ | OS | File | MITRE ATT&CK | Description |
+|:-:|---------------------------------|:-:|:--:|:----:|--------------|-------------|
 | 1 | scheduled_tasks_windows_elastic | ✅ | Win | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-e5f6-7890-abcd-ef1234567890.json) | T1053.005, T1059.001, T1105 | Detects suspicious Windows scheduled tasks using path-based whitelist filtering and LotL patterns (PowerShell -e, certutil, wscript, etc.) |
-| 2 | crontab_linux_elastic | ✅ | Linux | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-8901-bcde-f12345678901.json) | T1053.003, T1059.004, T1105 | Detects suspicious Linux cron jobs using system directory filtering and LotL patterns (curl\|bash, nc -e, base64 -d, etc.) |
-| 3 | launchd_macos_elastic | ✅ | Mac | [c3d4](kibana/osquery_saved_query/osquery_manager-c3d4e5f6-a7b8-9012-cdef-012345678902.json) | T1543.001, T1543.004, T1059.004, T1105, T1547.011 | Detects suspicious macOS Launch Agents/Daemons using code signature filtering and LotL patterns (curl, osascript, bash -c, base64 -D, etc.) |
+| 2 | crontab_linux_elastic           | ✅ | Linux | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-8901-bcde-f12345678901.json) | T1053.003, T1059.004, T1105 | Detects suspicious Linux cron jobs using system directory filtering and LotL patterns (curl\|bash, nc -e, base64 -d, etc.) |
+| 3 | launchd_darwin_elastic          | ✅ | Mac | [c3d4](kibana/osquery_saved_query/osquery_manager-c3d4e5f6-a7b8-9012-cdef-012345678902.json) | T1543.001, T1543.004, T1059.004, T1105, T1547.011 | Detects suspicious macOS Launch Agents/Daemons using code signature filtering and LotL patterns (curl, osascript, bash -c, base64 -D, etc.) |
 
 **Detection Methodology**:
 - **NON_WHITELISTED**: Flags items not in known-good allowlist (system paths, Apple/vendor signatures, package managers, maintenance tasks)
