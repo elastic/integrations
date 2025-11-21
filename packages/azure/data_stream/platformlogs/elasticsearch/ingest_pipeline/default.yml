@@ -8,11 +8,14 @@ processors:
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
+      description: Renames the Event Hub metadata from the `azure-eventhub` input.
   - script:
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
+      description: 'Cleanup: replaces empty fields with an empty string in the `message` field.'
+
   # BEGIN: Temporary field renaming
   - rename:
       field: azureLogForwarder
@@ -49,6 +52,34 @@ processors:
       field: timestamp
       ignore_missing: true
   # END: Temporary field renaming
+
+  # --------------------------------------
+  # Handle pipeline entry point.
+  # 
+  # The pipelines supports two entry points:
+  # 
+  # 1. `message` field (string): This is the entry point for log events coming 
+  #    from the `azure-eventhub` input or the Azure Native ISV.
+  # 2. `body.structured` field (object): This is the entry point for log 
+  #    events coming from the OpenTelemetry `azurelogs` translator.
+  # --------------------------------------------------------
+
+  # --------------------------------------------------------
+  # Handle `body.structured` field entry point.
+  # --------------------------------------------------------
+  - rename:
+      field: body.structured
+      target_field: azure.platformlogs
+      ignore_missing: true
+      description: 'Renames the `body.structured` field to `azure.platformlogs` to store the structured data.'
+  - remove:      
+      field: body
+      ignore_missing: true
+      description: 'Cleans up the `body` field after the structured data has been moved to the `azure.platformlogs` field.'
+
+  # --------------------------------------------------------
+  # Handle `message` field entry point.
+  # --------------------------------------------------------
   - rename:
       field: message
       target_field: event.original
@@ -63,6 +94,7 @@ processors:
   - json:
       field: event.original
       target_field: azure.platformlogs
+      if: 'ctx.azure?.platformlogs == null'
       on_failure:
         - grok:
             field: event.original
@@ -90,6 +122,10 @@ processors:
             field: tags
             value: ["preserve_original_event"]
             ignore_failure: true
+
+  # Handle the case when the `azure.platformlogs.properties` field is a string.
+  # We need to convert it to a nested object.
+  # --------------------------------------------------------
   - set:
       field: temp_properties
       value: '{{azure.platformlogs.properties}}'
@@ -119,6 +155,10 @@ processors:
       field: temp_properties
       ignore_missing: true
       description: 'Remove the temporary field after successful parsing.'
+
+  # --------------------------------------------------------
+  # Handle `azure.platformlogs` field.
+  # --------------------------------------------------------
   - rename:
       field: azure.platformlogs.Identity
       target_field: azure.platformlogs.identity
