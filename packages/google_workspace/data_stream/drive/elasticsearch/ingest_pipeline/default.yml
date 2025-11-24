@@ -34,6 +34,10 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.events == null
+      description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
+      tag: drop_empty_events
   - date:
       field: json.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
@@ -211,7 +215,7 @@ processors:
   - rename:
       field: google_workspace.drive.target_user
       target_field: google_workspace.drive.target
-      if: ctx.google_workspace.drive.target == null
+      if: ctx.google_workspace?.drive?.target == null
       ignore_missing: true
   - set:
       field: file.type

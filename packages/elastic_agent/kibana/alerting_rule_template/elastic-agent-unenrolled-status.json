@@ -1,0 +1,34 @@
+{
+  "id": "elastic-agent-unenrolled-status",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Elastic Agent] Unenrolled status",
+    "tags": ["Elastic Agent"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM logs-elastic_agent.status_change-default, *:logs-elastic_agent.status_change-default\n| WHERE data_stream.dataset == \"elastic_agent.status_change\" and agentless == false and health_status == \"unenrolled\""
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
