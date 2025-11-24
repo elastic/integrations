@@ -2,9 +2,11 @@
 description: Pipeline for Citrix Native messages
 processors:
   - set:
+      tag: set_citrix_cef_format_647109bc
       field: citrix.cef_format
       value: false
   - grok:
+      tag: grok_citrix_detail_21fa0653
       description: Extract native header and message.
       field: citrix.detail
       patterns:
@@ -14,6 +16,7 @@ processors:
         HEADER: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone} (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
         NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}):%{HOUR}:%{MINUTE}:%{SECOND}'
   - grok:
+      tag: grok__tmp_details_7fe39004
       description: Parse out details.
       field: _tmp.details
       patterns:
@@ -21,6 +24,7 @@ processors:
       pattern_definitions:
         DEFAULT: 'default '
   - set:
+      tag: set_citrix_default_class_7414b158
       field: citrix.default_class
       value: true
       if: ctx._tmp?.default == 'default ' # The trailing space is intended.
@@ -30,4 +34,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

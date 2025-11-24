@@ -5,30 +5,37 @@ processors:
   ## Interface Statistics ##
   ##########################
   - rename:
+      tag: rename_arista_interfaceId_to_arista_interface_id_a68659d0
       field: arista.interfaceId
       target_field: arista.interface.id
       ignore_missing: true
   - rename:
+      tag: rename_arista_rxBytes_to_arista_received_bytes_8eb16853
       field: arista.rxBytes
       target_field: arista.received.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_rxRate_to_arista_received_rate_6f05e75d
       field: arista.rxRate
       target_field: arista.received.rate
       ignore_missing: true
   - convert:
+      tag: convert_arista_received_rate_5d66c616
       field: arista.received.rate
       type: float
       ignore_missing: true
   - rename:
+      tag: rename_arista_txBytes_to_arista_transmitted_bytes_b83ca26d
       field: arista.txBytes
       target_field: arista.transmitted.bytes
       ignore_missing: true
   - rename:
+      tag: rename_arista_txRate_to_arista_transmitted_rate_81423df9
       field: arista.txRate
       target_field: arista.transmitted.rate
       ignore_missing: true
   - convert:
+      tag: convert_arista_transmitted_rate_4400e2fc
       field: arista.transmitted.rate
       type: float
       ignore_missing: true
@@ -38,4 +45,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

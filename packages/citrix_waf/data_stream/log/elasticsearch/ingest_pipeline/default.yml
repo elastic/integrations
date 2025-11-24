@@ -2,14 +2,17 @@
 description: Pipeline for Citrix Web App Firewall logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - grok:
+      tag: grok_event_original_022385c2
       description: Extract header details and message from log line.
       field: event.original
       patterns:
@@ -21,34 +24,42 @@ processors:
         SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})'
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
   - pipeline:
+      tag: pipeline_89a9f5e0
       name: '{{ IngestPipeline "cef" }}'
       if: ctx.citrix?.detail != null && ctx.citrix?.detail.startsWith("CEF:")
   - pipeline:
+      tag: pipeline_57c774a2
       name: '{{ IngestPipeline "native" }}'
       if: ctx.citrix?.detail != null && !ctx.citrix?.detail.startsWith("CEF:")
   - convert:
+      tag: convert_event_severity_5f837ce4
       field: event.severity
       type: long
       ignore_missing: true
   - set:
+      tag: set__conf_tz_offset_473d581a
       field: _conf.tz_offset
       value: UTC
       override: false
   - set:
+      tag: set_event_timezone_66df15c5
       field: event.timezone
       copy_from: _conf.tz_offset
       if: ctx.event?.timezone == null || ctx.event?.timezone == ""
   - date:
+      tag: date__tmp_timestamp8601_39f0e89a
       if: ctx?._tmp?.timestamp8601 != null
       field: _tmp.timestamp8601
       timezone: '{{{event.timezone}}}'
       formats:
         - ISO8601
   - set:
+      tag: set__tmp_timestamp_90c8795d
       field: _tmp.timestamp
       if: ctx._tmp?.timestamp != null && ctx.citrix?.event_year != null
       value: "{{{citrix.event_year}}} {{{_tmp.timestamp}}}"
   - date:
+      tag: date__tmp_timestamp_e583edfc
       if: ctx?._tmp?.timestamp != null
       field: _tmp.timestamp
       timezone: '{{{event.timezone}}}'
@@ -66,6 +77,7 @@ processors:
         - yyyy MMMM  d HH:mm:ss
         - yyyy MMMM dd HH:mm:ss
   - date:
+      tag: date__tmp_timestamp_native_ab5976b2
       if: ctx?._tmp?.timestamp_native != null
       field: _tmp.timestamp_native
       formats:
@@ -73,18 +85,22 @@ processors:
         - yyyy/MM/dd:HH:mm:ss
       timezone: '{{{event.timezone}}}'
   - remove:
+      tag: remove_citrix_event_year_5bf03913
       field: citrix.event_year
       ignore_failure: true
   - geoip:
+      tag: geoip_client_ip_to_client_geo_90831252
       field: client.ip
       target_field: client.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -93,6 +109,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_client_ip_to_client_as_f17fb2b3
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
       target_field: client.as
@@ -101,26 +118,32 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_client_as_asn_to_client_as_number_a6e30d01
       field: client.as.asn
       target_field: client.as.number
       ignore_missing: true
   - rename:
+      tag: rename_client_as_organization_name_to_client_as_organization_name_817a526f
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_url_original_to_url_2956d625
       field: url.original
       target_field: url
       if: ctx.url?.original != null && ctx.url?.original != ""
   - script:
+      tag: script_74b2bac3
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -138,10 +161,17 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
+      tag: remove_3f586893
       field:
         - _tmp
         - _conf
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - remove:
       field:
@@ -153,4 +183,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
