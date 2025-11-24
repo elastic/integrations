@@ -132,11 +132,15 @@ processors:
         if (!(ctx.o365audit.Actions instanceof List)) {
           ctx.o365audit.Actions = [ctx.o365audit.Actions];
         }
+      
+        // Actions contains both a human readable `QueryTime` using AM/PM and an ISO8601 format `QueryTime`
+        // We remove the AM/PM containing `QueryTime` to avoid duplicate field errors on flattening.
+        def queryTimePattern = /,"QueryTime":"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M"|"QueryTime":"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M",/;
         for (def e: ctx.o365audit.Actions) {
           if (e instanceof Map) {
             actions.add(e);
           } else if (e instanceof String) {
-            ctx._tmp.action_strings.add(e);
+            ctx._tmp.action_strings.add(queryTimePattern.matcher(e).replaceAll(''));
           }
         }
         if (actions.length == ctx.o365audit.Actions.length) {
@@ -672,11 +676,11 @@ processors:
       target_field: file.extension
       ignore_missing: true
       if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
-  - append: 
+  - append:
       field: event.category
       value: file
       if: 'ctx.event?.action != null && ["FileAccessed", "FileDeleted", "FileDownloaded", "FileModified", "FileMoved", "FileRenamed", "FileRestored", "FileUploaded", "FolderCopied", "FolderCreated", "FolderDeleted", "FolderModified", "FolderMoved", "FolderRenamed", "FolderRestored"].contains(ctx.event?.action)'
-  - append: 
+  - append:
       field: event.category
       value: configuration
       if: ctx.event?.action == "ComplianceSettingChanged"
@@ -1398,6 +1402,24 @@ processors:
         } else {
           ctx.o365audit.YammerNetworkId = ctx.o365audit.YammerNetworkId.toString();
         }
+  - script:
+      tag: convert_runningtime
+      description: Ensure that RunningTime is not rendered with e-notation or other numeric
+      if: ctx.o365audit?.RunningTime != null
+      source: |-
+        if (ctx.o365audit.RunningTime instanceof double) {
+          ctx.o365audit.RunningTime = ((long)ctx.o365audit.RunningTime).toString();
+        } else {
+          ctx.o365audit.RunningTime = ctx.o365audit.RunningTime.toString();
+        }
+  - script:
+      tag: convert_operationcount
+      description: Ensure that OperationCount is rendered as a long
+      if: ctx.o365audit?.OperationCount != null
+      source: |-
+        if (ctx.o365audit.OperationCount instanceof Number) {
+          ctx.o365audit.OperationCount = ((Number)ctx.o365audit.OperationCount).longValue();
+        }
   - append:
       field: email.message_id
       value: "{{{o365audit.InternetMessageId}}}"
@@ -1446,6 +1468,7 @@ processors:
       field: o365audit.EndTimeUtc
       target_field: o365audit.EndTimeUtc
       tag: date_EndTimeUtc
+      timezone: "UTC"
       formats:
         - ISO8601
       if: ctx.o365audit?.EndTimeUtc != null
@@ -1755,6 +1778,27 @@ processors:
       copy_from: o365audit.AppAccessContext.DeviceId
       tag: set_device_id_from_AppAccessContext_DeviceID
       ignore_empty_value: true
+  - json:
+      tag: json-extract-stringly-ExtendedProperties-additionalDetails
+      field: o365audit.ExtendedProperties.additionalDetails
+      if: ctx.o365audit?.ExtendedProperties?.additionalDetails instanceof String
+      on_failure:
+        - remove:
+            field: o365audit.ExtendedProperties.additionalDetails
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: device.id
+      copy_from: o365audit.ExtendedProperties.additionalDetails.DeviceId
+      tag: set_device_id_from_additionalDetails_DeviceID
+      ignore_empty_value: true
+      override: false
+  - user_agent:
+      field: o365audit.ExtendedProperties.additionalDetails.User-Agent
+      if: ctx.user_agent == null
+      ignore_missing: true
   - set:
       field: session.id
       copy_from: o365audit.AppAccessContext.AADSessionId
@@ -1770,6 +1814,66 @@ processors:
       copy_from: o365audit.ApplicationDisplayName
       tag: set_application_name
       ignore_empty_value: true
+
+  # ExchangeItemAggregated Schema
+  - append:
+      field: event.type
+      value: access
+      if: ctx.o365audit?.RecordType == "50"
+  - append:
+      field: event.category
+      value: email
+      if: ctx.o365audit?.RecordType == "50"
+  - rename:
+      field: o365audit.Messages
+      target_field: o365audit.ExchangeAggregatedMessages
+      tag: rename_messages_exchange
+      description: 'move generic Messages field to the ExchangeAggregatedMessages field type'
+      if: ctx.o365audit?.Messages != null && ctx.o365audit.RecordType == "50"
+  - script:
+      tag: convert_exchange_message_size_to_long
+      if: ctx.o365audit?.ExchangeAggregatedMessages != null
+      lang: painless
+      source: |
+        for (def i = 0; i < ctx.o365audit.ExchangeAggregatedMessages.length; i++) {
+          if (ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems == null) {
+             continue;
+          }
+          for (def j = 0; j < ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems.length; j++) {
+            def size = ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems[j].SizeInBytes;
+            if (size instanceof String) {
+              ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems[j].SizeInBytes = Long.parseLong(size);
+            } else {
+              ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems[j].SizeInBytes = (long)size;
+            }
+          }
+        }
+
+  - rename:
+      field: o365audit.Folders
+      target_field: o365audit.ExchangeAggregatedFolders
+      tag: rename_folders_exchange
+      description: 'move generic Folders field to the O365 ExchangeAggregatedFolders field type'
+      if: ctx.o365audit?.Folders != null && ctx.o365audit.RecordType == "50"
+  - script:
+      tag: convert_exchange_folder_size_to_long
+      if: ctx.o365audit?.ExchangeAggregatedFolders != null
+      lang: painless
+      source: |
+        for (def i = 0; i < ctx.o365audit.ExchangeAggregatedFolders.length; i++) {
+          if (ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems == null) {
+              continue;
+          }
+          for (def j = 0; j < ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems.length; j++) {
+            def size = ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems[j].SizeInBytes;
+            if (size instanceof String) {
+              ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems[j].SizeInBytes = Long.parseLong(size);
+            } else {
+              ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems[j].SizeInBytes = (long)size;
+            }
+          }
+        }
+
   - script:
       description: Handle _tmp.entities.ThreatDetectionMethods containing list of lists.
       lang: painless

@@ -5,18 +5,22 @@ processors:
   ## General Event Parsing ##
   ###########################
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - grok:
+      tag: grok_event_original_75a7bd5b
       field: event.original
       patterns:
         - '<%{NONNEGINT:log.syslog.priority:int}>%{SYSLOGTIMESTAMP:_temp_.raw_date} %{WORD}  %{NOTSPACE}\:[\s]+%{GREEDYDATA:_temp_.full_message}'
   - script:
+      tag: script_36f87397
       description: Translate log.syslog.priority to log.syslog.severity.code and log.syslog.facility.code
       lang: painless
       source: |
@@ -29,6 +33,7 @@ processors:
           ctx.log.syslog['facility'] = facility;
         }
   - script:
+      tag: script_75865bea
       description: Translate log.syslog.facility.code to log.syslog.facility.name
       lang: painless
       params:
@@ -62,6 +67,7 @@ processors:
         }
         ctx.log.syslog.facility.name = params[(ctx.log.syslog.facility.code).toString()];
   - script:
+      tag: script_f122971e
       description: Translate log.syslog.facility.code to log.syslog.facility.name
       lang: painless
       params:
@@ -80,6 +86,7 @@ processors:
         ctx.log.syslog.severity.name = params[(ctx.log.syslog.severity.code).toString()];
   # Remove port number from syslog source, and put to ECS log.syslog.hostname
   - gsub:
+      tag: gsub_log_source_address_to_log_syslog_hostname_3f30a81d
       if: ctx.log?.source?.address != null && ctx.log.source.address != ''
       field: log.source.address
       pattern: :.*
@@ -87,11 +94,13 @@ processors:
       target_field: log.syslog.hostname
   # Parse the JSON message to arista.*
   - json:
+      tag: json__temp__full_message_to_arista_95a60bb9
       field: _temp_.full_message
       target_field: arista
       ignore_failure: true
   # Drop messages we cannot yet parse
   - drop:
+      tag: drop_a2f7de63
       description: Drop events that are not yet supported
       if: |
         Collection supportedClasses = [
@@ -116,36 +125,43 @@ processors:
   ## Event Specific Pipelines ##
   ##############################
   - pipeline:
+      tag: pipeline_ca0e9826
       description: Use a separate pipeline for AdminLoginEvent events
       if: ctx.arista?.class == 'class com.untangle.uvm.event.AdminLoginEvent'
       name: '{{ IngestPipeline "admin_login" }}'
       ignore_missing_pipeline: true
   - pipeline:
+      tag: pipeline_818a75c1
       description: Use a separate pipeline for InterfaceStatEvent events
       if: ctx.arista?.class == 'class com.untangle.uvm.logging.InterfaceStatEvent'
       name: '{{ IngestPipeline "interface_stats" }}'
       ignore_missing_pipeline: true
   - pipeline:
+      tag: pipeline_6315af97
       description: Use a separate pipeline for SystemStatEvent events
       if: ctx.arista?.class == 'class com.untangle.uvm.logging.SystemStatEvent'
       name: '{{ IngestPipeline "system_stats" }}'
       ignore_missing_pipeline: true
   - pipeline:
+      tag: pipeline_3643f4c4
       description: Use a separate pipeline for WebFilterEvent events
       if: ctx.arista?.class == 'class com.untangle.app.web_filter.WebFilterEvent'
       name: '{{ IngestPipeline "web_filter" }}'
       ignore_missing_pipeline: true
   - pipeline:
+      tag: pipeline_51c21c80
       description: Use a separate pipeline for IntrusionPreventionLogEvent events
       if: ctx.arista?.class == 'class com.untangle.app.intrusion_prevention.IntrusionPreventionLogEvent'
       name: '{{ IngestPipeline "intrusion_prevention" }}'
       ignore_missing_pipeline: true
   - pipeline:
+      tag: pipeline_6cc31f3c
       description: Use a separate pipeline for HttpRequestEvent and HttpResponseEvent events
       if: ctx.arista?.class == 'class com.untangle.app.http.HttpRequestEvent' || ctx.arista?.class == 'class com.untangle.app.http.HttpResponseEvent'
       name: '{{ IngestPipeline "http_event" }}'
       ignore_missing_pipeline: true
   - pipeline:
+      tag: pipeline_b3cfb348
       description: Use a separate pipeline for SessionStatsEvent events
       if: ctx.arista?.class == 'class com.untangle.uvm.app.SessionStatsEvent'
       name: '{{ IngestPipeline "session_stats" }}'
@@ -155,24 +171,29 @@ processors:
   ############################
   # Set timezone based on config or locale. Defaults to UTC.
   - set:
+      tag: set__temp__tz_452e10f1
       field: _temp_.tz
       copy_from: _conf.tz_offset
       if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
   - set:
+      tag: set__temp__tz_c02c1420
       field: _temp_.tz
       copy_from: event.timezone
       override: false
       if: ctx.event?.timezone != null
   - set:
+      tag: set__temp__tz_11a55a67
       field: _temp_.tz
       value: UTC
       override: false
   - set:
+      tag: set_event_timezone_7f7859a7
       field: event.timezone
       override: false
       copy_from: _temp_.tz
   # Parse the timestamp from the event if available
   - date:
+      tag: date_arista_timeStamp_8317ee3e
       if: ctx.arista?.timeStamp != null
       timezone: "{{{ event.timezone }}}"
       field: "arista.timeStamp"
@@ -184,9 +205,11 @@ processors:
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
+            tag: remove_event_timezone_f9a71c2e
             field: event.timezone
             ignore_missing: true
         - date:
+            tag: date_arista_timeStamp_24497be9
             if: ctx.arista?.timeStamp != null
             field: "arista.timeStamp"
             formats:
@@ -196,10 +219,12 @@ processors:
               - "yyyy-MM-dd HH:mm:ss.S"
             on_failure:
               - append:
+                  tag: append_error_message_6da19ad9
                   field: error.message
                   value: "Error parsing date from field `arista.timeStamp`. Value of field: {{{ arista.timeStamp }}}: {{{ _ingest.on_failure_message }}}"
   # Fall back to the syslog timestamp if the event does not contain a timestamp
   - date:
+      tag: date__temp__raw_date_d69e2957
       if: ctx._temp_?.raw_date != null && ctx.arista?.timeStamp == null
       timezone: "{{{ event.timezone }}}"
       field: "_temp_.raw_date"
@@ -209,9 +234,11 @@ processors:
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
+            tag: remove_event_timezone_3d2527a7
             field: event.timezone
             ignore_missing: true
         - date:
+            tag: date__temp__raw_date_092b278a
             if: ctx._temp_?.raw_date != null
             field: "_temp_.raw_date"
             formats:
@@ -221,16 +248,19 @@ processors:
               - "yyyy-MM-dd HH:mm:ss.S"
             on_failure:
               - append:
+                  tag: append_error_message_5fde2821
                   field: error.message
                   value: "Error parsing date from syslog timestamp. Value of field: {{{ _temp_.raw_date }}}{{{ _ingest.on_failure_message }}}"
   ##############################################
   ## Move SessionEvent Data Before Processing ##
   ##############################################
   - remove:
+      tag: remove_arista_sessionEvent_timeStamp_a0ade285
       if: ctx.arista?.sessionEvent?.timeStamp != null
       field: arista.sessionEvent.timeStamp
       ignore_missing: true
   - foreach:
+      tag: foreach_arista_sessionEvent_7c53bcd2
       if: ctx.arista?.sessionEvent != null
       field: arista.sessionEvent
       processor:
@@ -248,44 +278,54 @@ processors:
   ## ECS Source Mapping ##
   ########################
   - rename:
+      tag: rename_arista_CClientAddr_to_source_ip_61b62357
       field: arista.CClientAddr
       target_field: source.ip
       ignore_missing: true
   - convert:
+      tag: convert_source_ip_b57304ca
       field: source.ip
       type: ip
       ignore_missing: true
   - rename:
+      tag: rename_arista_CClientPort_to_source_port_dc9271c5
       field: arista.CClientPort
       target_field: source.port
       ignore_missing: true
   - rename:
+      tag: rename_arista_SClientAddr_to_source_nat_ip_5df922f2
       field: arista.SClientAddr
       target_field: source.nat.ip
       ignore_missing: true
   - convert:
+      tag: convert_source_nat_ip_0f3c4387
       field: source.nat.ip
       type: ip
       ignore_missing: true
   - rename:
+      tag: rename_arista_SClientPort_to_source_nat_port_bbc9f380
       field: arista.SClientPort
       target_field: source.nat.port
       ignore_missing: true
   - rename:
+      tag: rename_arista_c2pBytes_to_source_bytes_61292f1a
       field: arista.c2pBytes
       target_field: source.bytes
       ignore_missing: true
   - convert:
+      tag: convert_source_bytes_0c5a9349
       field: source.bytes
       type: integer
       ignore_missing: true
   # Geolocation for source IP
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: "source.ip"
       target_field: "source.geo"
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -294,10 +334,12 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
@@ -305,44 +347,54 @@ processors:
   ## ECS Destination Mapping ##
   #############################
   - rename:
+      tag: rename_arista_CServerAddr_to_destination_ip_22253286
       field: arista.CServerAddr
       target_field: destination.ip
       ignore_failure: true
   - convert:
+      tag: convert_destination_ip_2d5160a7
       field: destination.ip
       type: ip
       ignore_missing: true
   - rename:
+      tag: rename_arista_CServerPort_to_destination_port_2122911c
       field: arista.CServerPort
       target_field: destination.port
       ignore_failure: true
   - rename:
+      tag: rename_arista_SServerAddr_to_destination_nat_ip_b5f4081f
       field: arista.SServerAddr
       target_field: destination.nat.ip
       ignore_failure: true
   - convert:
+      tag: convert_destination_nat_ip_79b6561e
       field: destination.nat.ip
       type: ip
       ignore_missing: true
   - rename:
+      tag: rename_arista_SServerPort_to_destination_nat_port_405a5205
       field: arista.SServerPort
       target_field: destination.nat.port
       ignore_failure: true
   - rename:
+      tag: rename_arista_s2pBytes_to_destination_bytes_5dc8ae67
       field: arista.s2pBytes
       target_field: destination.bytes
       ignore_failure: true
   - convert:
+      tag: convert_destination_bytes_12f421d0
       field: destination.bytes
       type: integer
       ignore_missing: true
   # Geolocation for destination IP
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: "destination.ip"
       target_field: "destination.geo"
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -351,10 +403,12 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
@@ -362,18 +416,22 @@ processors:
   ## ECS Event Mapping ##
   #######################
   - rename:
+      tag: rename_arista_reason_to_event_reason_07f5af7a
       field: arista.reason
       target_field: event.reason
       ignore_missing: true
   - rename:
+      tag: rename_arista_sessionId_to_event_id_ef127c24
       field: arista.sessionId
       target_field: event.id
       ignore_missing: true
   - convert:
+      tag: convert_event_id_d2cffc63
       field: event.id
       type: string
       ignore_missing: true
   - script:
+      tag: script_1b2ec520
       lang: painless
       source: |
         if (ctx?.event == null) {
@@ -403,6 +461,7 @@ processors:
         }
   # Parse event.start
   - date:
+      tag: date_event_start_to_event_start_4af1089d
       if: ctx.event?.start != null
       timezone: "{{{ event.timezone }}}"
       field: event.start
@@ -415,9 +474,11 @@ processors:
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
+            tag: remove_event_timezone_8a6d692d
             field: event.timezone
             ignore_missing: true
         - date:
+            tag: date_event_start_to_event_start_0bb95121
             if: ctx.event?.start != null
             field: event.start
             target_field: event.start
@@ -428,12 +489,15 @@ processors:
               - "yyyy-MM-dd HH:mm:ss.S"
             on_failure:
               - append:
+                  tag: append_error_message_ae95440e
                   field: error.message
                   value: "Error parsing date from field `event.start`. Value of field: {{{ event.start }}}: {{{ _ingest.on_failure_message }}}"
               - remove:
+                  tag: remove_event_end_94904176
                   field: event.end
   # Parse event.end from Unix MS
   - date:
+      tag: date_event_end_to_event_end_86ecdb91
       if: ctx.event?.end != null
       timezone: "{{{ event.timezone }}}"
       field: event.end
@@ -443,9 +507,11 @@ processors:
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
+            tag: remove_event_timezone_83ce7da1
             field: event.timezone
             ignore_missing: true
         - date:
+            tag: date_event_end_to_event_end_12eb103f
             if: ctx.event?.end != null
             field: event.end
             target_field: event.end
@@ -453,12 +519,15 @@ processors:
               - "UNIX_MS"
             on_failure:
               - append:
+                  tag: append_error_message_f7d5eb1e
                   field: error.message
                   value: "Error parsing date from field `event.end`. Value of field: {{{ event.end }}}: {{{ _ingest.on_failure_message }}}"
               - remove:
+                  tag: remove_event_end_5b57992a
                   field: event.end
   # Calculate event.duration from event.start and event.end
   - script:
+      tag: script_8fa62f0f
       lang: painless
       if: ctx.event?.start != null && ctx.event?.end != null
       source: >-
@@ -467,6 +536,7 @@ processors:
         ctx.event['duration'] = ChronoUnit.NANOS.between(eventstart, eventend);
   # Enrich event fields based on arista.class
   - script:
+      tag: script_547ad461
       lang: painless
       params:
         "class com.untangle.app.ad_blocker.AdBlockerEvent":
@@ -590,18 +660,22 @@ processors:
   ## ECS Network Mapping ##
   #########################
   - rename:
+      tag: rename_arista_protocol_to_network_iana_number_e26d9723
       field: arista.protocol
       target_field: network.iana_number
       ignore_missing: true
   - convert:
+      tag: convert_network_iana_number_b5dcb911
       field: network.iana_number
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_arista_protocolName_to_network_transport_c4508f8c
       field: arista.protocolName
       target_field: network.transport
       ignore_missing: true
   - script:
+      tag: script_313eb76c
       description: Calculate network.bytes
       if: (ctx.source?.bytes != null || ctx.destination?.bytes != null) && ctx.network?.bytes == null
       ignore_failure: true
@@ -618,6 +692,7 @@ processors:
           ctx.network.bytes = ctx.source.bytes
         }
   - script:
+      tag: script_25468906
       description: Calculate network.packets
       if: (ctx.source?.packets != null || ctx.destination?.packets != null) && ctx.network?.packets == null
       ignore_failure: true
@@ -634,6 +709,7 @@ processors:
           ctx.network.packets = ctx.source.packets
         }
   - script:
+      tag: script_ee4e3528
       description: Calculate network.direction if zones are not configured
       lang: painless
       if: "ctx?.source?.ip != null && ctx?.destination?.ip != null"
@@ -671,38 +747,47 @@ processors:
           ctx.network.direction = null;
         }
   - community_id:
+      tag: community_id_99f56bc8
       ignore_missing: true
       ignore_failure: true
   ##########################
   ## ECS Observer Mapping ##
   ##########################
   - set:
+      tag: set_observer_product_eec95764
       field: observer.product
       value: "Arista NG Firewall"
   - set:
+      tag: set_observer_vendor_d9a64040
       field: observer.vendor
       value: "Arista"
   - set:
+      tag: set_observer_type_5dddf3ba
       field: observer.type
       value: "firewall"
   - rename:
+      tag: rename_arista_serverIntf_to_observer_egress_interface_id_3e2ff721
       field: arista.serverIntf
       target_field: observer.egress.interface.id
       ignore_missing: true
   - rename:
+      tag: rename_arista_clientIntf_to_observer_ingress_interface_id_4c90abbd
       field: arista.clientIntf
       target_field: observer.ingress.interface.id
       ignore_missing: true
   - convert:
+      tag: convert_observer_egress_interface_id_eb84cf39
       field: observer.egress.interface.id
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_observer_ingress_interface_id_491701d1
       field: observer.ingress.interface.id
       type: string
       ignore_missing: true
   # If interface names and aliases were provided, add them here
   - script:
+      tag: script_16ed71f2
       description: Set interface aliases and names if provided in config
       lang: painless
       source: |-
@@ -740,75 +825,36 @@ processors:
   ## ECS Rule Mapping ##
   ######################
   - rename:
+      tag: rename_arista_category_to_rule_category_13be3a14
       field: arista.category
       target_field: rule.category
       ignore_missing: true
   - rename:
+      tag: rename_arista_policyId_to_rule_ruleset_762871ef
       field: arista.policyId
       target_field: rule.ruleset
       ignore_missing: true
   - convert:
+      tag: convert_rule_ruleset_2040f2bc
       field: rule.ruleset
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_arista_ruleId_to_rule_id_ff19f17f
       field: arista.ruleId
       target_field: rule.id
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_rule_id_652b2ac1
       field: rule.id
       type: string
-      ignore_missing: true
-  ########################
-  ## ECS Source Mapping ##
-  ########################
-  - rename:
-      field: arista.CClientAddr
-      target_field: source.ip
-      ignore_failure: true
-  - convert:
-      field: source.ip
-      type: ip
-      ignore_missing: true
-  - rename:
-      field: arista.CClientPort
-      target_field: source.port
-      ignore_failure: true
-  - rename:
-      field: arista.c2pBytes
-      target_field: source.bytes
-      ignore_failure: true
-  - convert:
-      field: source.bytes
-      type: integer
-      ignore_missing: true
-  # Geolocation for source IP
-  - geoip:
-      field: "source.ip"
-      target_field: "source.geo"
-      ignore_missing: true
-  # IP Autonomous System (AS) Lookup
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-  - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
       ignore_missing: true
   ######################
   ## ECS Tags Mapping ##
   ######################
   - append:
+      tag: append_tags_d1ae9d02
       field: tags
       value: '{{{arista.tagsString}}}'
       if: ctx.arista?.tagsString != null && ctx.arista.tagsString != ''
@@ -818,6 +864,7 @@ processors:
   ## ECS User Mapping ##
   ######################
   - rename:
+      tag: rename_arista_username_to_user_name_e4407650
       field: arista.username
       target_field: user.name
       ignore_missing: true
@@ -825,6 +872,7 @@ processors:
   ## ECS Host Mapping ##
   ######################
   - rename:
+      tag: rename_arista_hostname_to_host_name_8df9842c
       field: arista.hostname
       target_field: host.name
       ignore_missing: true
@@ -833,48 +881,57 @@ processors:
   #########################
   # Hosts
   - append:
+      tag: append_related_hosts_452ef445
       if: ctx.host?.name != null
       field: related.hosts
       value: '{{{host.name}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_b0d7ba0b
       if: ctx.destination?.domain != null
       field: related.hosts
       value: '{{{destination.domain}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_b0d2e007
       if: ctx.source?.domain != null
       field: related.hosts
       value: '{{{source.domain}}}'
       allow_duplicates: false
   # IP Addresses
   - append:
+      tag: append_related_ip_c1a6356b
       if: ctx.destination?.ip != null
       field: related.ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_6a388074
       if: ctx.destination?.nat?.ip != null
       field: related.ip
       value: '{{{destination.nat.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_54415bdd
       if: ctx.host?.ip != null
       field: related.ip
       value: '{{{host.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_8121c591
       if: ctx.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_53b62ed8
       if: ctx.source?.nat?.ip != null
       field: related.ip
       value: '{{{source.nat.ip}}}'
       allow_duplicates: false
   # Users
   - append:
+      tag: append_related_user_837e080f
       if: ctx.user?.name != null
       field: related.user
       value: '{{{user.name}}}'
@@ -883,10 +940,12 @@ processors:
   ## ECS Arista-Specific Mapping ##
   #################################
   - rename:
+      tag: rename_arista_policyId_to_arista_policy_id_7877a8d4
       field: arista.policyId
       target_field: arista.policy.id
       ignore_missing: true
   - rename:
+      tag: rename_arista_policyRuleId_to_arista_policy_rule_id_0617bee1
       field: arista.policyRuleId
       target_field: arista.policy.rule_id
       ignore_missing: true
@@ -894,6 +953,7 @@ processors:
   ## Clean Up ##
   ##############
   - remove:
+      tag: remove_0643803a
       description: Remove Arista fields that are not necessary after parsing to ECS
       field:
         - arista.blocked
@@ -915,20 +975,36 @@ processors:
         - arista.timeStamp
       ignore_missing: true
   - remove:
+      tag: remove_arista_d9ceb304
       description: Remove Arista root field if empty
       field: arista
       if: ctx.arista != null && ctx['arista'].empty
   - remove:
+      tag: remove_5a57e1e9
       field:
         - _temp
         - _temp_
         - _conf
         - _ingest
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
