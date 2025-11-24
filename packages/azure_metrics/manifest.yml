@@ -1,6 +1,6 @@
 name: azure_metrics
 title: Azure Resource Metrics
-version: "1.10.0"
+version: "1.11.0"
 description: Collect metrics from Azure resources with Elastic Agent.
 type: integration
 icons:
@@ -19,9 +19,13 @@ categories:
   - observability
   - azure
   - custom
+  # Added containers category to match policy template categories (container_registry, container_instance, and container_service templates reference containers subcategory)
+  - containers
+  # Added datastore category to match policy template categories (database_account template references datastore subcategory)
+  - datastore
 conditions:
   kibana:
-    version: "~8.17.7 || ^8.18.2 || ^9.0.2"
+    version: "~8.18.8 || ~8.19.5 || ~9.0.8 || ^9.1.5"
 vars:
   - name: client_id
     type: text
@@ -51,6 +55,7 @@ vars:
   - name: refresh_list_interval
     type: text
     title: Refresh list interval
+    description: How often the integration refreshes the list of Azure resources to collect metrics from. For example, if you set this to `30m`, the integration will refresh the list every 30 minutes. Do not set this to a value lower than `600s`.
     multi: false
     required: false
     show_user: true

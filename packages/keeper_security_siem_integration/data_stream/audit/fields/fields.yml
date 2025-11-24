@@ -1,0 +1,106 @@
+---
+# data_stream/audit/fields/fields.yml (Keeper-specific fields)
+- name: timestamp
+  type: date
+  description: Timestamp of the audit event
+  example: "2024-01-15T10:30:45.123Z"
+- name: category
+  type: keyword
+  description: Category of the audit event
+  example: "security"
+- name: audit_event
+  type: keyword
+  description: Type of audit event performed
+  example: "copy_password"
+- name: remote_address
+  type: ip
+  description: IP address from which the action was performed
+  example: "10.15.16.194"
+- name: client_version
+  type: keyword
+  description: Version of the Keeper client used
+  example: "EMConsole.17.0.0"
+- name: username
+  type: keyword
+  description: Username that performed the action
+  example: "user@company.com"
+- name: enterprise_id
+  type: long
+  description: Enterprise identifier
+  example: 1236
+- name: user
+  type: group
+  description: User information
+  fields:
+    - name: name
+      type: keyword
+      description: Username
+    - name: email
+      type: keyword
+      description: User email address
+- name: source
+  type: group
+  description: Source information
+  fields:
+    - name: ip
+      type: ip
+      description: Source IP address
+- name: organization
+  type: group
+  description: Organization information
+  fields:
+    - name: id
+      type: keyword
+      description: Organization identifier
+    - name: name
+      type: constant_keyword
+      value: "keeper-security"
+      description: Organization name
+- name: user_agent
+  type: group
+  description: User agent information
+  fields:
+    - name: original
+      type: keyword
+      description: Original user agent string
+- name: related
+  type: group
+  description: Related fields for correlation
+  fields:
+    - name: user
+      type: keyword
+      description: Related usernames
+    - name: ip
+      type: ip
+      description: Related IP addresses
+- name: source
+  type: group
+  fields:
+    - name: geo
+      type: group
+      description: Geographic location of the source IP (ECS)
+      fields:
+        - name: continent_name
+          type: keyword
+          description: Name of the continent.
+        - name: country_name
+          type: keyword
+          description: Country name.
+        - name: country_iso_code
+          type: keyword
+          description: Country ISO code.
+        - name: region_name
+          type: keyword
+          description: Region/state/province name.
+        - name: region_iso_code
+          type: keyword
+          description: Region ISO code.
+        - name: city_name
+          type: keyword
+          description: City name.
+        - name: timezone
+          type: keyword
+          description: Time zone.
+        - name: location
+          type: geo_point
+          description: Longitude/latitude (for maps & geo queries).

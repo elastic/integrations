@@ -23,6 +23,14 @@ streams:
         required: true
         show_user: false
         default: 100
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum Pages Per Interval is the maximum number of pages that can be collected at each interval.
+        multi: false
+        required: false
+        show_user: false
+        default: 1000
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
@@ -31,11 +39,7 @@ streams:
         required: false
         show_user: false
         description: >-
-          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
-          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
-          tracer will delete any stored traces.
-          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
-          for details.
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
       - name: preserve_original_event
         type: bool
         title: Preserve original event
@@ -62,6 +66,23 @@ streams:
         required: true
         show_user: false
         default: 30s
+      - name: cloud_data
+        title: Cloud Metadata Source
+        description: What source to use to populate `cloud.*` fields.
+        type: select
+        multi: false
+        required: true
+        show_user: false
+        options:
+          - text: Elastic Only
+            value: elastic_cloud_data
+          - text: Provider Only
+            value: provider_cloud_data
+          - text: Elastic and Provider
+            value: both
+          - text: None
+            value: ''
+        default: both
       - name: preserve_duplicate_custom_fields
         required: false
         title: Preserve duplicate custom fields

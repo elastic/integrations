@@ -1,8 +1,8 @@
 type: logs
 title: Akamai SIEM Logs
 streams:
-  - input: httpjson
-    template_path: httpjson.yml.hbs
+  - input: cel
+    template_path: cel.yml.hbs
     title: Akamai SIEM logs
     description: Collect Akamai logs via the SIEM API
     vars:
@@ -67,8 +67,8 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: 24h
-        description: Initial interval to poll for events. Default is 24 hours. Supported units for this parameter are h/m/s.
+        default: 12h
+        description: Initial interval to poll for events. Default is the maximum allowed value of 12 hours. Supported units for this parameter are h/m/s.
       - name: event_limit
         type: integer
         multi: false
@@ -76,6 +76,15 @@ streams:
         show_user: false
         title: Event Limit
         description: Defines the approximate maximum number of security events each fetch returns, in both offset and time-based modes. The default limit is 10000 and the maximum limit available is 600000. Listing an unlimited number of logs isn't possible. Expect requests to return a slightly higher number of security events than you set in the limit parameter, because data is stored in different buckets.
+        default: 10000
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum Pages Per Interval is the maximum number of pages that can be collected at each interval.
+        multi: false
+        required: false
+        show_user: false
+        default: 5000
       - name: proxy_url
         type: text
         title: Proxy URL

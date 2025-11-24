@@ -29,17 +29,17 @@ processors:
         - session
       if: ctx.event?.category != null && ctx.event?.category == "network_session"
       tag: set_event_category
-  - set: 
+  - set:
       field: network.type
       value: ipv4
       if: ctx.netflow?.source_ipv4_address != null || ctx.netflow?.destination_ipv4_address != null
       tag: set_network_type_ipv4
-  - set: 
+  - set:
       field: network.type
       value: ipv6
       if: (ctx.netflow?.source_ipv6_address != null || ctx.netflow?.destination_ipv6_address != null) && ctx.network?.type == null
       tag: set_network_type_ipv6
-  - append: 
+  - append:
       field: network.type
       value: ipv6
       if: (ctx.netflow?.source_ipv6_address != null || ctx.netflow?.destination_ipv6_address != null) && ctx.network?.type == "ipv4"
@@ -81,7 +81,7 @@ processors:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
-      tag: geoip_destination_lookup 
+      tag: geoip_destination_lookup
 
   # IP Autonomous System (AS) Lookup
   - geoip:
@@ -124,7 +124,7 @@ processors:
       tag: rename_as_field_org
   - remove:
       tag: remove_tmp_fields
-      field: 
+      field:
         - _tmp_
       ignore_missing: true
   - pipeline:
@@ -134,10 +134,24 @@ processors:
   - remove:
       tag: remove_conf_fields
       field: "_conf"
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

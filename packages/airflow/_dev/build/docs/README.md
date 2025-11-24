@@ -10,7 +10,11 @@ Use the Airflow integration to:
 - Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
 - Monitor your workflows' performance and status in real-time.
 
-## Data streams
+## Compatibility
+
+The Airflow package is tested with Airflow `2.4.3`. It should work with any `2.*` version.
+
+## What data does this integration collect?
 
 The Airflow integration gathers metric data.
 
@@ -23,19 +27,13 @@ Data stream:
 Note:
 - Users can monitor and view metrics within the ingested documents for Airflow in the `metrics-*` index pattern from `Discover`.
 
-## Compatibility
-
-The Airflow module is tested with Airflow `2.4.0`. It should work with versions `2.0.0` and later.
-
 ## What do I need to use this integration?
 
 Users require Elasticsearch to store and search user data, and Kibana to visualize and manage it. They can utilize the hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
 
-To ingest data from Airflow, users must have [StatsD](https://github.com/statsd/statsd) to receive the same.
+## How do I deploy this integration?
 
-## Setup
-
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, refer to the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Steps to Setup Airflow
 
