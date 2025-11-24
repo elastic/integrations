@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
 env:
-  SETUP_GVM_VERSION: "v0.5.2"
+  SETUP_GVM_VERSION: "v0.6.0"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
   DOCKER_COMPOSE_VERSION: "v2.24.1"
   DOCKER_VERSION: "false" # not required to set since system tests are not running yet
@@ -109,6 +109,8 @@ steps:
   - label: ":github: Report failed tests"
     key: report-failed-tests
     command: ".buildkite/scripts/report_issues.sh"
+    env:
+      CI_MAX_TESTS_REPORTED: 30
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
