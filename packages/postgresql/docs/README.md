@@ -140,57 +140,54 @@ An example event for `activity` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-30T09:14:50.873Z",
+    "@timestamp": "2025-08-04T11:18:45.293Z",
     "agent": {
-        "ephemeral_id": "f065ed3c-78fb-41da-9fe6-88ab3ff0f088",
-        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "30c960ab-2783-4872-b8f2-747d3fd22516",
+        "id": "b36acb54-cf84-4518-a468-71f4bc0cc44a",
+        "name": "elastic-agent-41460",
         "type": "metricbeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "postgresql.activity",
-        "namespace": "ep",
+        "namespace": "88740",
         "type": "metrics"
     },
-    "database": {
-        "oid": 12379
-    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
+        "id": "b36acb54-cf84-4518-a468-71f4bc0cc44a",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.activity",
-        "duration": 6165334,
-        "ingested": "2024-04-30T09:15:02Z",
+        "duration": 22551727,
+        "ingested": "2025-08-04T11:18:48Z",
         "module": "postgresql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "containerized": false,
+        "hostname": "elastic-agent-41460",
         "ip": [
-            "192.168.251.4"
+            "172.18.0.4",
+            "172.25.0.2"
         ],
         "mac": [
-            "02-42-C0-A8-FB-04"
+            "6A-0E-5F-3C-38-88",
+            "FE-F8-13-97-42-E8"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-41460",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.99.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -199,33 +196,15 @@ An example event for `activity` looks as following:
     },
     "postgresql": {
         "activity": {
-            "application_name": "",
-            "backend_start": "2024-04-30T09:14:50.875Z",
-            "client": {
-                "address": "192.168.251.4",
-                "hostname": "",
-                "port": 49266
-            },
-            "database": {
-                "name": "postgres",
-                "oid": 12379
-            },
-            "pid": 113,
-            "query": "SELECT * FROM pg_stat_activity",
-            "query_id": "W/d3kCHhA8b/M4YpzDBJHlJM7xU=",
-            "query_start": "2024-04-30T09:14:50.877Z",
-            "state": "active",
-            "state_change": "2024-04-30T09:14:50.877Z",
-            "transaction_start": "2024-04-30T09:14:50.877Z",
-            "user": {
-                "id": 10,
-                "name": "postgres"
-            },
-            "waiting": false
+            "backend_start": "2025-08-04T11:18:23.847Z",
+            "backend_type": "autovacuum launcher",
+            "pid": 69,
+            "wait_event": "AutovacuumMain",
+            "wait_event_type": "Activity"
         }
     },
     "service": {
-        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10&sslmode=disable",
+        "address": "postgres://svc-postgresql:5432?connect_timeout=10&sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -289,54 +268,54 @@ An example event for `bgwriter` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:38:29.389Z",
+    "@timestamp": "2025-08-04T11:19:45.381Z",
     "agent": {
-        "ephemeral_id": "24686799-f7eb-4c30-b72d-8936c5c0546a",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "fa6e155e-abc0-4afb-9af8-5c95e3add05a",
+        "id": "9e9b065c-94e2-42c0-8d10-9005f4df537a",
+        "name": "elastic-agent-98211",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "postgresql.bgwriter",
-        "namespace": "ep",
+        "namespace": "43672",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "9e9b065c-94e2-42c0-8d10-9005f4df537a",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.bgwriter",
-        "duration": 16119001,
-        "ingested": "2022-01-12T03:38:30Z",
+        "duration": 19163200,
+        "ingested": "2025-08-04T11:19:48Z",
         "module": "postgresql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "containerized": false,
+        "hostname": "elastic-agent-98211",
         "ip": [
-            "172.18.0.4"
+            "172.18.0.4",
+            "172.25.0.2"
         ],
         "mac": [
-            "02-42-C0-A8-FB-04"
+            "16-D1-3C-3E-52-C0",
+            "52-11-95-E5-54-9D"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-98211",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -346,30 +325,15 @@ An example event for `bgwriter` looks as following:
     "postgresql": {
         "bgwriter": {
             "buffers": {
-                "allocated": 187,
-                "backend": 0,
-                "backend_fsync": 0,
-                "checkpoints": 0,
+                "allocated": 150,
                 "clean": 0,
                 "clean_full": 0
             },
-            "checkpoints": {
-                "requested": 0,
-                "scheduled": 0,
-                "times": {
-                    "sync": {
-                        "ms": 0
-                    },
-                    "write": {
-                        "ms": 0
-                    }
-                }
-            },
-            "stats_reset": "2022-01-12T03:38:06.524Z"
+            "stats_reset": "2025-08-04T11:19:23.197Z"
         }
     },
     "service": {
-        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10&sslmode=disable",
+        "address": "postgres://svc-postgresql:5432?connect_timeout=10&sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -423,57 +387,57 @@ An example event for `database` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-01T09:58:10.541Z",
+    "@timestamp": "2025-08-04T11:20:44.602Z",
     "agent": {
-        "ephemeral_id": "f01bc762-745d-4991-8e9e-72d8b06d0460",
-        "id": "de455097-cace-48cd-b1db-e2dda1bf1ecd",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "882ac099-82a3-4c48-8449-82b609937448",
+        "id": "802d8e4d-462b-43d0-b591-7dd61e6a31ac",
+        "name": "elastic-agent-29103",
         "type": "metricbeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "postgresql.database",
-        "namespace": "ep",
+        "namespace": "83453",
         "type": "metrics"
     },
     "database": {
-        "oid": 12379
+        "oid": 0
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "de455097-cace-48cd-b1db-e2dda1bf1ecd",
+        "id": "802d8e4d-462b-43d0-b591-7dd61e6a31ac",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.database",
-        "duration": 17453448,
-        "ingested": "2024-05-01T09:58:22Z",
+        "duration": 9301717,
+        "ingested": "2025-08-04T11:20:47Z",
         "module": "postgresql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "containerized": false,
+        "hostname": "elastic-agent-29103",
         "ip": [
-            "192.168.241.7"
+            "172.18.0.4",
+            "172.25.0.2"
         ],
         "mac": [
-            "02-42-C0-A8-F1-07"
+            "42-B8-08-02-61-FE",
+            "FE-36-D2-50-60-84"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-29103",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.99.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -483,8 +447,8 @@ An example event for `database` looks as following:
     "postgresql": {
         "database": {
             "blocks": {
-                "hit": 2604,
-                "read": 256,
+                "hit": 498,
+                "read": 68,
                 "time": {
                     "read": {
                         "ms": 0
@@ -496,29 +460,28 @@ An example event for `database` looks as following:
             },
             "conflicts": 0,
             "deadlocks": 0,
-            "name": "postgres",
-            "number_of_backends": 1,
-            "oid": 12379,
+            "name": "",
+            "number_of_backends": 0,
+            "oid": 0,
             "rows": {
                 "deleted": 0,
-                "fetched": 1514,
-                "inserted": 43,
-                "returned": 1719,
-                "updated": 3
+                "fetched": 49,
+                "inserted": 27,
+                "returned": 125,
+                "updated": 5
             },
-            "stats_reset": "2024-05-01T09:57:46.179Z",
             "temporary": {
                 "bytes": 0,
                 "files": 0
             },
             "transactions": {
-                "commit": 10,
+                "commit": 0,
                 "rollback": 0
             }
         }
     },
     "service": {
-        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10&sslmode=disable",
+        "address": "postgres://svc-postgresql:5432?connect_timeout=10&sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -581,57 +544,57 @@ An example event for `statement` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-30T09:17:42.181Z",
+    "@timestamp": "2025-08-04T11:22:46.129Z",
     "agent": {
-        "ephemeral_id": "0bad7d4e-66f6-408c-9ae4-f6f4daddb7ab",
-        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "c1cd0f49-e39b-4ebb-b99a-f6fe8ce87bcf",
+        "id": "9624ecf5-759b-4014-b5a0-0cbc00753e65",
+        "name": "elastic-agent-26975",
         "type": "metricbeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "postgresql.statement",
-        "namespace": "ep",
+        "namespace": "50293",
         "type": "metrics"
     },
     "database": {
-        "oid": 12379
+        "oid": 5
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
+        "id": "9624ecf5-759b-4014-b5a0-0cbc00753e65",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.statement",
-        "duration": 5544043,
-        "ingested": "2024-04-30T09:17:54Z",
+        "duration": 10331273,
+        "ingested": "2025-08-04T11:22:49Z",
         "module": "postgresql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "containerized": false,
+        "hostname": "elastic-agent-26975",
         "ip": [
-            "192.168.251.4"
+            "172.18.0.4",
+            "172.25.0.2"
         ],
         "mac": [
-            "02-42-C0-A8-FB-04"
+            "9A-B6-B6-AC-DC-EA",
+            "BA-9C-5B-0B-F3-8F"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-26975",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.99.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -641,11 +604,11 @@ An example event for `statement` looks as following:
     "postgresql": {
         "statement": {
             "database": {
-                "oid": 12379
+                "oid": 5
             },
             "query": {
                 "calls": 2,
-                "id": 1691311383,
+                "id": -5746151688169000000,
                 "memory": {
                     "local": {
                         "dirtied": 0,
@@ -655,7 +618,7 @@ An example event for `statement` looks as following:
                     },
                     "shared": {
                         "dirtied": 0,
-                        "hit": 12,
+                        "hit": 14,
                         "read": 0,
                         "written": 0
                     },
@@ -665,22 +628,22 @@ An example event for `statement` looks as following:
                     }
                 },
                 "rows": 6,
-                "text": "SELECT d.datname as \"Name\",\n       pg_catalog.pg_get_userbyid(d.datdba) as \"Owner\",\n       pg_catalog.pg_encoding_to_char(d.encoding) as \"Encoding\",\n       d.datcollate as \"Collate\",\n       d.datctype as \"Ctype\",\n       pg_catalog.array_to_string(d.datacl, ?) AS \"Access privileges\"\nFROM pg_catalog.pg_database d\nORDER BY 1;",
+                "text": "SELECT\n  d.datname as \"Name\",\n  pg_catalog.pg_get_userbyid(d.datdba) as \"Owner\",\n  pg_catalog.pg_encoding_to_char(d.encoding) as \"Encoding\",\n  CASE d.datlocprovider WHEN $1 THEN $2 WHEN $3 THEN $4 WHEN $5 THEN $6 END AS \"Locale Provider\",\n  d.datcollate as \"Collate\",\n  d.datctype as \"Ctype\",\n  d.datlocale as \"Locale\",\n  d.daticurules as \"ICU Rules\",\n  CASE WHEN pg_catalog.array_length(d.datacl, $7) = $8 THEN $9 ELSE pg_catalog.array_to_string(d.datacl, $10) END AS \"Access privileges\"\nFROM pg_catalog.pg_database d\nORDER BY 1",
                 "time": {
                     "max": {
-                        "ms": 0.107
+                        "ms": 0.126893
                     },
                     "mean": {
                         "ms": 0
                     },
                     "min": {
-                        "ms": 0.096
+                        "ms": 0.077674
                     },
                     "stddev": {
                         "ms": 0
                     },
                     "total": {
-                        "ms": 0.203
+                        "ms": 0.204567
                     }
                 }
             },
@@ -690,7 +653,7 @@ An example event for `statement` looks as following:
         }
     },
     "service": {
-        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10&sslmode=disable",
+        "address": "postgres://svc-postgresql:5432?connect_timeout=10&sslmode=disable",
         "type": "postgresql"
     }
 }
