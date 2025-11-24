@@ -35,7 +35,7 @@ if ! process_package "${package}" ; then
 fi
 popd > /dev/null
 
-if [ "${exit_code}" -ne 0 ]] ; then
+if [ "${exit_code}" -ne 0 ] ; then
   exit "${exit_code}"
 fi
 
