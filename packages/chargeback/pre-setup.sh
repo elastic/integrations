@@ -18,7 +18,9 @@ PUT chargeback_conf_lookup
       "conf_ecu_rate_unit": { "type": "keyword"},
       "conf_indexing_weight": { "type": "integer" },
       "conf_query_weight": { "type": "integer" },
-      "conf_storage_weight": { "type": "integer" }
+      "conf_storage_weight": { "type": "integer" },
+      "conf_start_date": {"type": "date"},
+      "conf_end_date": {"type": "date"}
     }
   }
 }
@@ -31,7 +33,9 @@ POST chargeback_conf_lookup/_doc/config
   "conf_ecu_rate_unit": "EUR",
   "conf_indexing_weight": 20,
   "conf_query_weight": 20,
-  "conf_storage_weight": 40
+  "conf_storage_weight": 40,
+  "conf_start_date": "2024-01-01T12:00:00.000Z",
+  "conf_end_date": "2030-12-31T23:59:59.000Z"
 }
 
 # Create data view used for control.
