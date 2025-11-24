@@ -1,0 +1,165 @@
+config_version: 2
+interval: {{interval}}
+resource:
+  url: {{api_host}}/siem/v1/configs/{{config_ids}}
+  {{#if ssl}}
+  ssl: {{ssl}}
+  {{/if}}
+  {{#if http_client_timeout}}
+  timeout: {{http_client_timeout}}
+  {{/if}}
+  {{#if proxy_url }}
+  proxy_url: {{proxy_url}}
+  {{/if}}
+  tracer:
+    enabled: {{enable_request_tracer}}
+    filename: "../../logs/cel/http-request-trace-*.ndjson"
+    maxbackups: 5
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+
+state:
+  client_token: {{client_token}}
+  access_token: {{access_token}}
+  client_secret: {{client_secret}}
+  initial_interval: {{initial_interval}}
+  event_limit: {{event_limit}}
+
+redact:
+  fields:
+    - client_secret
+    - access_token
+    - client_token  
+
+program: |-
+  state.with(
+    (
+      state.?cursor.recovery_mode.orValue(false) ?
+        {
+          "from": int(now - duration("12h")),
+          "to": int(now - duration("1m")),
+        }
+      : state.?cursor.last_offset.hasValue() ?
+        {
+          "offset": state.cursor.last_offset,
+        }
+      :
+        {
+          "from": max(int(now - duration(state.initial_interval)), int(now - duration("12h"))),
+          "to": int(now - duration("1m")),
+        }
+    ).as(params,
+      (
+        state.url.trim_right("/") + "?" + {
+          "limit": [string(state.event_limit)],
+          ?"from": params.?from.optMap(v, [string(v)]),
+          ?"to": params.?to.optMap(v, [string(v)]),
+          ?"offset": params.?offset.optMap(v, [string(v)]),
+        }.format_query()
+      ).as(request_url,
+        now.format("20060102T15:04:05-0700").as(timestamp,
+          uuid().as(nonce,
+            sprintf(
+              "EG1-HMAC-SHA256 client_token=%s;access_token=%s;timestamp=%s;nonce=%s;",
+              [state.client_token, state.access_token, timestamp, nonce]
+            ).as(sig_base,
+              base64(hmac(timestamp, "sha256", bytes(state.client_secret))).as(sig_key,
+                request_url.parse_url().as(u,
+                  sprintf(
+                    "GET\t%s\t%s\t%s?%s\t\t\t%s",
+                    [
+                      u.Scheme,
+                      u.Host,
+                      u.Path,
+                      u.RawQuery,
+                      sig_base,
+                    ]
+                  ).as(to_sign,
+                    base64(hmac(to_sign, "sha256", bytes(sig_key))).as(signature,
+                      sig_base + "signature=" + signature
+                    )
+                  )
+                )
+              )
+            ).as(auth_header,
+              request(
+                "GET",
+                request_url
+              ).with(
+                {
+                  "Header": {
+                    "Authorization": [auth_header],
+                  },
+                }
+              ).do_request().as(resp,
+                (resp.StatusCode == 200) ?
+                  string(resp.Body).split("\n").filter(line, line != "").as(lines,
+                    {
+                      "events": lines.map(line, {"message": line}),
+                      "cursor": {
+                        ?"last_offset": (lines.size() > 0) ?
+                          lines[lines.size() - 1].decode_json().as(lastEvent,
+                            (has(lastEvent.offset) && lastEvent.offset != "") ?
+                              optional.of(lastEvent.offset)
+                            :
+                              optional.none()
+                          )
+                        :
+                          optional.none(),
+                        "recovery_mode": false,
+                      },
+                      "want_more": (lines.size() > 0) ?
+                        lines[lines.size() - 1].decode_json().as(lastEvent,
+                          has(lastEvent.offset) && lastEvent.offset != ""
+                        )
+                      :
+                        false,
+                    }
+                  )
+                : (resp.StatusCode == 416) ?
+                  {
+                    "events": [
+                      {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + request_url + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      }
+                    ],
+                    "cursor": state.cursor.drop("last_offset").with(
+                      {
+                        "recovery_mode": true,
+                      }
+                    ),
+                    "want_more": true,
+                  }
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET " + request_url + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+              )
+            )
+          )
+        )
+      )
+    )
+  )

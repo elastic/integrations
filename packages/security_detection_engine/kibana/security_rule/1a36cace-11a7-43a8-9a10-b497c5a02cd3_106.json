@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a new credential is added to an application in Azure. An application may use a certificate or secret string to prove its identity when requesting a token. Multiple certificates and secrets can be added for an application and an adversary may abuse this by creating an additional authentication method to evade defenses or persist in an environment.",
+        "false_positives": [
+            "Application credential additions may be done by a system or network administrator. Verify whether the username, hostname, and/or resource name should be making changes in your environment. Application credential additions from unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.auditlogs-*",
+            "filebeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure Application Credential Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Azure Application Credential Modification\n\nAzure applications use credentials like certificates or secret strings for identity verification during token requests. Adversaries may exploit this by adding unauthorized credentials, enabling persistent access or evading defenses. The detection rule monitors audit logs for successful updates to application credentials, flagging potential misuse by identifying unauthorized credential modifications.\n\n### Possible investigation steps\n\n- Review the Azure audit logs to identify the specific application that had its credentials updated, focusing on entries with the operation name \"Update application - Certificates and secrets management\" and a successful outcome.\n- Determine the identity of the user or service principal that performed the credential modification by examining the associated user or principal ID in the audit log entry.\n- Investigate the context of the credential modification by checking for any recent changes or unusual activities related to the application, such as modifications to permissions or roles.\n- Assess the legitimacy of the new credential by verifying if it aligns with expected operational procedures or if it was authorized by a known and trusted entity.\n- Check for any additional suspicious activities in the audit logs around the same timeframe, such as failed login attempts or other modifications to the application, to identify potential indicators of compromise.\n- Contact the application owner or relevant stakeholders to confirm whether the credential addition was expected and authorized, and gather any additional context or concerns they might have.\n\n### False positive analysis\n\n- Routine credential updates by authorized personnel can trigger alerts. Regularly review and document credential management activities to distinguish between legitimate and suspicious actions.\n- Automated processes or scripts that update application credentials as part of maintenance or deployment cycles may cause false positives. Identify and whitelist these processes to prevent unnecessary alerts.\n- Credential updates during application scaling or migration might be flagged. Coordinate with IT teams to schedule these activities and temporarily adjust monitoring thresholds or exclusions.\n- Third-party integrations that require periodic credential updates can be mistaken for unauthorized changes. Maintain an inventory of such integrations and establish baseline behaviors to filter out benign activities.\n- Frequent updates by specific service accounts could be part of normal operations. Monitor these accounts separately and consider creating exceptions for known, non-threatening patterns.\n\n### Response and remediation\n\n- Immediately revoke the unauthorized credentials by accessing the Azure portal and removing any suspicious certificates or secret strings associated with the affected application.\n- Conduct a thorough review of the application's access logs to identify any unauthorized access or actions performed using the compromised credentials.\n- Reset and update all legitimate credentials for the affected application to ensure no further unauthorized access can occur.\n- Notify the security team and relevant stakeholders about the incident, providing details of the unauthorized credential modification and any potential impact.\n- Implement additional monitoring on the affected application to detect any further unauthorized changes or access attempts.\n- Review and tighten access controls and permissions for managing application credentials to prevent unauthorized modifications in the future.\n- If necessary, escalate the incident to higher-level security management or external cybersecurity experts for further investigation and response.",
+        "query": "event.dataset:azure.auditlogs and azure.auditlogs.operation_name:\"Update application - Certificates and secrets management\" and event.outcome:(success or Success)\n",
+        "references": [
+            "https://msrc-blog.microsoft.com/2020/12/13/customer-guidance-on-recent-nation-state-cyber-attacks/"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1a36cace-11a7-43a8-9a10-b497c5a02cd3",
+        "setup": "The Azure Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Azure",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.001",
+                                "name": "Additional Cloud Credentials",
+                                "reference": "https://attack.mitre.org/techniques/T1098/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 106
+    },
+    "id": "1a36cace-11a7-43a8-9a10-b497c5a02cd3_106",
+    "type": "security-rule"
+}

@@ -1,0 +1,59 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: cloudflare_logpush
+      name: test-abs-cloudflare_logpush
+      streams:
+        - account_name: devstoreaccount1
+          auth.connection_string.uri: DefaultEndpointsProtocol=https;AccountName=dummystorageacct;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;EndpointSuffix=core.windows.net
+          auth.oauth2:
+            client_id: ${SECRET_0}
+            client_secret: ${SECRET_1}
+            tenant_id: 12345
+          auth.shared_credentials.account_key: ${SECRET_2}
+          containers:
+            - name: test-container
+          data_stream:
+            dataset: cloudflare_logpush.dlp_forensic_copies
+          expand_event_list_from_field: records
+          file_selectors:
+            - regex: access-logs/
+          max_workers: 3
+          poll: true
+          poll_interval: 15s
+          processors:
+            - decode_json_fields:
+                fields:
+                    - message
+                max_depth: 10
+                overwrite_keys: true
+                process_array: true
+                target: ""
+          publisher_pipeline.disable_host: true
+          tags:
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+          timestamp_epoch: 10000000000
+      type: azure-blob-storage
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-cloudflare_logpush.dlp_forensic_copies-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}
+    - {}
