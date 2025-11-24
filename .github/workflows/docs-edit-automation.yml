@@ -14,7 +14,11 @@ jobs:
       github.actor != 'github-actions[bot]' &&
       (startsWith(github.head_ref, 'docs-enhancement/') || startsWith(github.head_ref, 'docs-bugfix/'))
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -25,11 +29,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🔍 Analyzing documentation changes..."
-          
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          
+
           # Get changed files directly from PR
-          if ! PR_FILES=$(gh pr view $PR_NUMBER --json files -q '.files[].path' 2>/dev/null); then
+          if ! PR_FILES=$(gh pr view "$PR_NUMBER" --json files -q '.files[].path' 2>/dev/null); then
             echo "Error: Failed to fetch PR files"
             exit 1
           fi
@@ -51,7 +53,7 @@ jobs:
           fi
           
           # Get custom changelog description from PR body
-          if ! PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body // ""' 2>/dev/null); then
+          if ! PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body // ""' 2>/dev/null); then
             echo "Warning: Failed to fetch PR body, using default changelog description"
             PR_BODY=""
           fi
@@ -103,8 +105,8 @@ jobs:
           echo "packages_needing_update=$PACKAGES_NEEDING_UPDATE" >> $GITHUB_OUTPUT
           echo "packages_already_done=$PACKAGES_ALREADY_DONE" >> $GITHUB_OUTPUT
 
-      - name: Comment with exact commands
-        if: steps.analyze.outputs.packages_needing_update
+      - name: Comment with exact commands (same-repo PRs)
+        if: steps.analyze.outputs.packages_needing_update && github.event.pull_request.head.repo.fork == false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -112,8 +114,7 @@ jobs:
           CHANGE_TYPE="${{ steps.analyze.outputs.change_type }}"
           VERSION_BUMP="${{ steps.analyze.outputs.version_bump }}"
           CHANGELOG_DESC="${{ steps.analyze.outputs.changelog_desc }}"
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          
+
           # Create clean package list for the for loop
           PACKAGE_LIST=$(echo $PACKAGES | xargs)
           
@@ -123,50 +124,91 @@ jobs:
             exit 0
           fi
           
-          COMMENT="Please run these commands to update changelogs and build docs:
+          COMMENT_FILE=$(mktemp)
+          {
+            echo "Please run these commands to update changelogs and build docs:"
+            echo ""
+            echo '```bash'
+            echo "for pkg in ${PACKAGE_LIST}; do"
+            echo '  cd packages/$pkg'
+            echo "  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP"
+            echo "  elastic-package build"
+            echo "  cd ../.."
+            echo "done"
+            echo "git add -u"
+            echo "git commit -m \"docs: update changelogs and build documentation\""
+            echo "git push"
+            echo '```'
+            echo ""
+            echo "Prerequisite: \`go install github.com/elastic/elastic-package\`"
+          } > "$COMMENT_FILE"
 
-
-for pkg in ${PACKAGE_LIST}; do
-  cd packages/\$pkg
-  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP
-  elastic-package build
-  cd ../..
-done
-git add -u
-git commit -m \"docs: update changelogs and build documentation\"
-git push
-
-
-Prerequisite: \`go install github.com/elastic/elastic-package\`"
-
-          # Add info about packages already updated
           if [ -n "${{ steps.analyze.outputs.packages_already_done }}" ]; then
-            COMMENT="$COMMENT
-
-Note: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`"
+            echo "" >> "$COMMENT_FILE"
+            echo "Note: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`" >> "$COMMENT_FILE"
           fi
-          
-          gh pr comment $PR_NUMBER --body "$COMMENT"
+
+          if ! gh pr comment "$PR_NUMBER" --body-file "$COMMENT_FILE"; then
+            {
+              echo "## 📋 Documentation follow-up"
+              echo
+              cat "$COMMENT_FILE"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Show commands in summary (fork PRs)
+        if: steps.analyze.outputs.packages_needing_update && github.event.pull_request.head.repo.fork == true
+        run: |
+          PACKAGES="${{ steps.analyze.outputs.packages_needing_update }}"
+          CHANGE_TYPE="${{ steps.analyze.outputs.change_type }}"
+          VERSION_BUMP="${{ steps.analyze.outputs.version_bump }}"
+          CHANGELOG_DESC="${{ steps.analyze.outputs.changelog_desc }}"
+
+          PACKAGE_LIST=$(echo $PACKAGES | xargs)
+
+          if [ -z "$PACKAGE_LIST" ]; then
+            exit 0
+          fi
+
+          {
+            echo "## 📋 Documentation follow-up"
+            echo ""
+            echo "Please run these commands to update changelogs and build docs:"
+            echo ""
+            echo '```bash'
+            echo "for pkg in ${PACKAGE_LIST}; do"
+            echo '  cd packages/$pkg'
+            echo "  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP"
+            echo "  elastic-package build"
+            echo "  cd ../.."
+            echo "done"
+            echo "git add -u"
+            echo "git commit -m \"docs: update changelogs and build documentation\""
+            echo "git push"
+            echo '```'
+            echo ""
+            echo "Prerequisite: \`go install github.com/elastic/elastic-package\`"
+            if [ -n "${{ steps.analyze.outputs.packages_already_done }}" ]; then
+              echo ""
+              echo "Note: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Add labels
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Please add the following labels — ${{ steps.analyze.outputs.label }},documentation"
+          echo "Please add the following labels — '${{ steps.analyze.outputs.label }}' and 'documentation'" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Handle edge cases
         if: steps.analyze.outputs.no_docs_changes == 'true' || (steps.analyze.outputs.packages_needing_update == '' && steps.analyze.outputs.packages_already_done != '')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ steps.analyze.outputs.no_docs_changes }}" = "true" ]; then
-            MESSAGE="No documentation files (\`packages/*/_dev/build/docs/README.md\`) were changed in this PR."
+            MESSAGE="No documentation files (packages/*/_dev/build/docs/README.md) were changed in this PR."
           else
             MESSAGE="All packages with documentation changes already have updated changelogs and manifests."
           fi
           
           echo "## 📚 Documentation Status
 
-$MESSAGE
+          $MESSAGE
 
-Your PR is ready for review! 🎉"
+          Your PR is ready for review! 🎉" >> "$GITHUB_STEP_SUMMARY"

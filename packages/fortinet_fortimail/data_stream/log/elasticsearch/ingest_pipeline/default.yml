@@ -2,23 +2,29 @@
 description: Pipeline for processing Fortinet FortiMail logs.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_observer_vendor_7e57c221
       field: observer.vendor
       value: Fortinet
   - set:
+      tag: set_observer_product_7580a600
       field: observer.product
       value: FortiMail
   - set:
+      tag: set_observer_type_5dddf3ba
       field: observer.type
       value: firewall
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - grok:
@@ -30,6 +36,7 @@ processors:
         - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>%{GREEDYDATA:temp.message}$'
       on_failure:
         - append:
+            tag: append_error_message_2c4a457a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - gsub:
@@ -40,6 +47,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fd68155b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - kv:
@@ -53,22 +61,27 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0e8855ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_timezone_656ca26d
       field: event.timezone
       copy_from: _conf.tz_offset
       if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
       ignore_empty_value: true
   - rename:
+      tag: rename_temp_date_to_fortinet_fortimail_log_date_791b1e7f
       field: temp.date
       target_field: fortinet_fortimail.log.date
       ignore_missing: true
   - rename:
+      tag: rename_temp_time_to_fortinet_fortimail_log_time_28b7e7b1
       field: temp.time
       target_field: fortinet_fortimail.log.time
       ignore_missing: true
   - set:
+      tag: set_temp_timestamp_3a851ed4
       field: temp.timestamp
       value: '{{{fortinet_fortimail.log.date}}}T{{{fortinet_fortimail.log.time}}}'
       if: ctx.fortinet_fortimail?.log?.date != null && ctx.fortinet_fortimail.log.date != '' && ctx.fortinet_fortimail.log.time != null && ctx.fortinet_fortimail.log.time != ''
@@ -82,24 +95,28 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ss
       on_failure:
         - append:
+            tag: append_error_message_7393d9f9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: temp.timestamp
-      tag: 'date_set_timestamp'
+      tag: date_temp_timestamp_0ab6aaa4
       if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone == null
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SSS
         - yyyy-MM-dd'T'HH:mm:ss
       on_failure:
         - append:
+            tag: append_error_message_8ab178d9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_temp_device_id_to_fortinet_fortimail_log_device_id_ad7319b7
       field: temp.device_id
       target_field: fortinet_fortimail.log.device_id
       ignore_missing: true
   - set:
+      tag: set_observer_serial_number_af8a006c
       field: observer.serial_number
       copy_from: fortinet_fortimail.log.device_id
       ignore_empty_value: true
@@ -111,41 +128,51 @@ processors:
       if: ctx.fortinet_fortimail?.log?.priority_number != ''
       on_failure:
         - append:
+            tag: append_error_message_e4e1f474
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_log_syslog_priority_5bba7139
       field: log.syslog.priority
       copy_from: fortinet_fortimail.log.priority_number
       ignore_empty_value: true
   - rename:
+      tag: rename_temp_log_id_to_fortinet_fortimail_log_id_c4838ad6
       field: temp.log_id
       target_field: fortinet_fortimail.log.id
       ignore_missing: true
   - set:
+      tag: set_event_code_fd86fb7a
       field: event.code
       copy_from: fortinet_fortimail.log.id
       ignore_empty_value: true
   - rename:
+      tag: rename_temp_type_to_fortinet_fortimail_log_type_7498bbf7
       field: temp.type
       target_field: fortinet_fortimail.log.type
       ignore_missing: true
   - rename:
+      tag: rename_temp_subtype_to_fortinet_fortimail_log_sub_type_50405a6e
       field: temp.subtype
       target_field: fortinet_fortimail.log.sub_type
       ignore_missing: true
   - rename:
+      tag: rename_temp_pri_to_fortinet_fortimail_log_priority_a6f312b4
       field: temp.pri
       target_field: fortinet_fortimail.log.priority
       ignore_missing: true
   - set:
+      tag: set_log_level_e6bfdefc
       field: log.level
       copy_from: fortinet_fortimail.log.priority
       ignore_empty_value: true
   - rename:
+      tag: rename_temp_subject_to_fortinet_fortimail_log_subject_798cf6cf
       field: temp.subject
       target_field: fortinet_fortimail.log.subject
       ignore_missing: true
   - set:
+      tag: set_email_subject_a26859b4
       field: email.subject
       copy_from: fortinet_fortimail.log.subject
       ignore_empty_value: true
@@ -171,40 +198,51 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_a08d2f23
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_temp_msg_to_fortinet_fortimail_log_message_09e20425
       field: temp.msg
       target_field: fortinet_fortimail.log.message
       ignore_missing: true
   - set:
+      tag: set_message_4828486a
       field: message
       copy_from: fortinet_fortimail.log.message
       ignore_empty_value: true
   - pipeline:
+      tag: pipeline_c9fec8bf
       name: '{{ IngestPipeline "pipeline_history" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'statistics'
   - pipeline:
+      tag: pipeline_eb9d81a8
       name: '{{ IngestPipeline "pipeline_system" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'kevent'
   - pipeline:
+      tag: pipeline_fe700e77
       name: '{{ IngestPipeline "pipeline_mail" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'event'
   - pipeline:
+      tag: pipeline_f4d2fc92
       name: '{{ IngestPipeline "pipeline_antivirus" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'virus'
   - pipeline:
+      tag: pipeline_6b2edc66
       name: '{{ IngestPipeline "pipeline_antispam" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'spam'
   - pipeline:
+      tag: pipeline_70a3c98c
       name: '{{ IngestPipeline "pipeline_encryption" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'encrypt'
   - remove:
+      tag: remove_c9ff360d
       field:
         - _conf
         - temp
       ignore_missing: true
   - remove:
+      tag: remove_017c4e84
       field:
         - fortinet_fortimail.log.action
         - fortinet_fortimail.log.client.ip
@@ -229,11 +267,13 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
+      tag: remove_779d3744
       field:
         - event.original
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
   - script:
+      tag: script_69e302b9
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -251,13 +291,28 @@ processors:
         drop(ctx);
       description: Drops null/empty values recursively.
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "An adversary with access to a set of compromised credentials may attempt to persist or escalate privileges by attaching additional permissions to user groups the compromised user account belongs to. This rule looks for use of the IAM AttachGroupPolicy API operation to attach the highly permissive AdministratorAccess AWS managed policy to an existing IAM user group.",
+        "false_positives": [
+            "While this can be normal behavior, it should be investigated to ensure validity. Verify whether the user identity should be using the IAM `AttachGroupPolicy` API operation to attach the `AdministratorAccess` policy to the user group."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "group.name",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS IAM AdministratorAccess Policy Attached to Group",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS IAM AdministratorAccess Policy Attached to Group\n\nThe AWS-managed `AdministratorAccess` policy grants full administrative privileges across all AWS services.  \nWhen attached to a group, all group members inherit this access, often unintentionally broadening the blast radius of a compromise.  \nAdversaries can exploit `iam:AttachGroupPolicy` permissions to escalate privileges or establish persistence by attaching this policy to an existing user group.\n\n#### Possible investigation steps\n\n- **Identify the affected group and calling principal.**  \n  Review `aws.cloudtrail.user_identity.arn` (caller) and `aws.cloudtrail.request_parameters.groupName` (target group).  \n  Validate whether this aligns with legitimate change management or automation workflows.  \n\n- **Review group membership.**  \n  Enumerate current members using `aws iam get-group`.  \n  Determine whether unauthorized users could have gained administrative access as a result.  \n\n- **Inspect CloudTrail details.**  \n  Check `source.ip`, `user_agent.original`, and `source.geo` fields for anomalies.  \n  Compare with historical operations by the same principal.  \n\n- **Correlate related IAM activity.**  \n  Search for adjacent events such as `AddUserToGroup`, `CreateUser`, or `AttachUserPolicy`.  \n  These may indicate chained privilege escalation.  \n\n- **Assess propagation of privileges.**  \n  If the group has many members or is linked to cross-account roles, the impact may extend beyond a single user.  \n  Document all affected identities for containment.  \n\n### False positive analysis\n\n- **Intentional access updates.**  \n  Policy attachment may occur during legitimate administrative provisioning. Confirm via ticketing systems.  \n- **Automation or compliance tasks.**  \n  Some environments use centralized scripts to attach AdministratorAccess temporarily. Validate through automation logs.  \n\n### Response and remediation\n\n**1. Immediate containment**\n- Detach the policy from the affected group (`aws iam detach-group-policy`).  \n- Review and limit group membership. Temporarily remove non-essential users or disable access for impacted accounts.  \n- Rotate credentials for users who inherited admin privileges from the attachment.  \n- Enable MFA on all impacted accounts.  \n\n**2. Evidence preservation**\n- Export the triggering `AttachGroupPolicy` event and related CloudTrail entries \u00b130 minutes from the alert.  \n- Preserve AWS Config and GuardDuty records to support forensic analysis.  \n\n**3. Scoping and investigation**\n- Review additional IAM operations from the same caller (`CreateAccessKey`, `AttachRolePolicy`, `UpdateAssumeRolePolicy`).  \n- Identify whether new groups or roles were created shortly before or after the event.  \n- Check for subsequent API activity by newly privileged users (for example, S3, EC2, or IAM modifications).  \n\n**4. Recovery and hardening**\n- Reinforce least privilege, avoid assigning `AdministratorAccess` to groups.  \n- Use role-based access control with scoped permissions.   \n- Enable CloudTrail, GuardDuty, and Security Hub across all regions.  \n- Implement SCPs at the organization level to restrict direct `AdministratorAccess` attachments.  \n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/): response steps related to IAM policy modification and unauthorized privilege escalation..  \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/): for containment, analysis, and recovery guidance.\n- **AWS Documentation:** [AdministratorAccess Policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_job-functions.html#jf_administrator).\n",
+        "query": "iam where event.dataset == \"aws.cloudtrail\"\n   and event.provider == \"iam.amazonaws.com\"\n   and event.action == \"AttachGroupPolicy\"\n   and event.outcome == \"success\"\n   and stringContains(aws.cloudtrail.request_parameters, \"policyArn=arn:aws:iam::aws:policy/AdministratorAccess\")\n",
+        "references": [
+            "https://docs.aws.amazon.com/IAM/latest/APIReference/API_AttachGroupPolicy.html",
+            "https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AdministratorAccess.html",
+            "https://hackingthe.cloud/aws/exploitation/iam_privilege_escalation/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "df919b5e-a0f6-4fd8-8598-e3ce79299e3b",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS IAM",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Privilege Escalation",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.003",
+                                "name": "Additional Cloud Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.003",
+                                "name": "Additional Cloud Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 7
+    },
+    "id": "df919b5e-a0f6-4fd8-8598-e3ce79299e3b_7",
+    "type": "security-rule"
+}
