@@ -1,0 +1,20 @@
+---
+description: Pipeline for processing Azure Events logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+
+  # Extract azure.resource.id
+  - set:
+      field: azure.resource.id
+      copy_from: resource.attributes.cloud.resource_id
+      if: ctx.resource?.attributes?.cloud?.resource_id != null
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
