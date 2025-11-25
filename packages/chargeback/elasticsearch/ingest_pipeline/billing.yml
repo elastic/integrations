@@ -1,0 +1,26 @@
+description: 'Chargeback: Set composite_key from @timestamp and deployment_id.'
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx['@timestamp'] != null) {
+            ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
+        }
+      tag: ess_billing
+  - pipeline:
+      description: '[Fleet] Global pipeline for all data streams'
+      ignore_missing_pipeline: true
+      name: global@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      ignore_missing_pipeline: true
+      name: metrics@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback` integration'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback.integration@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for the `chargeback.billing` dataset'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback.billing@custom
