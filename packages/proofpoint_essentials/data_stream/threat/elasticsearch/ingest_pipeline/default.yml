@@ -264,16 +264,17 @@ processors:
           if (ctx.proofpoint_essentials.threat.threats_info_map instanceof List) {
             for (item in ctx.proofpoint_essentials.threat.threats_info_map) {
               if (item?.threat_time instanceof String && Instant.parse(item.threat_time).isAfter(ts)) {
-                ctx['@timestamp'] = item.threat_time;
+                ts = item.threat_time;
               }
             }
           }
         }
         if (ctx.proofpoint_essentials?.threat?.event_type == 'clicks_blocked' || ctx.proofpoint_essentials?.threat?.event_type == 'clicks_permitted') {
           if (ctx.proofpoint_essentials.threat.threat_time instanceof String && Instant.parse(ctx.proofpoint_essentials.threat.threat_time).isAfter(ts)) {
-            ctx['@timestamp'] = ctx.proofpoint_essentials.threat.threat_time;
+            ts = ctx.proofpoint_essentials.threat.threat_time;
           }
         }
+        ctx['@timestamp'] = ts.toString();
       on_failure:
         - append:
             field: error.message

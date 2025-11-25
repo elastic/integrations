@@ -121,7 +121,7 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.click_ip | The external IP address of the user who clicked on the link. If the user is behind a firewall performing network address translation, the IP address of the firewall will be shown. | ip |
 | proofpoint_essentials.threat.click_time | The time the user clicked on the URL. | date |
 | proofpoint_essentials.threat.completely_rewritten | The rewrite status of the message. | keyword |
-| proofpoint_essentials.threat.customer_eid | The customers entity ID. | keyword |
+| proofpoint_essentials.threat.customer_eid | The customer's entity ID. | keyword |
 | proofpoint_essentials.threat.customer_name | The customer's name, as configured in Essentials. | keyword |
 | proofpoint_essentials.threat.event_type |  | keyword |
 | proofpoint_essentials.threat.from_address | The email address contained in the From: header, excluding friendly name. | keyword |
@@ -133,19 +133,19 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.malware_score | The malware score of the message. Higher scores indicate higher certainty. | long |
 | proofpoint_essentials.threat.message_details_url | A permalink to the messages' details page. | keyword |
 | proofpoint_essentials.threat.message_id | Message-ID extracted from the headers of the email message. It can be used to look up the associated message in PPS and is not unique. | keyword |
-| proofpoint_essentials.threat.message_parts.content_type | The true, detected Content-Type of the messagePart. This may differ from the oContentType value. | keyword |
-| proofpoint_essentials.threat.message_parts.disposition | If the value is "inline", the messagePart is a message body. If the value is "attached", the messagePart is an attachment. | keyword |
-| proofpoint_essentials.threat.message_parts.filename | The filename of the messagePart. | keyword |
-| proofpoint_essentials.threat.message_parts.md5 | The MD5 hash of the messagePart contents. | keyword |
-| proofpoint_essentials.threat.message_parts.o_content_type | The declared Content-Type of the messagePart. | keyword |
+| proofpoint_essentials.threat.message_parts.content_type | The true, detected Content-Type of the message_part. This may differ from the o_content_type value. | keyword |
+| proofpoint_essentials.threat.message_parts.disposition | If the value is "inline", the message_part is a message body. If the value is "attached", the message_part is an attachment. | keyword |
+| proofpoint_essentials.threat.message_parts.filename | The filename of the message_part. | keyword |
+| proofpoint_essentials.threat.message_parts.md5 | The MD5 hash of the message_part contents. | keyword |
+| proofpoint_essentials.threat.message_parts.o_content_type | The declared Content-Type of the message_part. | keyword |
 | proofpoint_essentials.threat.message_parts.sandbox_status | The verdict returned by the sandbox during the scanning process. | keyword |
-| proofpoint_essentials.threat.message_parts.sha256 | The SHA256 hash of the messagePart contents. | keyword |
+| proofpoint_essentials.threat.message_parts.sha256 | The SHA256 hash of the message_part contents. | keyword |
 | proofpoint_essentials.threat.message_size | The size in bytes of the message, including headers and attachments. | long |
 | proofpoint_essentials.threat.message_time | When the message was delivered to the user or quarantined by PPS. | date |
 | proofpoint_essentials.threat.parent_eid | The parent's EID. | keyword |
 | proofpoint_essentials.threat.parent_name | The parent's name, as configured in Essentials. | keyword |
 | proofpoint_essentials.threat.phish_score | The phish score of the message. Higher scores indicate higher certainty. | long |
-| proofpoint_essentials.threat.quarantine_rule | The name of the rule which quarantined the message. This appears only for messagesBlocked events. | keyword |
+| proofpoint_essentials.threat.quarantine_rule | The name of the rule which quarantined the message. This appears only for messages_blocked events. | keyword |
 | proofpoint_essentials.threat.recipient | An array containing the email addresses of the SMTP (envelope) recipients. | keyword |
 | proofpoint_essentials.threat.reply_to_address | The email address contained in the Reply-To: header, excluding friendly name. | keyword |
 | proofpoint_essentials.threat.sender | The email address of the SMTP (envelope) sender. The user-part is hashed. The domain-part is cleartext. | keyword |
@@ -162,7 +162,7 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.threats_info_map.threat | The artifact which was condemned by Proofpoint. The malicious URL, hash of the attachment threat, or email address of the impostor sender. | keyword |
 | proofpoint_essentials.threat.threats_info_map.threat_id | The unique identifier associated with this threat. It can be used to query the forensics and campaign endpoints. | keyword |
 | proofpoint_essentials.threat.threats_info_map.threat_status | The current state of the threat. | keyword |
-| proofpoint_essentials.threat.threats_info_map.threat_time | Proofpoint assigned the threatStatus at this time. | date |
+| proofpoint_essentials.threat.threats_info_map.threat_time | Proofpoint assigned the threat_status at this time. | date |
 | proofpoint_essentials.threat.threats_info_map.threat_type | Whether the threat was an attachment, URL, or message type. | keyword |
 | proofpoint_essentials.threat.to_addresses | A list of email addresses contained within the To: header, excluding friendly names. | keyword |
 | proofpoint_essentials.threat.url | The malicious URL which was clicked. | keyword |
@@ -190,7 +190,7 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.click_ip | The external IP address of the user who clicked on the link. If the user is behind a firewall performing network address translation, the IP address of the firewall will be shown. | ip |
 | proofpoint_essentials.threat.click_time | The time the user clicked on the URL. | date |
 | proofpoint_essentials.threat.completely_rewritten | The rewrite status of the message. | keyword |
-| proofpoint_essentials.threat.customer_eid | The customers entity ID. | keyword |
+| proofpoint_essentials.threat.customer_eid | The customer's entity ID. | keyword |
 | proofpoint_essentials.threat.customer_name | The customer's name, as configured in Essentials. | keyword |
 | proofpoint_essentials.threat.event_type |  | keyword |
 | proofpoint_essentials.threat.from_address | The email address contained in the From: header, excluding friendly name. | keyword |
@@ -202,19 +202,19 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.malware_score | The malware score of the message. Higher scores indicate higher certainty. | long |
 | proofpoint_essentials.threat.message_details_url | A permalink to the messages' details page. | keyword |
 | proofpoint_essentials.threat.message_id | Message-ID extracted from the headers of the email message. It can be used to look up the associated message in PPS and is not unique. | keyword |
-| proofpoint_essentials.threat.message_parts.content_type | The true, detected Content-Type of the messagePart. This may differ from the oContentType value. | keyword |
-| proofpoint_essentials.threat.message_parts.disposition | If the value is "inline", the messagePart is a message body. If the value is "attached", the messagePart is an attachment. | keyword |
-| proofpoint_essentials.threat.message_parts.filename | The filename of the messagePart. | keyword |
-| proofpoint_essentials.threat.message_parts.md5 | The MD5 hash of the messagePart contents. | keyword |
-| proofpoint_essentials.threat.message_parts.o_content_type | The declared Content-Type of the messagePart. | keyword |
+| proofpoint_essentials.threat.message_parts.content_type | The true, detected Content-Type of the message_part. This may differ from the o_content_type value. | keyword |
+| proofpoint_essentials.threat.message_parts.disposition | If the value is "inline", the message_part is a message body. If the value is "attached", the message_part is an attachment. | keyword |
+| proofpoint_essentials.threat.message_parts.filename | The filename of the message_part. | keyword |
+| proofpoint_essentials.threat.message_parts.md5 | The MD5 hash of the message_part contents. | keyword |
+| proofpoint_essentials.threat.message_parts.o_content_type | The declared Content-Type of the message_part. | keyword |
 | proofpoint_essentials.threat.message_parts.sandbox_status | The verdict returned by the sandbox during the scanning process. | keyword |
-| proofpoint_essentials.threat.message_parts.sha256 | The SHA256 hash of the messagePart contents. | keyword |
+| proofpoint_essentials.threat.message_parts.sha256 | The SHA256 hash of the message_part contents. | keyword |
 | proofpoint_essentials.threat.message_size | The size in bytes of the message, including headers and attachments. | long |
 | proofpoint_essentials.threat.message_time | When the message was delivered to the user or quarantined by PPS. | date |
 | proofpoint_essentials.threat.parent_eid | The parent's EID. | keyword |
 | proofpoint_essentials.threat.parent_name | The parent's name, as configured in Essentials. | keyword |
 | proofpoint_essentials.threat.phish_score | The phish score of the message. Higher scores indicate higher certainty. | long |
-| proofpoint_essentials.threat.quarantine_rule | The name of the rule which quarantined the message. This appears only for messagesBlocked events. | keyword |
+| proofpoint_essentials.threat.quarantine_rule | The name of the rule which quarantined the message. This appears only for messages_blocked events. | keyword |
 | proofpoint_essentials.threat.recipient | An array containing the email addresses of the SMTP (envelope) recipients. | keyword |
 | proofpoint_essentials.threat.reply_to_address | The email address contained in the Reply-To: header, excluding friendly name. | keyword |
 | proofpoint_essentials.threat.sender | The email address of the SMTP (envelope) sender. The user-part is hashed. The domain-part is cleartext. | keyword |
@@ -231,7 +231,7 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.threats_info_map.threat | The artifact which was condemned by Proofpoint. The malicious URL, hash of the attachment threat, or email address of the impostor sender. | keyword |
 | proofpoint_essentials.threat.threats_info_map.threat_id | The unique identifier associated with this threat. It can be used to query the forensics and campaign endpoints. | keyword |
 | proofpoint_essentials.threat.threats_info_map.threat_status | The current state of the threat. | keyword |
-| proofpoint_essentials.threat.threats_info_map.threat_time | Proofpoint assigned the threatStatus at this time. | date |
+| proofpoint_essentials.threat.threats_info_map.threat_time | Proofpoint assigned the threat_status at this time. | date |
 | proofpoint_essentials.threat.threats_info_map.threat_type | Whether the threat was an attachment, URL, or message type. | keyword |
 | proofpoint_essentials.threat.to_addresses | A list of email addresses contained within the To: header, excluding friendly names. | keyword |
 | proofpoint_essentials.threat.url | The malicious URL which was clicked. | keyword |
@@ -259,7 +259,7 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.click_ip | The external IP address of the user who clicked on the link. If the user is behind a firewall performing network address translation, the IP address of the firewall will be shown. | ip |
 | proofpoint_essentials.threat.click_time | The time the user clicked on the URL. | date |
 | proofpoint_essentials.threat.completely_rewritten | The rewrite status of the message. | keyword |
-| proofpoint_essentials.threat.customer_eid | The customers entity ID. | keyword |
+| proofpoint_essentials.threat.customer_eid | The customer's entity ID. | keyword |
 | proofpoint_essentials.threat.customer_name | The customer's name, as configured in Essentials. | keyword |
 | proofpoint_essentials.threat.event_type |  | keyword |
 | proofpoint_essentials.threat.from_address | The email address contained in the From: header, excluding friendly name. | keyword |
@@ -271,19 +271,19 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.malware_score | The malware score of the message. Higher scores indicate higher certainty. | long |
 | proofpoint_essentials.threat.message_details_url | A permalink to the messages' details page. | keyword |
 | proofpoint_essentials.threat.message_id | Message-ID extracted from the headers of the email message. It can be used to look up the associated message in PPS and is not unique. | keyword |
-| proofpoint_essentials.threat.message_parts.content_type | The true, detected Content-Type of the messagePart. This may differ from the oContentType value. | keyword |
-| proofpoint_essentials.threat.message_parts.disposition | If the value is "inline", the messagePart is a message body. If the value is "attached", the messagePart is an attachment. | keyword |
-| proofpoint_essentials.threat.message_parts.filename | The filename of the messagePart. | keyword |
-| proofpoint_essentials.threat.message_parts.md5 | The MD5 hash of the messagePart contents. | keyword |
-| proofpoint_essentials.threat.message_parts.o_content_type | The declared Content-Type of the messagePart. | keyword |
+| proofpoint_essentials.threat.message_parts.content_type | The true, detected Content-Type of the message_part. This may differ from the o_content_type value. | keyword |
+| proofpoint_essentials.threat.message_parts.disposition | If the value is "inline", the message_part is a message body. If the value is "attached", the message_part is an attachment. | keyword |
+| proofpoint_essentials.threat.message_parts.filename | The filename of the message_part. | keyword |
+| proofpoint_essentials.threat.message_parts.md5 | The MD5 hash of the message_part contents. | keyword |
+| proofpoint_essentials.threat.message_parts.o_content_type | The declared Content-Type of the message_part. | keyword |
 | proofpoint_essentials.threat.message_parts.sandbox_status | The verdict returned by the sandbox during the scanning process. | keyword |
-| proofpoint_essentials.threat.message_parts.sha256 | The SHA256 hash of the messagePart contents. | keyword |
+| proofpoint_essentials.threat.message_parts.sha256 | The SHA256 hash of the message_part contents. | keyword |
 | proofpoint_essentials.threat.message_size | The size in bytes of the message, including headers and attachments. | long |
 | proofpoint_essentials.threat.message_time | When the message was delivered to the user or quarantined by PPS. | date |
 | proofpoint_essentials.threat.parent_eid | The parent's EID. | keyword |
 | proofpoint_essentials.threat.parent_name | The parent's name, as configured in Essentials. | keyword |
 | proofpoint_essentials.threat.phish_score | The phish score of the message. Higher scores indicate higher certainty. | long |
-| proofpoint_essentials.threat.quarantine_rule | The name of the rule which quarantined the message. This appears only for messagesBlocked events. | keyword |
+| proofpoint_essentials.threat.quarantine_rule | The name of the rule which quarantined the message. This appears only for messages_blocked events. | keyword |
 | proofpoint_essentials.threat.recipient | An array containing the email addresses of the SMTP (envelope) recipients. | keyword |
 | proofpoint_essentials.threat.reply_to_address | The email address contained in the Reply-To: header, excluding friendly name. | keyword |
 | proofpoint_essentials.threat.sender | The email address of the SMTP (envelope) sender. The user-part is hashed. The domain-part is cleartext. | keyword |
@@ -300,7 +300,7 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.threats_info_map.threat | The artifact which was condemned by Proofpoint. The malicious URL, hash of the attachment threat, or email address of the impostor sender. | keyword |
 | proofpoint_essentials.threat.threats_info_map.threat_id | The unique identifier associated with this threat. It can be used to query the forensics and campaign endpoints. | keyword |
 | proofpoint_essentials.threat.threats_info_map.threat_status | The current state of the threat. | keyword |
-| proofpoint_essentials.threat.threats_info_map.threat_time | Proofpoint assigned the threatStatus at this time. | date |
+| proofpoint_essentials.threat.threats_info_map.threat_time | Proofpoint assigned the threat_status at this time. | date |
 | proofpoint_essentials.threat.threats_info_map.threat_type | Whether the threat was an attachment, URL, or message type. | keyword |
 | proofpoint_essentials.threat.to_addresses | A list of email addresses contained within the To: header, excluding friendly names. | keyword |
 | proofpoint_essentials.threat.url | The malicious URL which was clicked. | keyword |
@@ -328,7 +328,7 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.click_ip | The external IP address of the user who clicked on the link. If the user is behind a firewall performing network address translation, the IP address of the firewall will be shown. | ip |
 | proofpoint_essentials.threat.click_time | The time the user clicked on the URL. | date |
 | proofpoint_essentials.threat.completely_rewritten | The rewrite status of the message. | keyword |
-| proofpoint_essentials.threat.customer_eid | The customers entity ID. | keyword |
+| proofpoint_essentials.threat.customer_eid | The customer's entity ID. | keyword |
 | proofpoint_essentials.threat.customer_name | The customer's name, as configured in Essentials. | keyword |
 | proofpoint_essentials.threat.event_type |  | keyword |
 | proofpoint_essentials.threat.from_address | The email address contained in the From: header, excluding friendly name. | keyword |
@@ -340,19 +340,19 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.malware_score | The malware score of the message. Higher scores indicate higher certainty. | long |
 | proofpoint_essentials.threat.message_details_url | A permalink to the messages' details page. | keyword |
 | proofpoint_essentials.threat.message_id | Message-ID extracted from the headers of the email message. It can be used to look up the associated message in PPS and is not unique. | keyword |
-| proofpoint_essentials.threat.message_parts.content_type | The true, detected Content-Type of the messagePart. This may differ from the oContentType value. | keyword |
-| proofpoint_essentials.threat.message_parts.disposition | If the value is "inline", the messagePart is a message body. If the value is "attached", the messagePart is an attachment. | keyword |
-| proofpoint_essentials.threat.message_parts.filename | The filename of the messagePart. | keyword |
-| proofpoint_essentials.threat.message_parts.md5 | The MD5 hash of the messagePart contents. | keyword |
-| proofpoint_essentials.threat.message_parts.o_content_type | The declared Content-Type of the messagePart. | keyword |
+| proofpoint_essentials.threat.message_parts.content_type | The true, detected Content-Type of the message_part. This may differ from the o_content_type value. | keyword |
+| proofpoint_essentials.threat.message_parts.disposition | If the value is "inline", the message_part is a message body. If the value is "attached", the message_part is an attachment. | keyword |
+| proofpoint_essentials.threat.message_parts.filename | The filename of the message_part. | keyword |
+| proofpoint_essentials.threat.message_parts.md5 | The MD5 hash of the message_part contents. | keyword |
+| proofpoint_essentials.threat.message_parts.o_content_type | The declared Content-Type of the message_part. | keyword |
 | proofpoint_essentials.threat.message_parts.sandbox_status | The verdict returned by the sandbox during the scanning process. | keyword |
-| proofpoint_essentials.threat.message_parts.sha256 | The SHA256 hash of the messagePart contents. | keyword |
+| proofpoint_essentials.threat.message_parts.sha256 | The SHA256 hash of the message_part contents. | keyword |
 | proofpoint_essentials.threat.message_size | The size in bytes of the message, including headers and attachments. | long |
 | proofpoint_essentials.threat.message_time | When the message was delivered to the user or quarantined by PPS. | date |
 | proofpoint_essentials.threat.parent_eid | The parent's EID. | keyword |
 | proofpoint_essentials.threat.parent_name | The parent's name, as configured in Essentials. | keyword |
 | proofpoint_essentials.threat.phish_score | The phish score of the message. Higher scores indicate higher certainty. | long |
-| proofpoint_essentials.threat.quarantine_rule | The name of the rule which quarantined the message. This appears only for messagesBlocked events. | keyword |
+| proofpoint_essentials.threat.quarantine_rule | The name of the rule which quarantined the message. This appears only for messages_blocked events. | keyword |
 | proofpoint_essentials.threat.recipient | An array containing the email addresses of the SMTP (envelope) recipients. | keyword |
 | proofpoint_essentials.threat.reply_to_address | The email address contained in the Reply-To: header, excluding friendly name. | keyword |
 | proofpoint_essentials.threat.sender | The email address of the SMTP (envelope) sender. The user-part is hashed. The domain-part is cleartext. | keyword |
@@ -369,7 +369,7 @@ For more information on architectures that can be used for scaling this integrat
 | proofpoint_essentials.threat.threats_info_map.threat | The artifact which was condemned by Proofpoint. The malicious URL, hash of the attachment threat, or email address of the impostor sender. | keyword |
 | proofpoint_essentials.threat.threats_info_map.threat_id | The unique identifier associated with this threat. It can be used to query the forensics and campaign endpoints. | keyword |
 | proofpoint_essentials.threat.threats_info_map.threat_status | The current state of the threat. | keyword |
-| proofpoint_essentials.threat.threats_info_map.threat_time | Proofpoint assigned the threatStatus at this time. | date |
+| proofpoint_essentials.threat.threats_info_map.threat_time | Proofpoint assigned the threat_status at this time. | date |
 | proofpoint_essentials.threat.threats_info_map.threat_type | Whether the threat was an attachment, URL, or message type. | keyword |
 | proofpoint_essentials.threat.to_addresses | A list of email addresses contained within the To: header, excluding friendly names. | keyword |
 | proofpoint_essentials.threat.url | The malicious URL which was clicked. | keyword |
