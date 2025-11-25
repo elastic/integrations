@@ -1193,30 +1193,88 @@
                                     "layers": {
                                         "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98": {
                                             "columnOrder": [
-                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d"
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2"
                                             ],
                                             "columns": {
                                                 "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and ( NOT aws.dimensions.Name : * ) and ( NOT aws.dimensions.Method : * ) and (NOT aws.dimensions.Resource : * ) and aws.dimensions.Protocol : * "
-                                                    },
                                                     "isBucketed": false,
                                                     "label": "Total errors",
-                                                    "operationType": "sum",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "emptyAsNull": false,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "compact": true,
                                                                 "decimals": 2
                                                             }
+                                                        },
+                                                        "formula": "sum(aws.bedrock_agentcore.metrics.UserErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') + sum(aws.bedrock_agentcore.metrics.SystemErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') ",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2"
+                                                    ]
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.UserErrors.sum"
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.SystemErrors.sum"
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 336,
+                                                                "min": 0
+                                                            },
+                                                            "name": "add",
+                                                            "text": "sum(aws.bedrock_agentcore.metrics.UserErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') + sum(aws.bedrock_agentcore.metrics.SystemErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') ",
+                                                            "type": "function"
                                                         }
                                                     },
-                                                    "sourceField": "aws.bedrock_agentcore.metrics.Errors.sum"
+                                                    "references": [
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1"
+                                                    ]
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -2615,30 +2673,88 @@
                                     "layers": {
                                         "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98": {
                                             "columnOrder": [
-                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d"
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2"
                                             ],
                                             "columns": {
                                                 "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and ( NOT aws.dimensions.Name : * ) and ( NOT aws.dimensions.Method : * ) and (NOT aws.dimensions.Resource : * ) and aws.dimensions.Protocol : * "
-                                                    },
                                                     "isBucketed": false,
                                                     "label": "Total errors",
-                                                    "operationType": "sum",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "emptyAsNull": false,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "compact": true,
                                                                 "decimals": 2
                                                             }
+                                                        },
+                                                        "formula": "sum(aws.bedrock_agentcore.metrics.UserErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') + sum(aws.bedrock_agentcore.metrics.SystemErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') ",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2"
+                                                    ]
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.UserErrors.sum"
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.SystemErrors.sum"
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 336,
+                                                                "min": 0
+                                                            },
+                                                            "name": "add",
+                                                            "text": "sum(aws.bedrock_agentcore.metrics.UserErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') + sum(aws.bedrock_agentcore.metrics.SystemErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') ",
+                                                            "type": "function"
                                                         }
                                                     },
-                                                    "sourceField": "aws.bedrock_agentcore.metrics.Errors.sum"
+                                                    "references": [
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1"
+                                                    ]
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -5051,7 +5167,7 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Shows the top non-tool/call invocations having a high average latency with duration and throttles - by resource, target",
+                    "description": "Shows the top non-tool/call invocations having a high average latency with duration and throttles - by resource, method",
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -5065,7 +5181,7 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Top non-tool call performance analysis - by resource and target"
+                    "title": "Top non-tool call performance analysis - by resource and method"
                 },
                 "gridData": {
                     "h": 13,
@@ -5619,7 +5735,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-11-25T07:10:42.841Z",
+    "created_at": "2025-11-25T12:46:31.211Z",
     "id": "aws_bedrock_agentcore-b113ff26-879e-4ea2-b0ac-993b98ed06c4",
     "references": [
         {
@@ -5630,86 +5746,6 @@
         {
             "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "aws_bedrock_agentcore-3235ab43-8fa0-47f5-9590-b8d7451a4c92",
-            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
-            "type": "dashboard"
-        },
-        {
-            "id": "aws_bedrock_agentcore-b113ff26-879e-4ea2-b0ac-993b98ed06c4",
-            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
-            "type": "dashboard"
-        },
-        {
-            "id": "aws_bedrock_agentcore-1f2ef1c3-afab-4b23-9e8b-b966f2fe40d2",
-            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
-            "type": "dashboard"
-        },
-        {
-            "id": "aws_bedrock_agentcore-b2372a13-4d94-43ec-8623-6c8d226dd071",
-            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
-            "type": "dashboard"
-        },
-        {
-            "id": "metrics-*",
-            "name": "7d12d737-7165-4653-b43e-eb82a54a3afb:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "e0a902fc-33bb-44e2-acea-f88e51e4d102:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "4370ed09-46eb-4035-a3d5-12378233a9f8:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "3f02bbd6-b8a6-4b88-a2de-65b4fc16c8af:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "55189e6d-6bb8-4455-baf2-15464e586124:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "ef6cc1dd-9271-47ac-8943-338b9f4cc36c:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "b0d57662-d91d-45c5-b942-b999a3acd85b:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "632d1caa-42da-45d7-a552-e5350fccdc48:indexpattern-datasource-layer-a2d356c4-e1d5-40ba-88b9-f3f2f81e6a20",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "68c905f7-8bb4-4261-8eff-9ade2f55dd73:indexpattern-datasource-layer-a2d356c4-e1d5-40ba-88b9-f3f2f81e6a20",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "5d621de6-d8e2-4853-990f-a61082a0e5c3:indexpattern-datasource-layer-a2d356c4-e1d5-40ba-88b9-f3f2f81e6a20",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "c0f42445-925e-43ed-8ef4-03e8f729d253:indexpattern-datasource-layer-a2d356c4-e1d5-40ba-88b9-f3f2f81e6a20",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "60a2756c-4e9d-486f-b7a1-4ef9d11b2fd9:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
             "type": "index-pattern"
         },
         {
@@ -5795,6 +5831,86 @@
         {
             "id": "metrics-*",
             "name": "6782e715-8783-48c8-825b-ddb155fe1fc6:indexpattern-datasource-layer-e47e9a42-e2b0-4ccc-b3f9-cc4fe20e49ee",
+            "type": "index-pattern"
+        },
+        {
+            "id": "aws_bedrock_agentcore-3235ab43-8fa0-47f5-9590-b8d7451a4c92",
+            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock_agentcore-b113ff26-879e-4ea2-b0ac-993b98ed06c4",
+            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock_agentcore-1f2ef1c3-afab-4b23-9e8b-b966f2fe40d2",
+            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock_agentcore-b2372a13-4d94-43ec-8623-6c8d226dd071",
+            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "metrics-*",
+            "name": "7d12d737-7165-4653-b43e-eb82a54a3afb:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e0a902fc-33bb-44e2-acea-f88e51e4d102:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4370ed09-46eb-4035-a3d5-12378233a9f8:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "3f02bbd6-b8a6-4b88-a2de-65b4fc16c8af:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "55189e6d-6bb8-4455-baf2-15464e586124:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "ef6cc1dd-9271-47ac-8943-338b9f4cc36c:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b0d57662-d91d-45c5-b942-b999a3acd85b:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "632d1caa-42da-45d7-a552-e5350fccdc48:indexpattern-datasource-layer-a2d356c4-e1d5-40ba-88b9-f3f2f81e6a20",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "68c905f7-8bb4-4261-8eff-9ade2f55dd73:indexpattern-datasource-layer-a2d356c4-e1d5-40ba-88b9-f3f2f81e6a20",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "5d621de6-d8e2-4853-990f-a61082a0e5c3:indexpattern-datasource-layer-a2d356c4-e1d5-40ba-88b9-f3f2f81e6a20",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c0f42445-925e-43ed-8ef4-03e8f729d253:indexpattern-datasource-layer-a2d356c4-e1d5-40ba-88b9-f3f2f81e6a20",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "60a2756c-4e9d-486f-b7a1-4ef9d11b2fd9:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
             "type": "index-pattern"
         },
         {
