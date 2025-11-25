@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when an IAM group is deleted using the DeleteGroup API call. Deletion of an IAM group may represent a malicious attempt to remove audit trails, disrupt operations, or hide adversary activity (for example after using the group briefly for privileged access). This can be an indicator of impact or cleanup in an attack lifecycle.",
+        "false_positives": [
+            "Legitimate group deletion during decommissioning of projects, clean-up of service accounts, or identity lifecycle changes may trigger this alert. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Resource group deletions by unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS IAM Group Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS IAM Group Deletion\n\nAttackers sometimes remove groups to erase evidence, disrupt operations, or prevent users from receiving needed permissions (Impact). Deletion can also follow malicious cleanup after attaching policies and using the group briefly. This alert fires on `DeleteGroup` API call. Consider intentional disruption or covering tracks, particularly if the group was privileged or recently modified.\n\n### Possible investigation steps\n\n- **Identify the actor and environment**  \n  - Review `aws.cloudtrail.user_identity.arn`, `aws.cloudtrail.user_identity.access_key_id`.  \n  - Check `source.ip`, `user_agent.original`, `cloud.account.id`, `cloud.region` for atypical activity.\n\n- **Determine what was lost**\n  - From `aws.cloudtrail.request_parameters`, capture `groupName`.  \n  - Use history or logs to identify existing members and attached policies prior to deletion (ex: `GetGroup`, `ListAttachedGroupPolicies`).  \n  - Determine if the group contained privileged roles/policies that could have been weaponized.\n\n- **Correlate with related activity**\n  - Look in the prior 1\u201324h for `DetachGroupPolicy`, `RemoveUserFromGroup`, `DeleteGroupPolicy`, which often precede deletion in adversary cleanup workflows.  \n  - After deletion, monitor for creation of new similarly-named groups, or re-attachment of policies to other groups/roles.\n\n### False positive analysis\n\n- Projects & services that are being decommissioned often require group deletion. Confirm through internal inventory and change control.  \n- Sandbox or dev accounts frequently create and delete groups; ensure the environment context is understood.\n\n### Response and remediation\n\n- **Containment**: If deletion was unauthorized, restrict the actor\u2019s IAM privileges and block further configuration changes.  \n- **Investigation and scoping**: Recover details of the deleted group (members, policies) from logs or AWS Config, and determine the impact of the deletion (which users lost membership, service account disruption).  \n- **Recovery and hardening**: Recreate the group if necessary, restore intended policies and memberships, enforce change-control for group deletions, restrict `iam:DeleteGroup` privileges, and create alerts for destructive IAM operations.\n\n### Additional information\n[AWS Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/)\n",
+        "query": "event.dataset: aws.cloudtrail and \n    event.provider: iam.amazonaws.com and \n    event.action: DeleteGroup and \n    event.outcome: success\n",
+        "references": [
+            "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/iam/delete-group.html",
+            "https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteGroup.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "867616ec-41e5-4edc-ada2-ab13ab45de8a",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS IAM",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 210
+    },
+    "id": "867616ec-41e5-4edc-ada2-ab13ab45de8a_210",
+    "type": "security-rule"
+}
