@@ -231,24 +231,23 @@ processors:
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
       source: |
-        void addNestedValue(def ctx, String path, def value) {
+        void addNestedValue(def currentCtx, String path, def value) {
           if (value == null || value == "") {
             return;
           }
           String[] parts = path.splitOnToken('.');
-          def current = ctx;
           for (int i = 0; i < parts.length - 1; i++) {
-            if (current[parts[i]] == null) {
-              current[parts[i]] = [:];
+            if (currentCtx[parts[i]] == null) {
+              currentCtx[parts[i]] = [:];
             }
-            current = current[parts[i]];
+            currentCtx = currentCtx[parts[i]];
           }
           String lastPart = parts[parts.length - 1];
-          if (current[lastPart] == null) {
-            current[lastPart] = [];
+          if (currentCtx[lastPart] == null) {
+            currentCtx[lastPart] = [];
           }
-          if (!current[lastPart].contains(value)) {
-            current[lastPart].add(value);
+          if (!currentCtx[lastPart].contains(value)) {
+            currentCtx[lastPart].add(value);
           }
         }
         
