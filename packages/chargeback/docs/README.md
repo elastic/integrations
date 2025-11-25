@@ -30,6 +30,38 @@ This default weighting means storage contributes most to the blended cost calcul
 
 Chargeback is also present based on a configured rate and unit. These are used to display cost in the local currency, for instance `EUR`, with a rate of `0.85`.
 
+All configuration values can be updated, as follows:
+
+```
+POST chargeback_conf_lookup/_update/config
+{
+  "doc": {
+    "conf_ecu_rate": 0.85,
+    "conf_ecu_rate_unit": "EUR",
+    "conf_indexing_weight": 20,
+    "conf_query_weight": 20,
+    "conf_storage_weight": 40,
+    "conf_start_date": "2024-01-01T12:00:00.000Z",
+    "conf_end_date": "2030-12-31T23:59:59.000Z"
+  }
+}
+```
+
+You can add additional configuration documents with different start and end dates to support multiple rate periods:
+
+```
+POST chargeback_conf_lookup/_doc/config_2025
+{
+  "conf_ecu_rate": 0.90,
+  "conf_ecu_rate_unit": "EUR",
+  "conf_indexing_weight": 20,
+  "conf_query_weight": 20,
+  "conf_storage_weight": 40,
+  "conf_start_date": "2025-01-01T00:00:00.000Z",
+  "conf_end_date": "2025-12-31T23:59:59.000Z"
+}
+```
+
 Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdown` dashboard.
 
 ![Cost and Consumption breakdown](../img/chargeback.png)
