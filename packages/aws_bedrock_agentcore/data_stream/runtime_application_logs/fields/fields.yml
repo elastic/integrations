@@ -1,53 +1,68 @@
 - name: aws.bedrock_agentcore
   type: group
   fields:
+    - name: session_id
+      type: keyword
+      description: Unique identifier for the AgentCore runtime session.
+
     - name: resource_arn
       type: keyword
-      description: The Amazon Resource Name (ARN) of the AgentCore runtime resource.
+      description: Amazon Resource Name (ARN) of the AgentCore runtime resource.
 
-    - name: account_id
+    - name: severity_number
+      type: integer
+      description: Numeric severity level associated with the event.
+
+    - name: severity_text
       type: keyword
-      description: ID of the account.
+      description: Textual representation of the severity level.
 
     - name: request_id
       type: keyword
-      description: ID of the request.
+      description: ID of the processed request.
+
+    - name: prompt
+      type: text
+      description: User prompt text captured by the event.
 
     - name: prompt_hash
       type: text
-      description: Hash of the user prompt for deduplication purposes.
+      description: Hash of the user prompt for deduplication and correlation.
+
+    - name: operation
+      type: keyword
+      description: Name of the AgentCore operation executed.
+
+    - name: service_name
+      type: keyword
+      description: Name of the service handling the operation.
+
+    - name: body
+      type: group
+      fields:
+        - name: request_payload
+          type: group
+          fields:
+            - name: prompt
+              type: text
+              description: User prompt text extracted from the request payload.
+
+            - name: actor_id
+              type: text
+              description: Identifier of the actor initiating the request.
 
 # Gen AI fields relevant for AgentCore
 - name: gen_ai
   type: group
   fields:
-    - name: system
-      type: keyword
-      description: Name of the AI system (aws).
-
     - name: conversation.id
       type: keyword
       description: Unique identifier for the conversation or session.
 
     - name: operation.name
       type: keyword
-      description: Name of the operation.
+      description: Name of the GenAI operation performed.
 
     - name: provider.name
       type: keyword
-      description: Name of the AI provider or vendor.
-
-    - name: prompt
-      type: text
-      description: The user prompt sent to the AgentCore runtime.
-
-    - name: request
-      type: group
-      fields:
-        - name: id
-          type: keyword
-          description: Unique identifier for the request.
-          
-- name: session.id
-  type: keyword
-  description: Identifier for the session.
+      description: Name of the AI provider or platform.
