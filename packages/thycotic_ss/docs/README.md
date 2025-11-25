@@ -87,36 +87,36 @@ An example event for `logs` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-10T13:13:32.000Z",
+    "@timestamp": "2025-11-10T13:13:18.000Z",
     "agent": {
-        "ephemeral_id": "8b34f219-cb12-4346-a4d8-dff36ab92ed9",
-        "id": "21fd6389-bda5-46dd-9abe-cc77aef72e44",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "9b332f1b-3496-4574-ace8-0c4e93681d56",
+        "id": "4cad8b8e-68de-45a6-938c-44935eb26c44",
+        "name": "elastic-agent-81566",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.19.2"
     },
     "data_stream": {
         "dataset": "thycotic_ss.logs",
-        "namespace": "ep",
+        "namespace": "62177",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "21fd6389-bda5-46dd-9abe-cc77aef72e44",
+        "id": "4cad8b8e-68de-45a6-938c-44935eb26c44",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.19.2"
     },
     "event": {
-        "action": "view",
+        "action": "password_displayed",
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "code": "10004",
+        "code": "10039",
         "dataset": "thycotic_ss.logs",
-        "ingested": "2022-12-16T06:41:35Z",
+        "ingested": "2025-11-10T07:36:05Z",
         "kind": "event",
         "provider": "secret",
         "type": [
@@ -125,37 +125,34 @@ An example event for `logs` looks as following:
     },
     "host": {
         "ip": [
-            "172.23.0.4"
+            "172.24.0.3"
         ],
         "name": "THYCOTICSS02"
     },
     "input": {
         "type": "udp"
     },
-    "message": "[[SecretServer]] Event: [Secret] Action: [View] By User: U.Admin Item Name: Admin User Personal Admin Account - example\\adminuser (Item Id: 12) Container Name: Admin User (Container Id: 11) ",
+    "message": "[[SecretServer]] Event: [Secret] Action: [Password displayed] By User: Example.com\\user.ad Item name: File Name (Item Id: 5631) Container name: Sample User(admin) (Container Id: 1493) Details: Fields: (Password)",
     "observer": {
         "hostname": "THYCOTICSS02",
         "ip": [
-            "172.23.0.4"
+            "172.24.0.3"
         ],
         "product": "Secret Server",
         "vendor": "Thycotic Software",
-        "version": "11.3.000001"
+        "version": "11.7.000061"
     },
     "related": {
         "hosts": [
             "THYCOTICSS02"
         ],
         "ip": [
-            "172.23.0.4",
-            "172.16.1.116"
-        ],
-        "user": [
-            "U.Admin"
+            "172.24.0.3",
+            "10.10.0.12"
         ]
     },
     "source": {
-        "ip": "172.16.1.116"
+        "ip": "10.10.0.12"
     },
     "tags": [
         "forwarded"
@@ -163,17 +160,16 @@ An example event for `logs` looks as following:
     "thycotic_ss": {
         "event": {
             "secret": {
-                "folder": "Admin User",
-                "id": "12",
-                "name": "Admin User Personal Admin Account - example\\adminuser"
-            },
-            "time": "2022-11-10T13:13:23.000Z"
+                "folder": "Sample User(admin)",
+                "id": "5631",
+                "name": "File Name"
+            }
         }
     },
     "user": {
-        "full_name": "Unlimited Administrator",
-        "id": "2",
-        "name": "U.Admin"
+        "domain": "Example.com",
+        "full_name": "Sample User(admin)",
+        "id": "971"
     }
 }
 ```

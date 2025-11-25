@@ -24,11 +24,12 @@ processors:
         ctx.cisco_ise.log.log_details_raw.forEach((k, v) -> c[k.replace(' ', '_').toLowerCase()] = v);
         ctx.cisco_ise.log.log_details_raw = c;
 
-  - dissect:
+  - grok:
       field: cisco_ise.log.log_details_raw.message
-      tag: dissect_alarm_queue_link_error_host_details
+      tag: grok_alarm_queue_link_error_host_details
       if: ctx.cisco_ise?.log?.log_details_raw?.message != null && ctx.event?.action == "Queue Link Error"
-      pattern: 'From %{source.address} To %{destination.address}'
+      patterns:
+        - '^(%{DATA} )?From %{DATA:source.address} To %{DATA:destination.address}$'
       on_failure:
         - append:
             tag: append_error_message_c2eeada6
@@ -176,3 +177,7 @@ on_failure:
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
