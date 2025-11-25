@@ -26,7 +26,7 @@ PUT chargeback_conf_lookup
 }
 
 # Add the default configuration to the chargeback_conf_lookup index.
-POST chargeback_conf_lookup/_doc/config
+POST chargeback_conf_lookup/_doc
 {
   "config_join_key": "chargeback_config",
   "conf_ecu_rate": 0.85,
