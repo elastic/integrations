@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies newly seen removable devices by device.serial_number and host.id using the Elastic Defend device mount events. While this activity is not inherently malicious, analysts can use those events to aid monitoring for data exfiltration over those devices.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-endpoint.events.device-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "New USB Storage Device Mounted",
+        "new_terms_fields": [
+            "device.serial_number",
+            "host.id"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating New USB Storage Device Mounted\n\nRemovable devices, like USB drives, are common in Windows environments for data transfer. Adversaries exploit these to introduce malware or exfiltrate data, leveraging their plug-and-play nature. The detection rule monitors registry changes for new device names, signaling potential unauthorized access. By focusing on first-time-seen devices, it helps identify suspicious activities linked to data exfiltration or initial access attempts.\n\nThis detection uses Elastic Defend device control events, Device control helps protect your Windows and Mac endpoints from data loss, malware, and unauthorized access by managing which devices can connect to your computers. Specifically, it restricts which external USB storage devices can connect to hosts that have Elastic Defend installed.\n\n\n### Possible investigation steps\n\n- Review the device mount event details to confirm the presence of a new device by checking the device.serial_number.\n- Check for any subsequent file access or transfer events involving the new device to assess potential data exfiltration.\n- Investigate the device's history by searching for any previous connections to other systems within the network to determine if it has been used elsewhere.\n- Analyze any related alerts or logs for additional context or suspicious activities linked to the device.\n\n### False positive analysis\n\n- Frequent use of company-issued USB drives for legitimate data transfer can trigger alerts. Maintain a list of approved devices and create exceptions for these in the monitoring system.\n- Software updates or installations via USB drives may be flagged. Identify and whitelist known update devices or processes to prevent unnecessary alerts.\n- IT department activities involving USB devices for maintenance or troubleshooting can appear suspicious. Coordinate with IT to log and exclude these routine operations from triggering alerts.\n- Devices used for regular backups might be detected as new. Ensure backup devices are registered and excluded from the rule to avoid false positives.\n- Personal USB devices used by employees for non-work-related purposes can cause alerts. Implement a policy for registering personal devices and exclude them if deemed non-threatening.\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent potential data exfiltration or further spread of malware.\n- Block the device by serial number using the relevant Elastic Defend Device Control policy.\n- Conduct a thorough scan of the isolated host using updated antivirus and anti-malware tools to identify and remove any malicious software introduced via the removable device.\n- If malicious activity is confirmed, collect and preserve relevant logs and evidence for further forensic analysis and potential legal action.\n- Notify the security team and relevant stakeholders about the incident, providing details of the device and any identified threats.\n- Implement a temporary block on the use of removable devices across the network until the threat is fully contained and remediated.\n- Enhance monitoring and detection capabilities by updating security tools and rules to better identify similar threats in the future, focusing on registry changes and device connections.",
+        "query": "host.os.type:(macos or windows) and event.type:device and event.action:mount and event.outcome:success and volume.removable:true\n",
+        "references": [
+            "https://www.elastic.co/docs/solutions/security/manage-elastic-defend/trusted-devices",
+            "https://www.elastic.co/docs/solutions/security/configure-elastic-defend/configure-an-integration-policy-for-elastic-defend#device-control"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "volume.removable",
+                "type": "boolean"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "483832a8-ffdd-4e11-8e96-e0224f7bda9b",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Use Case: Device Control",
+            "Tactic: Initial Access",
+            "Tactic: Exfiltration",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1091",
+                        "name": "Replication Through Removable Media",
+                        "reference": "https://attack.mitre.org/techniques/T1091/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1052",
+                        "name": "Exfiltration Over Physical Medium",
+                        "reference": "https://attack.mitre.org/techniques/T1052/",
+                        "subtechnique": [
+                            {
+                                "id": "T1052.001",
+                                "name": "Exfiltration over USB",
+                                "reference": "https://attack.mitre.org/techniques/T1052/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "483832a8-ffdd-4e11-8e96-e0224f7bda9b_1",
+    "type": "security-rule"
+}
