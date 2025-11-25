@@ -19,7 +19,7 @@ state:
   organization_id: !!str {{organization_id}}
   lookbehind: !!int {{lookbehind}}
   add_tags: !!bool {{add_tags}}
-  tag_endpoint: !!str "https://cloud.elastic.co/api/v1/deployments/_search"
+  dep_search_url: !!str {{dep_search_url}}
 redact:
   fields:
     - api_key
@@ -27,7 +27,7 @@ program: |-
   (state.add_tags) ?
     request(
       "POST",
-      state.tag_endpoint
+      state.dep_search_url
     ).with(
       {
         "Header": {
