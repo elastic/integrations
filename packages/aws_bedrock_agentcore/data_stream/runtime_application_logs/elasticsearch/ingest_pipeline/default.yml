@@ -2,6 +2,7 @@
 description: Pipeline for Amazon Bedrock AgentCore runtime application logs
 processors:
   - rename:
+      tag: rename_original_message
       field: message
       target_field: event.original
       if: 'ctx.event?.original == null'
@@ -9,6 +10,7 @@ processors:
       ignore_missing: true
 
   - remove:
+      tag: remove_message_after_copy
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
@@ -16,12 +18,14 @@ processors:
       
   # Parse JSON if the log comes as a string
   - json:
+      tag: parse_json_event_original
       field: event.original
       target_field: aws.bedrock_agentcore
       if: 'ctx.event?.original != null'
       ignore_failure: true
 
   - date:
+      tag: convert_event_timestamp
       field: aws.bedrock_agentcore.event_timestamp
       target_field: "@timestamp"
       formats:
@@ -29,56 +33,68 @@ processors:
       ignore_failure: true
 
   - rename:
+      tag: rename_account_id
       field: aws.bedrock_agentcore.account_id
       target_field: cloud.account.id
       ignore_missing: true
 
   - rename:
+      tag: rename_traceId
       field: aws.bedrock_agentcore.traceId
       target_field: trace.id
       ignore_missing: true
 
   - rename:
+      tag: rename_trace_id_fallback
+      if: ctx.trace?.id == null
       field: aws.bedrock_agentcore.trace_id
       target_field: trace.id
-      if: ctx.trace.id == null
+      ignore_missing: true
 
   - rename:
+      tag: rename_spanId
       field: aws.bedrock_agentcore.spanId
       target_field: span.id
       ignore_missing: true
 
   - rename:
+      tag: rename_span_id_fallback
       field: aws.bedrock_agentcore.span_id
       target_field: span.id
       ignore_missing: true
-      if: ctx.span.id == null
+      if: ctx.span?.id == null
   
   - rename:
+      tag: rename_severity_number
       field: aws.bedrock_agentcore.severityNumber
       target_field: aws.bedrock_agentcore.severity_number
       ignore_missing: true
 
   - rename:
+      tag: rename_severity_text
       field: aws.bedrock_agentcore.severityText
       target_field: aws.bedrock_agentcore.severity_text
       ignore_missing: true
       
   # Set ECS version
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
       
   # Set cloud service metadata
   - set:
+      tag: set_cloud_service_name
       field: cloud.service.name
       value: bedrock-agentcore
       
   - set:
+      tag: set_cloud_provider
       field: cloud.provider
       value: aws
 
   - script:
+      tag: extract_resource_attributes
       description: Extract fields from resource.attributes with dotted keys
       lang: painless
       if: ctx.aws?.bedrock_agentcore?.resource?.attributes != null
@@ -88,33 +104,40 @@ processors:
         if (attrs.containsKey('service.name')) {
           if (ctx.service == null) ctx.service = new HashMap();
           ctx.service.name = attrs['service.name'];
+          ctx.aws.dimensions.Name = attrs['service.name'];
         }
       ignore_failure: true
-  
+
   - set:
+      tag: set_genai_provider
       field: gen_ai.provider.name
       value: aws_bedrock_agentcore
 
   - set:
+      tag: set_genai_operation
       field: gen_ai.operation.name
       value: invoke_agent
 
   - set:
+      tag: set_conversation_id
       field: gen_ai.conversation.id
       copy_from: aws.bedrock_agentcore.session_id
 
   - set:
+      tag: set_event_outcome_success
       field: event.outcome
       value: success
       if: ctx.error?.message == null
       
   - set:
+      tag: set_event_outcome_failure
       field: event.outcome  
       value: failure
       if: ctx.error?.message != null
       
   # Truncate large prompt fields to prevent storage issues
   - script:
+      tag: truncate_large_prompts
       description: Truncate large prompts and store hash
       lang: painless
       if: ctx.aws?.bedrock_agentcore?.body?.request_payload?.prompt != null && ctx.aws?.bedrock_agentcore?.body?.request_payload?.prompt instanceof String
@@ -126,6 +149,7 @@ processors:
       ignore_failure: true
 
   - remove:
+      tag: remove_unused_fields
       field:
         - aws.bedrock_agentcore.attributes
         - aws.bedrock_agentcore.resource
@@ -137,6 +161,7 @@ processors:
       
   # Remove empty/null values
   - script:
+      tag: cleanup_null_values
       description: Remove null/empty values recursively
       lang: painless
       source: |
