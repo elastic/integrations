@@ -248,15 +248,14 @@ An example event for `runtime_application` looks as following:
         "type": "aws-cloudwatch"
     },
     "gen_ai": {
-        "system": "aws_bedrock_agentcore",
-        "provider": {
-            "name": "aws"
-        },
         "conversation": {
-            "id": "0a6a8cc0-42ac-4e2c-adee-c3cbb81d2e87"
+            "id": "76d5c1a5-df2d-4299-b536-9f0302e344ab"
         },
         "operation": {
-            "name": "InvokeAgentRuntime"
+            "name": "invoke_agent"
+        },
+        "provider": {
+            "name": "aws_bedrock_agentcore"
         }
     },
     "trace": {
@@ -272,7 +271,7 @@ An example event for `runtime_application` looks as following:
         "dataset": "aws_bedrock_agentcore.runtime_application_logs"
     },
     "service": {
-        "name": "AgentCoreCodeRuntime"
+        "name": "customersupport.DEFAULT"
     },
     "event": {
         "agent_id_status": "verified",
@@ -283,9 +282,19 @@ An example event for `runtime_application` looks as following:
     },
     "aws": {
         "bedrock_agentcore": {
-            "account_id": "627286350137",
-            "resource_arn": "arn:aws:bedrock-agentcore:us-east-1:627286350137:runtime/claudeserver-CdBoW2FLP1",
-            "request_id": "816db982-a20b-46e6-9615-8a9fe544485e"
+            "body": {
+                "request_payload": {
+                    "actor_id": "DEFAULT",
+                    "prompt": "Summarize my previous conversation"
+                }
+            },
+            "operation": "InvokeAgentRuntime",
+            "request_id": "083603b2-7b75-46ba-bf61-45c562764b68",
+            "resource_arn": "arn:aws:bedrock-agentcore:us-east-1:627286350133:runtime/customersupport-3OutfrDDJ3",
+            "service_name": "AgentCoreCodeRuntime",
+            "session_id": "76d5c1a5-df2d-4299-b536-9f0302e344cb",
+            "severity_number": 9,
+            "severity_text": "INFO"
         }
     },
     "span": {
