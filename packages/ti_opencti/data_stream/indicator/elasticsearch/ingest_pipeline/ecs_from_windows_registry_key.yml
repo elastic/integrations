@@ -24,13 +24,19 @@ processors:
       if: ctx._tmp_registry?.hive != null
 
   # append object
-  - append:
-      field: threat.indicator.registry
-      value: []
   - script:
       description: Append to the destination
       lang: painless
       source: |
+        if (ctx.threat == null) {
+          ctx.threat = [:];
+        }
+        if (ctx.threat.indicator == null) {
+          ctx.threat.indicator = [:];
+        }
+        if (ctx.threat.indicator.registry == null) {
+          ctx.threat.indicator.registry = [];
+        }
         ctx.threat.indicator.registry.add(ctx._tmp_registry);
 
   - remove:
