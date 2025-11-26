@@ -264,7 +264,7 @@ processors:
               addNestedValue(ctx, "service.entity.id", actor);
             }
             // Service account paths: projects/*/serviceAccounts/*
-            else if (actor.contains("/serviceAccounts/")) {
+            else if (actor.contains("/serviceAccounts")) {
               addNestedValue(ctx, "service.entity.id", actor);
             }
             // User accounts: user:* or email addresses (not service accounts)
@@ -272,11 +272,11 @@ processors:
               addNestedValue(ctx, "user.entity.id", actor);
             }
             // Compute instances: projects/*/zones/*/instances/*
-            else if (actor.contains("/instances/")) {
+            else if (actor.contains("/instances")) {
               addNestedValue(ctx, "host.entity.id", actor);
             }
             // GCP service or API names: *.googleapis.com (but not principal:// or workloadIdentityPools)
-            else if (actor.contains(".googleapis.com") && !actor.startsWith("principal://") && !actor.contains("/workloadIdentityPools/")) {
+            else if (actor.contains(".googleapis.com") && !actor.startsWith("principal://") && !actor.contains("/workloadIdentityPools")) {
               addNestedValue(ctx, "service.entity.id", actor);
             }
             // Everything else (repo:, workloadIdentityPools, principal://, etc.)
@@ -295,41 +295,41 @@ processors:
             String target = targetId.toString();
             
             // Compute instances
-            if (target.contains("/instances/")) {
+            if (target.contains("/instances")) {
               addNestedValue(ctx, "host.target.entity.id", target);
             }
             // Service accounts: projects/*/serviceAccounts/* or email addresses ending with .gserviceaccount.com
-            else if (target.contains("/serviceAccounts/") || 
+            else if (target.contains("/serviceAccounts") || 
                      (target.contains("@") && target.contains(".gserviceaccount.com"))) {
               addNestedValue(ctx, "service.target.entity.id", target);
             }
             // IAM principals (users, groups)
-            else if (target.contains("/users/") || 
-                     target.contains("/groups/") ||
-                     (target.contains("@") && target.contains("/members/"))) {
+            else if (target.contains("/users") || 
+                     target.contains("/groups") ||
+                     (target.contains("@") && target.contains("/members"))) {
               addNestedValue(ctx, "user.target.entity.id", target);
             }
             // GCP service resources
             else if (target.contains("/machineTypes") ||
-                     target.contains("/deployments/") ||
+                     target.contains("/deployments") ||
                      target.contains("/services") ||
-                     target.contains("/policies/") ||
-                     target.contains("/operations/") ||
+                     target.contains("/policies") ||
+                     target.contains("/operations") ||
                      target.contains("/subnetworks") ||
                      target.contains("/networkEdgeSecurityServices") ||
-                     target.contains("/functions/") ||
-                     target.contains("/buckets/") ||
-                     target.contains("/datasets/") ||
-                     target.contains("/tables/") ||
-                     target.contains("/disks/") ||
-                     target.contains("/networks/") ||
-                     target.contains("/firewalls/") ||
-                     target.contains("/backendServices/") ||
-                     target.contains("/forwardingRules/") ||
-                     target.contains("/healthChecks/") ||
-                     target.contains("/sslCertificates/") ||
-                     target.contains("/targetPools/") ||
-                     target.contains("/urlMaps/") ||
+                     target.contains("/functions") ||
+                     target.contains("/buckets") ||
+                     target.contains("/datasets") ||
+                     target.contains("/tables") ||
+                     target.contains("/disks") ||
+                     target.contains("/networks") ||
+                     target.contains("/firewalls") ||
+                     target.contains("/backendServices") ||
+                     target.contains("/forwardingRules") ||
+                     target.contains("/healthChecks") ||
+                     target.contains("/sslCertificates") ||
+                     target.contains("/targetPools") ||
+                     target.contains("/urlMaps") ||
                      target.contains(".googleapis.com")) {
               addNestedValue(ctx, "service.target.entity.id", target);
             }
