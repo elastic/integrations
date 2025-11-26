@@ -1,22 +1,47 @@
 ---
 description: Pipeline for processing Azure Events logs
 processors:
-  - set:
-      field: ecs.version
-      value: '8.11.0'
-
   - dot_expander:
       field: "*"
       path: attributes
   - dot_expander:
       field: "*"
       path: resource.attributes
-  
-  # Extract azure.resource.id
+  - set:
+      field: tmp_json.category
+      copy_from: attributes.azure.category
+      ignore_empty_value: true
+  - set:
+      field: azure.activitylogs.time
+      copy_from: '@timestamp'
   - set:
       field: azure.resource.id
       copy_from: resource.attributes.cloud.resource_id
-      if: ctx.resource?.attributes?.cloud?.resource_id != null
+      ignore_empty_value: true
+  - set:
+      field: azure.activitylogs.event_category
+      copy_from: resource.attributes.cloud.resource_id
+      ignore_empty_value: true
+  - set:
+      field: azure.activitylogs.result_type
+      copy_from: attributes.azure.result.type
+      ignore_empty_value: true
+  - set:
+      field: azure.activitylogs.operation_name
+      copy_from: attributes.azure.operation.name
+      ignore_empty_value: true
+  - set:
+      field: azure.activitylogs.operation_version
+      copy_from: attributes.azure.operation.version
+      ignore_empty_value: true
+  - set:
+      field: azure.activitylogs.result_signature
+      copy_from: attributes.azure.result.signature
+      ignore_empty_value: true
+  - set:
+      field: azure.correlation_id
+      copy_from: attributes.azure.correlation_id
+      ignore_empty_value: true
 
 on_failure:
   - set:
