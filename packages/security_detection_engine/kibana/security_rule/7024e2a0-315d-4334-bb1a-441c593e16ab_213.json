@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects deletion of an AWS CloudTrail trail via DeleteTrail API. Removing trails is a high-risk action that destroys an audit control plane and is frequently paired with other destructive or stealthy operations. Validate immediately and restore compliant logging.",
+        "false_positives": [
+            "Trail deletions may be made by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Trail deletions by unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS CloudTrail Log Deleted",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS CloudTrail Log Deleted\n\nAWS CloudTrail is a service that enables governance, compliance, and operational and risk auditing of your AWS account. It logs API calls and related events, providing visibility into user activity. This rule identifies the deletion of an AWS log trail using the `DeleteTrail` API. Deleting a trail can eliminate visibility and is a strong indicator of defense evasion or sabotage.\n\n#### Possible investigation steps\n- **Actor & target**\n  - Identify `aws.cloudtrail.user_identity.arn`, `user_agent.original`, `source.ip`.\n  - Confirm which trail was deleted (name/ARN, multi-region/organization status) from `aws.cloudtrail.request_parameters` or `target.entity.id`.\n- **Blast radius**\n  - Determine whether it was the only trail or if organization/multi-region coverage remains.\n  - Review preceding `StopLogging` or `UpdateTrail` and subsequent high-risk actions (IAM, S3, KMS, EC2 exports).\n- **Data preservation**\n  - Verify S3 destinations and CloudWatch log groups for retained historical logs and file integrity validation.\n\n### False positive analysis\n- **Planned deletion**: Validate with tickets and decommissioning plans; ensure replacement/alternate trails exist.\n\n### Response and remediation\n- Recreate or re-enable compliant multi-region (or organization) trails immediately.\n- Investigate the actor\u2019s recent activity; rotate creds if compromise is suspected.\n- Validate destination bucket policies, CMK policies, and event selectors for all active trails.\n- Hardening: Restrict `cloudtrail:DeleteTrail` and enforce guardrails via AWS Config/SCPs; alert on future deletions.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.provider: \"cloudtrail.amazonaws.com\"\n    and event.action: \"DeleteTrail\"\n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_DeleteTrail.html",
+            "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudtrail/delete-trail.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "7024e2a0-315d-4334-bb1a-441c593e16ab",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Cloudtrail",
+            "Use Case: Log Auditing",
+            "Resources: Investigation Guide",
+            "Tactic: Defense Evasion"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 213
+    },
+    "id": "7024e2a0-315d-4334-bb1a-441c593e16ab_213",
+    "type": "security-rule"
+}
