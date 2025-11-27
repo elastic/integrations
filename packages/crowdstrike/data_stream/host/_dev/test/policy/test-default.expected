@@ -17,22 +17,17 @@ inputs:
           program: |-
             // This logic determines which CrowdStrike devices endpoint to call. The
             // "/devices/combined/devices/v1" endpoint is not supported in GovCloud
-            // environments, so we must fall back to the "/devices/entities/devices/v2"
+            // environments, so we must use the "/devices/queries/devices/v1"
             // endpoint when running in GovCloud.
             //
-            // The selection works in two stages:
-            // 1. If the "gov_cloud" flag is explicitly enabled in the data stream manifest,
-            //    we always use the "/devices/entities/devices/v2" endpoint.
+            // The selection works based on the "gov_cloud" flag:
+            // 1. If the "gov_cloud" flag is enabled in the data stream manifest,
+            //    we use the "/devices/queries/devices/v1" endpoint.
             //
-            // 2. If the flag is disabled, the program inspects the base URL to infer
-            //    whether the integration is pointed at a GovCloud environment. If the
-            //    URL matches a known GovCloud domain, we avoid calling the unsupported
-            //    combined endpoint and instead use "/devices/entities/devices/v2".
-            //
-            // This dual-check mechanism ensures that GovCloud users do not encounter errors
-            // even if they forget to enable the "gov_cloud" flag in the manifest.
+            // 2. If the flag is disabled, we use the "/devices/combined/devices/v1" endpoint.
             (
-              state.gov_cloud || state.url.trim_right("/") in ["https://api.laggar.gcw.crowdstrike.com", "https://api.us-gov-2.crowdstrike.mil"] ?
+              state.gov_cloud ?
+                // GovCloud branch: use /devices/queries/devices/v1 endpoint for GovCloud CIDs.
                 (
                   state.want_more ?
                     state.?page.start
@@ -77,7 +72,7 @@ inputs:
                           "error": {
                             "code": string(get_resp.StatusCode),
                             "id": string(get_resp.Status),
-                            "message": "GET:" + (
+                            "message": "GET: " + (
                               (size(get_resp.Body) != 0) ?
                                 string(get_resp.Body)
                               :
@@ -124,7 +119,7 @@ inputs:
                               "error": {
                                 "code": string(post_resp.StatusCode),
                                 "id": string(post_resp.Status),
-                                "message": "POST:" + (
+                                "message": "POST: " + (
                                   (size(post_resp.Body) != 0) ?
                                     string(post_resp.Body)
                                   :
@@ -140,6 +135,7 @@ inputs:
                   )
                 )
               :
+                // Commercial CID branch: use /devices/combined/devices/v1 endpoint for commercial CIDs.
                 state.with(
                   (
                     state.?want_more.orValue(false) ?
