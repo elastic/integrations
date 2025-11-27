@@ -1,0 +1,182 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful AWS Management Console or federation login activity performed using an EC2 instance\u2019s assumed role credentials. EC2 instances typically use temporary credentials to make API calls, not to authenticate interactively via the console. A successful \"ConsoleLogin\" or \"GetSigninToken\" event using a session pattern that includes \"i-\" (the EC2 instance ID) is highly anomalous and may indicate that an adversary obtained the instance\u2019s temporary credentials from the instance metadata service (IMDS) and used them to access the console. Such activity can enable lateral movement, privilege escalation, or persistence within the AWS account.",
+        "event_category_override": "event.type",
+        "false_positives": [
+            "This is very uncommon behavior and should result in minimal false positives, ensure validity of the triggered event and include exceptions where necessary."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS EC2 Instance Console Login via Assumed Role",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS EC2 Instance Console Login via Assumed Role\n\nThis rule detects successful AWS console or federation logins using temporary credentials tied to EC2 instance profiles. Under normal conditions, EC2 instances use their temporary credentials for programmatic API access \u2014 **not** for interactive console sessions. When an attacker gains access to an instance\u2019s IMDS (Instance Metadata Service) or its environment variables, they may retrieve temporary STS credentials and attempt console logins to gain full access to the AWS account. A successful login of this type is rare and high-risk, as it strongly suggests credential theft or unauthorized session hijacking.\n\n#### Possible investigation steps\n\n- **Identify the source and actor**\n  - Review `aws.cloudtrail.user_identity.arn`, `user.id`, and `user_agent.original` fields to confirm the session originated from an EC2 instance (`:i-` pattern).\n  - Correlate the instance ID (`i-xxxxxx`) with the specific EC2 instance in your environment to identify its owner, purpose, and running applications.\n  - Check `source.ip` and `cloud.region` to determine if the login originated from within AWS infrastructure (expected) or an external location (suspicious).\n\n- **Correlate surrounding activity**\n  - Pivot in Timeline to view the sequence of events leading up to the login, including:\n    - STS token retrievals (`GetSessionToken`, `AssumeRole`, `GetCallerIdentity`)\n    - Calls to the IMDS endpoint or local credential exfiltration attempts from the instance.\n  - Investigate whether the same role or credentials were used for API actions following the login (e.g., `CreateUser`, `AttachRolePolicy`, or `ListBuckets`).\n\n- **Assess IAM role exposure**\n  - Determine which IAM role was associated with the instance at the time of the event and review its attached permissions.\n  - Evaluate whether the role grants console access or permissions beyond what that workload normally requires.\n  - Check for any recent changes to that role\u2019s trust policy or attached policies.\n\n- **Validate authorization**\n  - Contact the EC2 instance owner or service team to confirm if any legitimate process should be logging in to the console.\n  - If no legitimate activity can explain the login, treat the credentials as compromised.\n\n### False positive analysis\n\nThis is very uncommon behavior.  \nKnown legitimate causes include:\n- AWS or internal security automation that programmatically initiates console sessions for validation or testing.\n- Forensic or incident-response automation that logs in using temporary credentials from a compromised instance.\n- Red-team or penetration-testing activity designed to validate IMDS exposure or lateral movement scenarios.\n\nFor any other occurrence, treat the alert as potentially malicious.  \nValidate through:\n- The originating instance\u2019s purpose and owner.\n- Known automation patterns in `user_agent.original`.\n- The timestamp alignment with planned testing or security validation.\n\n### Response and remediation\n\n- **Immediate containment**\n  - Revoke the temporary credentials for the affected role (`aws sts revoke-session-token` or rotate the role credentials).\n  - Isolate the associated EC2 instance (e.g., detach it from the VPC or security groups) to prevent further credential misuse.\n  - Invalidate active console sessions via AWS CLI or the AWS Console.\n\n- **Investigation and scoping**\n  - Review CloudTrail logs for all actions associated with the compromised role in the preceding 24 hours.\n  - Determine if additional roles or instances show similar `ConsoleLogin` patterns.\n  - Search for network indicators of IMDS exploitation (e.g., requests to `169.254.169.254` from unauthorized binaries or users).\n\n- **Recovery and hardening**\n  - Rotate all credentials for affected roles and users.\n  - Apply IMDSv2 enforcement to prevent credential harvesting from EC2 metadata.\n  - Implement restrictive IAM policies: deny console access (`iam:PassRole`, `sts:GetFederationToken`) for non-human roles.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "info where event.dataset == \"aws.cloudtrail\"\n   and event.provider == \"signin.amazonaws.com\"\n   and event.action in (\"ConsoleLogin\", \"GetSigninToken\")\n   and event.outcome == \"success\"\n   and aws.cloudtrail.user_identity.type == \"AssumedRole\"\n   and stringContains (user.id, \":i-\")\n",
+        "references": [
+            "https://redcanary.com/blog/aws-sts/",
+            "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_enable-console-custom-url.html/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "d1e5e410-3e34-412e-9b1f-dd500b3b55cd",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS EC2",
+            "Data Source: AWS STS",
+            "Data Source: AWS Sign-In",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Lateral Movement",
+            "Tactic: Credential Access",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.007",
+                                "name": "Cloud Services",
+                                "reference": "https://attack.mitre.org/techniques/T1021/007/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.001",
+                                "name": "Application Access Token",
+                                "reference": "https://attack.mitre.org/techniques/T1550/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.005",
+                                "name": "Cloud Instance Metadata API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "d1e5e410-3e34-412e-9b1f-dd500b3b55cd_5",
+    "type": "security-rule"
+}
