@@ -17,11 +17,15 @@ This integration collects log messages of the following type:
 
 - `Adapter`: Collect details of all adapters (endpoint: `/api/v2/adapters`).
 
+- `User`: Collect details of all users (endpoint: `/api/v2/users`).
+
 ### Supported use cases
 
-Integrating the Axonius Adapters with Elastic SIEM provides clear visibility into adapter health and data-collection performance across the environment. The dashboard highlights overall adapter status, offering a quick understanding of which integrations are functioning normally and which require attention. Essential adapter details are surfaced to help analysts validate configurations, identify failing plugins, and understand the distribution of adapters across nodes.
+Integrating the Axonius Adapters and User Datastreams with Elastic SIEM provides centralized visibility into both data-collection health and user identity context across the environment. Together, these datastreams help analysts understand how data is being ingested through adapters and how that data maps to user identities and access posture.
 
-It also provides insight into connection behavior for each adapter, revealing patterns of active, inactive, and error-prone connections. Error-specific views make it easy to spot problematic integrations and prioritize troubleshooting efforts. These insights enable teams to maintain reliable data ingestion, reduce blind spots, and ensure complete and accurate asset collection across all connected systems.
+The dashboards highlight overall adapter status and connection behavior, making it easy to identify healthy integrations, failing plugins, and error-prone connections that may impact asset visibility. At the same time, user-focused views surface role distribution and essential identity attributes, helping analysts quickly assess access patterns and identify high-privileged or unusual user activity. Consolidated user details and source information provide clarity on where identity data originates and whether coverage gaps exist.
+
+By combining adapter health insights with user identity visibility, security teams can ensure reliable data ingestion, detect identity-related anomalies, reduce blind spots, and streamline investigations that depend on accurate, end-to-end context from both integrations and users.
 
 ## What do I need to use this integration?
 
@@ -106,6 +110,16 @@ The `adapter` data stream provides adapter logs from axonius.
 
 {{ event "adapter" }}
 
+### User
+
+The `user` data stream provides user events from axonius.
+
+#### user fields
+
+{{ fields "user" }}
+
+{{ event "user" }}
+
 ### Inputs used
 {{/* All inputs used by this package will be automatically listed here. */}}
 {{ inputDocs }}
@@ -115,7 +129,8 @@ The `adapter` data stream provides adapter logs from axonius.
 These APIs are used with this integration:
 
 * Adapter (endpoint: `/api/v2/adapters`)
+* User (endpoint: `/api/v2/users`)
 
 #### ILM Policy
 
-To facilitate adapter data, source data stream-backed indices `.ds-logs-axonius.adapter-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-axonius.adapter-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter and user data, source data stream-backed indices `.ds-logs-axonius.adapter-*` and `.ds-logs-axonius.user-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy` and `logs-axonius.user-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
