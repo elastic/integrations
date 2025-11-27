@@ -107,23 +107,23 @@ processors:
           'network-acl': true
           'dhcp-options': true
         hostIdPrefixes:
-          'i-': true
-          'vol-': true
-          'snap-': true
-          'ami-': true
+          - 'i-'
+          - 'vol-'
+          - 'snap-'
+          - 'ami-'
         serviceIdPrefixes:
-          'sg-': true
-          'sgr-': true
-          'eni-': true
-          'vpc-': true
-          'subnet-': true
-          'acl-': true
-          'rtb-': true
-          'igw-': true
-          'nat-': true
-          'vpce-': true
-          'tgw-': true
-          'pcx-': true
+          - 'sg-'
+          - 'sgr-'
+          - 'eni-'
+          - 'vpc-'
+          - 'subnet-'
+          - 'acl-'
+          - 'rtb-'
+          - 'igw-'
+          - 'nat-'
+          - 'vpce-'
+          - 'tgw-'
+          - 'pcx-'
         userIdentityTypes:
           'IAMUser': true
           'Root': true
@@ -892,7 +892,7 @@ processors:
                 classified = true;
               } else {
                 // Check host ID prefixes
-                for (def prefix : params.hostIdPrefixes.keySet()) {
+                for (def prefix : params.hostIdPrefixes) {
                   if (target.startsWith(prefix)) {
                     hostTargets.add(target);
                     classified = true;
@@ -902,7 +902,7 @@ processors:
                 
                 // Check service ID prefixes if not yet classified
                 if (!classified) {
-                  for (def prefix : params.serviceIdPrefixes.keySet()) {
+                  for (def prefix : params.serviceIdPrefixes) {
                     if (target.startsWith(prefix)) {
                       serviceTargets.add(target);
                       classified = true;
