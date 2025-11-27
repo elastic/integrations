@@ -52,15 +52,9 @@ processors:
       description: Append to the destination
       lang: painless
       source: |
-        if (ctx.threat == null) {
-          ctx.threat = [:];
-        }
-        if (ctx.threat.indicator == null) {
-          ctx.threat.indicator = [:];
-        }
-        if (ctx.threat.indicator.file == null) {
-          ctx.threat.indicator.file = [];
-        }
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
+        ctx.threat.indicator.file = ctx.threat.indicator.file ?: [];
         ctx.threat.indicator.file.add(ctx._tmp_file);
 
   - remove:
