@@ -45,7 +45,7 @@ program: |-
       "archived": ["false"],
       "limit": [string(state.batch_size)],
       "order": ["asc"],
-      ?"anchor": state.?next_anchor.optMap(v, [v]),
+      ?"anchor": state.?next_anchor.orValue(null) != null ? optional.of([state.next_anchor]) : optional.none(),
     }.format_query()
   ).do_request().as(resp, resp.StatusCode == 200 ?
     resp.Body.decode_json().as(body,
