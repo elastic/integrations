@@ -186,3 +186,6 @@ The Microsoft SQL Server `transaction_log` dataset provides metrics from the log
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "transaction_log"}}
+
+## Alerting Rule Template
+{{alertRuleTemplates}}
