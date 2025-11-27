@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-01-06T12:00:00.000Z",
     "created_by": "elastic",
-    "description": "Parse systemd services on Linux systems. Provides visibility into systemd service units including: (1) Service identification (unit name, description), (2) Load state (whether unit definition was properly loaded), (3) Activation state (high-level active/inactive status), (4) Sub-state details (low-level unit activation state), (5) Service enablement status (enabled, disabled, masked), (6) Unit file path (source of unit configuration). Detection focuses on: services in unexpected states (loaded but inactive), services with unusual configurations, masked or disabled critical services. Use Cases: System service inventory, service state monitoring, persistence mechanism detection (systemd service-based persistence), unauthorized service installation detection, service misconfiguration identification, compliance auditing for service configurations.",
+    "description": "Parse systemd services on Linux systems with unit file hash enrichment for integrity monitoring. Provides visibility into systemd service units including: (1) Service identification (unit name, description), (2) Load state (whether unit definition was properly loaded), (3) Activation state (high-level active/inactive status), (4) Sub-state details (low-level unit activation state), (5) Service enablement status (enabled, disabled, masked), (6) Unit file path with hash for integrity verification. Detection focuses on: services in unexpected states (loaded but inactive), services with unusual configurations, masked or disabled critical services, tampered unit files (via hash comparison). Use Cases: System service inventory, service state monitoring, persistence mechanism detection (systemd service-based persistence), unauthorized service installation detection, service misconfiguration identification, compliance auditing for service configurations, unit file integrity monitoring.",
     "ecs_mapping": [
       {
         "key": "service.name",
@@ -20,6 +20,18 @@
         "key": "file.path",
         "value": {
           "field": "fragment_path"
+        }
+      },
+      {
+        "key": "file.hash.md5",
+        "value": {
+          "field": "unit_file_md5"
+        }
+      },
+      {
+        "key": "file.hash.sha256",
+        "value": {
+          "field": "unit_file_sha256"
         }
       },
       {
@@ -55,7 +67,8 @@
             "systemd",
             "services",
             "persistence",
-            "service_enumeration"
+            "service_enumeration",
+            "integrity_monitoring"
           ]
         }
       }
@@ -63,15 +76,14 @@
     "id": "services_systemd_linux_elastic",
     "interval": "3600",
     "platform": "linux",
-    "query": "SELECT\n  id,\n  load_state,\n  active_state,\n  sub_state,\n  description,\n  unit_file_state,\n  fragment_path\nFROM systemd_units\nWHERE id LIKE '%.service'\nORDER BY active_state, id;",
-    "updated_at": "2025-01-06T12:00:00.000Z",
+    "query": "-- Linux Systemd Services Enumeration with Unit File Hash Enrichment\n-- Source: Native osquery tables (systemd_units, hash)\n-- Focus: Complete systemd service inventory with unit file integrity monitoring\n-- MITRE ATT&CK: T1543.002 (Systemd Service)\n\nSELECT\n  su.id,\n  su.load_state,\n  su.active_state,\n  su.sub_state,\n  su.description,\n  su.unit_file_state,\n  su.fragment_path,\n  -- Unit file hash enrichment for integrity monitoring\n  h.md5 AS unit_file_md5,\n  h.sha256 AS unit_file_sha256\nFROM systemd_units su\nLEFT JOIN hash h ON h.path = su.fragment_path\nWHERE su.id LIKE '%.service'\nORDER BY su.active_state, su.id;",
+    "updated_at": "2025-11-27T00:00:00.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "9.2.0",
   "id": "osquery_manager-f8b0894b-772d-4242-8e19-dbc5d7ae2e06",
   "references": [],
   "type": "osquery-saved-query",
-  "updated_at": "2025-01-06T12:00:00.000Z",
+  "updated_at": "2025-11-27T00:00:00.000Z",
   "version": "Wzk2LDJd"
 }
-
