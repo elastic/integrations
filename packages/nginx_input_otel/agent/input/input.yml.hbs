@@ -1,12 +1,11 @@
 receivers:
   nginx:
-    endpoint: {{nginx_endpoint}}
-    collection_interval: {{period}}
+    {{receiver_config}}
 processors:
-  resourcedetection:
-    detectors: ["system", "ec2"]
+  resourcedetection/system:
+    detectors: ["system"]
 service:
   pipelines:
     metrics:
       receivers: [nginx]
-      processors: [resourcedetection]
+      processors: [resourcedetection/system]

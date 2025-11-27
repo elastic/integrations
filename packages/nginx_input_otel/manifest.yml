@@ -15,11 +15,6 @@ conditions:
     version: "^9.2.0"
   elastic:
     subscription: "basic"
-screenshots:
-  - src: /img/sample-screenshot.png
-    title: Sample screenshot
-    size: 600x600
-    type: image/png
 icons:
   - src: /img/nginx_otellogo.svg
     title: Sample logo
@@ -33,24 +28,15 @@ policy_templates:
     input: otelcol
     template_path: input.yml.hbs
     vars:
-      - name: nginx_endpoint
-        type: text
-        title: NGINX Endpoint
-        description: The endpoint for NGINX status page to collect metrics
+      - name: receiver_config
+        type: yaml
+        title: Receiver Configuration
         required: true
         show_user: true
-        default: http://localhost:80/status
-      - name: period
-        type: text
-        title: Collection Interval
-        description: How often to collect metrics
-        default: 10s
-      - name: additional_detectors
-        type: text
-        title: Additional Resource Detectors
-        description: Comma-separated list of additional resource detectors to use
-        required: false
-        show_user: true
+        description: Configuration for the NGINX receiver. This configuration will be inserted directly into the receiver section of the OpenTelemetry Collector configuration.
+        default: |
+          endpoint: http://localhost:80/status
+          collection_interval: 10s
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic
