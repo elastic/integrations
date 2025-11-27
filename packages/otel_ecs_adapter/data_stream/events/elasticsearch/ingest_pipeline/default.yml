@@ -3,13 +3,25 @@ description: Pipeline for processing Azure Events logs
 processors:
   - dot_expander:
       field: "*"
+      path: body.structured
+      if: ctx.body?.structured != null
+  - dot_expander:
+      field: "*"
       path: attributes
+      if: ctx.attributes != null
   - dot_expander:
       field: "*"
       path: resource.attributes
+      if: ctx.resource?.attributes != null
+  # Extract category from body.structured.category (OTEL format) or attributes.azure.category (legacy format)
+  - set:
+      field: tmp_json.category
+      copy_from: body.structured.category
+      ignore_empty_value: true
   - set:
       field: tmp_json.category
       copy_from: attributes.azure.category
+      if: ctx.tmp_json?.category == null
       ignore_empty_value: true
   - set:
       field: azure.activitylogs.time
