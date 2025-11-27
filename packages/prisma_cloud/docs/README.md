@@ -1764,11 +1764,11 @@ An example event for `misconfiguration` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-11-24T11:13:37.107Z",
+    "@timestamp": "2025-11-27T07:15:31.063Z",
     "agent": {
-        "ephemeral_id": "259866e2-2bd4-4676-b8d9-2acd344b9c24",
-        "id": "64de2f4a-e7c5-40bc-b751-337ab81262e2",
-        "name": "elastic-agent-20536",
+        "ephemeral_id": "10e6dcfd-2426-449c-ad88-dd7b950c6ff6",
+        "id": "ef0fcaa5-8765-4499-86d8-6dd2bc23a7fe",
+        "name": "elastic-agent-53293",
         "type": "filebeat",
         "version": "8.19.4"
     },
@@ -1782,14 +1782,14 @@ An example event for `misconfiguration` looks as following:
     },
     "data_stream": {
         "dataset": "prisma_cloud.misconfiguration",
-        "namespace": "49595",
+        "namespace": "89870",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "64de2f4a-e7c5-40bc-b751-337ab81262e2",
+        "id": "ef0fcaa5-8765-4499-86d8-6dd2bc23a7fe",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1800,7 +1800,7 @@ An example event for `misconfiguration` looks as following:
         ],
         "dataset": "prisma_cloud.misconfiguration",
         "id": "4b000a6af8c000b000ecd6c91c0000bd|463d8b58-1f01-462c-9e30-eca36d8fa11d",
-        "ingested": "2025-11-24T11:13:40Z",
+        "ingested": "2025-11-27T07:15:34Z",
         "kind": [
             "state"
         ],
@@ -1860,6 +1860,7 @@ An example event for `misconfiguration` looks as following:
         "evaluation": "failed"
     },
     "rule": {
+        "id": "463d8b58-1f01-462c-9e30-eca36d8fa11d",
         "name": "Azure Log Analytics workspace configured with overly permissive network access",
         "uuid": "463d8b58-1f01-462c-9e30-eca36d8fa11d"
     },
