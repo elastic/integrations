@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-01-06T12:00:00.000Z",
     "created_by": "elastic",
-    "description": "Parse launchd services on macOS systems. Provides visibility into launchd service agents and daemons including: (1) Service identification (label, name, path), (2) Service configuration state (disabled status, run_at_load, keep_alive), (3) Program executable path, (4) Plist file path (source of service configuration), (5) Service execution context (username, groupname). Detection focuses on: services in unexpected states, services with unusual configurations (e.g., disabled critical services or enabled suspicious services), unauthorized service installations in user directories, launchd-based persistence mechanisms (common macOS persistence technique). Use Cases: System service inventory, service configuration monitoring, persistence mechanism detection (launchd-based persistence is common on macOS), unauthorized service installation detection, service misconfiguration identification, compliance auditing for service configurations, privilege escalation detection via service manipulation.",
+    "description": "Parse launchd services on macOS systems with hash and code signature enrichment. Provides visibility into launchd service agents and daemons including: (1) Service identification (label, name, path), (2) Service configuration state (disabled status, run_at_load, keep_alive), (3) Program executable path with hash and signature validation, (4) Plist file path (source of service configuration), (5) Service execution context (username, groupname). Detection focuses on: services in unexpected states, services with unusual configurations (e.g., disabled critical services or enabled suspicious services), unsigned or untrusted executables, unauthorized service installations in user directories, launchd-based persistence mechanisms (common macOS persistence technique). Use Cases: System service inventory, service configuration monitoring, persistence mechanism detection (launchd-based persistence is common on macOS), unauthorized service installation detection, service misconfiguration identification, compliance auditing for service configurations, privilege escalation detection via service manipulation.",
     "ecs_mapping": [
       {
         "key": "service.name",
@@ -32,6 +32,36 @@
         "key": "group.name",
         "value": {
           "field": "groupname"
+        }
+      },
+      {
+        "key": "file.hash.md5",
+        "value": {
+          "field": "md5"
+        }
+      },
+      {
+        "key": "file.hash.sha256",
+        "value": {
+          "field": "sha256"
+        }
+      },
+      {
+        "key": "file.code_signature.signing_id",
+        "value": {
+          "field": "signing_id"
+        }
+      },
+      {
+        "key": "file.code_signature.team_id",
+        "value": {
+          "field": "team_id"
+        }
+      },
+      {
+        "key": "file.code_signature.status",
+        "value": {
+          "field": "signature_status"
         }
       },
       {
@@ -68,7 +98,8 @@
             "launchd",
             "services",
             "persistence",
-            "service_enumeration"
+            "service_enumeration",
+            "code_signing"
           ]
         }
       }
@@ -76,14 +107,14 @@
     "id": "services_launchd_darwin_elastic",
     "interval": "3600",
     "platform": "darwin",
-    "query": "SELECT\n  label,\n  name,\n  path,\n  program,\n  disabled,\n  run_at_load,\n  keep_alive,\n  COALESCE(on_demand, 0) AS on_demand,\n  COALESCE(username, 'root') AS username,\n  COALESCE(groupname, 'wheel') AS groupname\nFROM launchd\nORDER BY disabled, label;",
-    "updated_at": "2025-01-06T12:00:00.000Z",
+    "query": "-- macOS Launchd Services Enumeration with Hash/Signature Enrichment\n-- Source: Native osquery tables (launchd, hash, signature)\n-- Focus: Complete launchd service inventory with security metadata for persistence detection\n-- MITRE ATT&CK: T1543.001 (Launch Agent), T1543.004 (Launch Daemon)\n\nSELECT\n  l.label,\n  l.name,\n  l.path,\n  l.program,\n  l.disabled,\n  l.run_at_load,\n  l.keep_alive,\n  COALESCE(l.on_demand, 0) AS on_demand,\n  COALESCE(l.username, 'root') AS username,\n  COALESCE(l.groupname, 'wheel') AS groupname,\n  -- Hash enrichment (per osquery-builder guidelines)\n  h.md5,\n  h.sha256,\n  -- Code signature enrichment (macOS uses 'signature' table)\n  sig.identifier AS signing_id,\n  sig.team_identifier AS team_id,\n  sig.authority AS signing_authority,\n  CASE\n    WHEN sig.signed = 1 AND sig.identifier IS NOT NULL THEN 'valid'\n    WHEN sig.signed = 1 THEN 'signed'\n    ELSE 'unsigned'\n  END AS signature_status\nFROM launchd l\nLEFT JOIN hash h ON h.path = l.program\nLEFT JOIN signature sig ON sig.path = l.program\nORDER BY l.disabled, l.label;",
+    "updated_at": "2025-11-27T00:00:00.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "9.2.0",
   "id": "osquery_manager-5823a22e-5add-416d-a142-de323400edb0",
   "references": [],
   "type": "osquery-saved-query",
-  "updated_at": "2025-01-06T12:00:00.000Z",
+  "updated_at": "2025-11-27T00:00:00.000Z",
   "version": "Wzk1LDJd"
 }
