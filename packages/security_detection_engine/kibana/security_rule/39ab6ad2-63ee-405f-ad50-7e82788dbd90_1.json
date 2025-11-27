@@ -1,0 +1,341 @@
+{
+    "attributes": {
+        "rule_id": "39ab6ad2-63ee-405f-ad50-7e82788dbd90",
+        "version": 1,
+        "name": "Generated Rule 39ab6ad2-63ee-405f-ad50-7e82788dbd90 v1",
+        "description": "test-prebuilt-rule (version = 1, package version = 1)\n\nThis rule identifies potentially suspicious activity by detecting instances where a single IAM user's temporary session token is accessed from multiple IP addresses within a short time frame. Such behavior may suggest that an adversary has compromised temporary credentials and is utilizing them from various locations. To enhance detection accuracy and minimize false positives, the rule incorporates criteria that evaluate unique IP addresses, user agents, cities, and networks. These additional checks help distinguish between legitimate distributed access patterns and potential credential misuse. Detected activities are classified into different types based on the combination of unique indicators, with each classification assigned a fidelity score reflecting the likelihood of malicious behavior. High fidelity scores are given to patterns most indicative of threats, such as multiple unique IPs, networks, cities, and user agents. Medium and low fidelity scores correspond to less severe patterns, enabling security teams to effectively prioritize alerts.",
+        "risk_score": 21,
+        "severity": "critical",
+        "timestamp_override": "event.ingested",
+        "license": "Elastic License v2",
+        "note": "## Triage and analysis\n\n### Investigating Persistence via KDE AutoStart Script or Desktop File Modification\n\nK Desktop Environment (KDE) is a popular graphical desktop environment for Linux systems. It supports AutoStart scripts and desktop files that execute automatically upon user logon.\n\nAdversaries may exploit this feature to maintain persistence on a compromised system by creating or modifying these files.\n\nThe detection rule 'Persistence via KDE AutoStart Script or Desktop File Modification' is designed to identify such activities by monitoring file events on Linux systems. It specifically targets the creation or modification of files with extensions \".sh\" or .desktop in various AutoStart directories. By detecting these events, the rule helps security analysts identify potential abuse of KDE AutoStart functionality by malicious actors.\n\n> **Note**:\n> This investigation guide uses the [Osquery Markdown Plugin](https://www.elastic.co/guide/en/security/current/invest-guide-run-osquery.html) introduced in Elastic Stack version 8.5.0. Older Elastic Stack versions will display unrendered Markdown in this guide.\n> This investigation guide uses [placeholder fields](https://www.elastic.co/guide/en/security/current/osquery-placeholder-fields.html) to dynamically pass alert data into Osquery queries. Placeholder fields were introduced in Elastic Stack version 8.7.0. If you're using Elastic Stack version 8.6.0 or earlier, you'll need to manually adjust this investigation guide's queries to ensure they properly run.\n\n### Possible investigation steps\n\n- Investigate the file that was created or modified.\n  - !{osquery{\"label\":\"Osquery - Retrieve File Listing Information\",\"query\":\"SELECT * FROM file WHERE ( path LIKE '/home/%/.config/autostart/%.sh' OR path LIKE '/home/%/.config/autostart/%.desktop'\\nOR path LIKE '/root/.config/autostart/%.sh' OR path LIKE '/root/.config/autostart/%.desktop' OR path LIKE\\n'/home/%/.kde/Autostart/% ",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Azure",
+            "Data Source: Azure Activity Logs",
+            "Data Source: Graph API",
+            "Data Source: Graph API Activity Logs",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Audit Logs",
+            "Data Source: Microsoft Entra ID Sign-in Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "enabled": false,
+        "risk_score_mapping": [
+            {
+                "field": "microsoft_sentinel.alert.properties.confidence_score",
+                "operator": "equals",
+                "value": ""
+            }
+        ],
+        "severity_mapping": [
+            {
+                "field": "azure.identityprotection.properties.risk_level",
+                "operator": "equals",
+                "severity": "high",
+                "value": "high"
+            },
+            {
+                "field": "azure.identityprotection.properties.risk_level",
+                "operator": "equals",
+                "severity": "medium",
+                "value": "medium"
+            },
+            {
+                "field": "azure.identityprotection.properties.risk_level",
+                "operator": "equals",
+                "severity": "low",
+                "value": "low"
+            }
+        ],
+        "interval": "10m",
+        "from": "now-3660s",
+        "to": "now",
+        "exceptions_list": [
+            {
+                "id": "endpoint_list",
+                "list_id": "endpoint_list",
+                "type": "endpoint",
+                "namespace_type": "agnostic"
+            }
+        ],
+        "author": [
+            "Elastic",
+            "Gary Blackwell",
+            "Austin Songer"
+        ],
+        "false_positives": [
+            "Users accessing their accounts from anonymized IP addresses, such as VPNs or Tor, may trigger this rule. If this is expected behavior in your environment, consider adjusting the rule or adding exceptions for specific users or IP ranges.",
+            "Users who frequently travel or access their accounts from different geographic locations may trigger this rule due to the unlikely travel detection mechanism. If this is expected behavior, consider adjusting the rule or adding exceptions for specific users.",
+            "Users who have recently changed their passwords may trigger this rule due to the password spray detection mechanism. If this is expected behavior, consider adjusting the rule or adding exceptions for specific users."
+        ],
+        "references": [
+            "https://gtfobins.github.io/gtfobins/apt/",
+            "https://gtfobins.github.io/gtfobins/apt-get/",
+            "https://gtfobins.github.io/gtfobins/nawk/",
+            "https://gtfobins.github.io/gtfobins/mawk/",
+            "https://gtfobins.github.io/gtfobins/awk/",
+            "https://gtfobins.github.io/gtfobins/gawk/",
+            "https://gtfobins.github.io/gtfobins/busybox/",
+            "https://gtfobins.github.io/gtfobins/c89/",
+            "https://gtfobins.github.io/gtfobins/c99/",
+            "https://gtfobins.github.io/gtfobins/cpulimit/",
+            "https://gtfobins.github.io/gtfobins/crash/",
+            "https://gtfobins.github.io/gtfobins/env/",
+            "https://gtfobins.github.io/gtfobins/expect/",
+            "https://gtfobins.github.io/gtfobins/find/",
+            "https://gtfobins.github.io/gtfobins/flock/",
+            "https://gtfobins.github.io/gtfobins/gcc/",
+            "https://gtfobins.github.io/gtfobins/mysql/",
+            "https://gtfobins.github.io/gtfobins/nice/",
+            "https://gtfobins.github.io/gtfobins/ssh/",
+            "https://gtfobins.github.io/gtfobins/vi/",
+            "https://gtfobins.github.io/gtfobins/vim/",
+            "https://gtfobins.github.io/gtfobins/capsh/",
+            "https://gtfobins.github.io/gtfobins/byebug/",
+            "https://gtfobins.github.io/gtfobins/git/",
+            "https://gtfobins.github.io/gtfobins/ftp/",
+            "https://www.elastic.co/security-labs/sequel-on-persistence-mechanisms"
+        ],
+        "max_signals": 1000,
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1037",
+                        "name": "Boot or Logon Initialization Scripts",
+                        "reference": "https://attack.mitre.org/techniques/T1037/",
+                        "subtechnique": [
+                            {
+                                "id": "T1037.004",
+                                "name": "RC Scripts",
+                                "reference": "https://attack.mitre.org/techniques/T1037/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.006",
+                                "name": "Kernel Modules and Extensions",
+                                "reference": "https://attack.mitre.org/techniques/T1547/006/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1136",
+                        "name": "Create Account",
+                        "reference": "https://attack.mitre.org/techniques/T1136/",
+                        "subtechnique": [
+                            {
+                                "id": "T1136.001",
+                                "name": "Local Account",
+                                "reference": "https://attack.mitre.org/techniques/T1136/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.002",
+                                "name": "Systemd Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/002/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/"
+                    },
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/",
+                        "subtechnique": [
+                            {
+                                "id": "T1574.006",
+                                "name": "Dynamic Linker Hijacking",
+                                "reference": "https://attack.mitre.org/techniques/T1574/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.003",
+                                "name": "Cron",
+                                "reference": "https://attack.mitre.org/techniques/T1053/003/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.003",
+                                "name": "Sudo and Sudo Caching",
+                                "reference": "https://attack.mitre.org/techniques/T1548/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1014",
+                        "name": "Rootkit",
+                        "reference": "https://attack.mitre.org/techniques/T1014/"
+                    }
+                ]
+            }
+        ],
+        "setup": "## Setup\n\nThis rule requires data coming in from one of the following integrations:\n- Elastic Defend\n- Auditbeat\n- Filebeat\n- Packetbeat\n\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows\nthe Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest to select \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to ... [truncated]",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "name": "azure.signinlogs.category",
+                "type": "keyword"
+            },
+            {
+                "name": "azure.signinlogs.properties.app_id",
+                "type": "keyword"
+            },
+            {
+                "name": "azure.signinlogs.properties.device_detail.device_id",
+                "type": "keyword"
+            },
+            {
+                "name": "azure.signinlogs.properties.device_detail.trust_type",
+                "type": "keyword"
+            },
+            {
+                "name": "azure.signinlogs.properties.incoming_token_type",
+                "type": "keyword"
+            },
+            {
+                "name": "azure.signinlogs.properties.resource_display_name",
+                "type": "keyword"
+            },
+            {
+                "name": "azure.signinlogs.properties.token_protection_status_details.sign_in_session_status",
+                "type": "unknown"
+            },
+            {
+                "name": "azure.signinlogs.properties.user_id",
+                "type": "keyword"
+            },
+            {
+                "name": "azure.signinlogs.properties.user_type",
+                "type": "keyword"
+            },
+            {
+                "name": "azure.signinlogs.result_signature",
+                "type": "keyword"
+            },
+            {
+                "name": "event.dataset",
+                "type": "keyword"
+            }
+        ],
+        "type": "query",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "query": "library where event.action == \"load\" and dll.Ext.relative_file_creation_time <= 3600 and\n    not (\n      dll.path : (\n        \"?:\\\\Windows\\\\System32\\\\*\",\n        \"?:\\\\Windows\\\\SysWOW64\\\\*\",\n        \"?:\\\\Windows\\\\SystemTemp\\\\*\",\n        \"?:\\\\$WINDOWS.~BT\\\\NewOS\\\\Windows\\\\WinSxS\\\\*\",\n        \"?:\\\\$WINDOWS.~BT\\\\NewOS\\\\Windows\\\\System32\\\\*\",\n        \"?:\\\\$WINDOWS.~BT\\\\Sources\\\\*\",\n        \"?:\\\\$WINDOWS.~BT\\\\Work\\\\*\",\n        \"?:\\\\Windows\\\\WinSxS\\\\*\",\n        \"?:\\\\Windows\\\\SoftwareDistribution\\\\Download\\\\*\",\n        \"?:\\\\Windows\\\\assembly\\\\NativeImages_v*\"\n      )\n    ) and\n    not (\n      dll.code_signature.subject_name in (\n        \"Microsoft Windows\",\n        \"Microsoft Corporation\",\n        \"Microsoft Windows Hardware Abstraction Layer Publisher\",\n        \"Microsoft Windows Publisher\",\n        \"Microsoft Windows 3rd party Component\",\n        \"Microsoft 3rd Party Application Component\"\n      ) and dll.code_signature.trusted == true\n    ) and not dll.code_signature.status : (\"errorCode_endpoint*\", \"errorUntrustedRoot\", \"errorChaining\") and\n    dll.name : (\n      \"aadauthhelper.dll\", \"aadcloudap.dll\", \"aadjcsp.dll\", \"aadtb.dll\", \"aadwamextension.dll\", \"aarsvc.dll\", \"abovelockapphost.dll\", \"accessibilitycpl.dll\", \"accountaccessor.dll\", \"accountsrt.dll\", \"acgenral.dll\", \"aclayers.dll\", \"acledit.dll\", \"aclui.dll\", \"acmigration.dll\", \"acppage.dll\", \"acproxy.dll\", \"acspecfc.dll\", \"actioncenter.dll\", \"actioncentercpl.dll\", \"actionqueue.dll\", \"activationclient.dll\", \"activeds.dll\", \"activesynccsp.dll\", \"actxprxy.dll\", \"acwinrt.dll\", \"acxtrnal.dll\", \"adaptivecards.dll\", \"addressparser.dll\", \"adhapi.dll\", \"adhsvc.dll\", \"admtmpl.dll\", \"adprovider.dll\", \"adrclient.dll\", \"adsldp.dll\", \"adsldpc.dll\", \"adsmsext.dll\", \"adsnt.dll\", \"adtschema.dll\", \"advancedemojids.dll\", \"advapi32.dll\", \"advapi32res.dll\", \"advpack.dll\", \"aeevts.dll\", \"aeinv.dll\", \"aepic.dll\", \"ajrouter.dll\", \"altspace)",
+        "language": "lucene"
+    },
+    "id": "39ab6ad2-63ee-405f-ad50-7e82788dbd90_1",
+    "type": "security-rule"
+}
