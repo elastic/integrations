@@ -2694,9 +2694,9 @@ An example event for `host` looks as following:
 {
     "@timestamp": "2023-11-07T10:26:53.000Z",
     "agent": {
-        "ephemeral_id": "a6f81e7f-864b-4344-b8ec-f6041238c4fc",
-        "id": "765abad7-087d-47bb-8b19-9c1cbdd02841",
-        "name": "elastic-agent-62044",
+        "ephemeral_id": "ca93e106-c70b-45b7-a058-ee8f088d0c70",
+        "id": "71a16dcf-a5de-41c8-9aff-5ba104165fbc",
+        "name": "elastic-agent-18005",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -2840,7 +2840,7 @@ An example event for `host` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.host",
-        "namespace": "49463",
+        "namespace": "67537",
         "type": "logs"
     },
     "device": {
@@ -2850,7 +2850,7 @@ An example event for `host` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "765abad7-087d-47bb-8b19-9c1cbdd02841",
+        "id": "71a16dcf-a5de-41c8-9aff-5ba104165fbc",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -2860,7 +2860,7 @@ An example event for `host` looks as following:
             "host"
         ],
         "dataset": "crowdstrike.host",
-        "ingested": "2025-11-19T07:13:45Z",
+        "ingested": "2025-11-27T09:36:28Z",
         "kind": "event",
         "original": "{\"agent_load_flags\":\"0\",\"agent_local_time\":\"2023-11-07T04:51:16.678Z\",\"agent_version\":\"7.05.17603.0\",\"bios_manufacturer\":\"ABCInc.\",\"bios_version\":\"2020.0.1.0.0(iBridge:22.11.000.0.0,0)\",\"chassis_type\":\"9\",\"chassis_type_desc\":\"Laptop\",\"cid\":\"92012896127c4948236ba7601b886b0\",\"config_id_base\":\"6594763\",\"config_id_build\":\"1703\",\"config_id_platform\":\"4\",\"connection_ip\":\"81.2.69.192\",\"cpu_signature\":\"460517\",\"device_id\":\"3114433dbce478ca48d9a828b9b34be\",\"device_policies\":{\"device_control\":{\"applied\":true,\"applied_date\":\"2023-06-20T08:45:26.341093915Z\",\"assigned_date\":\"2023-06-20T08:43:47.736146738Z\",\"policy_id\":\"2f88daf0177f467dae69262a5ce71775\",\"policy_type\":\"device-control\"},\"firewall\":{\"applied\":true,\"applied_date\":\"2023-09-11T10:33:44.174488832Z\",\"assigned_date\":\"2023-09-11T10:32:47.853976945Z\",\"policy_id\":\"1ee301f7e3e24e96ad6a23c73aaac1e3\",\"policy_type\":\"firewall\",\"rule_set_id\":\"1ee301f7e3e24e96ad6a23c73aaac1e3\"},\"global_config\":{\"applied\":true,\"applied_date\":\"2023-11-07T04:52:59.515775409Z\",\"assigned_date\":\"2023-11-07T04:51:18.94671252Z\",\"policy_id\":\"7e3078b60976486cac5dc998808d9135\",\"policy_type\":\"globalconfig\",\"settings_hash\":\"f01def74\"},\"prevention\":{\"applied\":true,\"applied_date\":\"2023-06-08T10:04:47.643357971Z\",\"assigned_date\":\"2023-06-08T10:03:49.505180252Z\",\"policy_id\":\"1024fac1b279424fa7300b8ac2d56be5\",\"policy_type\":\"prevention\",\"rule_groups\":[],\"settings_hash\":\"f7a54ca1\"},\"remote_response\":{\"applied\":true,\"applied_date\":\"2023-06-08T10:04:47.01735027Z\",\"assigned_date\":\"2023-06-08T10:03:49.505163572Z\",\"policy_id\":\"dabb4def99034f11b9b3d52271584c9f\",\"policy_type\":\"remote-response\",\"settings_hash\":\"8a548e5e\"},\"sensor_update\":{\"applied\":true,\"applied_date\":\"2023-11-07T04:52:59.659583066Z\",\"assigned_date\":\"2023-11-07T04:47:43.342175341Z\",\"policy_id\":\"64bfa2bbcd4e46da92a66b107933da11\",\"policy_type\":\"sensor-update\",\"settings_hash\":\"tagged|18;101\",\"uninstall_protection\":\"ENABLED\"}},\"external_ip\":\"81.2.69.192\",\"first_seen\":\"2023-06-08T10:00:19Z\",\"group_hash\":\"b607fe25348a46d421ff46e19741b0caf5bbc70bb6da1637f56e97b4e1454d77\",\"groups\":[\"182388a8dbea4c44b5e019cfd32c2695\"],\"hostname\":\"CLM101-131.local\",\"kernel_version\":\"22.6.0\",\"last_seen\":\"2023-11-07T10:25:24Z\",\"local_ip\":\"81.2.69.142\",\"mac_address\":\"14-7d-da-ad-ac-71\",\"machine_domain\":\"SYS\",\"major_version\":\"22\",\"meta\":{\"version\":\"6002\",\"version_string\":\"7:43570272778\"},\"minor_version\":\"6\",\"modified_timestamp\":\"2023-11-07T10:26:53Z\",\"os_build\":\"22G120\",\"os_version\":\"Ventura(13)\",\"platform_id\":\"1\",\"platform_name\":\"Mac\",\"policies\":[{\"applied\":true,\"applied_date\":\"2023-06-08T10:04:47.643357971Z\",\"assigned_date\":\"2023-06-08T10:03:49.505180252Z\",\"policy_id\":\"1024fac1b279424fa7300b8ac2d56be5\",\"policy_type\":\"prevention\",\"rule_groups\":[],\"settings_hash\":\"f7a54ca1\"}],\"product_type_desc\":\"Workstation\",\"provision_status\":\"Provisioned\",\"reduced_functionality_mode\":\"no\",\"serial_number\":\"FVFDH73HMNHX\",\"site_name\":\"Default-First-Site-Name\",\"status\":\"normal\",\"system_manufacturer\":\"ABCInc.\",\"system_product_name\":\"Air,1\",\"tags\":[\"tags\"]}",
         "type": [
