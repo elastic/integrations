@@ -23,7 +23,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | # | Artifact | ✓ | OS | Query | File | Implementation Notes                                                                                                             |
 |---|----------|--|----|-------|------|----------------------------------------------------------------------------------------------------------------------------------|
-| 1 | AppCompatCache          | ✅ | Win | appcompatcache_shimcache_execution_tracking     | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)    | shimcache table with code signature validation, file hashing, and comprehensive risk scoring                                                                                                                  |
+| 1 | AppCompatCache          | ✅ | Win | appcompatcache_shimcache_windows_elastic     | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)    | shimcache table with signature-aware filtering (unsigned/untrusted binaries, suspicious paths), hash enrichment, excludes valid Microsoft-signed binaries                                                                                                                  |
 | 2 | AmCache                 | ❌ | Win | -     | -    | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
 | 3 | BITS Jobs Database      | ⚠️ | Win | -     | -    | Not a native table, but can be queried via windows_eventlog                                                                      |
 | 4 | Browser URL History     | ⚠️ | Win | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
@@ -152,7 +152,7 @@ While some artifacts are not directly available, the existing queries provide st
 ## Artifacts by Category
 
 ### Execution Artifacts
-- ✅ AppCompatCache (Windows: shimcache table) - **NEW: Full production query with risk scoring**
+- ✅ AppCompatCache (Windows: shimcache table) - **Production query with signature-aware filtering**
 - ⚠️ PowerShell History (Windows: powershell_events table)
 - ⚠️ Prefetch Files (Windows: prefetch table)
 - ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
