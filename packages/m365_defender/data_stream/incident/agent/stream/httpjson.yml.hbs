@@ -54,7 +54,12 @@ response.split:
     keep_parent: true
 cursor:
   last_update_time:
-    value: '[[.last_event.lastUpdateDateTime]]'
+    value: >-
+      [[- if index .last_event "lastUpdateDateTime" -]]
+        [[- .last_event.lastUpdateDateTime -]]
+      [[- end -]]
+    fail_on_template_error: true
+    do_not_log_failure: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
