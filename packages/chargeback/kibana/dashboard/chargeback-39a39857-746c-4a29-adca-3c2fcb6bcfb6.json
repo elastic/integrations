@@ -101,7 +101,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value | SORT @timestamp desc | LIMIT 5000"
                                             },
@@ -309,7 +309,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, tier\n| KEEP deployment, tier, agg_blended\n| WHERE agg_blended \u003e 0"
                                             },
@@ -425,7 +425,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, tier\n| KEEP deployment, tier, agg_blended\n| WHERE agg_blended \u003e 0"
                                             },
@@ -658,7 +658,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_indexing = sum(indexing),\n    agg_querying = sum(querying),\n    agg_storage = sum(storage),\n    agg_blended = sum(blended)\n    BY\n        tier\n| WHERE agg_blended \u003e 0"
                                             },
@@ -939,7 +939,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC\n| Limit 20"
                                             },
@@ -1064,7 +1064,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC\n| Limit 20"
                                             },
@@ -1189,7 +1189,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC\n| limit 20"
                                             },
@@ -1306,7 +1306,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot,\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight))) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream\n| WHERE agg_blended \u003e 0\n| SORT agg_blended DESC\n| limit 20"
                                             },
@@ -1456,7 +1456,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE(deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE(deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE(deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE(deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * total_ecu),\n    storage = CASE(store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE(\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    Indexing = round(sum(indexing),2),\n    Querying = round(sum(querying),2),\n    Storage = round(sum(storage),2),\n    Blended = round(sum(blended),2)\n    BY datastream, tier\n| SORT Blended DESC\n| RENAME tier as `Data tier`, datastream as `Data stream`\n| Keep `Data stream`, `Data tier`, Indexing, Querying, Storage, Blended\n| WHERE `Data stream` is not null"
                                             },
@@ -1654,7 +1654,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC"
                                             },
@@ -1811,7 +1811,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time \u003e 0,\n        TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_indexing \u003e 0"
                                             },
@@ -1968,7 +1968,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time \u003e 0,\n        TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC"
                                             },
@@ -2166,7 +2166,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time \u003e 0,\n        TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC"
                                             },
@@ -2323,7 +2323,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time \u003e 0,\n        TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_querying \u003e 0"
                                             },
@@ -2480,7 +2480,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC"
                                             },
@@ -2678,7 +2678,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC"
                                             },
@@ -2835,7 +2835,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_storage \u003e 0"
                                             },
@@ -2992,7 +2992,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC"
                                             },
@@ -3190,7 +3190,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream\n| WHERE agg_blended \u003e 0\n| SORT agg_blended DESC"
                                             },
@@ -3353,7 +3353,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        tier\n| WHERE agg_blended \u003e 0"
                                             },
@@ -3502,7 +3502,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "chargeback_integration",
                                             "query": {
                                                 "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    `% Normalised cost` = sum(blended)\n    BY\n        @timestamp,\n        datastream,\n        tier\n| WHERE `% Normalised cost` \u003e 0\n| SORT `% Normalised cost` DESC"
                                             },

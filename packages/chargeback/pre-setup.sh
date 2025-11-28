@@ -37,13 +37,3 @@ POST chargeback_conf_lookup/_doc
   "conf_start_date": "2024-01-01T12:00:00.000Z",
   "conf_end_date": "2030-12-31T23:59:59.000Z"
 }
-
-# Create data view used for control.
-POST kbn:/api/data_views/data_view
-{
-  "data_view": {
-    "name": "[Chargeback] Billing Cluster Cost",
-    "title": "billing_cluster_cost_lookup",
-    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f"
-  }
-}
