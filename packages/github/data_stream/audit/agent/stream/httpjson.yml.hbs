@@ -55,7 +55,12 @@ response.pagination:
 
 cursor:
   last_timestamp:
-    value: '[[ .last_event.created_at ]]'
+    value: >-
+      [[- if index .last_event "@timestamp" -]]
+        [[- .last_event.Get "@timestamp" -]]
+      [[- else -]]
+        [[- .last_event.created_at -]]
+      [[- end -]]
     fail_on_template_error: true
 
 {{#if tags.length}}
