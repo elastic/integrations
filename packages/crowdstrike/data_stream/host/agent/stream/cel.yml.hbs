@@ -25,94 +25,219 @@ state:
   initial_interval: {{initial_interval}}
   batch_size: {{batch_size}}
   select_fields: {{select_fields}}
+  offset: 0
+  want_more: false
+  gov_cloud: {{gov_cloud}}
 {{#if query}}
   query: {{query}}
 {{/if}}
 redact:
   fields: ~
 program: |-
-  state.with(
-    (
-      state.?want_more.orValue(false) ?
-        state.start_time
-      :
-        state.?cursor.last_timestamp.orValue(
-          (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-        )
-    ).as(start_time,
-      request(
-        "GET",
-        state.url.trim_right("/") + "/devices/combined/devices/v1?" + {
-          ?"offset": state.?next.page_token.optMap(v, [v]),
-          "limit": [string(state.batch_size)],
-          "sort": ["modified_timestamp|asc"],
-          "filter": [
-            [
-              "modified_timestamp:>'" + start_time + "'",
-              ?state.?query.optMap(q, "(" + q + ")"),
-            ].join("+"),
-          ],
-          ?"fields": state.?select_fields.optMap(v, [v.trim_right(",")+",modified_timestamp"]),
-        }.format_query()
-      ).do_request().as(resp, (resp.StatusCode == 200) ?
-        resp.Body.decode_json().as(body,
-          (size(body.?errors.orValue([])) > 0) ?
-            {
-              "events": body.errors.map(error,
+  // This logic determines which CrowdStrike devices endpoint to call. The
+  // "/devices/combined/devices/v1" endpoint is not supported in GovCloud
+  // environments, so we must use the "/devices/queries/devices/v1"
+  // endpoint when running in GovCloud.
+  //
+  // The selection works based on the "gov_cloud" flag:
+  // 1. If the "gov_cloud" flag is enabled in the data stream manifest,
+  //    we use the "/devices/queries/devices/v1" endpoint.
+  //
+  // 2. If the flag is disabled, we use the "/devices/combined/devices/v1" endpoint.
+  (
+    state.gov_cloud ?
+      // GovCloud branch: use /devices/queries/devices/v1 endpoint for GovCloud CIDs.
+      (
+        state.want_more ?
+          state.?page.start
+        :
+          optional.of(state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)))
+      ).as(filter,
+        state.with(
+          get_request(
+            state.url.trim_right("/") + "/devices/queries/devices/v1?" + {
+              "sort": ["modified_timestamp.asc"],
+              "offset": [string(state.offset)],
+              "limit": [string(state.batch_size)],
+              ?"filter": (filter.hasValue() || state.?query.orValue("") != "") ?
+                optional.of(
+                  [
+                    [
+                      ?filter.optMap(f, "modified_timestamp:>\"" + f + "\""),
+                      ?state.?query.optMap(q, "(" + q + ")"),
+                    ].join("+"),
+                  ]
+                )
+              :
+                optional.none(),
+            }.format_query()
+          ).do_request().as(get_resp, (get_resp.StatusCode == 200) ?
+            bytes(get_resp.Body).decode_json().as(body,
+              (int(state.offset) + body.resources.size() < body.meta.pagination.total).as(want_more,
                 {
-                  "error": {
-                    "code": string(error.code),
-                    "message": string(error.message),
+                  "next": {
+                    ?"resources": (body.resources.size() > 0) ? optional.of(body.resources) : optional.none(),
                   },
+                  "filter": filter,
+                  "events": [],
+                  "offset": want_more ? (int(state.offset) + body.resources.size()) : 0,
+                  "want_more": want_more,
                 }
-              ),
-              "next": {},
-              "want_more": false,
-            }
+              )
+            )
           :
             {
-              "events": has(body.resources) ?
-                body.resources.map(e,
+              "events": {
+                "error": {
+                  "code": string(get_resp.StatusCode),
+                  "id": string(get_resp.Status),
+                  "message": "GET: " + (
+                    (size(get_resp.Body) != 0) ?
+                      string(get_resp.Body)
+                    :
+                      string(get_resp.Status) + " (" + string(get_resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "next": {},
+            }
+          )
+        ).as(state,
+          state.with(
+            !has(state.?next.resources) ? // Exit early due to GET failure or no resources to collect.
+              state
+            :
+              post_request(
+                state.url.trim_right("/") + "/devices/entities/devices/v2",
+                "application/json",
+                {"ids": state.next.resources}.encode_json()
+              ).do_request().as(post_resp, (post_resp.StatusCode == 200) ?
+                bytes(post_resp.Body).decode_json().as(inner_body,
                   {
-                    "message": e.encode_json(),
+                    "events": inner_body.resources.map(e,
+                      {
+                        "message": e.encode_json(),
+                      }
+                    ),
+                    "cursor": {
+                      ?"last_timestamp": (has(inner_body.resources) && inner_body.resources.size() > 0) ?
+                        optional.of(inner_body.resources.map(e, timestamp(e.modified_timestamp)).max().format(time_layout.RFC3339))
+                      :
+                        state.?cursor.last_timestamp,
+                    },
+                    "page": {
+                      "start": state.filter,
+                    },
+                    "next": {},
                   }
                 )
               :
-                [],
-              "start_time": start_time,
-              "next": {
-                ?"page_token": body.?meta.pagination.next,
-              },
-              "cursor": {
-                // The records are sorted in ascending order, based on value of modified_timestamp.
-                // In the next interval we start from the last event (newest) time.
-                ?"last_timestamp": (has(body.resources) && body.resources.size() > 0) ?
-                  optional.of(timestamp(body.resources[size(body.resources) - 1].modified_timestamp).format(time_layout.RFC3339))
-                :
-                  state.?cursor.last_timestamp,
-              },
-              "want_more": has(body.?meta.pagination.next),
-            }
+                {
+                  "events": {
+                    "error": {
+                      "code": string(post_resp.StatusCode),
+                      "id": string(post_resp.Status),
+                      "message": "POST: " + (
+                        (size(post_resp.Body) != 0) ?
+                          string(post_resp.Body)
+                        :
+                          string(post_resp.Status) + " (" + string(post_resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                  "next": {},
+                }
+              )
+          )
         )
-      :
-        {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GET " + state.url.trim_right("/") + "/devices/combined/devices/v1:" + (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
-            },
-          },
-          "next": {},
-          "want_more": false,
-        }
       )
-    )
+    :
+      // Commercial CID branch: use /devices/combined/devices/v1 endpoint for commercial CIDs.
+      state.with(
+        (
+          state.?want_more.orValue(false) ?
+            state.start_time
+          :
+            state.?cursor.last_timestamp.orValue(
+              (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+            )
+        ).as(start_time,
+          request(
+            "GET",
+            state.url.trim_right("/") + "/devices/combined/devices/v1?" + {
+              ?"offset": state.?next.page_token.optMap(v, [v]),
+              "limit": [string(state.batch_size)],
+              "sort": ["modified_timestamp|asc"],
+              "filter": [
+                [
+                  "modified_timestamp:>'" + start_time + "'",
+                  ?state.?query.optMap(q, "(" + q + ")"),
+                ].join("+"),
+              ],
+              ?"fields": state.?select_fields.optMap(v, [v.trim_right(",")+",modified_timestamp"]),
+            }.format_query()
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              (size(body.?errors.orValue([])) > 0) ?
+                {
+                  "events": body.errors.map(error,
+                    {
+                      "error": {
+                        "code": string(error.code),
+                        "message": string(error.message),
+                      },
+                    }
+                  ),
+                  "next": {},
+                  "want_more": false,
+                }
+              :
+                {
+                  "events": has(body.resources) ?
+                    body.resources.map(e,
+                      {
+                        "message": e.encode_json(),
+                      }
+                    )
+                  :
+                    [],
+                  "start_time": start_time,
+                  "next": {
+                    ?"page_token": body.?meta.pagination.next,
+                  },
+                  "cursor": {
+                    // The records are sorted in ascending order, based on value of modified_timestamp.
+                    // In the next interval we start from the last event (newest) time.
+                    ?"last_timestamp": (has(body.resources) && body.resources.size() > 0) ?
+                      optional.of(timestamp(body.resources[size(body.resources) - 1].modified_timestamp).format(time_layout.RFC3339))
+                    :
+                      state.?cursor.last_timestamp,
+                  },
+                  "want_more": has(body.?meta.pagination.next),
+                }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/devices/combined/devices/v1:" + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "next": {},
+              "want_more": false,
+            }
+          )
+        )
+      )
   )
 tags:
 {{#if preserve_original_event}}
