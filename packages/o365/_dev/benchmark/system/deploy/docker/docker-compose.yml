@@ -1,0 +1,15 @@
+services:
+  o365:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: o365
+    ports:
+      - 8082
+    environment:
+      PORT: "8082"
+    volumes:
+      - ./files:/files:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command:
+      - http-server
+      - --addr=:8082
+      - --config=/files/config.yml
