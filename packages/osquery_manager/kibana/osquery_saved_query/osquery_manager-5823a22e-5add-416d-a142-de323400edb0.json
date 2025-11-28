@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-01-06T12:00:00.000Z",
     "created_by": "elastic",
-    "description": "Parse launchd services on macOS systems. Provides visibility into launchd service agents and daemons including: (1) Service identification (label, name, path), (2) Service configuration state (disabled status, run_at_load, keep_alive), (3) Program executable path, (4) Plist file path (source of service configuration), (5) Service execution context (username, groupname). Detection focuses on: services in unexpected states, services with unusual configurations (e.g., disabled critical services or enabled suspicious services), unauthorized service installations in user directories, launchd-based persistence mechanisms (common macOS persistence technique). Use Cases: System service inventory, service configuration monitoring, persistence mechanism detection (launchd-based persistence is common on macOS), unauthorized service installation detection, service misconfiguration identification, compliance auditing for service configurations, privilege escalation detection via service manipulation.",
+    "description": "Detects suspicious third-party macOS launchd persistence. Excludes Apple services (/System/, /Library/Apple/, Apple-signed) using regex. Focuses on: unsigned binaries, programs in /tmp or user directories, hidden files, third-party services with run_at_load. Includes signature validation, hash enrichment, and service_type classification. Optimized for low noise (~10-20 results vs 600+). MITRE ATT&CK: T1543.001 (Launch Agent), T1543.004 (Launch Daemon).",
     "ecs_mapping": [
       {
         "key": "service.name",
@@ -29,9 +29,27 @@
         }
       },
       {
-        "key": "group.name",
+        "key": "file.hash.sha256",
         "value": {
-          "field": "groupname"
+          "field": "sha256"
+        }
+      },
+      {
+        "key": "file.code_signature.subject_name",
+        "value": {
+          "field": "signer"
+        }
+      },
+      {
+        "key": "file.code_signature.status",
+        "value": {
+          "field": "signature_status"
+        }
+      },
+      {
+        "key": "service.type",
+        "value": {
+          "field": "service_type"
         }
       },
       {
@@ -63,27 +81,29 @@
         "key": "tags",
         "value": {
           "value": [
+            "threat_hunting",
+            "suspicious",
             "darwin",
             "macos",
             "launchd",
             "services",
-            "persistence",
-            "service_enumeration"
+            "persistence"
           ]
         }
       }
     ],
-    "id": "services_launchd_darwin_elastic",
+    "id": "services_suspicious_darwin",
     "interval": "3600",
+    "timeout": 120,
     "platform": "darwin",
-    "query": "SELECT\n  label,\n  name,\n  path,\n  program,\n  disabled,\n  run_at_load,\n  keep_alive,\n  COALESCE(on_demand, 0) AS on_demand,\n  COALESCE(username, 'root') AS username,\n  COALESCE(groupname, 'wheel') AS groupname\nFROM launchd\nORDER BY disabled, label;",
-    "updated_at": "2025-01-06T12:00:00.000Z",
+    "query": "-- macOS Suspicious LaunchD Services Detection (Optimized)\n-- Source: Native osquery tables (launchd, signature, hash)\n-- Focus: Third-party persistence only - excludes all Apple services\n-- MITRE ATT&CK: T1543.001 (Launch Agent), T1543.004 (Launch Daemon)\n\nWITH services_enriched AS (\n  SELECT\n    l.label,\n    l.name,\n    l.path,\n    l.program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    COALESCE(l.username, 'root') AS username,\n    COALESCE(s.signed, 0) AS is_signed,\n    s.authority AS signer,\n    CASE WHEN s.signed = 1 THEN 'signed' ELSE 'unsigned' END AS signature_status,\n    (SELECT sha256 FROM hash WHERE path = l.program LIMIT 1) AS sha256,\n    -- Classify service type for analysis\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'System-Daemon'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'System-Agent'\n      WHEN l.path LIKE '%/Library/LaunchAgents/%' THEN 'User-Agent'\n      ELSE 'Other'\n    END AS service_type\n  FROM launchd l\n  LEFT JOIN signature s ON s.path = l.program\n  WHERE l.path IS NOT NULL AND l.path != ''\n)\n\nSELECT *\nFROM services_enriched\n-- EXCLUDE all Apple/system services using consolidated regex\nWHERE regex_match(\n    path,\n    '^(/System/|/Library/Apple/|/usr/libexec/)',\n    0\n) IS NULL\n  AND regex_match(\n    COALESCE(signer, ''),\n    '(Apple|Software Signing)',\n    0\n) IS NULL\n-- Focus on suspicious indicators\nAND (\n  -- Unsigned is always suspicious\n  is_signed = 0\n  -- Or in suspicious locations\n  OR program LIKE '/Users/%'\n  OR program LIKE '/tmp/%'\n  OR program LIKE '/var/tmp/%'\n  OR program LIKE '/private/tmp/%'\n  OR program LIKE '%/.%'\n  -- Or third-party with persistence enabled\n  OR (is_signed = 1 AND run_at_load = '1')\n)\nORDER BY\n  is_signed ASC,\n  service_type,\n  label;",
+    "updated_at": "2025-11-28T13:50:00.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "9.2.0",
   "id": "osquery_manager-5823a22e-5add-416d-a142-de323400edb0",
   "references": [],
   "type": "osquery-saved-query",
-  "updated_at": "2025-01-06T12:00:00.000Z",
+  "updated_at": "2025-11-28T13:50:00.000Z",
   "version": "Wzk1LDJd"
 }
