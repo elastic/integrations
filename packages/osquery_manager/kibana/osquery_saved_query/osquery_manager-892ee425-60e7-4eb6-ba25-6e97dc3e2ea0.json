@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-01-06T10:30:00.000Z",
     "created_by": "elastic",
-    "description": "Comprehensive Windows services enumeration with security metadata enrichment. Enumerates all Windows services with service configuration (name, display name, path, start type, status, user account), binary security validation (code signatures, file hashes), ServiceDLL hijacking detection, registry-based persistence mechanisms (FailureCommand, FailureActions), and service creation timeline. Detects unsigned/untrusted executables, services in user-writable directories, privilege escalation patterns, ServiceDLL hijacking, and persistence via service failure recovery mechanisms. MITRE ATT&CK: T1543.003 (Windows Service), T1574.011 (ServiceDLL Hijacking), T1036.005 (Masquerading), T1112 (Modify Registry).",
+    "description": "Detects suspicious Windows services using multiple anomaly indicators. Filters for: unsigned/untrusted binaries, unusual executable paths (not System32/Program Files), recently created services (<30 days), FailureCommand persistence, ServiceDLL hijacking (untrusted DLLs), and user-writable directory execution. Excludes known-good Microsoft-signed services. Results sorted by risk (unsigned first, then persistence, then recency). MITRE ATT&CK: T1543.003 (Windows Service), T1574.011 (ServiceDLL Hijacking), T1112 (Modify Registry).",
     "ecs_mapping": [
       {
         "key": "service.name",
@@ -23,21 +23,27 @@
         }
       },
       {
+        "key": "process.command_line",
+        "value": {
+          "field": "cmd"
+        }
+      },
+      {
         "key": "process.executable",
         "value": {
-          "field": "path"
+          "field": "exe_path"
+        }
+      },
+      {
+        "key": "process.pid",
+        "value": {
+          "field": "pid"
         }
       },
       {
         "key": "user.name",
         "value": {
           "field": "user_account"
-        }
-      },
-      {
-        "key": "file.hash.md5",
-        "value": {
-          "field": "md5"
         }
       },
       {
@@ -59,9 +65,9 @@
         }
       },
       {
-        "key": "file.code_signature.trusted",
+        "key": "registry.path",
         "value": {
-          "field": "cert_trusted"
+          "field": "registry_path"
         }
       },
       {
@@ -77,45 +83,9 @@
         }
       },
       {
-        "key": "dll.hash.md5",
-        "value": {
-          "field": "servicedll_md5"
-        }
-      },
-      {
-        "key": "dll.code_signature.subject_name",
-        "value": {
-          "field": "servicedll_cert_subject"
-        }
-      },
-      {
         "key": "dll.code_signature.status",
         "value": {
           "field": "servicedll_signature_status"
-        }
-      },
-      {
-        "key": "event.created",
-        "value": {
-          "field": "service_registry_mtime"
-        }
-      },
-      {
-        "key": "registry.key",
-        "value": {
-          "field": "registry_path"
-        }
-      },
-      {
-        "key": "process.command_line",
-        "value": {
-          "field": "failure_command"
-        }
-      },
-      {
-        "key": "service.failure_actions_raw",
-        "value": {
-          "field": "failure_actions_raw"
         }
       },
       {
@@ -147,29 +117,29 @@
         "key": "tags",
         "value": {
           "value": [
+            "threat_hunting",
+            "suspicious",
             "persistence",
             "services",
             "windows",
-            "service_enumeration",
             "code_signing",
-            "servicedll_hijacking",
-            "privilege_escalation",
-            "forensics"
+            "dll_hijacking"
           ]
         }
       }
     ],
-    "id": "services_windows_elastic",
+    "id": "services_suspicious_windows",
     "interval": "3600",
+    "timeout": 180,
     "platform": "windows",
-    "query": "-- Comprehensive Windows Services Enumeration\n-- Source: Native osquery tables (services, registry, hash, authenticode)\n-- Focus: Complete service inventory with security metadata, ServiceDLL hijacking detection, and persistence mechanisms\n-- MITRE ATT&CK: T1543.003 (Windows Service), T1574.011 (ServiceDLL Hijacking), T1112 (Modify Registry)\n\nWITH extracted AS (\n  SELECT\n    s.name,\n    s.display_name,\n    s.path,\n    s.status,\n    s.start_type,\n    s.user_account,\n    s.service_type,\n    s.module_path,\n    s.win32_exit_code,\n    'HKEY_LOCAL_MACHINE\\\\System\\\\CurrentControlSet\\\\Services\\\\' || s.name AS registry_path,\n    -- Timeline fields\n    r_service_key.mtime AS service_registry_mtime,\n    CAST((strftime('%s', 'now') - r_service_key.mtime) / 86400 AS INTEGER) AS days_since_creation,\n    -- Primary binary security (hashes and code signing)\n    h.sha256,\n    h.md5,\n    a.subject_name AS cert_subject,\n    a.issuer_name AS cert_issuer,\n    a.result AS signature_status,\n    CASE WHEN a.result = 'trusted' THEN 1 ELSE 0 END AS cert_trusted,\n    -- ServiceDLL fields (DLL hijacking detection)\n    r_servicedll.data AS service_dll,\n    h_dll.sha256 AS servicedll_sha256,\n    h_dll.md5 AS servicedll_md5,\n    a_dll.subject_name AS servicedll_cert_subject,\n    a_dll.issuer_name AS servicedll_cert_issuer,\n    a_dll.result AS servicedll_signature_status,\n    -- Persistence mechanism detection\n    r_failcmd.data AS failure_command,\n    r_failact.data AS failure_actions_raw\n  FROM services s\n  LEFT JOIN registry r_service_key ON r_service_key.path = 'HKEY_LOCAL_MACHINE\\\\System\\\\CurrentControlSet\\\\Services\\\\' || s.name\n  LEFT JOIN registry r_servicedll ON r_servicedll.path = 'HKEY_LOCAL_MACHINE\\\\System\\\\CurrentControlSet\\\\Services\\\\' || s.name || '\\\\Parameters' AND r_servicedll.name = 'ServiceDll'\n  LEFT JOIN registry r_failcmd ON r_failcmd.path = 'HKEY_LOCAL_MACHINE\\\\System\\\\CurrentControlSet\\\\Services\\\\' || s.name AND r_failcmd.name = 'FailureCommand'\n  LEFT JOIN registry r_failact ON r_failact.path = 'HKEY_LOCAL_MACHINE\\\\System\\\\CurrentControlSet\\\\Services\\\\' || s.name AND r_failact.name = 'FailureActions'\n  LEFT JOIN hash h ON h.path = s.path\n  LEFT JOIN authenticode a ON a.path = s.path\n  LEFT JOIN hash h_dll ON h_dll.path = r_servicedll.data\n  LEFT JOIN authenticode a_dll ON a_dll.path = r_servicedll.data\n  WHERE s.name IS NOT NULL\n)\n\nSELECT *\nFROM extracted\nORDER BY start_type, status;",
-    "updated_at": "2025-11-07T00:00:00.000Z",
+    "query": "-- Windows Suspicious Services Detection\n-- Source: Native osquery tables (services, registry, hash, authenticode)\n-- Focus: Detect suspicious/malicious services - NOT a full inventory\n-- Filters: Unsigned binaries, unusual paths, persistence mechanisms, recent changes\n-- MITRE ATT&CK: T1543.003 (Windows Service), T1574.011 (ServiceDLL Hijacking), T1112 (Modify Registry)\n\nWITH services_registry AS (\n  SELECT\n    s.name,\n    s.display_name,\n    s.path AS cmd,\n    CASE\n      WHEN s.path LIKE '\"%' THEN\n        SUBSTR(s.path, 2, INSTR(SUBSTR(s.path, 2), '\"') - 1)\n      WHEN INSTR(LOWER(s.path), '.exe ') > 0 THEN\n        SUBSTR(s.path, 1, INSTR(LOWER(s.path), '.exe') + 3)\n      WHEN INSTR(LOWER(s.path), '.sys ') > 0 THEN\n        SUBSTR(s.path, 1, INSTR(LOWER(s.path), '.sys') + 3)\n      ELSE s.path\n    END AS exe_path,\n    s.status,\n    s.start_type,\n    s.user_account,\n    s.service_type,\n    s.pid,\n    'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name AS registry_path,\n    r_key.mtime AS service_registry_mtime,\n    r_dll.data AS service_dll,\n    r_failcmd.data AS failure_command\n  FROM services s\n  LEFT JOIN registry r_key ON r_key.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name AND r_key.name = 'Start'\n  LEFT JOIN registry r_dll ON r_dll.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name || '\\Parameters' AND r_dll.name = 'ServiceDll'\n  LEFT JOIN registry r_failcmd ON r_failcmd.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name AND r_failcmd.name = 'FailureCommand'\n  WHERE s.service_type NOT LIKE '%DRIVER%'\n    AND s.path IS NOT NULL\n    AND s.path != ''\n),\nservices_enriched AS (\n  SELECT\n    sr.*,\n    CAST((strftime('%s', 'now') - sr.service_registry_mtime) / 86400 AS INTEGER) AS days_since_modified,\n    (SELECT sha256 FROM hash WHERE path = sr.exe_path LIMIT 1) AS sha256,\n    (SELECT subject_name FROM authenticode WHERE path = sr.exe_path LIMIT 1) AS cert_subject,\n    (SELECT result FROM authenticode WHERE path = sr.exe_path LIMIT 1) AS signature_status,\n    CASE WHEN sr.service_dll IS NOT NULL AND sr.service_dll != '' THEN\n      (SELECT sha256 FROM hash WHERE path = sr.service_dll LIMIT 1)\n    END AS servicedll_sha256,\n    CASE WHEN sr.service_dll IS NOT NULL AND sr.service_dll != '' THEN\n      (SELECT result FROM authenticode WHERE path = sr.service_dll LIMIT 1)\n    END AS servicedll_signature_status\n  FROM services_registry sr\n)\n\nSELECT *\nFROM services_enriched\nWHERE (\n  -- HIGH RISK: Unsigned or untrusted binary (not in trusted paths)\n  ((signature_status IS NULL OR signature_status != 'trusted')\n    AND exe_path NOT LIKE 'C:\\\\Windows\\\\System32\\\\%'\n    AND exe_path NOT LIKE 'C:\\\\Windows\\\\SysWOW64\\\\%')\n  -- HIGH RISK: Running from user-writable directories\n  OR exe_path LIKE 'C:\\\\Users\\\\%'\n  OR exe_path LIKE '%\\\\AppData\\\\%'\n  OR exe_path LIKE '%\\\\Temp\\\\%'\n  OR exe_path LIKE 'C:\\\\Temp\\\\%'\n  OR exe_path LIKE 'C:\\\\ProgramData\\\\%'\n  -- HIGH RISK: Has persistence via FailureCommand\n  OR failure_command IS NOT NULL\n  -- HIGH RISK: ServiceDLL with untrusted signature (DLL hijacking)\n  OR (service_dll IS NOT NULL AND (servicedll_signature_status IS NULL OR servicedll_signature_status != 'trusted'))\n)\nORDER BY\n  CASE WHEN signature_status IS NULL OR signature_status != 'trusted' THEN 0 ELSE 1 END,\n  CASE WHEN failure_command IS NOT NULL THEN 0 ELSE 1 END,\n  CASE WHEN exe_path LIKE 'C:\\\\Users\\\\%' OR exe_path LIKE '%\\\\Temp\\\\%' THEN 0 ELSE 1 END;",
+    "updated_at": "2025-11-28T00:00:00.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "9.2.0",
   "id": "osquery_manager-892ee425-60e7-4eb6-ba25-6e97dc3e2ea0",
   "references": [],
   "type": "osquery-saved-query",
-  "updated_at": "2025-11-07T00:00:00.000Z",
+  "updated_at": "2025-11-28T00:00:00.000Z",
   "version": "WzgzLDJd"
 }
