@@ -2,7 +2,7 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
+**Last Updated**: 2025-11-28
 **Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
 **Total Queries**: 30 (3 core forensic variants + 27 additional)
 **Completion Rate**: 2.2% (1/46 core artifacts fully supported)
@@ -32,9 +32,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 5 | File Listing            | ⚠️ | Win | - | - | file and hash tables |
 | 5a | File Listing            | ⚠️ | Linux | - | - | file and hash tables |
 | 5b | File Listing            | ⚠️ | Mac | - | - | file and hash tables |
-| 6 | Installed Services      | ✅ | Win | services_windows_elastic | [892e](kibana/osquery_saved_query/osquery_manager-892ee425-60e7-4eb6-ba25-6e97dc3e2ea0.json) | Comprehensive Windows services enumeration with risk scoring (0-100), detecting suspicious services in user-writable directories, unsigned binaries, ServiceDLL hijacking, and privilege escalation patterns |
-| 6a | Installed Services      | ✅ | Linux | services_systemd_linux_elastic | [f8b0](kibana/osquery_saved_query/osquery_manager-f8b0894b-772d-4242-8e19-dbc5d7ae2e06.json) | Parse systemd services on Linux, monitoring service units with load state, activation state, and enablement status |
-| 6b | Installed Services      | ✅ | Mac | services_launchd_darwin_elastic | [5823](kibana/osquery_saved_query/osquery_manager-5823a22e-5add-416d-a142-de323400edb0.json) | Parse launchd services on macOS, providing visibility into launch daemons and agents with configuration state and execution context |
+| 6 | Installed Services      | ✅ | Win | services_suspicious_windows | [892e](kibana/osquery_saved_query/osquery_manager-892ee425-60e7-4eb6-ba25-6e97dc3e2ea0.json) | Detects suspicious Windows services: unsigned binaries, unusual paths, FailureCommand persistence, ServiceDLL hijacking. Excludes Microsoft-signed services. MITRE: T1543.003 |
+| 6a | Installed Services      | ✅ | Linux | services_suspicious_linux | [f8b0](kibana/osquery_saved_query/osquery_manager-f8b0894b-772d-4242-8e19-dbc5d7ae2e06.json) | Detects suspicious systemd services in user directories, /tmp, ~/.config/systemd. Hash enrichment and file age tracking. MITRE: T1543.002 |
+| 6b | Installed Services      | ✅ | Mac | services_suspicious_darwin | [5823](kibana/osquery_saved_query/osquery_manager-5823a22e-5add-416d-a142-de323400edb0.json) | Detects suspicious third-party launchd persistence. Excludes Apple services using regex. Signature and hash enrichment. Optimized for low noise (~10-20 results). MITRE: T1543.001, T1543.004 |
 | 7 | Jumplists               | ❌ | Win | - | - | Not natively supported — PR #7260 closed due to OLE format complexity |
 | 8 | LNK files               | ⚠️ | Win | - | - | shortcut_files table (deprecated), file table and recent_files table is an alternative (osquery upgrade needed for recent files) |
 | 9 | ARP Cache               | ⚠️ | Win | - | - | arp_cache table |
