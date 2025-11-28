@@ -109,3 +109,6 @@ The primary aggregation value will be retrieved for all the metrics contained in
 For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
 
 {{fields "metrics"}}
+
+## Alerting Rule Template
+{{alertRuleTemplates}}
