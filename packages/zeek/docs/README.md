@@ -74,7 +74,12 @@ Integrating Zeek with Elastic provides a powerful solution for network security 
 
 ## What do I need to use this integration?
 
-You will need a working Zeek installation that is actively monitoring network traffic.
+To use this integration, you need:
+
+*   A working Zeek installation that is actively monitoring network traffic.
+*   Zeek configured to output logs in JSON format.
+*   Network access via a network tap or SPAN port for Zeek to monitor and analyze traffic.
+*   Elastic Agent installed on the host where Zeek logs are generated.
 
 ## How do I deploy this integration?
 
@@ -84,27 +89,38 @@ Elastic Agent must be installed on the host where your Zeek logs are generated. 
 
 Elastic Agent will monitor the Zeek log files, collect new log entries, and ship them to your Elastic cluster, where they will be processed by the integration's ingest pipelines.
 
-### Onboard / configure
+### Onboard and configure
 
-#### 1. Configure Zeek for JSON Output
+To set up the Zeek integration, you must first configure Zeek to output logs in the correct format, and then add the integration in Kibana.
+
+### Set up steps in Zeek
 
 For the integration to correctly parse the logs, Zeek must be configured to output logs in JSON format. This can be done by enabling the `json-logs` policy.
 
 Add the following line to your `local.zeek` configuration file (typically located at `/opt/zeek/share/zeek/site/local.zeek` or a similar path):
 
-```
+```bash
 @load policy/tuning/json-logs.zeek
 ```
 
-After adding this line, restart Zeek for the changes to take effect.
+After adding this line, restart Zeek for the changes to take effect:
 
-#### 2. Add the Zeek Integration in Kibana
+```bash
+sudo zeekctl deploy
+```
+
+### Set up steps in Kibana
 
 1.  In Kibana, navigate to **Management > Integrations**.
 2.  In the search bar, type **Zeek** and select the integration.
 3.  Click **Add Zeek**.
 4.  Configure the integration name and optionally add a description.
-5.  Under **Settings**, specify the **Base Path** to your Zeek log files. The default paths are `/var/log/bro/current`, `/opt/zeek/logs/current`, and `/usr/local/var/spool/zeek`. Add the correct path for your environment if it differs.
+5.  Under **Settings**, specify the **Base Path** to your Zeek log files. The default paths are:
+    *   `/var/log/bro/current`
+    *   `/opt/zeek/logs/current`
+    *   `/usr/local/var/spool/zeek`
+
+    Add the correct path for your environment if it differs.
 6.  Click **Save and continue**.
 
 This will enroll the Elastic Agent in a policy to collect Zeek logs from the specified paths.
