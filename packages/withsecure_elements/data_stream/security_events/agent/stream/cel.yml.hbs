@@ -45,7 +45,7 @@ program: |-
       ],
       "engineGroup": state.engine_groups,
       "limit": [string(state.batch_size)],
-      ?"anchor": state.?next_anchor.orValue(null) != null ? optional.of([state.next_anchor]) : optional.none(),
+      ?"anchor": state.?next_anchor.optMap(v, [v]),
     }.format_query()
   ).with({
     "Header": {
@@ -72,7 +72,7 @@ program: |-
         "initial_interval": state.initial_interval,
         "batch_size": state.batch_size,
         "engine_groups": state.engine_groups,
-        ?"next_anchor": body.?nextAnchor,
+        ?"next_anchor": has(body.nextAnchor) ? optional.of(body.nextAnchor) : optional.none(),
         "want_more": has(body.nextAnchor),
       }
     )
@@ -114,4 +114,3 @@ publisher_pipeline.disable_host: true
 processors:
 {{processors}}
 {{/if}}
-

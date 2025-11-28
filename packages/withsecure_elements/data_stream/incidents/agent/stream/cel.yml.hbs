@@ -16,11 +16,6 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
-resource.headers:
-  User-Agent:
-    - Elastic-WithSecure-Elements-Connector/0.1.0
-  Accept:
-    - application/json
 auth.oauth2:
   client.id: {{client_id}}
   client.secret: {{client_secret}}
@@ -45,9 +40,14 @@ program: |-
       "archived": ["false"],
       "limit": [string(state.batch_size)],
       "order": ["asc"],
-      ?"anchor": state.?next_anchor.orValue(null) != null ? optional.of([state.next_anchor]) : optional.none(),
+      ?"anchor": state.?next_anchor.optMap(v, [v]),
     }.format_query()
-  ).do_request().as(resp, resp.StatusCode == 200 ?
+  ).with({
+    "Header": {
+      "User-Agent": ["Elastic-WithSecure-Elements-Connector/0.1.0"],
+      "Accept": ["application/json"],
+    },
+  }).do_request().as(resp, resp.StatusCode == 200 ?
     resp.Body.decode_json().as(body,
       {
         "events": has(body.items) && body.items.size() > 0 ?
@@ -65,7 +65,7 @@ program: |-
         "organization_id": state.organization_id,
         "initial_interval": state.initial_interval,
         "batch_size": state.batch_size,
-        ?"next_anchor": body.?nextAnchor,
+        ?"next_anchor": has(body.nextAnchor) ? optional.of(body.nextAnchor) : optional.none(),
         "want_more": has(body.nextAnchor),
       }
     )
