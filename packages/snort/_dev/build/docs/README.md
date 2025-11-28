@@ -18,7 +18,7 @@ The following log formats are supported:
 - Alert Fast output (from logfile or syslog)
 - Snort 3 JSON log file
 
-This integration is compatible with Elastic Stack versions `^8.11.0 || ^9.0.0`.
+This integration is compatible with Elastic Stack versions 8.11.0 and higher.
 
 ### How it works
 
@@ -56,9 +56,7 @@ The Snort integration collects log messages containing information about network
 
 Elastic Agent must be installed to collect logs and send them to the Elastic Stack. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-### Onboard / configure
-
-#### 1. Configure Snort
+### Set up steps in Snort
 
 1.  **Install Snort**: If not already installed, download the latest version from the [official website](https://www.snort.org/) and follow the installation instructions for your operating system.
 2.  **Configure `snort.conf`**: Edit the `snort.conf` file to set network variables, define rule paths, and configure output plugins.
@@ -71,7 +69,7 @@ Elastic Agent must be installed to collect logs and send them to the Elastic Sta
     ```
 5.  **Start Snort**: Start Snort to begin monitoring network traffic.
 
-#### 2. Configure the Elastic Integration
+### Set up steps in Kibana
 
 1.  In Kibana, go to **Management > Integrations**.
 2.  Search for "Snort" and click on it.
@@ -101,9 +99,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 For more information, refer to the official [Snort Documentation](https://www.snort.org/documents).
 
-## Scaling
-
-For high-traffic environments, deploying Snort in a distributed architecture with multiple sensors can help balance the load and improve detection capabilities.
+## Performance and scaling
 
 For more information on architectures that can be used for scaling Elastic ingest, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
@@ -124,7 +120,3 @@ The `log` data stream collects all log types from Snort.
 ### Inputs used
 
 {{ inputDocs }}
-
-### API usage
-
-This integration does not use any external APIs.
