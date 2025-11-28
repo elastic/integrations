@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-11-07T00:00:00.000Z",
         "created_by": "elastic",
-        "description": "Retrieves enriched ARP cache entries with local interface details including local IP addresses and MAC addresses. Combines ARP cache data with network interface configuration to provide complete neighbor relationship context. This enriched view helps investigate network communications, detect ARP spoofing, and understand both source and destination network endpoints. Equivalent to Windows.Network.ArpCache artifact functionality.",
+        "description": "Retrieves enriched ARP cache entries with local interface details including local IP addresses and MAC addresses. Combines ARP cache data with network interface configuration to provide complete neighbor relationship context. This enriched view helps investigate network communications, detect ARP spoofing, and understand both source and destination network endpoints.",
         "ecs_mapping": [
             {
                 "key": "destination.ip",
@@ -17,13 +17,13 @@
                 }
             },
             {
-                "key": "host.ip",
+                "key": "source.ip",
                 "value": {
                     "field": "LocalAddress"
                 }
             },
             {
-                "key": "host.mac",
+                "key": "source.mac",
                 "value": {
                     "field": "LocalMAC"
                 }
@@ -49,7 +49,8 @@
         ],
         "id": "arp_cache_elastic",
         "interval": "3600",
-        "query": "-- ARP Cache with Local Interface Information\n-- Provides complete network neighbor context by joining ARP cache with interface details\n-- Source: arp_cache + interface_details + interface_addresses tables\n-- Equivalent to Windows.Network.ArpCache artifact\n\nWITH arp_entries AS (\n    SELECT \n        a.address AS RemoteAddress,\n        a.mac AS RemoteMACAddress,\n        a.interface AS InterfaceName,\n        CASE \n            WHEN a.permanent = '1' THEN 'Persistent'\n            ELSE 'Active'\n        END AS Store,\n        CASE\n            WHEN a.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS AddressFamily\n    FROM arp_cache a\n),\nlocal_interfaces AS (\n    SELECT \n        id.interface,\n        id.mac AS LocalMAC,\n        ia.address AS LocalAddress\n    FROM interface_details id\n    LEFT JOIN interface_addresses ia ON id.interface = ia.interface\n    WHERE id.mac IS NOT NULL\n        AND ia.address IS NOT NULL\n)\nSELECT \n    ae.RemoteAddress,\n    ae.RemoteMACAddress,\n    ae.InterfaceName,\n    ae.Store,\n    ae.AddressFamily,\n    li.LocalAddress,\n    li.LocalMAC\nFROM arp_entries ae\nLEFT JOIN local_interfaces li ON ae.InterfaceName = li.interface\nORDER BY ae.InterfaceName, ae.RemoteAddress;",        "platform": "linux,darwin,windows",
+        "query": "-- ARP Cache with Local Interface Information\n-- Provides complete network neighbor context by joining ARP cache with interface details\n-- Source: arp_cache + interface_details + interface_addresses tables\n-- Cross-platform: Windows uses MAC in arp_cache.interface, Linux/macOS use interface name\n\nWITH arp_entries AS (\n    SELECT\n        a.address AS RemoteAddress,\n        a.mac AS RemoteMACAddress,\n        a.interface AS InterfaceIdentifier,\n        CASE\n            WHEN a.permanent = '1' THEN 'Persistent'\n            ELSE 'Active'\n        END AS Store,\n        CASE\n            WHEN a.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS AddressFamily\n    FROM arp_cache a\n),\nlocal_interfaces AS (\n    SELECT\n        id.interface AS InterfaceIndex,\n        id.mac AS LocalMAC,\n        ia.address AS LocalAddress,\n        CASE\n            WHEN ia.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS AddressFamily\n    FROM interface_details id\n    LEFT JOIN interface_addresses ia ON id.interface = ia.interface\n    WHERE id.mac IS NOT NULL\n        AND ia.address IS NOT NULL\n)\nSELECT\n    ae.RemoteAddress,\n    ae.RemoteMACAddress,\n    COALESCE(li.InterfaceIndex, ae.InterfaceIdentifier) AS InterfaceName,\n    ae.Store,\n    ae.AddressFamily,\n    li.LocalAddress,\n    li.LocalMAC\nFROM arp_entries ae\nLEFT JOIN local_interfaces li ON\n    (ae.InterfaceIdentifier = li.InterfaceIndex OR LOWER(ae.InterfaceIdentifier) = LOWER(li.LocalMAC))\n    AND ae.AddressFamily = li.AddressFamily\nORDER BY InterfaceName, ae.RemoteAddress;",
+        "platform": "linux,darwin,windows",
         "updated_at": "2025-11-07T00:00:00.000Z",
         "updated_by": "elastic"
     },
