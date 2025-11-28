@@ -524,7 +524,7 @@ prepare_stack() {
     fi
 
     echo "Boot up the Elastic stack"
-    if ! ${ELASTIC_PACKAGE_BIN} stack up -d ${args} ; then
+    if ! retry 2 ${ELASTIC_PACKAGE_BIN} stack up -d ${args} ; then
         return 1
     fi
     echo ""
