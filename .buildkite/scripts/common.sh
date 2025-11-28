@@ -261,7 +261,7 @@ check_git_diff() {
 use_elastic_package() {
     echo "--- Installing elastic-package"
     mkdir -p build
-    go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
+    retry 5 go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
 }
 
 elastic_package_verbosity() {
@@ -524,7 +524,7 @@ prepare_stack() {
     fi
 
     echo "Boot up the Elastic stack"
-    if ! ${ELASTIC_PACKAGE_BIN} stack up -d ${args} ; then
+    if ! retry 2 ${ELASTIC_PACKAGE_BIN} stack up -d ${args} ; then
         return 1
     fi
     echo ""
