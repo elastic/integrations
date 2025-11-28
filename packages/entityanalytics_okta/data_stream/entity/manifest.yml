@@ -14,15 +14,82 @@ streams:
         multi: false
         required: true
         show_user: true
-        description: The Okta domain.
+        description: The URL of your Okta domain. For example, https://dev-123456.okta.com.
       - name: okta_token
         type: password
         title: Okta API Token
         multi: false
-        required: true
+        required: false
         show_user: true
-        description: The Okta API token, used for authentication.
+        description: |
+          The API Key of your Okta service application. This is required for standard API Key based authentication only.
+          Do not use this field if you are using standard OAuth2 authentication or Okta Integration Network (OIN) app authentication.
         secret: true
+      - name: client_id
+        type: text
+        title: Client ID
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The Client ID of your Okta service application.
+          This is required for standard OAuth2 authentication and OIN app authentication.
+          Do not use this field if you are using API Key based authentication.
+      - name: client_secret
+        type: password
+        title: Client Secret
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The Client Secret of your Okta service application.
+          This is required for standard OAuth2 authentication and OIN app authentication.
+          Do not use this field if you are using API Key based authentication.
+        secret: true
+      - name: jwk_json
+        type: password
+        title: JWK JSON
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The private JSON Web Key (JWK) of your Okta service application.
+          This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+          Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
+        secret: true
+      - name: key_pem
+        type: textarea
+        title: PEM Encoded Key
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The private key of your Okta service application in PEM format.
+          This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+          Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
+      - name: jwk_file
+        type: text
+        title: JWK File
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The path to the file containing the private JSON Web Key (JWK) of your Okta service application.
+          This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+          Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
+      - name: okta_scopes
+        type: text
+        title: Okta Scopes
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - okta.users.read
+          - okta.devices.read
+        description: |
+          This is the list of 'okta.*' scopes that your Okta service application has access to.
+          This is required for standard OAuth2 authentication and OIN app authentication.
+          Do not use this field if you are using API Key based authentication.
       - name: dataset
         type: select
         title: Okta Dataset
