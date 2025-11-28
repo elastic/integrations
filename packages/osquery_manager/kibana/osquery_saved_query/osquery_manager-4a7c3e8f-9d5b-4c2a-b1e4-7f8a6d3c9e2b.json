@@ -1,0 +1,86 @@
+{
+  "attributes": {
+    "created_at": "2025-11-07T10:30:00.000Z",
+    "created_by": "elastic",
+    "description": "Extracts Application Compatibility Cache (ShimCache) entries tracking program execution history on Windows systems. Enumerates executed programs with entry order (lower = more recent), modification timestamps for timeline analysis, execution flags (Windows 7/8), file hashes, and code signatures. Detects recently executed programs, executables from suspicious locations (Temp, AppData, Downloads), unsigned/untrusted binaries, and deleted programs. ShimCache provides forensic evidence of program execution even when programs are no longer running or have been deleted. MITRE ATT&CK: T1204 (User Execution), T1059 (Command Scripting), T1218 (System Binary Proxy Execution).",
+    "ecs_mapping": [
+      {
+        "key": "event.category",
+        "value": {
+          "value": [
+            "process"
+          ]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": [
+            "info"
+          ]
+        }
+      },
+      {
+        "key": "file.path",
+        "value": {
+          "field": "path"
+        }
+      },
+      {
+        "key": "file.mtime",
+        "value": {
+          "field": "modified_time"
+        }
+      },
+      {
+        "key": "file.hash.md5",
+        "value": {
+          "field": "md5"
+        }
+      },
+      {
+        "key": "file.hash.sha256",
+        "value": {
+          "field": "sha256"
+        }
+      },
+      {
+        "key": "file.code_signature.subject_name",
+        "value": {
+          "field": "subject_name"
+        }
+      },
+      {
+        "key": "file.code_signature.status",
+        "value": {
+          "field": "signature_status"
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "execution_tracking",
+            "appcompatcache",
+            "shimcache",
+            "forensics",
+            "code_signing",
+            "windows"
+          ]
+        }
+      }
+    ],
+    "id": "appcompatcache_shimcache_windows_elastic",
+    "interval": "7200",
+    "platform": "windows",
+    "query": "-- Application Compatibility Cache (ShimCache) Execution Tracking\n-- Source: Native osquery table (shimcache)\n-- Focus: Suspicious program execution - unsigned, untrusted, or risky paths\n-- MITRE ATT&CK: T1204 (User Execution), T1059 (Command Scripting), T1218 (System Binary Proxy Execution)\n\nWITH extracted AS (\n  SELECT\n    s.entry,\n    s.path,\n    s.modified_time,\n    s.execution_flag,\n    h.md5,\n    h.sha256,\n    a.subject_name,\n    a.result AS signature_status\n  FROM shimcache s\n  LEFT JOIN hash h ON h.path = s.path\n  LEFT JOIN authenticode a ON a.path = s.path\n)\n\nSELECT *\nFROM extracted\nWHERE (\n  -- Unsigned binaries (no code signature)\n  subject_name IS NULL\n  -- Invalid or untrusted signatures\n  OR signature_status != 'Valid'\n  -- Suspicious execution paths (user-writable, temp, staging, persistence locations)\n  OR regex_match(path, '\\\\\\\\(Temp|Downloads|Public|PerfLogs)\\\\\\\\|\\\\\\\\AppData\\\\\\\\(Local\\\\\\\\Temp|Roaming)\\\\\\\\|\\\\\\\\ProgramData\\\\\\\\|\\\\\\\\Windows\\\\\\\\Temp\\\\\\\\|^C:\\\\\\\\[^\\\\\\\\]+\\\\.exe$|\\\\\\\\(Intel|Dell|HP)\\\\\\\\', 0) IS NOT NULL\n)\n-- Exclude valid Microsoft-signed binaries (trusted, reduces noise)\nAND NOT (\n  subject_name LIKE '%Microsoft%'\n  AND signature_status = 'Valid'\n)\nORDER BY entry ASC;",
+    "updated_at": "2025-11-07T10:30:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.2.0",
+  "id": "osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-11-07T10:30:00.000Z",
+  "version": "WzgzLDJd"
+}
