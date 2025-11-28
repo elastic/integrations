@@ -31,10 +31,12 @@ The Prisma Cloud integration collects data for the following event types:
 | Host                          |
 | Host Profile                  |
 | Incident Audit                |
+| Misconfiguration              |
+| Vulnerability                 |
 
 **NOTE**:
 
-Alert and Audit data-streams are part of [CSPM](https://pan.dev/prisma-cloud/api/cspm/) module, whereas Host, Host Profile and Incident Audit are part of [CWP](https://pan.dev/prisma-cloud/api/cwpp/) module.
+Alert, Audit, Misconfiguration, and Vulnerability data-streams are part of [CSPM](https://pan.dev/prisma-cloud/api/cspm/) module, whereas Host, Host Profile and Incident Audit are part of [CWP](https://pan.dev/prisma-cloud/api/cwpp/) module.
 
 ## Requirements
 
@@ -85,6 +87,19 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
    - interval
    - offset
    - batch size
+
+   or if you want to collect Misconfiguration data via REST API, then you have to put the following details:
+   - username
+   - password
+   - url
+   - interval
+   - batch size
+
+   or if you want to collect Vulnerability data via REST API, then you have to put the following details:
+   - username
+   - password
+   - url
+   - interval
 
   or if you want to collect Host, Host Profile and Incident Audit data via TCP/UDP, then you have to put the following details:
    - listen address
@@ -143,3 +158,23 @@ This is the `Incident Audit` dataset.
 {{event "incident_audit"}}
 
 {{fields "incident_audit"}}
+
+### Misconfiguration
+
+This is the `Misconfiguration` dataset.
+
+#### Example
+
+{{event "misconfiguration"}}
+
+{{fields "misconfiguration"}}
+
+### Vulnerability
+
+This is the `Vulnerability` dataset.
+
+#### Example
+
+{{event "vulnerability"}}
+
+{{fields "vulnerability"}}
