@@ -1,0 +1,172 @@
+---
+description: Pipeline for processing WithSecure Elements incidents
+processors:
+  # Store original message
+  - set:
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null && ctx.message != null
+      ignore_failure: true
+      tag: set_event_original
+  - remove:
+      field: message
+      if: ctx.event?.original != null && ctx.message != null && ctx.message == ctx.event.original
+      ignore_missing: true
+      tag: remove_message
+
+  # Parse JSON directly into custom namespace
+  - json:
+      field: event.original
+      target_field: withsecure_elements.incidents
+      if: ctx.event?.original != null && ctx.event.original instanceof String
+      on_failure:
+        - set:
+            field: error.message
+            value: 'Failed to parse JSON from event.original'
+      tag: json_decode
+      description: Decode JSON from event.original into withsecure_elements.incidents
+
+  # Set ECS version and basic fields
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+      tag: set_ecs_version
+  - set:
+      field: event.dataset
+      value: withsecure_elements.incidents
+      tag: set_event_dataset
+  - set:
+      field: event.module
+      value: withsecure_elements
+      tag: set_event_module
+  - set:
+      field: event.category
+      value: [threat]
+      tag: set_event_category
+  - set:
+      field: event.type
+      value: [incident]
+      tag: set_event_type
+  - set:
+      field: event.kind
+      value: alert
+      tag: set_event_kind
+  - set:
+      field: event.provider
+      value: withsecure_elements
+      tag: set_event_provider
+  - set:
+      field: event.action
+      value: detected
+      tag: set_event_action
+  - set:
+      field: event.outcome
+      value: success
+      tag: set_event_outcome
+
+  # Generate unique _id for automatic deduplication
+  - fingerprint:
+      fields:
+        - withsecure_elements.incidents.incidentId
+        - withsecure_elements.incidents.updatedTimestamp
+      target_field: _id
+      ignore_missing: true
+      tag: generate_document_id
+  
+  # Map to ECS fields using copy_from
+  - set:
+      field: event.id
+      copy_from: withsecure_elements.incidents.incidentId
+      if: ctx.withsecure_elements?.incidents?.incidentId != null
+      ignore_failure: true
+      tag: set_event_id
+  - set:
+      field: event.risk_score
+      copy_from: withsecure_elements.incidents.riskScore
+      if: ctx.withsecure_elements?.incidents?.riskScore != null
+      ignore_failure: true
+      tag: set_event_risk_score
+  - script:
+      lang: painless
+      tag: normalize_incident_severity
+      if: ctx.withsecure_elements?.incidents?.riskLevel != null
+      source: >
+        def riskLevelValue = ctx.withsecure_elements.incidents.riskLevel;
+        if (riskLevelValue == null) return;
+        if (riskLevelValue instanceof Number) {
+          ctx.event.severity = ((Number) riskLevelValue).intValue();
+          return;
+        }
+        def normalized = riskLevelValue.toString().toLowerCase();
+        if (normalized == 'info' || normalized == 'low') {
+          ctx.event.severity = 21;
+        } else if (normalized == 'medium') {
+          ctx.event.severity = 47;
+        } else if (normalized == 'high') {
+          ctx.event.severity = 73;
+        } else if (normalized == 'severe') {
+          ctx.event.severity = 99;
+        }
+
+  # Set timestamps
+  - date:
+      field: withsecure_elements.incidents.createdTimestamp
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.withsecure_elements?.incidents?.createdTimestamp != null
+      tag: set_timestamp
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      copy_from: "@timestamp"
+      if: ctx['@timestamp'] != null
+      ignore_failure: true
+      tag: set_event_created
+  - set:
+      field: event.start
+      copy_from: "@timestamp"
+      if: ctx['@timestamp'] != null
+      ignore_failure: true
+      tag: set_event_start
+  - date:
+      field: withsecure_elements.incidents.updatedTimestamp
+      target_field: event.end
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.withsecure_elements?.incidents?.updatedTimestamp != null
+      tag: set_event_end
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
