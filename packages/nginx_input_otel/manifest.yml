@@ -1,0 +1,42 @@
+format_version: 3.5.0
+name: nginx_otel_input
+title: "NGINX OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "NGINX OpenTelemetry Input Package"
+type: input
+categories:
+  - web
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/nginx_otellogo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: nginxreceiver
+    type: metrics
+    title: NGINX OpenTelemetry Input
+    description: Collect NGINX metrics using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: receiver_config
+        type: yaml
+        title: Receiver Configuration
+        required: true
+        show_user: true
+        description: Configuration for the NGINX receiver. This configuration will be inserted directly into the receiver section of the OpenTelemetry Collector configuration.
+        default: |
+          endpoint: http://localhost:80/status
+          collection_interval: 10s
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
