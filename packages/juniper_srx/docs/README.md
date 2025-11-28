@@ -33,6 +33,35 @@ The Juniper SRX integration collects the following log types from SRX devices:
 *   **RT_SECINTEL**: Security intelligence events tracking connections to known malicious sources.
 *   **System logs**: General system-level events from the SRX device.
 
+The following processes and tags are supported:
+
+| JunOS processes | JunOS tags                                |
+|-----------------|-------------------------------------------|
+| RT_FLOW         | RT_FLOW_SESSION_CREATE                    |
+|                 | RT_FLOW_SESSION_CLOSE                     |
+|                 | RT_FLOW_SESSION_DENY                      |
+|                 | APPTRACK_SESSION_CREATE                   |
+|                 | APPTRACK_SESSION_CLOSE                    |
+|                 | APPTRACK_SESSION_VOL_UPDATE               |
+| RT_IDS          | RT_SCREEN_TCP                             |
+|                 | RT_SCREEN_UDP                             |
+|                 | RT_SCREEN_ICMP                            |
+|                 | RT_SCREEN_IP                              |
+|                 | RT_SCREEN_TCP_DST_IP                      |
+|                 | RT_SCREEN_TCP_SRC_IP                      |
+| RT_UTM          | WEBFILTER_URL_PERMITTED                   |
+|                 | WEBFILTER_URL_BLOCKED                     |
+|                 | AV_VIRUS_DETECTED_MT                      |
+|                 | CONTENT_FILTERING_BLOCKED_MT              |
+|                 | ANTISPAM_SPAM_DETECTED_MT                 |
+| RT_IDP          | IDP_ATTACK_LOG_EVENT                      |
+|                 | IDP_APPDDOS_APP_STATE_EVENT               |
+| RT_AAMW         | SRX_AAMW_ACTION_LOG                       |
+|                 | AAMW_MALWARE_EVENT_LOG                    |
+|                 | AAMW_HOST_INFECTED_EVENT_LOG              |
+|                 | AAMW_ACTION_LOG                           |
+| RT_SECINTEL     | SECINTEL_ACTION_LOG                       |
+
 All logs must be sent in the `structured-data + brief` syslog format.
 
 ## Supported use cases
