@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "created_at": "2025-11-28T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "YARA-based content detection of suspicious Windows LNK shortcut files. Scans LNK binary content directly for malicious patterns: LOLBins (powershell, cmd, wscript, mshta, rundll32, certutil, bitsadmin), encoded commands (-enc, -e flags), hidden execution (-W Hidden, ExecutionPolicy Bypass), download cradles (DownloadString, Invoke-WebRequest, Invoke-Expression), and HTTP/HTTPS URLs. This approach bypasses osquery's shortcut_target_path parsing issues by scanning raw file bytes. Returns only files matching suspicious patterns. RELATED QUERY: Use lnk_forensics_windows_elastic for comprehensive LNK enumeration with full metadata, timestamps, authenticode signatures, and shellbags enrichment across all forensic locations.",
+        "ecs_mapping": [
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "rule.name",
+                "value": {
+                    "field": "matches"
+                }
+            },
+            {
+                "key": "threat.indicator.matched.atomic",
+                "value": {
+                    "field": "strings"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "threat.indicator.type",
+                "value": {
+                    "value": "file"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": "malware"
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": "indicator"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "location_type"
+                }
+            }
+        ],
+        "id": "lnk_yara_detection_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- YARA-based LNK Suspicious Pattern Detection\n-- Source: yara table with inline signature rule scanning LNK binary content\n-- Purpose: Content-based detection of malicious LNK files (complements lnk_forensics_windows_elastic)\n-- Note: For comprehensive LNK enumeration with metadata, use lnk_forensics_windows_elastic query\n-- Technical: YARA table requires JOIN (not IN subquery); hash uses scalar subqueries\n\nWITH lnk_paths AS (\n    -- User-specific Startup and Desktop folders\n    SELECT f.path\n    FROM users u\n    CROSS JOIN file f\n    WHERE (\n        f.directory = u.directory || '\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup'\n        OR f.directory = u.directory || '\\Desktop'\n    )\n    AND u.directory LIKE 'C:\\Users\\%'\n    AND u.username NOT IN ('Default', 'Default User', 'Public', 'All Users')\n    AND f.filename LIKE '%.lnk'\n    \n    UNION ALL\n    \n    -- System-wide Startup folder (persistence)\n    SELECT f.path\n    FROM file f\n    WHERE f.directory = 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup'\n    AND f.filename LIKE '%.lnk'\n    \n    UNION ALL\n    \n    -- Public Desktop\n    SELECT f.path\n    FROM file f\n    WHERE f.directory = 'C:\\Users\\Public\\Desktop'\n    AND f.filename LIKE '%.lnk'\n)\nSELECT\n    y.path,\n    y.matches,\n    y.strings,\n    -- Hash enrichment via scalar subqueries (JOIN breaks YARA constraints)\n    (SELECT md5 FROM hash WHERE path = y.path) AS md5,\n    (SELECT sha256 FROM hash WHERE path = y.path) AS sha256,\n    CASE\n        WHEN y.path LIKE '%Startup%' THEN 'startup'\n        WHEN y.path LIKE '%Desktop%' THEN 'desktop'\n        ELSE 'other'\n    END AS location_type\nFROM lnk_paths lp\n-- JOIN required for YARA path constraint (IN subquery doesn't push constraints)\nJOIN yara y ON y.path = lp.path\nWHERE y.sigrule = 'rule Suspicious_LNK {\n    strings:\n        // LOLBins - Living Off The Land Binaries\n        $ps = \"powershell\" nocase\n        $cmd = \"cmd.exe\" nocase\n        $ws = \"wscript\" nocase\n        $cs = \"cscript\" nocase\n        $mshta = \"mshta\" nocase\n        $rundll = \"rundll32\" nocase\n        $certutil = \"certutil\" nocase\n        $bitsadmin = \"bitsadmin\" nocase\n        // Encoded/Hidden execution\n        $enc = \"-enc\" nocase\n        $hidden = \"-W Hidden\" nocase\n        $bypass = \"ExecutionPolicy Bypass\" nocase\n        // Download cradles\n        $dl = \"DownloadString\" nocase\n        $iwr = \"Invoke-WebRequest\" nocase\n        $iex = \"Invoke-Expression\" nocase\n        // Network indicators\n        $http = \"http://\" nocase\n        $https = \"https://\" nocase\n    condition:\n        any of them\n}'\nAND y.matches IS NOT NULL\nAND y.matches != ''\nORDER BY\n    -- Priority: Startup locations first (persistence)\n    CASE WHEN y.path LIKE '%Startup%' THEN 1 ELSE 2 END;",
+        "updated_at": "2025-11-28T00:00:00.000Z",
+        "updated_by": "elastic",
+        "tags": [
+            "forensics",
+            "persistence",
+            "yara",
+            "malware-detection",
+            "lnk-analysis",
+            "threat-hunting"
+        ],
+        "mitre_attack": [
+            {
+                "id": "T1547.001",
+                "tactic": "Persistence",
+                "technique": "Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+                "reference": "https://attack.mitre.org/techniques/T1547/001/"
+            },
+            {
+                "id": "T1204.002",
+                "tactic": "Execution",
+                "technique": "User Execution: Malicious File",
+                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+            },
+            {
+                "id": "T1059.001",
+                "tactic": "Execution",
+                "technique": "Command and Scripting Interpreter: PowerShell",
+                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+            },
+            {
+                "id": "T1059.003",
+                "tactic": "Execution",
+                "technique": "Command and Scripting Interpreter: Windows Command Shell",
+                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+            },
+            {
+                "id": "T1027",
+                "tactic": "Defense Evasion",
+                "technique": "Obfuscated Files or Information",
+                "reference": "https://attack.mitre.org/techniques/T1027/"
+            },
+            {
+                "id": "T1105",
+                "tactic": "Command and Control",
+                "technique": "Ingress Tool Transfer",
+                "reference": "https://attack.mitre.org/techniques/T1105/"
+            }
+        ]
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-b2c3d4e5-lnk2-11ef-8f39-bf9c07530bbb",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-28T00:00:00.000Z",
+    "version": "WzEsMV0="
+}
