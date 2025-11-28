@@ -121,10 +121,10 @@ The following artifacts cannot be queried with standard osquery and require exte
 
 ### Partially Available Artifacts
 
-| # | Artifact | Status | Notes |
-|:-:|----------|:------:|-------|
-| 1 | Browser URL History (All Platforms) | ✅ | **FULLY AVAILABLE**: Native `browser_history` table via Elastic osquery extension (osquerybeat). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration required. See [browser_history_setup.md](docs/browser_history_setup.md) |
-| 2 | BITS Jobs Database (Windows) | ⚠️ | Not a native table, but can be queried via windows_eventlog table |
+| # | Artifact | Status | Notes                                                                                                                                                                                                                                                        |
+|:-:|----------|:------:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1 | Browser URL History (All Platforms) | ✅ | **FULLY AVAILABLE**: Native `elastic_browser_history` table via Elastic osquery extension (osquerybeat). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration required. See [browser_history_setup.md](docs/browser_history_setup.md) |
+| 2 | BITS Jobs Database (Windows) | ⚠️ | Not a native table, but can be queried via windows_eventlog table                                                                                                                                                                                            |
 
 ### Alternative Coverage
 
@@ -169,7 +169,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Shell History (Linux/Mac: shell_history table)
 - ⚠️ Shellbags (Windows: shellbags table)
 - ⚠️ User Assist (Windows: userassist table)
-- ✅ **Browser URL History (All platforms: Elastic osquery extension `browser_history` table - Multi-browser support)** - **UPDATED**
+- ✅ **Browser URL History (All platforms: Elastic osquery extension `elastic_browser_history` table - Multi-browser support)** - **UPDATED**
 - ❌ Jumplists (Not Available - Use Shellbags + LNK Files + Browser History as alternatives)
 
 ### File System/Forensics
