@@ -68,6 +68,42 @@ rules:
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
     methods: [GET]
     query_params:
+      contentType: "Audit.SharePoint"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType": "Audit.Sharepoint","contentId": "celid2a","contentUri": "http://svc-o365:8082/api/v1.0/celsp1/activity/feed/audit/celid2b","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2023-03-30T17:35:00.000Z"}]
+  - path: /api/v1.0/celsp1/activity/feed/audit/celid2b
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [
+          {{- $g := glob "/var/log/corpus-*" -}}
+          {{- range $g -}}
+            {{- file . -}}
+          {{- end -}}
+          {{/* A last line of hard-coded data is required to avoid empty string from being sent to CEL program in the final line */}}
+          { "ListItemUniqueId": "longcondor", "ItemType": "lavendercurtain", "Workload": "eveningraven", "OrganizationId": "coconutkeeper", "UserId": "ribboneye", "Site": "blossomsalmon", "WebId": "bonemask", "UserType": 0, "Version": 9, "UserAgent": "cherryelk", "UserKey": "rhinestonehisser", "CustomUniqueId": false, "Operation": "daisytooth", "ObjectId": "rustthorn", "Id": "7", "CorrelationId": "runemind", "RecordType": 6 }
+          ]
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
       contentType: "Audit.General"
       startTime: "{startTime:.*}"
       endTime: "{endTime:.*}"
