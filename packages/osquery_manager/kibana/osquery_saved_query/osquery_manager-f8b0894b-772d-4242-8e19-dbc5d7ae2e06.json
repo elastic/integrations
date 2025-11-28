@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-01-06T12:00:00.000Z",
     "created_by": "elastic",
-    "description": "Parse systemd services on Linux systems. Provides visibility into systemd service units including: (1) Service identification (unit name, description), (2) Load state (whether unit definition was properly loaded), (3) Activation state (high-level active/inactive status), (4) Sub-state details (low-level unit activation state), (5) Service enablement status (enabled, disabled, masked), (6) Unit file path (source of unit configuration). Detection focuses on: services in unexpected states (loaded but inactive), services with unusual configurations, masked or disabled critical services. Use Cases: System service inventory, service state monitoring, persistence mechanism detection (systemd service-based persistence), unauthorized service installation detection, service misconfiguration identification, compliance auditing for service configurations.",
+    "description": "Detects suspicious Linux systemd services using multiple anomaly indicators. Filters for: services in user-writable directories (/home, /tmp, /var/tmp), user systemd units (~/.config/systemd), unusual unit_file_state (linked, transient), services running binaries from suspicious paths. Excludes standard system services in /lib/systemd and /usr/lib/systemd. Results sorted by risk (user paths first). MITRE ATT&CK: T1543.002 (Systemd Service).",
     "ecs_mapping": [
       {
         "key": "service.name",
@@ -20,6 +20,12 @@
         "key": "file.path",
         "value": {
           "field": "fragment_path"
+        }
+      },
+      {
+        "key": "file.hash.sha256",
+        "value": {
+          "field": "sha256"
         }
       },
       {
@@ -51,27 +57,29 @@
         "key": "tags",
         "value": {
           "value": [
+            "threat_hunting",
+            "suspicious",
             "linux",
             "systemd",
             "services",
-            "persistence",
-            "service_enumeration"
+            "persistence"
           ]
         }
       }
     ],
-    "id": "services_systemd_linux_elastic",
+    "id": "services_suspicious_linux",
     "interval": "3600",
+    "timeout": 120,
     "platform": "linux",
-    "query": "SELECT\n  id,\n  load_state,\n  active_state,\n  sub_state,\n  description,\n  unit_file_state,\n  fragment_path\nFROM systemd_units\nWHERE id LIKE '%.service'\nORDER BY active_state, id;",
-    "updated_at": "2025-01-06T12:00:00.000Z",
+    "query": "-- Linux Suspicious Systemd Services Detection\n-- Source: Native osquery tables (systemd_units, file, hash)\n-- Focus: Detect suspicious/malicious systemd services - NOT a full inventory\n-- MITRE ATT&CK: T1543.002 (Systemd Service)\n\nWITH services_enriched AS (\n  SELECT\n    su.id,\n    su.load_state,\n    su.active_state,\n    su.sub_state,\n    su.description,\n    su.unit_file_state,\n    su.fragment_path,\n    f.mtime AS file_mtime,\n    CAST((strftime('%s', 'now') - f.mtime) / 86400 AS INTEGER) AS days_since_modified,\n    (SELECT sha256 FROM hash WHERE path = su.fragment_path LIMIT 1) AS sha256\n  FROM systemd_units su\n  LEFT JOIN file f ON f.path = su.fragment_path\n  WHERE su.id LIKE '%.service'\n    AND su.fragment_path IS NOT NULL\n    AND su.fragment_path != ''\n)\n\nSELECT *\nFROM services_enriched\nWHERE (\n  -- HIGH RISK: Service unit in user home directories\n  fragment_path LIKE '/home/%'\n  OR fragment_path LIKE '/root/%'\n  -- HIGH RISK: Service unit in temp directories\n  OR fragment_path LIKE '/tmp/%'\n  OR fragment_path LIKE '/var/tmp/%'\n  -- HIGH RISK: User systemd units (persistence location)\n  OR fragment_path LIKE '%/.config/systemd/%'\n  OR fragment_path LIKE '%/.local/share/systemd/%'\n  -- MEDIUM RISK: Unusual unit_file_state (not standard enabled/disabled/static)\n  OR unit_file_state IN ('linked', 'linked-runtime', 'transient')\n  -- MEDIUM RISK: Service in /etc/systemd but not standard package install\n  OR (fragment_path LIKE '/etc/systemd/system/%' AND days_since_modified < 30)\n  -- MEDIUM RISK: Service in /run (runtime generated)\n  OR fragment_path LIKE '/run/systemd/%'\n)\nORDER BY\n  CASE WHEN fragment_path LIKE '/home/%' OR fragment_path LIKE '/tmp/%' THEN 0 ELSE 1 END,\n  CASE WHEN fragment_path LIKE '%/.config/systemd/%' THEN 0 ELSE 1 END,\n  days_since_modified ASC;",
+    "updated_at": "2025-11-28T00:00:00.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "9.2.0",
   "id": "osquery_manager-f8b0894b-772d-4242-8e19-dbc5d7ae2e06",
   "references": [],
   "type": "osquery-saved-query",
-  "updated_at": "2025-01-06T12:00:00.000Z",
+  "updated_at": "2025-11-28T00:00:00.000Z",
   "version": "Wzk2LDJd"
 }
 
