@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2024-11-30
+**Total Core Artifacts**: 3 available + 37 in progress + 6 not available = 46 total variants
+**Total Queries**: 29 (2 core forensic + 27 additional)
+**Completion Rate**: 6.5% (3/46 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 3     | 6.5%       |
+| ⚠️ In Progress (Needs Validation) | 37    | 80.4%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -43,9 +43,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 10 | Disks & Volumes         | ⚠️ | Win | -     | -    | disk_info table                                                                                                                  |
 | 10a | Disks & Volumes         | ⚠️ | Linux | -     | -    | disk_info table                                                                                                                  |
 | 10b | Disks & Volumes         | ⚠️ | Mac | -     | -    | disk_info table                                                                                                                  |
-| 11 | Network Interfaces & IP Configuration | ⚠️ | Win | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
-| 11a | Network Interfaces & IP Configuration | ⚠️ | Linux | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
-| 11b | Network Interfaces & IP Configuration | ⚠️ | Mac | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
+| 11 | Network Interfaces & IP Configuration | ✅ | Win | network_interfaces_windows_elastic | [9307](kibana/osquery_saved_query/osquery_manager-9307c448-d8e2-49a3-aeca-469881183087.json) | interface_details + interface_addresses with DHCP/DNS configuration |
+| 11a | Network Interfaces & IP Configuration | ✅ | Linux | network_interfaces_linux_macos_elastic | [c251](kibana/osquery_saved_query/osquery_manager-c251aeb1-698f-44a4-9526-cdd349b9ccbe.json) | interface_details + interface_addresses + interface_ipv6 (hop_limit, forwarding, redirect_accept) |
+| 11b | Network Interfaces & IP Configuration | ✅ | Mac | network_interfaces_linux_macos_elastic | [c251](kibana/osquery_saved_query/osquery_manager-c251aeb1-698f-44a4-9526-cdd349b9ccbe.json) | interface_details + interface_addresses + interface_ipv6 (hop_limit, forwarding, redirect_accept) |
 | 12 | NTFS USN Journal        | ⚠️ | Win | -     | -    | ntfs_journal_events table                                                                                                        |
 | 13 | Open Handles            | ❌ | Win | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
 | 13a | Open Handles            | ❌ | Linux | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
@@ -181,7 +181,7 @@ While some artifacts are not directly available, the existing queries provide st
 
 ### Network/C2 Indicators
 - ⚠️ ARP Cache (All platforms: arp_cache table)
-- ⚠️ Network Interfaces & IP Configuration (All platforms: interface_details, interface_addresses, interface_ipv6)
+- ✅ Network Interfaces & IP Configuration (Windows: DHCP/DNS config; Linux/macOS: IPv6 config with hop_limit, forwarding, redirect_accept)
 
 ### System Information
 - ⚠️ Disks & Volumes (All platforms: disk_info table)
