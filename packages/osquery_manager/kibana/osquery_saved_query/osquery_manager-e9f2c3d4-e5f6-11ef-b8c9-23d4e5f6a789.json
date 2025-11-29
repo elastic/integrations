@@ -1,0 +1,51 @@
+{
+    "attributes": {
+        "created_at": "2025-11-29T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Retrieve physical disk hardware information on Linux and macOS systems. Filters out loop devices, snap mounts, and virtual filesystems to show only real storage devices. Cross-platform equivalent to Windows disk_info query.",
+        "ecs_mapping": [
+            {
+                "key": "host.disk.device.name",
+                "value": {
+                    "field": "device_name"
+                }
+            },
+            {
+                "key": "observer.vendor",
+                "value": {
+                    "field": "vendor"
+                }
+            },
+            {
+                "key": "observer.product",
+                "value": {
+                    "field": "model"
+                }
+            },
+            {
+                "key": "observer.type",
+                "value": {
+                    "field": "device_type"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "mount_point"
+                }
+            }
+        ],
+        "id": "disk_info_linux_macos_elastic",
+        "interval": "3600",
+        "platform": "linux,darwin",
+        "query": "-- Linux/macOS physical disk inventory\n-- Source: block_devices + mounts tables\n-- Filters out: loop devices, snap mounts, disk images, virtual filesystems\nSELECT\n    bd.name AS device_name,\n    bd.vendor,\n    bd.model,\n    bd.type AS device_type,\n    bd.uuid,\n    ROUND((bd.size * bd.block_size) / 1073741824.0, 2) AS size_gb,\n    m.path AS mount_point,\n    m.type AS filesystem_type,\n    CASE \n        WHEN m.blocks > 0 THEN \n            ROUND(100.0 * (m.blocks - m.blocks_free) / m.blocks, 2)\n        ELSE NULL \n    END AS usage_percent,\n    ROUND((m.blocks_available * m.blocks_size) / 1073741824.0, 2) AS available_gb\nFROM block_devices bd\nLEFT JOIN mounts m ON (\n    m.device LIKE '%' || bd.name || '%'\n    OR m.device_alias LIKE '%' || bd.name || '%'\n)\nWHERE bd.name != ''\n  AND bd.type != ''\n  -- Filter out loop devices (snap packages on Linux)\n  AND bd.name NOT LIKE 'loop%'\n  AND bd.name NOT LIKE '/dev/loop%'\n  -- Filter out disk images only (keep Virtual Interface for VMs)\n  AND bd.type != 'Disk Image'\n  -- Filter out squashfs (snap), devtmpfs, tmpfs, overlay\n  AND COALESCE(m.type, '') NOT IN ('squashfs', 'devtmpfs', 'tmpfs', 'overlay', 'autofs')\n  -- Filter out snap mount paths\n  AND COALESCE(m.path, '') NOT LIKE '/snap/%'\n  -- Filter out macOS system asset paths\n  AND COALESCE(m.path, '') NOT LIKE '/System/Library/Assets%'\n  -- Only show primary mount points (avoid duplicates)\n  AND (\n    m.path IS NULL \n    OR m.path IN ('/', '/boot', '/boot/efi', '/home', '/var', '/tmp', '/opt')\n    OR m.path LIKE '/Volumes/%'\n    OR m.path LIKE '/mnt/%'\n    OR m.path LIKE '/media/%'\n  );",
+        "updated_at": "2025-11-29T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-e9f2c3d4-e5f6-11ef-b8c9-23d4e5f6a789",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-29T00:00:00.000Z",
+    "version": "WzEsMV0="
+}
