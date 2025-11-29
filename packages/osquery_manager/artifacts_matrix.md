@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2025-11-29
+**Total Core Artifacts**: 3 available + 37 in progress + 6 not available = 46 total variants
+**Total Queries**: 32 (5 core forensic variants + 27 additional)
+**Completion Rate**: 6.5% (3/46 core artifacts fully supported)
 
 ---
 
@@ -13,9 +13,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
-| ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
+| ✅ Available (Fully Supported) | 3     | 6.5%       |
+| ⚠️ In Progress (Needs Validation) | 37    | 80.5%      |
+| ❌ Not Available (Requires Extensions) | 6     | 13.0%       |
 
 ---
 
@@ -40,9 +40,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 9 | ARP Cache               | ⚠️ | Win | -     | -    | arp_cache table                                                                                                                  |
 | 9a | ARP Cache               | ⚠️ | Linux | -     | -    | arp_cache table                                                                                                                  |
 | 9b | ARP Cache               | ⚠️ | Mac | -     | -    | arp_cache table                                                                                                                  |
-| 10 | Disks & Volumes         | ⚠️ | Win | -     | -    | disk_info table                                                                                                                  |
-| 10a | Disks & Volumes         | ⚠️ | Linux | -     | -    | disk_info table                                                                                                                  |
-| 10b | Disks & Volumes         | ⚠️ | Mac | -     | -    | disk_info table                                                                                                                  |
+| 10 | Disks & Volumes         | ✅ | Win | disk_info_windows_elastic | [d8a1](kibana/osquery_saved_query/osquery_manager-d8a1b2c3-d4e5-11ef-a6b7-12c3d4e5f678.json) | disk_info table                                                                                                                  |
+| 10a | Disks & Volumes         | ✅ | Linux | disk_info_linux_macos_elastic | [e9f2](kibana/osquery_saved_query/osquery_manager-e9f2c3d4-e5f6-11ef-b8c9-23d4e5f6a789.json) | block_devices + mounts tables                                                                                                    |
+| 10b | Disks & Volumes         | ✅ | Mac | disk_info_linux_macos_elastic | [e9f2](kibana/osquery_saved_query/osquery_manager-e9f2c3d4-e5f6-11ef-b8c9-23d4e5f6a789.json) | block_devices + mounts tables                                                                                                    |
 | 11 | Network Interfaces & IP Configuration | ⚠️ | Win | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
 | 11a | Network Interfaces & IP Configuration | ⚠️ | Linux | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
 | 11b | Network Interfaces & IP Configuration | ⚠️ | Mac | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
@@ -184,7 +184,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Network Interfaces & IP Configuration (All platforms: interface_details, interface_addresses, interface_ipv6)
 
 ### System Information
-- ⚠️ Disks & Volumes (All platforms: disk_info table)
+- ✅ Disks & Volumes (Windows: disk_info table, Linux/macOS: block_devices + mounts tables)
 - ⚠️ Process Listing (All platforms: processes table)
 - ❌ Open Handles (Not Available - PR #7835 open, EclecticIQ extension available)
 
