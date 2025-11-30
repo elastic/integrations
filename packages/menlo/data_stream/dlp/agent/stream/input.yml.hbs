@@ -30,36 +30,60 @@ program: |
         (string(int(now() - duration(state.initial_interval))))
     ),
     "application/json",
-    {"token": state.token, "log_type": "dlp", "pagingIdentifiers": (
-      has(state.cursor) && has(state.cursor.paging) && state.cursor.paging != null ?
-        state.cursor.paging
-      :
-        {}
-    )
+    {
+      "token": state.token,
+      "log_type": "dlp",
+      "pagingIdentifiers": (
+        has(state.?cursor.paging) && state.cursor.paging != null ?
+          state.cursor.paging.with({
+            "hashes": state.cursor.paging.hashes.transformMap(_, v, try(int(v), "fail").as(t, has(t.fail) ? v : t))
+          })
+        :
+          {}
+      )
     }.encode_json()
-  ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
-    "events": body[0].result.events.map(e, {
-        "message": e.encode_json(),
-      }),
+  ).do_request().as(resp, resp.StatusCode == 200 ?
+    bytes(resp.Body).decode_json_string_numbers().as(body, {
+      "events": body[0].result.events.map(e, {
+          "message": e.encode_json(),
+        }),
+        "url": state.url,
+        "batch_size": state.batch_size,
+        "token": state.token,
+        "cursor": {
+          "last_timestamp": (
+            has(body[0].timestamp) && body[0].timestamp.size() > 0
+            ?
+              body[0].timestamp.parse_time(time_layout.RFC3339)
+            :
+              null
+            ),
+          "paging": (
+            has(body[0].result.pagingIdentifiers) && body[0].result.pagingIdentifiers.size() > 0 ?
+              body[0].result.pagingIdentifiers
+            : 
+              null
+          )
+        }
+      })
+  : 
+    {
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "POST " + state.url.trim_right("/") + (
+            (size(resp.Body) != 0) ?
+              string(resp.Body)
+            :
+              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+          ),
+        },
+      },
       "url": state.url,
       "batch_size": state.batch_size,
       "token": state.token,
-      "cursor": {
-        "last_timestamp": (
-          has(body[0].timestamp) && body[0].timestamp.size() > 0
-          ?
-            body[0].timestamp.parse_time(time_layout.RFC3339)
-          :
-            null
-          ),
-        "paging": (
-          has(body[0].result.pagingIdentifiers) && body[0].result.pagingIdentifiers.size() > 0 ?
-            body[0].result.pagingIdentifiers
-          : 
-            null
-        )
-      }
-    })
+    }
   )
 tags:
 {{#if preserve_original_event}}
