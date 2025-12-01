@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2025-12-01
+**Total Core Artifacts**: 1 available + 41 in progress + 6 not available = 48 total variants
+**Total Queries**: 33 (3 core forensic variants + 3 file monitoring + 27 additional)
+**Completion Rate**: 2.1% (1/48 core artifacts fully supported)
 
 ---
 
@@ -13,9 +13,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
-| ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
+| ✅ Available (Fully Supported) | 1     | 2.1%       |
+| ⚠️ In Progress (Needs Validation) | 41    | 85.4%      |
+| ❌ Not Available (Requires Extensions) | 6     | 12.5%      |
 
 ---
 
@@ -46,7 +46,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 11 | Network Interfaces & IP Configuration | ⚠️ | Win | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
 | 11a | Network Interfaces & IP Configuration | ⚠️ | Linux | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
 | 11b | Network Interfaces & IP Configuration | ⚠️ | Mac | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
-| 12 | NTFS USN Journal        | ⚠️ | Win | -     | -    | ntfs_journal_events table                                                                                                        |
+| 12 | NTFS USN Journal        | ✅ | Win | ntfs_usn_journal_events_windows_elastic | [e4eb](kibana/osquery_saved_query/osquery_manager-e4ebcc53-fbb9-420a-9418-b8edc1f8f2df.json) | ntfs_journal_events table. Requires: `enable_ntfs_event_publisher=true`, `disable_events=false` |
+| 12a | File System Events     | ⚠️ | Linux | file_system_events_linux_elastic | [521f](kibana/osquery_saved_query/osquery_manager-521f7c0d-7ef4-4ff4-9510-e899bbc1b285.json) | file_events table (inotify). Includes hashes. Requires: `enable_file_events=true` |
+| 12b | File System Events     | ⚠️ | Mac | file_system_events_macos_elastic | [6954](kibana/osquery_saved_query/osquery_manager-6954690d-32c3-4c50-a973-3fae66114349.json) | file_events (FSEvents). Includes hashes. Requires: `enable_file_events=true` |
 | 13 | Open Handles            | ❌ | Win | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
 | 13a | Open Handles            | ❌ | Linux | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
 | 13b | Open Handles            | ❌ | Mac | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
@@ -176,7 +178,9 @@ While some artifacts are not directly available, the existing queries provide st
 
 ### File System/Forensics
 - ⚠️ File Listing (All platforms: file and hash tables)
-- ⚠️ NTFS USN Journal (Windows: ntfs_journal_events table)
+- ✅ NTFS USN Journal (Windows: ntfs_journal_events table) - Query: `ntfs_usn_journal_events_windows_elastic`
+- ⚠️ File System Events (Linux: file_events table via inotify) - Query: `file_system_events_linux_elastic`
+- ⚠️ File System Events (macOS: file_events table via FSEvents) - Query: `file_system_events_macos_elastic`
 - ❌ MFT (Not Available - Use NTFS USN Journal as alternative or Trail of Bits extension)
 
 ### Network/C2 Indicators
@@ -187,5 +191,110 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Disks & Volumes (All platforms: disk_info table)
 - ⚠️ Process Listing (All platforms: processes table)
 - ❌ Open Handles (Not Available - PR #7835 open, EclecticIQ extension available)
+
+---
+
+## Cross-Platform File System Monitoring Reference
+
+This section documents the equivalent file monitoring capabilities across platforms for forensic investigations.
+
+### Windows: NTFS USN Journal (`ntfs_journal_events`)
+
+- **Backend**: NTFS Update Sequence Number Journal
+- **Features**: Tracks file creation, modification, deletion, rename operations
+- **Forensic Value**: Captures events even for deleted files, provides timeline of filesystem activity
+- **Limitations**: No file hashes (evented table), no process context
+- **Configuration**:
+  ```json
+  {
+    "options": {
+      "disable_events": "false",
+      "enable_ntfs_event_publisher": "true"
+    },
+    "file_paths": {
+      "tmp": ["C:\\Windows\\Temp\\%%"]
+    }
+  }
+  ```
+- **Query**: `ntfs_usn_journal_events_windows_elastic` ✅
+- **MITRE ATT&CK**: T1070.004 (File Deletion), T1083 (File Discovery)
+
+### Linux: File Events (`file_events`)
+
+- **Backend**: Linux inotify kernel subsystem
+- **Features**: File changes with md5, sha1, sha256 hashes included
+- **Forensic Value**: Tracks file modifications with cryptographic verification
+- **Limitations**: Watch count limited by kernel memory (`/proc/sys/fs/inotify/max_user_watches`), no process context
+- **Configuration**:
+  ```json
+  {
+    "options": {
+      "disable_events": "false",
+      "enable_file_events": "true"
+    },
+    "file_paths": {
+      "etc": ["/etc/%%"],
+      "homes": ["/home/%%"],
+      "tmp": ["/tmp/%%"],
+      "var": ["/var/%%"]
+    },
+    "exclude_paths": {
+      "proc": ["/proc/%"],
+      "sys": ["/sys/%"]
+    }
+  }
+  ```
+- **Query**: `file_system_events_linux_elastic` ⚠️ (Needs validation)
+- **File**: [osquery_manager-521f7c0d-7ef4-4ff4-9510-e899bbc1b285.json](kibana/osquery_saved_query/osquery_manager-521f7c0d-7ef4-4ff4-9510-e899bbc1b285.json)
+- **Alternative**: `process_file_events` (Audit-based) for process context - requires `disable_audit=false`
+- **MITRE ATT&CK**: T1070.004 (File Deletion), T1083 (File Discovery)
+
+### macOS: File Events (`file_events`)
+
+- **Backend**: macOS FSEvents framework
+- **Features**: File changes with md5, sha1, sha256 hashes included
+- **Forensic Value**: Tracks file modifications with cryptographic verification, lower noise than EndpointSecurity
+- **Limitations**: No process context (use `es_process_file_events` if needed)
+- **Configuration**:
+  ```json
+  {
+    "options": {
+      "disable_events": "false",
+      "enable_file_events": "true"
+    },
+    "file_paths": {
+      "users": ["/Users/%%"],
+      "apps": ["/Applications/%%"],
+      "tmp": ["/tmp/%%"],
+      "library": ["/Library/%%"]
+    },
+    "exclude_paths": {
+      "var_folders": ["/private/var/folders/%"]
+    }
+  }
+  ```
+- **Query**: `file_system_events_macos_elastic` ⚠️ (Needs validation)
+- **File**: [osquery_manager-6954690d-32c3-4c50-a973-3fae66114349.json](kibana/osquery_saved_query/osquery_manager-6954690d-32c3-4c50-a973-3fae66114349.json)
+- **Alternative**: `es_process_file_events` (EndpointSecurity) for process context - requires Full Disk Access + `disable_endpointsecurity_fim=false`
+- **MITRE ATT&CK**: T1070.004 (File Deletion), T1083 (File Discovery)
+
+### Platform Comparison Matrix
+
+| Feature | Windows (USN Journal) | Linux (inotify) | macOS (FSEvents) |
+|---------|----------------------|-----------------|------------------|
+| **Table** | `ntfs_journal_events` | `file_events` | `file_events` |
+| **File hashes** | ❌ | ✅ md5, sha1, sha256 | ✅ md5, sha1, sha256 |
+| **Process context** | ❌ | ❌ (use `process_file_events`) | ❌ (use `es_process_file_events`) |
+| **Deleted file tracking** | ✅ Excellent | ⚠️ Limited | ⚠️ Limited |
+| **Historical events** | ✅ Journal persists | ❌ Real-time only | ❌ Real-time only |
+| **Scale** | High | Medium (watch limits) | Medium |
+| **Noise level** | Medium | Configurable | Configurable |
+
+### Recommended Deployment
+
+1. **Incident Response**: Enable on all platforms for real-time file activity monitoring
+2. **Forensic Timeline**: Windows USN Journal provides best historical coverage
+3. **Malware Detection**: Linux/macOS `file_events` with hashes for IOC matching
+4. **Process Attribution**: Use platform-specific alternatives (`process_file_events`, `es_process_file_events`)
 
 ---
