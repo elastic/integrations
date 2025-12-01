@@ -89,7 +89,7 @@ program: |-
         },
       }
     ).do_request().as(resp, (resp.StatusCode == 200) ?
-      bytes(resp.Body).decode_json().as(body, !has(body.data) ?
+      resp.Body.decode_json().as(body, !has(body.data) ?
         {
           "events": [],
           "want_more": false,
@@ -122,7 +122,7 @@ program: |-
                                 },
                               }
                             ).do_request().as(resp, (resp.StatusCode == 200) ?
-                              bytes(resp.Body).decode_json().as(body,
+                              resp.Body.decode_json().as(body,
                                 body.?data.orValue(
                                   {
                                     "_enrich_error_message": "No data received for " + issue.relationships.scan_item.links.related,

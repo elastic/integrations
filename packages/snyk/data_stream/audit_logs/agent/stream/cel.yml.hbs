@@ -75,8 +75,7 @@ program: |-
               "limit": ["100"],
             }.format_query()
           ).with(auth_header).do_request().as(resp, (resp.StatusCode == 200) ?
-            // TODO: Remove unnecessary bytes conversion when kibana.version is at least v8.15.0.
-            bytes(resp.Body).decode_json().data.map(org,
+            resp.Body.decode_json().data.map(org,
               {
                 "id": org.id,
                 // Migrating from single org to multi-org will lose cursor last_created.
@@ -135,8 +134,7 @@ program: |-
             }.format_query()
           )
         ).with(auth_header).do_request().as(resp, (resp.StatusCode == 200) ?
-          // TODO: Remove unnecessary bytes conversion when kibana.version is at least v8.15.0.
-          bytes(resp.Body).decode_json().as(body, !has(body.?data.items) ?
+          resp.Body.decode_json().as(body, !has(body.?data.items) ?
             {
               "id": item.id,
               "events": [],
