@@ -41,6 +41,20 @@ fi
 
 custom_package_checker_script_path="${SCRIPTS_BUILDKITE_PATH}/packages/${package}.sh"
 
+echo "$custom_package_checker_script_path"
+
+if [ -f "$custom_package_checker_script_path" ]; then
+  echo "Script found"
+else
+  echo "Script is not found"
+fi
+
+if [ -x "$custom_package_checker_script_path" ]; then
+  echo "Script is executable"
+else
+  echo "Script is not executable"
+fi
+
 if [ -x "$custom_package_checker_script_path" ]; then
   echo "--- [${package}] Run individual package checker"
   "$custom_package_checker_script_path"
