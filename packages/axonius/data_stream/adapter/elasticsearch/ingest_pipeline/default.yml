@@ -1,0 +1,302 @@
+---
+description: Pipeline for processing adapter logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 9.2.0
+  - terminate:
+      description: error message set and no data to process.
+      tag: terminate_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+
+  # remove agentless metadata
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+
+  # parse the event JSON
+  - rename:
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      tag: remove_message
+      if: ctx.event?.original != null
+      field: message
+      ignore_missing: true
+  - json:
+      tag: json_event_original_into_axonius_adapter
+      field: event.original
+      target_field: axonius.adapter
+
+  # Add fingerprint
+  - fingerprint:
+      tag: fingerprint_into__id
+      fields:
+        - axonius.adapter.id
+      target_field: _id
+      ignore_missing: true
+
+  # Set event.* fields
+  - set:
+      tag: set_event_kind_1
+      field: event.kind
+      value: event
+
+  # Date processors
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_1
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        date:
+          tag: date__ingest__value_last_fetch_time_into__ingest__value_last_fetch_time
+          field: _ingest._value.last_fetch_time
+          target_field: _ingest._value.last_fetch_time
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+          on_failure:
+            - remove:
+                tag: remove_01
+                field: _ingest._value.last_fetch_time
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_2
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        date:
+          tag: date__ingest__value_last_successful_fetch_into__ingest__value_last_successful_fetch
+          field: _ingest._value.last_successful_fetch
+          target_field: _ingest._value.last_successful_fetch
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+          on_failure:
+            - remove:
+                tag: remove_02
+                field: _ingest._value.last_successful_fetch
+
+  # Convert to Long
+  - convert:
+      tag: convert_axonius_adapter_connections_count_error_count_to_long
+      field: axonius.adapter.connections_count.error_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_03
+            field: axonius.adapter.connections_count.error_count
+        - append:
+            tag: append_error_message_01
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_axonius_adapter_connections_count_inactive_count_to_long
+      field: axonius.adapter.connections_count.inactive_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_04
+            field: axonius.adapter.connections_count.inactive_count
+        - append:
+            tag: append_error_message_02
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_axonius_adapter_connections_count_success_count_to_long
+      field: axonius.adapter.connections_count.success_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_05
+            field: axonius.adapter.connections_count.success_count
+        - append:
+            tag: append_error_message_03
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_axonius_adapter_connections_count_total_count_to_long
+      field: axonius.adapter.connections_count.total_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_06
+            field: axonius.adapter.connections_count.total_count
+        - append:
+            tag: append_error_message_04
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_axonius_adapter_connections_count_warning_count_to_long
+      field: axonius.adapter.connections_count.warning_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_07
+            field: axonius.adapter.connections_count.warning_count
+        - append:
+            tag: append_error_message_05
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Boolean
+  - convert:
+      tag: convert_axonius_adapter_is_master_to_boolean
+      field: axonius.adapter.is_master
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_08
+            field: axonius.adapter.is_master
+        - append:
+            tag: append_error_message_06
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_3
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        convert:
+          tag: convert__ingest__value_active_to_boolean
+          field: _ingest._value.active
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_09
+                field: _ingest._value.active
+            - append:
+                tag: append_error_message_07
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_4
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        convert:
+          tag: convert__ingest__value_failed_connections_limit_exceeded_to_boolean
+          field: _ingest._value.failed_connections_limit_exceeded
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_10
+                field: _ingest._value.failed_connections_limit_exceeded
+            - append:
+                tag: append_error_message_08
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_5
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        convert:
+          tag: convert__ingest__value_did_notify_error_to_boolean
+          field: _ingest._value.did_notify_error
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_11
+                field: _ingest._value.did_notify_error
+            - append:
+                tag: append_error_message_09
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Map custom fields to corresponding ECS and related fields.
+  - set:
+      tag: set_event_id
+      field: event.id
+      copy_from: axonius.adapter.id
+      ignore_empty_value: true
+  - set:
+      tag: set_event_outcome_1
+      if: ctx.axonius?.adapter?.status != null && ctx.axonius.adapter.status.toLowerCase() == 'success'
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_event_outcome_2
+      if: ctx.axonius?.adapter?.status != null && ctx.axonius.adapter.status.toLowerCase() == 'error'
+      field: event.outcome
+      value: failure
+
+  # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
+  - remove:
+      tag: remove_custom_duplicate_fields
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field: axonius.adapter.id
+      ignore_missing: true
+
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+        map.values().removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        void handleList(List list) {
+        list.removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        handleMap(ctx);
+  - set:
+      tag: set_event_kind_2
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_1
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message_10
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_3
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_2
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
