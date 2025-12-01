@@ -14,7 +14,7 @@ stack: beta 9.2.0
 
 The integration can monitor and ingest rotated Kubernetes container logs, including 
 on-the-fly decompression of GZIP archives. To enable this:
- - change the _ID_ to `kubernetes-container-logs-${kubernetes.pod.uid}-${kubernetes.container.name}`
+ - change the `ID` to `kubernetes-container-logs-${kubernetes.pod.uid}-${kubernetes.container.name}`
  - add `gzip_experimental: true` under _Advanced options > Custom configurations_. Refer to
 [filestream documentation on reading GZIP files](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html) for details.
  - set the path to `/var/log/pods/${kubernetes.namespace}_${kubernetes.pod.name}_${kubernetes.pod.uid}/${kubernetes.container.name}/*.log*`. Refer to the official
