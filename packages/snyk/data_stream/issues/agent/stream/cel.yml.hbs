@@ -88,23 +88,7 @@ program: |-
           "Authorization": ["Token " + state.api_token],
         },
       }
-    ).do_request().as(resp, (resp.StatusCode != 200) ?
-      {
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": "GET:" + (
-              (size(resp.Body) != 0) ?
-                string(resp.Body)
-              :
-                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-            ),
-          },
-        },
-        "want_more": false,
-      }
-    :
+    ).do_request().as(resp, (resp.StatusCode == 200) ?
       bytes(resp.Body).decode_json().as(body, !has(body.data) ?
         {
           "events": [],
@@ -137,9 +121,7 @@ program: |-
                                   "Authorization": ["Token " + state.api_token],
                                 },
                               }
-                            ).do_request().as(resp, (resp.StatusCode != 200) ?
-                              {"_enrich_error_message": "Status code " + string(resp.StatusCode) + " received while fetching " + issue.relationships.scan_item.links.related}
-                            :
+                            ).do_request().as(resp, (resp.StatusCode == 200) ?
                               bytes(resp.Body).decode_json().as(body,
                                 body.?data.orValue(
                                   {
@@ -147,6 +129,8 @@ program: |-
                                   }
                                 )
                               )
+                            :
+                              {"_enrich_error_message": "Status code " + string(resp.StatusCode) + " received while fetching " + issue.relationships.scan_item.links.related}
                             )
                           ),
                         }
@@ -170,6 +154,22 @@ program: |-
           "want_more": has(body.?links.next),
         }
       )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:" + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
     )
   )
 tags:
