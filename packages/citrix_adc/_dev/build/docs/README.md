@@ -7,7 +7,7 @@ The Citrix NetScaler (ADC) integration for Elastic enables you to collect and an
 
 ### Compatibility
 
-This integration is compatible with Citrix NetScaler (ADC) versions that produce syslog data in the standard format. It has been tested with NetScaler version 13.x.
+This integration is compatible with Citrix NetScaler (ADC) versions that produce syslog data in the standard format. It has been tested with NetScaler version `v13.0`, `v13.1`, and `v14.1`.
 
 ### How it works
 
@@ -23,14 +23,14 @@ To maximize performance and minimize scaling concerns, you can perform the follo
 
 ## What data does this integration collect?
 
-The Citrix NetScaler (ADC) integration collects logs and events from the following data streams:
+The Citrix NetScaler (ADC) integration collects logs, metrics, and events from the following data streams:
 
-*   **`system`**: System-level events, including hardware, configuration, and system status messages.
-*   **`vpn`**: Events related to VPN user activity, such as logins, logouts, and session details.
-*   **`lbvserver`**: Performance and health metrics for load balancing virtual servers.
-*   **`interface`**: Network interface statistics and status events.
-*   **`service`**: Backend service health, status, and performance metrics.
-*   **`log`**: General log messages and events that provide insight into the appliance's operations.
+*   **`interface`**: Collects metrics related to id, state, inbound packets, outbound packets and received packets for Citrix ADC interfaces, which are numbered in slot/port notation.
+*   **`lbvserver`**: Collects metrics related to name, state, client connections, requests and responses for the load balancing server, which is logically located between the client and the server farm and manages traffic flow.
+*   **`service`**: Collects metrics like throughput, client-server connections, and request bytes for Service resources, identified by name, IP address, and port.
+*   **`system`**: Collects metrics like memory in use, total system memory, and CPU count for system resources.
+*   **`vpn`**: Collects metrics like CPS, ICA license, client-server requests, file system and sockets for Citrix VPN, which provides full SSL VPN capabilities to Citrix Gateway.
+*   **`logs`**: Provides events from the configured syslog server.
 
 ## What do I need to use this integration?
 
@@ -47,6 +47,10 @@ Elastic Agent must be installed to collect data from your NetScaler appliance. Y
 For detailed installation instructions, refer to the Elastic Agent [installation guide](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). Only one Elastic Agent is needed per host.
 
 ### Onboard and configure
+
+For step-by-step instructions on how to set up an integration, check the [quick start](integrations://docs/extend/quick-start.md).
+
+**NOTE:** It is recommended to configure the application firewall to enable CEF-formatted logs.
 
 #### Set up steps in Citrix NetScaler (ADC)
 

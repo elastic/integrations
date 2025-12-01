@@ -12,6 +12,12 @@
 - Metrics: `interface`, `lbvserver`, `service`, `system`, `vpn` (collected via HTTP/JSON polling of Citrix APIs).
 - Logs: Citrix NetScaler syslog events. CEF format is recommended; RFC 5424-compliant syslog is recommended (supported in NetScaler 14.1+).
 - Example events and exported fields for each dataset are available in the integration README.
+  - **`interface`**: This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts. `interface` data stream collects metrics related to id, state, inbound packets, outbound packets and received packets.
+  - **`lbvserver`**: This is the `lbvserver` data stream. The load balancing server is logically located between the client and the server farm, and manages traffic flow to the servers in the server farm. `lbvserver` data stream collects metrics related to name, state, client connections, requests and responses.
+  - **`service`**: This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources. `service` data stream collects metrics related to name, IP address, port, throughput and transactions.
+  - **`system`**: This is the `system` data stream. With the help of the system endpoint, metrics like memory in use, total system memory, CPU count can be collected along with other statistics for system resources.
+  - **`vpn`**: This is the `vpn` data stream. Citrix VPN is the add-on that provides full Secure Sockets Layer (SSL) virtual private network (VPN) capabilities to Citrix Gateway, allowing users to access remote applications on internal networks securely. `vpn` data stream collects metrics like CPS, ICA license, client-server requests, file system and sockets.
+  - **`logs`**: The `citrix_adc.log` dataset provides events from the configured syslog server.
 
 ## Compatibility
 - Tested against Citrix ADC versions `v13.0`, `v13.1`, and `v14.1`.
@@ -23,6 +29,10 @@
 - Use multiple Agent inputs or scale syslog receivers as ingestion volume increases. Vendor-specific performance guidance is not provided in the README.
 
 # Set Up Instructions
+
+For step-by-step instructions on how to set up an integration, check the [quick start](integrations://docs/extend/quick-start.md).
+
+**NOTE:** It is recommended to configure the application firewall to enable CEF-formatted logs.
 
 ## Vendor prerequisites
 - Host(s) and administrator credentials for the Citrix ADC instance.
