@@ -21,51 +21,16 @@ rules:
             "scope": "connect.api.read"
           }
 
-  # Incidents endpoint - GET /incidents/v1/incidents (paginated request with anchor)
-  - path: /incidents/v1/incidents
-    methods: [GET]
-    query_params:
-      organizationId: "{organizationId:.*}"
-      archived: "false"
-      limit: "{limit:.*}"
-      anchor: "{anchor:.*}"
-    request_headers:
-      Authorization:
-        - "Bearer test-access-token-12345"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {
-            "items": [
-              {
-                "incidentId": "9d948gcf-g8fg-69c9-0dca-5729fa072ege",
-                "incidentPublicId": "2532078-23322",
-                "organizationId": "777f240c-752d-4eb5-8422-94c5336e3005",
-                "name": "Detection in TEST-WORKSTATION-03",
-                "status": "in_progress",
-                "severity": "high",
-                "riskLevel": "high",
-                "riskScore": 85,
-                "resolution": "investigating",
-                "createdTimestamp": "2025-11-26T17:41:00.000Z",
-                "updatedTimestamp": "2025-11-26T17:41:02.000Z",
-                "initialReceivedTimestamp": "2025-11-26T17:41:00.000Z",
-                "categories": ["SUSPICIOUS_ACTIVITY"],
-                "sources": ["endpoint"]
-              }
-            ]
-          }
-
   # Incidents endpoint - GET /incidents/v1/incidents (initial request without anchor)
   - path: /incidents/v1/incidents
     methods: [GET]
     query_params:
       organizationId: "{organizationId:.*}"
+      updatedTimestampStart: "{updatedTimestampStart:.*}"
       archived: "false"
       limit: "{limit:.*}"
+      order: "asc"
+      anchor: null
     request_headers:
       Authorization:
         - "Bearer test-access-token-12345"
@@ -111,6 +76,46 @@ rules:
               }
             ],
             "nextAnchor": "test-anchor-12345"
+          }
+
+  # Incidents endpoint - GET /incidents/v1/incidents (paginated request with anchor)
+  - path: /incidents/v1/incidents
+    methods: [GET]
+    query_params:
+      organizationId: "{organizationId:.*}"
+      updatedTimestampStart: "{updatedTimestampStart:.*}"
+      archived: "false"
+      limit: "{limit:.*}"
+      order: "asc"
+      anchor: "{anchor:.*}"
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token-12345"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "items": [
+              {
+                "incidentId": "9d948gcf-g8fg-69c9-0dca-5729fa072ege",
+                "incidentPublicId": "2532078-23322",
+                "organizationId": "777f240c-752d-4eb5-8422-94c5336e3005",
+                "name": "Detection in TEST-WORKSTATION-03",
+                "status": "in_progress",
+                "severity": "high",
+                "riskLevel": "high",
+                "riskScore": 85,
+                "resolution": "investigating",
+                "createdTimestamp": "2025-11-26T17:41:00.000Z",
+                "updatedTimestamp": "2025-11-26T17:41:02.000Z",
+                "initialReceivedTimestamp": "2025-11-26T17:41:00.000Z",
+                "categories": ["SUSPICIOUS_ACTIVITY"],
+                "sources": ["endpoint"]
+              }
+            ]
           }
 
   # Security events endpoint - POST /security-events/v1/security-events
