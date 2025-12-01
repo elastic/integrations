@@ -8,7 +8,7 @@ source:
         gt: 0
 dest:
   index: billing_cluster_cost_lookup
-  pipeline: 0.2.3-billing
+  pipeline: 0.2.4-billing
 frequency: 60m
 sync:
   time:
@@ -20,6 +20,9 @@ pivot:
       date_histogram:
         field: "@timestamp"
         calendar_interval: 1d
+    deployment_group:
+      terms:
+        field: deployment_group
     deployment_id:
       terms:
         field: ess.billing.deployment_id
@@ -39,4 +42,4 @@ _meta:
   run_as_kibana_system: false
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.2.1
+  fleet_transform_version: 0.2.2
