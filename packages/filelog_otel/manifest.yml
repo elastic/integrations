@@ -1,0 +1,73 @@
+format_version: 3.5.0
+name: filelog_otel
+title: "Collect logs from files"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Tails and parses logs from files using the filelog receiver of the OTel collector."
+type: input
+categories:
+  - custom
+  - custom_logs
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logs-icon.svg
+    type: image/svg+xml
+policy_templates:
+  - name: filelogreceiver
+    type: logs
+    title: Custom log file
+    description: Collect your custom log files.
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: include
+        required: true
+        title: Include patterns.
+        description: A list of file glob patterns that match the file paths to be read.
+        type: text
+        multi: true
+      - name: exclude
+        required: false
+        title: Exclude patterns.
+        description: A list of file glob patterns to exclude from reading. This is applied against the paths matched by include.
+        type: text
+        multi: true
+      - name: start_at
+        required: false
+        title: At startup, where to start reading logs from the file. Options are "beginning" or "end".
+        type: select
+        multi: false
+        default: end
+        options:
+          - text: Beginning of files.
+            value: beginning
+          - text: End of files.
+            value: end
+      - name: include_file_name
+        required: false
+        show_user: false
+        title: Whether to add the file name as the attribute log.file.name.
+        type: bool
+        default: true
+      - name: include_file_path
+        required: false
+        show_user: false
+        title: Whether to add the file path as the attribute log.file.path.
+        type: bool
+        default: false
+      - name: poll_interval
+        required: false
+        show_user: false
+        title: The duration between filesystem polls.
+        type: duration
+        default: 200ms
+
+owner:
+  github: elastic/ecosystem
+  type: elastic
