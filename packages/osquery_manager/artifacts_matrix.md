@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2025-12-01
+**Total Core Artifacts**: 2 available + 38 in progress + 6 not available = 46 total variants
+**Total Queries**: 30 (2 core forensic + 28 additional)
+**Completion Rate**: 4.3% (2/46 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 1     | 2.2%       |
+| ⚠️ In Progress (Needs Validation) | 39    | 84.8%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -62,7 +62,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 19 | Shell History           | ⚠️ | Linux | -     | -    | shell_history table                                                                                                              |
 | 19a | Shell History           | ⚠️ | Mac | -     | -    | shell_history table                                                                                                              |
 | 20 | Shellbags               | ⚠️ | Win | -     | -    | shellbags table                                                                                                                  |
-| 21 | Tasks                   | ⚠️ | Win | -     | -    | scheduled_tasks table                                                                                                            |
+| 21 | Tasks                   | ✅ | Win | [2650](kibana/osquery_saved_query/osquery_manager-265051dd-bc20-491a-a998-98ebc2f00af7.json), [94a7](kibana/osquery_saved_query/osquery_manager-94a743fd-5f84-44f3-b38a-2732d8b6f51b.json) | -    | scheduled_tasks table. Two queries: (1) Full coverage without hash enrichment, (2) With hash/signature enrichment (file must exist) |
 | 21a | Tasks                   | ⚠️ | Linux | -     | -    | scheduled_tasks table                                                                                                            |
 | 21b | Tasks                   | ⚠️ | Mac | -     | -    | scheduled_tasks table                                                                                                            |
 | 22 | User Assist             | ⚠️ | Win | -     | -    | userassist table                                                                                                                 |
@@ -105,8 +105,11 @@ These queries existed in the original repository and provide additional coverage
 | 24 | unsigned_startup_items_vt | ✅ | Win | [b068](kibana/osquery_saved_query/osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135.json) | Unsigned startup items with VirusTotal integration |
 | 25 | unsigned_dlls_on_system_folders_vt | ✅ | Win | [63c1](kibana/osquery_saved_query/osquery_manager-63c1fe20-176f-11ed-89c6-331eb0db6d01.json) | Unsigned DLLs in system folders with VirusTotal integration |
 | 26 | executables_in_temp_folder_vt | ✅ | Win | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration |
+| 27 | scheduled_tasks_suspicious | ✅ | Win | [2650](kibana/osquery_saved_query/osquery_manager-265051dd-bc20-491a-a998-98ebc2f00af7.json) | Suspicious scheduled tasks - FULL coverage (LOTL + suspicious paths). No hash enrichment. T1053.005 |
+| 28 | scheduled_tasks_enriched | ✅ | Win | [94a7](kibana/osquery_saved_query/osquery_manager-94a743fd-5f84-44f3-b38a-2732d8b6f51b.json) | Suspicious scheduled tasks WITH hash/signature enrichment. Only tasks with existing files. T1053.005 |
 
 **Note**: Queries with VirusTotal integration require the VirusTotal extension configured in osquery.
+**Note**: Scheduled tasks queries 27 and 28 are companion queries - use 27 for complete detection, use 28 for enrichment when file exists.
 
 ---
 
@@ -161,7 +164,8 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Installed Services (All platforms: services table)
 - ⚠️ Persistence (All platforms: multiple tables)
 - ⚠️ Registry (Windows: registry table)
-- ⚠️ Tasks (All platforms: scheduled_tasks table)
+- ✅ Tasks (Windows: scheduled_tasks table - two companion queries for full coverage + enrichment)
+- ⚠️ Tasks (Linux/Mac: scheduled_tasks table - pending)
 - ⚠️ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
 - ⚠️ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
 - ⚠️ BITS Jobs Database (Windows: via windows_eventlog)
