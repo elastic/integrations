@@ -1,0 +1,69 @@
+{
+    "attributes": {
+        "created_at": "2025-12-01T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detects ALL suspicious Windows scheduled tasks for persistence hunting without hash enrichment. Provides complete coverage including tasks where the referenced executable no longer exists on disk (potential cleanup indicator). Uses dual-detection: (1) SUSPICIOUS_PATH - tasks with executables in user-writable locations and (2) LOTL_INDICATOR - Living off the Land patterns. For hash/signature enrichment on tasks with existing files, use the companion query 'scheduled_tasks_enriched_windows_elastic'. Maps to MITRE ATT&CK T1053.005.",
+        "ecs_mapping": [
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "task_name"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "action"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "exe_path"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "exe_path"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["configuration"]
+                }
+            },
+            {
+                "key": "threat.technique.name",
+                "value": {
+                    "field": "detection_method"
+                }
+            },
+            {
+                "key": "rule.description",
+                "value": {
+                    "field": "detection_reason"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["persistence", "mitre_t1053_005", "scheduled_task"]
+                }
+            }
+        ],
+        "id": "scheduled_tasks_suspicious_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Windows Scheduled Tasks - Suspicious Task Detection (Full Coverage)\n-- MITRE ATT&CK: T1053.005 (Scheduled Task/Job: Scheduled Task)\n-- Returns ALL suspicious tasks regardless of whether executable exists on disk\n-- For hash/signature enrichment, use companion query: scheduled_tasks_enriched_windows_elastic\n\nSELECT\n    st.name AS task_name,\n    st.action,\n    st.path AS task_path,\n    st.enabled,\n    st.state,\n    st.hidden,\n    datetime(st.last_run_time, 'unixepoch', 'UTC') AS last_run_time_utc,\n    datetime(st.next_run_time, 'unixepoch', 'UTC') AS next_run_time_utc,\n    st.last_run_message,\n    st.last_run_code,\n    -- Extracted executable path\n    CASE\n        WHEN INSTR(LOWER(TRIM(st.action)), '.exe ') > 0\n        THEN SUBSTR(TRIM(st.action), 1, INSTR(LOWER(TRIM(st.action)), '.exe ') + 3)\n        ELSE TRIM(st.action)\n    END AS exe_path,\n    -- Detection classification\n    CASE\n        WHEN st.action LIKE '%powershell% -e %' OR st.action LIKE '% -enc %' OR st.action LIKE '% -EncodedCommand %' THEN 'LOTL_INDICATOR'\n        WHEN st.action LIKE '%Invoke-WebRequest%' OR st.action LIKE '%IWR %' OR st.action LIKE '%Invoke-Expression%' THEN 'LOTL_INDICATOR'\n        WHEN st.action LIKE '%DownloadString%' OR st.action LIKE '%DownloadFile%' OR st.action LIKE '%WebClient%' THEN 'LOTL_INDICATOR'\n        WHEN st.action LIKE '%certutil% -urlcache%' OR st.action LIKE '%certutil% /urlcache%' THEN 'LOTL_INDICATOR'\n        WHEN st.action LIKE '%bitsadmin%/transfer%' THEN 'LOTL_INDICATOR'\n        WHEN st.action LIKE '%mshta%http%' OR st.action LIKE '%mshta%javascript%' THEN 'LOTL_INDICATOR'\n        WHEN st.action LIKE '%regsvr32%/s%/n%' OR st.action LIKE '%regsvr32%scrobj%' THEN 'LOTL_INDICATOR'\n        WHEN st.action LIKE '%schtasks%/create%' THEN 'LOTL_INDICATOR'\n        WHEN st.action LIKE '%-nop%' AND st.action LIKE '%-w hidden%' THEN 'LOTL_INDICATOR'\n        ELSE 'SUSPICIOUS_PATH'\n    END AS detection_method,\n    CASE\n        WHEN st.action LIKE '%powershell% -e %' OR st.action LIKE '% -enc %' OR st.action LIKE '% -EncodedCommand %' THEN 'PowerShell base64 encoded command'\n        WHEN st.action LIKE '%Invoke-WebRequest%' OR st.action LIKE '%IWR %' OR st.action LIKE '%Invoke-Expression%' THEN 'PowerShell download/execute'\n        WHEN st.action LIKE '%DownloadString%' OR st.action LIKE '%DownloadFile%' OR st.action LIKE '%WebClient%' THEN 'PowerShell download method'\n        WHEN st.action LIKE '%certutil% -urlcache%' OR st.action LIKE '%certutil% /urlcache%' THEN 'CertUtil abuse'\n        WHEN st.action LIKE '%bitsadmin%/transfer%' THEN 'BITSAdmin abuse'\n        WHEN st.action LIKE '%mshta%http%' OR st.action LIKE '%mshta%javascript%' THEN 'MSHTA execution'\n        WHEN st.action LIKE '%regsvr32%/s%/n%' OR st.action LIKE '%regsvr32%scrobj%' THEN 'Regsvr32 proxy execution'\n        WHEN st.action LIKE '%schtasks%/create%' THEN 'Nested task creation'\n        WHEN st.action LIKE '%-nop%' AND st.action LIKE '%-w hidden%' THEN 'PowerShell hidden execution'\n        WHEN st.action LIKE '%\\\\Users\\\\%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 'Executable in User Temp'\n        WHEN st.action LIKE '%\\\\Users\\\\%\\\\AppData\\\\%' THEN 'Executable in User AppData'\n        WHEN st.action LIKE '%\\\\Users\\\\Public\\\\%' THEN 'Executable in Users Public'\n        WHEN st.action LIKE '%\\\\ProgramData\\\\%' THEN 'Executable in ProgramData'\n        WHEN st.action LIKE '%\\\\Temp\\\\%' THEN 'Executable in Temp directory'\n        WHEN st.action LIKE '%\\\\Downloads\\\\%' THEN 'Executable in Downloads'\n        ELSE 'Suspicious scheduled task'\n    END AS detection_reason\nFROM scheduled_tasks st\nWHERE\n    st.enabled = 1\n    -- Detection filters\n    AND (\n        -- LOTL indicators (high confidence)\n        st.action LIKE '%powershell% -e %'\n        OR st.action LIKE '% -enc %'\n        OR st.action LIKE '% -EncodedCommand %'\n        OR st.action LIKE '%Invoke-WebRequest%'\n        OR st.action LIKE '%IWR %'\n        OR st.action LIKE '%Invoke-Expression%'\n        OR st.action LIKE '%DownloadString%'\n        OR st.action LIKE '%DownloadFile%'\n        OR st.action LIKE '%WebClient%'\n        OR st.action LIKE '%certutil% -urlcache%'\n        OR st.action LIKE '%certutil% /urlcache%'\n        OR st.action LIKE '%bitsadmin%/transfer%'\n        OR st.action LIKE '%mshta%http%'\n        OR st.action LIKE '%mshta%javascript%'\n        OR st.action LIKE '%regsvr32%/s%/n%'\n        OR st.action LIKE '%regsvr32%scrobj%'\n        OR st.action LIKE '%schtasks%/create%'\n        OR (st.action LIKE '%-nop%' AND st.action LIKE '%-w hidden%')\n        -- Suspicious paths (user-writable locations)\n        OR st.action LIKE '%\\\\Users\\\\%\\\\AppData\\\\%'\n        OR st.action LIKE '%\\\\Users\\\\Public\\\\%'\n        OR st.action LIKE '%\\\\Temp\\\\%'\n        OR st.action LIKE '%\\\\Downloads\\\\%'\n        OR (st.action LIKE '%\\\\ProgramData\\\\%' AND st.action NOT LIKE '%\\\\Microsoft\\\\%')\n    )\n    -- Exclude known good vendors using consolidated regex pattern\n    AND regex_match(st.action, '\\\\\\\\(Microsoft|Google\\\\\\\\Update|Adobe)\\\\\\\\', 0) IS NULL\nORDER BY\n    CASE WHEN st.action LIKE '%powershell% -e%' OR st.action LIKE '% -enc %' THEN 0 ELSE 1 END,\n    st.name",
+        "updated_at": "2025-12-01T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.3",
+    "id": "osquery_manager-265051dd-bc20-491a-a998-98ebc2f00af7",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-12-01T00:00:00.000Z",
+    "version": "WzEsMV0="
+}
