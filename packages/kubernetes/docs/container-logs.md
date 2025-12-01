@@ -7,7 +7,7 @@ This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
 By default, only [container parser](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_parsers) is enabled. Additional log parsers can be added as an advanced options configuration.
 
-## Ingesting Rotated Container Logs
+## Ingesting Rotated Container Logs[ingesting-rotated-container-logs]
 ```{applies_to}
 stack: beta 9.2.0
 ```
