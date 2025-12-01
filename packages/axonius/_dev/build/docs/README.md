@@ -19,13 +19,15 @@ This integration collects log messages of the following type:
 
 - `User`: Collect details of all users (endpoint: `/api/v2/users`).
 
+- `Gateway`: Collect details of all Gateway (endpoint: `/api/v2/gateway`).
+
 ### Supported use cases
 
-Integrating the Axonius Adapter and User Data streams with Elastic SIEM provides centralized visibility into both data-collection health and user identity context across the environment. Together, these data streams help analysts understand how data is being ingested through adapters and how that data maps to user identities and access posture.
+Integrating the Axonius Adapter, User, and Gateway Datastreams with Elastic SIEM provides centralized visibility into data ingestion health, user identity context, and gateway configuration across the environment. Together, these datastreams help analysts understand how data flows into the platform, how it maps to user access and roles, and how gateways operate within the network.
 
-The dashboards highlight overall adapter status and connection behavior, making it easy to identify healthy integrations, failing plugins, and error-prone connections that may impact asset visibility. At the same time, user-focused views surface role distribution and essential identity attributes, helping analysts quickly assess access patterns and identify high-privileged or unusual user activity. Consolidated user details and source information provide clarity on where identity data originates and whether coverage gaps exist.
+The dashboards surface key insights into adapter and gateway status, connection behavior, and routing context, making it easy to identify failing integrations, misconfigurations, or irregular network behavior. At the same time, user-focused views highlight role distribution and essential identity attributes, supporting quick assessment of access posture and detection of unusual or high-privileged activity.
 
-By combining adapter health insights with user identity visibility, security teams can ensure reliable data ingestion, detect identity-related anomalies, reduce blind spots, and streamline investigations that depend on accurate, end-to-end context from both integrations and users.
+By correlating integration health, identity context, and gateway configuration, security teams can reduce blind spots, detect anomalies more effectively, and streamline investigations with accurate, end-to-end operational and security context.
 
 ## What do I need to use this integration?
 
@@ -126,6 +128,16 @@ The `user` data stream provides user events from axonius.
 
 {{ event "user" }}
 
+### Gateway
+
+The `gateway` data stream provides gateway events from axonius.
+
+#### gateway fields
+
+{{ fields "gateway" }}
+
+{{ event "gateway" }}
+
 ### Inputs used
 {{/* All inputs used by this package will be automatically listed here. */}}
 {{ inputDocs }}
@@ -136,7 +148,8 @@ These APIs are used with this integration:
 
 * Adapter (endpoint: `/api/v2/adapters`)
 * User (endpoint: `/api/v2/users`)
+* Gateway (endpoint: `/api/v2/gateway`)
 
 ### ILM Policy
 
-To facilitate adapter and user data, source data stream-backed indices `.ds-logs-axonius.adapter-*` and `.ds-logs-axonius.user-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy` and `logs-axonius.user-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter, user and gateway data, source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*` and `.ds-logs-axonius.gateway-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy` amd `logs-axonius.gateway-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
