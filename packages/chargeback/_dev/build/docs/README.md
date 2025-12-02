@@ -206,7 +206,6 @@ To use this integration, the following prerequisites must be met:
 
 **Required Transforms:**
 - The transform `logs-elasticsearch.index_pivot-default-{VERSION}` (from the Elasticsearch integration) must be running to aggregate usage metrics per index
-- All Chargeback transforms will be automatically created and started when the integration is installed
 
 **Data Flow:**
 1. ESS Billing data is collected into `metrics-ess_billing.billing-*`
