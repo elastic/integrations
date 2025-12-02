@@ -47,10 +47,11 @@ processors:
         - "^<%{NUMBER:cisco_nexus.log.priority_number:long}>%{SYSLOGTIMESTAMP:cisco_nexus.log.syslog_time}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}(?::)?%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE}:%{SPACE}%{NEXUS_BODY}$"
         - "^<%{NUMBER:cisco_nexus.log.priority_number:long}>%{SYSLOGTIMESTAMP:cisco_nexus.log.syslog_time}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}(?::)?%{SPACE}%{WORD:temp.timezone}:%{SPACE}%{NEXUS_BODY}$"
         - "^<%{NUMBER:cisco_nexus.log.priority_number:long}>(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name}):%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE}:%{SPACE}%{NEXUS_BODY}$"
-        - "^<%{NUMBER:cisco_nexus.log.priority_number:long}>:%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE}:%{SPACE}%{NEXUS_BODY}$"
+        - "^<%{NUMBER:cisco_nexus.log.priority_number:long}>:%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE}%{SPACE}:%{SPACE}%{NEXUS_BODY}$"
         - "^%{NEXUS_TIMESTAMP:temp.timestamp}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}%{NEXUS_BODY}$"
       on_failure:
         - append:
+            tag: append_error_message_6a5a74a1
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   # If a timezone is present from the vendor, we will check if it matches an entry in the tz_map to convert it.
@@ -119,6 +120,7 @@ processors:
         - MMM d HH:mm:ss.SSS
       on_failure:
         - append:
+            tag: append_error_message_ebfd3d8f
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   # Sets the @timestamp field when a timezone exists or has been set by tz_offset.
@@ -148,6 +150,7 @@ processors:
         - MMM d HH:mm:ss.SSS
       on_failure:
         - append:
+            tag: append_error_message_39d81770
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   # To parse the syslog timestamp into the correct format when event.timezone is set
@@ -166,6 +169,7 @@ processors:
         - MMM d HH:mm:ss.SSS
       on_failure:
         - append:
+            tag: append_error_message_8eb784d7
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   # To parse the syslog timestamp into the correct format when event.timezone is not set
@@ -183,6 +187,7 @@ processors:
         - MMM d HH:mm:ss.SSS
       on_failure:
         - append:
+            tag: append_error_message_6e22be52
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
 
@@ -269,6 +274,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_aae2588f
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - script:
@@ -281,6 +287,7 @@ processors:
         ctx.log.syslog.facility.code = (ctx.cisco_nexus.log.priority_number - ctx.event.severity)/8;
       on_failure:
         - append:
+            tag: append_error_message_000f13b5
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - trim:
@@ -343,10 +350,24 @@ processors:
       value: pipeline_error
       tag: "set_pipeline_error_into_event_kind"
       if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

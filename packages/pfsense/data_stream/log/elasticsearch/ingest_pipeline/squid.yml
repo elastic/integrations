@@ -2,26 +2,32 @@
 description: Pipeline for parsing PFsense Squid logs.
 processors:
   - grok:
+      tag: grok_message_55f0c6b7
       field: message
       patterns:
       - '%{IPORHOST:source.address} %{NOTSPACE:squid.request_status}/%{NUMBER:http.response.status_code:long} %{NUMBER:http.response.bytes:long} %{NOTSPACE:http.request.method} (?:%{URI:url.original}|(%{IPORHOST:url.domain}(?::%{DATA:url.port})?))?%{SPACE}%{NOTSPACE:http.request.referrer}%{SPACE}%{NOTSPACE:squid.hierarchy_status}/(?:%{IPORHOST:destination.address}|-)%{SPACE}%{NOTSPACE:http.response.mime_type}'
       ignore_missing: false
   - uri_parts:
+      tag: uri_parts_url_original_c5d45689
       field: url.original
       ignore_failure: true
       if: ctx.url?.original != null
   - convert:
+      tag: convert_url_port_537f953d
       field: url.port
       type: long
       ignore_missing: true
   - append:
+      tag: append_event_category_4595ee28
       field: event.category
       value: web
   - set:
+      tag: set_event_outcome_b50e8224
       field: event.outcome
       value: success
       if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
+      tag: set_event_outcome_75086854
       field: event.outcome
       value: failure
       if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
@@ -31,4 +37,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -2,6 +2,7 @@
 description: Pipeline for processing Hashicorp Vault metrics.
 processors:
   - remove:
+      tag: remove_0f1df825
       field:
         - event.dataset
         - event.module
@@ -10,30 +11,50 @@ processors:
         - service.type
       ignore_missing: true
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_service_type_6ed233ed
       field: service.type
       value: hashicorp_vault
   - set:
+      tag: set_event_kind_495d69f0
       field: event.kind
       value: metric
   - rename:
+      tag: rename_prometheus_labels_to_labels_01ec3db0
       field: prometheus.labels
       target_field: labels
       ignore_missing: true
   - set:
+      tag: set_labels_job_8e615894
       field: labels.job
       value: hashicorp_vault
       override: true
   - rename:
+      tag: rename_prometheus_to_hashicorp_vault_metrics_6ac57ed1
       field: prometheus
       target_field: hashicorp_vault.metrics
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
