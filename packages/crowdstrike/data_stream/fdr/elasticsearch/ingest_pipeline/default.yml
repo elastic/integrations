@@ -316,6 +316,12 @@ processors:
       tag: data_protection_detection_summary
       if: ctx.crowdstrike?.ExternalApiType == 'Event_DataProtectionDetectionSummaryEvent'
 
+# File Integrity Monitor Rule Matched events
+  - pipeline:
+      name: '{{ IngestPipeline "fim_rule_matched" }}'
+      tag: fim_rule_matched
+      if: ctx.crowdstrike?.ExternalApiType == 'Event_FileIntegrityMonitorRuleMatchedEnriched' || ctx.crowdstrike?.event_simpleName == 'FileIntegrityMonitorRuleMatched'
+
 # Handle case changes.
   - rename:
       tag: rename_GrandParentCommandLine_GrandparentCommandLine
@@ -491,6 +497,11 @@ processors:
       field: crowdstrike.aipCount
       type: integer
       if: (ctx.crowdstrike?.aipCount != null && ctx.crowdstrike?.aipCount != "")
+  - convert:
+      field: crowdstrike.Nonce
+      tag: convert_nonce_to_string
+      type: string
+      ignore_missing: true
   - convert:
       field: crowdstrike.discovererCount
       type: integer
@@ -3161,7 +3172,7 @@ processors:
   - set:
       field: file.type
       value: file
-      if: ctx.file?.path != null && !ctx.event.action.contains("Directory")
+      if: ctx.file?.path != null && !ctx.event.action.contains("Directory") && ctx.file?.type == null
   - set:
       field: file.type
       value: dir

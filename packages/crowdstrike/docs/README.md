@@ -1514,6 +1514,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.CertificatePublisher |  | keyword |
 | crowdstrike.CertificateSignatureHash |  | keyword |
 | crowdstrike.CertificateSignatureHashAlgorithm |  | keyword |
+| crowdstrike.ChangeId |  | keyword |
 | crowdstrike.ChangeTime |  | date |
 | crowdstrike.ChangedPcrBitmap |  | match_only_text |
 | crowdstrike.ChannelDiffStatus |  | keyword |
@@ -1546,6 +1547,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ConnectionAddressIP6 |  | match_only_text |
 | crowdstrike.ConnectionFlags |  | keyword |
 | crowdstrike.ConnectionType |  | keyword |
+| crowdstrike.ContentDiff.Exists |  | boolean |
 | crowdstrike.ContentPatternCounts |  | nested |
 | crowdstrike.ContentPatterns.ConfidenceLevel |  | long |
 | crowdstrike.ContentPatterns.ID |  | keyword |
@@ -1652,6 +1654,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.FeatureVector |  | match_only_text |
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
+| crowdstrike.FileAttributesNew |  | keyword |
+| crowdstrike.FileAttributesPrevious |  | keyword |
 | crowdstrike.FileCategory |  | keyword |
 | crowdstrike.FileCategoryCounts |  | nested |
 | crowdstrike.FileContent |  | match_only_text |
@@ -1771,6 +1775,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.IpEntryFlags |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
 | crowdstrike.IsClipboard |  | boolean |
+| crowdstrike.IsEBPF |  | keyword |
+| crowdstrike.IsFromDifferentMountNamespace |  | keyword |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsProcessInitializing |  | keyword |
@@ -1872,14 +1878,18 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.NetworkModuleLoadCount |  | long |
 | crowdstrike.NetworkRecvAcceptCount |  | long |
 | crowdstrike.NewExecutableWrittenCount |  | long |
+| crowdstrike.NewFileAttributesLinux |  | keyword |
 | crowdstrike.NewFileIdentifier |  | keyword |
+| crowdstrike.NewUnixPermissions |  | keyword |
 | crowdstrike.NlMtu |  | keyword |
-| crowdstrike.Nonce |  | integer |
+| crowdstrike.Nonce |  | keyword |
 | crowdstrike.OSVersionFileData |  | match_only_text |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
 | crowdstrike.Object1Type |  | keyword |
+| crowdstrike.ObjectAccessOperationType |  | keyword |
 | crowdstrike.ObjectNameEtw |  | match_only_text |
+| crowdstrike.ObjectType |  | keyword |
 | crowdstrike.ObjectTypeEtw |  | match_only_text |
 | crowdstrike.Objective |  | keyword |
 | crowdstrike.OciContainerAppName |  | match_only_text |
@@ -1997,10 +2007,16 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.PlatformId |  | keyword |
 | crowdstrike.PlatformName |  | keyword |
 | crowdstrike.PointerSize |  | keyword |
+| crowdstrike.Policy.ID |  | keyword |
+| crowdstrike.Policy.Name |  | keyword |
+| crowdstrike.PolicyRuleSeverity |  | long |
 | crowdstrike.PreferredLifetime |  | keyword |
 | crowdstrike.PrefixLength |  | keyword |
 | crowdstrike.PrefixOrigin |  | keyword |
+| crowdstrike.Prevalence.Key |  | keyword |
 | crowdstrike.PreviousConnectTime |  | date |
+| crowdstrike.PreviousFileAttributesLinux |  | keyword |
+| crowdstrike.PreviousUnixPermissions |  | keyword |
 | crowdstrike.PrimaryModule |  | keyword |
 | crowdstrike.PrivilegedProcessHandleCount |  | long |
 | crowdstrike.PrivilegesBitmask |  | keyword |
@@ -2092,6 +2108,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ScriptControlErrorCode |  | keyword |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
 | crowdstrike.ScriptingLanguageId |  | keyword |
+| crowdstrike.SecurityInformationLinux |  | keyword |
 | crowdstrike.SensorGroupingTags |  | keyword |
 | crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
@@ -2166,6 +2183,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.SubjectDomainNameEtw |  | match_only_text |
 | crowdstrike.SuffixOrigin |  | keyword |
 | crowdstrike.SuppressType |  | keyword |
+| crowdstrike.Suppression.Suppressed |  | boolean |
 | crowdstrike.SuspectStackCount |  | long |
 | crowdstrike.SuspiciousCredentialModuleLoadCount |  | long |
 | crowdstrike.SuspiciousDnsRequestCount |  | long |
