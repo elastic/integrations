@@ -57,7 +57,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
   - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
-**Note:** Please make sure both initial interval and interval are in hours and greater than 1 hour.
+**Note:** Please make sure both initial interval and interval are in hours and the initial interval is greater than 2 hours.
 
 ### Enabling the integration in Elastic:
 
@@ -163,7 +163,7 @@ These transforms are automatically started to populate `Threat Intelligence`, `A
 
 ## Troubleshooting
 
-1. If you see an error like `Package 2025031310 is not available until 2025-03-13 at 11:00 UTC because of privacy policy.`, ensure that your initial interval and interval are set in hours and are greater than one hour.
+1. If you see an error like `Package 2025031310 is not available until 2025-03-13 at 11:00 UTC because of privacy policy.`, ensure that your initial interval and interval are set in hours and the initial interval is greater than two hours.
 2. If events are not appearing in the transformed index, check if transforms are running without errors. If you encounter issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
 3. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
    **Note:** More events in index patterns mean more time needed for detection rules to run.
