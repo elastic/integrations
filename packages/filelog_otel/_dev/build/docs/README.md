@@ -5,11 +5,11 @@ described in the comments.
 
 Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
 */}}
-# Custom Logs Integration for Elastic based on the OTel collector
+# Custom Logs input for Elastic based on the OTel Collector
 
 ## Overview
 {{/* Complete this section with a short summary of what data this integration collects and what use cases it enables */}}
-The Custom Logs integration for Elastic based on the OTel collector collects
+The Custom Logs input for Elastic based on the OTel Collector collects
 logs from files using the [File Log
 Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/filelogreceiver/README.md)
 of the OTel Collector.
@@ -19,13 +19,12 @@ This integration can be used to collect logs from files.
 ### How it works
 {{/* Add a high level overview on how this integration works. For example, does it collect data from API calls or recieving data from a network or file.*/}}
 This integration tails and parses logs from files. Observed files are the ones
-matching the configured patterns
+matching the configured patterns.
 
 ## What data does this integration collect?
 {{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available */}}
 
-{{/* TODO */}}
-Key fileds are stored folowing [Semantic Conventions for logs](https://opentelemetry.io/docs/specs/semconv/general/logs/), among them:
+Key fields are stored following [Semantic Conventions for logs](https://opentelemetry.io/docs/specs/semconv/general/logs/), among them:
 | Field Name | Description |
 |-------------|-------------|
 | message | Collected log line. |
@@ -56,7 +55,7 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 {{/* List the steps that will need to be followed in order to completely set up a working integration.
 For integrations that support multiple input types, be sure to add steps for all inputs.
 */}}
-This integration needs to be configured with the glob patters of the files to
+This integration needs to be configured with the glob patterns of the files to
 collect.
 
 ### Validation
