@@ -6,9 +6,23 @@ source:
     range:
       ess.billing.total_ecu:
         gt: 0
+  runtime_mappings:
+    deployment_group:
+      type: keyword
+      script:
+        source: |
+          if (params._source?.ess?.billing?.deployment_tags != null) {
+            for (tag in params._source.ess.billing.deployment_tags) {
+              if (tag.startsWith('chargeback_group:')) {
+                emit(tag.substring('chargeback_group:'.length()));
+                return;
+              }
+            }
+          }
+          emit('');
 dest:
   index: billing_cluster_cost_lookup
-  pipeline: 0.2.4-billing
+  pipeline: 0.2.5-billing
 frequency: 60m
 sync:
   time:
@@ -20,6 +34,9 @@ pivot:
       date_histogram:
         field: "@timestamp"
         calendar_interval: 1d
+    deployment_group:
+      terms:
+        field: deployment_group
     deployment_id:
       terms:
         field: ess.billing.deployment_id
@@ -42,4 +59,4 @@ _meta:
   run_as_kibana_system: false
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.2.4
+  fleet_transform_version: 0.2.5
