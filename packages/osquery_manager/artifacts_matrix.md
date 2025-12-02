@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2025-12-02
+**Total Core Artifacts**: 4 available + 36 in progress + 6 not available = 46 total variants
+**Total Queries**: 32 (26 original + 6 new process queries)
+**Completion Rate**: 8.7% (4/46 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 4     | 8.7%       |
+| ⚠️ In Progress (Needs Validation) | 36    | 78.3%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -55,9 +55,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 14b | Persistence             | ⚠️ | Mac | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
 | 15 | PowerShell History      | ⚠️ | Win | -     | -    | powershell_events table                                                                                                          |
 | 16 | Prefetch Files          | ⚠️ | Win | -     | -    | prefetch table                                                                                                                   |
-| 17 | Process Listing         | ⚠️ | Win | -     | -    | processes table                                                                                                                  |
-| 17a | Process Listing         | ⚠️ | Linux | -     | -    | processes table                                                                                                                  |
-| 17b | Process Listing         | ⚠️ | Mac | -     | -    | processes table                                                                                                                  |
+| 17 | Process Listing         | ✅ | Win | process_listing_windows_elastic | [8be8](kibana/osquery_saved_query/osquery_manager-8be8f7d8-270c-4bf3-bba4-4b99e4c56485.json) | Full forensic listing + suspicious detection query |
+| 17a | Process Listing         | ✅ | Linux | process_listing_linux_elastic | [a0c7](kibana/osquery_saved_query/osquery_manager-a0c7b358-f7eb-4bb8-9e08-52bd1afe8987.json) | Full forensic listing + suspicious detection query |
+| 17b | Process Listing         | ✅ | Mac | process_listing_macos_elastic | [888a](kibana/osquery_saved_query/osquery_manager-888ac365-4095-4de8-9990-41d96a792356.json) | Full forensic listing + suspicious detection query |
 | 18 | Registry                | ⚠️ | Win | -     | -    | registry table                                                                                                                   |
 | 19 | Shell History           | ⚠️ | Linux | -     | -    | shell_history table                                                                                                              |
 | 19a | Shell History           | ⚠️ | Mac | -     | -    | shell_history table                                                                                                              |
@@ -105,6 +105,12 @@ These queries existed in the original repository and provide additional coverage
 | 24 | unsigned_startup_items_vt | ✅ | Win | [b068](kibana/osquery_saved_query/osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135.json) | Unsigned startup items with VirusTotal integration |
 | 25 | unsigned_dlls_on_system_folders_vt | ✅ | Win | [63c1](kibana/osquery_saved_query/osquery_manager-63c1fe20-176f-11ed-89c6-331eb0db6d01.json) | Unsigned DLLs in system folders with VirusTotal integration |
 | 26 | executables_in_temp_folder_vt | ✅ | Win | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration |
+| 27 | process_listing_windows | ✅ | Win | [8be8](kibana/osquery_saved_query/osquery_manager-8be8f7d8-270c-4bf3-bba4-4b99e4c56485.json) | Full forensic process listing with parent chain, hashes, code signatures |
+| 27a | process_listing_linux | ✅ | Linux | [a0c7](kibana/osquery_saved_query/osquery_manager-a0c7b358-f7eb-4bb8-9e08-52bd1afe8987.json) | Full forensic process listing with parent chain, hashes, username |
+| 27b | process_listing_macos | ✅ | Mac | [888a](kibana/osquery_saved_query/osquery_manager-888ac365-4095-4de8-9990-41d96a792356.json) | Full forensic process listing with parent chain, hashes, code signatures |
+| 27c | suspicious_processes_windows | ✅ | Win | [4537](kibana/osquery_saved_query/osquery_manager-45375d5b-c4a6-4cea-8f1b-eb1cbd3c6e9d.json) | Suspicious process detection: LOLBins, unsigned, unusual paths (MITRE T1059, T1218) |
+| 27d | suspicious_processes_linux | ✅ | Linux | [4da8](kibana/osquery_saved_query/osquery_manager-4da83919-be77-48df-ad50-4f5b464c2bab.json) | Suspicious process detection: reverse shells, crypto-miners, container escapes (MITRE T1059, T1496, T1611) |
+| 27e | suspicious_processes_macos | ✅ | Mac | [2b1b](kibana/osquery_saved_query/osquery_manager-2b1b604c-e355-4e23-b8b4-d014a0aa3197.json) | Suspicious process detection: unsigned, osascript abuse, quarantine bypass (MITRE T1059, T1553.001) |
 
 **Note**: Queries with VirusTotal integration require the VirusTotal extension configured in osquery.
 
@@ -185,7 +191,7 @@ While some artifacts are not directly available, the existing queries provide st
 
 ### System Information
 - ⚠️ Disks & Volumes (All platforms: disk_info table)
-- ⚠️ Process Listing (All platforms: processes table)
+- ✅ Process Listing (All platforms: processes table) - Full forensic listing + suspicious detection queries available
 - ❌ Open Handles (Not Available - PR #7835 open, EclecticIQ extension available)
 
 ---
