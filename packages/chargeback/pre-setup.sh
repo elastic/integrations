@@ -9,7 +9,7 @@ PUT chargeback_conf_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.2.5" }
+      "package": { "name": "chargeback", "version": "0.2.6" }
     },
     "properties": {
       "config_join_key": { "type": "keyword" },
