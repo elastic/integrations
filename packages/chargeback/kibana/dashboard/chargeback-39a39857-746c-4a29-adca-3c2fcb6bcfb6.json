@@ -55,17 +55,38 @@
                     "attributes": {
                         "references": [],
                         "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
                                 "textBased": {
-                                    "indexPatternRefs": [],
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
                                     "layers": {
-                                        "c2dbde04-0769-4485-b4fa-4cb05a1d975e": {
+                                        "aa55ae31-395f-4738-b9fd-3da1d649d640": {
                                             "columns": [
                                                 {
                                                     "columnId": "@timestamp",
-                                                    "customLabel": true,
+                                                    "customLabel": false,
                                                     "fieldName": "@timestamp",
-                                                    "label": "Date",
+                                                    "label": "@timestamp",
                                                     "meta": {
                                                         "esType": "date",
                                                         "type": "date"
@@ -73,37 +94,29 @@
                                                 },
                                                 {
                                                     "columnId": "deployment",
-                                                    "customLabel": true,
+                                                    "customLabel": false,
                                                     "fieldName": "deployment",
-                                                    "label": "Deployment",
+                                                    "label": "deployment",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "total_ecu_value",
-                                                    "customLabel": true,
-                                                    "fieldName": "total_ecu_value",
+                                                    "columnId": "total_value",
+                                                    "customLabel": false,
+                                                    "fieldName": "total_value",
                                                     "inMetricDimension": true,
-                                                    "label": "Normalised cost",
+                                                    "label": "total_value",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
                                                     }
                                                 }
                                             ],
-                                            "index": "chargeback_integration",
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value | SORT @timestamp desc | LIMIT 5000"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS `total_value`=SUM(total_ecu_value) by @timestamp, deployment\n| KEEP @timestamp, deployment, total_value | SORT @timestamp desc | LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -113,7 +126,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value | SORT @timestamp desc | LIMIT 5000"
+                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS `total_value`=SUM(total_ecu_value) by @timestamp, deployment\n| KEEP @timestamp, deployment, total_value | SORT @timestamp desc | LIMIT 5000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -135,14 +148,14 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "total_ecu_value"
+                                            "total_value"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
                                             "colorMode": {
                                                 "type": "categorical"
                                             },
-                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "paletteId": "default",
                                             "specialAssignments": [
                                                 {
                                                     "color": {
@@ -157,7 +170,7 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "c2dbde04-0769-4485-b4fa-4cb05a1d975e",
+                                        "layerId": "aa55ae31-395f-4738-b9fd-3da1d649d640",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
                                         "splitAccessor": "deployment",
@@ -177,7 +190,7 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Normalised cost over time",
+                        "title": "total_value over @timestamp",
                         "version": 1,
                         "visualizationType": "lnsXY"
                     },
@@ -188,7 +201,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value | SORT @timestamp desc | LIMIT 5000"
+                        "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS `total_value`=SUM(total_ecu_value) by @timestamp, deployment\n| KEEP @timestamp, deployment, total_value | SORT @timestamp desc | LIMIT 5000"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -211,6 +224,307 @@
             },
             {
                 "embeddableConfig": {
+<<<<<<< Updated upstream
+=======
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "28174526-fb0d-4645-a2b7-f5101203fb4e": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "dff61ce4-8b3c-40bf-8972-0970a0a7ecc9",
+                                                    "customLabel": true,
+                                                    "fieldName": "deployment_group",
+                                                    "label": "Deployment group",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "deployment_group"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "04726936-593d-48df-9ebc-9963d006ad1c",
+                                                    "fieldName": "Normalised cost",
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "params": {
+                                                            "id": "number"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "Normalised cost"
+                                                        },
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| STATS `Normalised cost` = SUM(total_ecu * conf_ecu_rate) by deployment_group"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| STATS `Normalised cost` = SUM(total_ecu * conf_ecu_rate) by deployment_group"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "dff61ce4-8b3c-40bf-8972-0970a0a7ecc9",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "04726936-593d-48df-9ebc-9963d006ad1c",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "28174526-fb0d-4645-a2b7-f5101203fb4e",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Normalised cost",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| STATS `Normalised cost` = SUM(total_ecu * conf_ecu_rate) by deployment_group"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "43ab691d-4b1f-4e83-b2e4-026c16f6a5eb",
+                    "sectionId": "2b8b2365-5e05-4f1d-8880-f35892a8e60f",
+                    "w": 9,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "43ab691d-4b1f-4e83-b2e4-026c16f6a5eb",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "c6398250-abb1-4935-a3a8-41af3c8ea057": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "@timestamp",
+                                                    "customLabel": false,
+                                                    "fieldName": "@timestamp",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "deployment_group",
+                                                    "customLabel": false,
+                                                    "fieldName": "deployment_group",
+                                                    "label": "deployment_group",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total_value",
+                                                    "customLabel": false,
+                                                    "fieldName": "total_value",
+                                                    "inMetricDimension": true,
+                                                    "label": "total_value",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate\n| STATS `total_value`=SUM(total_ecu_value) by @timestamp, deployment_group\n| KEEP @timestamp, deployment_group, total_value | SORT @timestamp desc | LIMIT 5000"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate\n| STATS `total_value`=SUM(total_ecu_value) by @timestamp, deployment_group\n| KEEP @timestamp, deployment_group, total_value | SORT @timestamp desc | LIMIT 5000"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total_value"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "c6398250-abb1-4935-a3a8-41af3c8ea057",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "deployment_group",
+                                        "xAccessor": "@timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "total_value over @timestamp",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate\n| STATS `total_value`=SUM(total_ecu_value) by @timestamp, deployment_group\n| KEEP @timestamp, deployment_group, total_value | SORT @timestamp desc | LIMIT 5000"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "timeRange": {
+                        "from": "now-6M",
+                        "to": "now"
+                    },
+                    "title": "Normalised cost over the last 6 months per deployment group"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "003538c5-ca13-4130-949f-2b70047abb38",
+                    "sectionId": "2b8b2365-5e05-4f1d-8880-f35892a8e60f",
+                    "w": 39,
+                    "x": 9,
+                    "y": 0
+                },
+                "panelIndex": "003538c5-ca13-4130-949f-2b70047abb38",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+>>>>>>> Stashed changes
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -3976,7 +4290,7 @@
                 "title": "Deployment statistics"
             },
             {
-                "collapsed": false,
+                "collapsed": true,
                 "gridData": {
                     "i": "96918af7-e003-4af8-8c37-245db141d60c",
                     "y": 12
@@ -4005,7 +4319,11 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
+<<<<<<< Updated upstream
     "created_at": "2025-11-24T14:44:11.362Z",
+=======
+    "created_at": "2025-12-02T09:15:39.552Z",
+>>>>>>> Stashed changes
     "id": "chargeback-39a39857-746c-4a29-adca-3c2fcb6bcfb6",
     "references": [
         {
