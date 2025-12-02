@@ -4,41 +4,13 @@
 
 The [Microsoft Defender XDR](https://learn.microsoft.com/en-us/defender-xdr/) integration allows you to monitor Alert, Incident (Microsoft Graph Security API), Event (Streaming API) Logs, and Vulnerability (Microsoft Defender for Endpoint API) Logs. Microsoft Defender XDR is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
 
-Use the Microsoft Defender XDR integration to collect and parse data from the Microsoft Azure Event Hub, Microsoft Graph Security v1.0 REST API, and the Microsoft Defender Endpoint API. Then visualise that data in Kibana.
+### How it works
 
-For example, you could use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert, incident, and vulnerability a user can take an appropriate action in the Microsoft Defender XDR Portal.
+The integration works by collecting data from the Microsoft Azure Event Hub, Microsoft Graph Security v1.0 REST API, and the Microsoft Defender Endpoint API. Then visualise that data in Kibana.
 
-## Data streams
+### Compatibility
 
-The Microsoft Defender XDR integration collects logs for four types of events: Alert, Event, Incident, and Vulnerability.
-
-**Alert:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
-
-**Event:** This data stream leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of Supported Events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
-
-**Incidents and Alerts:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0) to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in Microsoft Defender XDR. Incidents stemming from Microsoft Defender XDR, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
-
-**Vulnerability:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) to collect vulnerability.
-
-## Requirements
-
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
-
-This module has used **Microsoft Azure Event Hub** for Streaming Event, **Microsoft Graph Security v1.0 REST API** for Incident data stream and **Microsoft Defender for Endpoint API** for Vulnerability data stream.
-
-For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) input, state such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
-
-### Agentless enabled integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
-
-### Agent-based installation
-
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
-
-## Compatibility
-###  This integration supports below API versions to collect data.
+This integration supports below API versions to collect data.
   - [Microsoft Graph Security v1.0 REST API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0)
   - [M365 Defender Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
   - Supported Microsoft Defender XDR streaming event types:
@@ -69,16 +41,52 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
   - [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
     - [Vulnerabilities API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
 
+## What data does this integration collect?
 
-## Setup
+The Microsoft Defender XDR integration collects logs for four types of events: Alert, Event, Incident, and Vulnerability.
 
+**Alert:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
+
+**Event:** This data stream leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of Supported Events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
+
+**Incidents and Alerts:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0) to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in Microsoft Defender XDR. Incidents stemming from Microsoft Defender XDR, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
+
+**Vulnerability:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) to collect vulnerability assessments.
+
+**Note:** Alerts are individual detection events surfaced by Microsoft and partner security providers, while Incidents and Alerts are correlated collections of alerts that represent a broader attack.
+
+### Supported Use Cases
+
+Use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert, incident, and vulnerability a user can take an appropriate action in the Microsoft Defender XDR Portal.
+
+## What do I need to use this integration?
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+This module has used **Microsoft Azure Event Hub** for Streaming Event, **Microsoft Graph Security v1.0 REST API** for Incident data stream and **Microsoft Defender for Endpoint API** for Vulnerability data stream.
+
+For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) input, state such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
+
+### Agentless enabled integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+
+## How do I deploy this integration?
+
+### Onboard / configure
 Follow the steps below to configure data collection from Microsoft sources.
 
-### 1. Collecting Data from Microsoft Azure Event Hub
+#### 1. Collecting Data from Microsoft Azure Event Hub
 
 - [Configure Microsoft Defender XDR to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/defender-xdr/streaming-api-event-hub?view=o365-worldwide).
 
-### 2. Collecting Data from Microsoft Graph Security v1.0 REST API (for Incidents & Alerts)
+#### 2. Collecting Data from Microsoft Graph Security v1.0 REST API (for Incidents & Alerts)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
 - Assign the required permission: **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0).
@@ -87,17 +95,20 @@ Follow the steps below to configure data collection from Microsoft sources.
   - Client Secret
   - Tenant ID
 
-### 3. Collecting Data from Microsoft Defender for Endpoint API (for Vulnerabilities)
+#### 3. Collecting Data from Microsoft Defender for Endpoint API (for Vulnerabilities)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
 - Assign the required permissions:
-  - **Vulnerability.Read**
   - **Vulnerability.Read.All**
   See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#22-permissions).
 - After registration, retrieve the following credentials needed for configuration:
   - Client ID
   - Client Secret
   - Tenant ID
+
+### Validate that the integration is working
+
+Navigate to the **Discover** tab in Kibana. Filter for the `m365_defender.*log*` dataset (`data_stream.dataset : "m365_defender.*log"`) and verify that logs are being ingested. You can also check the pre-built dashboards for this integration by searching for "Microsoft Defender XDR" in the **Dashboards** section.
 
 #### Data Retention and ILM Configuration
 
@@ -120,7 +131,13 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 
 - Expiring SAS URLs: The option `SAS Valid Hours` in `vulnerability` data stream controls the duration that the `Shared Access Signature (SAS)` download URLs are valid for. The default value of this option is `1h` i.e., 1 hour, and the maximum allowed value is `6h` i.e., 6 hours. Increase the value of the option `SAS Valid Hours` when you see `error.message` indicates signatures are invalid, or when you notice invalid signature errors inside CEL trace logs.
 
-## Logs reference
+## Scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### log
 
 ### alert
 
@@ -159,3 +176,6 @@ This is the `vulnerability` dataset.
 {{event "vulnerability"}}
 
 {{fields "vulnerability"}}
+
+### Inputs used
+{{ inputDocs }}
