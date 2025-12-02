@@ -2,42 +2,53 @@
 description: Pipeline for parsing Snort logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - set:
+      tag: set_observer_vendor_c34d3ed0
       field: observer.vendor
       value: snort
   - set:
+      tag: set_observer_product_09c0225f
       field: observer.product
       value: ids
   - set:
+      tag: set_observer_type_ccdf2750
       field: observer.type
       value: ids
   - set:
+      tag: set_event_created_e3f09e3b
       field: event.created
       copy_from: '@timestamp'
   - grok:
+      tag: grok_event_original_302e2f2f
       field: event.original
       patterns:
         - ^%{CHAR:_tmp.first_char}
       pattern_definitions:
         CHAR: .
   - pipeline:
+      tag: pipeline_a273d711
       if: ctx._tmp.first_char != '{'
       name: '{{ IngestPipeline "plaintext" }}'
   - pipeline:
+      tag: pipeline_88737aa4
       if: ctx._tmp.first_char == '{'
       name: '{{ IngestPipeline "json" }}'
   - set:
+      tag: set_event_timezone_4ca44cac
       field: event.timezone
       value: "{{{_tmp.tz_offset}}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
   - date:
+      tag: date__tmp_timestamp_to_@timestamp_b1347feb
       field: _tmp.timestamp
       target_field: '@timestamp'
       timezone: "{{{ event.timezone }}}"
@@ -48,6 +59,7 @@ processors:
         - MMM dd HH:mm:ss
       if: ctx.event?.timezone != null
   - date:
+      tag: date__tmp_timestamp_to_@timestamp_0c843d11
       field: _tmp.timestamp
       target_field: '@timestamp'
       formats:
@@ -57,59 +69,73 @@ processors:
         - MMM dd HH:mm:ss
       if: ctx.event?.timezone == null
   - convert:
+      tag: convert_source_address_to_source_ip_48c76f83
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
   - convert:
+      tag: convert_destination_address_to_destination_ip_dbe5a90d
       field: destination.address
       target_field: destination.ip
       type: ip
       ignore_missing: true
   - uppercase:
+      tag: uppercase_destination_mac_04de3657
       field: destination.mac
       ignore_missing: true
   - uppercase:
+      tag: uppercase_source_mac_5b4e7be2
       field: source.mac
       ignore_missing: true
   - gsub:
+      tag: gsub_destination_mac_c758fda1
       field: destination.mac
       pattern: '[.:]'
       replacement: '-'
       ignore_missing: true
   - gsub:
+      tag: gsub_source_mac_23244bf4
       field: source.mac
       pattern: '[.:]'
       replacement: '-'
       ignore_missing: true
   - gsub:
+      tag: gsub_snort_tcp_flags_edebaf43
       field: snort.tcp.flags
       pattern: \*
       replacement: ''
       ignore_missing: true
   - lowercase:
+      tag: lowercase_network_transport_bc8c1c12
       field: network.transport
       ignore_missing: true
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - append:
+      tag: append_event_category_2559ac69
       field: event.category
       value: network
       allow_duplicates: false
   - set:
+      tag: set_network_direction_a298f1f4
       field: network.direction
       value: unknown
       if: ctx.network?.direction == null
   - set:
+      tag: set_network_type_b7f5a7f1
       field: network.type
       value: ipv4
       if: ctx.source?.ip != null && ctx.source?.ip.contains(".")
   - set:
+      tag: set_network_type_3f194452
       field: network.type
       value: ipv6
       if: ctx.source?.ip != null && !ctx.source?.ip.contains(".")
   - script:
+      tag: script_fb40cd29
       lang: painless
       ignore_failure: true
       if: ctx.network?.transport != null
@@ -123,29 +149,36 @@ processors:
             ctx.network.iana_number = '1';
         }
   - network_direction:
+      tag: network_direction_6d15af04
       internal_networks_field: _tmp.internal_networks
   - community_id:
+      tag: community_id_99f56bc8
       ignore_failure: true
       ignore_missing: true
   - append:
+      tag: append_event_type_7c5f5272
       field: event.type
       value: allowed
       if: ctx._tmp?.action?.toLowerCase() == 'allow'
   - append:
+      tag: append_event_type_d34af3c3
       field: event.type
       value: denied
       if: ctx._tmp?.action?.toLowerCase() == 'block'
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -154,6 +187,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -162,40 +196,61 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - append:
+      tag: append_related_ip_8121c591
       if: ctx.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_ip_c1a6356b
       if: ctx.destination?.ip != null
       field: related.ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
   - remove:
+      tag: remove_0ecf6d42
       field:
         - _tmp
         - json
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

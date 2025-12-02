@@ -2,27 +2,34 @@
 description: Pipeline for processing SonicWall firewall logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_observer_vendor_a3f4a7b8
       field: observer.vendor
       value: SonicWall
   - set:
+      tag: set_observer_product_7901f82f
       field: observer.product
       value: SonicOS
   - set:
+      tag: set_observer_type_5dddf3ba
       field: observer.type
       value: firewall
   - set:
+      tag: set_event_timezone_9e69f396
       field: event.timezone
       value: "{{{_conf.tz_offset}}}"
       if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - grok:
+      tag: grok_event_original_882a4bdd
       field: event.original
       description: Extracts key-value pairs from original message
       patterns:
@@ -31,27 +38,33 @@ processors:
           KEY_VALUES: 'id=.*'
       on_failure:
           - fail:
+              tag: fail_805e728b
               message: 'unable to extract key-values from log message: {{{ _ingest.on_failure_message }}}'
   - grok:
+      tag: grok__temp__header_96923848
       field: _temp_.header
-      patterns: 
+      patterns:
         - '^(?:<%{NUMBER:log.syslog.priority:long}>)?%{SYSLOGTIMESTAMP}?%{SPACE}%{DATA:_temp_.host}?$'
   - convert:
+      tag: convert__temp__host_to_host_ip_a6ba828f
       field: _temp_.host
       type: ip
       target_field: host.ip
       if: ctx._temp_?.host != null
       ignore_failure: true
   - set:
+      tag: set_host_ip_1d72afcb
       field: host.ip
       value: ['{{{host.ip}}}']
       if: ctx.host?.ip instanceof String
   - rename:
+      tag: rename__temp__host_to_host_name_4ff6325a
       field: _temp_.host
       target_field: host.name
       if: ctx.host?.ip == null && ctx._temp_?.host != null && ctx._temp_.host != ''
       ignore_failure: true
   - kv:
+      tag: kv__temp__serialized_kv_d4d79ba0
       field: _temp_.serialized_kv
       description: Splits key-value pairs extracted from original message
       field_split: ' +(?=[a-zA-Z0-9_-]+=)'
@@ -61,9 +74,11 @@ processors:
       trim_value: "\"'"
       on_failure:
         - fail:
+            tag: fail_888e4162
             message: 'unable to process key-values from log message: {{{ _ingest.on_failure_message }}}'
 
   - script:
+      tag: script_4c0c8132
       lang: painless
       description: Maps SonicWall fields to ECS
       if: 'ctx.sonicwall?.firewall != null'
@@ -188,17 +203,18 @@ processors:
           }
         }
 
-#
-# Source and destination information
-#
-# The src and dst fields have the following format:
-# <IP>[:<PORT>[:<INTERFACE>[:<HOSTNAME>]]]
-#
-# For IPv6 addresses the srcV6/dstV6 fields are used.
-# These contain the ip address, and optionally the src/dst
-# fields are used to include extra information, leaving
-# the <IP> part empty (value starts with `:`).
+  #
+  # Source and destination information
+  #
+  # The src and dst fields have the following format:
+  # <IP>[:<PORT>[:<INTERFACE>[:<HOSTNAME>]]]
+  #
+  # For IPv6 addresses the srcV6/dstV6 fields are used.
+  # These contain the ip address, and optionally the src/dst
+  # fields are used to include extra information, leaving
+  # the <IP> part empty (value starts with `:`).
   - script:
+      tag: script_bc7a7ce7
       lang: painless
       description: Extracts additional information from src and dst
       params:
@@ -231,10 +247,11 @@ processors:
           removes.add(field.getKey());
         }
 
-#
-# Duration fields dur / cdur
-#
+  #
+  # Duration fields dur / cdur
+  #
   - script:
+      tag: script_ed7313c1
       lang: painless
       description: Calculates event.duration
       params:
@@ -260,6 +277,7 @@ processors:
         }
 
   - foreach:
+      tag: foreach__temp__removes_80350c78
       field: _temp_.removes
       processor:
         remove:
@@ -267,6 +285,7 @@ processors:
           ignore_missing: true
 
   - foreach:
+      tag: foreach__temp__sets_e4ed0ff5
       field: _temp_.sets
       processor:
         set:
@@ -274,18 +293,21 @@ processors:
           value: '{{{ _ingest._value.value }}}'
 
   - set:
+      tag: set_source_address_91851c17
       field: source.address
       copy_from: sonicwall.firewall.srcV6
       override: true
       ignore_failure: true
 
   - set:
+      tag: set_destination_address_a50bb7f1
       field: destination.address
       copy_from: sonicwall.firewall.dstV6
       override: true
       ignore_failure: true
 
   - date:
+      tag: date_@timestamp_f835b139
       field: '@timestamp'
       formats:
         - 'yyyy-MM-dd HH:mm:ss VV'
@@ -295,9 +317,11 @@ processors:
       if: 'ctx._conf?.tz_offset != null && ctx._conf.tz_offset != "local"'
       on_failure:
         - append:
+            tag: append_error_message_fdb43f09
             field: error.message
             value: 'failed to parse time field ({{{ @timestamp }}}): {{{ _ingest.on_failure_message }}}'
   - date:
+      tag: date_@timestamp_0d6a6c2f
       field: '@timestamp'
       formats:
         - 'yyyy-MM-dd HH:mm:ss VV'
@@ -306,29 +330,34 @@ processors:
       if: 'ctx._conf?.tz_offset == null || ctx._conf.tz_offset == "local"'
       on_failure:
         - append:
+            tag: append_error_message_1e45afff
             field: error.message
             value: 'failed to parse time field ({{{ @timestamp }}}): {{{ _ingest.on_failure_message }}}'
 
-#
-# Validate IP addresses
-#
+  #
+  # Validate IP addresses
+  #
   - convert:
+      tag: convert_observer_hostname_to__temp__observer_ip_21493c15
       field: observer.hostname
       target_field: _temp_.observer.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_observer_ip_e16d7e9d
       field: observer.ip
       value: "{{{ _temp_.observer.ip }}}"
       allow_duplicates: false
       if: 'ctx._temp_?.observer?.ip != null'
 
   - remove:
+      tag: remove_observer_hostname_8cdc4e8d
       field: observer.hostname
       if: 'ctx.observer?.ip != null'
 
   - convert:
+      tag: convert_source_address_to_source_ip_f5632a20
       field: source.address
       target_field: source.ip
       type: ip
@@ -336,10 +365,12 @@ processors:
       ignore_failure: true
 
   - remove:
+      tag: remove_source_address_5b1ed208
       field: source.address
       if: 'ctx.source?.ip != null'
 
   - convert:
+      tag: convert_destination_address_to_destination_ip_f1388f0c
       field: destination.address
       target_field: destination.ip
       type: ip
@@ -347,49 +378,57 @@ processors:
       ignore_failure: true
 
   - remove:
+      tag: remove_destination_address_0f9ca0a8
       field: destination.address
       if: 'ctx.destination?.ip != null'
 
-#
-# Geoip enrichment
-#
+  #
+  # Geoip enrichment
+  #
   - geoip:
+        tag: geoip_source_ip_to_source_geo_da2e41b2
         field: source.ip
         target_field: source.geo
         ignore_missing: true
 
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
 
-#
-# Convert MAC addresses
-#
+  #
+  # Convert MAC addresses
+  #
   - uppercase:
+      tag: uppercase_source_mac_5b4e7be2
       field: source.mac
       ignore_missing: true
 
   - gsub:
+      tag: gsub_source_mac_328298a4
       field: source.mac
       pattern: ':'
       replacement: '-'
       ignore_missing: true
 
   - uppercase:
+      tag: uppercase_destination_mac_04de3657
       field: destination.mac
       ignore_missing: true
 
   - gsub:
+      tag: gsub_destination_mac_52ddb47b
       field: destination.mac
       pattern: ':'
       replacement: '-'
       ignore_missing: true
 
-#
-# Process proto field
-#
+  #
+  # Process proto field
+  #
   - grok:
+      tag: grok_network_transport_21dd0e8a
       field: network.transport
       description: Extracts transport and protocol information from proto field
       patterns:
@@ -402,10 +441,11 @@ processors:
         NOSLASH_WORD: '[^/]*'
       ignore_failure: true
 
-#
-# Extract optional (undocumented) port in nat fields.
-#
+  #
+  # Extract optional (undocumented) port in nat fields.
+  #
   - grok:
+      tag: grok__temp__source_nat_ip_86b94679
       field: _temp_.source_nat_ip
       description: Extracts optional port number from src nat field
       ignore_missing: true
@@ -416,6 +456,7 @@ processors:
         - '^\[%{IPV6:source.nat.ip}\]:%{POSINT:source.nat.port}$'
 
   - grok:
+      tag: grok__temp__destination_nat_ip_97f7a582
       field: _temp_.destination_nat_ip
       description: Extracts optional port number from dst nat field
       ignore_missing: true
@@ -425,98 +466,121 @@ processors:
         - '^%{IPV6:destination.nat.ip}$'
         - '^\[%{IPV6:destination.nat.ip}\]:%{POSINT:destination.nat.port}$'
 
-#
-# Validate integer fields
-#
+  #
+  # Validate integer fields
+  #
   - convert:
+      tag: convert_source_bytes_1c4305d3
       field: source.bytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_bytes_e33575af
             field: source.bytes
 
   - convert:
+      tag: convert_source_port_4955d6a9
       field: source.port
       type: integer
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_port_0813349d
             field: source.port
 
   - convert:
+      tag: convert_source_nat_port_cae51fbb
       field: source.nat.port
       type: integer
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_nat_port_5ebae6aa
             field: source.nat.port
 
   - convert:
+      tag: convert_source_packets_7718e13b
       field: source.packets
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_packets_079b0871
             field: source.packets
 
   - convert:
+      tag: convert_destination_bytes_9a9d8ca5
       field: destination.bytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_bytes_0425f3f2
             field: destination.bytes
 
   - convert:
+      tag: convert_destination_port_cdbd1c15
       field: destination.port
       type: integer
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_port_fa207c3e
             field: destination.port
 
   - convert:
+      tag: convert_destination_nat_port_d61b8981
       field: destination.nat.port
       type: integer
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_nat_port_6c23e3bb
             field: destination.nat.port
 
   - convert:
+      tag: convert_destination_packets_7faf12a5
       field: destination.packets
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_packets_95c6683c
             field: destination.packets
 
   - convert:
+      tag: convert_event_duration_dfe9fd73
       field: event.duration
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_event_duration_555cc59d
             field: event.duration
 
   - convert:
+      tag: convert_event_sequence_562f390f
       field: event.sequence
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_event_sequence_e9fdd720
             field: event.sequence
 
   - convert:
+      tag: convert_event_severity_4d6b0993
       field: event.severity
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_event_severity_94e7adea
             field: event.severity
 
   - script:
+      tag: script_d31ba1a7
       lang: painless
       description: Aggregates bytes/packets counters
       params:
@@ -544,25 +608,28 @@ processors:
           }
         }
 
-#
-# Extends message field with note
-#
+  #
+  # Extends message field with note
+  #
   - set:
+      tag: set_message_1c217775
       field: message
       description: Extends message field with note
       value: '{{{ message }}} ({{{ sonicwall.firewall.note }}})'
       override: true
       if: 'ctx.message != null && ctx.sonicwall?.firewall?.note != null'
   - set:
+      tag: set_message_ff556d2c
       field: message
       value: '{{{ sonicwall.firewall.note }}}'
       ignore_empty_value: true
       override: false
 
-#
-# ECS event categorization by message type
-#
+  #
+  # ECS event categorization by message type
+  #
   - script:
+      tag: script_9079cbb3
       lang: painless
       description: Fills ECS categorization fields depending on message Event ID
       params:
@@ -713,34 +780,34 @@ processors:
             outcome: success
           connection-start:
             kind: event
-            category: [ network ]
+            category: [network]
             type:
               - connection
               - start
             outcome: success
           connection-end:
             kind: event
-            category: [ network ]
+            category: [network]
             type:
               - connection
               - end
             outcome: success
           connection-denied:
             kind: event
-            category: [ network ]
+            category: [network]
             type:
               - connection
               - denied
             outcome: success
           packet-dropped:
             kind: event
-            category: [ network ]
+            category: [network]
             type:
               - denied
             outcome: success
           connection-info:
             kind: event
-            category: [ network ]
+            category: [network]
             type:
               - connection
               - info
@@ -955,7 +1022,6 @@ processors:
           # IPS
           "608": attack-detected # 608,Security Services,IPS,Attack,ALERT,569,IPS Detection Alert,IPS Detection Alert: %s
           "609": attack-blocked # 609,Security Services,IPS,Attack,ALERT,570,IPS Prevention Alert,IPS Prevention Alert: %s
-
 
           # Flood Protection
           "25": attack-detected # 25,Firewall Settings,Flood Protection,Attack,WARNING,503,Possible SYN Flood,Possible SYN flood attack detected
@@ -1226,6 +1292,7 @@ processors:
 
       on_failure:
         - append:
+            tag: append_error_message_b9cf6447
             field: error.message
             value: 'internal ECS categorization error: {{{ _ingest.on_failure_message }}}'
       source: |
@@ -1244,73 +1311,84 @@ processors:
         }
         event["action"] = evtype;
 
-#
-# Builds url fields
-# url = proto + :// + dstname + arg
-#
-# This requires `arg` field being present (url.path)
-# as dstname can have a different meaning (email attachments)
-# but arg is always used in the context of an HTTP transaction
-#
+  #
+  # Builds url fields
+  # url = proto + :// + dstname + arg
+  #
+  # This requires `arg` field being present (url.path)
+  # as dstname can have a different meaning (email attachments)
+  # but arg is always used in the context of an HTTP transaction
+  #
   - set:
+      tag: set_url_scheme_d8a192ea
       field: url.scheme
       value: '{{{ network.protocol }}}'
       ignore_empty_value: true
       if: 'ctx.url?.path != null'
 
   - rename:
+      tag: rename_url_domain_to_sonicwall_firewall_dstname_f7058561
       field: url.domain
       target_field: sonicwall.firewall.dstname
       ignore_missing: true
       if: 'ctx.url?.path == null'
 
   - set:
+      tag: set_url_full_a7779e9d
       field: url.full
       value: '{{{ url.scheme }}}://{{{ url.domain }}}{{{ url.path }}}'
       if: 'ctx.url?.scheme != null && ctx.url?.domain != null'
 
   - set:
+      tag: set_url_full_6a9eb381
       field: url.full
       value: '//{{{ url.domain }}}{{{ url.path }}}'
       if: 'ctx.url?.scheme == null && ctx.url?.domain != null'
 
-#
-# Related fields
-#
+  #
+  # Related fields
+  #
   - append:
+      tag: append_related_ip_0793d2d9
       field: related.ip
       value: "{{{ source.ip }}}"
       allow_duplicates: false
       if: 'ctx.source?.ip != null'
   - append:
+      tag: append_related_ip_863bd232
       field: related.ip
       value: "{{{ source.nat.ip }}}"
       allow_duplicates: false
       if: 'ctx.source?.nat?.ip != null'
   - append:
+      tag: append_related_ip_9e75d6b5
       field: related.ip
       value: "{{{ destination.ip }}}"
       allow_duplicates: false
       if: 'ctx.destination?.ip != null'
   - append:
+      tag: append_related_ip_b03d3bb8
       field: related.ip
       value: "{{{ destination.nat.ip }}}"
       allow_duplicates: false
       if: 'ctx.destination?.nat?.ip != null'
   - append:
+      tag: append_related_ip_b4e81fa2
       field: related.ip
       value: "{{{ _temp_.observer.ip }}}"
       allow_duplicates: false
       if: 'ctx._temp_?.observer?.ip != null'
   - append:
+      tag: append_related_user_981c7fa7
       field: related.user
       value: "{{{ user.name }}}"
       allow_duplicates: false
       if: 'ctx.user?.name != null'
-#
-# Cleanup
-#
+  #
+  # Cleanup
+  #
   - remove:
+      tag: remove_834a7e82
       field:
         - _conf
         - _temp_
@@ -1322,8 +1400,15 @@ processors:
       ignore_missing: true
 
   - remove:
+      tag: remove_sonicwall_288fe141
       field: sonicwall
       if: 'ctx.sonicwall?.firewall?.size() == 0'
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
   - set:
@@ -1331,4 +1416,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

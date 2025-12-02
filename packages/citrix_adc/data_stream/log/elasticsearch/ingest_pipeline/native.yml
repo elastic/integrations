@@ -47,7 +47,7 @@ processors:
       field: event.type
       tag: set_event_category
       if: ctx.citrix?.device_event_class_id != null && ['TCP'].contains(ctx.citrix.device_event_class_id.toUpperCase())
-      value: [end,connection]
+      value: [end, connection]
   - set:
       field: event.category
       tag: set_event_category_process
@@ -133,6 +133,7 @@ processors:
       if: ctx.citrix_adc?.log?.client_ip != null && ctx.citrix_adc?.log.client_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_9b6ff6cf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -147,7 +148,7 @@ processors:
       if: ctx.citrix_adc?.log?.status != null && ctx.citrix_adc.log.status.toLowerCase() == 'failure'
   - set:
       field: event.outcome
-      tag: set_event_outcome_failure
+      tag: set_event_outcome_ccaf65bf
       value: failure
       if: ctx.citrix?.name != null && ctx.citrix.name == "LOGIN_FAILED"
   - set:
@@ -163,6 +164,7 @@ processors:
       if: ctx.citrix_adc?.log?.destination?.ip != null && ctx.citrix_adc.log.destination.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_64d71fc8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -193,6 +195,7 @@ processors:
       if: ctx.citrix_adc?.log?.remote_ip != null && ctx.citrix_adc?.log.remote_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_0ea500ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -208,6 +211,7 @@ processors:
       if: ctx.citrix_adc?.log?.source?.ip != null && ctx.citrix_adc.log.source.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_5cfe9f0e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -231,6 +235,7 @@ processors:
       tag: 'user_agent_processor'
       on_failure:
         - append:
+            tag: append_error_message_1c8c5d61
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -244,17 +249,21 @@ processors:
       copy_from: citrix_adc.log.username
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_outcome_57bff405
       field: event.outcome
       value: success
       if: ctx?.event?.outcome == null && ctx?.event?.category == "authentication" && ctx?.citrix_adc?.log?.access == "Allowed"
   - set:
+      tag: set_event_outcome_9f8f117a
       field: event.outcome
       value: failure
       if: ctx?.event?.outcome == null && ctx?.event?.category == "authentication" && ctx?.citrix_adc?.log?.access != "Allowed"
   - set:
+      tag: set_observer_hostname_611f136f
       field: observer.hostname
       copy_from: citrix.host
       ignore_empty_value: true
@@ -265,6 +274,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7593fe36
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
@@ -411,9 +421,15 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

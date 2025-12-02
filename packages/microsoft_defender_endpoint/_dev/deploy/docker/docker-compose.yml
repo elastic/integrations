@@ -7,7 +7,7 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   microsoft-defender-mock:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     ports:
       - 8080
     volumes:
@@ -19,11 +19,12 @@ services:
       - --addr=:8080
       - --config=/config.yml
   microsoft-defender-endpoint-vulnerability-cel:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     ports:
       - 8080
     volumes:
       - ./vulnerability-http-mock-config.yml:/config.yml
+      - ./download-vulnerability.log.gz:/download-vulnerability.log.gz
     environment:
       PORT: 8080
     command:

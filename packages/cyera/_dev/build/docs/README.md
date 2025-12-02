@@ -8,18 +8,18 @@ The Cyera integration for Elastic allows you to collect logs and visualize the d
 
 ### Compatibility
 
-The Cyera integration supports the following versions of Cyera APIs.
+This integration is compatible with different versions of Cyera APIs for respective data streams as below:
 
 | Data streams   | Version |
 |----------------|---------|
 | Classification | v1      |
 | Issue          | v3      |
-| Datastore      | v2      |
 | Event          | v1      |
+| Datastore      | v2      |
 
 ### How it works
 
-This integration periodically queries the Cyera API to retrieve classifications.
+This integration periodically queries the Cyera API to retrieve classifications, issues, events and datastores.
 
 ## What data does this integration collect?
 
@@ -27,8 +27,14 @@ This integration collects log messages of the following types:
 
 - `Classification`: Collects classifications that have been identified by the Cyera system.
 
+- `Issue`: Collects issues that have been identified by the Cyera system.
+
+- `Event`: Collects all events from the Cyera system.
+
+- `Datastore`: Collects all datastore objects from the Cyera system.
+
 ### Supported use cases
-Integrating Cyera Classification data stream with Elastic SIEM provides visibility into sensitive data classification across cloud and SaaS environments. By correlating Cyera’s classification intelligence with Elastic analytics, security teams can strengthen data security posture and simplify compliance. Dashboards in Kibana present breakdowns by sensitivity, category, and trends over time, enabling faster investigations and improved accountability.
+Integrating Cyera Classification, Issues, Events and Datastore data streams with Elastic SIEM provides end-to-end visibility into where sensitive data resides, the risks tied to that data, and the security events triggered across cloud and SaaS environments. By correlating datastore metadata (such as type, provider, sensitivity, and ownership) with Cyera’s classification intelligence, issue context, and event activity in Elastic analytics, security teams can strengthen data security posture, accelerate incident response, and simplify compliance. Dashboards in Kibana present breakdowns by datastore type, sensitivity, category, severity, status, risk status, event type, and trends over time — enabling faster investigations, better prioritization, and improved accountability.
 
 ## What do I need to use this integration?
 
@@ -106,6 +112,30 @@ For more information on architectures that can be used for scaling this integrat
 
 {{event "classification"}}
 
+### Datastore
+
+{{fields "datastore"}}
+
+#### Example event
+
+{{event "datastore"}}
+
+### Issue
+
+{{fields "issue"}}
+
+#### Example event
+
+{{event "issue"}}
+
+### Event
+
+{{fields "event"}}
+
+#### Example event
+
+{{event "event"}}
+
 ### Inputs used
 
 These inputs can be used in this integration:
@@ -114,4 +144,4 @@ These inputs can be used in this integration:
 
 #### ILM Policy
 
-To facilitate classification data, source data stream-backed indices `.ds-logs-cyera.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-cyera.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate classification, datastore, issues and event data, source data stream-backed indices `.ds-logs-cyera.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-cyera.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.

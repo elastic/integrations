@@ -23,6 +23,30 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
 
+  # Set up tag logic for choosing which cloud metadata to include.
+  - append:
+      field: tags
+      value: ["elastic_cloud_data", "provider_cloud_data"]
+      if: ctx.tags?.contains('both') == true
+  - script:
+      lang: painless
+      if: ctx.tags?.contains('both') == true
+      source: ctx.tags.remove(ctx.tags.indexOf('both'));
+  - script:
+      lang: painless
+      if: ctx.cloud == null && ctx.tags?.contains('elastic_cloud_data') == true
+      source: ctx.tags.remove(ctx.tags.indexOf('elastic_cloud_data'));
+  - set:
+      field: _conf.want_provider_cloud
+      value: true
+      if: ctx.tags?.contains('provider_cloud_data') == true
+  - remove:
+      description: Remove elastic agent-provided cloud metadata fields if not requested.
+      field: cloud
+      if: ctx.tags != null && !ctx.tags.contains('elastic_cloud_data')
+      ignore_missing: true
+      ignore_failure: true
+
   # parse the event JSON
   - rename:
       field: message
@@ -649,6 +673,38 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: qualys_gav.asset.inventory_list_data.inventory
+      tag: foreach_asset_inventory_list_data_inventory_to_date_created
+      if: ctx.qualys_gav?.asset?.inventory_list_data?.inventory instanceof List
+      processor:
+        date:
+          field: _ingest._value.created
+          target_field: _ingest._value.created
+          tag: date_asset_inventory_list_data_inventory_created
+          formats:
+            - UNIX_MS
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.created
+                ignore_missing: true
+  - foreach:
+      field: qualys_gav.asset.inventory_list_data.inventory
+      tag: foreach_asset_inventory_list_data_inventory_to_date_last_updated
+      if: ctx.qualys_gav?.asset?.inventory_list_data?.inventory instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_updated
+          target_field: _ingest._value.last_updated
+          tag: date_asset_inventory_list_data_inventory_last_updated
+          formats:
+            - UNIX_MS
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.last_updated
+                ignore_missing: true
   - date:
       field: qualys_gav.asset.activity.last_scanned_date
       target_field: qualys_gav.asset.activity.last_scanned_date
@@ -728,31 +784,69 @@ processors:
       if: ctx.qualys_gav?.asset?.netbios_name != null
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_asset_network_interface_list_data_network_interface_to_convert_address_ip_v4
+      tag: foreach_network_interface_list_data_network_interface_to_split_address_ip_v4
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
-        convert:
+        split:
           field: _ingest._value.address_ip_v4
-          tag: convert_asset_network_interface_list_data_network_interface_address_ip_v4
-          type: ip
+          separator: ','
+          tag: split_asset_network_interface_list_data_network_interface_address_ip_v4
           ignore_missing: true
           on_failure:
-            - remove:
-                field: _ingest._value.address_ip_v4
-                ignore_missing: true
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
+      tag: foreach_network_interface_list_data_network_interface_to_trim_address_ip_v4
+      if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.address_ip_v4
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4_trim
+          ignore_failure: true
+          processor:
+            trim:
+              field: _ingest._value
+              tag: trim_asset_network_interface_list_data_network_interface_address_ip_v4
+              ignore_missing: true
+  - foreach:
+      field: qualys_gav.asset.network_interface_list_data.network_interface
+      tag: foreach_asset_network_interface_list_data_network_interface_to_convert_address_ip_v4
+      if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.address_ip_v4
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_asset_network_interface_list_data_network_interface_address_ip_v4
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: qualys_gav.asset.network_interface_list_data.network_interface
       tag: foreach_network_interface_list_data_network_interface_to_set_related_ip_from_address_ip_v4
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
-        append:
-          field: related.ip
-          tag: append_network_interface_list_data_network_interface_address_ip_v4_into_related_ip
-          value: '{{{_ingest._value.address_ip_v4}}}'
-          allow_duplicates: false
+        foreach:
+          field: _ingest._value.address_ip_v4
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4
+          ignore_failure: true
+          processor:
+            append:
+              field: related.ip
+              tag: append_network_interface_list_data_network_interface_address_ip_v4_into_related_ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
       tag: foreach_network_interface_list_data_network_interface_to_gsub_mac_address
@@ -1051,11 +1145,243 @@ processors:
       tag: set_host_os_version_from_asset_operating_system_version
       copy_from: qualys_gav.asset.operating_system.version
       ignore_empty_value: true
+  - lowercase:
+      field: qualys_gav.asset.provider
+      target_field: cloud.provider
+      tag: lowercase_cloud_provider_from_asset_provider
+      ignore_missing: true
+
+  # Convert AWS EC2 specific fields
+  - convert:
+      field: qualys_gav.asset.cloud_provider.aws.ec2.has_agent
+      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_has_agent_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: qualys_gav.asset.cloud_provider.aws.ec2.has_agent
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
+      tag: date_qualys_gav_asset_cloud_provider_aws_ec2_launchdate
+      target_field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.qualys_gav?.asset?.cloud_provider?.aws?.ec2?.launchdate != null && ctx.qualys_gav.asset.cloud_provider.aws.ec2.launchdate != ''
+      on_failure:
+        - remove:
+            field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: qualys_gav.asset.cloud_provider.aws.ec2.qualys_scanner
+      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_qualys_scanner_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: qualys_gav.asset.cloud_provider.aws.ec2.qualys_scanner
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: qualys_gav.asset.cloud_provider.aws.ec2.spot_instance
+      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_spot_instance_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: qualys_gav.asset.cloud_provider.aws.ec2.spot_instance
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Map/Convert AWS EC2 specific fields to ECS fields
   - set:
-      field: cloud.provider
-      tag: set_cloud_provider_from_asset_provider
-      copy_from: qualys_gav.asset.cloud_provider
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_asset_cloud_provider_aws_ec2_account_id
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.account_id
+      if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
+  - set:
+      field: cloud.availability_zone
+      tag: set_cloud_availability_zone_from_asset_cloud_provider_aws_ec2_availability_zone
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.availability_zone
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_aws_ec2_instance_id
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.instance_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_aws_ec2_hostname
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.hostname
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.machine.type
+      tag: set_cloud_machine_type_from_asset_cloud_provider_aws_ec2_instance_type
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.instance_type
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region_from_asset_cloud_provider_aws_ec2_region_code
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.region.code
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'aws' && ctx.qualys_gav?.asset?.cloud_provider?.aws?.ec2 != null
+      value: ec2
+
+  # Map/Convert Azure specific fields to ECS fields
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_asset_cloud_provider_azure_vm_subscription_id
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.subscription_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_azure_vm_vm_id
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.vm_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_azure_vm_name
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.name
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.machine.type
+      tag: set_cloud_machine_type_from_asset_cloud_provider_azure_vm_size
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.size
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region_from_asset_cloud_provider_azure_vm_location
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.location
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure' && ctx.qualys_gav?.asset?.cloud_provider?.azure?.vm != null
+      value: vm
+
+  # Map/Convert GCP specific fields to ECS fields
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_asset_cloud_provider_gcp_compute_project_id
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.project_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.availability_zone
+      tag: set_cloud_availability_zone_from_asset_cloud_provider_gcp_compute_zone
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.zone
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_gcp_compute_instance_id
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.instance_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_gcp_compute_hostname
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.hostname
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.machine.type
+      tag: set_cloud_machine_type_from_asset_cloud_provider_gcp_compute_machine_type
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.machine_type
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.project.id
+      tag: set_cloud_project_id_from_asset_cloud_provider_gcp_compute_project_id
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.project_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - grok:
+      field: qualys_gav.asset.cloud_provider.gcp.compute.zone
+      tag: grok_cloud_region_from_asset_cloud_provider_gcp_compute_zone
+      patterns:
+        - '%{GREEDYDATA:cloud.region}-%{WORD}$'
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'gcp' && ctx.qualys_gav?.asset?.cloud_provider?.gcp?.compute != null
+      value: compute
+
+  # Convert IBM specific fields
+  - convert:
+      field: qualys_gav.asset.cloud_provider.ibm.virtual_server.datacenter_id
+      tag: convert_qualys_gav_asset_cloud_provider_ibm_virtual_server_datacenter_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: qualys_gav.asset.cloud_provider.ibm.virtual_server.ibm_id
+      tag: convert_qualys_gav_asset_cloud_provider_ibm_virtual_server_ibm_id_to_string
+      type: string
+      ignore_missing: true
+  
+  # Map/Convert IBM specific fields to ECS fields
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_asset_cloud_provider_ibm_virtual_server_datacenter_id
+      copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.datacenter_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_ibm_virtual_server_ibm_id
+      copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.ibm_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_ibm_virtual_server_device_name
+      copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.device_name
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.availability_zone
+      tag: set_cloud_availability_zone_from_asset_cloud_provider_ibm_virtual_server_location
+      copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.location
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure' && ctx.qualys_gav?.asset?.cloud_provider?.ibm?.virtual_server != null
+      value: virtual_server
+
+  # Map risk scores
   - convert:
       field: qualys_gav.asset.risk_score
       tag: convert_qualys_gav_asset_risk_score_to_float
@@ -1728,6 +2054,11 @@ processors:
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - _conf
+      tag: remove_temporary_fields
+      ignore_missing: true
 
   # Cleanup
   - script:
