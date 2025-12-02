@@ -1387,6 +1387,7 @@ For more information on architectures that can be used for scaling this integrat
 | aws_securityhub.finding.time | The normalized event occurrence time or the finding creation time. | date |
 | aws_securityhub.finding.time_dt | The normalized event occurrence time or the finding creation time. | date |
 | aws_securityhub.finding.timezone_offset | The number of minutes that the reported event time is ahead or behind UTC. | long |
+| aws_securityhub.finding.transform_unique_id |  | keyword |
 | aws_securityhub.finding.type_name | The event/finding type name, as defined by the type_uid. | keyword |
 | aws_securityhub.finding.type_uid | The event/finding type ID. | keyword |
 | aws_securityhub.finding.unmapped | The attributes that are not mapped to the event schema. | flattened |
@@ -1502,6 +1503,7 @@ For more information on architectures that can be used for scaling this integrat
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.fixed_version | In which version of the package the vulnerability was fixed. | keyword |
