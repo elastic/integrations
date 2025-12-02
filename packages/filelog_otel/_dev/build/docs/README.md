@@ -5,12 +5,11 @@ described in the comments.
 
 Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
 */}}
-# Custom Logs input for Elastic based on the OTel Collector
+# File Log OpenTelemetry input
 
 ## Overview
 {{/* Complete this section with a short summary of what data this integration collects and what use cases it enables */}}
-The Custom Logs input for Elastic based on the OTel Collector collects
-logs from files using the [File Log
+The File Log OpenTelemetry input collects logs from files using the [File Log
 Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/filelogreceiver/README.md)
 of the OTel Collector.
 
