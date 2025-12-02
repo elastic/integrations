@@ -43,13 +43,13 @@ processors:
       value: "{{{_ingest._value.version}}}"
 
   # append object
-  - append:
-      field: threat.indicator.x509
-      value: []
   - script:
       description: Append to the destination
       lang: painless
       source: |
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
+        ctx.threat.indicator.x509 = ctx.threat.indicator.x509 ?: [];
         ctx.threat.indicator.x509.add(ctx._tmp_x509);
 
   - remove:
