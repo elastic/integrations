@@ -50,7 +50,7 @@ processors:
 
   # Set event.* fields
   - set:
-      tag: set_event_kind_1
+      tag: set_event_kind
       field: event.kind
       value: event
 
@@ -71,6 +71,10 @@ processors:
             - remove:
                 tag: remove_01
                 field: _ingest._value.last_fetch_time
+            - append:
+                tag: append_error_message_last_fetch_time
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       tag: foreach_of_axonius_adapter_connections_2
       if: ctx.axonius?.adapter?.connections instanceof List
@@ -87,6 +91,10 @@ processors:
             - remove:
                 tag: remove_02
                 field: _ingest._value.last_successful_fetch
+            - append:
+                tag: append_error_message_last_successful_fetch
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Convert to Long
   - convert:
@@ -231,12 +239,12 @@ processors:
       copy_from: axonius.adapter.id
       ignore_empty_value: true
   - set:
-      tag: set_event_outcome_1
+      tag: set_event_outcome_success
       if: ctx.axonius?.adapter?.status != null && ctx.axonius.adapter.status.toLowerCase() == 'success'
       field: event.outcome
       value: success
   - set:
-      tag: set_event_outcome_2
+      tag: set_event_outcome_failure
       if: ctx.axonius?.adapter?.status != null && ctx.axonius.adapter.status.toLowerCase() == 'error'
       field: event.outcome
       value: failure
@@ -255,24 +263,24 @@ processors:
       lang: painless
       source: |-
         void handleMap(Map map) {
-        map.values().removeIf(v -> {
-        	if (v instanceof Map) {
-        	handleMap(v);
-        	} else if (v instanceof List) {
-        	handleList(v);
-        	}
-        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
-        });
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+          	  handleMap(v);
+          	  } else if (v instanceof List) {
+          	      handleList(v);
+          	  }
+          	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
         void handleList(List list) {
-        list.removeIf(v -> {
-        	if (v instanceof Map) {
-        	handleMap(v);
-        	} else if (v instanceof List) {
-        	handleList(v);
-        	}
-        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
-        });
+          list.removeIf(v -> {
+          	if (v instanceof Map) {
+          	  handleMap(v);
+          	  } else if (v instanceof List) {
+          	      handleList(v);
+          	  }
+          	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
         handleMap(ctx);
   - set:
