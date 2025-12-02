@@ -4,13 +4,12 @@
 PUT chargeback_conf_lookup
 {
   "settings": { 
-    "index.mode": "lookup", 
-    "index.hidden": true 
+    "index.mode": "lookup"
   },
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.2.3" }
+      "package": { "name": "chargeback", "version": "0.2.4" }
     },
     "properties": {
       "config_join_key": { "type": "keyword" },
