@@ -1,0 +1,126 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  api_key_secret: {{api_key_secret}}
+  initial_interval: {{initial_interval}}
+  customer_data: {{collect_customer_data}}
+  own_data: {{collect_own_data}}
+redact:
+  fields:
+    - api_key
+    - api_key_secret
+program: |
+  state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)).as(start_time,
+    (timestamp((int(now)/60)*60) - timestamp(start_time)).as(time_diff,
+      time_diff >= duration("30s") ?
+        (
+          time_diff >= duration("1h") ?
+            // if time_diff is greater than 1 hour, fetch data for that hour, as the time period exceeds the maximum interval of 1 hour.
+            {
+              "end_time": (timestamp(start_time) + duration("1h")).format(time_layout.RFC3339),
+              "start_time": start_time,
+            }
+          :
+            // if time_diff is less than 1 hour, fetch data for that time period.
+            {
+              "end_time": timestamp((int(now)/60)*60).format(time_layout.RFC3339),
+              "start_time": start_time,
+            }
+        )
+      :
+        // if time_diff is less than 30 seconds, return the evaluation, as time period is below the minimum interval of 30 seconds.
+        state.with({
+          "events": [{"message": "interval is below the minimum value"}],
+          "want_more": false,
+          "cursor": {
+            "last_timestamp": start_time
+          }
+        })
+    )
+  ).as(time_range,
+    has(time_range.events) ? time_range : // exit if interval is below the minimum value, no data to fetch.
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/v2/siem/all?" + {
+            "interval": [time_range.start_time + "/" + time_range.end_time],
+            "ownData": [string(state.own_data)],
+            "customerData": [string(state.customer_data)],
+          }.format_query()
+        ).basic_authentication(state.api_key, state.api_key_secret).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+            "events": (
+              body.clicksBlocked.map(e, e.with({"event_type": "clicks_blocked"})) +
+              body.clicksPermitted.map(e, e.with({"event_type": "clicks_permitted"})) +
+              body.messagesBlocked.map(e, e.with({"event_type": "messages_blocked"})) +
+              body.messagesDelivered.map(e, e.with({"event_type": "messages_delivered"}))
+            ).as(events, events.map(e, {
+              "message": e.encode_json(),
+            })),
+            "want_more": (timestamp((int(now)/60)*60) - body.queryEndTime.parse_time("2006-01-02 15:04:05 -0700 MST")).as(time_diff, time_diff >= duration("30s")),
+            "cursor": {
+              "last_timestamp": body.queryEndTime.parse_time("2006-01-02 15:04:05 -0700 MST").format(time_layout.RFC3339),
+            }
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/v2/siem/all: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event:
+    when:
+      equals:
+        message: "interval is below the minimum value"
+{{#if processors}}
+{{processors}}
+{{/if}}

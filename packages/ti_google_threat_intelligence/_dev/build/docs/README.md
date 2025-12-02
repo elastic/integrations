@@ -80,28 +80,30 @@ To keep the collected data up to date, **Transforms** are used.
 
 Users can view the transforms by navigating to **Management > Stack Management > Transforms**.
 
-Follow **Steps to enable transforms** to enable transforms and populate `Threat Feed Overview` and `IOC Stream Overview` dashboard.
-
 Here, users can see continuously running transforms and also view the latest transformed GTI data in the **Discover** section.
+
+Currently, 10 transforms are available across all GTI integration data streams.
+
+The following list contains the transforms and their associated pipelines:
+
+| Transform Name                                                                                                                                                                      | Description                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| IP Transform (ID: `logs-ti_google_threat_intelligence.ip_ioc`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline`)                                          | Keeps IP entity type data up to date.                                           |
+| URL Transform (ID: `logs-ti_google_threat_intelligence.url_ioc`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc-transform-pipeline`)                                       | Keeps URL entity type data up to date.                                          |
+| Domain Transform (ID: `logs-ti_google_threat_intelligence.domain_ioc`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc-transform-pipeline`)                              | Keeps Domain entity type data up to date.                                       |
+| File Transform (ID: `logs-ti_google_threat_intelligence.file_ioc`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc-transform-pipeline`)                                    | Keeps File entity type data up to date.                                         |
+| IP IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.ip_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline`)                        | Keeps IP entity type data up to date for IOC Stream.                            |
+| URL IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.url_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc_st-transform-pipeline`)                     | Keeps URL entity type data up to date for IOC Stream.                           |
+| Domain IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.domain_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc_st-transform-pipeline`)            | Keeps Domain entity type data up to date for IOC Stream.                        |
+| File IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.file_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc_st-transform-pipeline`)                  | Keeps File entity type data up to date for IOC Stream.                          |
+| Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule-pipeline`)                               | Filters and extracts necessary information from Detected IOCs from threat feed. |
+| Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule_ioc_st-pipeline`) | Filters and extracts necessary information from Detected IOCs from IOC stream.  |
+
+All the GTI transforms are automatically started and the dashboards `Threat Feed Overview` and `IOC Stream Overview` are populated.
 
 The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
-
-Currently, four transforms are available across all 14 data streams.
-
-The following are four transforms along with their associated pipelines:
-
-| Transform Name                                                                                                                                                           | Description                                              |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| IP Transform (ID: `logs-ti_google_threat_intelligence.ip_ioc`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline`)                               | Keeps IP entity type data up to date.                    |
-| URL Transform (ID: `logs-ti_google_threat_intelligence.url_ioc`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc-transform-pipeline`)                            | Keeps URL entity type data up to date.                   |
-| Domain Transform (ID: `logs-ti_google_threat_intelligence.domain_ioc`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc-transform-pipeline`)                   | Keeps Domain entity type data up to date.                |
-| File Transform (ID: `logs-ti_google_threat_intelligence.file_ioc`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc-transform-pipeline`)                         | Keeps File entity type data up to date.                  |
-| IP IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.ip_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline`)             | Keeps IP entity type data up to date for IOC Stream.     |
-| URL IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.url_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc_st-transform-pipeline`)          | Keeps URL entity type data up to date for IOC Stream.    |
-| Domain IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.domain_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc_st-transform-pipeline`) | Keeps Domain entity type data up to date for IOC Stream. |
-| File IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.file_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc_st-transform-pipeline`)       | Keeps File entity type data up to date for IOC Stream.   |
 
 For example:
 
@@ -134,8 +136,6 @@ To tailor a rule based on Elastic environment:
 
 Once saved, successfully executed rules will generate alerts. Users can view these alerts in the **Alerts** section.
 
-**Note:** Two transforms are available to filter relevant data from alerts. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc` and `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
-
 The following are the names of the eight sample rules:
 
 | Sample Rule Name                                             | Description                                                                                                                           |
@@ -149,30 +149,12 @@ The following are the names of the eight sample rules:
 | Google Threat Intelligence File IOC Stream Correlation       | Detects and alerts on matches between File IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.       |
 | Google Threat Intelligence IP Address IOC Stream Correlation | Detects and alerts on matches between IP Address IOCs collected by GTI IOC Stream data with user's selected Elastic environment data. |
 
-The following are two transforms along with their associated pipelines to filter relevant data from alerts. Follow **Steps to enable transforms** to enable these transforms and populate `Threat Intelligence`, `Adversary Intelligence` and `IOC Stream Threat Intelligence` dashboards.
+**Note:** The following two transforms are available to filter relevant data from alerts.
 
-| Transform Name                                                                                                                                                                      | Description                                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule-pipeline`)                               | Filters and extracts necessary information from Detected IOCs from threat feed. |
-| Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule_ioc_st-pipeline`) | Filters and extracts necessary information from Detected IOCs from IOC stream.  |
+- Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`)
+- Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`)
 
-### Steps to enable transforms
-
-1. Navigate to **Stack Management > Transforms** in Kibana.
-2. Locate the transform you want to enable by searching for its **Transform ID**.
-3. Click the **three dots** next to the transform, then select **Edit**.
-4. Under the **Destination configuration** section, set the **Ingest Pipeline**:
-   - Each transform in the **Google Threat Intelligence** integration has a corresponding ingest pipeline.
-   - Refer to the **Transforms table** above for the appropriate pipeline name associated with transform.
-   - Prefix the pipeline name with the integration version.
-     For example:
-     ```
-     {package_version}-ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline
-     ```
-   - Click **Update** to save the changes.
-5. Click the **three dots** again next to the transform and select **Start** to activate it.
-
-**Note:** After updating the integration, make sure to update the pipeline prefix accordingly.
+These transforms are automatically started to populate `Threat Intelligence`, `Adversary Intelligence` and `IOC Stream Threat Intelligence` dashboards. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc` and `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
 
 ## Limitations
 
@@ -188,7 +170,7 @@ The following are two transforms along with their associated pipelines to filter
 5. Ensure that relevant fields are correctly mapped in the **Indicator Mapping** section. Verify that fields in the specified index pattern are properly mapped, and ensure entity-specific fields (e.g., IP fields to IP fields, keyword fields like file hash SHA256 to corresponding file hash SHA256 fields) are accurately configured.
 6. If any transform is not in a **Healthy** state, try resetting it:
    - Click the **three dots** next to the transform, then select **Reset**.
-   - After resetting, follow the **Steps to enable transforms** above to reconfigure and restart the transform.
+   - After resetting, restart the transform if they are not automatically started.
 
 ## Logs Reference
 
