@@ -1,5 +1,5 @@
 ---
-description: 'Chargeback: Set composite_key from @timestamp and deployment_id.'
+description: "Chargeback: Set composite_key from @timestamp and deployment_id, and extract cost_type from SKU."
 processors:
   - script:
       ignore_failure: true
@@ -9,6 +9,32 @@ processors:
             ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
         }
       tag: ess_billing
+  - set:
+      field: cost_type
+      value: 'data-transfer'
+      if: ctx.sku =~ /^(aws|gcp|azure).data-transfer.*/
+  - set:
+      field: cost_type
+      value: 'snapshots'
+      if: ctx.sku =~ /^(aws|gcp|azure).snapshot-storage&/
+  - set:
+      field: cost_type
+      value: 'inference'
+      if: ctx.sku == 'global.inference-chat-input'
+  - grok:
+      field: sku
+      ignore_failure: true
+      patterns:
+        - "%{WORD}.es.%{WORD:cost_type}.%{GREEDYDATA}"
+        - "%{WORD}.%{DATA:cost_type}-vcu_%{GREEDYDATA}"
+        - "%{WORD}.%{WORD:cost_type}.%{GREEDYDATA}"
+        - "%{WORD}.%{DATA:cost_type}.%{GREEDYDATA}"
+      description: retrieve a human readable cost type from the sku field
+      if: ctx.cost_type == null
+  - set:
+      field: cost_type
+      value: 'datahot/datacontent'
+      if: ctx.cost_type == 'datahot'
   - pipeline:
       description: '[Fleet] Global pipeline for all data streams'
       ignore_missing_pipeline: true
