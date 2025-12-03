@@ -47,7 +47,7 @@ retry() {
 
 cleanup() {
   echo "Deleting temporary files..."
-  rm -rf ${WORKSPACE}/${TMP_FOLDER_TEMPLATE_BASE}.*
+  rm -rf ${WORKSPACE}/${TMP_FOLDER_TEMPLATE_BASE:-tmp}.*
   echo "Done."
 }
 
