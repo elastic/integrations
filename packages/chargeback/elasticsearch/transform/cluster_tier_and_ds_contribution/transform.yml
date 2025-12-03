@@ -25,6 +25,12 @@ pivot:
           lang: painless
           source: >
             if (doc.containsKey('elasticsearch.index.tier') && !doc['elasticsearch.index.tier'].empty) {
+              def itier = doc.containsKey('elasticsearch.index.tier') && !doc['elasticsearch.index.tier'].empty ? doc['elasticsearch.index.tier'].value : null;
+              if (itier == null) return 'unknown';
+              if (itier.contains('hot') || itier.contains('hot/content') || itier.contains('content')) return 'datahot/datacontent';
+              if (itier.contains('warm')) return 'datawarm';
+              if (itier.contains('cold')) return 'datacold';
+              if (itier.contains('frozen')) return 'datafrozen';
               return doc['elasticsearch.index.tier'].value;
             }
             def pref = doc.containsKey('elasticsearch.index.tier_preference') && !doc['elasticsearch.index.tier_preference'].empty ? doc['elasticsearch.index.tier_preference'].value : null;
