@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-01-06T12:00:00.000Z",
     "created_by": "elastic",
-    "description": "Detects suspicious third-party macOS launchd persistence. Excludes Apple services (/System/, /Library/Apple/, Apple-signed) using regex. Focuses on: unsigned binaries, programs in /tmp or user directories, hidden files, third-party services with run_at_load. Includes signature validation, hash enrichment, and service_type classification. Optimized for low noise (~10-20 results vs 600+). MITRE ATT&CK: T1543.001 (Launch Agent), T1543.004 (Launch Daemon).",
+    "description": "Detects third-party macOS launchd persistence and suspicious Apple services. Returns ALL non-Apple-signed services for comprehensive threat hunting, plus Apple-signed services running from suspicious locations (/Users/, /tmp/, hidden directories) using consolidated regex patterns. Extracts executable path from both 'program' and 'program_arguments' fields for accurate signature validation. Excludes system paths (/System/, /Library/Apple/). Includes signature validation, MD5/SHA256 hash enrichment, and service_type classification. MITRE ATT&CK: T1543.001 (Launch Agent), T1543.004 (Launch Daemon).",
     "ecs_mapping": [
       {
         "key": "service.name",
@@ -19,13 +19,25 @@
       {
         "key": "process.executable",
         "value": {
-          "field": "program"
+          "field": "executable_path"
+        }
+      },
+      {
+        "key": "process.args",
+        "value": {
+          "field": "program_arguments"
         }
       },
       {
         "key": "user.name",
         "value": {
           "field": "username"
+        }
+      },
+      {
+        "key": "file.hash.md5",
+        "value": {
+          "field": "md5"
         }
       },
       {
@@ -96,14 +108,14 @@
     "interval": "3600",
     "timeout": 120,
     "platform": "darwin",
-    "query": "-- macOS Suspicious LaunchD Services Detection (Optimized)\n-- Source: Native osquery tables (launchd, signature, hash)\n-- Focus: Third-party persistence only - excludes all Apple services\n-- MITRE ATT&CK: T1543.001 (Launch Agent), T1543.004 (Launch Daemon)\n\nWITH services_enriched AS (\n  SELECT\n    l.label,\n    l.name,\n    l.path,\n    l.program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    COALESCE(l.username, 'root') AS username,\n    COALESCE(s.signed, 0) AS is_signed,\n    s.authority AS signer,\n    CASE WHEN s.signed = 1 THEN 'signed' ELSE 'unsigned' END AS signature_status,\n    (SELECT sha256 FROM hash WHERE path = l.program LIMIT 1) AS sha256,\n    -- Classify service type for analysis\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'System-Daemon'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'System-Agent'\n      WHEN l.path LIKE '%/Library/LaunchAgents/%' THEN 'User-Agent'\n      ELSE 'Other'\n    END AS service_type\n  FROM launchd l\n  LEFT JOIN signature s ON s.path = l.program\n  WHERE l.path IS NOT NULL AND l.path != ''\n)\n\nSELECT *\nFROM services_enriched\n-- EXCLUDE all Apple/system services using consolidated regex\nWHERE regex_match(\n    path,\n    '^(/System/|/Library/Apple/|/usr/libexec/)',\n    0\n) IS NULL\n  AND regex_match(\n    COALESCE(signer, ''),\n    '(Apple|Software Signing)',\n    0\n) IS NULL\n-- Focus on suspicious indicators\nAND (\n  -- Unsigned is always suspicious\n  is_signed = 0\n  -- Or in suspicious locations\n  OR program LIKE '/Users/%'\n  OR program LIKE '/tmp/%'\n  OR program LIKE '/var/tmp/%'\n  OR program LIKE '/private/tmp/%'\n  OR program LIKE '%/.%'\n  -- Or third-party with persistence enabled\n  OR (is_signed = 1 AND run_at_load = '1')\n)\nORDER BY\n  is_signed ASC,\n  service_type,\n  label;",
-    "updated_at": "2025-11-28T13:50:00.000Z",
+    "query": "-- macOS LaunchD Services Detection - Third-Party and Suspicious Focus\n-- Source: Native osquery tables (launchd, signature, hash)\n-- Focus: All non-Apple services + Apple services in suspicious locations\n-- Derives executable from program or program_arguments for accurate signature checks\n-- MITRE ATT&CK: T1543.001 (Launch Agent), T1543.004 (Launch Daemon)\n\nWITH services_enriched AS (\n  SELECT\n    l.label,\n    l.name,\n    l.path,\n    l.program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    COALESCE(NULLIF(l.username, ''), 'root') AS username,\n    -- Derive executable: prefer program, fallback to first arg in program_arguments\n    CASE\n      WHEN l.program IS NOT NULL AND l.program != '' THEN l.program\n      WHEN l.program_arguments IS NOT NULL AND l.program_arguments != '' THEN\n        CASE\n          WHEN INSTR(l.program_arguments, ' ') > 0\n            THEN SUBSTR(l.program_arguments, 1, INSTR(l.program_arguments, ' ') - 1)\n          ELSE l.program_arguments\n        END\n      ELSE NULL\n    END AS executable_path,\n    -- Classify service type for analysis\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'System-Daemon'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'System-Agent'\n      WHEN l.path LIKE '%/Library/LaunchAgents/%' THEN 'User-Agent'\n      ELSE 'Other'\n    END AS service_type\n  FROM launchd l\n  WHERE l.path IS NOT NULL AND l.path != ''\n),\nservices_with_signatures AS (\n  SELECT\n    se.*,\n    -- Use subqueries to avoid duplicates from multiple signature entries\n    (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) AS signer,\n    -- Consider signed if authority exists (signed column may mean notarized)\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) != ''\n      THEN 1 ELSE 0\n    END AS is_signed,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) != ''\n      THEN 'signed' ELSE 'unsigned'\n    END AS signature_status,\n    (SELECT md5 FROM hash WHERE path = se.executable_path LIMIT 1) AS md5,\n    (SELECT sha256 FROM hash WHERE path = se.executable_path LIMIT 1) AS sha256\n  FROM services_enriched se\n)\n\nSELECT *\nFROM services_with_signatures\nWHERE\n  -- EXCLUDE Apple/system service PATHS\n  regex_match(path, '^(/System/|/Library/Apple/|/usr/libexec/)', 0) IS NULL\n  AND (\n    -- INCLUDE: All non-Apple signed services (third-party threat hunting)\n    regex_match(COALESCE(signer, ''), '(Apple|Software Signing)', 0) IS NULL\n    -- OR INCLUDE: Any service (even Apple-signed) in suspicious locations\n    OR regex_match(COALESCE(executable_path, ''), '(^/Users/|^/tmp/|^/var/tmp/|^/private/tmp/|/[.])', 0) IS NOT NULL\n  )\nORDER BY\n  is_signed ASC,\n  service_type,\n  label;",
+    "updated_at": "2025-12-03T10:00:00.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "9.2.0",
   "id": "osquery_manager-5823a22e-5add-416d-a142-de323400edb0",
   "references": [],
   "type": "osquery-saved-query",
-  "updated_at": "2025-11-28T13:50:00.000Z",
+  "updated_at": "2025-12-03T10:00:00.000Z",
   "version": "Wzk1LDJd"
 }
