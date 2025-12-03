@@ -1,0 +1,75 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when multiple hosts are using the same agent ID. This could occur in the event of an agent being taken over and used to inject illegitimate documents into an instance as an attempt to spoof events in order to masquerade actual activity to evade detection.",
+        "false_positives": [
+            "This is meant to run only on datasources using Elastic Agent 7.14+ since versions prior to that will be missing the necessary field, resulting in false positives."
+        ],
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Agent Spoofing - Multiple Hosts Using Same Agent",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Agent Spoofing - Multiple Hosts Using Same Agent\n\nIn network environments, agents are deployed on hosts to monitor and report activities. Adversaries may exploit these agents by hijacking their IDs to inject false data, masking malicious actions. The detection rule identifies anomalies where multiple hosts report using the same agent ID, signaling potential spoofing attempts. By focusing on unique agent ID usage, it helps uncover evasion tactics aimed at concealing unauthorized activities.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific agent ID that is being reported by multiple hosts.\n- Cross-reference the agent ID with the list of known and authorized agents to determine if it has been compromised or misconfigured.\n- Examine the network logs and host activity for each host reporting the same agent ID to identify any unusual or unauthorized activities.\n- Check for any recent changes or updates to the agent software on the affected hosts that could explain the anomaly.\n- Investigate the timeline of events to determine when the agent ID started being used by multiple hosts and correlate this with any known incidents or changes in the network environment.\n- Assess the potential impact of the spoofing attempt on the network's security posture and consider isolating affected hosts if necessary to prevent further malicious activity.\n\n### False positive analysis\n\n- Legitimate load balancing or failover scenarios where multiple hosts are configured to use the same agent ID for redundancy can trigger false positives. Users should identify and document these configurations, then create exceptions in the detection rule to exclude these known non-threatening behaviors.\n- Virtualized environments where snapshots or clones of a host are created might result in multiple instances reporting the same agent ID. Users should ensure that each virtual instance is assigned a unique agent ID or adjust the rule to account for these scenarios.\n- Testing or development environments where agents are intentionally duplicated for testing purposes can also lead to false positives. Users should tag these environments appropriately and modify the rule to exclude events from these tags.\n- In cases where agents are temporarily reassigned to different hosts for maintenance or troubleshooting, users should maintain a log of these activities and adjust the detection rule to ignore these temporary changes.\n\n### Response and remediation\n\n- Isolate affected hosts immediately to prevent further spread of potentially malicious activities across the network.\n- Revoke and reissue new agent IDs for the affected hosts to ensure that compromised IDs are no longer in use.\n- Conduct a thorough forensic analysis on the isolated hosts to identify any unauthorized changes or malicious software that may have been introduced.\n- Review and update access controls and authentication mechanisms for agent deployment to prevent unauthorized access and hijacking of agent IDs.\n- Monitor network traffic and logs closely for any signs of continued spoofing attempts or related suspicious activities.\n- Escalate the incident to the security operations center (SOC) and relevant stakeholders to ensure awareness and coordinated response efforts.\n- Implement enhanced logging and alerting for agent ID anomalies to improve detection of similar threats in the future.",
+        "query": "from logs-endpoint.*  metadata _id\n| where event.agent_id_status is not null \n| stats Esql.count_distinct_host_ids = count_distinct(host.id), Esql.host_id_values = values(host.id), Esql.user_id_values_user_id = values(user.id) by agent.id\n| where Esql.count_distinct_host_ids >= 2\n| keep Esql.count_distinct_host_ids, Esql.host_id_values, Esql.user_id_values_user_id, agent.id\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.count_distinct_host_ids",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_id_values_user_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "493834ca-f861-414c-8602-150d5505b777",
+        "severity": "high",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 104
+    },
+    "id": "493834ca-f861-414c-8602-150d5505b777_104",
+    "type": "security-rule"
+}
