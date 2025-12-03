@@ -488,6 +488,12 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.packet_capture_name |  | keyword |
 | checkpoint.packet_capture_time |  | keyword |
 | checkpoint.packet_capture_unique_id | Identifier of the packet capture files. | keyword |
+| checkpoint.packets_dropped.destination.ip | Destination IP address of the dropped packet. | ip |
+| checkpoint.packets_dropped.destination.port | Destination port of the dropped packet. | long |
+| checkpoint.packets_dropped.interface.name | Interface name where the packet was dropped. | keyword |
+| checkpoint.packets_dropped.network.iana_number | IANA protocol number of the dropped packet. | keyword |
+| checkpoint.packets_dropped.source.ip | Source IP address of the dropped packet. | ip |
+| checkpoint.packets_dropped.source.port | Source port of the dropped packet. | long |
 | checkpoint.parent_file_hash | Archive's hash in case of extracted files. | keyword |
 | checkpoint.parent_file_name | Archive's name in case of extracted files. | keyword |
 | checkpoint.parent_file_uid | Archive's UID in case of extracted files. | keyword |
