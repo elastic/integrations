@@ -1,0 +1,519 @@
+- name: netbox
+  type: group
+  fields:
+    - name: url
+      type: keyword
+      description: The API URL for the device.
+    - name: display_url
+      type: keyword
+      description: The web UI URL for the device.
+    - name: display
+      type: keyword
+      description: The display name of the device.
+    - name: comments
+      type: text
+      description: User-provided comments for the device.
+    - name: last_updated
+      type: date
+      description: The timestamp when the device was last updated.
+    - name: created
+      type: date
+      description: The timestamp when the device was created.
+    - name: custom_fields
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: Custom fields configured for the device.
+    - name: tags
+      type: nested
+      fields:
+        - name: id
+          type: long
+          description: The unique identifier of the tag.
+        - name: url
+          type: keyword
+          description: The API URL for the tag.
+        - name: display_url
+          type: keyword
+          description: The display URL for the tag.
+        - name: display
+          type: keyword
+          description: The display name of the tag.
+        - name: name
+          type: keyword
+          description: The name of the tag.
+        - name: slug
+          type: keyword
+          description: The slug of the tag.
+        - name: color
+          type: keyword
+          description: The color code of the tag.
+    - name: tenant
+      type: group
+      fields:
+        - name: id
+          type: long
+          description: The unique identifier of the tenant.
+        - name: url
+          type: keyword
+          description: The API URL for the tenant.
+        - name: display
+          type: keyword
+          description: The display name of the tenant.
+        - name: name
+          type: keyword
+          description: The name of the tenant.
+        - name: slug
+          type: keyword
+          description: The slug of the tenant.
+        - name: description
+          type: text
+          description: The description of the tenant.
+    - name: device
+      type: group
+      fields:
+        - name: id
+          type: long
+          description: The unique numeric identifier for the device.
+        - name: coordinates
+          type: float
+          description: GPS coordinates in decimal format (longitude, latitude).
+        - name: name
+          type: keyword
+          description: The name of the device.
+        - name: device_type
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the device type.
+            - name: url
+              type: keyword
+              description: The API URL for the device type.
+            - name: display
+              type: keyword
+              description: The display name of the device type.
+            - name: manufacturer
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  description: The unique identifier of the manufacturer.
+                - name: url
+                  type: keyword
+                  description: The API URL for the manufacturer.
+                - name: display
+                  type: keyword
+                  description: The display name of the manufacturer.
+                - name: name
+                  type: keyword
+                  description: The name of the manufacturer.
+                - name: slug
+                  type: keyword
+                  description: The slug of the manufacturer.
+                - name: description
+                  type: text
+                  description: The description of the manufacturer.
+            - name: model
+              type: keyword
+              description: The model of the device type.
+            - name: slug
+              type: keyword
+              description: The slug of the device type.
+            - name: description
+              type: text
+              description: The description of the device type.
+        - name: role
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the device role.
+            - name: url
+              type: keyword
+              description: The API URL for the device role.
+            - name: display
+              type: keyword
+              description: The display name of the device role.
+            - name: name
+              type: keyword
+              description: The name of the device role.
+            - name: slug
+              type: keyword
+              description: The slug of the device role.
+            - name: description
+              type: text
+              description: The description of the device role.
+            - name: _depth
+              type: long
+              description: The depth level of the device role.
+        - name: platform
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the platform.
+            - name: url
+              type: keyword
+              description: The API URL for the platform.
+            - name: display
+              type: keyword
+              description: The display name of the platform.
+            - name: name
+              type: keyword
+              description: The name of the platform.
+            - name: slug
+              type: keyword
+              description: The slug of the platform.
+            - name: description
+              type: text
+              description: The description of the platform.
+        - name: serial
+          type: keyword
+          description: The serial number of the device.
+        - name: asset_tag
+          type: keyword
+          description: The asset tag of the device.
+        - name: site
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the site.
+            - name: url
+              type: keyword
+              description: The API URL for the site.
+            - name: display
+              type: keyword
+              description: The display name of the site.
+            - name: name
+              type: keyword
+              description: The name of the site.
+            - name: slug
+              type: keyword
+              description: The slug of the site.
+            - name: description
+              type: text
+              description: The description of the site.
+        - name: location
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the location.
+            - name: url
+              type: keyword
+              description: The API URL for the location.
+            - name: display
+              type: keyword
+              description: The display name of the location.
+            - name: name
+              type: keyword
+              description: The name of the location.
+            - name: slug
+              type: keyword
+              description: The slug of the location.
+            - name: description
+              type: text
+              description: The description of the location.
+            - name: rack_count
+              type: long
+              description: The number of racks in the location.
+            - name: _depth
+              type: long
+              description: The depth level of the location.
+        - name: virtual_chassis
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the virtual chassis.
+            - name: url
+              type: keyword
+              description: The API URL for the virtual chassis.
+            - name: display
+              type: keyword
+              description: The display name of the virtual chassis.
+            - name: name
+              type: keyword
+              description: The name of the virtual chassis.
+            - name: description
+              type: text
+              description: The description of the virtual chassis.
+            - name: master
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  description: The unique identifier of the master device.
+                - name: url
+                  type: keyword
+                  description: The API URL for the master device.
+                - name: display
+                  type: keyword
+                  description: The display name of the master device.
+                - name: display_url
+                  type: keyword
+                  description: The web UI URL for the master device.
+                - name: name
+                  type: keyword
+                  description: The name of the master device.
+            - name: member_count
+              type: long
+              description: The number of members in the virtual chassis.
+        - name: rack
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the rack.
+            - name: url
+              type: keyword
+              description: The API URL for the rack.
+            - name: display
+              type: keyword
+              description: The display name of the rack.
+            - name: name
+              type: keyword
+              description: The name of the rack.
+            - name: description
+              type: text
+              description: The description of the rack.
+        - name: position
+          type: long
+          description: The position of the device in the rack.
+        - name: face
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: The value of the device face.
+            - name: label
+              type: keyword
+              description: The label of the device face.
+        - name: parent_device
+          type: keyword
+          description: The parent device identifier.
+        - name: status
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: The status value of the device.
+            - name: label
+              type: keyword
+              description: The status label of the device.
+        - name: airflow
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: The airflow value of the device.
+            - name: label
+              type: keyword
+              description: The airflow label of the device.
+        - name: primary_ip
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the primary IP address.
+            - name: url
+              type: keyword
+              description: The API URL for the primary IP address.
+            - name: address
+              type: ip
+              description: The primary IP address.
+            - name: display
+              type: keyword
+              description: The display name of the primary IP address.
+            - name: name
+              type: keyword
+              description: The name of the primary IP address.
+            - name: description
+              type: text
+              description: The description of the primary IP address.
+            - name: family
+              type: group
+              fields:
+                - name: value
+                  type: long
+                  description: The IP family value (4 for IPv4, 6 for IPv6).
+                - name: label
+                  type: keyword
+                  description: The IP family label (IPv4 or IPv6).
+        - name: primary_ip4
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the primary IPv4 address.
+            - name: url
+              type: keyword
+              description: The API URL for the primary IPv4 address.
+            - name: address
+              type: ip
+              description: The primary IPv4 address.
+            - name: display
+              type: keyword
+              description: The display name of the primary IPv4 address.
+            - name: name
+              type: keyword
+              description: The name of the primary IPv4 address.
+            - name: description
+              type: text
+              description: The description of the primary IPv4 address.
+            - name: family
+              type: group
+              fields:
+                - name: value
+                  type: long
+                  description: The IP family value (4 for IPv4).
+                - name: label
+                  type: keyword
+                  description: The IP family label (IPv4).
+        - name: primary_ip6
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the primary IPv6 address.
+            - name: url
+              type: keyword
+              description: The API URL for the primary IPv6 address.
+            - name: address
+              type: ip
+              description: The primary IPv6 address.
+            - name: display
+              type: keyword
+              description: The display name of the primary IPv6 address.
+            - name: name
+              type: keyword
+              description: The name of the primary IPv6 address.
+            - name: description
+              type: text
+              description: The description of the primary IPv6 address.
+            - name: family
+              type: group
+              fields:
+                - name: value
+                  type: long
+                  description: The IP family value (6 for IPv6).
+                - name: label
+                  type: keyword
+                  description: The IP family label (IPv6).
+        - name: oob_ip
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the out-of-band IP address.
+            - name: url
+              type: keyword
+              description: The API URL for the out-of-band IP address.
+            - name: address
+              type: ip
+              description: The out-of-band IP address.
+            - name: display
+              type: keyword
+              description: The display name of the out-of-band IP address.
+            - name: name
+              type: keyword
+              description: The name of the out-of-band IP address.
+            - name: description
+              type: text
+              description: The description of the out-of-band IP address.
+            - name: family
+              type: group
+              fields:
+                - name: value
+                  type: long
+                  description: The IP family value (4 for IPv4, 6 for IPv6).
+                - name: label
+                  type: keyword
+                  description: The IP family label (IPv4 or IPv6).
+        - name: cluster
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the cluster.
+            - name: url
+              type: keyword
+              description: The API URL for the cluster.
+            - name: display
+              type: keyword
+              description: The display name of the cluster.
+            - name: name
+              type: keyword
+              description: The name of the cluster.
+            - name: description
+              type: text
+              description: The description of the cluster.
+        - name: vc_position
+          type: long
+          description: The virtual chassis position of the device.
+        - name: vc_priority
+          type: long
+          description: The virtual chassis priority of the device.
+        - name: description
+          type: text
+          description: The description of the device.
+        - name: config_template
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the config template.
+            - name: url
+              type: keyword
+              description: The API URL for the config template.
+            - name: description
+              type: text
+              description: The description of the config template.
+            - name: display
+              type: keyword
+              description: The display name of the config template.
+            - name: name
+              type: keyword
+              description: The name of the config template.
+        - name: config_context
+          type: object
+          object_type: keyword
+          object_type_mapping_type: "*"
+          description: The configuration context of the device.
+        - name: local_context_data
+          type: object
+          object_type: keyword
+          object_type_mapping_type: "*"
+          description: The local context data of the device.
+        - name: console_port_count
+          type: long
+          description: The number of console ports on the device.
+        - name: console_server_port_count
+          type: long
+          description: The number of console server ports on the device.
+        - name: power_port_count
+          type: long
+          description: The number of power ports on the device.
+        - name: power_outlet_count
+          type: long
+          description: The number of power outlets on the device.
+        - name: interface_count
+          type: long
+          description: The number of interfaces on the device.
+        - name: front_port_count
+          type: long
+          description: The number of front ports on the device.
+        - name: rear_port_count
+          type: long
+          description: The number of rear ports on the device.
+        - name: device_bay_count
+          type: long
+          description: The number of device bays on the device.
+        - name: module_bay_count
+          type: long
+          description: The number of module bays on the device.
+        - name: inventory_item_count
+          type: long
+          description: The number of inventory items associated with the device.
