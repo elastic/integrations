@@ -23,8 +23,8 @@ redact:
 # Everything the CEL program needs must be under `state`
 state:
   url: {{base_url}}
-  api_key: {{api_key}}
-  team_id: {{team_id}}
+  api_key: "{{api_key}}"
+  team_id: "{{team_id}}"
   offset: 0
   batch_size: {{batch_size}}
   # force string; when unset this becomes ""
@@ -51,31 +51,38 @@ program: |-
       ).with(
         {
           "Header": {
-            "X-API-Key": [string(state.api_key)],
-            "X-Team-Id": [string(state.team_id)],
+            ?"X-API-Key": ("api_key" in state && string(state["api_key"]) != "") ?
+              optional.of([string(state["api_key"])]) :
+              optional.none(),
+            ?"X-Team-Id": ("team_id" in state && string(state["team_id"]) != "") ?
+              optional.of([string(state["team_id"])]) :
+              optional.none(),
           },
         }
       ).do_request().as(resp,
-        (resp.StatusCode == 200) ?
-          bytes(resp.Body).decode_json().as(body,
+        {
+          "status_ok": resp.StatusCode == 200,
+          "resp": resp,
+          "body": (size(resp.Body) != 0) ? bytes(resp.Body).decode_json() : {}
+        }.as(vars,
+          {
+            "items": (vars.status_ok && ("data" in vars.body) && vars.body["data"] != null) ? vars.body["data"] : []
+          }.as(x,
             {
-              "events": has(body.data) ?
-                body.data.map(e, {"message": e.encode_json()})
-              :
-                [],
-              "offset": has(body.data) ?
-                (state.offset + body.data.size())
-              :
-                state.offset,
-              "want_more": has(body.data) && body.data.size() == int(state.batch_size),
+              "events": x.items.map(e, {"message": e.encode_json()}),
+              "offset": int(state.offset) + x.items.size(),
+              "want_more": vars.status_ok && x.items.size() == int(state.batch_size),
+              ?"error": vars.status_ok ?
+                optional.none() :
+                optional.of({"message": "HTTP " + string(vars.resp.StatusCode) + " " + string(vars.resp.Body)}),
+              "api_key": ("api_key" in state) ? state["api_key"] : "",
+              "team_id": ("team_id" in state) ? state["team_id"] : "",
+              "url": ("url" in state) ? state["url"] : "",
+              "batch_size": state.batch_size,
+              "time_window": state.time_window,
             }
           )
-        :
-          {
-            "events": [],
-            "error": {"message": "HTTP " + string(resp.StatusCode) + " " + string(resp.Body)},
-            "want_more": false,
-          }
+        )
       )
     )
   )
