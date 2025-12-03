@@ -125,11 +125,11 @@ The `billing_cluster_cost` transform automatically extracts these tags from the 
 
 **Note:** Each deployment should have only one `chargeback_group` tag. Having multiple tags can cause issues and lead to unpredictable cost allocation.
 
-## Observability Alerts
+## Observability Rules
 
-The following are sample observability alerts that can help ensure data validity by notifying you when events occur that could compromise the accuracy of your chargeback data:
+The following are sample observability rules that can help ensure data validity by notifying you when events occur that could compromise the accuracy of your chargeback data:
 
-### Alert 1: New Chargeback Group Detected
+### Rule 1: New Chargeback Group Detected
 
 Detects when a new `chargeback_group` tag is added to a deployment, allowing teams to be notified when new cost allocation groups are created.
 
@@ -147,23 +147,23 @@ POST kbn:/api/alerting/rule/chargeback_new_group_detected
   "params": {
     "size": 100,
     "esqlQuery": {
-      "esql": "FROM billing_cluster_cost_lookup | STATS count = COUNT(*) BY deployment_group | SORT deployment_group"
+      "esql": "FROM billing_cluster_cost_lookup | STATS count = COUNT(*) BY deployment_group | SORT deployment_group | KEEP deployment_group"
     },
     "threshold": [0],
     "timeField": "@timestamp",
     "searchType": "esqlQuery",
     "timeWindowSize": 3,
     "timeWindowUnit": "d",
-    "thresholdComparator": ">"
+    "thresholdComparator": ">",
+    "excludeHitsFromPreviousRun": true
   },
-  "notify_when": "onActionGroupChange",
   "actions": []
 }
 ```
 
-### Alert 2: Deployment with Chargeback Group Missing Usage Data
+### Rule 2: Deployment with Chargeback Group Missing Usage Data
 
-Alerts when a deployment has a chargeback group assigned but is not sending usage/consumption data. This indicates a potential configuration issue or data collection problem.
+Detects when a deployment has a chargeback group assigned but is not sending usage/consumption data. This indicates a potential configuration issue or data collection problem.
 
 **To create this alert**, navigate to **Dev Tools** in Kibana and run:
 ```json
@@ -174,22 +174,45 @@ POST kbn:/api/alerting/rule/chargeback_deployment_missing_usage_data
   "consumer": "alerts",
   "rule_type_id": ".es-query",
   "schedule": {
-    "interval": "6h"
+    "interval": "1h"
   },
   "params": {
-    "size": 0,
+    "size": 100,
     "esqlQuery": {
-      "esql": "FROM billing_cluster_cost_lookup | WHERE deployment_group != \"\" | LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key | WHERE cluster_name IS NULL | STATS count = COUNT(*) BY deployment_id, deployment_name, deployment_group"
+      "esql": """FROM billing_cluster_cost_lookup
+| WHERE deployment_group != ""
+| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key
+| WHERE cluster_name IS NULL
+| INLINE STATS count = COUNT(*) BY deployment_id, deployment_name, deployment_group
+| EVAL result = CONCAT("Deployment `", deployment_name,"` (`", deployment_id,"`) in deployment group `", deployment_group, "` did not have usage data since ", left(composite_key,10),".")
+| STATS result = VALUES(result)
+| MV_EXPAND result"""
     },
     "threshold": [0],
     "timeField": "@timestamp",
     "searchType": "esqlQuery",
     "timeWindowSize": 3,
     "timeWindowUnit": "d",
-    "thresholdComparator": ">"
+    "thresholdComparator": ">",
+    "excludeHitsFromPreviousRun": true
   },
   "actions": []
 }
+```
+
+### Alert actions
+
+**Configure an action** with the following message template appended to the default content (keep the new lines, as it helps with legibility):
+
+```
+Details:
+
+{{#context.hits}}
+• {{_source}}
+
+{{/context.hits}}
+
+Total: {{context.hits.length}}
 ```
 
 ## Requirements
