@@ -13,7 +13,12 @@ inputs:
           config_version: 2
           cursor:
             last_update_time:
-                value: '[[.last_event.lastUpdateDateTime]]'
+                do_not_log_failure: true
+                fail_on_template_error: true
+                value: |-
+                    [[- if index .last_event "lastUpdateDateTime" -]]
+                      [[- .last_event.lastUpdateDateTime -]]
+                    [[- end -]]
           data_stream:
             dataset: m365_defender.incident
           interval: 30s
