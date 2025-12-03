@@ -95,31 +95,17 @@ The integration creates the following transforms to aggregate cost and usage dat
 
 These transforms produce lookup indices that are queried by the dashboard using ES|QL LOOKUP JOINs to correlate billing costs with actual usage patterns.
 
-### Starting the Transforms
+### Transform Auto-Start
 
-After installing the integration, you need to manually start the four usage-related transforms:
+All Chargeback transforms start automatically when the integration is installed. No manual intervention is required to start the transforms.
 
-1. Navigate to **Stack Management → Transforms**
-2. Filter for `chargeback` to see all Chargeback transforms
-3. Start the following transforms:
-   - `cluster_deployment_contribution`
-   - `cluster_datastream_contribution`
-   - `cluster_tier_contribution`
-   - `cluster_tier_and_ds_contribution`
+**Performance Note:** On clusters with months of historical monitoring data for multiple deployments, the initial transform execution may process a large volume of data. This can cause temporary performance impact during the first run. The transforms will then run incrementally on their configured schedules (15-60 minute intervals), processing only new data with minimal overhead.
 
-The `billing_cluster_cost` transform starts automatically and does not require manual intervention.
+You can verify the transforms are running by navigating to **Stack Management → Transforms** and filtering for `chargeback`.
 
 ### Transform Health Monitoring
 
-To set up alerts that notify you when transforms are not working:
-
-1. Navigate to **Stack Management → Transforms**
-2. Filter for `chargeback` to see all Chargeback transforms
-3. Select a transform and click the **Actions** menu
-4. Select **Create alert rule**
-5. Configure the alert rule to notify when the transform health status changes
-
-This will create a transform health rule that monitors the selected transform and sends notifications when issues are detected.
+The integration includes a **Transform Health Monitoring** alert rule template that can be installed from the integration page. This rule monitors all Chargeback transforms and alerts when they encounter issues or failures, providing proactive notification of any problems with data processing.
 
 ## Dashboard
 
@@ -148,80 +134,15 @@ The `billing_cluster_cost` transform automatically extracts these tags from the 
 
 **Note:** Each deployment should have only one `chargeback_group` tag. Having multiple tags can cause issues and lead to unpredictable cost allocation.
 
-## Observability Rules
+## Observability Alerting
 
-The following are sample observability rules that can help ensure data validity by notifying you when events occur that could compromise the accuracy of your chargeback data:
+This integration includes 3 pre-configured alert rule templates that can be installed directly from the integration page in Kibana:
 
-### Rule 1: New Chargeback Group Detected
+1. **Transform Health Monitoring** - Monitors the health of all Chargeback transforms and alerts when they encounter issues or failures
+2. **New Chargeback Group Detected** - Notifies when a new `chargeback_group` tag is added to a deployment
+3. **Deployment with Chargeback Group Missing Usage Data** - Detects when a deployment has a chargeback group assigned but is not sending usage/consumption data
 
-Detects when a new `chargeback_group` tag is added to a deployment, allowing teams to be notified when new cost allocation groups are created.
-
-**To create this alert**, navigate to **Dev Tools** in Kibana and run:
-```json
-POST kbn:/api/alerting/rule/chargeback_new_group_detected
-{
-  "name": "[Chargeback] New chargeback group detected",
-  "tags": ["Chargeback"],
-  "consumer": "alerts",
-  "rule_type_id": ".es-query",
-  "schedule": {
-    "interval": "1h"
-  },
-  "params": {
-    "size": 100,
-    "esqlQuery": {
-      "esql": "FROM billing_cluster_cost_lookup | STATS count = COUNT(*) BY deployment_group | SORT deployment_group | KEEP deployment_group"
-    },
-    "threshold": [0],
-    "timeField": "@timestamp",
-    "searchType": "esqlQuery",
-    "timeWindowSize": 3,
-    "timeWindowUnit": "d",
-    "thresholdComparator": ">",
-    "excludeHitsFromPreviousRun": true
-  },
-  "actions": []
-}
-```
-
-### Rule 2: Deployment with Chargeback Group Missing Usage Data
-
-Detects when a deployment has a chargeback group assigned but is not sending usage/consumption data. This indicates a potential configuration issue or data collection problem.
-
-**To create this alert**, navigate to **Dev Tools** in Kibana and run:
-```json
-POST kbn:/api/alerting/rule/chargeback_deployment_missing_usage_data
-{
-  "name": "[Chargeback] Deployment with chargeback group missing usage data",
-  "tags": ["Chargeback"],
-  "consumer": "alerts",
-  "rule_type_id": ".es-query",
-  "schedule": {
-    "interval": "1h"
-  },
-  "params": {
-    "size": 100,
-    "esqlQuery": {
-      "esql": """FROM billing_cluster_cost_lookup
-| WHERE deployment_group != ""
-| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key
-| WHERE cluster_name IS NULL
-| INLINE STATS count = COUNT(*) BY deployment_id, deployment_name, deployment_group
-| EVAL result = CONCAT("Deployment `", deployment_name,"` (`", deployment_id,"`) in deployment group `", deployment_group, "` did not have usage data since ", left(composite_key,10),".")
-| STATS result = VALUES(result)
-| MV_EXPAND result"""
-    },
-    "threshold": [0],
-    "timeField": "@timestamp",
-    "searchType": "esqlQuery",
-    "timeWindowSize": 3,
-    "timeWindowUnit": "d",
-    "thresholdComparator": ">",
-    "excludeHitsFromPreviousRun": true
-  },
-  "actions": []
-}
-```
+**Important:** For alert rules 2 and 3, ensure that the Chargeback transforms are running before setting them up. These alerting rules query the lookup indices created by the transforms (`billing_cluster_cost_lookup`, `cluster_deployment_contribution_lookup`, etc.). If the transforms are not started, the alerts will not function correctly.
 
 ### Alert actions
 
