@@ -230,12 +230,12 @@ POST kbn:/api/alerting/rule/chargeback_deployment_missing_usage_data
 ```
 Details:
 
-{{#context.hits}}
-• {{_source}}
+{{`{{#context.hits}}`}}
+• {{`{{_source}}`}}
 
-{{/context.hits}}
+{{`{{/context.hits}}`}}
 
-Total: {{context.hits.length}}
+Total: {{`{{context.hits.length}}`}}
 ```
 
 ## Requirements
