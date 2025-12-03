@@ -333,17 +333,16 @@ processors:
       lang: painless
       tag: set_event_severity_from_severity_name
       if: ctx.crowdstrike?.SeverityName instanceof String && ctx.crowdstrike.SeverityName != ''
+      params:
+        low: 21
+        info: 21
+        informational: 21
+        medium: 47
+        high: 73
+        critical: 99
       source: |-
         ctx.event = ctx.event ?: [:];
-        def severityScores = [
-          'low': 21,
-          'info': 21,
-          'informational': 21,
-          'medium': 47,
-          'high': 73,
-          'critical': 99
-        ];
-        Integer score = severityScores[ctx.crowdstrike.SeverityName.toLowerCase()];
+        Integer score = params[ctx.crowdstrike.SeverityName.toLowerCase()];
         if (score != null) {
           ctx.event.severity = score;
         }

@@ -28,7 +28,7 @@ The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to easily
 
 3. **Falcon Data Replicator**: This collects events from your endpoints, cloud workloads, identities, and data. CrowdStrike Falcon Data Replicator (FDR) enables you with actionable insights to improve SOC performance. FDR contains data collected by the Falcon platform's single, lightweight agent. It includes the following datasets for receiving logs:
 
-- `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR). In addition to the existing log types, the integration supports parsing of Cloud Security Posture Management (CSPM) Indicators of Misconfiguration (IOM) and Indicators of Attack (IOA) events.
+- `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR). In addition to the existing log types, the integration supports parsing of Cloud Security Posture Management (CSPM). CSPM contains Indicators of Misconfiguration (IOM) and Indicators of Attack (IOA) events.
 
 4. **CrowdStrike Event Stream**: This streams security logs from CrowdStrike Event Stream, including authentication activity, cloud security posture management (CSPM), firewall logs, user activity, and XDR data. It captures real-time security events like user logins, cloud environment changes, network traffic, and advanced threat detections. The streaming integration provides continuous monitoring and analysis for proactive threat detection. It enhances visibility into user behavior, network security, and overall system health. This setup enables faster response capabilities to emerging security incidents. It includes the following datasets for receiving logs:
 
