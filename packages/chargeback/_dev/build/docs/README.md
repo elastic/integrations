@@ -34,7 +34,11 @@ Chargeback costs are presented based on a configured rate and unit. These are us
 
 ## Configuration
 
-All configuration values can be updated via the configuration lookup index:
+Configuration values are stored in the `chargeback_conf_lookup` index. The dashboard automatically applies the correct configuration based on the billing date falling within the `conf_start_date` and `conf_end_date` range.
+
+### Update the default configuration:
+
+Using `_update/config` updates the document with ID `config`:
 
 ```
 POST chargeback_conf_lookup/_update/config
@@ -42,14 +46,33 @@ POST chargeback_conf_lookup/_update/config
   "doc": {
     "conf_ecu_rate": 0.85,
     "conf_ecu_rate_unit": "EUR",
-    "conf_indexing_weight": 50,
+    "conf_indexing_weight": 20,
     "conf_query_weight": 20,
     "conf_storage_weight": 40,
     "conf_start_date": "2024-01-01T00:00:00.000Z",
-    "conf_end_date": "2024-12-31T23:59:59.999Z"
+    "conf_end_date": "2024-12-31T23:tie"
   }
 }
 ```
+
+### Add a new configuration period (for time-based rate changes):
+
+Using `_doc` creates a new document with an auto-generated ID:
+
+```
+POST chargeback_conf_lookup/_doc
+{
+  "conf_ecu_rate": 0.95,
+  "conf_ecu_rate_unit": "EUR",
+  "conf_indexing_weight": 20,
+  "conf_query_weight": 20,
+  "conf_storage_weight": 40,
+  "conf_start_date": "2025-01-01T00:00:00.000Z",
+  "conf_end_date": "2025-12-31T23:59:59.999Z"
+}
+```
+
+This allows you to have different rates for different time periods (e.g., quarterly or annual rate changes).
 
 **Configuration Options:**
 - `conf_ecu_rate`: The monetary value per ECU (e.g., 0.85)
