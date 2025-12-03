@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-12-03T10:00:00.000Z",
         "created_by": "elastic",
-        "description": "UserAssist Registry: Track applications executed via Windows Explorer. Shows execution count and last execution time per user. Useful for forensic investigation of user-initiated program execution. Note: Command-line executions are NOT captured. MITRE ATT&CK: T1204 (User Execution).",
+        "description": "UserAssist Registry: Track applications executed via Windows Explorer. Shows execution count and last execution time per user. Useful for forensic investigation of user-initiated program execution. MITRE ATT&CK: T1204 (User Execution).",
         "ecs_mapping": [
             {
                 "key": "file.path",
@@ -62,7 +62,7 @@
         "id": "userassist_windows_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "-- UserAssist: Track applications executed via Windows Explorer\n-- Forensic value: Shows user-initiated program executions with timestamps\n-- Note: Command-line executions (cmd.exe) are NOT captured in UserAssist\nSELECT\n  ua.path AS path,\n  REPLACE(ua.path, RTRIM(ua.path, REPLACE(ua.path, '\\', '')), '') AS name,\n  ua.sid AS sid,\n  u.username AS username,\n  datetime(ua.last_execution_time, 'unixepoch', 'UTC') AS last_execution_utc,\n  ua.last_execution_time,\n  ua.count AS execution_count,\n  h.md5 AS md5,\n  h.sha256 AS sha256\nFROM userassist ua\nLEFT JOIN users u ON ua.sid = u.uuid\nLEFT JOIN hash h ON ua.path = h.path\nWHERE ua.path != ''\n  AND ua.last_execution_time > 0",
+        "query": "-- UserAssist: Track applications executed via Windows Explorer\n-- Forensic value: Shows user-initiated program executions with timestamps\nSELECT\n  ua.path AS path,\n  REPLACE(ua.path, RTRIM(ua.path, REPLACE(ua.path, '\\', '')), '') AS name,\n  ua.sid AS sid,\n  u.username AS username,\n  datetime(ua.last_execution_time, 'unixepoch', 'UTC') AS last_execution_utc,\n  ua.last_execution_time,\n  ua.count AS execution_count,\n  h.md5 AS md5,\n  h.sha256 AS sha256\nFROM userassist ua\nLEFT JOIN users u ON ua.sid = u.uuid\nLEFT JOIN hash h ON ua.path = h.path\nWHERE ua.path != ''\n  AND ua.last_execution_time > 0",
         "updated_at": "2025-12-03T10:00:00.000Z",
         "updated_by": "elastic"
     },
