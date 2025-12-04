@@ -83,16 +83,19 @@ processors:
           return null;
         }
         processFields(ctx.ocsf);
-  - rename:
-      field: ocsf.resource
-      target_field: ocsf.resources
-      tag: rename_resource_to_resources
-      ignore_missing: true
-      if: ctx.ocsf?.resources == null
-  - append:
-      field: ocsf.resources
-      value: []
-      if: ctx.ocsf?.resources != null
+  - script:
+      description: Append resource to resources.
+      tag: script_ocsf_resources
+      lang: painless
+      if: ctx.ocsf?.resources == null && ctx.ocsf?.resource != null
+      source: >-
+        ctx.ocsf.resources = [];
+        ctx.ocsf.resources.add(ctx.ocsf.resource);
+        ctx.ocsf.remove('resource')
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ocsf.resources
       ignore_missing: true
