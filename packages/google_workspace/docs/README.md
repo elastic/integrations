@@ -1070,12 +1070,15 @@ An example event for `admin` looks as following:
 | google_workspace.admin.rule.name | The rule name. | keyword |
 | google_workspace.admin.service.name | The service name. | keyword |
 | google_workspace.admin.setting.description | The setting name. | keyword |
+| google_workspace.admin.setting.metadata.description |  | keyword |
+| google_workspace.admin.setting.metadata.rule.key |  | keyword |
+| google_workspace.admin.setting.metadata.rule.type |  | keyword |
+| google_workspace.admin.setting.metadata.user_defined.name | The name of the user-defined setting. | keyword |
 | google_workspace.admin.setting.name | The setting name. | keyword |
 | google_workspace.admin.url.name | The website name. | keyword |
 | google_workspace.admin.user.birthdate | The user's birth date. | date |
 | google_workspace.admin.user.email | The user's primary email address. | keyword |
 | google_workspace.admin.user.nickname | The user's nickname. | keyword |
-| google_workspace.admin.user_defined_setting.name | The name of the user-defined setting. | keyword |
 | google_workspace.admin.verification_method | Related verification method. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-security-settings and https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-domain-settings | keyword |
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
