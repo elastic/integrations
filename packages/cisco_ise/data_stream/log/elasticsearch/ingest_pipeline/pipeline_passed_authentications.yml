@@ -169,17 +169,22 @@ processors:
         'cts-pac-opaque': true
       source: |-
         def m = new HashMap();
+        def attrs = new HashMap();
+
         for (val in ctx.cisco_ise.log.log_details['cisco-av-pair']) {
           int pos = val.indexOf("=");
           if (pos == -1) {
             if(params.containsKey(val)) m[val] = null;
           } else {
             def key = val.substring(0,pos);
-            if(params.containsKey(key)) m[key] = val.substring(pos+1);
+            def value = val.substring(pos+1);
+            attrs[key] = value;
+            if(params.containsKey(key)) m[key] = value;
           }
         }
-        
+
         ctx.cisco_ise.log["cisco_av_pair"] = m;
+        ctx.cisco_ise.log["attributes"] = attrs;
   - kv:
       tag: kv_av_pair
       if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['cisco-av-pair'] instanceof String
