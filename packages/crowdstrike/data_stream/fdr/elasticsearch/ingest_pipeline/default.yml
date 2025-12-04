@@ -2,6 +2,15 @@
 description: Pipeline for processing sample logs
 processors:
   - remove:
+      tag: remove_constant_keyword_fields
+      field:
+        - ecs.version
+        - event.dataset
+        - event.module
+        - observer.type
+        - observer.vendor
+      ignore_missing: true
+  - remove:
       field:
         - organization
         - division
@@ -2618,12 +2627,17 @@ processors:
       field: crowdstrike.User.Name
       target_field: user.name
       ignore_missing: true
-      if: ctx.crowdstrike?.User?.Name != null && ctx.user?.name == null
+      if: '!(ctx.crowdstrike?.User instanceof String) && ctx.crowdstrike?.User?.Name != null && ctx.user?.name == null'
   - rename:
       field: crowdstrike.UserName
       target_field: user.name
       ignore_missing: true
       if: ctx.crowdstrike?.UserName != null && ctx.user?.name == null
+  - rename:
+      if: ctx.crowdstrike?.User instanceof String && ctx.user?.name == null
+      field: crowdstrike.User
+      target_field: user.name
+      ignore_missing: true
   - split:
       field: crowdstrike.UserPrincipal
       target_field: "_temp.user_parts"
@@ -3693,7 +3707,6 @@ processors:
       ignore_missing: true
   - remove:
       field:
-        - ecs.version
         - _temp
         - crowdstrike.timestamp
         - crowdstrike._time
