@@ -21,7 +21,6 @@ state:
   want_more: false
 redact:
   fields:
-    - user
     - password
     - next.access_token
 program: |
@@ -97,8 +96,9 @@ program: |
               []
             ),
             "next": {
+              // Store the access token for the pagination request.
               ?"access_token": has(body.nextPageToken) ? optional.of(state.next.access_token) : optional.none(),
-              ?"pageToken": has(body.nextPageToken) ? optional.of(body.nextPageToken) : optional.none(),
+              ?"pageToken": body.?nextPageToken,
             },
             "batch_size": state.batch_size,
             "url": state.url,
