@@ -109,6 +109,8 @@ When CloudWatch log collection is enabled, you can retrieve logs from all log st
 | aws_bedrock.invocation.input.input_content_type |  | keyword |
 | aws_bedrock.invocation.input.input_token_count | The number of tokens used in the GenAI input. | long |
 | aws_bedrock.invocation.input.messages_content_kinds | The different content formats related to the input messages/prompts. | keyword |
+| aws_bedrock.invocation.messages.content.text |  | match_only_text |
+| aws_bedrock.invocation.messages.content.type |  | keyword |
 | aws_bedrock.invocation.model_id |  | keyword |
 | aws_bedrock.invocation.output.completion_text | The formatted LLM text model responses. Only a limited number of LLM text models are supported. | text |
 | aws_bedrock.invocation.output.output_body_json |  | flattened |
@@ -119,6 +121,8 @@ When CloudWatch log collection is enabled, you can retrieve logs from all log st
 | aws_bedrock.invocation.result |  | keyword |
 | aws_bedrock.invocation.schema_type |  | keyword |
 | aws_bedrock.invocation.schema_version |  | keyword |
+| aws_bedrock.invocation.system.text |  | match_only_text |
+| aws_bedrock.invocation.system.type |  | keyword |
 | aws_bedrock.invocation.task_type |  | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
