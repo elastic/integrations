@@ -55,6 +55,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.cloudfront.cookies | This key is used to capture the cookies specifically. | keyword |
 | aws.cloudfront.domain | The domain name of the CloudFront distribution (for example, d111111abcdef8.cloudfront.net). | keyword |
 | aws.cloudfront.edge_detailed_result_type | When the value of the x-edge-result-type field is Error, this field contains the specific type of error. When the object was served to the viewer from the Origin Shield cache, this field contains OriginShieldHit. In all other cases, this field contains the same value as x-edge-result-type. | keyword |
 | aws.cloudfront.edge_location | The edge location that served the request. Each edge location is identified by a three-letter code and an arbitrarily assigned number (for example, DFW3). The three-letter code typically corresponds with the International Air Transport Association (IATA) airport code for an airport near the edge location’s geographic location. | keyword |
