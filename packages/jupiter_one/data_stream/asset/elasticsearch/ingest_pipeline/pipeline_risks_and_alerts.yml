@@ -1,0 +1,502 @@
+---
+description: Pipeline for processing risks and alerts type.
+processors:
+
+  # Set event.* fields.
+  - set:
+      tag: set_event_kind_1
+      field: event.kind
+      value: alert
+  - append:
+      tag: append_event_category
+      if: ctx.jupiter_one.asset.entity._class.contains('Vulnerability')
+      field: event.category
+      value: vulnerability
+  - append:
+      tag: append_event_type
+      if: ctx.jupiter_one.asset.entity._class.contains('Vulnerability')
+      field: event.type
+      value: info
+  # Dot expander
+  - dot_expander:
+      tag: dot_expander_from_*
+      field: '*'
+      path: jupiter_one.asset.properties
+  # Date processors
+  - date:
+      tag: date_jupiter_one_asset_properties_approved_on_into_jupiter_one_asset_properties_approved_on
+      if: ctx.jupiter_one?.asset?.properties?.approved_on != null && ctx.jupiter_one.asset.properties.approved_on != ''
+      field: jupiter_one.asset.properties.approved_on
+      target_field: jupiter_one.asset.properties.approved_on
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_01
+            field:
+              - jupiter_one.asset.properties.approved_on
+        - append:
+            tag: append_error_message_01
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_jupiter_one_asset_properties_reported_on_into_jupiter_one_asset_properties_reported_on
+      if: ctx.jupiter_one?.asset?.properties?.reported_on != null && ctx.jupiter_one.asset.properties.reported_on != ''
+      field: jupiter_one.asset.properties.reported_on
+      target_field: jupiter_one.asset.properties.reported_on
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_02
+            field:
+              - jupiter_one.asset.properties.reported_on
+        - append:
+            tag: append_error_message_02
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_jupiter_one_asset_properties_detected_on_into_jupiter_one_asset_properties_detected_on
+      if: ctx.jupiter_one?.asset?.properties?.detected_on != null && ctx.jupiter_one.asset.properties.detected_on != ''
+      field: jupiter_one.asset.properties.detected_on
+      target_field: jupiter_one.asset.properties.detected_on
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_03
+            field:
+              - jupiter_one.asset.properties.detected_on
+        - append:
+            tag: append_error_message_03
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_jupiter_one_asset_properties_published_on_into_jupiter_one_asset_properties_published_on
+      if: ctx.jupiter_one?.asset?.properties?.published_on != null && ctx.jupiter_one.asset.properties.published_on != ''
+      field: jupiter_one.asset.properties.published_on
+      target_field: jupiter_one.asset.properties.published_on
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_04
+            field:
+              - jupiter_one.asset.properties.published_on
+        - append:
+            tag: append_error_message_04
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Long Processors
+  - convert:
+      tag: convert_jupiter_one_asset_properties_total_number_of_affected_entities_to_long
+      field: jupiter_one.asset.properties.total_number_of_affected_entities
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_05
+            field:
+              - jupiter_one.asset.properties.total_number_of_affected_entities
+        - append:
+            tag: append_error_message_05
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_numeric_severity_to_long
+      field: jupiter_one.asset.properties.numeric_severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_06
+            field:
+              - jupiter_one.asset.properties.numeric_severity
+        - append:
+            tag: append_error_message_06
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_remediation_sla_to_long
+      field: jupiter_one.asset.properties.remediation_sla
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_07
+            field:
+              - jupiter_one.asset.properties.remediation_sla
+        - append:
+            tag: append_error_message_07
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_exploit_status_to_long
+      field: jupiter_one.asset.properties.exploit_status
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_08
+            field:
+              - jupiter_one.asset.properties.exploit_status
+        - append:
+            tag: append_error_message_08
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Double Processors
+  - convert:
+      tag: convert_jupiter_one_asset_properties_exploitability_to_double
+      field: jupiter_one.asset.properties.exploitability
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_09
+            field:
+              - jupiter_one.asset.properties.exploitability
+        - append:
+            tag: append_error_message_09
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_impact_to_double
+      field: jupiter_one.asset.properties.impact
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_10
+            field:
+              - jupiter_one.asset.properties.impact
+        - append:
+            tag: append_error_message_10
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_score_to_double
+      field: jupiter_one.asset.properties.score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_11
+            field:
+              - jupiter_one.asset.properties.score
+        - append:
+            tag: append_error_message_11
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Boolean Processors
+  - convert:
+      tag: convert_jupiter_one_asset_properties_open_to_boolean
+      field: jupiter_one.asset.properties.open
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_12
+            field:
+              - jupiter_one.asset.properties.open
+        - append:
+            tag: append_error_message_12
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_approved_to_boolean
+      field: jupiter_one.asset.properties.approved
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_13
+            field:
+              - jupiter_one.asset.properties.approved
+        - append:
+            tag: append_error_message_13
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_exception_to_boolean
+      field: jupiter_one.asset.properties.exception
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_14
+            field:
+              - jupiter_one.asset.properties.exception
+        - append:
+            tag: append_error_message_14
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_production_to_boolean
+      field: jupiter_one.asset.properties.production
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_15
+            field:
+              - jupiter_one.asset.properties.production
+        - append:
+            tag: append_error_message_15
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_blocks_production_to_boolean
+      field: jupiter_one.asset.properties.blocks_production
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_16
+            field:
+              - jupiter_one.asset.properties.blocks_production
+        - append:
+            tag: append_error_message_16
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_tag_production_to_boolean
+      field: jupiter_one.asset.properties.tag.production
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_17
+            field:
+              - jupiter_one.asset.properties.tag.production
+        - append:
+            tag: append_error_message_17
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_blocking_to_boolean
+      field: jupiter_one.asset.properties.blocking
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_18
+            field:
+              - jupiter_one.asset.properties.blocking
+        - append:
+            tag: append_error_message_18
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to IP
+  - convert:
+      tag: convert_jupiter_one_asset_properties_device_local_ip_to_ip
+      if: ctx.jupiter_one?.asset?.properties?.device_local_ip != ''
+      field: jupiter_one.asset.properties.device_local_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_19
+            field:
+              - jupiter_one.asset.properties.device_local_ip
+        - append:
+            tag: append_error_message_19
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_jupiter_one_asset_properties_device_external_ip_to_ip
+      if: ctx.jupiter_one?.asset?.properties?.device_external_ip != ''
+      field: jupiter_one.asset.properties.device_external_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_20
+            field:
+              - jupiter_one.asset.properties.device_external_ip
+        - append:
+            tag: append_error_message_20
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - append:
+      tag: append_related_user_1
+      if: ctx.jupiter_one?.asset?.properties?.reporter != null
+      field: related.user
+      value: '{{{jupiter_one.asset.properties.reporter}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_1
+      if: ctx.jupiter_one?.asset?.properties?.device_local_ip != null
+      field: related.ip
+      value: '{{{jupiter_one.asset.properties.device_local_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_2
+      if: ctx.jupiter_one?.asset?.properties?.user_id != null
+      field: related.user
+      value: '{{{jupiter_one.asset.properties.user_id}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_2
+      if: ctx.jupiter_one?.asset?.properties?.device_external_ip != null
+      field: related.ip
+      value: '{{{jupiter_one.asset.properties.device_external_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts
+      if: ctx.jupiter_one?.asset?.properties?.device_hostname != null
+      field: related.hosts
+      value: '{{{jupiter_one.asset.properties.device_hostname}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_3
+      if: ctx.jupiter_one?.asset?.properties?.user_name != null
+      field: related.user
+      value: '{{{jupiter_one.asset.properties.user_name}}}'
+      allow_duplicates: false
+  - foreach:
+      tag: foreach_of_jupiter_one_asset_properties_approvers
+      if: ctx.jupiter_one?.asset?.properties?.approvers instanceof List
+      field: jupiter_one.asset.properties.approvers
+      processor:
+        append:
+          tag: append_related_user_4
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
+  # Map custom fields to corresponding ECS and related fields.
+  - set:
+      tag: set_log_level
+      field: log.level
+      copy_from: jupiter_one.asset.properties.level
+      ignore_empty_value: true
+  - lowercase:
+      field: log.level
+      tag: lowercase_log_level
+      ignore_missing: true
+  - set:
+      tag: set_vulnerability_id
+      field: vulnerability.id
+      copy_from: jupiter_one.asset.properties.cve_id
+      ignore_empty_value: true
+      if: ctx.jupiter_one?.asset?.entity?._class?.contains('Vulnerability') == true
+  - set:
+      tag: set_vulnerability_score_base
+      field: vulnerability.score.base
+      copy_from: jupiter_one.asset.properties.score
+      ignore_empty_value: true
+      if: ctx.jupiter_one?.asset?.entity?._class?.contains('Vulnerability') == true
+  - set:
+      tag: set_vulnerability_severity
+      field: vulnerability.severity
+      copy_from: jupiter_one.asset.properties.severity
+      ignore_empty_value: true
+      if: ctx.jupiter_one?.asset?.entity?._class?.contains('Vulnerability') == true
+  - set:
+      tag: set_host_id
+      field: host.id
+      copy_from: jupiter_one.asset.properties.device_id
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_file_name
+      field: threat.indicator.file.name
+      copy_from: jupiter_one.asset.properties.filename
+      ignore_empty_value: true
+      if: ctx.jupiter_one?.asset?.entity?._class?.contains('Finding') == true
+  - set:
+      tag: set_user_id
+      field: user.id
+      copy_from: jupiter_one.asset.properties.user_id
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_file_path
+      field: threat.indicator.file.path
+      copy_from: jupiter_one.asset.properties.filepath
+      ignore_empty_value: true
+      if: ctx.jupiter_one?.asset?.entity?._class?.contains('Finding') == true
+  - set:
+      tag: set_threat_indicator_ip
+      field: threat.indicator.ip
+      copy_from: jupiter_one.asset.properties.device_external_ip
+      ignore_empty_value: true
+      if: ctx.jupiter_one?.asset?.entity?._class?.contains('Finding') == true
+  - set:
+      tag: set_host_os_version
+      field: host.os.version
+      copy_from: jupiter_one.asset.properties.device_os_version
+      ignore_empty_value: true
+  - set:
+      tag: set_host_hostname
+      field: host.hostname
+      copy_from: jupiter_one.asset.properties.device_hostname
+      ignore_empty_value: true
+  - set:
+      tag: set_host_os_platform
+      field: host.os.platform
+      copy_from: jupiter_one.asset.properties.device_platform_name
+      ignore_empty_value: true
+  - set:
+      tag: set_user_name
+      field: user.name
+      copy_from: jupiter_one.asset.properties.user_name
+      ignore_empty_value: true
+  - append:
+      tag: append_vulnerability_category
+      if: ctx.jupiter_one?.asset?.properties?.category != null && ctx.jupiter_one?.asset?.entity?._class?.contains('Vulnerability') == true
+      field: vulnerability.category
+      value: '{{{jupiter_one.asset.properties.category}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_technique_name
+      if: ctx.jupiter_one?.asset?.properties?.technique != null && ctx.jupiter_one?.asset?.entity?._class?.contains('Finding') == true
+      field: threat.technique.name
+      value: '{{{jupiter_one.asset.properties.technique}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_host_mac
+      if: ctx.jupiter_one?.asset?.properties?.device_mac_address != null
+      field: host.mac
+      value: '{{{jupiter_one.asset.properties.device_mac_address}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_technique_id
+      if: ctx.jupiter_one?.asset?.properties?.technique_id != null && ctx.jupiter_one?.asset?.entity?._class?.contains('Finding') == true
+      field: threat.technique.id
+      value: '{{{jupiter_one.asset.properties.technique_id}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_tactic_id
+      if: ctx.jupiter_one?.asset?.properties?.tactic_id != null && ctx.jupiter_one?.asset?.entity?._class?.contains('Finding') == true
+      field: threat.tactic.id
+      value: '{{{jupiter_one.asset.properties.tactic_id}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_tactic_name
+      if: ctx.jupiter_one?.asset?.properties?.tactic != null && ctx.jupiter_one?.asset?.entity?._class?.contains('Finding') == true
+      field: threat.tactic.name
+      value: '{{{jupiter_one.asset.properties.tactic}}}'
+      allow_duplicates: false
+  - set:
+      tag: set_vulnerability_enumeration
+      if: ctx.jupiter_one?.asset?.properties?.cve_id != null
+      field: vulnerability.enumeration
+      value: CVE
+on_failure:
+  - append:
+      tag: append_error_message_21
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_2
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
