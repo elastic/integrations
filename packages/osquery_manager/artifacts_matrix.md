@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2025-11-20
+**Total Core Artifacts**: 2 available + 38 in progress + 6 not available = 46 total variants
+**Total Queries**: 31 (4 core forensic variants + 27 additional)
+**Completion Rate**: 4.3% (2/46 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 2     | 4.3%       |
+| ⚠️ In Progress (Needs Validation) | 38    | 82.6%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -54,7 +54,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 14a | Persistence             | ⚠️ | Linux | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
 | 14b | Persistence             | ⚠️ | Mac | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
 | 15 | PowerShell History      | ⚠️ | Win | -     | -    | powershell_events table                                                                                                          |
-| 16 | Prefetch Files          | ⚠️ | Win | -     | -    | prefetch table                                                                                                                   |
+| 16 | Prefetch Files          | ✅ | Win | prefetch_windows_elastic | [c9f4](kibana/osquery_saved_query/osquery_manager-c9f4e1a0-a7e4-11ef-9b3d-94b24cd614c6.json) | Native prefetch table (CORRECTED: parses .pf files to extract executable names, run counts, last run times, and accessed resources - equivalent to VQL Windows.Forensics.Prefetch) |
 | 17 | Process Listing         | ⚠️ | Win | -     | -    | processes table                                                                                                                  |
 | 17a | Process Listing         | ⚠️ | Linux | -     | -    | processes table                                                                                                                  |
 | 17b | Process Listing         | ⚠️ | Mac | -     | -    | processes table                                                                                                                  |
@@ -127,12 +127,13 @@ The following artifacts cannot be queried with standard osquery and require exte
 |:-:|----------|:------:|-------|
 | 1 | Browser URL History (All Platforms) | ⚠️ | No native table, databases locked while browser running. Can be supported via ATC custom tables. Alternative: Downloads folder analysis, file system queries for browser cache |
 | 2 | BITS Jobs Database (Windows) | ⚠️ | Not a native table, but can be queried via windows_eventlog table |
+| 3 | Prefetch Files (Windows) | ✅ | CORRECTED: Native prefetch table available since Osquery v5.x - fully parses .pf files to extract executable names, run counts, last run times, and accessed resources. Equivalent to VQL Windows.Forensics.Prefetch artifact. |
 
 ### Alternative Coverage
 
 While some artifacts are not directly available, the existing queries provide strong coverage through related artifacts:
 
-**Execution Tracking**: Use Prefetch + AppCompatCache (shimcache) + File Listing + Process Listing instead of AmCache
+**Execution Tracking**: Use Prefetch (native prefetch table) + AppCompatCache (shimcache) + File Listing + Process Listing instead of AmCache
 **User Activity**: Use Shellbags + LNK Files + Recent Files instead of Jumplists/Browser History
 **File System Monitoring**: Use NTFS USN Journal + File Listing with Hashes instead of MFT
 **Resource Access**: Use Network Connections (process_open_sockets) + Process Listing instead of Open Handles
@@ -154,7 +155,7 @@ While some artifacts are not directly available, the existing queries provide st
 ### Execution Artifacts
 - ⚠️ AppCompatCache (Windows: shimcache table)
 - ⚠️ PowerShell History (Windows: powershell_events table)
-- ⚠️ Prefetch Files (Windows: prefetch table)
+- ✅ Prefetch Files (Windows: native prefetch table - CORRECTED to use proper parsing, not file enumeration)
 - ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
 
 ### Persistence Mechanisms
