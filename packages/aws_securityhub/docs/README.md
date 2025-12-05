@@ -11,16 +11,17 @@ The AWS Security Hub integration uses the REST API. It uses the `GetFindingsV2` 
 
 ### How it works
 
-The **finding** data stream uses the `/findingsv2` endpoint to gather all findings starting from the configured initial interval. Subsequently, it fetches the recent findings available at each specified interval.
+The **finding** data stream uses the `/findingsv2` endpoint to gather all findings starting from the configured `Initial Interval`. Subsequently, it fetches the recent findings available at each specified `Interval`.
 
 ## What data does this integration collect?
 
-The AWS Security Hub integration collects log messages of the following types:
+The AWS Security Hub integration collects logs of the following types:
 
 - `Finding`: Returns a list of findings in OCSF format. Refer to the [GetFindingsV2 API Reference](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindingsV2.html).
 
 ### Supported use cases
-Integrating AWS Security Hub with Elastic SIEM provides a comprehensive view of the security state of your AWS resources. Leveraging AWS Security Hub integration helps you analyze security trends to identify and prioritize security issues across your AWS environment.
+
+Integrating AWS Security Hub with Elastic SIEM provides a comprehensive view of the security state of your AWS resources. Leveraging AWS Security Hub integration helps you analyze security trends to identify and prioritize security issues across your AWS environment. It also adds support for the [Elastic Cloud Security Workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data), allowing users to explore insights via the Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3).
 
 ## What do I need to use this integration?
 
@@ -57,7 +58,7 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search bar, type **AWS Security Hub**.
 3. Select the **AWS Security Hub** integration from the search results.
-4. Select **Add AWS Security Hubs** to add the integration.
+4. Select **Add AWS Security Hub** to add the integration.
 5. Enable and configure **Collect AWS Security Hub logs via API**:
 
     - Configure AWS Authentication parameters and set the **AWS Region** and **Top Level Domain**. Adjust the integration configuration parameters as needed, including the **Initial Interval**, **Interval**, **Batch Size** etc. to enable data collection.
@@ -1522,7 +1523,173 @@ For more information on architectures that can be used for scaling this integrat
 
 #### Finding
 
+An example event for `finding` looks as following:
 
+```json
+{
+    "@timestamp": "2025-09-19T09:17:19.594Z",
+    "agent": {
+        "ephemeral_id": "d99253fa-73de-4995-bf01-2a3765e8e14a",
+        "id": "4dc5b472-1e62-4182-ab60-92b49ef1037c",
+        "name": "elastic-agent-84401",
+        "type": "filebeat",
+        "version": "9.3.0"
+    },
+    "aws_securityhub": {
+        "finding": {
+            "activity_id": "1",
+            "category_name": "Findings",
+            "category_uid": "2",
+            "class_name": "Compliance Finding",
+            "class_uid": "2003",
+            "cloud": {
+                "provider": "AWS",
+                "region": "us-east-2"
+            },
+            "compliance": {
+                "control": "SQS.3",
+                "standards": "standards/aws-foundational-security-best-practices/v/1.0.0",
+                "status": "Pass",
+                "status_id": "1"
+            },
+            "finding_info": {
+                "analytic": {
+                    "category": "AWS::Config::ConfigRule",
+                    "name": "securityhub-sqs-queue-no-public-access-abcdef12",
+                    "type": "Rule",
+                    "type_id": "1"
+                },
+                "created_time": "2025-09-19T09:17:19.594Z",
+                "created_time_dt": "2025-09-19T09:17:19.594Z",
+                "first_seen_time": "2025-09-19T09:17:17.503Z",
+                "first_seen_time_dt": "2025-09-19T09:17:17.503Z",
+                "last_seen_time": "2025-09-19T09:17:17.503Z",
+                "last_seen_time_dt": "2025-09-19T09:17:17.503Z",
+                "modified_time": "2025-09-19T09:17:19.594Z",
+                "types": [
+                    "Software and Configuration Checks/Industry and Regulatory Standards",
+                    "Posture Management"
+                ]
+            },
+            "metadata": {
+                "product": {
+                    "name": "Security Hub",
+                    "uid": "arn:aws:securityhub:us-east-2::productv2/aws/securityhub"
+                },
+                "profiles": [
+                    "cloud",
+                    "datetime"
+                ],
+                "uid": "d1bc4b01234567890123456789abcdefabcdefabcdefabcdef123456",
+                "version": "1.6.0"
+            },
+            "remediation": {
+                "desc": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.",
+                "references": "https://docs.aws.amazon.com/console/securityhub/SQS.3/remediation"
+            },
+            "resources": {
+                "cloud_partition": "aws",
+                "owner": {
+                    "account": {
+                        "uid": "123456789012"
+                    }
+                },
+                "region": "us-east-2",
+                "type": "AWS::SQS::Queue",
+                "uid": "https://sqs.us-east-2.amazonaws.com/123456789012/securityhubfinding",
+                "uid_alt": "arn:aws:sqs:us-east-2:123456789012:securityhubfinding"
+            },
+            "severity": "Informational",
+            "severity_id": "1",
+            "status": "Resolved",
+            "status_id": "4",
+            "time": "2025-09-19T09:17:19.594Z",
+            "type_name": "Compliance Finding: Create",
+            "type_uid": "200301",
+            "vendor_attributes": {
+                "severity": "Informational",
+                "severity_id": "1"
+            }
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "123456789012"
+        },
+        "provider": "aws",
+        "region": "us-east-2",
+        "service": {
+            "name": "AWS::SQS::Queue"
+        }
+    },
+    "data_stream": {
+        "dataset": "aws_securityhub.finding",
+        "namespace": "26984",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.2.0"
+    },
+    "elastic_agent": {
+        "id": "4dc5b472-1e62-4182-ab60-92b49ef1037c",
+        "snapshot": true,
+        "version": "9.3.0"
+    },
+    "event": {
+        "action": "Create",
+        "agent_id_status": "verified",
+        "created": "2025-09-19T09:17:19.594Z",
+        "dataset": "aws_securityhub.finding",
+        "id": "arn:aws:securityhub:us-east-2:123456789012:security-control/SQS.3/finding/7abcdef4-abcd-1234-5678-501234567894",
+        "ingested": "2025-12-05T03:08:57Z",
+        "kind": "state",
+        "module": "aws_securityhub",
+        "original": "{\"activity_id\":1,\"activity_name\":\"Create\",\"category_name\":\"Findings\",\"category_uid\":2,\"class_name\":\"Compliance Finding\",\"class_uid\":2003,\"cloud\":{\"account\":{\"uid\":\"123456789012\"},\"provider\":\"AWS\",\"region\":\"us-east-2\"},\"compliance\":{\"control\":\"SQS.3\",\"standards\":[\"standards/aws-foundational-security-best-practices/v/1.0.0\"],\"status\":\"Pass\",\"status_id\":1},\"finding_info\":{\"analytic\":{\"category\":\"AWS::Config::ConfigRule\",\"name\":\"securityhub-sqs-queue-no-public-access-abcdef12\",\"type\":\"Rule\",\"type_id\":1},\"created_time\":1758273439594,\"created_time_dt\":\"2025-09-19T09:17:19.594Z\",\"desc\":\"This controls checks whether an Amazon SQS access policy allows public access to an SQS queue. The control fails if an SQS access policy allows public access to the queue.\",\"first_seen_time\":1758273437503,\"first_seen_time_dt\":\"2025-09-19T09:17:17.503Z\",\"last_seen_time\":1758273437503,\"last_seen_time_dt\":\"2025-09-19T09:17:17.503Z\",\"modified_time\":1758273439594,\"modified_time_dt\":\"2025-09-19T09:17:19.594Z\",\"title\":\"SQS queue access policies should not allow public access\",\"types\":[\"Software and Configuration Checks/Industry and Regulatory Standards\",\"Posture Management\"],\"uid\":\"arn:aws:securityhub:us-east-2:123456789012:security-control/SQS.3/finding/7abcdef4-abcd-1234-5678-501234567894\"},\"metadata\":{\"product\":{\"name\":\"Security Hub\",\"uid\":\"arn:aws:securityhub:us-east-2::productv2/aws/securityhub\",\"vendor_name\":\"AWS\"},\"profiles\":[\"cloud\",\"datetime\"],\"uid\":\"d1bc4b01234567890123456789abcdefabcdefabcdefabcdef123456\",\"version\":\"1.6.0\"},\"remediation\":{\"desc\":\"For information on how to correct this issue, consult the AWS Security Hub controls documentation.\",\"references\":[\"https://docs.aws.amazon.com/console/securityhub/SQS.3/remediation\"]},\"resources\":[{\"cloud_partition\":\"aws\",\"owner\":{\"account\":{\"uid\":\"123456789012\"}},\"region\":\"us-east-2\",\"type\":\"AWS::SQS::Queue\",\"uid\":\"https://sqs.us-east-2.amazonaws.com/123456789012/securityhubfinding\",\"uid_alt\":\"arn:aws:sqs:us-east-2:123456789012:securityhubfinding\"}],\"severity\":\"Informational\",\"severity_id\":1,\"status\":\"Resolved\",\"status_id\":4,\"time\":1758273439594,\"time_dt\":\"2025-09-19T09:17:19.594Z\",\"type_name\":\"Compliance Finding: Create\",\"type_uid\":200301,\"vendor_attributes\":{\"severity\":\"Informational\",\"severity_id\":1}}",
+        "outcome": "success",
+        "provider": "AWS",
+        "severity": 21,
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "vendor": "AWS Security Hub"
+    },
+    "organization": {
+        "name": "AWS"
+    },
+    "resource": {
+        "id": "https://sqs.us-east-2.amazonaws.com/123456789012/securityhubfinding",
+        "type": "AWS::SQS::Queue"
+    },
+    "result": {
+        "evaluation": "passed"
+    },
+    "rule": {
+        "description": "This controls checks whether an Amazon SQS access policy allows public access to an SQS queue. The control fails if an SQS access policy allows public access to the queue.",
+        "id": "SQS.3",
+        "name": "SQS queue access policies should not allow public access",
+        "reference": "https://docs.aws.amazon.com/console/securityhub/SQS.3/remediation",
+        "remediation": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.\\r\\nhttps://docs.aws.amazon.com/console/securityhub/SQS.3/remediation"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "aws_securityhub-finding"
+    ],
+    "vulnerability": {
+        "scanner": {
+            "vendor": "Inspector"
+        }
+    }
+}
+```
 
 ### Inputs used
 

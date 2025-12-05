@@ -11,16 +11,17 @@ The AWS Security Hub integration uses the REST API. It uses the `GetFindingsV2` 
 
 ### How it works
 
-The **finding** data stream uses the `/findingsv2` endpoint to gather all findings starting from the configured initial interval. Subsequently, it fetches the recent findings available at each specified interval.
+The **finding** data stream uses the `/findingsv2` endpoint to gather all findings starting from the configured `Initial Interval`. Subsequently, it fetches the recent findings available at each specified `Interval`.
 
 ## What data does this integration collect?
 
-The AWS Security Hub integration collects log messages of the following types:
+The AWS Security Hub integration collects logs of the following types:
 
 - `Finding`: Returns a list of findings in OCSF format. Refer to the [GetFindingsV2 API Reference](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindingsV2.html).
 
 ### Supported use cases
-Integrating AWS Security Hub with Elastic SIEM provides a comprehensive view of the security state of your AWS resources. Leveraging AWS Security Hub integration helps you analyze security trends to identify and prioritize security issues across your AWS environment.
+
+Integrating AWS Security Hub with Elastic SIEM provides a comprehensive view of the security state of your AWS resources. Leveraging AWS Security Hub integration helps you analyze security trends to identify and prioritize security issues across your AWS environment. It also adds support for the [Elastic Cloud Security Workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data), allowing users to explore insights via the Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3).
 
 ## What do I need to use this integration?
 
@@ -57,7 +58,7 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search bar, type **AWS Security Hub**.
 3. Select the **AWS Security Hub** integration from the search results.
-4. Select **Add AWS Security Hubs** to add the integration.
+4. Select **Add AWS Security Hub** to add the integration.
 5. Enable and configure **Collect AWS Security Hub logs via API**:
 
     - Configure AWS Authentication parameters and set the **AWS Region** and **Top Level Domain**. Adjust the integration configuration parameters as needed, including the **Initial Interval**, **Interval**, **Batch Size** etc. to enable data collection.
@@ -93,7 +94,7 @@ For more information on architectures that can be used for scaling this integrat
 
 #### Finding
 
-{{/* {{event "finding"}} */}}
+{{event "finding"}}
 
 ### Inputs used
 

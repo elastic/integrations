@@ -1131,15 +1131,25 @@ processors:
   # event.*
   - set:
       field: event.kind
-      tag: set_event_kind
-      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002','2003','2004','2006'].contains(ctx.aws_securityhub.finding.class_uid)
+      tag: set_event_kind_to_alert
+      if: |-
+        ctx.aws_securityhub?.finding?.class_uid != null && (
+          ctx.aws_securityhub.finding.class_uid.equals('2002') ||
+          ctx.aws_securityhub.finding.class_uid.equals('2004') ||
+          ctx.aws_securityhub.finding.class_uid.equals('2006')
+        )
       value: alert
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_state
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ctx.aws_securityhub.finding.class_uid.equals('2003')
+      value: state
   - append:
       field: event.category
       tag: append_vulnerability_into_event_category
       value: vulnerability
       allow_duplicates: false
-      if: ctx.aws_securityhub?.finding?.class_uid != null && ['2002'].contains(ctx.aws_securityhub.finding.class_uid)
+      if: ctx.aws_securityhub?.finding?.class_uid != null && ctx.aws_securityhub.finding.class_uid.equals('2002')
   - append:
       field: event.type
       tag: append_info_into_event_type
@@ -1215,12 +1225,21 @@ processors:
       field: event.outcome
       tag: set_event_outcome_unknown
       value: unknown
-      if: ctx.aws_securityhub?.finding?.status_id != null && ['0', '1', '2'].contains(ctx.aws_securityhub.finding.status_id)
+      if: |-
+        ctx.aws_securityhub?.finding?.status_id != null && (
+          ctx.aws_securityhub.finding.status_id.equals('0') ||
+          ctx.aws_securityhub.finding.status_id.equals('1') ||
+          ctx.aws_securityhub.finding.status_id.equals('2')
+        )
   - set:
       field: event.outcome
       tag: set_event_outcome_success
       value: success
-      if: ctx.aws_securityhub?.finding?.status_id != null && ['3', '4'].contains(ctx.aws_securityhub.finding.status_id)
+      if: |-
+        ctx.aws_securityhub?.finding?.status_id != null && (
+          ctx.aws_securityhub.finding.status_id.equals('3') ||
+          ctx.aws_securityhub.finding.status_id.equals('4')
+        )
   
   - script:
       description: Extract ECS fields from aws.securityhub_findings.resources.
@@ -1529,17 +1548,6 @@ processors:
           ctx.vulnerability.score.base = cvss.base_score;
           ctx.vulnerability.score.version = cvss.version;
           ctx.vulnerability.classification = 'CVSS';
-          if (cvss.severity == 'NONE') {
-            ctx.vulnerability.severity = 'None';
-          } else if (cvss.severity == 'LOW') {
-            ctx.vulnerability.severity = 'Low';
-          } else if (cvss.severity == 'MEDIUM') {
-            ctx.vulnerability.severity = 'Medium';
-          } else if (cvss.severity == 'HIGH') {
-            ctx.vulnerability.severity = 'High';
-          } else if (cvss.severity == 'CRITICAL') {
-            ctx.vulnerability.severity = 'Critical';
-          }
         }
         
         if (ctx.aws_securityhub.finding.finding_info?.title != null) {
@@ -1999,6 +2007,11 @@ processors:
       field: aws_securityhub.finding.transform_unique_id
       tag: set_transform_unique_id
       value: '{{event.id}}|{{vulnerability.id}}|{{resource.id}}|{{package.name}}|{{package.version}}'
+      if: |-
+        ctx.aws_securityhub?.finding?.class_uid == '2002' &&
+        ctx.package?.name != null &&
+        ctx.aws_securityhub?.finding?.activity_id != '3' &&
+        ctx.error?.message == null
 
   - remove:
       field:

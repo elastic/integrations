@@ -13,6 +13,23 @@ rules:
         body: |-
           {{ minify_json `
           {
+            "Findings": []
+          }
+          `}}
+  - path: /findingsv2
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - "application/json"
+    request_body: /^\{"Filters":\{"CompositeFilters":\[\{"DateFilters":\[\{"FieldName":"finding_info\.modified_time_dt","Filter":\{"End":.*,"Start":.*\}\}\]\}\]\},"MaxResults":2,"NextToken":"next_token_1","SortCriteria":\[\{"Field":"finding_info\.modified_time_dt","SortOrder":"asc"\}\]\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
             "Findings": [
               {
                 "activity_id": 1,
@@ -160,105 +177,6 @@ rules:
                     "severity": "MEDIUM"
                   }
                 ]
-              }
-            ]
-          }
-          `}}
-  - path: /findingsv2
-    methods: ['POST']
-    request_headers:
-      Content-Type:
-        - "application/json"
-    request_body: /^\{"Filters":\{"CompositeFilters":\[\{"DateFilters":\[\{"FieldName":"finding_info\.modified_time_dt","Filter":\{"End":.*,"Start":.*\}\}\]\}\]\},"MaxResults":2,"NextToken":"next_token_1","SortCriteria":\[\{"Field":"finding_info\.modified_time_dt","SortOrder":"asc"\}\]\}/
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - 'application/json'
-        body: |-
-          {{ minify_json `
-          {
-            "Findings": [
-              {
-                "activity_id": 1,
-                "activity_name": "Create",
-                "category_name": "Findings",
-                "category_uid": 2,
-                "class_name": "Compliance Finding",
-                "class_uid": 2003,
-                "cloud": {
-                  "account": { "uid": "123456789012" },
-                  "provider": "AWS",
-                  "region": "us-east-2"
-                },
-                "compliance": {
-                  "control": "IAM.1",
-                  "requirements": ["CIS AWS Foundations Benchmark v1.2.0/1.22"],
-                  "standards": [
-                    "ruleset/cis-aws-foundations-benchmark/v/1.2.0",
-                    "standards/aws-foundational-security-best-practices/v/1.0.0"
-                  ],
-                  "status": "Pass",
-                  "status_id": 1
-                },
-                "finding_info": {
-                  "analytic": {
-                    "category": "AWS::Config::ConfigRule",
-                    "name": "securityhub-iam-policy-no-statements-with-admin-access-babcdefe",
-                    "type": "Rule",
-                    "type_id": 1
-                  },
-                  "created_time": 1758273558940,
-                  "created_time_dt": "2025-09-19T09:19:18.940Z",
-                  "desc": "This AWS control checks whether the default version of AWS Identity and Access Management (IAM) policies (also known as customer managed policies) do not have administrator access with a statement that has \"Effect\": \"Allow\" with \"Action\": \"*\" over \"Resource\": \"*\". It only checks for the Customer Managed Policies that you created, but not inline and AWS Managed Policies.",
-                  "first_seen_time": 1758273549612,
-                  "first_seen_time_dt": "2025-09-19T09:19:09.612Z",
-                  "last_seen_time": 1758273549612,
-                  "last_seen_time_dt": "2025-09-19T09:19:09.612Z",
-                  "modified_time": 1758273558940,
-                  "modified_time_dt": "2025-09-19T09:19:18.940Z",
-                  "title": "IAM policies should not allow full \"*\" administrative privileges",
-                  "types": [
-                    "Software and Configuration Checks/Industry and Regulatory Standards",
-                    "Posture Management"
-                  ],
-                  "uid": "arn:aws:securityhub:us-east-2:123456789012:security-control/IAM.1/finding/11233211-1234-efab-abcd-701234567892"
-                },
-                "metadata": {
-                  "product": {
-                    "name": "Security Hub",
-                    "uid": "arn:aws:securityhub:us-east-2::productv2/aws/securityhub",
-                    "vendor_name": "AWS"
-                  },
-                  "profiles": ["cloud", "datetime"],
-                  "uid": "d1bc4b01234567890123456789abcdefefabcdefabcdef123451234566",
-                  "version": "1.6.0"
-                },
-                "remediation": {
-                  "desc": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.",
-                  "references": [
-                    "https://docs.aws.amazon.com/console/securityhub/IAM.1/remediation"
-                  ]
-                },
-                "resources": [
-                  {
-                    "cloud_partition": "aws",
-                    "owner": { "account": { "uid": "123456789012" } },
-                    "region": "global",
-                    "type": "AWS::IAM::Policy",
-                    "uid": "AJKSDBVKJJKVBJDSVBWKURGBFWK",
-                    "uid_alt": "arn:aws:iam::123456789012:policy/service-role/Amazon_EventBridge_Invoke_Sqs_1412345678"
-                  }
-                ],
-                "severity": "Informational",
-                "severity_id": 1,
-                "status": "Resolved",
-                "status_id": 4,
-                "time": 1758273558940,
-                "time_dt": "2025-09-19T09:19:18.940Z",
-                "type_name": "Compliance Finding: Create",
-                "type_uid": 200301,
-                "vendor_attributes": { "severity": "Informational", "severity_id": 1 }
               },
               {
                 "activity_id": 1,
