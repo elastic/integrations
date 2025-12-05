@@ -5,6 +5,42 @@
         "description": "Detects macOS persistence via dual-detection approach: (1) Non-Apple signed LaunchAgents/Daemons and (2) Living off the Land (LotL) attack indicators using legitimate macOS tools. Identifies both unsigned persistence AND abuse of bash, curl/osascript, base64, etc. Filters out Apple system paths while detecting suspicious patterns regardless of code signature. Note: macOS 10.13+ login items may not be fully captured due to Apple's backgrounditems.btm format. Maps to MITRE ATT&CK T1543.001 (Launch Agent/Daemon), T1547.015 (Login Items), T1059.004 (Unix Shell), T1105 (Ingress Tool Transfer).",
         "ecs_mapping": [
             {
+                "key": "event.category",
+                "value": {
+                    "value": ["configuration"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.kind",
+                "value": {
+                    "value": "state"
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "value": "osquery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "osquery.startup_items"
+                }
+            },
+            {
+                "key": "host.os.type",
+                "value": {
+                    "value": "macos"
+                }
+            },
+            {
                 "key": "process.name",
                 "value": {
                     "field": "name"
@@ -13,7 +49,13 @@
             {
                 "key": "process.executable",
                 "value": {
-                    "field": "path"
+                    "field": "exe_path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "args"
                 }
             },
             {
@@ -49,13 +91,13 @@
             {
                 "key": "file.mtime",
                 "value": {
-                    "field": "mtime"
+                    "field": "modified_time"
                 }
             },
             {
                 "key": "file.ctime",
                 "value": {
-                    "field": "ctime"
+                    "field": "changed_time"
                 }
             },
             {
@@ -83,39 +125,33 @@
                 }
             },
             {
+                "key": "service.state",
+                "value": {
+                    "field": "status"
+                }
+            },
+            {
                 "key": "rule.category",
                 "value": {
                     "field": "type"
                 }
             },
             {
-                "key": "event.outcome",
-                "value": {
-                    "field": "status"
-                }
-            },
-            {
-                "key": "code_signature.signed",
-                "value": {
-                    "field": "signed"
-                }
-            },
-            {
-                "key": "code_signature.subject_name",
-                "value": {
-                    "field": "identifier"
-                }
-            },
-            {
-                "key": "registry.path",
+                "key": "file.directory",
                 "value": {
                     "field": "source"
                 }
             },
             {
-                "key": "event.category",
+                "key": "file.code_signature.signed",
                 "value": {
-                    "field": "detection_method"
+                    "field": "is_signed"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
                 }
             },
             {
@@ -123,16 +159,58 @@
                 "value": {
                     "field": "detection_reason"
                 }
+            },
+            {
+                "key": "rule.name",
+                "value": {
+                    "field": "detection_method"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "persistence", "startup_items", "macos", "mitre_t1543_001", "mitre_t1547_015", "mitre_t1059_004", "mitre_t1105"]
+                }
+            },
+            {
+                "key": "threat.framework",
+                "value": {
+                    "value": "MITRE ATT&CK"
+                }
+            },
+            {
+                "key": "threat.tactic.id",
+                "value": {
+                    "value": ["TA0003", "TA0002"]
+                }
+            },
+            {
+                "key": "threat.tactic.name",
+                "value": {
+                    "value": ["Persistence", "Execution"]
+                }
+            },
+            {
+                "key": "threat.technique.id",
+                "value": {
+                    "value": ["T1543.001", "T1547.015", "T1059.004", "T1105"]
+                }
+            },
+            {
+                "key": "threat.technique.name",
+                "value": {
+                    "value": ["Create or Modify System Process: Launch Agent", "Boot or Logon Autostart Execution: Login Items", "Command and Scripting Interpreter: Unix Shell", "Ingress Tool Transfer"]
+                }
             }
         ],
         "id": "startup_items_darwin_elastic",
         "interval": "3600",
         "platform": "darwin",
-        "query": "-- Dual-detection macOS persistence query:\n-- 1. NON_WHITELISTED: Non-Apple signed LaunchAgents/Daemons (signature-based filtering)\n-- 2. LOTL_INDICATOR: Living off the Land patterns (bash -c, curl | bash, osascript, etc.)\n-- MITRE ATT&CK: T1543.001, T1547.015, T1059.004, T1105\n\nWITH non_whitelisted_launchd AS (\n    SELECT\n        l.label AS name,\n        COALESCE(NULLIF(l.program, ''), l.program_arguments) AS path,\n        l.path AS source,\n        l.program_arguments AS args,\n        l.username,\n        CASE\n            WHEN l.disabled = '1' OR l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 THEN 'enabled'\n            ELSE 'unknown'\n        END AS status,\n        'Launch Agent/Daemon' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'Non-Apple signed LaunchAgent/Daemon' AS detection_reason\n    FROM launchd AS l\n    WHERE (\n        (l.program IS NOT NULL AND l.program != '')\n        OR (l.program_arguments IS NOT NULL AND l.program_arguments != '')\n    )\n        AND l.path NOT LIKE '/System/Library/%'\n        AND l.path NOT LIKE '/Library/Apple/%'\n        AND (l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 OR l.run_at_load IS NOT NULL)\n),\nnon_whitelisted_startup AS (\n    SELECT\n        si.name,\n        si.path,\n        si.source,\n        si.args,\n        si.username,\n        si.status,\n        CASE\n            WHEN si.type = 'Startup Item' THEN 'Legacy Startup Item'\n            WHEN si.type = 'Login Item' THEN 'Login Item'\n            ELSE si.type\n        END AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'Legacy startup/login item' AS detection_reason\n    FROM startup_items AS si\n    WHERE si.path IS NOT NULL\n        AND si.path != ''\n        AND si.path NOT LIKE '/System/Library/%'\n        AND si.path NOT LIKE '/Library/Apple/%'\n),\nlotl_launchd AS (\n    SELECT\n        l.label AS name,\n        COALESCE(NULLIF(l.program, ''), l.program_arguments) AS path,\n        l.path AS source,\n        l.program_arguments AS args,\n        l.username,\n        CASE\n            WHEN l.disabled = '1' OR l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 THEN 'enabled'\n            ELSE 'unknown'\n        END AS status,\n        'Launch Agent/Daemon (LotL)' AS type,\n        'LOTL_INDICATOR' AS detection_method,\n        CASE\n            WHEN l.program_arguments LIKE '%bash -c%' OR l.program_arguments LIKE '%sh -c%' THEN 'Shell command execution via -c flag'\n            WHEN l.program_arguments LIKE '%curl%|%bash%' OR l.program_arguments LIKE '%curl%|%sh%' THEN 'Download and pipe to shell'\n            WHEN l.program_arguments LIKE '%curl%http%' OR l.program_arguments LIKE '%wget%http%' THEN 'Download utility abuse'\n            WHEN l.program_arguments LIKE '%base64 -D%' OR l.program_arguments LIKE '%base64 --decode%' THEN 'Base64 decode for obfuscation'\n            WHEN l.program_arguments LIKE '%osascript%' AND l.program_arguments LIKE '%-e%' THEN 'AppleScript execution abuse'\n            WHEN l.program_arguments LIKE '%python%-%c%' OR l.program_arguments LIKE '%perl%-%e%' THEN 'Scripting language one-liner'\n            WHEN l.program_arguments LIKE '%/tmp/%' OR l.program_arguments LIKE '%/private/tmp/%' THEN 'Execution from temp directory'\n            WHEN l.program_arguments LIKE '%/dev/tcp/%' THEN 'Bash TCP socket redirection'\n            WHEN l.program_arguments LIKE '%nc %' OR l.program_arguments LIKE '%netcat%' THEN 'Netcat reverse shell'\n            WHEN l.program_arguments LIKE '%nohup%&%' OR l.program_arguments LIKE '%disown%' THEN 'Background process persistence'\n            WHEN l.program_arguments LIKE '%.sh%' AND (COALESCE(NULLIF(l.program, ''), l.program_arguments) LIKE '/tmp/%' OR COALESCE(NULLIF(l.program, ''), l.program_arguments) LIKE '/private/tmp/%') THEN 'Shell script from temp directory'\n            ELSE 'Unknown LotL pattern in LaunchAgent'\n        END AS detection_reason\n    FROM launchd AS l\n    WHERE (\n        (l.program IS NOT NULL AND l.program != '')\n        OR (l.program_arguments IS NOT NULL AND l.program_arguments != '')\n    )\n        AND (l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 OR l.run_at_load IS NOT NULL)\n        AND (\n            l.program_arguments LIKE '%bash -c%'\n            OR l.program_arguments LIKE '%sh -c%'\n            OR l.program_arguments LIKE '%curl%|%bash%'\n            OR l.program_arguments LIKE '%curl%|%sh%'\n            OR l.program_arguments LIKE '%curl%http%'\n            OR l.program_arguments LIKE '%wget%http%'\n            OR l.program_arguments LIKE '%base64 -D%'\n            OR l.program_arguments LIKE '%base64 --decode%'\n            OR (l.program_arguments LIKE '%osascript%' AND l.program_arguments LIKE '%-e%')\n            OR l.program_arguments LIKE '%python%-%c%'\n            OR l.program_arguments LIKE '%perl%-%e%'\n            OR l.program_arguments LIKE '%/tmp/%'\n            OR l.program_arguments LIKE '%/private/tmp/%'\n            OR l.program_arguments LIKE '%/dev/tcp/%'\n            OR l.program_arguments LIKE '%nc %'\n            OR l.program_arguments LIKE '%netcat%'\n            OR l.program_arguments LIKE '%nohup%&%'\n            OR l.program_arguments LIKE '%disown%'\n            OR (l.program_arguments LIKE '%.sh%' AND (COALESCE(NULLIF(l.program, ''), l.program_arguments) LIKE '/tmp/%' OR COALESCE(NULLIF(l.program, ''), l.program_arguments) LIKE '/private/tmp/%'))\n        )\n),\ncombined AS (\n    SELECT * FROM non_whitelisted_launchd\n    UNION ALL\n    SELECT * FROM non_whitelisted_startup\n    UNION ALL\n    SELECT * FROM lotl_launchd\n)\nSELECT\n    c.name,\n    c.path,\n    c.type,\n    c.status,\n    c.source,\n    c.args,\n    c.username,\n    c.detection_method,\n    c.detection_reason,\n    s.signed,\n    s.identifier,\n    h.sha256,\n    h.sha1,\n    h.md5,\n    f.size,\n    f.mtime,\n    f.ctime,\n    f.uid,\n    f.gid,\n    f.mode\nFROM combined AS c\nLEFT JOIN signature AS s ON c.path = s.path\nLEFT JOIN hash AS h ON c.path = h.path\nLEFT JOIN file AS f ON c.path = f.path\nWHERE (\n    c.detection_method = 'LOTL_INDICATOR'\n    OR s.signed IS NULL\n    OR s.signed = 0\n    OR (\n        s.identifier IS NOT NULL\n        AND s.identifier NOT LIKE 'com.apple.%'\n        AND s.identifier NOT LIKE 'Apple Inc.%'\n    )\n)\nORDER BY\n    CASE WHEN c.detection_method = 'LOTL_INDICATOR' THEN 0 ELSE 1 END,\n    CASE WHEN s.signed = 0 OR s.signed IS NULL THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.name",
+        "query": "-- Dual-detection macOS persistence query:\n-- 1. NON_WHITELISTED: Non-Apple signed LaunchAgents/Daemons (signature-based filtering)\n-- 2. LOTL_INDICATOR: Living off the Land patterns (bash -c, curl | bash, osascript, etc.)\n-- Uses TRIM() on paths and extracts executable path from program_arguments\n-- MITRE ATT&CK: T1543.001, T1547.015, T1059.004, T1105\n\nWITH non_whitelisted_launchd AS (\n    SELECT\n        l.label AS name,\n        TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) AS path,\n        l.path AS source,\n        l.program_arguments AS args,\n        l.username,\n        CASE\n            WHEN l.disabled = '1' OR l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 THEN 'enabled'\n            ELSE 'unknown'\n        END AS status,\n        'Launch Agent/Daemon' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'Non-Apple signed LaunchAgent/Daemon' AS detection_reason\n    FROM launchd AS l\n    WHERE (\n        (l.program IS NOT NULL AND TRIM(l.program) != '')\n        OR (l.program_arguments IS NOT NULL AND TRIM(l.program_arguments) != '')\n    )\n        AND l.path NOT LIKE '/System/Library/%'\n        AND l.path NOT LIKE '/Library/Apple/%'\n        AND (l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 OR l.run_at_load IS NOT NULL)\n),\nnon_whitelisted_startup AS (\n    SELECT\n        si.name,\n        TRIM(si.path) AS path,\n        si.source,\n        si.args,\n        si.username,\n        si.status,\n        CASE\n            WHEN si.type = 'Startup Item' THEN 'Legacy Startup Item'\n            WHEN si.type = 'Login Item' THEN 'Login Item'\n            ELSE si.type\n        END AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'Legacy startup/login item' AS detection_reason\n    FROM startup_items AS si\n    WHERE TRIM(si.path) IS NOT NULL\n        AND TRIM(si.path) != ''\n        AND TRIM(si.path) NOT LIKE '/System/Library/%'\n        AND TRIM(si.path) NOT LIKE '/Library/Apple/%'\n),\nlotl_launchd AS (\n    SELECT\n        l.label AS name,\n        TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) AS path,\n        l.path AS source,\n        l.program_arguments AS args,\n        l.username,\n        CASE\n            WHEN l.disabled = '1' OR l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 THEN 'enabled'\n            ELSE 'unknown'\n        END AS status,\n        'Launch Agent/Daemon (LotL)' AS type,\n        'LOTL_INDICATOR' AS detection_method,\n        CASE\n            WHEN l.program_arguments LIKE '%bash -c%' OR l.program_arguments LIKE '%sh -c%' THEN 'Shell command execution via -c flag'\n            WHEN l.program_arguments LIKE '%curl%|%bash%' OR l.program_arguments LIKE '%curl%|%sh%' THEN 'Download and pipe to shell'\n            WHEN l.program_arguments LIKE '%curl%http%' OR l.program_arguments LIKE '%wget%http%' THEN 'Download utility abuse'\n            WHEN l.program_arguments LIKE '%base64 -D%' OR l.program_arguments LIKE '%base64 --decode%' THEN 'Base64 decode for obfuscation'\n            WHEN l.program_arguments LIKE '%osascript%' AND l.program_arguments LIKE '%-e%' THEN 'AppleScript execution abuse'\n            WHEN l.program_arguments LIKE '%python%-%c%' OR l.program_arguments LIKE '%perl%-%e%' THEN 'Scripting language one-liner'\n            WHEN l.program_arguments LIKE '%/tmp/%' OR l.program_arguments LIKE '%/private/tmp/%' THEN 'Execution from temp directory'\n            WHEN l.program_arguments LIKE '%/dev/tcp/%' THEN 'Bash TCP socket redirection'\n            WHEN l.program_arguments LIKE '%nc %' OR l.program_arguments LIKE '%netcat%' THEN 'Netcat reverse shell'\n            WHEN l.program_arguments LIKE '%nohup%&%' OR l.program_arguments LIKE '%disown%' THEN 'Background process persistence'\n            WHEN l.program_arguments LIKE '%.sh%' AND (TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) LIKE '/tmp/%' OR TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) LIKE '/private/tmp/%') THEN 'Shell script from temp directory'\n            ELSE 'Unknown LotL pattern in LaunchAgent'\n        END AS detection_reason\n    FROM launchd AS l\n    WHERE (\n        (l.program IS NOT NULL AND TRIM(l.program) != '')\n        OR (l.program_arguments IS NOT NULL AND TRIM(l.program_arguments) != '')\n    )\n        AND (l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 OR l.run_at_load IS NOT NULL)\n        AND (\n            l.program_arguments LIKE '%bash -c%'\n            OR l.program_arguments LIKE '%sh -c%'\n            OR l.program_arguments LIKE '%curl%|%bash%'\n            OR l.program_arguments LIKE '%curl%|%sh%'\n            OR l.program_arguments LIKE '%curl%http%'\n            OR l.program_arguments LIKE '%wget%http%'\n            OR l.program_arguments LIKE '%base64 -D%'\n            OR l.program_arguments LIKE '%base64 --decode%'\n            OR (l.program_arguments LIKE '%osascript%' AND l.program_arguments LIKE '%-e%')\n            OR l.program_arguments LIKE '%python%-%c%'\n            OR l.program_arguments LIKE '%perl%-%e%'\n            OR l.program_arguments LIKE '%/tmp/%'\n            OR l.program_arguments LIKE '%/private/tmp/%'\n            OR l.program_arguments LIKE '%/dev/tcp/%'\n            OR l.program_arguments LIKE '%nc %'\n            OR l.program_arguments LIKE '%netcat%'\n            OR l.program_arguments LIKE '%nohup%&%'\n            OR l.program_arguments LIKE '%disown%'\n            OR (l.program_arguments LIKE '%.sh%' AND (TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) LIKE '/tmp/%' OR TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) LIKE '/private/tmp/%'))\n        )\n),\ncombined AS (\n    SELECT * FROM non_whitelisted_launchd\n    UNION ALL\n    SELECT * FROM non_whitelisted_startup\n    UNION ALL\n    SELECT * FROM lotl_launchd\n)\nSELECT\n    c.name,\n    c.path,\n    -- Extract executable path (first space-separated token if path contains arguments)\n    CASE\n        WHEN INSTR(c.path, ' ') > 0 AND SUBSTR(c.path, 1, 1) != '-'\n        THEN SUBSTR(c.path, 1, INSTR(c.path, ' ') - 1)\n        ELSE c.path\n    END AS exe_path,\n    c.type,\n    c.status,\n    c.source,\n    c.args,\n    c.username,\n    c.detection_method,\n    c.detection_reason,\n    s.signed AS is_signed,\n    s.identifier AS signature_signer,\n    h.sha256,\n    h.sha1,\n    h.md5,\n    f.size,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.uid,\n    f.gid,\n    f.mode\nFROM combined AS c\nLEFT JOIN signature AS s ON s.path = CASE\n    WHEN INSTR(c.path, ' ') > 0 AND SUBSTR(c.path, 1, 1) != '-'\n    THEN SUBSTR(c.path, 1, INSTR(c.path, ' ') - 1)\n    ELSE c.path\nEND\nLEFT JOIN hash AS h ON h.path = CASE\n    WHEN INSTR(c.path, ' ') > 0 AND SUBSTR(c.path, 1, 1) != '-'\n    THEN SUBSTR(c.path, 1, INSTR(c.path, ' ') - 1)\n    ELSE c.path\nEND\nLEFT JOIN file AS f ON f.path = CASE\n    WHEN INSTR(c.path, ' ') > 0 AND SUBSTR(c.path, 1, 1) != '-'\n    THEN SUBSTR(c.path, 1, INSTR(c.path, ' ') - 1)\n    ELSE c.path\nEND\nWHERE (\n    c.detection_method = 'LOTL_INDICATOR'\n    OR s.signed IS NULL\n    OR s.signed = 0\n    OR (\n        s.identifier IS NOT NULL\n        AND s.identifier NOT LIKE 'com.apple.%'\n        AND s.identifier NOT LIKE 'Apple Inc.%'\n    )\n)\nORDER BY\n    CASE WHEN c.detection_method = 'LOTL_INDICATOR' THEN 0 ELSE 1 END,\n    CASE WHEN s.signed = 0 OR s.signed IS NULL THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.name",
         "updated_at": "2025-11-21T00:00:00.000Z",
         "updated_by": "elastic"
     },
-    "coreMigrationVersion": "8.3.3",
+    "coreMigrationVersion": "9.2.0",
     "id": "osquery_manager-f6a7b8c9-d0e1-34f0-5678-901234567890",
     "references": [],
     "type": "osquery-saved-query",
