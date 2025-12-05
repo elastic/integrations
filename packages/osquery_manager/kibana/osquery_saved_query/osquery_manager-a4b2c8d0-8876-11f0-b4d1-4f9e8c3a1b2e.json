@@ -2,12 +2,42 @@
     "attributes": {
         "created_at": "2025-11-20T00:00:00.000Z",
         "created_by": "elastic",
-        "description": "Windows Shellbags forensic analysis - tracks directories accessed via Windows Explorer for user activity investigation. Useful for identifying folder browsing history and user behavior patterns.",
+        "description": "Windows Shellbags forensic analysis - tracks directories accessed via Windows Explorer for user activity investigation. Useful for identifying folder browsing history and user behavior patterns. Maps to MITRE ATT&CK T1083 File and Directory Discovery.",
         "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["access"]
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "value": "osquery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "osquery.shellbags"
+                }
+            },
+            {
+                "key": "host.os.type",
+                "value": {
+                    "value": "windows"
+                }
+            },
             {
                 "key": "user.id",
                 "value": {
-                    "field": "sid"
+                    "field": "user_sid"
                 }
             },
             {
@@ -39,16 +69,58 @@
                 "value": {
                     "field": "accessed_time"
                 }
+            },
+            {
+                "key": "file.inode",
+                "value": {
+                    "field": "mft_entry"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "shellbags", "user_activity", "forensics", "mitre_t1083", "windows"]
+                }
+            },
+            {
+                "key": "threat.framework",
+                "value": {
+                    "value": "MITRE ATT&CK"
+                }
+            },
+            {
+                "key": "threat.tactic.id",
+                "value": {
+                    "value": ["TA0007"]
+                }
+            },
+            {
+                "key": "threat.tactic.name",
+                "value": {
+                    "value": ["Discovery"]
+                }
+            },
+            {
+                "key": "threat.technique.id",
+                "value": {
+                    "value": ["T1083"]
+                }
+            },
+            {
+                "key": "threat.technique.name",
+                "value": {
+                    "value": ["File and Directory Discovery"]
+                }
             }
         ],
         "id": "shellbags_windows_elastic",
         "interval": "3600",
-        "query": "SELECT\n  sid,\n  source,\n  path,\n  modified_time,\n  created_time,\n  accessed_time,\n  mft_entry,\n  mft_sequence\nFROM shellbags\nWHERE path != '' AND path IS NOT NULL\nORDER BY modified_time DESC;",
+        "query": "SELECT\n  sid AS user_sid,\n  source,\n  path,\n  datetime(modified_time, 'unixepoch') AS modified_time,\n  datetime(created_time, 'unixepoch') AS created_time,\n  datetime(accessed_time, 'unixepoch') AS accessed_time,\n  mft_entry,\n  mft_sequence\nFROM shellbags\nWHERE path != '' AND path IS NOT NULL\nORDER BY modified_time DESC;",
         "platform": "windows",
         "updated_at": "2025-11-20T00:00:00.000Z",
         "updated_by": "elastic"
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "9.2.0",
     "id": "osquery_manager-a4b2c8d0-8876-11f0-b4d1-4f9e8c3a1b2e",
     "references": [],
     "type": "osquery-saved-query",
