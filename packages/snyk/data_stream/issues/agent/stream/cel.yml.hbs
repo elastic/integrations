@@ -88,24 +88,42 @@ program: |-
           "Authorization": ["Token " + state.api_token],
         },
       }
-    ).do_request().as(resp, (resp.StatusCode != 200) ?
-      {
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": "GET:" + (
-              (size(resp.Body) != 0) ?
-                string(resp.Body)
-              :
-                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+    ).do_request().as(resp,
+      // We are doing this work for its side-effects.
+      resp.with(
+        // Canonicalise header keys to match rate_limit conventions.
+        resp.Header.transformMapEntry(k, v, {k.canonical_mime_header_key(): v}).as(headers,
+          // Calculate and apply rate limits.
+          rate_limit(
+            headers.with(
+              {
+                "X-Ratelimit-Reset": [string(int(now + duration(string(headers[?"X-Ratelimit-Reset"][0].orValue("1")) + "s")))],
+              }
             ),
-          },
-        },
-        "want_more": false,
-      }
-    :
-      bytes(resp.Body).decode_json().as(body, !has(body.data) ?
+            "X-Ratelimit",
+            false,
+            true,
+            duration(string(headers[?"X-Ratelimit-Reset"][0].orValue("1")) + "s"),
+            0
+          )
+        ).as(rate_headers,
+          rate_headers.with(
+            {
+              // Work around inf detection in input.
+              // If the headers are missing or rate_limit failed, rate and
+              // next may be missing. So use optional types.
+              ?"rate": (rate_headers.?rate == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
+              ?"next": (rate_headers.?next == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
+            }
+          )
+        ).as(limit,
+          {
+            "rate_limit": limit, // Debugging value only.
+          }
+        )
+      )
+    ).as(resp, (resp.StatusCode == 200) ?
+      resp.Body.decode_json().as(body, !has(body.data) ?
         {
           "events": [],
           "want_more": false,
@@ -137,16 +155,50 @@ program: |-
                                   "Authorization": ["Token " + state.api_token],
                                 },
                               }
-                            ).do_request().as(resp, (resp.StatusCode != 200) ?
-                              {"_enrich_error_message": "Status code " + string(resp.StatusCode) + " received while fetching " + issue.relationships.scan_item.links.related}
-                            :
-                              bytes(resp.Body).decode_json().as(body,
+                            ).do_request().as(resp,
+                              // We are doing this work for its side-effects.
+                              resp.with(
+                                // Canonicalise header keys to match rate_limit conventions.
+                                resp.Header.transformMapEntry(k, v, {k.canonical_mime_header_key(): v}).as(headers,
+                                  // Calculate and apply rate limits.
+                                  rate_limit(
+                                    headers.with(
+                                      {
+                                        "X-Ratelimit-Reset": [string(int(now + duration(string(headers[?"X-Ratelimit-Reset"][0].orValue("1")) + "s")))],
+                                      }
+                                    ),
+                                    "X-Ratelimit",
+                                    false,
+                                    true,
+                                    duration(string(headers[?"X-Ratelimit-Reset"][0].orValue("1")) + "s"),
+                                    0
+                                  )
+                                ).as(rate_headers,
+                                  rate_headers.with(
+                                    {
+                                      // Work around inf detection in input.
+                                      // If the headers are missing or rate_limit failed, rate and
+                                      // next may be missing. So use optional types.
+                                      ?"rate": (rate_headers.?rate == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
+                                      ?"next": (rate_headers.?next == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
+                                    }
+                                  )
+                                ).as(limit,
+                                  {
+                                    "rate_limit": limit, // Debugging value only.
+                                  }
+                                )
+                              )
+                            ).as(resp, (resp.StatusCode == 200) ?
+                              resp.Body.decode_json().as(body,
                                 body.?data.orValue(
                                   {
                                     "_enrich_error_message": "No data received for " + issue.relationships.scan_item.links.related,
                                   }
                                 )
                               )
+                            :
+                              {"_enrich_error_message": "Status code " + string(resp.StatusCode) + " received while fetching " + issue.relationships.scan_item.links.related}
                             )
                           ),
                         }
@@ -170,6 +222,28 @@ program: |-
           "want_more": has(body.?links.next),
         }
       )
+    : (resp.StatusCode == 429) ?
+      // We were not able to avoid a rate limit excession.
+      {
+        "events": [],
+        "want_more": false,
+      }
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:" + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
     )
   )
 tags:
