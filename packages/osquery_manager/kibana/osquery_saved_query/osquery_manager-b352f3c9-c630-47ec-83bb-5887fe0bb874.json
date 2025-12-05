@@ -2,8 +2,44 @@
     "attributes": {
         "created_at": "2025-11-07T00:00:00.000Z",
         "created_by": "elastic",
-        "description": "Collects browser history from all supported browsers, filtering out common legitimate domains to reduce noise for forensic investigations. IMPORTANT: Requires Elastic Agent v9.3.0+. Automatically discovers Chrome, Edge, Firefox, and Safari histories without ATC configuration. Returns potentially suspicious URLs with timestamps, titles, browser names, user profiles, and navigation context. Cross-platform (Windows, macOS, Linux).",
+        "description": "Collects browser history from all supported browsers, filtering out common legitimate domains to reduce noise for forensic investigations. IMPORTANT: Requires Elastic Agent v9.3.0+. Automatically discovers Chrome, Edge, Firefox, and Safari histories without ATC configuration. Returns potentially suspicious URLs with timestamps, titles, browser names, user profiles, and navigation context. Cross-platform (Windows, macOS, Linux). MITRE ATT&CK: T1217 Browser Bookmark Discovery.",
         "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["web"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["access"]
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "value": "osquery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "osquery.browser_history"
+                }
+            },
+            {
+                "key": "event.created",
+                "value": {
+                    "field": "event_time"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "field": "title"
+                }
+            },
             {
                 "key": "url.full",
                 "value": {
@@ -11,9 +47,9 @@
                 }
             },
             {
-                "key": "event.action",
+                "key": "url.domain",
                 "value": {
-                    "field": "title"
+                    "field": "domain"
                 }
             },
             {
@@ -25,36 +61,54 @@
             {
                 "key": "user.name",
                 "value": {
-                    "field": "user"
+                    "field": "username"
                 }
             },
             {
-                "key": "url.domain",
+                "key": "tags",
                 "value": {
-                    "field": "domain"
+                    "value": ["osquery", "browser_history", "forensics", "threat_hunting", "mitre_t1217"]
                 }
             },
             {
-                "key": "event.category",
+                "key": "threat.framework",
                 "value": {
-                    "value": "web"
+                    "value": "MITRE ATT&CK"
                 }
             },
             {
-                "key": "event.type",
+                "key": "threat.tactic.id",
                 "value": {
-                    "value": "info"
+                    "value": ["TA0007"]
+                }
+            },
+            {
+                "key": "threat.tactic.name",
+                "value": {
+                    "value": ["Discovery"]
+                }
+            },
+            {
+                "key": "threat.technique.id",
+                "value": {
+                    "value": ["T1217"]
+                }
+            },
+            {
+                "key": "threat.technique.name",
+                "value": {
+                    "value": ["Browser Bookmark Discovery"]
                 }
             }
         ],
         "id": "browser_history_elastic",
         "interval": "3600",
         "platform": "linux,darwin,windows",
-        "query": "-- Browser history from Elastic osquery extension\n-- Supports: Chrome, Edge, Firefox, Safari\n-- Filters out common legitimate domains to surface suspicious/malicious activity\nSELECT\n  datetime,\n  url,\n  title,\n  browser,\n  user,\n  domain,\n  transition_type\nFROM elastic_browser_history\nWHERE\n  -- Filter out known legitimate domains (allowlist)\n  regex_match(\n      domain,\n      '^(.*\\\\.)?(' ||\n      -- Search engines\n      'google\\\\.com|google\\\\.co\\\\.[a-z]{2}|googleapis\\\\.com|gstatic\\\\.com|bing\\\\.com|yahoo\\\\.com|duckduckgo\\\\.com|baidu\\\\.com|yandex\\\\.ru|' ||\n      -- Microsoft ecosystem\n      'microsoft\\\\.com|microsoftonline\\\\.com|office\\\\.com|office365\\\\.com|windows\\\\.net|windows\\\\.com|live\\\\.com|outlook\\\\.com|azure\\\\.com|visualstudio\\\\.com|' ||\n      -- Apple ecosystem\n      'apple\\\\.com|icloud\\\\.com|itunes\\\\.com|' ||\n      -- Amazon/AWS\n      'amazon\\\\.com|amazon\\\\.co\\\\.[a-z]{2}|amazonaws\\\\.com|aws\\\\.amazon\\\\.com|' ||\n      -- Social media\n      'facebook\\\\.com|fb\\\\.com|instagram\\\\.com|twitter\\\\.com|x\\\\.com|linkedin\\\\.com|reddit\\\\.com|pinterest\\\\.com|tiktok\\\\.com|snapchat\\\\.com|whatsapp\\\\.com|discord\\\\.com|telegram\\\\.org|' ||\n      -- Video/Streaming\n      'youtube\\\\.com|youtu\\\\.be|netflix\\\\.com|hulu\\\\.com|disneyplus\\\\.com|twitch\\\\.tv|vimeo\\\\.com|spotify\\\\.com|soundcloud\\\\.com|' ||\n      -- Shopping/Commerce\n      'ebay\\\\.com|walmart\\\\.com|target\\\\.com|bestbuy\\\\.com|etsy\\\\.com|shopify\\\\.com|paypal\\\\.com|stripe\\\\.com|' ||\n      -- News/Media\n      'cnn\\\\.com|bbc\\\\.com|bbc\\\\.co\\\\.uk|nytimes\\\\.com|reuters\\\\.com|wsj\\\\.com|theguardian\\\\.com|forbes\\\\.com|bloomberg\\\\.com|' ||\n      -- Cloud/Storage\n      'dropbox\\\\.com|box\\\\.com|onedrive\\\\.com|drive\\\\.google\\\\.com|' ||\n      -- CDN/Infrastructure\n      'cloudflare\\\\.com|akamai\\\\.net|akamaized\\\\.net|fastly\\\\.net|cloudfront\\\\.net|azureedge\\\\.net|cdnjs\\\\.com|jsdelivr\\\\.net|unpkg\\\\.com|' ||\n      -- Developer/Tech\n      'github\\\\.com|github\\\\.io|gitlab\\\\.com|stackoverflow\\\\.com|stackexchange\\\\.com|npmjs\\\\.com|docker\\\\.com|atlassian\\\\.com|atlassian\\\\.net|jira\\\\.com|bitbucket\\\\.org|mozilla\\\\.org|mozilla\\\\.com|' ||\n      -- Business tools\n      'slack\\\\.com|zoom\\\\.us|zoom\\\\.com|teams\\\\.microsoft\\\\.com|salesforce\\\\.com|hubspot\\\\.com|zendesk\\\\.com|intercom\\\\.com|notion\\\\.so|' ||\n      -- Security vendors\n      'elastic\\\\.co|splunk\\\\.com|crowdstrike\\\\.com|virustotal\\\\.com|malwarebytes\\\\.com|norton\\\\.com|mcafee\\\\.com|kaspersky\\\\.com|' ||\n      -- Other common legitimate\n      'wikipedia\\\\.org|wikimedia\\\\.org|archive\\\\.org|w3\\\\.org|jquery\\\\.com|bootstrapcdn\\\\.com|fontawesome\\\\.com|fonts\\\\.googleapis\\\\.com|recaptcha\\\\.net|googletagmanager\\\\.com|google-analytics\\\\.com|doubleclick\\\\.net|googlesyndication\\\\.com' ||\n      ')$',\n      0\n  ) IS NULL\nORDER BY datetime DESC;",
+        "query": "-- Browser history from Elastic osquery extension\n-- Supports: Chrome, Edge, Firefox, Safari\n-- Filters out common legitimate domains to surface suspicious/malicious activity\n-- MITRE ATT&CK: T1217 Browser Bookmark Discovery\nSELECT\n  datetime AS event_time,\n  url,\n  title,\n  browser,\n  user AS username,\n  domain,\n  transition_type\nFROM elastic_browser_history\nWHERE\n  -- Filter out known legitimate domains (allowlist)\n  regex_match(\n      domain,\n      '^(.*\\\\.)?(' ||\n      -- Search engines\n      'google\\\\.com|google\\\\.co\\\\.[a-z]{2}|googleapis\\\\.com|gstatic\\\\.com|bing\\\\.com|yahoo\\\\.com|duckduckgo\\\\.com|baidu\\\\.com|yandex\\\\.ru|' ||\n      -- Microsoft ecosystem\n      'microsoft\\\\.com|microsoftonline\\\\.com|office\\\\.com|office365\\\\.com|windows\\\\.net|windows\\\\.com|live\\\\.com|outlook\\\\.com|azure\\\\.com|visualstudio\\\\.com|' ||\n      -- Apple ecosystem\n      'apple\\\\.com|icloud\\\\.com|itunes\\\\.com|' ||\n      -- Amazon/AWS\n      'amazon\\\\.com|amazon\\\\.co\\\\.[a-z]{2}|amazonaws\\\\.com|aws\\\\.amazon\\\\.com|' ||\n      -- Social media\n      'facebook\\\\.com|fb\\\\.com|instagram\\\\.com|twitter\\\\.com|x\\\\.com|linkedin\\\\.com|reddit\\\\.com|pinterest\\\\.com|tiktok\\\\.com|snapchat\\\\.com|whatsapp\\\\.com|discord\\\\.com|telegram\\\\.org|' ||\n      -- Video/Streaming\n      'youtube\\\\.com|youtu\\\\.be|netflix\\\\.com|hulu\\\\.com|disneyplus\\\\.com|twitch\\\\.tv|vimeo\\\\.com|spotify\\\\.com|soundcloud\\\\.com|' ||\n      -- Shopping/Commerce\n      'ebay\\\\.com|walmart\\\\.com|target\\\\.com|bestbuy\\\\.com|etsy\\\\.com|shopify\\\\.com|paypal\\\\.com|stripe\\\\.com|' ||\n      -- News/Media\n      'cnn\\\\.com|bbc\\\\.com|bbc\\\\.co\\\\.uk|nytimes\\\\.com|reuters\\\\.com|wsj\\\\.com|theguardian\\\\.com|forbes\\\\.com|bloomberg\\\\.com|' ||\n      -- Cloud/Storage\n      'dropbox\\\\.com|box\\\\.com|onedrive\\\\.com|drive\\\\.google\\\\.com|' ||\n      -- CDN/Infrastructure\n      'cloudflare\\\\.com|akamai\\\\.net|akamaized\\\\.net|fastly\\\\.net|cloudfront\\\\.net|azureedge\\\\.net|cdnjs\\\\.com|jsdelivr\\\\.net|unpkg\\\\.com|' ||\n      -- Developer/Tech\n      'github\\\\.com|github\\\\.io|gitlab\\\\.com|stackoverflow\\\\.com|stackexchange\\\\.com|npmjs\\\\.com|docker\\\\.com|atlassian\\\\.com|atlassian\\\\.net|jira\\\\.com|bitbucket\\\\.org|mozilla\\\\.org|mozilla\\\\.com|' ||\n      -- Business tools\n      'slack\\\\.com|zoom\\\\.us|zoom\\\\.com|teams\\\\.microsoft\\\\.com|salesforce\\\\.com|hubspot\\\\.com|zendesk\\\\.com|intercom\\\\.com|notion\\\\.so|' ||\n      -- Security vendors\n      'elastic\\\\.co|splunk\\\\.com|crowdstrike\\\\.com|virustotal\\\\.com|malwarebytes\\\\.com|norton\\\\.com|mcafee\\\\.com|kaspersky\\\\.com|' ||\n      -- Other common legitimate\n      'wikipedia\\\\.org|wikimedia\\\\.org|archive\\\\.org|w3\\\\.org|jquery\\\\.com|bootstrapcdn\\\\.com|fontawesome\\\\.com|fonts\\\\.googleapis\\\\.com|recaptcha\\\\.net|googletagmanager\\\\.com|google-analytics\\\\.com|doubleclick\\\\.net|googlesyndication\\\\.com' ||\n      ')$',\n      0\n  ) IS NULL\nORDER BY event_time DESC;",
         "updated_at": "2025-11-07T00:00:00.000Z",
         "updated_by": "elastic"
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "9.2.0",
     "id": "osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874",
     "references": [],
     "type": "osquery-saved-query",

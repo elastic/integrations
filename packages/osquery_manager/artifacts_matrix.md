@@ -26,7 +26,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 1 | AppCompatCache          | ⚠️ | Win | -     | -    | shimcache table                                                                                                                  |
 | 2 | AmCache                 | ❌ | Win | -     | -    | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
 | 3 | BITS Jobs Database      | ⚠️ | Win | -     | -    | Not a native table, but can be queried via windows_eventlog                                                                      |
-| 4 | Browser URL History     | ✅ | All | browser_history_elastic | [b352f3c9](kibana/osquery_saved_query/osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874.json) | Elastic osquery extension required (osquerybeat). Cross-platform (Windows, macOS, Linux). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration needed. See [Setup Guide](docs/browser_history_setup.md) |
+| 4 | Browser URL History     | ✅ | All | browser_history_elastic | [b352f3c9](kibana/osquery_saved_query/osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874.json) | Requires Elastic Agent v9.3.0+. Cross-platform (Windows, macOS, Linux). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration needed. MITRE ATT&CK: T1217. See [Setup Guide](docs/browser_history_setup.md) |
 | 5 | File Listing            | ⚠️ | Win | -     | -    | file and hash tables                                                                                                             |
 | 5a | File Listing            | ⚠️ | Linux | -     | -    | file and hash tables                                                                                                             |
 | 5b | File Listing            | ⚠️ | Mac | -     | -    | file and hash tables                                                                                                             |
@@ -123,7 +123,7 @@ The following artifacts cannot be queried with standard osquery and require exte
 
 | # | Artifact | Status | Notes                                                                                                                                                                                                                                                        |
 |:-:|----------|:------:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1 | Browser URL History (All Platforms) | ✅ | **FULLY AVAILABLE**: Native `elastic_browser_history` table via Elastic osquery extension (osquerybeat). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration required. See [browser_history_setup.md](docs/browser_history_setup.md) |
+| 1 | Browser URL History (All Platforms) | ✅ | **FULLY AVAILABLE**: Native `elastic_browser_history` table (requires Elastic Agent v9.3.0+). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration required. MITRE ATT&CK: T1217. See [browser_history_setup.md](docs/browser_history_setup.md) |
 | 2 | BITS Jobs Database (Windows) | ⚠️ | Not a native table, but can be queried via windows_eventlog table                                                                                                                                                                                            |
 
 ### Alternative Coverage
@@ -131,7 +131,7 @@ The following artifacts cannot be queried with standard osquery and require exte
 While some artifacts are not directly available, the existing queries provide strong coverage through related artifacts:
 
 **Execution Tracking**: Use Prefetch + AppCompatCache (shimcache) + File Listing + Process Listing instead of AmCache
-**User Activity**: Use Shellbags + LNK Files + Recent Files + **Browser History via Elastic osquery extension (UPDATED)** instead of Jumplists
+**User Activity**: Use Shellbags + LNK Files + Recent Files + **Browser History (Elastic Agent v9.3.0+)** instead of Jumplists
 **File System Monitoring**: Use NTFS USN Journal + File Listing with Hashes instead of MFT
 **Resource Access**: Use Network Connections (process_open_sockets) + Process Listing instead of Open Handles
 
@@ -169,7 +169,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Shell History (Linux/Mac: shell_history table)
 - ⚠️ Shellbags (Windows: shellbags table)
 - ⚠️ User Assist (Windows: userassist table)
-- ✅ **Browser URL History (All platforms: Elastic osquery extension `elastic_browser_history` table - Multi-browser support)** - **UPDATED**
+- ✅ **Browser URL History (All platforms: `elastic_browser_history` table, requires Elastic Agent v9.3.0+ - Multi-browser support, MITRE ATT&CK T1217)**
 - ❌ Jumplists (Not Available - Use Shellbags + LNK Files + Browser History as alternatives)
 
 ### File System/Forensics
