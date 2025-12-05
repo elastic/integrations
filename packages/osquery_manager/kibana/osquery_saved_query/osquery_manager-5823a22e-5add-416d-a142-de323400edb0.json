@@ -2,8 +2,44 @@
   "attributes": {
     "created_at": "2025-01-06T12:00:00.000Z",
     "created_by": "elastic",
-    "description": "Detects third-party macOS launchd persistence and suspicious Apple services. Returns ALL non-Apple-signed services for comprehensive threat hunting, plus Apple-signed services running from suspicious locations (/Users/, /tmp/, hidden directories) using consolidated regex patterns. Extracts executable path from both 'program' and 'program_arguments' fields for accurate signature validation. Excludes system paths (/System/, /Library/Apple/). Includes signature validation, MD5/SHA256 hash enrichment, and service_type classification. MITRE ATT&CK: T1543.001 (Launch Agent), T1543.004 (Launch Daemon).",
+    "description": "Identifies third-party macOS launchd persistence mechanisms and Apple-signed services in suspicious locations. Enumerates non-Apple-signed services for threat hunting, flags Apple-signed binaries executing from user-writable paths (/Users/, /tmp/, hidden directories). Derives executable from program or program_arguments fields, enriches with code signature validation and file hashes. Excludes trusted system paths (/System/, /Library/Apple/). Covers MITRE ATT&CK T1543.001 (Launch Agent) and T1543.004 (Launch Daemon).",
     "ecs_mapping": [
+      {
+        "key": "event.category",
+        "value": {
+          "value": ["configuration"]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": ["info"]
+        }
+      },
+      {
+        "key": "event.kind",
+        "value": {
+          "value": "state"
+        }
+      },
+      {
+        "key": "event.module",
+        "value": {
+          "value": "osquery"
+        }
+      },
+      {
+        "key": "event.dataset",
+        "value": {
+          "value": "osquery.launchd_services"
+        }
+      },
+      {
+        "key": "host.os.type",
+        "value": {
+          "value": "macos"
+        }
+      },
       {
         "key": "service.name",
         "value": {
@@ -23,7 +59,7 @@
         }
       },
       {
-        "key": "process.args",
+        "key": "process.command_line",
         "value": {
           "field": "program_arguments"
         }
@@ -35,87 +71,85 @@
         }
       },
       {
-        "key": "file.hash.md5",
+        "key": "process.hash.md5",
         "value": {
           "field": "md5"
         }
       },
       {
-        "key": "file.hash.sha256",
+        "key": "process.hash.sha256",
         "value": {
           "field": "sha256"
         }
       },
       {
-        "key": "file.code_signature.subject_name",
+        "key": "process.code_signature.subject_name",
         "value": {
-          "field": "signer"
+          "field": "signature_signer"
         }
       },
       {
-        "key": "file.code_signature.status",
+        "key": "process.code_signature.status",
         "value": {
           "field": "signature_status"
-        }
-      },
-      {
-        "key": "service.type",
-        "value": {
-          "field": "service_type"
-        }
-      },
-      {
-        "key": "event.category",
-        "value": {
-          "value": [
-            "configuration",
-            "process"
-          ]
-        }
-      },
-      {
-        "key": "event.type",
-        "value": {
-          "value": [
-            "info"
-          ]
-        }
-      },
-      {
-        "key": "event.kind",
-        "value": {
-          "value": [
-            "state"
-          ]
         }
       },
       {
         "key": "tags",
         "value": {
           "value": [
+            "persistence",
             "threat_hunting",
-            "suspicious",
-            "darwin",
-            "macos",
             "launchd",
-            "services",
-            "persistence"
+            "macos",
+            "mitre_t1543_001",
+            "mitre_t1543_004"
           ]
+        }
+      },
+      {
+        "key": "threat.framework",
+        "value": {
+          "value": "MITRE ATT&CK"
+        }
+      },
+      {
+        "key": "threat.tactic.id",
+        "value": {
+          "value": ["TA0003"]
+        }
+      },
+      {
+        "key": "threat.tactic.name",
+        "value": {
+          "value": ["Persistence"]
+        }
+      },
+      {
+        "key": "threat.technique.id",
+        "value": {
+          "value": ["T1543.001", "T1543.004"]
+        }
+      },
+      {
+        "key": "threat.technique.name",
+        "value": {
+          "value": ["Create or Modify System Process: Launch Agent", "Create or Modify System Process: Launch Daemon"]
         }
       }
     ],
-    "id": "services_suspicious_darwin",
+    "id": "services_suspicious_darwin_elastic",
     "interval": "3600",
     "timeout": 120,
     "platform": "darwin",
-    "query": "-- macOS LaunchD Services Detection - Third-Party and Suspicious Focus\n-- Source: Native osquery tables (launchd, signature, hash)\n-- Focus: All non-Apple services + Apple services in suspicious locations\n-- Derives executable from program or program_arguments for accurate signature checks\n-- MITRE ATT&CK: T1543.001 (Launch Agent), T1543.004 (Launch Daemon)\n\nWITH services_enriched AS (\n  SELECT\n    l.label,\n    l.name,\n    l.path,\n    l.program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    COALESCE(NULLIF(l.username, ''), 'root') AS username,\n    -- Derive executable: prefer program, fallback to first arg in program_arguments\n    CASE\n      WHEN l.program IS NOT NULL AND l.program != '' THEN l.program\n      WHEN l.program_arguments IS NOT NULL AND l.program_arguments != '' THEN\n        CASE\n          WHEN INSTR(l.program_arguments, ' ') > 0\n            THEN SUBSTR(l.program_arguments, 1, INSTR(l.program_arguments, ' ') - 1)\n          ELSE l.program_arguments\n        END\n      ELSE NULL\n    END AS executable_path,\n    -- Classify service type for analysis\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'System-Daemon'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'System-Agent'\n      WHEN l.path LIKE '%/Library/LaunchAgents/%' THEN 'User-Agent'\n      ELSE 'Other'\n    END AS service_type\n  FROM launchd l\n  WHERE l.path IS NOT NULL AND l.path != ''\n),\nservices_with_signatures AS (\n  SELECT\n    se.*,\n    -- Use subqueries to avoid duplicates from multiple signature entries\n    (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) AS signer,\n    -- Consider signed if authority exists (signed column may mean notarized)\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) != ''\n      THEN 1 ELSE 0\n    END AS is_signed,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = se.executable_path LIMIT 1) != ''\n      THEN 'signed' ELSE 'unsigned'\n    END AS signature_status,\n    (SELECT md5 FROM hash WHERE path = se.executable_path LIMIT 1) AS md5,\n    (SELECT sha256 FROM hash WHERE path = se.executable_path LIMIT 1) AS sha256\n  FROM services_enriched se\n)\n\nSELECT *\nFROM services_with_signatures\nWHERE\n  -- EXCLUDE Apple/system service PATHS\n  regex_match(path, '^(/System/|/Library/Apple/|/usr/libexec/)', 0) IS NULL\n  AND (\n    -- INCLUDE: All non-Apple signed services (third-party threat hunting)\n    regex_match(COALESCE(signer, ''), '(Apple|Software Signing)', 0) IS NULL\n    -- OR INCLUDE: Any service (even Apple-signed) in suspicious locations\n    OR regex_match(COALESCE(executable_path, ''), '(^/Users/|^/tmp/|^/var/tmp/|^/private/tmp/|/[.])', 0) IS NOT NULL\n  )\nORDER BY\n  is_signed ASC,\n  service_type,\n  label;",
-    "updated_at": "2025-12-03T10:00:00.000Z",
+    "query": "-- macOS LaunchD Persistence Detection\n-- Enumerates non-Apple and suspicious launchd services for threat hunting\n-- T1543.001 (Launch Agent), T1543.004 (Launch Daemon)\n\nWITH services_base AS (\n  SELECT\n    l.label,\n    l.name,\n    l.path,\n    l.program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    COALESCE(NULLIF(l.username, ''), 'root') AS username,\n    CASE\n      WHEN l.program IS NOT NULL AND l.program != '' THEN l.program\n      WHEN l.program_arguments IS NOT NULL AND l.program_arguments != '' THEN\n        CASE\n          WHEN INSTR(l.program_arguments, ' ') > 0\n            THEN SUBSTR(l.program_arguments, 1, INSTR(l.program_arguments, ' ') - 1)\n          ELSE l.program_arguments\n        END\n      ELSE NULL\n    END AS executable_path,\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'system_daemon'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'system_agent'\n      WHEN l.path LIKE '%/Library/LaunchAgents/%' THEN 'user_agent'\n      ELSE 'other'\n    END AS launchd_type\n  FROM launchd l\n  WHERE l.path IS NOT NULL\n    AND l.path != ''\n),\nservices_enriched AS (\n  SELECT\n    sb.*,\n    (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) AS signature_signer,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 1 ELSE 0\n    END AS is_signed,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 'signed' ELSE 'unsigned'\n    END AS signature_status,\n    (SELECT md5 FROM hash WHERE path = sb.executable_path LIMIT 1) AS md5,\n    (SELECT sha256 FROM hash WHERE path = sb.executable_path LIMIT 1) AS sha256\n  FROM services_base sb\n)\n\nSELECT *\nFROM services_enriched\nWHERE\n  regex_match(path, '^(/System/|/Library/Apple/|/usr/libexec/)', 0) IS NULL\n  AND (\n    regex_match(COALESCE(signature_signer, ''), '(Apple|Software Signing)', 0) IS NULL\n    OR regex_match(COALESCE(executable_path, ''), '(^/Users/|^/tmp/|^/var/tmp/|^/private/tmp/|/[.])', 0) IS NOT NULL\n  )\nORDER BY\n  is_signed ASC,\n  launchd_type,\n  label;",
+    "updated_at": "2025-12-05T10:00:00.000Z",
     "updated_by": "elastic"
   },
   "coreMigrationVersion": "9.2.0",
   "id": "osquery_manager-5823a22e-5add-416d-a142-de323400edb0",
   "references": [],
   "type": "osquery-saved-query",
-  "updated_at": "2025-12-03T10:00:00.000Z",
+  "updated_at": "2025-12-05T10:00:00.000Z",
   "version": "Wzk1LDJd"
 }
