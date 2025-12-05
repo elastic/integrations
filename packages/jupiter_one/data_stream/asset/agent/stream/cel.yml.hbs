@@ -1,0 +1,120 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  account_id: {{account_id}}
+  query: >-
+    query J1QL(
+      $query: String!
+      $variables: JSON
+      $cursor: String
+    ) {
+      queryV1(
+        query: $query
+        variables: $variables
+        cursor: $cursor
+      ) {
+        data
+        cursor
+      }
+    }
+redact:
+  fields:
+    - api_token
+program: |
+  state.url.trim_right("/").as(base_url, state.with(
+    post_request(
+      base_url,
+      "application/json",
+      {
+        "query": state.query,
+        "variables": {
+          "query": "FIND (Finding | Alert | Vulnerability)",
+          ?"cursor": state.?next.page
+        }
+      }.encode_json()
+    ).with(
+      {
+        "Header": {
+          "Authorization": ["Bearer " + state.api_token],
+          "Content-Type": ["application/json"],
+          "Jupiterone-Account": [state.account_id],
+        },
+      }
+  ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, body.?data.queryV1.data.orValue(null) != null ?
+        {
+          "events": body.data.queryV1.data.map(e, {
+            "message": e.encode_json(),
+          }),
+          "want_more": has(body.data.queryV1.cursor) && body.data.queryV1.cursor != null,
+          "next":{
+            ?"page": body.?data.queryV1.cursor,
+          }
+        }
+      :
+        {
+          "events": [],
+          "want_more": false,
+          "next": {},
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST assets: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+        "next": {},
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
