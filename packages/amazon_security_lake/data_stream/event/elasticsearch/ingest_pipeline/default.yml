@@ -88,10 +88,9 @@ processors:
       tag: script_ocsf_resources
       lang: painless
       if: ctx.ocsf?.resources == null && ctx.ocsf?.resource != null
-      source: >-
-        ctx.ocsf.resources = [];
-        ctx.ocsf.resources.add(ctx.ocsf.resource);
-        ctx.ocsf.remove('resource')
+      source: |-
+        ctx.ocsf.resources = [ctx.ocsf.resource];
+        ctx.ocsf.remove('resource');
       on_failure:
         - append:
             field: error.message
