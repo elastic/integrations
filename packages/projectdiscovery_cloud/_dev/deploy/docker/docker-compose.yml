@@ -13,3 +13,16 @@ services:
       - http-server
       - --addr=:8090
       - --config=/files/config-changelogs.yml
+  projectdiscovery-export:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: projectdiscovery-export
+    ports:
+      - 8091
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8091'
+    command:
+      - http-server
+      - --addr=:8091
+      - --config=/files/config-export.yml
