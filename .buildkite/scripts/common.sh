@@ -45,12 +45,6 @@ retry() {
   return 0
 }
 
-cleanup() {
-  echo "Deleting temporary files..."
-  rm -rf ${WORKSPACE}/${TMP_FOLDER_TEMPLATE_BASE:-tmp}.*
-  echo "Done."
-}
-
 unset_secrets () {
   for var in $(printenv | sed 's;=.*;;' | sort); do
     if [[ "$var" == *_SECRET || "$var" == *_TOKEN ]]; then
