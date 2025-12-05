@@ -2,12 +2,42 @@
     "attributes": {
         "created_at": "2025-11-20T15:30:00.000Z",
         "created_by": "elastic",
-        "description": "Investigate Windows Prefetch artifacts for execution history. Prefetch files (.pf) track application launches, execution counts, and associated file/directory access patterns. This query uses the native Osquery prefetch table to parse .pf files and extract forensic intelligence including executable names, run counts, last execution times, and accessed resources. Limited to executables run in the last 90 days to reduce noise. Results capped at 1024 (Windows prefetch directory limit). Equivalent to Velociraptor Windows.Forensics.Prefetch artifact.",
+        "description": "Investigate Windows Prefetch artifacts for execution history (MITRE ATT&CK T1204 User Execution). Prefetch files (.pf) track application launches, execution counts, and associated file/directory access patterns. This query uses the native Osquery prefetch table to parse .pf files and extract forensic intelligence including executable names, run counts, last execution times, and accessed resources. Limited to executables run in the last 90 days. Excludes high-volume low-forensic-value Windows processes (SearchIndexer, RuntimeBroker, BackgroundTaskHost, etc.) while preserving forensically important binaries.",
         "ecs_mapping": [
             {
-                "key": "process.name",
+                "key": "event.category",
                 "value": {
-                    "field": "filename"
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "value": "osquery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "osquery.prefetch"
+                }
+            },
+            {
+                "key": "event.created",
+                "value": {
+                    "field": "last_execution"
+                }
+            },
+            {
+                "key": "host.os.type",
+                "value": {
+                    "value": "windows"
                 }
             },
             {
@@ -17,21 +47,15 @@
                 }
             },
             {
-                "key": "process.hash.md5",
+                "key": "file.hash.md5",
                 "value": {
                     "field": "hash"
                 }
             },
             {
-                "key": "event.created",
+                "key": "file.path",
                 "value": {
-                    "field": "last_execution_time"
-                }
-            },
-            {
-                "key": "event.sequence",
-                "value": {
-                    "field": "run_count"
+                    "field": "prefetch_file_path"
                 }
             },
             {
@@ -41,38 +65,50 @@
                 }
             },
             {
-                "key": "host.id",
+                "key": "tags",
                 "value": {
-                    "field": "volume_serial"
+                    "value": ["execution_artifacts", "forensics", "prefetch", "osquery", "windows", "mitre_t1204"]
                 }
             },
             {
-                "key": "file.path",
+                "key": "threat.framework",
                 "value": {
-                    "field": "accessed_files"
+                    "value": "MITRE ATT&CK"
                 }
             },
             {
-                "key": "file.directory",
+                "key": "threat.tactic.id",
                 "value": {
-                    "field": "accessed_directories"
+                    "value": ["TA0002"]
                 }
             },
             {
-                "key": "file.path",
+                "key": "threat.tactic.name",
                 "value": {
-                    "field": "prefetch_file_path"
+                    "value": ["Execution"]
+                }
+            },
+            {
+                "key": "threat.technique.id",
+                "value": {
+                    "value": ["T1204"]
+                }
+            },
+            {
+                "key": "threat.technique.name",
+                "value": {
+                    "value": ["User Execution"]
                 }
             }
         ],
         "id": "prefetch_windows_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "SELECT\n  datetime(last_run_time, 'unixepoch') AS last_execution_time,\n  filename,\n  hash,\n  run_count,\n  other_run_times,\n  size,\n  volume_serial,\n  volume_creation,\n  accessed_files_count,\n  accessed_directories_count,\n  accessed_files,\n  accessed_directories,\n  path AS prefetch_file_path\nFROM prefetch\nWHERE last_run_time > (strftime('%s', 'now') - 7776000)\nORDER BY last_run_time DESC\nLIMIT 1024",
+        "query": "SELECT\n  datetime(last_run_time, 'unixepoch') AS last_execution,\n  filename,\n  hash,\n  run_count,\n  other_run_times,\n  size,\n  volume_serial,\n  volume_creation,\n  accessed_files_count,\n  accessed_directories_count,\n  accessed_files,\n  accessed_directories,\n  path AS prefetch_file_path\nFROM prefetch\nWHERE last_run_time > (strftime('%s', 'now') - 7776000)\n  AND filename NOT LIKE 'SEARCHINDEXER%'\n  AND filename NOT LIKE 'SEARCHPROTOCOLHOST%'\n  AND filename NOT LIKE 'SEARCHFILTERHOST%'\n  AND filename NOT LIKE 'RUNTIMEBROKER%'\n  AND filename NOT LIKE 'BACKGROUNDTASKHOST%'\n  AND filename NOT LIKE 'WMIPRVSE%'\n  AND filename NOT LIKE 'DLLHOST%'\n  AND filename NOT LIKE 'TASKHOSTW%'\nORDER BY last_run_time DESC",
         "updated_at": "2025-11-20T15:30:00.000Z",
         "updated_by": "elastic"
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "9.2.0",
     "id": "osquery_manager-c9f4e1a0-a7e4-11ef-9b3d-94b24cd614c6",
     "references": [],
     "type": "osquery-saved-query",
