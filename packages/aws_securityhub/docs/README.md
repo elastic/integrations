@@ -35,7 +35,7 @@ Enable AWS Security Hub in your environment. For more detail, refer to the link 
 
 #### Collecting data from AWS Security Hub API
 
-Users can authenticate using permanent security credentials, as well as temporary security credentials. They can also select `shared_credential_file`, `credential_profile_name` to retrieve credentials. Additionally, they can use `role_arn` to specify which AWS IAM role to assume for generating temporary credentials. An `external_id` can also be provided when assuming a role in another account.
+Users can authenticate using permanent security credentials, as well as temporary security credentials. They can also select `Shared Credential File`, `Credential Profile Name` to retrieve credentials. Additionally, they can use `Role ARN` to specify which AWS IAM role to assume for generating temporary credentials. An `External ID` can also be provided when assuming a role in another account.
 
 The credentials must have permission to perform the **securityhub:GetFindings** action.
 
