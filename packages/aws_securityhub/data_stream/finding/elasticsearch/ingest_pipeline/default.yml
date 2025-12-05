@@ -1302,13 +1302,7 @@ processors:
         // Extract ECS host field
         if (res.type == 'AWS::EC2::Instance' && res.uid != null) {
           ctx.host.id = res.uid;
-        }
-        if (res.type == 'AWS::EC2::Instance' && res.tags instanceof List) {
-          for (def tag: res.tags) {
-            if (tag.name == 'Name') {
-              ctx.host.name = tag.value;
-            }
-          }
+          ctx.host.name = res.uid;
         }
         if (res.type == 'AWS::EC2::Instance' && res.data?.awsEc2InstanceDetails?.type != null) {
           ctx.host.type = res.data.awsEc2InstanceDetails.type;
