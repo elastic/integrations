@@ -61,7 +61,7 @@
       {
         "key": "file.mtime",
         "value": {
-          "field": "mtime_utc"
+          "field": "modified_time"
         }
       },
       {
@@ -117,7 +117,7 @@
     "interval": "3600",
     "timeout": 120,
     "platform": "linux",
-    "query": "-- Linux Systemd Service Persistence Detection\n-- Identifies suspicious service units in non-standard locations\n-- T1543.002 (Systemd Service)\n\nWITH services_base AS (\n  SELECT\n    su.id AS unit_id,\n    su.load_state,\n    su.active_state,\n    su.sub_state,\n    su.description,\n    su.unit_file_state,\n    su.fragment_path,\n    f.mtime,\n    datetime(f.mtime, 'unixepoch') AS mtime_utc,\n    CAST((strftime('%s', 'now') - f.mtime) / 86400 AS INTEGER) AS days_since_modified,\n    (SELECT sha256 FROM hash WHERE path = su.fragment_path LIMIT 1) AS sha256\n  FROM systemd_units su\n  LEFT JOIN file f ON f.path = su.fragment_path\n  WHERE su.id LIKE '%.service'\n    AND su.fragment_path IS NOT NULL\n    AND su.fragment_path != ''\n)\n\nSELECT *\nFROM services_base\nWHERE (\n  fragment_path LIKE '/home/%'\n  OR fragment_path LIKE '/root/%'\n  OR fragment_path LIKE '/tmp/%'\n  OR fragment_path LIKE '/var/tmp/%'\n  OR fragment_path LIKE '%/.config/systemd/%'\n  OR fragment_path LIKE '%/.local/share/systemd/%'\n  OR unit_file_state IN ('linked', 'linked-runtime', 'transient')\n  OR (fragment_path LIKE '/etc/systemd/system/%' AND days_since_modified < 30)\n  OR fragment_path LIKE '/run/systemd/%'\n)\nORDER BY\n  CASE WHEN fragment_path LIKE '/home/%' OR fragment_path LIKE '/tmp/%' THEN 0 ELSE 1 END,\n  CASE WHEN fragment_path LIKE '%/.config/systemd/%' THEN 0 ELSE 1 END,\n  days_since_modified ASC;",
+    "query": "-- Linux Systemd Service Persistence Detection\n-- Identifies suspicious service units in non-standard locations\n-- T1543.002 (Systemd Service)\n\nWITH services_base AS (\n  SELECT\n    su.id AS unit_id,\n    su.load_state,\n    su.active_state,\n    su.sub_state,\n    su.description,\n    su.unit_file_state,\n    su.fragment_path,\n    f.mtime,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    CAST((strftime('%s', 'now') - f.mtime) / 86400 AS INTEGER) AS days_since_modified,\n    (SELECT sha256 FROM hash WHERE path = su.fragment_path LIMIT 1) AS sha256\n  FROM systemd_units su\n  LEFT JOIN file f ON f.path = su.fragment_path\n  WHERE su.id LIKE '%.service'\n    AND su.fragment_path IS NOT NULL\n    AND su.fragment_path != ''\n)\n\nSELECT *\nFROM services_base\nWHERE (\n  fragment_path LIKE '/home/%'\n  OR fragment_path LIKE '/root/%'\n  OR fragment_path LIKE '/tmp/%'\n  OR fragment_path LIKE '/var/tmp/%'\n  OR fragment_path LIKE '%/.config/systemd/%'\n  OR fragment_path LIKE '%/.local/share/systemd/%'\n  OR unit_file_state IN ('linked', 'linked-runtime', 'transient')\n  OR (fragment_path LIKE '/etc/systemd/system/%' AND days_since_modified < 30)\n  OR fragment_path LIKE '/run/systemd/%'\n)\nORDER BY\n  CASE WHEN fragment_path LIKE '/home/%' OR fragment_path LIKE '/tmp/%' THEN 0 ELSE 1 END,\n  CASE WHEN fragment_path LIKE '%/.config/systemd/%' THEN 0 ELSE 1 END,\n  days_since_modified ASC;",
     "updated_at": "2025-12-05T10:00:00.000Z",
     "updated_by": "elastic"
   },
