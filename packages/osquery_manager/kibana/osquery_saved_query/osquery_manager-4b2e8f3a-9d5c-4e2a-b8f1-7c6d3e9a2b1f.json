@@ -7,24 +7,31 @@
       {
         "key": "event.category",
         "value": {
-          "value": [
-            "network"
-          ]
+          "value": ["network"]
         }
       },
       {
         "key": "event.type",
         "value": {
-          "value": [
-            "connection",
-            "info"
-          ]
+          "value": ["connection", "info"]
+        }
+      },
+      {
+        "key": "event.module",
+        "value": {
+          "value": "osquery"
+        }
+      },
+      {
+        "key": "event.dataset",
+        "value": {
+          "value": "osquery.bits_monitoring"
         }
       },
       {
         "key": "event.code",
         "value": {
-          "field": "eventid"
+          "field": "event_id"
         }
       },
       {
@@ -34,48 +41,82 @@
         }
       },
       {
+        "key": "event.action",
+        "value": {
+          "value": "bits-transfer"
+        }
+      },
+      {
+        "key": "event.created",
+        "value": {
+          "field": "event_time"
+        }
+      },
+      {
+        "key": "host.os.type",
+        "value": {
+          "value": "windows"
+        }
+      },
+      {
         "key": "url.full",
         "value": {
-          "field": "Url"
+          "field": "url_full"
         }
       },
       {
         "key": "url.domain",
         "value": {
-          "field": "Host"
+          "field": "url_domain"
         }
       },
       {
-        "key": "file.name",
+        "key": "event.reason",
         "value": {
-          "field": "Name"
-        }
-      },
-      {
-        "key": "event.action",
-        "value": {
-          "value": [
-            "bits-transfer"
-          ]
+          "field": "filename"
         }
       },
       {
         "key": "tags",
         "value": {
-          "value": [
-            "persistence",
-            "defense_evasion",
-            "bits_jobs",
-            "network_transfer",
-            "mitre_t1197"
-          ]
+          "value": ["osquery", "persistence", "defense_evasion", "bits_jobs", "network_transfer", "mitre_t1197", "windows"]
+        }
+      },
+      {
+        "key": "threat.framework",
+        "value": {
+          "value": "MITRE ATT&CK"
+        }
+      },
+      {
+        "key": "threat.tactic.id",
+        "value": {
+          "value": ["TA0005", "TA0003"]
+        }
+      },
+      {
+        "key": "threat.tactic.name",
+        "value": {
+          "value": ["Defense Evasion", "Persistence"]
+        }
+      },
+      {
+        "key": "threat.technique.id",
+        "value": {
+          "value": ["T1197"]
+        }
+      },
+      {
+        "key": "threat.technique.name",
+        "value": {
+          "value": ["BITS Jobs"]
         }
       }
     ],
     "id": "bits_monitoring_windows_elastic",
     "interval": "3600",
     "platform": "windows",
-    "query": "-- Monitor BITS (Background Intelligent Transfer Service) file transfers\n-- Source: Windows Event Log (Microsoft-Windows-Bits-Client/Operational)\n-- Event ID 59: BITS transfer completion events\n-- Focus: External/suspicious download sources (filters out known-good vendors and private IPs)\n-- MITRE ATT&CK: T1197 (BITS Jobs)\n\nWITH extracted AS (\n    SELECT\n        datetime,\n        provider_name,\n        eventid,\n        json_extract(data, '$.EventData.url') AS Url,\n        -- Robust Host Extraction:\n        -- 1. Remove protocol headers\n        -- 2. Split by slash to get the domain\n        -- 3. Split by colon to remove ports (e.g. :8080) if present\n        split(\n            split(\n                replace(\n                    replace(json_extract(data, '$.EventData.url'), 'https://', ''),\n                    'http://', ''\n                ),\n                '/', 0\n            ),\n            ':', 0\n        ) AS Host,\n        json_extract(data, '$.EventData.name') AS Name\n    FROM windows_eventlog\n    WHERE channel = 'Microsoft-Windows-Bits-Client/Operational'\n      AND eventid = 59\n)\n\nSELECT *\nFROM extracted\nWHERE regex_match(\n    Host,\n    '^(.*\\\\.)?(office365\\\\.com|office\\\\.net|windowsupdate\\\\.com|live\\\\.com|mozilla\\\\.com|adobe\\\\.com|microsoft\\\\.com|google\\\\.com|oracle\\\\.com|hp\\\\.com|aka\\\\.ms|gvt1\\\\.com|oneclient\\\\.sfx\\\\.ms)$|^(10\\\\.|192\\\\.168\\\\.|172\\\\.(1[6-9]|2[0-9]|3[0-1])\\\\.).*',\n    0\n) IS NULL;",
+    "query": "-- Monitor BITS (Background Intelligent Transfer Service) file transfers\n-- Source: Windows Event Log (Microsoft-Windows-Bits-Client/Operational)\n-- Event ID 59: BITS transfer completion events\n-- Focus: External/suspicious download sources (filters out known-good vendors and private IPs)\n-- MITRE ATT&CK: T1197 (BITS Jobs)\n\nWITH extracted AS (\n    SELECT\n        datetime AS event_time,\n        provider_name,\n        eventid AS event_id,\n        json_extract(data, '$.EventData.url') AS url_full,\n        -- Robust Host Extraction:\n        -- 1. Remove protocol headers\n        -- 2. Split by slash to get the domain\n        -- 3. Split by colon to remove ports (e.g. :8080) if present\n        split(\n            split(\n                replace(\n                    replace(json_extract(data, '$.EventData.url'), 'https://', ''),\n                    'http://', ''\n                ),\n                '/', 0\n            ),\n            ':', 0\n        ) AS url_domain,\n        json_extract(data, '$.EventData.name') AS filename\n    FROM windows_eventlog\n    WHERE channel = 'Microsoft-Windows-Bits-Client/Operational'\n      AND eventid = 59\n)\n\nSELECT *\nFROM extracted\nWHERE regex_match(\n    url_domain,\n    '^(.*\\\\.)?(office365\\\\.com|office\\\\.net|windowsupdate\\\\.com|live\\\\.com|mozilla\\\\.com|adobe\\\\.com|microsoft\\\\.com|google\\\\.com|oracle\\\\.com|hp\\\\.com|aka\\\\.ms|gvt1\\\\.com|oneclient\\\\.sfx\\\\.ms)$|^(10\\\\.|192\\\\.168\\\\.|172\\\\.(1[6-9]|2[0-9]|3[0-1])\\\\.).*',\n    0\n) IS NULL;",
     "updated_at": "2025-11-07T10:00:00.000Z",
     "updated_by": "elastic"
   },
