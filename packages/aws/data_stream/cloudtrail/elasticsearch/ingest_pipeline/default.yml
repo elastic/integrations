@@ -867,8 +867,13 @@ processors:
                   resourceType = resourcePart.substring(0, slashIdx);
                 }
                 
+                // Check for service-linked roles first (AWSServiceRoleFor*) - these are service resources, not users
+                if (target.contains("/AWSServiceRoleFor") || target.contains("/aws-service-role/")) {
+                  serviceTargets.add(target);
+                  classified = true;
+                }
                 // Classify based on resource type
-                if (params.userResourceTypes.containsKey(resourceType)) {
+                else if (params.userResourceTypes.containsKey(resourceType)) {
                   userTargets.add(target);
                   classified = true;
                 } else if (params.hostResourceTypes.containsKey(resourceType)) {
@@ -949,7 +954,13 @@ processors:
           if (userType == "AWSService") {
             field("service.entity.id").set([ enrichCtx.actor ]);
             classified = true;
-          } else if (params.userIdentityTypes.containsKey(userType)) {
+          }
+          // Check for service-linked roles (AWSServiceRoleFor*) - these are AWS services, not users
+          else if (actorStr.contains("/AWSServiceRoleFor") || actorStr.contains("/aws-service-role/")) {
+            field("service.entity.id").set([ enrichCtx.actor ]);
+            classified = true;
+          }
+          else if (params.userIdentityTypes.containsKey(userType)) {
             field("user.entity.id").set([ enrichCtx.actor ]);
             classified = true;
           }
