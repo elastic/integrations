@@ -2,7 +2,7 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-12-08
 **Total Core Artifacts**: 2 available + 38 in progress + 6 not available = 46 total variants
 **Total Queries**: 30 (3 core forensic variants + 27 additional)
 **Completion Rate**: 4.3% (2/46 core artifacts fully supported)
@@ -153,7 +153,7 @@ While some artifacts are not directly available, the existing queries provide st
 
 ### Execution Artifacts
 - ⚠️ AppCompatCache (Windows: shimcache table)
-- ⚠️ PowerShell History (Windows: powershell_events table)
+- ✅ PowerShell History (Windows: powershell_events + windows_eventlog)
 - ⚠️ Prefetch Files (Windows: prefetch table)
 - ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
 
