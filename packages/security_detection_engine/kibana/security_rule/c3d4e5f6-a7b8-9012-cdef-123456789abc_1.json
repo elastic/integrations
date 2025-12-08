@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when GenAI processes perform encoding or chunking (base64, gzip, tar, zip) followed by outbound network activity. This sequence indicates data preparation for exfiltration. Attackers encode or compress sensitive data before transmission to obfuscate contents and evade detection. Legitimate GenAI workflows rarely encode data before network communications.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "GenAI Process Performing Encoding/Chunking Prior to Network Activity",
+        "note": "## Triage and analysis\n\n### Investigating GenAI Process Performing Encoding/Chunking Prior to Network Activity\n\nGenAI processes performing encoding or chunking operations followed by network activity is highly suspicious. This behavior indicates data preparation for exfiltration via GenAI prompts or agents, which is a strong indicator of malicious activity.\n\n### Possible investigation steps\n\n- Review the GenAI process that performed the encoding to identify which tool is running and verify if it's an expected/authorized tool.\n- Examine the encoding/chunking command line arguments to understand what data is being processed.\n- Review the network connection details to identify the destination and determine if it's expected.\n- Investigate the user account associated with the GenAI process to determine if this activity is expected for that user.\n- Review the data that was encoded to determine if it contains sensitive information.\n- Determine whether the encoding was initiated by a GenAI agent or automation loop rather than a user action.\n- Check whether the encoded data size or entropy suggests credential files, browser data, SSH keys, or cloud tokens.\n- Validate that the GenAI tool is installed from a trusted source and has not been modified.\n\n### False positive analysis\n\n- Legitimate data processing workflows that use GenAI tools may trigger this rule if they encode data before transmission.\n- Some local developer workflows may encode files before uploading training data or embeddings; confirm whether the host is a model-development workstation.\n\n### Response and remediation\n\n- Terminate the GenAI process and any spawned encoding/network processes to stop the malicious activity.\n- Review and revoke any API keys, tokens, or credentials that may have been exposed or used by the GenAI tool.\n- Investigate the encoded data and network destination to determine the scope of potential data exfiltration.\n",
+        "query": "sequence by process.entity_id with maxspan=30s\n\n  // Encoding/compression followed by network activity\n  [process where event.type == \"start\"\n     and event.type == \"start\"\n\n     // Encoding/chunking tools\n     and (\n       // Native encoding tools\n       process.name in (\"base64\", \"gzip\", \"tar\", \"zip\", \"split\", \"7z\", \"7za\", \"7zr\") or\n       \n       // PowerShell encoding\n       (process.name in (\"powershell.exe\", \"pwsh.exe\") and\n        process.command_line like~ (\"*Compress-Archive*\", \"*[Convert]::ToBase64String*\")) or\n       \n       // Python encoding\n       (process.name like~ \"python*\" and\n        process.command_line like~ (\"*base64*\", \"*gzip*\", \"*zlib*\", \"*tarfile*\", \"*zipfile*\")) or\n       \n       // Node.js encoding\n       (process.name in (\"node.exe\", \"node\") and\n        process.command_line like~ (\"*Buffer.from*\", \"*zlib*\", \"*gzip*\") and\n        not process.command_line like~ (\"*mcp*start*\", \"*mcp-server*\", \"*npm exec*mcp*\"))\n     )\n\n     // GenAI parent process\n     and (\n       process.parent.name in (\n         \"ollama.exe\", \"ollama\", \"Ollama\",\n         \"textgen.exe\", \"textgen\", \"text-generation-webui.exe\", \"oobabooga.exe\",\n         \"lmstudio.exe\", \"lmstudio\", \"LM Studio\",\n         \"claude.exe\", \"claude\", \"Claude\",\n         \"cursor.exe\", \"cursor\", \"Cursor\", \"Cursor Helper\", \"Cursor Helper (Plugin)\",\n         \"copilot.exe\", \"copilot\", \"Copilot\",\n         \"codex.exe\", \"codex\",\n         \"Jan\", \"jan.exe\", \"jan\", \"Jan Helper\",\n         \"gpt4all.exe\", \"gpt4all\", \"GPT4All\",\n         \"gemini-cli.exe\", \"gemini-cli\",\n         \"genaiscript.exe\", \"genaiscript\",\n         \"grok.exe\", \"grok\",\n         \"qwen.exe\", \"qwen\",\n         \"koboldcpp.exe\", \"koboldcpp\", \"KoboldCpp\",\n         \"llama-server\", \"llama-cli\"\n       ) or\n       \n       // Node/Deno with GenAI frameworks\n       (process.parent.name in (\"node.exe\", \"node\", \"deno.exe\", \"deno\") and\n        process.parent.command_line like~ (\n          \"*ollama*\", \"*mcp-server*\", \"*@modelcontextprotocol*\", \"*langchain*\", \"*autogpt*\",\n          \"*babyagi*\", \"*agentgpt*\", \"*crewai*\", \"*semantic-kernel*\", \"*llama-index*\",\n          \"*haystack*\", \"*openai*\", \"*anthropic*\", \"*cohere*\", \"*mistral*\"\n        )) or\n       \n       // Python with GenAI frameworks\n       (process.parent.name like~ \"python*\" and\n        process.parent.command_line like~ (\n          \"*ollama*\", \"*mcp-server*\", \"*langchain*\", \"*autogpt*\", \"*babyagi*\",\n          \"*agentgpt*\", \"*crewai*\", \"*semantic-kernel*\", \"*llama-index*\", \"*haystack*\",\n          \"*openai*\", \"*anthropic*\", \"*cohere*\", \"*mistral*\"\n        ))\n     )\n  ] by process.entity_id\n\n  // Outbound network connection (non-local)\n  [network where event.type == \"start\"\n     and event.action == \"connection_attempted\"\n     and destination.ip != null\n     and not cidrmatch(destination.ip, \"10.0.0.0/8\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.0.0/24\", \"192.0.0.0/29\",\n                       \"192.0.0.8/32\", \"192.0.0.9/32\", \"192.0.0.10/32\", \"192.0.0.170/32\", \"192.0.0.171/32\", \"192.0.2.0/24\",\n                       \"192.31.196.0/24\", \"192.52.193.0/24\", \"192.168.0.0/16\", \"192.88.99.0/24\", \"224.0.0.0/4\", \"100.64.0.0/10\",\n                       \"192.175.48.0/24\",\"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\", \"240.0.0.0/4\", \"::1\", \"FE80::/10\",\n                       \"FF00::/8\")\n     \n  ] by process.entity_id\n",
+        "references": [
+            "https://atlas.mitre.org/techniques/AML.T0086",
+            "https://glama.ai/blog/2025-11-11-the-lethal-trifecta-securing-model-context-protocol-against-data-flow-attacks",
+            "https://www.elastic.co/security-labs/elastic-advances-llm-security"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c3d4e5f6-a7b8-9012-cdef-123456789abc",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Exfiltration",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide",
+            "Domain: LLM",
+            "Mitre Atlas: T0086"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "c3d4e5f6-a7b8-9012-cdef-123456789abc_1",
+    "type": "security-rule"
+}
