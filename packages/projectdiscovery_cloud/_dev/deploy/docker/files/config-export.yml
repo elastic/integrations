@@ -1,4 +1,5 @@
 rules:
+  # First request returns one vulnerability
   - path: /v1/scans/results/export
     methods: ['POST']
     query_params:
@@ -40,3 +41,10 @@ rules:
             }
           ]
           `}}
+      # Subsequent requests return empty array
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `[]` }}
