@@ -17,6 +17,30 @@
                 }
             },
             {
+                "key": "event.kind",
+                "value": {
+                    "value": "event"
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "value": "osquery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "osquery.process_listing"
+                }
+            },
+            {
+                "key": "host.os.type",
+                "value": {
+                    "value": "windows"
+                }
+            },
+            {
                 "key": "process.pid",
                 "value": {
                     "field": "pid"
@@ -115,18 +139,25 @@
             {
                 "key": "process.code_signature.subject_name",
                 "value": {
-                    "field": "signer"
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "process_listing", "forensics", "windows"]
                 }
             }
         ],
         "id": "process_listing_windows_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "-- Windows Process Listing with Full Forensic Context\n-- Provides comprehensive process information including parent chain, hashes, code signatures, and username\n-- Use for: Threat hunting, incident response, baseline analysis\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    u.username,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.resident_size,\n    p.total_size,\n    p.threads,\n    p.handle_count,\n    p.on_disk,\n    p.elevated_token,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.result AS signature_status,\n    a.subject_name AS signer\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN users u ON p.uid = u.uid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN authenticode a ON p.path = a.path\nWHERE p.path != '';",
+        "query": "-- Windows Process Listing with Full Forensic Context\n-- Provides comprehensive process information including parent chain, hashes, code signatures, and username\n-- Use for: Threat hunting, incident response, baseline analysis\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    u.username,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.resident_size,\n    p.total_size,\n    p.threads,\n    p.handle_count,\n    p.on_disk,\n    p.elevated_token,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.result AS signature_status,\n    a.subject_name AS signature_signer\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN users u ON p.uid = u.uid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN authenticode a ON p.path = a.path\nWHERE p.path != '';",
+        "timeout": 180,
         "updated_at": "2025-01-06T10:00:00.000Z",
         "updated_by": "elastic"
     },
-    "coreMigrationVersion": "8.8.0",
+    "coreMigrationVersion": "9.2.0",
     "id": "osquery_manager-8be8f7d8-270c-4bf3-bba4-4b99e4c56485",
     "references": [],
     "type": "osquery-saved-query",
