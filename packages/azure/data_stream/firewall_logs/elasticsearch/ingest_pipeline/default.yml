@@ -82,12 +82,22 @@ processors:
       target_field: destination.ip
       ignore_missing: true
       ignore_failure: true
+  - set:
+      field: destination.nat.ip
+      tag: set_destination_nat_ip_from_properties_translated_ip
+      copy_from: json.properties.TranslatedIp
+      ignore_empty_value: true
   - rename:
       field: json.properties.TranslatedPort
       target_field: destination.port
       ignore_missing: true
       ignore_failure: true
       if: ctx?.azure?.firewall?.properties?.DestinationPort == null
+  - set:
+      field: destination.nat.port
+      tag: set_destination_nat_port_from_properties_translated_port
+      copy_from: json.properties.TranslatedPort
+      ignore_empty_value: true
   - rename:
       field: json.properties.Action
       target_field: event.action
@@ -230,19 +240,42 @@ processors:
       field: event.type
       value: "{{json.event.alert.action}}"
       if: ctx.json?.event?.alert?.action != null
+  - append:
+      field: event.type
+      tag: append_allowed_into_event_type
+      value: allowed
+      if: ctx.event?.action == "Allow"
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_denied_into_event_type
+      value: denied
+      if: ctx.event?.action == "Deny"
+      allow_duplicates: false
   - grok:
       field: source.address
       patterns:
         - "%{IP:source.ip}"
         - "%{HOSTNAME:source.domain}"
       ignore_missing: true
-      
+  - set:
+      field: source.address
+      tag: set_source_address_from_source_ip
+      copy_from: source.ip
+      if: ctx.source?.address == null
+      ignore_empty_value: true
   - grok:
       field: destination.address
       patterns:
         - "%{IP:destination.ip}"
         - "%{HOSTNAME:destination.domain}"
       ignore_missing: true
+  - set:
+      field: destination.address
+      tag: set_destination_address_from_destination_ip
+      copy_from: destination.ip
+      if: ctx.destination?.address == null
+      ignore_empty_value: true
 
   - geoip:
       field: source.ip
