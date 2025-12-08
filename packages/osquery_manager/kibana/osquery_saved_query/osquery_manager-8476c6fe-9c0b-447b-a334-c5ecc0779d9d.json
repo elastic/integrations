@@ -5,6 +5,36 @@
         "description": "Retrieves shell command history for all users with anti-forensics detection. Uses LEFT JOIN to identify users with no shell history (potential evidence of history clearing). Covers MITRE ATT&CK techniques T1059.004 (Unix Shell), T1552.003 (Bash History), T1070.003 (Clear Command History), T1105 (Ingress Tool Transfer), and T1562.001 (Disable or Modify Tools). Review results for: (1) suspicious command patterns including reverse shells, encoded commands, credential access, (2) users with no_history_suspicious='yes' indicating missing history files.",
         "ecs_mapping": [
             {
+                "key": "event.category",
+                "value": {
+                    "value": ["process", "host"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.kind",
+                "value": {
+                    "value": "event"
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "value": "osquery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "osquery.shell_history"
+                }
+            },
+            {
                 "key": "user.name",
                 "value": {
                     "field": "username"
@@ -41,28 +71,46 @@
                 }
             },
             {
-                "key": "event.category",
-                "value": {
-                    "value": ["process"]
-                }
-            },
-            {
-                "key": "event.type",
-                "value": {
-                    "value": ["info"]
-                }
-            },
-            {
                 "key": "tags",
                 "value": {
-                    "value": ["shell_history", "forensics", "anti_forensics_detection", "mitre_t1059_004", "mitre_t1552_003", "mitre_t1070_003", "mitre_t1105", "mitre_t1562_001"]
+                    "value": ["osquery", "shell_history", "forensics", "anti_forensics_detection", "mitre_t1059_004", "mitre_t1552_003", "mitre_t1070_003", "mitre_t1105", "mitre_t1562_001"]
+                }
+            },
+            {
+                "key": "threat.framework",
+                "value": {
+                    "value": "MITRE ATT&CK"
+                }
+            },
+            {
+                "key": "threat.tactic.id",
+                "value": {
+                    "value": ["TA0002", "TA0005", "TA0006", "TA0011"]
+                }
+            },
+            {
+                "key": "threat.tactic.name",
+                "value": {
+                    "value": ["Execution", "Defense Evasion", "Credential Access", "Command and Control"]
+                }
+            },
+            {
+                "key": "threat.technique.id",
+                "value": {
+                    "value": ["T1059.004", "T1070.003", "T1552.003", "T1105", "T1562.001"]
+                }
+            },
+            {
+                "key": "threat.technique.name",
+                "value": {
+                    "value": ["Command and Scripting Interpreter: Unix Shell", "Indicator Removal: Clear Command History", "Unsecured Credentials: Bash History", "Ingress Tool Transfer", "Impair Defenses: Disable or Modify Tools"]
                 }
             }
         ],
         "id": "shell_history_linux_macos_elastic",
         "interval": "3600",
         "platform": "linux,darwin",
-        "query": "-- Shell History - Command Execution Forensics with Anti-Forensics Detection\n-- MITRE ATT&CK: T1059.004 (Unix Shell), T1552.003 (Bash History), T1070.003 (Clear History), T1105 (Ingress Tool Transfer), T1562.001 (Disable Tools)\n-- Platforms: Linux, macOS\n-- Uses LEFT JOIN to detect users with no shell history (anti-forensics indicator)\n-- Note: Look for suspicious patterns and users with no_history_suspicious='yes'\nSELECT\n  u.username,\n  u.uid,\n  u.gid,\n  u.directory AS user_home,\n  sh.command,\n  sh.history_file,\n  CASE\n    WHEN sh.history_file LIKE '%bash_history%' THEN 'bash'\n    WHEN sh.history_file LIKE '%zsh_history%' THEN 'zsh'\n    WHEN sh.history_file LIKE '%fish_history%' THEN 'fish'\n    WHEN sh.history_file LIKE '%ash_history%' THEN 'ash'\n    ELSE 'unknown'\n  END AS shell_type,\n  CASE\n    WHEN sh.time > 0 THEN datetime(sh.time, 'unixepoch')\n    ELSE 'unknown'\n  END AS command_time,\n  sh.time AS command_timestamp,\n  CASE\n    WHEN sh.command IS NULL THEN 'yes'\n    ELSE 'no'\n  END AS no_history_suspicious\nFROM users u\nLEFT JOIN shell_history sh ON sh.uid = u.uid\nWHERE (u.uid >= 500 OR sh.command IS NOT NULL)\n  AND (sh.command IS NULL OR sh.command != '')\nORDER BY u.username, sh.time DESC",
+        "query": "-- Shell History - Command Execution Forensics with Anti-Forensics Detection\n-- MITRE ATT&CK: T1059.004 (Unix Shell), T1552.003 (Bash History), T1070.003 (Clear History), T1105 (Ingress Tool Transfer), T1562.001 (Disable Tools)\n-- Platforms: Linux, macOS\n-- Uses LEFT JOIN to detect users with no shell history (anti-forensics indicator)\n-- Note: UID >= 500 captures regular users on both macOS (500+) and Linux (1000+)\n-- Note: Look for suspicious patterns and users with no_history_suspicious='yes'\nSELECT\n  u.username,\n  u.uid,\n  u.gid,\n  u.directory AS user_home,\n  sh.command,\n  sh.history_file,\n  CASE\n    WHEN sh.history_file LIKE '%bash_history%' THEN 'bash'\n    WHEN sh.history_file LIKE '%zsh_history%' THEN 'zsh'\n    WHEN sh.history_file LIKE '%fish_history%' THEN 'fish'\n    WHEN sh.history_file LIKE '%ash_history%' THEN 'ash'\n    WHEN sh.history_file LIKE '%ksh_history%' THEN 'ksh'\n    WHEN sh.history_file LIKE '%tcsh_history%' OR sh.history_file LIKE '%.history%' THEN 'tcsh'\n    WHEN sh.history_file LIKE '%csh_history%' THEN 'csh'\n    ELSE 'unknown'\n  END AS shell_type,\n  CASE\n    WHEN sh.time > 0 THEN datetime(sh.time, 'unixepoch')\n    ELSE NULL\n  END AS command_time,\n  sh.time AS command_epoch,\n  CASE\n    WHEN sh.command IS NULL THEN 'yes'\n    ELSE 'no'\n  END AS no_history_suspicious\nFROM users u\nLEFT JOIN shell_history sh ON sh.uid = u.uid\nWHERE (u.uid >= 500 OR sh.command IS NOT NULL)\n  AND (sh.command IS NULL OR sh.command != '')\nORDER BY u.username, command_epoch DESC",
         "updated_at": "2024-12-02T17:00:00.000Z",
         "updated_by": "elastic"
     },
