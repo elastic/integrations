@@ -12,7 +12,10 @@ The Amazon GuardDuty integration can be used in three different modes to collect
 ## What do I need to use this integration?
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
-**Note**: It is recommended to use AWS SQS for Amazon GuardDuty.
+
+**Note**: 
+ - It is recommended to use AWS SQS for Amazon GuardDuty.
+ - When using the Amazon GuardDuty API to collect logs, data duplication can occur due to limitations with the current input.
 
 ### Agentless Enabled Integration
 
@@ -92,11 +95,11 @@ An example event for `guardduty` looks as following:
 {
     "@timestamp": "2022-11-22T12:22:20.938Z",
     "agent": {
-        "ephemeral_id": "7b37f535-5ec4-4b95-a393-f3852061d4ac",
-        "id": "9e5875f3-d206-43b3-b24e-5a5096e50846",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "9260a8f4-04bb-4bed-8f06-9a1f54eb3d56",
+        "id": "383f5f90-e651-4a26-b1d8-0ecf81fa72e9",
+        "name": "elastic-agent-86959",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.19.4"
     },
     "aws": {
         "guardduty": {
@@ -230,16 +233,16 @@ An example event for `guardduty` looks as following:
     },
     "data_stream": {
         "dataset": "aws.guardduty",
-        "namespace": "ep",
+        "namespace": "40034",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9e5875f3-d206-43b3-b24e-5a5096e50846",
+        "id": "383f5f90-e651-4a26-b1d8-0ecf81fa72e9",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "KUBERNETES_API_CALL",
@@ -248,7 +251,7 @@ An example event for `guardduty` looks as following:
         "dataset": "aws.guardduty",
         "end": "2022-11-22T12:22:20.000Z",
         "id": "e0c22973b012f3af67ac593443e920ff",
-        "ingested": "2023-12-14T11:38:35Z",
+        "ingested": "2025-11-12T05:48:59Z",
         "kind": [
             "event"
         ],

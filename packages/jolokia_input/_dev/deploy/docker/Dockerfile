@@ -1,5 +1,5 @@
 # Tomcat is started to fetch Jolokia metrics from it
-FROM openjdk:8-jdk-alpine
+FROM eclipse-temurin:8-jdk-alpine-3.22
 
 ENV TOMCAT_VERSION 7.0.86
 ENV TC apache-tomcat-${TOMCAT_VERSION}
@@ -25,9 +25,9 @@ RUN retry --min 1 --max 180 -- curl -J -L -s -f --show-error -O \
     mv jolokia-war-${JOLOKIA_VERSION}.war /usr/${TC}/webapps/jolokia.war && rm jolokia.sum
 
 # JMX setting to request authentication with remote connection
-RUN echo "monitorRole QED" >> /usr/lib/jvm/java-1.8-openjdk/jre/lib/management/jmxremote.password && \
-    echo "controlRole R&D" >> /usr/lib/jvm/java-1.8-openjdk/jre/lib/management/jmxremote.password && \
-    chmod 600 /usr/lib/jvm/java-1.8-openjdk/jre/lib/management/jmxremote.password
+RUN echo "monitorRole QED" >> /opt/java/openjdk/jre/lib/management/jmxremote.password && \
+    echo "controlRole R&D" >> /opt/java/openjdk/jre/lib/management/jmxremote.password && \
+    chmod 600 /opt/java/openjdk/jre/lib/management/jmxremote.password
 
 ADD jolokia.xml /usr/${TC}/conf/Catalina/localhost/jolokia.xml
 

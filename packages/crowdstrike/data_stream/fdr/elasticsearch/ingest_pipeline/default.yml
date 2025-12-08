@@ -2,6 +2,15 @@
 description: Pipeline for processing sample logs
 processors:
   - remove:
+      tag: remove_constant_keyword_fields
+      field:
+        - ecs.version
+        - event.dataset
+        - event.module
+        - observer.type
+        - observer.vendor
+      ignore_missing: true
+  - remove:
       field:
         - organization
         - division
@@ -331,6 +340,42 @@ processors:
       target_field: crowdstrike.HostHiddenStatus
       ignore_missing: true
       if: ctx.crowdstrike?.HostHiddenStatus == null
+  - convert:
+      tag: convert_crowdstrike_scores_os_to_long
+      field: crowdstrike.scores.os
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.scores.os
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_scores_sensor_to_long
+      field: crowdstrike.scores.sensor
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.scores.sensor
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_scores_overall_to_long
+      field: crowdstrike.scores.overall
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.scores.overall
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 # Non-sensor Events
   - pipeline:
@@ -366,6 +411,18 @@ processors:
   # 99 = Critical
   #
   # Leave crowdstrike values in place, since they have their own semantics.
+  - convert:
+      tag: convert_crowdstrike_alert_severity_to_long
+      if: ctx.crowdstrike?.alert?.severity != null && !(ctx.crowdstrike.alert.severity instanceof long)
+      field: crowdstrike.alert.severity
+      type: long
+      on_failure:
+        - remove:
+            field: crowdstrike.alert.severity
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Script to set event.severity.
@@ -2679,12 +2736,17 @@ processors:
       field: crowdstrike.User.Name
       target_field: user.name
       ignore_missing: true
-      if: ctx.crowdstrike?.User?.Name != null && ctx.user?.name == null
+      if: 'ctx.crowdstrike?.User instanceof Map && ctx.crowdstrike.User.Name != null && ctx.user?.name == null'
   - rename:
       field: crowdstrike.UserName
       target_field: user.name
       ignore_missing: true
       if: ctx.crowdstrike?.UserName != null && ctx.user?.name == null
+  - rename:
+      if: ctx.crowdstrike?.User instanceof String && ctx.user?.name == null
+      field: crowdstrike.User
+      target_field: user.name
+      ignore_missing: true
   - split:
       field: crowdstrike.UserPrincipal
       target_field: "_temp.user_parts"
@@ -3843,7 +3905,6 @@ processors:
       ignore_missing: true
   - remove:
       field:
-        - ecs.version
         - _temp
         - crowdstrike.timestamp
         - crowdstrike._time

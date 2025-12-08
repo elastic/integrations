@@ -5,8 +5,29 @@ container-logs integration collects and parses logs of Kubernetes containers.
 It requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
-By default only [container parser](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_parsers) is enabled. Additional log parsers can be added as an advanced options configuration.
+By default, only [container parser](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_parsers) is enabled. Additional log parsers can be added as an advanced options configuration.
 
+## Ingesting Rotated Container Logs[ingesting-rotated-container-logs]
+```{applies_to}
+stack: beta 9.2.0
+```
+
+The integration can monitor and ingest rotated Kubernetes container logs, including 
+on-the-fly decompression of GZIP archives. To enable this:
+ - change the `ID` to `kubernetes-container-logs-${kubernetes.pod.uid}-${kubernetes.container.name}`
+ - add `gzip_experimental: true` under _Advanced options > Custom configurations_. Refer to
+[filestream documentation on reading GZIP files](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html) for details.
+ - set the path to `/var/log/pods/${kubernetes.namespace}_${kubernetes.pod.name}_${kubernetes.pod.uid}/${kubernetes.container.name}/*.log*`. Refer to the official
+   [Kubernetes documentation on log rotation](https://kubernetes.io/docs/concepts/cluster-administration/logging/#log-rotation) for details on the log rotation mechanism and file naming convention.
+
+::::{important}
+Data Duplication: When you change the path on an existing integration,
+the Elastic Agent reads all existing files in the new directory from the beginning.
+This action causes a one-time re-ingestion of the log files.
+
+After the initial scan, the Elastic Agent tracks files normally and will only
+ingest new log data.
+::::
 
 ## Rerouting and preserve original event based on pod annotations
 
