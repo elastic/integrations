@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects exploitation attempts targeting CVE-2025-55182, a critical remote code execution vulnerability in React Server Components (RSC) Flight protocol. The vulnerability allows attackers to execute arbitrary code on the server by sending specially crafted deserialization payloads that exploit prototype chain traversal to access the Function constructor. This rule focuses on high-fidelity indicators of active exploitation including successful command execution responses and prototype pollution attack patterns.",
+        "from": "now-9m",
+        "index": [
+            "logs-network_traffic.http*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "React2Shell (CVE-2025-55182) Exploitation Attempt",
+        "note": "## Triage and analysis\n\n### Investigating React2Shell (CVE-2025-55182) Exploitation Attempt\n\nThis rule detects exploitation attempts targeting CVE-2025-55182, a critical remote code execution vulnerability in React's Flight protocol used by Next.js and other RSC implementations. The vulnerability stems from insecure prototype chain traversal in the Flight deserializer, allowing attackers to access `__proto__`, `constructor`, and ultimately the `Function` constructor to execute arbitrary code.\n\n### Possible investigation steps\n\n- Examine the full HTTP request body to identify the specific attack payload and command being executed.\n- Check the response body for `E{\"digest\":\"...\"}` patterns which contain command output from successful exploitation.\n- Identify the target application and verify if it runs vulnerable React (< 19.1.0) or Next.js (< 15.3.2) versions.\n- Review the source IP for other reconnaissance or exploitation attempts against web applications.\n- Check for the `Next-Action` header which is required for the exploit to work.\n- Correlate with process execution logs to identify if child processes (e.g., shell commands) were spawned by the Node.js process.\n\n### False positive analysis\n\n- Legitimate React Server Components traffic will NOT contain `__proto__`, `constructor:constructor`, or code execution patterns.\n- Security scanning tools like react2shell-scanner may trigger this rule during authorized penetration testing.\n- The combination of prototype pollution patterns with RSC-specific syntax is highly indicative of malicious activity.\n\n### Response and remediation\n\n- Immediately update affected applications: React >= 19.1.0, Next.js >= 15.3.2.\n- Block the source IP at the WAF/reverse proxy if exploitation is confirmed.\n- If HTTP 500 or 303 responses with `digest` output were observed, assume successful code execution and investigate for compromise.\n- Review server logs for evidence of command execution (file creation, network connections, process spawning).\n- Implement WAF rules to block requests containing `__proto__` or `constructor:constructor` in POST bodies.\n",
+        "query": "network where http.request.method == \"POST\" and\n(\n    // Successful CVE-2025-55182 RCE - command output in digest\n    (\n        http.response.status_code in (500, 303) and\n        http.response.body.content like~ \"*E{\\\"digest\\\"*\" and\n        http.request.body.content regex~ \"\"\".*\\$[0-9]+:[a-zA-Z_0-9]+:[a-zA-Z_0-9]+.*\"\"\"\n    ) or\n    // Prototype pollution attempts in RSC Flight data (never legitimate)\n    (\n        http.request.body.content regex~ \"\"\".*\\$[0-9]+:[a-zA-Z_0-9]+:[a-zA-Z_0-9]+.*\"\"\" and\n        (\n            http.request.body.content like~ \"*__proto__*\" or\n            http.request.body.content like~ \"*prototype*\"\n        )\n    )\n)\n",
+        "references": [
+            "https://www.wiz.io/blog/critical-vulnerability-in-react-cve-2025-55182",
+            "https://github.com/assetnote/react2shell-scanner",
+            "https://slcyber.io/research-center/high-fidelity-detection-mechanism-for-rsc-next-js-rce-cve-2025-55182-cve-2025-66478/",
+            "https://github.com/msanft/CVE-2025-55182"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "http.request.body.content",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "http.request.method",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "http.response.body.content",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "http.response.status_code",
+                "type": "long"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a8f7e9d4-3b2c-4d5e-8f1a-6c9b0e2d4a7f",
+        "severity": "high",
+        "tags": [
+            "Domain: Network",
+            "Domain: Application",
+            "Domain: Web",
+            "Use Case: Threat Detection",
+            "Use Case: Vulnerability",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Data Source: Network Packet Capture",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "a8f7e9d4-3b2c-4d5e-8f1a-6c9b0e2d4a7f_1",
+    "type": "security-rule"
+}

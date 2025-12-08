@@ -1,0 +1,108 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when GenAI tools access sensitive files such as cloud credentials, SSH keys, browser password databases, or shell configurations. Attackers leverage GenAI agents to systematically locate and exfiltrate credentials, API keys, and tokens. Access to credential stores (.aws/credentials, .ssh/id_*) suggests harvesting, while writes to shell configs (.bashrc, .zshrc) indicate persistence attempts. Note: On linux only creation events are available. Access events are not yet implemented.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "GenAI Process Accessing Sensitive Files",
+        "note": "## Triage and analysis\n\n### Investigating GenAI Process Accessing Sensitive Files\n\nThis rule detects GenAI tools accessing credential files, SSH keys, browser data, or shell configurations. While GenAI tools legitimately access project files, access to sensitive credential stores is unusual and warrants investigation.\n\n### Possible investigation steps\n\n- Review the GenAI process that triggered the alert to identify which tool is being used and verify if it's an expected/authorized tool.\n- Investigate the user account associated with the GenAI process to determine if this activity is expected for that user.\n- Review the types of sensitive files being accessed (credentials, keys, browser data, etc.) to assess the potential impact of credential harvesting or data exfiltration.\n- Check for other alerts or suspicious activity on the same host around the same time, particularly network exfiltration events.\n- Verify if the GenAI tool or extension is from a trusted source and if it's authorized for use in your environment.\n- Determine if the GenAI process accessed multiple sensitive directories in sequence, an indication of credential harvesting.\n- Check if the GenAI tool recently created or accessed AI agent config files, which may contain instructions enabling autonomous file scanning.\n- Review whether the access was preceded by an MCP server, LangChain agent, or background automation.\n\n### False positive analysis\n\n- Automated security scanning or auditing tools that leverage GenAI may access sensitive files as part of their normal operation.\n- Development workflows that use GenAI tools for code analysis may occasionally access credential files.\n\n### Response and remediation\n\n- Immediately review the GenAI process that accessed the documents to determine if it's compromised or malicious.\n- Review, rotate, and revoke any API keys, tokens, or credentials that may have been exposed or used by the GenAI tool.\n- Investigate the document access patterns to determine the scope of potential data exfiltration.\n- Update security policies to restrict or monitor GenAI tool usage in the environment, especially for access to sensitive files.\n",
+        "query": "file where event.action in (\"open\", \"creation\", \"modification\") and event.outcome == \"success\" and\n\n  // GenAI process \n    process.name in (\n      \"ollama.exe\", \"ollama\", \"Ollama\",\n      \"textgen.exe\", \"textgen\", \"text-generation-webui.exe\", \"oobabooga.exe\",\n      \"lmstudio.exe\", \"lmstudio\", \"LM Studio\",\n      \"claude.exe\", \"claude\", \"Claude\",\n      \"cursor.exe\", \"cursor\", \"Cursor\",\n      \"copilot.exe\", \"copilot\", \"Copilot\",\n      \"codex.exe\", \"codex\",\n      \"Jan\", \"jan.exe\", \"jan\",\n      \"gpt4all.exe\", \"gpt4all\", \"GPT4All\",\n      \"gemini-cli.exe\", \"gemini-cli\",\n      \"genaiscript.exe\", \"genaiscript\",\n      \"grok.exe\", \"grok\",\n      \"qwen.exe\", \"qwen\",\n      \"koboldcpp.exe\", \"koboldcpp\", \"KoboldCpp\",\n      \"llama-server\", \"llama-cli\"\n    ) and\n\n  // Sensitive file paths\n  (\n    // Persistence via Shell configs\n    file.name in (\".bashrc\", \".bash_profile\", \".zshrc\", \".zshenv\", \".zprofile\", \".profile\", \".bash_logout\") or\n\n    // Credentials In Files \n    file.name like~ \n                 (\"key?.db\", \n                  \"logins.json\", \n                  \"Login Data\", \n                  \"Local State\",\n                  \"signons.sqlite\",\n                  \"Cookies\", \n                  \"cookies.sqlite\",\n                  \"Cookies.binarycookies\", \n                  \"login.keychain-db\", \n                  \"System.keychain\", \n                  \"credentials.db\", \n                  \"credentials\", \n                  \"access_tokens.db\", \n                  \"accessTokens.json\", \n                  \"azureProfile.json\",\n                  \"RDCMan.settings\", \n                  \"known_hosts\", \n                  \"KeePass.config.xml\", \n                  \"Unattended.xml\")\n  )\n",
+        "references": [
+            "https://atlas.mitre.org/techniques/AML.T0085",
+            "https://atlas.mitre.org/techniques/AML.T0085.001",
+            "https://atlas.mitre.org/techniques/AML.T0055",
+            "https://glama.ai/blog/2025-11-11-the-lethal-trifecta-securing-model-context-protocol-against-data-flow-attacks",
+            "https://www.elastic.co/security-labs/elastic-advances-llm-security",
+            "https://specterops.io/blog/2025/11/21/an-evening-with-claude-code"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c0136397-f82a-45e5-9b9f-a3651d77e21a",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Domain: LLM",
+            "Mitre Atlas: T0085",
+            "Mitre Atlas: T0085.001",
+            "Mitre Atlas: T0055"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1005",
+                        "name": "Data from Local System",
+                        "reference": "https://attack.mitre.org/techniques/T1005/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "c0136397-f82a-45e5-9b9f-a3651d77e21a_1",
+    "type": "security-rule"
+}
