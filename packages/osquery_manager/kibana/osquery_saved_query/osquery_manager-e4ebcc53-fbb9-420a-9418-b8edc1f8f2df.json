@@ -2,7 +2,7 @@
   "attributes": {
     "created_at": "2025-12-01T10:00:00.000Z",
     "created_by": "elastic",
-    "description": "Tracks NTFS filesystem changes via the Update Sequence Number (USN) Journal including file creation, modification, deletion, and renames. Provides forensic evidence of file system activity even for deleted files. REQUIRED CONFIG: Add to Kibana osquery integration: {\"options\":{\"disable_events\":\"false\",\"enable_ntfs_event_publisher\":\"true\"},\"file_paths\":{\"tmp\":[\"C:\\\\Windows\\\\Temp\\\\%%\"]}}. MITRE ATT&CK: T1070.004 (Indicator Removal on Host: File Deletion), T1083 (File and Directory Discovery).",
+    "description": "Tracks NTFS filesystem changes via the Update Sequence Number (USN) Journal including file creation, modification, deletion, and renames. Provides forensic evidence of file system activity even for deleted files. REQUIRED CONFIG: Add to Kibana osquery integration: {\"options\":{\"disable_events\":\"false\",\"enable_ntfs_event_publisher\":\"true\"},\"file_paths\":{\"tmp\":[\"C:\\\\Windows\\\\Temp\\\\%%\"],\"users\":[\"C:\\\\Users\\\\%%\"],\"programdata\":[\"C:\\\\ProgramData\\\\%%\"]}}. MITRE ATT&CK: T1070.004 (Indicator Removal on Host: File Deletion), T1083 (File and Directory Discovery).",
     "ecs_mapping": [
       {
         "key": "event.category",
@@ -11,9 +11,45 @@
         }
       },
       {
+        "key": "event.type",
+        "value": {
+          "value": ["change"]
+        }
+      },
+      {
+        "key": "event.kind",
+        "value": {
+          "value": "event"
+        }
+      },
+      {
+        "key": "event.module",
+        "value": {
+          "value": "osquery"
+        }
+      },
+      {
+        "key": "event.dataset",
+        "value": {
+          "value": "osquery.ntfs_journal_events"
+        }
+      },
+      {
         "key": "event.action",
         "value": {
           "field": "action"
+        }
+      },
+      {
+        "key": "event.created",
+        "value": {
+          "field": "event_time"
+        }
+      },
+      {
+        "key": "host.os.type",
+        "value": {
+          "value": "windows"
         }
       },
       {
@@ -35,16 +71,52 @@
         }
       },
       {
+        "key": "file.ctime",
+        "value": {
+          "field": "record_time"
+        }
+      },
+      {
         "key": "tags",
         "value": {
-          "value": ["ntfs_journal", "usn", "filesystem_forensics", "mitre_t1070_004", "mitre_t1083"]
+          "value": ["ntfs_journal", "usn", "filesystem_forensics", "mitre_t1070_004", "mitre_t1083", "windows"]
+        }
+      },
+      {
+        "key": "threat.framework",
+        "value": {
+          "value": "MITRE ATT&CK"
+        }
+      },
+      {
+        "key": "threat.tactic.id",
+        "value": {
+          "value": ["TA0005", "TA0007"]
+        }
+      },
+      {
+        "key": "threat.tactic.name",
+        "value": {
+          "value": ["Defense Evasion", "Discovery"]
+        }
+      },
+      {
+        "key": "threat.technique.id",
+        "value": {
+          "value": ["T1070.004", "T1083"]
+        }
+      },
+      {
+        "key": "threat.technique.name",
+        "value": {
+          "value": ["Indicator Removal on Host: File Deletion", "File and Directory Discovery"]
         }
       }
     ],
     "id": "ntfs_usn_journal_events_windows_elastic",
     "interval": "3600",
     "platform": "windows",
-    "query": "-- NTFS Update Sequence Number (USN) Journal Events\n-- Tracks filesystem changes including file creation, modification, deletion, and renames\n-- MITRE ATT&CK: T1070.004 (Indicator Removal), T1083 (File and Directory Discovery)\n-- REQUIRED: Enable in Kibana osquery integration config:\n-- {\"options\":{\"disable_events\":\"false\",\"enable_ntfs_event_publisher\":\"true\"},\"file_paths\":{\"tmp\":[\"C:\\\\Windows\\\\Temp\\\\%%\"]}}\nSELECT\n  action,\n  path,\n  old_path,\n  category,\n  drive_letter,\n  file_attributes,\n  node_ref_number AS mft_entry,\n  parent_ref_number AS parent_mft_entry,\n  record_timestamp,\n  record_usn,\n  partial,\n  time\nFROM ntfs_journal_events\nWHERE action IS NOT NULL",
+    "query": "-- NTFS Update Sequence Number (USN) Journal Events\n-- Tracks filesystem changes including file creation, modification, deletion, and renames\n-- MITRE ATT&CK: T1070.004 (Indicator Removal), T1083 (File and Directory Discovery)\n-- REQUIRED: Enable in Kibana osquery integration config:\n-- {\"options\":{\"disable_events\":\"false\",\"enable_ntfs_event_publisher\":\"true\"},\n--  \"file_paths\":{\"tmp\":[\"C:\\\\Windows\\\\Temp\\\\%%\"],\"users\":[\"C:\\\\Users\\\\%%\"],\"programdata\":[\"C:\\\\ProgramData\\\\%%\"]}}\nSELECT\n  action,\n  path,\n  old_path,\n  category,\n  drive_letter,\n  file_attributes,\n  node_ref_number AS mft_entry,\n  parent_ref_number AS parent_mft_entry,\n  datetime(record_timestamp, 'unixepoch') AS record_time,\n  record_usn,\n  partial,\n  datetime(time, 'unixepoch') AS event_time\nFROM ntfs_journal_events\nWHERE action IS NOT NULL",
     "updated_at": "2025-12-01T12:00:00.000Z",
     "updated_by": "elastic"
   },
