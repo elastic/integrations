@@ -1,0 +1,131 @@
+---
+description: "Enriches documents with stable user.entity.id and host.entity.id values using ranking rules"
+processors:
+  - script:
+      lang: painless
+      description: "Compute user.entity.id and host.entity.id if not already present"
+      source: |
+        // Helper function to check if a value is valid (not null and not empty string)
+        boolean isValid(def value) {
+          if (value == null) {
+            return false;
+          }
+          if (value instanceof String && value.trim().isEmpty()) {
+            return false;
+          }
+          return true;
+        }
+
+        // -------------------------
+        // Resolve Host Entity ID
+        // -------------------------
+        // Process host first since user.entity.id may depend on host.entity.id
+        if (ctx.host != null) {
+          boolean hasHostEntityId = (ctx.host.entity != null && isValid(ctx.host.entity.id));
+
+          if (!hasHostEntityId) {
+            // Extract host fields
+            def hostId       = ctx.host.containsKey('id') ? ctx.host.id : null;
+            def hostName     = ctx.host.containsKey('name') ? ctx.host.name : null;
+            def hostHostname = ctx.host.containsKey('hostname') ? ctx.host.hostname : null;
+            def hostDomain   = ctx.host.containsKey('domain') ? ctx.host.domain : null;
+            def hostMac      = ctx.host.containsKey('mac') ? ctx.host.mac : null;
+
+            def hostEntityId = null;
+
+            // Apply ranking system for host.entity.id
+            // 1. host.entity.id -> already handled by hasHostEntityId guard
+            // 2. host.id
+            if (isValid(hostId)) {
+              hostEntityId = hostId;
+            }
+            // 3. host.name.host.domain
+            else if (isValid(hostName) && isValid(hostDomain)) {
+              hostEntityId = hostName + "." + hostDomain;
+            }
+            // 4. host.hostname.host.domain
+            else if (isValid(hostHostname) && isValid(hostDomain)) {
+              hostEntityId = hostHostname + "." + hostDomain;
+            }
+            // 5. host.name|host.mac
+            else if (isValid(hostName) && isValid(hostMac)) {
+              hostEntityId = hostName + "|" + hostMac;
+            }
+            // 6. host.hostname|host.mac
+            else if (isValid(hostHostname) && isValid(hostMac)) {
+              hostEntityId = hostHostname + "|" + hostMac;
+            }
+            // 7. host.hostname
+            else if (isValid(hostHostname)) {
+              hostEntityId = hostHostname;
+            }
+            // 8. host.name
+            else if (isValid(hostName)) {
+              hostEntityId = hostName;
+            }
+
+            if (hostEntityId != null) {
+              if (ctx.host.entity == null) {
+                ctx.host.entity = new HashMap();
+              }
+              ctx.host.entity.id = hostEntityId;
+            }
+          }
+        }
+
+        // -------------------------
+        // Resolve User Entity ID
+        // -------------------------
+        if (ctx.user != null) {
+          boolean hasUserEntityId = (ctx.user.entity != null && isValid(ctx.user.entity.id));
+
+          if (!hasUserEntityId) {
+            // Extract user fields
+            def userId     = ctx.user.containsKey('id') ? ctx.user.id : null;
+            def userEmail  = ctx.user.containsKey('email') ? ctx.user.email : null;
+            def userName   = ctx.user.containsKey('name') ? ctx.user.name : null;
+            def userDomain = ctx.user.containsKey('domain') ? ctx.user.domain : null;
+
+            // Get host.entity.id if available
+            def hostEntityId = null;
+            if (ctx.host != null && ctx.host.entity != null && isValid(ctx.host.entity.id)) {
+              hostEntityId = ctx.host.entity.id;
+            }
+
+            def userEntityId = null;
+
+            // Apply ranking system for user.entity.id
+            // 1. user.entity.id -> already handled by hasUserEntityId guard
+            // 2. user.id
+            if (isValid(userId)) {
+              userEntityId = userId;
+            }
+            // 3. user.email
+            else if (isValid(userEmail)) {
+              userEntityId = userEmail;
+            }
+            // 4. user.name@user.domain
+            else if (isValid(userName) && isValid(userDomain)) {
+              userEntityId = userName + "@" + userDomain;
+            }
+            // 5. user.name@host.entity.id
+            else if (isValid(userName) && hostEntityId != null) {
+              userEntityId = userName + "@" + hostEntityId;
+            }
+            // 6. user.name
+            else if (isValid(userName)) {
+              userEntityId = userName;
+            }
+
+            if (userEntityId != null) {
+              if (ctx.user.entity == null) {
+                ctx.user.entity = new HashMap();
+              }
+              ctx.user.entity.id = userEntityId;
+            }
+          }
+        }
+      on_failure:
+        - set:
+            field: error.message
+            value: "Failed to enrich entity IDs: {{ _ingest.on_failure_message }}"
