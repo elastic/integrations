@@ -49,6 +49,24 @@ processors:
         - UNIX
       tag: date_process_end_time
       if: 'ctx.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() <= 11'
+  - foreach:
+      field: crowdstrike.event.ExecutablesWritten
+      tag: convert_crowdstrike_executablewritten_timestamp_array
+      if: ctx.crowdstrike?.event?.ExecutablesWritten instanceof List
+      processor:
+        date:
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          tag: convert_crowdstrike_executablewritten_timestamp
+          on_failure:
+            - remove:
+                field: _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: crowdstrike.event.LocalIP
       target_field: source.ip
