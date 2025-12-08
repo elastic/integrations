@@ -17,6 +17,30 @@
                 }
             },
             {
+                "key": "event.kind",
+                "value": {
+                    "value": "event"
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "value": "osquery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "osquery.process_listing"
+                }
+            },
+            {
+                "key": "host.os.type",
+                "value": {
+                    "value": "macos"
+                }
+            },
+            {
                 "key": "process.pid",
                 "value": {
                     "field": "pid"
@@ -115,13 +139,13 @@
             {
                 "key": "process.code_signature.status",
                 "value": {
-                    "field": "signing_status"
+                    "field": "signature_status"
                 }
             },
             {
                 "key": "process.code_signature.subject_name",
                 "value": {
-                    "field": "authority"
+                    "field": "signature_signer"
                 }
             },
             {
@@ -129,17 +153,23 @@
                 "value": {
                     "field": "team_identifier"
                 }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "process_listing", "forensics", "macos"]
+                }
             }
         ],
         "id": "process_listing_macos_elastic",
         "interval": "3600",
         "platform": "darwin",
-        "query": "-- macOS Process Listing with Full Forensic Context\n-- Provides comprehensive process information including parent chain, hashes, code signatures, and username\n-- Use for: Threat hunting, incident response, baseline analysis\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    u.username,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.resident_size,\n    p.total_size,\n    p.threads,\n    p.nice,\n    p.on_disk,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    s.signed AS signing_status,\n    s.authority,\n    s.identifier AS bundle_identifier,\n    s.team_identifier\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN users u ON p.uid = u.uid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN signature s ON p.path = s.path\nWHERE p.path != '';",
+        "query": "-- macOS Process Listing with Full Forensic Context\n-- Provides comprehensive process information including parent chain, hashes, code signatures, and username\n-- Use for: Threat hunting, incident response, baseline analysis\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    u.username,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.resident_size,\n    p.total_size,\n    p.threads,\n    p.nice,\n    p.on_disk,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    s.signed AS signature_status,\n    s.authority AS signature_signer,\n    s.identifier AS bundle_identifier,\n    s.team_identifier\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN users u ON p.uid = u.uid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN signature s ON p.path = s.path\nWHERE p.path != '';",
         "timeout": 180,
         "updated_at": "2025-01-06T10:00:00.000Z",
         "updated_by": "elastic"
     },
-    "coreMigrationVersion": "8.8.0",
+    "coreMigrationVersion": "9.2.0",
     "id": "osquery_manager-888ac365-4095-4de8-9990-41d96a792356",
     "references": [],
     "type": "osquery-saved-query",
