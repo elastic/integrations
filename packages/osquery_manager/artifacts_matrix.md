@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-12-08
 **Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 32 (4 core forensic variants + 28 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Total Queries**: 33 (5 core forensic variants + 28 additional)
+**Completion Rate**: 10.9% (5/46 core artifacts fully supported)
 
 ---
 
@@ -112,25 +112,48 @@ These queries existed in the original repository and provide additional coverage
 
 ## Security Detection Queries (Threat Hunting & Persistence)
 
-Advanced threat detection queries using dual-detection methodology (NON_WHITELISTED + LOTL_INDICATOR) to identify suspicious persistence mechanisms and Living off the Land (LotL) attack patterns. These queries are optimized for Elastic Security and map to MITRE ATT&CK techniques.
+Advanced threat detection queries using dual-detection methodology (NON_WHITELISTED + LOTL_INDICATOR) to identify suspicious persistence mechanisms and Living off the Land (LOTL) attack patterns. These queries are optimized for Elastic Security and map to MITRE ATT&CK techniques.
 
-| # | Query                           | ✓ | OS | File | MITRE ATT&CK | Description |
+### Windows Scheduled Tasks (2-Query Approach)
+
+Windows scheduled tasks use a **companion query pattern** for optimal coverage:
+
+| # | Query | ✓ | OS | File | MITRE ATT&CK | Description |
 |:-:|---------------------------------|:-:|:--:|:----:|--------------|-------------|
-| 1 | scheduled_tasks_windows_elastic | ✅ | Win | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-e5f6-7890-abcd-ef1234567890.json) | T1053.005, T1059.001, T1105 | Detects suspicious Windows scheduled tasks using path-based whitelist filtering and LotL patterns (PowerShell -e, certutil, wscript, etc.) |
-| 2 | crontab_linux_elastic           | ✅ | Linux | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-8901-bcde-f12345678901.json) | T1053.003, T1059.004, T1105 | Detects suspicious Linux cron jobs using system directory filtering and LotL patterns (curl\|bash, nc -e, base64 -d, etc.) |
-| 3 | launchd_darwin_elastic          | ✅ | Mac | [c3d4](kibana/osquery_saved_query/osquery_manager-c3d4e5f6-a7b8-9012-cdef-012345678902.json) | T1543.001, T1543.004, T1059.004, T1105, T1547.011 | Detects suspicious macOS Launch Agents/Daemons using code signature filtering and LotL patterns (curl, osascript, bash -c, base64 -D, etc.) |
+| 1 | scheduled_tasks_suspicious_windows_elastic | ✅ | Win | [265051dd](kibana/osquery_saved_query/osquery_manager-265051dd-bc20-491a-a998-98ebc2f00af7.json) | T1053.005, T1059.001, T1105 | **Full Coverage Triage** - Detects ALL suspicious Windows scheduled tasks without hash enrichment. Catches tasks even when executable files are orphaned/deleted. Use for initial triage. |
+| 2 | scheduled_tasks_enriched_windows_elastic | ✅ | Win | [94a743fd](kibana/osquery_saved_query/osquery_manager-94a743fd-5f84-44f3-b38a-2732d8b6f51b.json) | T1053.005, T1059.001, T1105 | **Deep Investigation** - Enriched analysis with file hash (SHA256/SHA1/MD5) and code signature data. Uses CROSS JOIN for reliable osquery hash/authenticode table enrichment. Only returns tasks with existing executable files. |
+
+**Why Two Queries?**
+- **Query 1 (Suspicious)**: Prioritizes complete coverage - captures tasks even when the executable doesn't exist on disk
+- **Query 2 (Enriched)**: Uses `CROSS JOIN` pattern (instead of `LEFT JOIN`) for reliable hash/signature enrichment
+- **osquery Limitation**: `LEFT JOIN` with `hash` and `authenticode` tables doesn't work reliably; `CROSS JOIN` is the correct pattern
+
+### Cross-Platform Persistence Detection
+
+| # | Query | ✓ | OS | File | MITRE ATT&CK | Description |
+|:-:|---------------------------------|:-:|:--:|:----:|--------------|-------------|
+| 3 | crontab_linux_elastic | ✅ | Linux | [crontab](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-8901-bcde-f12345678901.json) | T1053.003, T1059.004, T1105 | Detects suspicious Linux cron jobs using system directory filtering and LOTL patterns (curl\|bash, nc -e, base64 -d, etc.). Multi-distro support. |
+| 4 | launchd_darwin_elastic | ✅ | Mac | [launchd](kibana/osquery_saved_query/osquery_manager-c3d4e5f6-a7b8-9012-cdef-012345678902.json) | T1543.001, T1543.004, T1059.004, T1105, T1547.011 | Detects suspicious macOS Launch Agents/Daemons using code signature filtering and LOTL patterns (curl, osascript, bash -c, base64 -D, etc.). Filters unsigned/non-Apple signed binaries. |
 
 **Detection Methodology**:
 - **NON_WHITELISTED**: Flags items not in known-good allowlist (system paths, Apple/vendor signatures, package managers, maintenance tasks)
 - **LOTL_INDICATOR**: Detects Living off the Land attack patterns (abuse of legitimate OS tools)
 - **Combined Detection**: One row per item with aggregated detection reasons, prioritizing LOTL indicators
-- **ECS Mapping**: Full Elastic Common Schema field mappings for integration with Elastic Security
-- **macOS-Specific**: Final WHERE clause filters by LOTL OR unsigned OR non-Apple signed binaries to reduce noise
+- **ECS Mapping**: Full Elastic Common Schema field mappings with proper `event.category` static arrays, `file.code_signature.*` namespacing, `threat.*` MITRE mappings, and standardized timestamp formatting
+
+**ECS Compliance** (All queries updated 2025-12-08):
+- ✅ `event.category` as static array `["configuration"]`
+- ✅ `event.type`, `event.kind`, `event.module`, `event.dataset` present
+- ✅ `host.os.type` for platform identification
+- ✅ `file.code_signature.*` with proper prefix (not unprefixed `code_signature.*`)
+- ✅ `threat.framework`, `threat.tactic.*`, `threat.technique.*` MITRE mappings
+- ✅ `tags` array with MITRE technique IDs
+- ✅ Timestamps converted with `datetime(..., 'unixepoch')` and readable aliases
 
 **Platform Coverage**:
-- ✅ Windows: scheduled_tasks (done)
-- ✅ Linux: crontab (done)
-- ✅ macOS: launchd (done)
+- ✅ Windows: scheduled_tasks (2 queries: suspicious + enriched)
+- ✅ Linux: crontab (1 query)
+- ✅ macOS: launchd (1 query)
 
 ---
 

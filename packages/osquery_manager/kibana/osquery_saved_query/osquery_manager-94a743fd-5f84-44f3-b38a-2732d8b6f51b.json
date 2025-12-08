@@ -1,0 +1,195 @@
+{
+    "attributes": {
+        "created_at": "2025-12-08T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Enriched analysis of suspicious Windows scheduled tasks with file hash and code signature data. Uses CROSS JOIN pattern for reliable osquery hash/authenticode table enrichment. This query only returns tasks where the executable file exists on disk and can be hashed/validated. For complete coverage including orphaned/deleted files, use the companion query 'scheduled_tasks_suspicious_windows_elastic'. Detects suspicious tasks using dual-detection approach: (1) Non-whitelisted tasks not in known-good allowlist and (2) Living off the Land (LOTL) attack indicators. Maps to MITRE ATT&CK T1053.005 (Scheduled Task), T1059.001 (PowerShell), T1105 (Ingress Tool Transfer).",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["configuration"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.kind",
+                "value": {
+                    "value": "state"
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "value": "osquery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "osquery.scheduled_tasks"
+                }
+            },
+            {
+                "key": "host.os.type",
+                "value": {
+                    "value": "windows"
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "task_name"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "command_line"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "executable_path"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "task_path"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "file_size"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "changed_time"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "file_directory"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "file.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "event.created",
+                "value": {
+                    "field": "last_execution"
+                }
+            },
+            {
+                "key": "rule.category",
+                "value": {
+                    "field": "task_type"
+                }
+            },
+            {
+                "key": "rule.description",
+                "value": {
+                    "field": "detection_reason"
+                }
+            },
+            {
+                "key": "rule.name",
+                "value": {
+                    "field": "detection_method"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["persistence", "scheduled_tasks", "threat_hunting", "hash_enriched", "mitre_t1053_005", "mitre_t1059_001", "mitre_t1105", "windows", "osquery"]
+                }
+            },
+            {
+                "key": "threat.framework",
+                "value": {
+                    "value": "MITRE ATT&CK"
+                }
+            },
+            {
+                "key": "threat.tactic.id",
+                "value": {
+                    "value": ["TA0003", "TA0002"]
+                }
+            },
+            {
+                "key": "threat.tactic.name",
+                "value": {
+                    "value": ["Persistence", "Execution"]
+                }
+            },
+            {
+                "key": "threat.technique.id",
+                "value": {
+                    "value": ["T1053.005", "T1059.001", "T1105"]
+                }
+            },
+            {
+                "key": "threat.technique.name",
+                "value": {
+                    "value": ["Scheduled Task/Job: Scheduled Task", "Command and Scripting Interpreter: PowerShell", "Ingress Tool Transfer"]
+                }
+            }
+        ],
+        "id": "scheduled_tasks_enriched_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Enriched suspicious Windows scheduled tasks with hash and signature data\n-- MITRE: T1053.005, T1059.001, T1105\n-- Uses CROSS JOIN for reliable osquery hash/authenticode enrichment\n-- Only returns tasks with existing executable files\n-- For full coverage, use companion query 'scheduled_tasks_suspicious_windows_elastic'\n\n-- CTE to extract executable path with TRIM to handle leading spaces in action field\nWITH task_paths AS (\n    SELECT\n        st.name AS task_name,\n        st.action AS command_line,\n        st.path AS task_path,\n        st.enabled,\n        st.state AS task_state,\n        st.hidden,\n        datetime(st.last_run_time, 'unixepoch') AS last_execution,\n        datetime(st.next_run_time, 'unixepoch') AS next_execution,\n        st.last_run_message,\n        -- Extract executable path using TRIM and .exe detection\n        CASE\n            WHEN INSTR(LOWER(TRIM(st.action)), '.exe ') > 0\n            THEN SUBSTR(TRIM(st.action), 1, INSTR(LOWER(TRIM(st.action)), '.exe ') + 3)\n            WHEN INSTR(LOWER(TRIM(st.action)), '.exe\"') > 0\n            THEN SUBSTR(TRIM(st.action), 1, INSTR(LOWER(TRIM(st.action)), '.exe\"') + 3)\n            ELSE TRIM(st.action)\n        END AS executable_path\n    FROM scheduled_tasks AS st\n    WHERE st.name IS NOT NULL\n        AND st.name != ''\n        AND st.action IS NOT NULL\n        AND st.action != ''\n),\nsuspicious_tasks AS (\n    SELECT\n        tp.task_name,\n        tp.command_line,\n        -- Remove leading quote if present from executable_path\n        CASE\n            WHEN SUBSTR(tp.executable_path, 1, 1) = '\"'\n            THEN SUBSTR(tp.executable_path, 2)\n            ELSE tp.executable_path\n        END AS executable_path,\n        tp.task_path,\n        tp.enabled,\n        tp.task_state,\n        tp.hidden,\n        tp.last_execution,\n        tp.next_execution,\n        tp.last_run_message,\n        -- Detection classification\n        CASE\n            WHEN LOWER(tp.command_line) LIKE '%powershell% -e%' OR LOWER(tp.command_line) LIKE '% -enc %' OR LOWER(tp.command_line) LIKE '% -encodedcommand %' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%invoke-webrequest%' OR LOWER(tp.command_line) LIKE '%iwr %' OR LOWER(tp.command_line) LIKE '%invoke-restmethod%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%-executionpolicy bypass%' OR LOWER(tp.command_line) LIKE '%-ep bypass%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%-w hidden%' OR LOWER(tp.command_line) LIKE '%-windowstyle hidden%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%iex(%' OR LOWER(tp.command_line) LIKE '%invoke-expression%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%[convert]::frombase64string%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%downloadstring%' OR LOWER(tp.command_line) LIKE '%downloadfile%' OR LOWER(tp.command_line) LIKE '%webclient%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%certutil% -urlcache%' OR LOWER(tp.command_line) LIKE '%certutil% -f%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%bitsadmin%/transfer%' OR LOWER(tp.command_line) LIKE '%bitsadmin% /transfer%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%mshta%http%' OR LOWER(tp.command_line) LIKE '%mshta%javascript%' OR LOWER(tp.command_line) LIKE '%mshta.exe%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%wscript.exe%' OR LOWER(tp.command_line) LIKE '%cscript.exe%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%regsvr32%/s%' OR LOWER(tp.command_line) LIKE '%regsvr32%scrobj%' THEN 'Scheduled Task (LOTL)'\n            WHEN (LOWER(tp.command_line) LIKE '%rundll32%' OR LOWER(tp.command_line) LIKE '%msiexec%') AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%.hta%' OR LOWER(tp.command_line) LIKE '%.vbs%' OR LOWER(tp.command_line) LIKE '%.js%' OR LOWER(tp.command_line) LIKE '%.wsf%' THEN 'Scheduled Task (LOTL)'\n            WHEN tp.hidden = 1 AND tp.enabled = 1 AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' AND tp.task_path NOT LIKE '\\Microsoft\\Office\\%' THEN 'Scheduled Task (LOTL)'\n            ELSE 'Scheduled Task'\n        END AS task_type,\n        -- Detection method\n        CASE\n            WHEN LOWER(tp.command_line) LIKE '%powershell% -e%' OR LOWER(tp.command_line) LIKE '% -enc %' OR LOWER(tp.command_line) LIKE '%invoke-%' OR LOWER(tp.command_line) LIKE '%iex(%' OR LOWER(tp.command_line) LIKE '%downloadstring%' OR LOWER(tp.command_line) LIKE '%certutil%' OR LOWER(tp.command_line) LIKE '%bitsadmin%' OR LOWER(tp.command_line) LIKE '%mshta%' OR LOWER(tp.command_line) LIKE '%wscript%' OR LOWER(tp.command_line) LIKE '%cscript%' OR LOWER(tp.command_line) LIKE '%regsvr32%' THEN 'LOTL_INDICATOR'\n            WHEN LOWER(tp.command_line) LIKE '%\\users\\%\\appdata\\%' OR LOWER(tp.command_line) LIKE '%\\users\\public\\%' OR LOWER(tp.command_line) LIKE '%\\temp\\%' OR LOWER(tp.command_line) LIKE '%\\downloads\\%' THEN 'SUSPICIOUS_PATH'\n            WHEN (LOWER(tp.command_line) LIKE '%\\programdata\\%' AND LOWER(tp.command_line) NOT LIKE '%\\microsoft\\%') THEN 'SUSPICIOUS_PATH'\n            WHEN tp.hidden = 1 AND tp.enabled = 1 THEN 'HIDDEN_ENABLED'\n            ELSE 'NON_WHITELISTED'\n        END AS detection_method,\n        -- Detection reason\n        CASE\n            WHEN LOWER(tp.command_line) LIKE '%powershell% -e%' OR LOWER(tp.command_line) LIKE '% -enc %' OR LOWER(tp.command_line) LIKE '% -encodedcommand %' THEN 'PowerShell base64 encoded command'\n            WHEN LOWER(tp.command_line) LIKE '%invoke-webrequest%' OR LOWER(tp.command_line) LIKE '%iwr %' OR LOWER(tp.command_line) LIKE '%invoke-restmethod%' THEN 'PowerShell download cradle'\n            WHEN LOWER(tp.command_line) LIKE '%-executionpolicy bypass%' OR LOWER(tp.command_line) LIKE '%-ep bypass%' THEN 'PowerShell execution policy bypass'\n            WHEN LOWER(tp.command_line) LIKE '%-w hidden%' OR LOWER(tp.command_line) LIKE '%-windowstyle hidden%' THEN 'PowerShell hidden window'\n            WHEN LOWER(tp.command_line) LIKE '%iex(%' OR LOWER(tp.command_line) LIKE '%invoke-expression%' THEN 'PowerShell Invoke-Expression abuse'\n            WHEN LOWER(tp.command_line) LIKE '%[convert]::frombase64string%' THEN 'PowerShell base64 decode'\n            WHEN LOWER(tp.command_line) LIKE '%downloadstring%' OR LOWER(tp.command_line) LIKE '%downloadfile%' OR LOWER(tp.command_line) LIKE '%webclient%' THEN 'PowerShell download method'\n            WHEN LOWER(tp.command_line) LIKE '%certutil% -urlcache%' OR LOWER(tp.command_line) LIKE '%certutil% -f%' THEN 'CertUtil download/decode abuse'\n            WHEN LOWER(tp.command_line) LIKE '%bitsadmin%/transfer%' OR LOWER(tp.command_line) LIKE '%bitsadmin% /transfer%' THEN 'BITSAdmin download abuse'\n            WHEN LOWER(tp.command_line) LIKE '%mshta%http%' OR LOWER(tp.command_line) LIKE '%mshta%javascript%' OR LOWER(tp.command_line) LIKE '%mshta.exe%' THEN 'MSHTA.exe abuse'\n            WHEN LOWER(tp.command_line) LIKE '%wscript.exe%' OR LOWER(tp.command_line) LIKE '%cscript.exe%' THEN 'Windows Script Host abuse'\n            WHEN LOWER(tp.command_line) LIKE '%regsvr32%/s%' OR LOWER(tp.command_line) LIKE '%regsvr32%scrobj%' THEN 'Regsvr32 proxy execution'\n            WHEN LOWER(tp.command_line) LIKE '%rundll32%' AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' THEN 'Rundll32 proxy execution'\n            WHEN LOWER(tp.command_line) LIKE '%msiexec%' AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' THEN 'MSI package execution'\n            WHEN LOWER(tp.command_line) LIKE '%.hta%' OR LOWER(tp.command_line) LIKE '%.vbs%' OR LOWER(tp.command_line) LIKE '%.js%' OR LOWER(tp.command_line) LIKE '%.wsf%' THEN 'Script file execution'\n            WHEN LOWER(tp.command_line) LIKE '%\\users\\%\\appdata\\local\\temp\\%' THEN 'Executable in User Temp'\n            WHEN LOWER(tp.command_line) LIKE '%\\users\\%\\appdata\\%' THEN 'Executable in User AppData'\n            WHEN LOWER(tp.command_line) LIKE '%\\users\\public\\%' THEN 'Executable in Users Public'\n            WHEN LOWER(tp.command_line) LIKE '%\\programdata\\%' AND LOWER(tp.command_line) NOT LIKE '%\\microsoft\\%' THEN 'Executable in ProgramData'\n            WHEN LOWER(tp.command_line) LIKE '%\\temp\\%' THEN 'Executable in Temp directory'\n            WHEN LOWER(tp.command_line) LIKE '%\\downloads\\%' THEN 'Executable in Downloads'\n            WHEN tp.hidden = 1 AND tp.enabled = 1 AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' THEN 'Hidden and enabled task'\n            ELSE 'Suspicious scheduled task'\n        END AS detection_reason\n    FROM task_paths AS tp\n    WHERE (\n        -- LOTL indicators\n        LOWER(tp.command_line) LIKE '%powershell% -e%'\n        OR LOWER(tp.command_line) LIKE '% -enc %'\n        OR LOWER(tp.command_line) LIKE '% -encodedcommand %'\n        OR LOWER(tp.command_line) LIKE '%invoke-webrequest%'\n        OR LOWER(tp.command_line) LIKE '%iwr %'\n        OR LOWER(tp.command_line) LIKE '%invoke-restmethod%'\n        OR LOWER(tp.command_line) LIKE '%-executionpolicy bypass%'\n        OR LOWER(tp.command_line) LIKE '%-ep bypass%'\n        OR LOWER(tp.command_line) LIKE '%-w hidden%'\n        OR LOWER(tp.command_line) LIKE '%-windowstyle hidden%'\n        OR LOWER(tp.command_line) LIKE '%iex(%'\n        OR LOWER(tp.command_line) LIKE '%invoke-expression%'\n        OR LOWER(tp.command_line) LIKE '%[convert]::frombase64string%'\n        OR LOWER(tp.command_line) LIKE '%downloadstring%'\n        OR LOWER(tp.command_line) LIKE '%downloadfile%'\n        OR LOWER(tp.command_line) LIKE '%webclient%'\n        OR LOWER(tp.command_line) LIKE '%certutil% -urlcache%'\n        OR LOWER(tp.command_line) LIKE '%certutil% -f%'\n        OR LOWER(tp.command_line) LIKE '%bitsadmin%/transfer%'\n        OR LOWER(tp.command_line) LIKE '%bitsadmin% /transfer%'\n        OR LOWER(tp.command_line) LIKE '%mshta%http%'\n        OR LOWER(tp.command_line) LIKE '%mshta%javascript%'\n        OR LOWER(tp.command_line) LIKE '%mshta.exe%'\n        OR LOWER(tp.command_line) LIKE '%wscript.exe%'\n        OR LOWER(tp.command_line) LIKE '%cscript.exe%'\n        OR LOWER(tp.command_line) LIKE '%regsvr32%/s%'\n        OR LOWER(tp.command_line) LIKE '%regsvr32%scrobj%'\n        OR (LOWER(tp.command_line) LIKE '%rundll32%' AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%')\n        OR (LOWER(tp.command_line) LIKE '%msiexec%' AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%')\n        OR LOWER(tp.command_line) LIKE '%.hta%'\n        OR LOWER(tp.command_line) LIKE '%.vbs%'\n        OR LOWER(tp.command_line) LIKE '%.js%'\n        OR LOWER(tp.command_line) LIKE '%.wsf%'\n        -- Suspicious paths\n        OR LOWER(tp.command_line) LIKE '%\\users\\%\\appdata\\%'\n        OR LOWER(tp.command_line) LIKE '%\\users\\public\\%'\n        OR LOWER(tp.command_line) LIKE '%\\temp\\%'\n        OR LOWER(tp.command_line) LIKE '%\\downloads\\%'\n        OR (LOWER(tp.command_line) LIKE '%\\programdata\\%' AND LOWER(tp.command_line) NOT LIKE '%\\microsoft\\%')\n        -- Hidden enabled tasks\n        OR (tp.hidden = 1 AND tp.enabled = 1 AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' AND tp.task_path NOT LIKE '\\Microsoft\\Office\\%')\n    )\n    -- Exclude known good vendors\n    AND NOT (\n        (tp.task_path LIKE '\\Microsoft\\Windows\\%' OR tp.task_path LIKE '\\Microsoft\\Office\\%')\n        AND (\n            LOWER(tp.command_line) LIKE '%\\system32\\%'\n            OR LOWER(tp.command_line) LIKE '%\\syswow64\\%'\n            OR LOWER(tp.command_line) LIKE '%program files\\windows defender\\%'\n        )\n    )\n    AND NOT (tp.task_path LIKE '\\Microsoft\\Windows\\Windows Defender\\%' AND LOWER(tp.command_line) LIKE '%defender%')\n    AND NOT (tp.task_path LIKE '\\MicrosoftEdgeUpdate%' OR (tp.task_path LIKE '%EdgeUpdate%' AND tp.command_line LIKE '%EdgeUpdate%'))\n    AND NOT (tp.task_path LIKE '%\\Google\\Update%' AND tp.command_line LIKE '%Google\\Update%')\n    AND NOT (tp.task_path LIKE '%\\Adobe\\%' AND tp.command_line LIKE '%Adobe%')\n    AND NOT (tp.task_path LIKE '%OneDrive%')\n)\nSELECT \n    st.task_name,\n    st.command_line,\n    st.executable_path,\n    st.task_path,\n    st.task_type,\n    st.enabled,\n    st.task_state,\n    st.hidden,\n    st.last_execution,\n    st.next_execution,\n    st.last_run_message,\n    st.detection_method,\n    st.detection_reason,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    h.sha256,\n    h.sha1,\n    h.md5,\n    f.size AS file_size,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.directory AS file_directory\nFROM suspicious_tasks AS st, hash AS h, authenticode AS a, file AS f\nWHERE h.path = st.executable_path\n  AND a.path = st.executable_path\n  AND f.path = st.executable_path\nORDER BY \n    CASE WHEN st.detection_method = 'LOTL_INDICATOR' THEN 0 ELSE 1 END,\n    st.detection_reason,\n    st.hidden DESC,\n    st.task_name",
+        "updated_at": "2025-12-08T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-94a743fd-5f84-44f3-b38a-2732d8b6f51b",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-12-08T00:00:00.000Z",
+    "version": "WzEwMDAwLDFd"
+}
