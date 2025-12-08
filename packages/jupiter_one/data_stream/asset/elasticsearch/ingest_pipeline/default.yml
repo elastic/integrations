@@ -2,18 +2,18 @@
 description: Pipeline for processing assets.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_3273339c
       field: ecs.version
       value: 9.2.0
   - terminate:
       description: error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_4c75f12b
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_44eed408
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -24,26 +24,26 @@ processors:
   # parse the event JSON
   - rename:
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_c74b1d7e
       if: ctx.event?.original == null
       field: message
       target_field: event.original
       ignore_missing: true
   - remove:
       description: The `message` field is no longer required if the document has an `event.original` field.
-      tag: remove_message
+      tag: remove_message_84808ee4
       if: ctx.event?.original != null
       field: message
       ignore_missing: true
   - json:
-      tag: json_event_original_into_json
+      tag: json_event_original_into_json_5e54dc16
       field: event.original
       target_field: json
 
   # rename to snake case
   - script:
       description: Convert camelCase to snake_case.
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_b18deb28
       lang: painless
       source: |-
         // Helper function to convert camelCase to snake_case
@@ -93,7 +93,7 @@ processors:
 
   # Date processors
   - date:
-      tag: date_jupiter_one_asset_entity__created_on_into_jupiter_one_asset_entity__created_on
+      tag: date_jupiter_one_asset_entity__created_on_into_jupiter_one_asset_entity__created_on_53197dce
       if: ctx.jupiter_one?.asset?.entity?._created_on != null && ctx.jupiter_one.asset.entity._created_on != ''
       field: jupiter_one.asset.entity._created_on
       target_field: jupiter_one.asset.entity._created_on
@@ -101,15 +101,15 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_01
+            tag: remove_jupiter_one_asset_entity__created_on_dc1039bc
             field:
               - jupiter_one.asset.entity._created_on
         - append:
-            tag: append_error_message_01
+            tag: append_error_message_80e23ffe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_jupiter_one_asset_entity__end_on_into_jupiter_one_asset_entity__end_on
+      tag: date_jupiter_one_asset_entity__end_on_into_jupiter_one_asset_entity__end_on_51f5d600
       if: ctx.jupiter_one?.asset?.entity?._end_on != null && ctx.jupiter_one.asset.entity._end_on != ''
       field: jupiter_one.asset.entity._end_on
       target_field: jupiter_one.asset.entity._end_on
@@ -117,15 +117,15 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_02
+            tag: remove_jupiter_one_asset_entity__end_on_495c02e5
             field:
               - jupiter_one.asset.entity._end_on
         - append:
-            tag: append_error_message_02
+            tag: append_error_message_b7ecd770
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_jupiter_one_asset_entity__begin_on_into_jupiter_one_asset_entity__begin_on
+      tag: date_jupiter_one_asset_entity__begin_on_into_jupiter_one_asset_entity__begin_on_c4ed2adc
       if: ctx.jupiter_one?.asset?.entity?._begin_on != null && ctx.jupiter_one.asset.entity._begin_on != ''
       field: jupiter_one.asset.entity._begin_on
       target_field: jupiter_one.asset.entity._begin_on
@@ -133,15 +133,15 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_03
+            tag: remove_jupiter_one_asset_entity__begin_on_a440af85
             field:
               - jupiter_one.asset.entity._begin_on
         - append:
-            tag: append_error_message_03
+            tag: append_error_message_f7cb4bfc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_jupiter_one_asset_properties_created_on_into_jupiter_one_asset_properties_created_on
+      tag: date_jupiter_one_asset_properties_created_on_into_jupiter_one_asset_properties_created_on_1c9e1b12
       if: ctx.jupiter_one?.asset?.properties?.created_on != null && ctx.jupiter_one.asset.properties.created_on != ''
       field: jupiter_one.asset.properties.created_on
       target_field: jupiter_one.asset.properties.created_on
@@ -149,15 +149,15 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_04
+            tag: remove_jupiter_one_asset_properties_created_on_fa9a5533
             field:
               - jupiter_one.asset.properties.created_on
         - append:
-            tag: append_error_message_04
+            tag: append_error_message_d3f00382
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_jupiter_one_asset_properties_updated_on_into_jupiter_one_asset_properties_updated_on
+      tag: date_jupiter_one_asset_properties_updated_on_into_jupiter_one_asset_properties_updated_on_b6181b48
       if: ctx.jupiter_one?.asset?.properties?.updated_on != null && ctx.jupiter_one.asset.properties.updated_on != ''
       field: jupiter_one.asset.properties.updated_on
       target_field: jupiter_one.asset.properties.updated_on
@@ -165,119 +165,119 @@ processors:
         - ISO8601
       on_failure:
         - remove:
-            tag: remove_05
+            tag: remove_jupiter_one_asset_properties_updated_on_e6c06ec8
             field:
               - jupiter_one.asset.properties.updated_on
         - append:
-            tag: append_error_message_05
+            tag: append_error_message_fe04bba8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Convert to Boolean Processors
   - convert:
-      tag: convert_jupiter_one_asset_entity__deleted_to_boolean
+      tag: convert_jupiter_one_asset_entity__deleted_to_boolean_25c54b2e
       field: jupiter_one.asset.entity._deleted
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_06
+            tag: remove_jupiter_one_asset_entity__deleted_69bdf3e7
             field:
               - jupiter_one.asset.entity._deleted
         - append:
-            tag: append_error_message_06
+            tag: append_error_message_7b30e3de
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_jupiter_one_asset_properties_active_to_boolean
+      tag: convert_jupiter_one_asset_properties_active_to_boolean_5564b08c
       field: jupiter_one.asset.properties.active
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_07
+            tag: remove_jupiter_one_asset_properties_active_4ca7ccbf
             field:
               - jupiter_one.asset.properties.active
         - append:
-            tag: append_error_message_07
+            tag: append_error_message_54998f2c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_jupiter_one_asset_properties_public_to_boolean
+      tag: convert_jupiter_one_asset_properties_public_to_boolean_18047c63
       field: jupiter_one.asset.properties.public
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_08
+            tag: remove_jupiter_one_asset_properties_public_ae85e045
             field:
               - jupiter_one.asset.properties.public
         - append:
-            tag: append_error_message_08
+            tag: append_error_message_e18b7891
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_jupiter_one_asset_properties_validated_to_boolean
+      tag: convert_jupiter_one_asset_properties_validated_to_boolean_b2fb2a7a
       field: jupiter_one.asset.properties.validated
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_09
+            tag: remove_jupiter_one_asset_properties_validated_69173e4d
             field:
               - jupiter_one.asset.properties.validated
         - append:
-            tag: append_error_message_09
+            tag: append_error_message_407dc25a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Convert to String Processors
   - convert:
-      tag: convert_jupiter_one_asset_entity__version_to_string
+      tag: convert_jupiter_one_asset_entity__version_to_string_27b58204
       field: jupiter_one.asset.entity._version
       type: string
       ignore_missing: true
 
   # Map custom fields to corresponding ECS and related fields.
   - set:
-      tag: set_event_id
+      tag: set_event_id_from_jupiter_one_asset_id_93ed03bd
       field: event.id
       copy_from: jupiter_one.asset.id
       ignore_empty_value: true
   - set:
-      tag: set_event_created
+      tag: set_event_created_from_jupiter_one_asset_entity__created_on_8f3911a5
       field: event.created
       copy_from: jupiter_one.asset.entity._created_on
       ignore_empty_value: true
   - set:
-      tag: set_event_end
+      tag: set_event_end_from_jupiter_one_asset_entity__end_on_094d551b
       field: event.end
       copy_from: jupiter_one.asset.entity._end_on
       ignore_empty_value: true
   - set:
-      tag: set_event_start
+      tag: set_event_start_from_jupiter_one_asset_entity__begin_on_5af9a100
       field: event.start
       copy_from: jupiter_one.asset.entity._begin_on
       ignore_empty_value: true
   - set:
-      tag: set_message
+      tag: set_message_from_jupiter_one_asset_properties_description_4aec05ad
       field: message
       copy_from: jupiter_one.asset.properties.description
       ignore_empty_value: true
   - set:
-      tag: set_url_original
+      tag: set_url_original_from_jupiter_one_asset_properties_web_link_ecced037
       field: url.original
       copy_from: jupiter_one.asset.properties.web_link
       ignore_empty_value: true
   - set:
-      tag: set_vulnerability_description
+      tag: set_vulnerability_description_from_jupiter_one_asset_properties_description_a164bed8
       if: ctx.jupiter_one?.asset?.entity?._class?.contains('Vulnerability') == true
       field: vulnerability.description
       copy_from: jupiter_one.asset.properties.description
       ignore_empty_value: true
   - script:
       description: Calculate event.duration.
-      tag: script_to_calculate_event_duration
+      tag: script_to_calculate_event_duration_02392f12
       if: ctx.event?.start != null && ctx.event.end != null
       lang: painless
       source: |-
@@ -285,27 +285,27 @@ processors:
         Instant eventend = ZonedDateTime.parse(ctx.event?.end).toInstant();
         ctx.event['duration'] = ChronoUnit.NANOS.between(eventstart, eventend);
   - uri_parts:
-      tag: uri_parts_url_original
+      tag: uri_parts_url_original_868d78a3
       field: url.original
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_10
+            tag: remove_url_original_bb962785
             field:
               - url.original
         - append:
-            tag: append_error_message_10
+            tag: append_error_message_3c4d3bd1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
-      tag: pipeline_pipeline_risks_and_alerts
+      tag: pipeline_pipeline_risks_and_alerts_59feaa44
       if: ctx.jupiter_one.asset.entity._class.contains('Vulnerability') || ctx.jupiter_one.asset.entity._class.contains('Alert') || ctx.jupiter_one.asset.entity._class.contains('Finding')
       name: '{{ IngestPipeline "pipeline_risks_and_alerts" }}'
       ignore_missing_pipeline: true
 
   # Remove Duplicate Custom Field if preserve_duplicate_custom_fields are not enabled
   - remove:
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_4ed959ed
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       field:
         - jupiter_one.asset.id
@@ -326,7 +326,7 @@ processors:
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_e26d02f6
       lang: painless
       source: |-
         void handleMap(Map map) {
@@ -351,27 +351,27 @@ processors:
         }
         handleMap(ctx);
   - set:
-      tag: set_event_kind_1
+      tag: set_event_kind_to_pipeline_error_92954dfa
       if: ctx.error?.message != null
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags_1
+      tag: append_tags_9fe66b2c
       if: ctx.error?.message != null
       field: tags
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
   - append:
-      tag: append_error_message_11
+      tag: append_error_message_e0c9bd63
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind_2
+      tag: set_event_kind_to_pipeline_error_f51b77ad
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags_2
+      tag: append_tags_d762b9c5
       field: tags
       value: preserve_original_event
       allow_duplicates: false
