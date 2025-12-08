@@ -5,6 +5,36 @@
         "description": "UserAssist Registry: Track applications executed via Windows Explorer. Shows execution count and last execution time per user. Useful for forensic investigation of user-initiated program execution. MITRE ATT&CK: T1204 (User Execution).",
         "ecs_mapping": [
             {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "value": "osquery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "osquery.userassist"
+                }
+            },
+            {
+                "key": "host.os.type",
+                "value": {
+                    "value": "windows"
+                }
+            },
+            {
                 "key": "file.path",
                 "value": {
                     "field": "path"
@@ -19,7 +49,7 @@
             {
                 "key": "user.id",
                 "value": {
-                    "field": "sid"
+                    "field": "user_sid"
                 }
             },
             {
@@ -29,40 +59,52 @@
                 }
             },
             {
-                "key": "file.hash.md5",
+                "key": "event.created",
                 "value": {
-                    "field": "md5"
-                }
-            },
-            {
-                "key": "file.hash.sha256",
-                "value": {
-                    "field": "sha256"
-                }
-            },
-            {
-                "key": "event.category",
-                "value": {
-                    "value": ["process"]
-                }
-            },
-            {
-                "key": "event.type",
-                "value": {
-                    "value": ["info"]
+                    "field": "last_execution"
                 }
             },
             {
                 "key": "tags",
                 "value": {
-                    "value": ["userassist", "mitre_t1204", "forensics"]
+                    "value": ["osquery", "userassist", "execution_artifacts", "forensics", "mitre_t1204", "windows"]
+                }
+            },
+            {
+                "key": "threat.framework",
+                "value": {
+                    "value": "MITRE ATT&CK"
+                }
+            },
+            {
+                "key": "threat.tactic.id",
+                "value": {
+                    "value": ["TA0002"]
+                }
+            },
+            {
+                "key": "threat.tactic.name",
+                "value": {
+                    "value": ["Execution"]
+                }
+            },
+            {
+                "key": "threat.technique.id",
+                "value": {
+                    "value": ["T1204"]
+                }
+            },
+            {
+                "key": "threat.technique.name",
+                "value": {
+                    "value": ["User Execution"]
                 }
             }
         ],
         "id": "userassist_windows_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "-- UserAssist: Track applications executed via Windows Explorer\n-- Forensic value: Shows user-initiated program executions with timestamps\nSELECT\n  ua.path AS path,\n  REPLACE(ua.path, RTRIM(ua.path, REPLACE(ua.path, '\\', '')), '') AS name,\n  ua.sid AS sid,\n  u.username AS username,\n  datetime(ua.last_execution_time, 'unixepoch', 'UTC') AS last_execution_utc,\n  ua.last_execution_time,\n  ua.count AS execution_count,\n  h.md5 AS md5,\n  h.sha256 AS sha256\nFROM userassist ua\nLEFT JOIN users u ON ua.sid = u.uuid\nLEFT JOIN hash h ON ua.path = h.path\nWHERE ua.path != ''\n  AND ua.last_execution_time > 0",
+        "query": "-- UserAssist: Track applications executed via Windows Explorer\n-- Forensic value: Shows user-initiated program executions with timestamps\nSELECT\n  ua.path AS path,\n  REPLACE(ua.path, RTRIM(ua.path, REPLACE(ua.path, '\\', '')), '') AS name,\n  ua.sid AS user_sid,\n  u.username AS username,\n  datetime(ua.last_execution_time, 'unixepoch') AS last_execution,\n  ua.count AS execution_count\nFROM userassist ua\nLEFT JOIN users u ON ua.sid = u.uuid\nWHERE ua.path != ''\n  AND ua.last_execution_time > 0",
         "updated_at": "2025-12-03T10:00:00.000Z",
         "updated_by": "elastic"
     },
