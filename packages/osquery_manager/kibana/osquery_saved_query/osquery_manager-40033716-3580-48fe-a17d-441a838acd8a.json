@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-12-03T10:00:00.000Z",
         "created_by": "elastic",
-        "description": "Detects WMI event subscriptions used for persistence (MITRE ATT&CK T1546.003). Includes bound subscriptions (active persistence) AND orphaned components (filters/consumers without bindings) which may indicate residual or partially removed malware. WMI eventing allows attackers to execute arbitrary commands or scripts when specific system events occur. Enriched with file hashes and code signatures for referenced executables and scripts.",
+        "description": "Detects WMI event subscriptions used for persistence (MITRE ATT&CK T1546.003). Includes bound subscriptions (active persistence) AND orphaned components (filters/consumers without bindings) which may indicate residual or partially removed malware. WMI eventing allows attackers to execute arbitrary commands or scripts when specific system events occur. Enriched with file hashes, code signatures, and file timestamps for referenced executables and scripts.",
         "ecs_mapping": [
             {
                 "key": "event.category",
@@ -83,6 +83,36 @@
                 }
             },
             {
+                "key": "file.created",
+                "value": {
+                    "field": "created_time"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "changed_time"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "file_size"
+                }
+            },
+            {
                 "key": "tags",
                 "value": {
                     "value": ["osquery", "persistence", "wmi", "event_subscription", "mitre_t1546_003", "windows"]
@@ -122,14 +152,14 @@
         "id": "wmi_persistence_event_subscriptions_windows_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "-- WMI Persistence Event Subscriptions - Complete Coverage (T1546.003)\n-- Detects bound subscriptions and orphaned components for full forensic visibility\n-- Fixed: Uses relative_path for proper JOIN matching per osquery schema\n\nWITH wmi_subscriptions AS (\n    -- Part 1: Bound subscriptions (complete filter-consumer chains)\n    SELECT\n        'bound' AS status,\n        filter.name AS filter_name,\n        filter.query AS filter_query,\n        filter.query_language,\n        filter.class AS filter_class,\n        COALESCE(cli.name, script.name) AS consumer_name,\n        CASE\n            WHEN cli.name IS NOT NULL THEN 'CommandLineEventConsumer'\n            WHEN script.name IS NOT NULL THEN 'ActiveScriptEventConsumer'\n            ELSE 'Unknown'\n        END AS consumer_type,\n        COALESCE(cli.class, script.class) AS consumer_class,\n        COALESCE(cli.relative_path, script.relative_path) AS consumer_relative_path,\n        cli.command_line_template,\n        cli.executable_path,\n        script.scripting_engine,\n        script.script_file_name,\n        script.script_text,\n        COALESCE(\n            NULLIF(cli.executable_path, ''),\n            NULLIF(cli.command_line_template, ''),\n            NULLIF(script.script_file_name, '')\n        ) AS hashable_path\n    FROM wmi_filter_consumer_binding binding\n    LEFT JOIN wmi_event_filters filter ON binding.filter = filter.relative_path\n    LEFT JOIN wmi_cli_event_consumers cli ON binding.consumer = cli.relative_path\n    LEFT JOIN wmi_script_event_consumers script ON binding.consumer = script.relative_path\n\n    UNION ALL\n\n    -- Part 2: Orphaned CLI consumers (possible residual malware)\n    SELECT\n        'orphaned_consumer' AS status,\n        '' AS filter_name,\n        '' AS filter_query,\n        '' AS query_language,\n        '' AS filter_class,\n        cli.name AS consumer_name,\n        'CommandLineEventConsumer' AS consumer_type,\n        cli.class AS consumer_class,\n        cli.relative_path AS consumer_relative_path,\n        cli.command_line_template,\n        cli.executable_path,\n        '' AS scripting_engine,\n        '' AS script_file_name,\n        '' AS script_text,\n        COALESCE(NULLIF(cli.executable_path, ''), NULLIF(cli.command_line_template, '')) AS hashable_path\n    FROM wmi_cli_event_consumers cli\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.consumer = cli.relative_path\n    )\n\n    UNION ALL\n\n    -- Part 3: Orphaned Script consumers (possible residual malware)\n    SELECT\n        'orphaned_consumer' AS status,\n        '' AS filter_name,\n        '' AS filter_query,\n        '' AS query_language,\n        '' AS filter_class,\n        script.name AS consumer_name,\n        'ActiveScriptEventConsumer' AS consumer_type,\n        script.class AS consumer_class,\n        script.relative_path AS consumer_relative_path,\n        '' AS command_line_template,\n        '' AS executable_path,\n        script.scripting_engine,\n        script.script_file_name,\n        script.script_text,\n        NULLIF(script.script_file_name, '') AS hashable_path\n    FROM wmi_script_event_consumers script\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.consumer = script.relative_path\n    )\n\n    UNION ALL\n\n    -- Part 4: Orphaned filters (possible residual malware)\n    SELECT\n        'orphaned_filter' AS status,\n        filter.name AS filter_name,\n        filter.query AS filter_query,\n        filter.query_language,\n        filter.class AS filter_class,\n        '' AS consumer_name,\n        '' AS consumer_type,\n        '' AS consumer_class,\n        '' AS consumer_relative_path,\n        '' AS command_line_template,\n        '' AS executable_path,\n        '' AS scripting_engine,\n        '' AS script_file_name,\n        '' AS script_text,\n        '' AS hashable_path\n    FROM wmi_event_filters filter\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.filter = filter.relative_path\n    )\n)\n\nSELECT\n    ws.status,\n    ws.filter_name,\n    ws.filter_query,\n    ws.query_language,\n    ws.filter_class,\n    ws.consumer_name,\n    ws.consumer_type,\n    ws.consumer_class,\n    ws.consumer_relative_path,\n    ws.command_line_template,\n    ws.executable_path,\n    ws.scripting_engine,\n    ws.script_file_name,\n    ws.script_text,\n    h.md5,\n    h.sha256,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status\nFROM wmi_subscriptions ws\nLEFT JOIN hash h ON h.path = ws.hashable_path AND ws.hashable_path != ''\nLEFT JOIN authenticode a ON a.path = ws.hashable_path AND ws.hashable_path != ''",
-        "updated_at": "2025-12-03T12:30:00.000Z",
+        "query": "-- WMI Persistence Event Subscriptions - Complete Coverage (T1546.003)\n-- Detects bound subscriptions and orphaned components for full forensic visibility\n-- Timestamps converted to UTC ISO 8601 format per ECS standardization\n\nWITH wmi_subscriptions AS (\n    -- Part 1: Bound subscriptions (complete filter-consumer chains)\n    SELECT\n        'bound' AS status,\n        filter.name AS filter_name,\n        filter.query AS filter_query,\n        filter.query_language,\n        filter.class AS filter_class,\n        COALESCE(cli.name, script.name) AS consumer_name,\n        CASE\n            WHEN cli.name IS NOT NULL THEN 'CommandLineEventConsumer'\n            WHEN script.name IS NOT NULL THEN 'ActiveScriptEventConsumer'\n            ELSE 'Unknown'\n        END AS consumer_type,\n        COALESCE(cli.class, script.class) AS consumer_class,\n        COALESCE(cli.relative_path, script.relative_path) AS consumer_relative_path,\n        cli.command_line_template,\n        cli.executable_path,\n        script.scripting_engine,\n        script.script_file_name,\n        script.script_text,\n        COALESCE(\n            NULLIF(cli.executable_path, ''),\n            NULLIF(cli.command_line_template, ''),\n            NULLIF(script.script_file_name, '')\n        ) AS hashable_path\n    FROM wmi_filter_consumer_binding binding\n    LEFT JOIN wmi_event_filters filter ON binding.filter = filter.relative_path\n    LEFT JOIN wmi_cli_event_consumers cli ON binding.consumer = cli.relative_path\n    LEFT JOIN wmi_script_event_consumers script ON binding.consumer = script.relative_path\n\n    UNION ALL\n\n    -- Part 2: Orphaned CLI consumers (possible residual malware)\n    SELECT\n        'orphaned_consumer' AS status,\n        '' AS filter_name,\n        '' AS filter_query,\n        '' AS query_language,\n        '' AS filter_class,\n        cli.name AS consumer_name,\n        'CommandLineEventConsumer' AS consumer_type,\n        cli.class AS consumer_class,\n        cli.relative_path AS consumer_relative_path,\n        cli.command_line_template,\n        cli.executable_path,\n        '' AS scripting_engine,\n        '' AS script_file_name,\n        '' AS script_text,\n        COALESCE(NULLIF(cli.executable_path, ''), NULLIF(cli.command_line_template, '')) AS hashable_path\n    FROM wmi_cli_event_consumers cli\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.consumer = cli.relative_path\n    )\n\n    UNION ALL\n\n    -- Part 3: Orphaned Script consumers (possible residual malware)\n    SELECT\n        'orphaned_consumer' AS status,\n        '' AS filter_name,\n        '' AS filter_query,\n        '' AS query_language,\n        '' AS filter_class,\n        script.name AS consumer_name,\n        'ActiveScriptEventConsumer' AS consumer_type,\n        script.class AS consumer_class,\n        script.relative_path AS consumer_relative_path,\n        '' AS command_line_template,\n        '' AS executable_path,\n        script.scripting_engine,\n        script.script_file_name,\n        script.script_text,\n        NULLIF(script.script_file_name, '') AS hashable_path\n    FROM wmi_script_event_consumers script\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.consumer = script.relative_path\n    )\n\n    UNION ALL\n\n    -- Part 4: Orphaned filters (possible residual malware)\n    SELECT\n        'orphaned_filter' AS status,\n        filter.name AS filter_name,\n        filter.query AS filter_query,\n        filter.query_language,\n        filter.class AS filter_class,\n        '' AS consumer_name,\n        '' AS consumer_type,\n        '' AS consumer_class,\n        '' AS consumer_relative_path,\n        '' AS command_line_template,\n        '' AS executable_path,\n        '' AS scripting_engine,\n        '' AS script_file_name,\n        '' AS script_text,\n        '' AS hashable_path\n    FROM wmi_event_filters filter\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.filter = filter.relative_path\n    )\n)\n\nSELECT\n    ws.status,\n    ws.filter_name,\n    ws.filter_query,\n    ws.query_language,\n    ws.filter_class,\n    ws.consumer_name,\n    ws.consumer_type,\n    ws.consumer_class,\n    ws.consumer_relative_path,\n    ws.command_line_template,\n    ws.executable_path,\n    ws.scripting_engine,\n    ws.script_file_name,\n    ws.script_text,\n    h.md5,\n    h.sha256,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    -- File timestamps converted to UTC ISO 8601 with readable aliases (ECS standard)\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.size AS file_size\nFROM wmi_subscriptions ws\nLEFT JOIN hash h ON h.path = ws.hashable_path AND ws.hashable_path != ''\nLEFT JOIN authenticode a ON a.path = ws.hashable_path AND ws.hashable_path != ''\nLEFT JOIN file f ON f.path = ws.hashable_path AND ws.hashable_path != ''",
+        "updated_at": "2025-12-09T10:00:00.000Z",
         "updated_by": "elastic"
     },
     "coreMigrationVersion": "9.2.0",
     "id": "osquery_manager-40033716-3580-48fe-a17d-441a838acd8a",
     "references": [],
     "type": "osquery-saved-query",
-    "updated_at": "2025-12-03T12:30:00.000Z",
+    "updated_at": "2025-12-09T10:00:00.000Z",
     "version": "WzEsMV0="
 }
