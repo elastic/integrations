@@ -852,6 +852,128 @@ processors:
           tag: remove_qualys_vmdr_asset_host_detection_metadata_azure_attribute_fields
           ignore_missing: true
   - rename:
+      field: json.METADATA.ALICLOUD.ATTRIBUTE
+      tag: rename_METADATA_ALICLOUD_ATTRIBUTE
+      target_field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute
+      ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute
+      if: ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute instanceof List
+      tag: foreach_rename_metadata_alicloud_attribute_NAME
+      processor:
+        rename:
+          field: _ingest._value.NAME
+          tag: rename_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_NAME_1
+          target_field: _ingest._value.name
+          ignore_missing: true
+  - rename:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.NAME
+      tag: rename_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_NAME_2
+      target_field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.name
+      ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute
+      if: ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute instanceof List
+      tag: foreach_rename_metadata_alicloud_attribute_LAST_STATUS
+      processor:
+        rename:
+          field: _ingest._value.LAST_STATUS
+          tag: rename_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_LAST_STATUS_1
+          target_field: _ingest._value.last.status
+          ignore_missing: true
+  - rename:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.LAST_STATUS
+      tag: rename_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_LAST_STATUS_2
+      target_field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.last.status
+      ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute
+      if: ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute instanceof List
+      tag: foreach_rename_metadata_alicloud_attribute_VALUE
+      processor:
+        rename:
+          field: _ingest._value.VALUE
+          tag: rename_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_VALUE_1
+          target_field: _ingest._value.value
+          ignore_missing: true
+  - rename:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.VALUE
+      tag: rename_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_VALUE_2
+      target_field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.value
+      ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute
+      if: ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute instanceof List
+      tag: foreach_rename_metadata_alicloud_attribute_LAST_ERROR
+      processor:
+        rename:
+          field: _ingest._value.LAST_ERROR
+          tag: rename_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_LAST_ERROR_1
+          target_field: _ingest._value.last.error.value
+          ignore_missing: true
+  - rename:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.LAST_ERROR
+      tag: rename_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_LAST_ERROR_2
+      target_field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.last.error.value
+      ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute
+      if: ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute instanceof List
+      tag: foreach_date_metadata_alicloud_attribute_LAST_SUCCESS_DATE
+      processor:
+        date:
+          field: _ingest._value.LAST_SUCCESS_DATE
+          tag: date_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_LAST_SUCCESS_DATE_1
+          target_field: _ingest._value.last.success_date
+          formats:
+            - ISO8601
+          ignore_failure: true
+  - date:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.LAST_SUCCESS_DATE
+      tag: date_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_LAST_SUCCESS_DATE_2
+      if: (!(ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute instanceof List)) && ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute?.LAST_SUCCESS_DATE != null && ctx.qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.LAST_SUCCESS_DATE != ''
+      target_field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.last.success_date
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute
+      if: ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute instanceof List
+      tag: foreach_date_metadata_alicloud_attribute_LAST_ERROR_DATE
+      processor:
+        date:
+          field: _ingest._value.LAST_ERROR_DATE
+          tag: date_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_LAST_ERROR_DATE_1
+          target_field: _ingest._value.last.error.date
+          formats:
+            - ISO8601
+          ignore_failure: true
+  - date:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.LAST_ERROR_DATE
+      tag: date_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_LAST_ERROR_DATE_2
+      if: (!(ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute instanceof List)) && ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute?.LAST_ERROR_DATE != null && ctx.qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.LAST_ERROR_DATE != ''
+      target_field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.last.error.date
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.metadata.alicloud.attribute
+      if: ctx.qualys_vmdr?.asset_host_detection?.metadata?.alicloud?.attribute instanceof List
+      tag: foreach_remove_metadata_alicloud_attribute_fields
+      processor:
+        remove:
+          field:
+            - _ingest._value.LAST_SUCCESS_DATE
+            - _ingest._value.LAST_ERROR_DATE
+          tag: remove_qualys_vmdr_asset_host_detection_metadata_alicloud_attribute_fields
+          ignore_missing: true
+  - rename:
       field: json.CLOUD_PROVIDER_TAGS.CLOUD_TAG
       tag: rename_CLOUD_PROVIDER_TAGS_CLOUD_TAG
       target_field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag
@@ -1163,6 +1285,70 @@ processors:
       field: qualys_vmdr.asset_host_detection.vulnerability.ASSET_CVE
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_ASSET_CVE_1
       target_field: qualys_vmdr.asset_host_detection.vulnerability.asset_cve
+      ignore_missing: true
+  - split:
+      field: qualys_vmdr.asset_host_detection.vulnerability.CVE
+      separator: ',\s?'
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.cve
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.CVE != null
+      tag: split_qualys_vmdr_asset_host_detection_vulnerability_CVE
+      ignore_missing: true
+  - rename:
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.LATEST_VULNERABILITY_DETECTION_SOURCE != null
+      field: qualys_vmdr.asset_host_detection.vulnerability.LATEST_VULNERABILITY_DETECTION_SOURCE
+      tag: rename_qualys_vmdr_asset_host_detection_vulnerability_LATEST_VULNERABILITY_DETECTION_SOURCE
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.latest_vulnerability_detection_source
+      ignore_missing: true
+  - split:
+      field: qualys_vmdr.asset_host_detection.vulnerability.MITRE_TACTIC_NAME
+      separator: ',\s?'
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.mitre_tactic_name
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.MITRE_TACTIC_NAME != null
+      tag: split_qualys_vmdr_asset_host_detection_vulnerability_MITRE_TACTIC_NAME
+      ignore_missing: true
+  - split:
+      field: qualys_vmdr.asset_host_detection.vulnerability.MITRE_TECHNIQUE_NAME
+      separator: ',\s?'
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.mitre_technique_name
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.MITRE_TECHNIQUE_NAME != null
+      tag: split_qualys_vmdr_asset_host_detection_vulnerability_MITRE_TECHNIQUE_NAME
+      ignore_missing: true
+  - split:
+      field: qualys_vmdr.asset_host_detection.vulnerability.MITRE_TACTIC_ID
+      separator: ',\s?'
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.mitre_tactic_id
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.MITRE_TACTIC_ID != null
+      tag: split_qualys_vmdr_asset_host_detection_vulnerability_MITRE_TACTIC_ID
+      ignore_missing: true
+  - split:
+      field: qualys_vmdr.asset_host_detection.vulnerability.MITRE_TECHNIQUE_ID
+      separator: ',\s?'
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.mitre_technique_id
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.MITRE_TECHNIQUE_ID != null
+      tag: split_qualys_vmdr_asset_host_detection_vulnerability_MITRE_TECHNIQUE_ID
+      ignore_missing: true
+  - rename:
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.TRURISK_ELIMINATION_STATUS != null
+      field: qualys_vmdr.asset_host_detection.vulnerability.TRURISK_ELIMINATION_STATUS
+      tag: rename_qualys_vmdr_asset_host_detection_vulnerability_TRURISK_ELIMINATION_STATUS
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.trurisk_elimination_status
+      ignore_missing: true
+  - split:
+      field: qualys_vmdr.asset_host_detection.vulnerability.VULNERABILITY_DETECTION_SOURCES
+      separator: ',\s?'
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.vulnerability_detection_sources
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.VULNERABILITY_DETECTION_SOURCES != null
+      tag: split_qualys_vmdr_asset_host_detection_vulnerability_VULNERABILITY_DETECTION_SOURCES
+      ignore_missing: true
+  - remove:
+      field:
+        - qualys_vmdr.asset_host_detection.vulnerability.CVE
+        - qualys_vmdr.asset_host_detection.vulnerability.MITRE_TACTIC_NAME
+        - qualys_vmdr.asset_host_detection.vulnerability.MITRE_TECHNIQUE_NAME
+        - qualys_vmdr.asset_host_detection.vulnerability.MITRE_TACTIC_ID
+        - qualys_vmdr.asset_host_detection.vulnerability.MITRE_TECHNIQUE_ID
+        - qualys_vmdr.asset_host_detection.vulnerability.VULNERABILITY_DETECTION_SOURCES
+      tag: remove_unmapped_capitalised_fields_from_vulnerability
       ignore_missing: true
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.QID != null
