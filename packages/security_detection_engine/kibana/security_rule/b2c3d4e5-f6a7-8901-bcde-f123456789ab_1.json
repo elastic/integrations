@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when GenAI tools spawn compilers or packaging tools to generate executables. Attackers leverage local LLMs to autonomously generate and compile malware, droppers, or implants. Python packaging tools (pyinstaller, nuitka, pyarmor) are particularly high-risk as they create standalone executables that can be deployed without dependencies. This rule focuses on compilation activity that produces output binaries, filtering out inspection-only operations.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "GenAI Process Compiling or Generating Executables",
+        "note": "## Triage and analysis\n\n### Investigating GenAI Process Compiling or Generating Executables\n\nThis rule detects GenAI tools spawning compilers or packaging tools. While developers may use GenAI to write code that they then compile, autonomous compilation by GenAI processes is unusual.\n\n### Possible investigation steps\n\n- Review the GenAI process that spawned the compiler to identify which tool is running and verify if it's an expected/authorized tool.\n- Investigate the user account associated with the GenAI process to determine if this activity is expected for that user.\n- Review the output files created by the compilation process to identify any malicious executables.\n- Check for other alerts or suspicious activity on the same host around the same time.\n- Verify if the GenAI tool is from a trusted source and if it's authorized for use in your environment.\n- Identify whether the generated executables appear in temporary directories often used for malware staging (`%TEMP%`, `/tmp`, `.cache`).\n- Inspect the compiled artifacts for networking imports, credential harvesting functionality, or persistence mechanisms.\n\n### False positive analysis\n\n- Legitimate development workflows that use GenAI tools for code generation may trigger this rule if they compile the generated code.\n- Some GenAI-assisted coding IDEs (Cursor, Copilot Workspace) may run compilation tasks when testing code; confirm whether the behavior is tied to developer workflow.\n\n### Response and remediation\n\n- Terminate the GenAI process and any spawned compiler processes to stop the malicious activity.\n- Investigate the compiled executables to determine if they are malicious.\n- Review audit logs to determine the scope of compilation activity and identify any executables that may have been created.\n- Quarantine any compiled binaries; submit suspicious artifacts to sandbox or malware analysis.\n",
+        "query": "process where event.type == \"start\" and\n\n  // GenAI parent process\n  (\n    process.parent.name in (\n      \"ollama.exe\", \"ollama\", \"Ollama\",\n      \"textgen.exe\", \"textgen\", \"text-generation-webui.exe\", \"oobabooga.exe\",\n      \"lmstudio.exe\", \"lmstudio\", \"LM Studio\",\n      \"claude.exe\", \"claude\", \"Claude\",\n      \"cursor.exe\", \"cursor\", \"Cursor\", \"Cursor Helper\", \"Cursor Helper (Plugin)\",\n      \"copilot.exe\", \"copilot\", \"Copilot\",\n      \"codex.exe\", \"codex\",\n      \"Jan\", \"jan.exe\", \"jan\", \"Jan Helper\",\n      \"gpt4all.exe\", \"gpt4all\", \"GPT4All\",\n      \"gemini-cli.exe\", \"gemini-cli\",\n      \"genaiscript.exe\", \"genaiscript\",\n      \"grok.exe\", \"grok\",\n      \"qwen.exe\", \"qwen\",\n      \"koboldcpp.exe\", \"koboldcpp\", \"KoboldCpp\",\n      \"llama-server\", \"llama-cli\"\n    ) or\n    \n    // Node/Deno with GenAI frameworks\n    (process.parent.name in (\"node.exe\", \"node\", \"deno.exe\", \"deno\") and\n     process.parent.command_line like~ (\"*mcp-server*\", \"*@modelcontextprotocol*\", \"*langchain*\", \"*autogpt*\", \"*babyagi*\", \"*agentgpt*\", \"*crewai*\", \"*semantic-kernel*\", \"*llama-index*\", \"*haystack*\")) or\n    \n    // Python with GenAI frameworks\n    (process.parent.name like~ \"python*\" and\n     process.parent.command_line like~ (\"*langchain*\", \"*autogpt*\", \"*babyagi*\", \"*agentgpt*\", \"*crewai*\", \"*semantic-kernel*\", \"*llama-index*\", \"*haystack*\"))\n  ) and\n\n  // Compilation tools\n  (\n    // Python packaging\n    process.name in (\"pyinstaller\", \"py2exe\", \"cx_Freeze\", \"nuitka\", \"pyarmor\", \"pkg\") or\n    \n    // C/C++ compilation with output\n    (process.name in (\"gcc\", \"g++\", \"clang\", \"clang++\", \"cl.exe\") and\n     process.command_line like~ \"*-o *\" and\n     process.command_line like~ (\"*.c *\", \"*.c\", \"*.cpp *\", \"*.cpp\", \"*.cc *\", \"*.cc\", \"*.m *\", \"*.m\") and\n     not process.command_line like~ \"*git*\") or\n    \n    // Go compilation\n    (process.name == \"go\" and process.args == \"build\") or\n    \n    // Rust compilation\n    (process.name == \"cargo\" and process.args == \"build\") or\n    (process.name == \"rustc\" and process.command_line like~ \"*-o *\") or\n    \n    // .NET compilation\n    process.name in (\"csc.exe\", \"vbc.exe\", \"msbuild.exe\") or\n    (process.name == \"dotnet\" and process.args == \"build\") or\n    \n    // Java compilation\n    process.name == \"javac\"\n  )\n",
+        "references": [
+            "https://atlas.mitre.org/techniques/AML.T0053",
+            "https://www.elastic.co/security-labs/elastic-advances-llm-security"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "b2c3d4e5-f6a7-8901-bcde-f123456789ab",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Auditd Manager",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide",
+            "Domain: LLM",
+            "Mitre Atlas: T0053"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/",
+                        "subtechnique": [
+                            {
+                                "id": "T1027.004",
+                                "name": "Compile After Delivery",
+                                "reference": "https://attack.mitre.org/techniques/T1027/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "b2c3d4e5-f6a7-8901-bcde-f123456789ab_1",
+    "type": "security-rule"
+}
