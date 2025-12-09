@@ -2,9 +2,9 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-28
+**Last Updated**: 2025-12-09
 **Total Core Artifacts**: 2 available + 38 in progress + 6 not available = 46 total variants
-**Total Queries**: 32 (4 core forensic variants + 28 additional)
+**Total Queries**: 31 (4 core forensic variants + 27 additional)
 **Completion Rate**: 4.3% (2/46 core artifacts fully supported)
 
 ---
@@ -36,7 +36,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 6a | Installed Services      | ⚠️ | Linux | -     | -    | systemd table                                                                                                                    |
 | 6b | Installed Services      | ⚠️ | Mac | -     | -    | launchd table                                                                                                                    |
 | 7 | Jumplists               | ❌ | Win | -     | -    | Not natively supported — PR #7260 closed due to OLE format complexity                                                            |
-| 8 | LNK files               | ✅ | Win | lnk_forensics_windows_elastic | [a1b2c3d4-lnk1](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json) | Comprehensive LNK forensics across 8+ locations (user/system Startup, Desktop, Recent Items, Quick Launch, SendTo, Start Menu) using users table enumeration. Enriched with hash, authenticode signatures, and shellbags data. Detects risky executables (cmd, powershell, pwsh, wscript, cscript, rundll32, regsvr32, mshta, wmic, certutil, bitsadmin), suspicious arguments (encoded commands, download cradles, hidden windows, UNC paths), large files (>20KB), and HTTP/HTTPS strings. Includes location_type classification and intelligent result prioritization. |
+| 8 | LNK files               | ✅ | Win | lnk_forensics_windows_elastic | [a1b2c3d4-lnk1](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json) | Comprehensive LNK forensics across 8+ locations (user/system Startup, Desktop, Recent Items, Quick Launch, SendTo, Start Menu) using users table enumeration. Extracts full shortcut metadata (target path, target type, location, start_in, run mode, comment/arguments) using path LIKE pattern (osquery #8727 workaround). Enriched with hash and authenticode signatures for both LNK files and their targets. Detects risky executables (cmd, powershell, pwsh, wscript, cscript, rundll32, regsvr32, mshta, wmic, certutil, bitsadmin), suspicious arguments (encoded commands, download cradles, hidden windows, UNC paths), large files (>20KB), and HTTP/HTTPS strings. Includes location_type classification and intelligent result prioritization. |
 | 9 | ARP Cache               | ⚠️ | Win | -     | -    | arp_cache table                                                                                                                  |
 | 9a | ARP Cache               | ⚠️ | Linux | -     | -    | arp_cache table                                                                                                                  |
 | 9b | ARP Cache               | ⚠️ | Mac | -     | -    | arp_cache table                                                                                                                  |
@@ -105,8 +105,7 @@ These queries existed in the original repository and provide additional coverage
 | 24 | unsigned_startup_items_vt | ✅ | Win | [b068](kibana/osquery_saved_query/osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135.json) | Unsigned startup items with VirusTotal integration |
 | 25 | unsigned_dlls_on_system_folders_vt | ✅ | Win | [63c1](kibana/osquery_saved_query/osquery_manager-63c1fe20-176f-11ed-89c6-331eb0db6d01.json) | Unsigned DLLs in system folders with VirusTotal integration |
 | 26 | executables_in_temp_folder_vt | ✅ | Win | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration |
-| 27 | lnk_forensics | ✅ | Win | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json) | Comprehensive LNK forensics across 8+ locations with hash, authenticode, and shellbags enrichment. Detects risky LOLBins, encoded commands, download cradles, UNC paths. Uses users table for dynamic enumeration. |
-| 28 | lnk_yara_detection | ✅ | Win | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-lnk2-11ef-8f39-bf9c07530bbb.json) | YARA-based LNK pattern detection. Scans LNK binary content directly for malicious patterns: LOLBins (powershell, cmd, wscript, mshta, rundll32, certutil, bitsadmin), encoded commands, hidden execution, download cradles, HTTP/HTTPS URLs, UNC paths, temp directory references, Base64 PowerShell patterns. Bypasses osquery shortcut_target_path parsing issues. |
+| 27 | lnk_forensics | ✅ | Win | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json) | Comprehensive LNK forensics across 8+ locations with full shortcut metadata, hash, and authenticode enrichment. Uses path LIKE pattern (osquery #8727 workaround) to ensure shortcut_target_path is populated. Detects risky LOLBins, encoded commands, download cradles, HTTP/HTTPS URLs, UNC paths. Uses users table for dynamic enumeration. |
 
 **Note**: Queries with VirusTotal integration require the VirusTotal extension configured in osquery.
 
@@ -169,7 +168,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ BITS Jobs Database (Windows: via windows_eventlog)
 
 ### User Activity
-- ✅ LNK files (Windows: file table with native shortcut parsing + hash + authenticode enrichment + shellbags correlation + 8+ locations via users table + YARA-based binary content scanning)
+- ✅ LNK files (Windows: file table with native shortcut parsing using path LIKE pattern for full metadata + hash + authenticode enrichment + 8+ locations via users table)
 - ⚠️ Shell History (Linux/Mac: shell_history table)
 - ⚠️ Shellbags (Windows: shellbags table)
 - ⚠️ User Assist (Windows: userassist table)
