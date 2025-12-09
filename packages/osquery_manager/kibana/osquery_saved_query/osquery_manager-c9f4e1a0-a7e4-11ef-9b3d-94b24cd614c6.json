@@ -104,7 +104,7 @@
         "id": "prefetch_windows_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "SELECT\n  datetime(last_run_time, 'unixepoch') AS last_execution,\n  filename,\n  hash,\n  run_count,\n  other_run_times,\n  size,\n  volume_serial,\n  volume_creation,\n  accessed_files_count,\n  accessed_directories_count,\n  accessed_files,\n  accessed_directories,\n  path AS prefetch_file_path\nFROM prefetch\nWHERE last_run_time > (strftime('%s', 'now') - 7776000)\n  AND filename NOT LIKE 'SEARCHINDEXER%'\n  AND filename NOT LIKE 'SEARCHPROTOCOLHOST%'\n  AND filename NOT LIKE 'SEARCHFILTERHOST%'\n  AND filename NOT LIKE 'RUNTIMEBROKER%'\n  AND filename NOT LIKE 'BACKGROUNDTASKHOST%'\n  AND filename NOT LIKE 'WMIPRVSE%'\n  AND filename NOT LIKE 'DLLHOST%'\n  AND filename NOT LIKE 'TASKHOSTW%'\nORDER BY last_run_time DESC",
+        "query": "SELECT\n  datetime(last_run_time, 'unixepoch') AS last_execution,\n  filename,\n  hash,\n  run_count,\n  other_run_times,\n  size,\n  volume_serial,\n  datetime(volume_creation, 'unixepoch') AS volume_creation_time,\n  accessed_files_count,\n  accessed_directories_count,\n  accessed_files,\n  accessed_directories,\n  path AS prefetch_file_path\nFROM prefetch\nWHERE last_run_time > (strftime('%s', 'now') - 7776000)\n  AND filename NOT LIKE 'SEARCHINDEXER%'\n  AND filename NOT LIKE 'SEARCHPROTOCOLHOST%'\n  AND filename NOT LIKE 'SEARCHFILTERHOST%'\n  AND filename NOT LIKE 'RUNTIMEBROKER%'\n  AND filename NOT LIKE 'BACKGROUNDTASKHOST%'\n  AND filename NOT LIKE 'WMIPRVSE%'\n  AND filename NOT LIKE 'DLLHOST%'\n  AND filename NOT LIKE 'TASKHOSTW%'\nORDER BY last_run_time DESC",
         "updated_at": "2025-11-20T15:30:00.000Z",
         "updated_by": "elastic"
     },
