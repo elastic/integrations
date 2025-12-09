@@ -3,7 +3,7 @@ name: filestream
 title: Custom Logs (Filestream)
 description: Collect log data using filestream with Elastic Agent.
 type: input
-version: 2.1.1
+version: 2.2.0
 conditions:
   kibana:
     version: "^9.2.0"
@@ -42,7 +42,7 @@ policy_templates:
         type: bool
         title: Use the "logs" data stream
         description: |
-          When enabled, data ingested by this integration is written to the "logs" data stream, and the configured dataset name is ignored. You also need to [Turn on wired streams](https://www.elastic.co/docs/solutions/observability/streams/wired-streams#streams-wired-streams-enable) in Streams [Settings](/app/streams) and to enable **Allow agents to write to Streams** for the output policy in the Fleet [Settings](/app/fleet/settings) tab. [Learn more](https://www.elastic.co/docs/solutions/observability/streams/wired-streams).
+          When enabled, data ingested by this integration is written to the "logs" data stream. **The 'Ingest Pipeline' and the configured 'Dataset name' are ignored**. You also need to [Turn on wired streams](https://www.elastic.co/docs/solutions/observability/streams/wired-streams#streams-wired-streams-enable) in Streams [Settings](/app/streams) and to enable **Allow agents to write to Streams** for the output policy in the Fleet [Settings](/app/fleet/settings) tab. [Learn more](https://www.elastic.co/docs/solutions/observability/streams/wired-streams).
         required: false
         show_user: true
         default: false
@@ -50,7 +50,7 @@ policy_templates:
         type: text
         title: Dataset name
         description: |
-          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html). **This field is ignored when 'Use the "logs" data stream' is enabled**.
         default: filestream.generic
         required: true
         show_user: true
@@ -58,7 +58,7 @@ policy_templates:
         type: text
         title: Ingest Pipeline
         description: |
-          The Ingest Node pipeline ID to be used by the integration.
+          The Ingest Node pipeline ID to be used by the integration. **This field is ignored when 'Use the "logs" data stream' is enabled**.
         required: false
         show_user: true
       - name: parsers
@@ -338,6 +338,30 @@ policy_templates:
         multi: false
         required: false
         show_user: true
+      - name: delete_enabled
+        type: bool
+        title: Delete files after they have been ingested
+        default: false
+        show_user: false
+        description: |
+          When enabled, files will be removed once the reader has been
+          closed (due to inactivity or EOF), all events have been
+          published to the output and the grace period has expired.
+          Refer to [Filebeat
+          documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-filestream#filebeat-input-filestream-delete-options)
+          for details.
+      - name: delete_grace_period
+        title: Grace period for deleting files
+        type: text
+        show_user: false
+        description: |
+          An interval to wait after the file is closed and all events
+          have been published before trying to remove it. The default
+          is `30m`.
+
+          E.g: "30m", Valid time units are "ns", "us" (or "µs"), "ms",
+          "s", "m", "h".
+
 owner:
   github: elastic/elastic-agent-data-plane
   type: elastic
