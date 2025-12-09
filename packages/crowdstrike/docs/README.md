@@ -851,7 +851,7 @@ Current supported event types are:
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
 | crowdstrike.event.ExecutablesWritten.FileName |  | keyword |
 | crowdstrike.event.ExecutablesWritten.FilePath |  | keyword |
-| crowdstrike.event.ExecutablesWritten.Timestamp |  | keyword |
+| crowdstrike.event.ExecutablesWritten.Timestamp |  | date |
 | crowdstrike.event.ExecutionID |  | keyword |
 | crowdstrike.event.ExecutionMetadata.ExecutionDuration |  | long |
 | crowdstrike.event.ExecutionMetadata.ExecutionStart |  | date |
@@ -1178,77 +1178,103 @@ An example event for `falcon` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-11-02T13:41:34.000Z",
+    "@timestamp": "2020-02-12T21:29:10.000Z",
     "agent": {
-        "ephemeral_id": "8f4a039c-66d4-439c-a43f-c5a95f653dd4",
-        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
-        "name": "elastic-agent-93422",
+        "ephemeral_id": "71d3d06c-8406-4244-9dda-5bad540eacd9",
+        "id": "e2b3b238-ebf6-442c-9d42-99ab4b5fad8c",
+        "name": "elastic-agent-14370",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.8"
     },
     "crowdstrike": {
         "event": {
-            "AgentIdString": "fffffffff33333",
-            "SessionId": "1111-fffff-4bb4-99c1-74c13cfc3e5a"
+            "AuditKeyValues": [
+                {
+                    "Key": "APIClientID",
+                    "ValueString": "1234567890abcdefghijklmnopqr"
+                },
+                {
+                    "Key": "partition",
+                    "ValueString": "0"
+                },
+                {
+                    "Key": "offset",
+                    "ValueString": "-1"
+                },
+                {
+                    "Key": "appId",
+                    "ValueString": "siem-connector-v2.0.0"
+                },
+                {
+                    "Key": "eventType",
+                    "ValueString": "[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]"
+                }
+            ],
+            "OperationName": "streamStarted",
+            "Success": true
         },
         "metadata": {
-            "customerIDString": "abcabcabc22221",
-            "eventType": "RemoteResponseSessionStartEvent",
-            "offset": 1,
+            "customerIDString": "8f69fe9e-b995-4204-95ad-44f9bcf75b6b",
+            "eventType": "AuthActivityAuditEvent",
+            "offset": 0,
             "version": "1.0"
         }
     },
     "data_stream": {
         "dataset": "crowdstrike.falcon",
-        "namespace": "99576",
+        "namespace": "25260",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
+        "id": "e2b3b238-ebf6-442c-9d42-99ab4b5fad8c",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.8"
     },
     "event": {
         "action": [
-            "remote_response_session_start_event"
+            "streamStarted"
         ],
         "agent_id_status": "verified",
         "category": [
-            "network",
-            "session"
+            "iam"
         ],
-        "created": "2023-11-02T13:41:34.000Z",
+        "created": "2020-02-12T21:29:10.710Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2025-05-30T08:29:21Z",
+        "ingested": "2025-12-08T13:26:53Z",
         "kind": "event",
-        "original": "{\"event\":{\"AgentIdString\":\"fffffffff33333\",\"HostnameField\":\"UKCHUDL00206\",\"SessionId\":\"1111-fffff-4bb4-99c1-74c13cfc3e5a\",\"StartTimestamp\":1698932494,\"UserName\":\"admin.rose@example.com\"},\"metadata\":{\"customerIDString\":\"abcabcabc22221\",\"eventCreationTime\":1698932494000,\"eventType\":\"RemoteResponseSessionStartEvent\",\"offset\":1,\"version\":\"1.0\"}}",
-        "start": "2023-11-02T13:41:34.000Z",
-        "type": [
-            "start"
-        ]
-    },
-    "host": {
-        "name": "UKCHUDL00206"
+        "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
+        "outcome": "success"
     },
     "input": {
-        "type": "streaming"
+        "type": "log"
     },
-    "message": "Remote response session started.",
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/falcon-audit-events.log"
+        },
+        "flags": [
+            "multiline"
+        ],
+        "offset": 910
+    },
+    "message": "Crowdstrike Streaming API",
     "observer": {
         "product": "Falcon",
         "vendor": "Crowdstrike"
     },
     "related": {
-        "hosts": [
-            "UKCHUDL00206"
+        "ip": [
+            "10.10.0.8"
         ],
         "user": [
-            "admin.rose",
-            "admin.rose@example.com"
+            "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
         ]
+    },
+    "source": {
+        "ip": "10.10.0.8"
     },
     "tags": [
         "preserve_original_event",
@@ -1256,9 +1282,7 @@ An example event for `falcon` looks as following:
         "crowdstrike-falcon"
     ],
     "user": {
-        "domain": "example.com",
-        "email": "admin.rose@example.com",
-        "name": "admin.rose"
+        "name": "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
     }
 }
 ```
