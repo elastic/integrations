@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when GenAI tools connect to domains using suspicious TLDs commonly abused for malware C2 infrastructure. TLDs like .top, .xyz, .ml, .cf, .onion are frequently used in phishing and malware campaigns. Legitimate GenAI services use well-established domains (.com, .ai, .io), so connections to suspicious TLDs may indicate compromised tools, malicious plugins, or AI-generated code connecting to attacker infrastructure.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "GenAI Process Connection to Suspicious Top Level Domain",
+        "note": "## Triage and analysis\n\n### Investigating GenAI Process Connection to Suspicious Top Level Domain\n\nThis rule detects GenAI tools connecting to domains with TLDs commonly abused by malware. The suspicious TLD filter makes this a high-signal rule with low expected volume.\n\n### Possible investigation steps\n\n- Review the GenAI process command line to identify which tool is running and verify if it's an expected/authorized tool.\n- Examine the network connection details (destination IP, port, protocol) to understand the nature of the communication.\n- Check the process execution chain to identify the full attack path and initial entry point.\n- Investigate the user account associated with the GenAI process to determine if this activity is expected for that user.\n- Review network traffic patterns to identify data exfiltration or command and control communications.\n- Check for other alerts or suspicious activity on the same host around the same time.\n- Verify if the GenAI tool is from a trusted source and if it's authorized for use in your environment.\n- Confirm whether the suspicious domain is used by package registries, CDN mirrors, or AI plugin repos.\n- Check if the GenAI tool attempted follow-up actions such as downloading scripts, connecting to IPs directly, or loading remote models.\n- Inspect whether the domain matches prompt-redirections, malicious AI plugins, or compromised package dependencies.\n\n### False positive analysis\n\n- Legitimate GenAI tools may occasionally connect to domains using suspicious TLDs if they're legitimate services.\n- Package managers (npx, pnpm, yarn, bunx) may connect to package registries or CDNs that use suspicious TLDs. Review and exclude known legitimate package registries if needed.\n- Some third-party AI plugin ecosystems (VSCode AI plugins, Cursor extensions) may download assets from unusual TLDs; verify allowlists.\n\n### Response and remediation\n\n- Terminate the GenAI process and any spawned child processes to stop the malicious activity.\n- Review and revoke any API keys, tokens, or credentials that may have been exposed or used by the GenAI tool.\n- Block the identified suspicious domains at the network level.\n- Investigate the GenAI tool configuration to identify how it was configured and what it was authorized to access.\n- Update security policies to restrict or monitor GenAI tool usage in the environment, especially for network communications.\n- Add detection for secondary indicators (reverse shells, encoded C2 traffic, odd user-agent strings).\n",
+        "query": "network where host.os.type in (\"macos\", \"windows\") and\n\n  // GenAI processes\n  process.name in (\n    \"ollama.exe\", \"ollama\", \"Ollama\",\n    \"textgen.exe\", \"textgen\", \"text-generation-webui.exe\", \"oobabooga.exe\",\n    \"lmstudio.exe\", \"lmstudio\", \"LM Studio\",\n    \"claude.exe\", \"claude\", \"Claude\",\n    \"cursor.exe\", \"cursor\", \"Cursor\",\n    \"copilot.exe\", \"copilot\", \"Copilot\",\n    \"codex.exe\", \"codex\",\n    \"Jan\", \"jan.exe\", \"jan\",\n    \"gpt4all.exe\", \"gpt4all\", \"GPT4All\",\n    \"gemini-cli.exe\", \"gemini-cli\",\n    \"genaiscript.exe\", \"genaiscript\",\n    \"grok.exe\", \"grok\",\n    \"qwen.exe\", \"qwen\",\n    \"koboldcpp.exe\", \"koboldcpp\", \"KoboldCpp\",\n    \"llama-server\", \"llama-cli\",\n    \"deno.exe\", \"deno\",\n    \"npx\", \"pnpm\", \"yarn\", \"bunx\"\n  ) and\n\n  // Suspicious TLDs \n  (\n    // Windows DNS events\n    (host.os.type == \"windows\" and dns.question.name != null and\n     dns.question.name regex \"\"\".*\\.(top|buzz|xyz|rest|ml|cf|gq|ga|onion|monster|cyou|quest|cc|bar|cfd|click|cam|surf|tk|shop|club|icu|pw|ws|online|fun|life|boats|store|hair|skin|motorcycles|christmas|lol|makeup|mom|bond|beauty|biz|live|work|zip|country|accountant|date|party|science|loan|win|men|faith|review|racing|download|host)\"\"\") or\n\n    // macOS network events\n    (host.os.type == \"macos\" and destination.domain != null and\n     destination.domain regex \"\"\".*\\.(top|buzz|xyz|rest|ml|cf|gq|ga|onion|monster|cyou|quest|cc|bar|cfd|click|cam|surf|tk|shop|club|icu|pw|ws|online|fun|life|boats|store|hair|skin|motorcycles|christmas|lol|makeup|mom|bond|beauty|biz|live|work|zip|country|accountant|date|party|science|loan|win|men|faith|review|racing|download|host)\"\"\")\n\n    // Linux DNS events\n    // Revist when available\n  )\n",
+        "references": [
+            "https://www.cybercrimeinfocenter.org/top-20-tlds-by-malicious-phishing-domains",
+            "https://atlas.mitre.org/techniques/AML.T0086",
+            "https://www.elastic.co/security-labs/elastic-advances-llm-security"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "dns.question.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide",
+            "Domain: LLM",
+            "Mitre Atlas: T0086"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/",
+                        "subtechnique": [
+                            {
+                                "id": "T1071.004",
+                                "name": "DNS",
+                                "reference": "https://attack.mitre.org/techniques/T1071/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890_1",
+    "type": "security-rule"
+}

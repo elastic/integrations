@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects suspicious child process activity from a React server application. This could be related to successful exploitation of CVE-2025-55182 or CVE-2025-66478. These vulnerabilities allow attackers to execute remote code due to insecure deserialization of React Server Components (RSC) Flight payloads, leading to unauthenticated RCE on servers running React 19.x or Next.js 14.3.0-canary+, 15.x, and 16.x with the App Router enabled",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious React Server Child Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious React Server Child Process\n\nThis rule flags suspicious shell or system utility processes spawned by a React or Next.js server application\u2014clear evidence of CVE-2025-55182 or CVE-2025-66478 exploitation enabling arbitrary code execution. An attacker sends a specially crafted RSC Flight protocol payload to a vulnerable Next.js or React Server Components endpoint, causing the server to deserialize untrusted data and execute attacker-controlled JavaScript, which then spawns shell commands or system utilities to establish initial access and persistence.\n\n### Possible investigation steps\n\n- Extract the parent Node.js process command line and working directory to identify the React or Next.js application, then check package.json or package-lock.json for React version (19.0-19.2) and Next.js version (14.3.0-canary, 15.x, 16.x) to confirm vulnerability.\n- Review web server access logs (Nginx, Apache, ALB) for suspicious POST requests to RSC endpoints (/_next/data/, /.next/, /api/) in the minutes before the shell spawn, focusing on requests with unusual Content-Type headers (text/x-component, application/rsc) or large payload sizes.\n- Analyze the spawned child process command line, arguments, working directory, and any downloaded files or scripts to identify the payload type (reverse shell, data exfiltration, credential theft, persistence mechanism) and compute file hashes for threat intelligence correlation.\n- Pivot on the source IP address from web logs across other hosts and applications to identify additional compromised servers, and check for lateral movement attempts or scanning activity from the compromised host to internal networks.\n- Examine the host for post-exploitation artifacts including new cron jobs, modified .bashrc/.profile files, SSH authorized_keys additions, new user accounts, unusual network connections to external IPs, files in /tmp or /var/tmp directories, and container escape attempts (nsenter, docker socket access).\n\n### False positive analysis\n\n- Legitimate build or deployment scripts triggered by CI/CD pipelines may cause Next.js build workers (jest-worker/processChild.js) to spawn shell commands; filter these by excluding processes with --node-ipc flags or running in /builds/, /workspace/, or other CI directories.\n- Development servers (next dev, expo start, react-scripts start) running on developer workstations may spawn legitimate shells for tooling; consider excluding NODE_ENV=development or processes running from user home directories if appropriate for your environment.\n- Server-side rendering (SSR) frameworks may legitimately invoke system utilities for image processing, PDF generation, or other server-side tasks; maintain an allowlist of expected child processes and their arguments for known applications.\n\n### Response and remediation\n\n- Immediately isolate the affected host to prevent lateral movement, terminate the Node.js parent process and all child processes spawned from the React/Next.js server, and block the source IP address at the firewall and WAF level.\n- Remove any persistence mechanisms installed by the attacker including cron jobs (check crontab -l for all users), modified shell initialization files (~/.bashrc, ~/.profile, /etc/profile.d/), SSH keys in ~/.ssh/authorized_keys, and systemd timers or service units.\n- Rotate all credentials and secrets accessible to the compromised application including database passwords, API keys, cloud service credentials (AWS/Azure/GCP), and session tokens, assuming they may have been exfiltrated.\n- Collect forensic artifacts including memory dumps of the Node.js process (if still running), packet captures of the malicious HTTP request, web server access and error logs, application logs from the React/Next.js server, and copies of any files created in /tmp, /var/tmp, or the application directory.\n- Escalate to incident command if the attacker achieved container escape (nsenter usage detected), accessed sensitive data or credentials, established C2 communication to external infrastructure, or if multiple hosts show similar exploitation patterns from the same source.\n- Patch immediately by upgrading React to version 19.0.1+, 19.1.2+, or 19.2.1+, and Next.js to versions 14.3.0-canary.88+, 15.0.5+, 15.1.9+, 15.2.6+, 15.3.6+, 15.4.8+, 15.5.7+, or 16.0.7+ depending on your major version, and deploy WAF rules to block malformed RSC payloads at the application edge.\n",
+        "query": "process where event.type == \"start\" and event.action in (\"exec\", \"executed\", \"start\", \"process_started\") and (\n    process.name in (\n      \"sh\", \"bash\", \"zsh\", \"curl\", \"wget\", \"id\", \"whoami\", \"uname\", \"cmd.exe\", \"cat\", \"powershell.exe\", \"java\", \"rundll32.exe\", \"wget.exe\", \"certutil.exe\",\n      \"nc\", \"ncat\", \"netcat\", \"nc.openbsd\", \"nc.traditional\", \"socat\", \"busybox\", \"mkfifo\", \"nohup\", \"setsid\", \"xterm\"\n    ) or\n    (process.name : \"python*\" and process.args : \"-c\" and process.args : (\n     \"*import*pty*spawn*\", \"*import*subprocess*call*\"\n    )) or\n    (process.name : \"perl*\" and process.args : \"-e\" and process.args : \"*socket*\" and process.args : (\n     \"*exec*\", \"*system*\"\n    )) or\n    (process.name : \"ruby*\" and process.args : (\"-e\", \"-rsocket\") and process.args : (\n     \"*TCPSocket.new*\", \"*TCPSocket.open*\"\n     )) or\n    (process.name : \"lua*\" and process.args : \"-e\" and process.args : \"*socket.tcp*\" and process.args : (\n     \"*io.popen*\", \"*os.execute*\"\n    )) or\n    (process.name : \"php*\" and process.args : \"-r\" and process.args : \"*fsockopen*\" and process.args : \"*/bin/*sh*\") or \n    (process.name == \"node\" and process.args == \"-e\" and process.args : \"*spawn*sh*\" and process.args : \"*connect*\") or\n    (process.name : (\"awk\", \"gawk\", \"mawk\", \"nawk\") and process.args : \"*/inet/tcp/*\") or\n    (process.name in (\"rvim\", \"vim\", \"vimdiff\", \"rview\", \"view\") and process.args == \"-c\" and process.args : \"*socket*\")\n)\nand (\n  ?process.working_directory : (\n    \"*react-dom*\", \"*.next*\", \"*node_modules/next*\", \"*react-server*\", \"*bin/next*\", \"*--experimental-https*\", \"*app/server*\",\n    \"*.pnpm/next*\", \"*/app/*\", \"*next/dist/server*\", \"*react-scripts*\") or\n  (\n    process.parent.name in (\"node\", \"bun\", \"node.exe\", \"bun.exe\") and\n    process.parent.command_line : (\n      \"*react-dom*\", \"*.next*\", \"*node_modules/next*\", \"*react-server*\", \"*next-server*\", \"*server.js*\", \"*bin/next*\",\n      \"*--experimental-https*\", \"*app/server*\", \"*.pnpm/next*\", \"*next start*\", \"*next dev*\", \"*react-scripts start*\", \"*next/dist/server*\"\n    )\n  )\n) and not (\n  ?process.parent.executable in (\"./runc\", \"/opt/google/chrome/chrome\") or\n  process.command_line like \"/bin/sh -c git config*\"\n)\n",
+        "references": [
+            "https://www.wiz.io/blog/critical-vulnerability-in-react-cve-2025-55182"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.working_directory",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "ae3e9625-89ad-4fc3-a7bf-fced5e64f01b",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Defend",
+            "Data Source: Auditd Manager",
+            "Data Source: SentinelOne",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "ae3e9625-89ad-4fc3-a7bf-fced5e64f01b_1",
+    "type": "security-rule"
+}
