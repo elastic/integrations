@@ -420,5 +420,3 @@ The following fields are populated for all events where `event.category: file`
 | Drift prevention | ✅ | ✅ |
 | Mount point awareness | ✅ | ✅ |
 | Process blocking| ✅ | ✅ |
-| Network event exports | Coming soon | Coming soon |
-| Network blocking| Coming soon | Coming soon |
