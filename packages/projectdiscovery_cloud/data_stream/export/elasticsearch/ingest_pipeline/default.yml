@@ -89,10 +89,6 @@ processors:
       copy_from: json.id
       ignore_empty_value: true
   - set:
-      field: vulnerability.status
-      copy_from: json.vuln_status
-      ignore_empty_value: true
-  - set:
       field: vulnerability.description
       copy_from: json.description
       ignore_empty_value: true
@@ -112,9 +108,6 @@ processors:
   - set:
       field: vulnerability.scanner.vendor
       value: ProjectDiscovery
-  - set:
-      field: vulnerability.scanner.type
-      value: nuclei
 
   # ECS host/asset mapping (from 'host' field or matched_at URL)
   - set:
@@ -209,12 +202,19 @@ processors:
       field: json.reference
       target_field: projectdiscovery.reference
       ignore_missing: true
+  - rename:
+      field: json.vuln_status
+      target_field: projectdiscovery.vuln_status
+      ignore_missing: true
+  - set:
+      field: projectdiscovery.scanner_type
+      value: nuclei
 
   # Final message
   - set:
       field: message
-      value: 'ProjectDiscovery export: {{vulnerability.id}} [{{vulnerability.severity}}] {{vulnerability.status}}'
-      if: ctx.vulnerability?.id != null && ctx.vulnerability?.status != null
+      value: 'ProjectDiscovery export: {{vulnerability.id}} [{{vulnerability.severity}}] {{projectdiscovery.vuln_status}}'
+      if: ctx.vulnerability?.id != null && ctx.projectdiscovery?.vuln_status != null
   - set:
       field: message
       value: ProjectDiscovery vulnerability export event
