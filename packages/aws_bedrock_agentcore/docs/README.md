@@ -166,6 +166,8 @@ An example event for `metrics` looks as following:
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| aws.bedrock_agentcore.agent_name | The name of the agent runtime. | keyword |  |  |
+| aws.bedrock_agentcore.endpoint_name | The endpoint name of the agent runtime. | keyword |  |  |
 | aws.bedrock_agentcore.metrics.ApiKeyFetchFailures.sum | Total number of failed API key fetch operations from credential providers. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.ApiKeyFetchSuccess.sum | Total number of successful API key fetch operations from credential providers. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.ApiKeyFetchThrottles.sum | Total number of throttled API key fetch operations from credential providers. | long |  | gauge |
