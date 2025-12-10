@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2025-12-10
+**Total Core Artifacts**: 4 available + 36 in progress + 6 not available = 46 total variants
+**Total Queries**: 33 (6 core forensic variants + 27 additional)
+**Completion Rate**: 8.7% (4/46 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 4     | 8.7%       |
+| ⚠️ In Progress (Needs Validation) | 36    | 78.3%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -29,9 +29,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 4 | Browser URL History     | ⚠️ | Win | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
 | 4a | Browser URL History     | ⚠️ | Linux | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
 | 4b | Browser URL History     | ⚠️ | Mac | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
-| 5 | File Listing            | ⚠️ | Win | -     | -    | file and hash tables                                                                                                             |
-| 5a | File Listing            | ⚠️ | Linux | -     | -    | file and hash tables                                                                                                             |
-| 5b | File Listing            | ⚠️ | Mac | -     | -    | file and hash tables                                                                                                             |
+| 5 | File Hash Info          | ✅ | Win | file_hash_info_windows_elastic | [f8e71a30](kibana/osquery_saved_query/osquery_manager-f8e71a30-b621-11ef-9c4a-8b2c7c5a1d3e.json) | Files with hash & authenticode in staging directories (T1036, T1105, T1564.001) |
+| 5a | File Hash Info          | ✅ | Linux | file_hash_info_linux_elastic | [b7d63c50](kibana/osquery_saved_query/osquery_manager-b7d63c50-b623-11ef-9c4a-8b2c7c5a1d40.json) | Files with hash & container/namespace awareness (T1036, T1105, T1565.001) |
+| 5b | File Hash Info          | ✅ | Mac | file_hash_info_darwin_elastic | [a3c52b40](kibana/osquery_saved_query/osquery_manager-a3c52b40-b622-11ef-9c4a-8b2c7c5a1d3f.json) | Files with hash & Gatekeeper signature validation (T1036, T1105, T1564.001) |
 | 6 | Installed Services      | ⚠️ | Win | -     | -    | services table                                                                                                                   |
 | 6a | Installed Services      | ⚠️ | Linux | -     | -    | systemd table                                                                                                                    |
 | 6b | Installed Services      | ⚠️ | Mac | -     | -    | launchd table                                                                                                                    |
@@ -175,7 +175,9 @@ While some artifacts are not directly available, the existing queries provide st
 - ❌ Jumplists (Not Available - Use Shellbags + LNK Files as alternatives)
 
 ### File System/Forensics
-- ⚠️ File Listing (All platforms: file and hash tables)
+- ✅ File Hash Info (Windows: file_hash_info_windows_elastic - file + hash + authenticode tables with PE metadata)
+- ✅ File Hash Info (Linux: file_hash_info_linux_elastic - file + hash tables with container/namespace awareness)
+- ✅ File Hash Info (macOS: file_hash_info_darwin_elastic - file + hash + signature tables with Gatekeeper validation)
 - ⚠️ NTFS USN Journal (Windows: ntfs_journal_events table)
 - ❌ MFT (Not Available - Use NTFS USN Journal as alternative or Trail of Bits extension)
 
