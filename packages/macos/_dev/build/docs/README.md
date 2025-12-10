@@ -85,6 +85,18 @@ This integration requires Elastic Agent to be installed on the macOS systems you
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
+## Should I use this integration if I already have Elastic Defend?
+
+For comprehensive visibility, yes. Elastic Defend isn't designed to provide a complete capture of all system events and it's recommended to supplement it with the macOS unified logging integration.
+Specifically, Elastic Defend on macOS does not capture:
+
+- All user login/logout events
+- Every user account creation, deletion, or modification
+- Complete system service registration and changes
+- Application diagnostic logs
+
+This integration fills those gaps, similar to how Windows users supplement Elastic Defend with Custom Windows Event Logs integration.
+
 ## Setup
 
 1. In the top search bar in Kibana, search for **Integrations**.

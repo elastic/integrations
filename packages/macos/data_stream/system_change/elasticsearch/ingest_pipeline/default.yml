@@ -20,70 +20,11 @@ processors:
         - '^\[%{WORD}\] %{DATA}\:(?:%{SPACE}mach=%{WORD:macos.event.message.mach:boolean})?(?:%{SPACE}listener=%{WORD:macos.event.message.listener:boolean})?(?:%{SPACE}peer=%{WORD:macos.event.message.peer:boolean})?(?:%{SPACE}name=%{GREEDYDATA:macos.event.message.name})?'
         - '^%{WORD} \[%{DATA}\](?:%{SPACE}flags=\[%{DATA:macos.event.message.flags}\])?(?:%{SPACE}seq=%{DATA:macos.event.message.seq},)?(?:%{SPACE}ack=%{DATA:macos.event.message.ack},)?(?:%{SPACE}win=%{DATA:macos.event.message.win})?(?:%{SPACE}state=%{DATA:macos.event.message.state})?(?:%{SPACE}rcv_nxt=%{DATA:macos.event.message.rcv_nxt},)?(?:snd_una=%{DATA:macos.event.message.snd_una})'
         - '^%{WORD} \[%{DATA}\](?:%{SPACE}flags=\[%{DATA:macos.event.message.flags}\])?(?:%{SPACE}seq=%{DATA:macos.event.message.seq},)?(?:%{SPACE}ack=%{DATA:macos.event.message.ack},)?(?:%{SPACE}win=%{DATA:macos.event.message.win})?(?:%{SPACE}state=%{DATA:macos.event.message.state})?(?:%{SPACE}rcv_nxt=%{DATA:macos.event.message.rcv_nxt},)?(?:snd_una=%{DATA:macos.event.message.snd_una})'
-        - '^nw_protocol_boringssl_signal_connected\(%{NUMBER}\) \[%{DATA:macos.event.message.connection_identifier}\]\[%{DATA}\] TLS connected \[(?:version\(%{DATA:macos.event.message.tls_version}\))?(?:%{SPACE}ciphersuite\(%{DATA:macos.event.message.cipher_suite}\))?(?:%{SPACE}group\(%{DATA:macos.event.message.group}\))?(?:%{SPACE}signature_alg\(%{DATA:macos.event.message.signature_alg}\))?(?:%{SPACE}alpn\(%{DATA:macos.event.message.alpn}\))?(?:%{SPACE}resumed\(%{DATA:macos.event.message.resumed}\))?(?:%{SPACE}offered_ticket\(%{DATA:macos.event.message.offered_ticket}\))?(?:%{SPACE}false_started\(%{DATA:macos.event.message.false_started}\))?(?:%{SPACE}ocsp_received\(%{DATA:macos.event.message.ocsp_received}\))?(?:%{SPACE}sct_received\(%{DATA:macos.event.message.sct_received}\))?(?:%{SPACE}connect_time\(%{DATA:macos.event.message.connection_time}\))?(?:%{SPACE}flight_time\(%{DATA:macos.event.message.flight_time}\))?(?:%{SPACE}rtt\(%{DATA:macos.event.message.rtt}\))?(?:%{SPACE}write_stalls\(%{DATA:macos.event.message.write_stalls:long}\))?(?:%{SPACE}read_stalls\(%{DATA:macos.event.message.read_stalls:long}\))?(?:%{SPACE}pake\(%{DATA:macos.event.message.pake}\))?\]'
-        - '^Task \<%{DATA:macos.event.message.task_uid}\>.\<%{NUMBER}\>%{SPACE}summary for %{DATA} \{(?:transaction_duration_ms=%{NUMBER:macos.event.message.transaction_duration_ms:long},)?(?:%{SPACE}response_status=%{NUMBER:macos.event.message.response_status:long},)?(?:%{SPACE}connection=%{NUMBER:macos.event.message.connection:long},)?(?:%{SPACE}protocol=%{DATA:macos.event.message.protocol},)?(?:%{SPACE}domain_lookup_duration_ms=%{NUMBER:macos.event.message.domain_lookup_duration_ms:long},)?(?:%{SPACE}connect_duration_ms=%{NUMBER:macos.event.message.connection_duration_ms:long},)?(?:%{SPACE}secure_connection_duration_ms=%{NUMBER:macos.event.message.secure_connection_duration_ms:long},)?(?:%{SPACE}private_relay=%{WORD:macos.event.message.private_relay:boolean},)?(?:%{SPACE}request_start_ms=%{NUMBER:macos.event.message.request_start_ms:long},)?(?:%{SPACE}request_duration_ms=%{NUMBER:macos.event.message.request_duration_ms:long},)?(?:%{SPACE}response_start_ms=%{NUMBER:macos.event.message.response_start_ms:long},)?(?:%{SPACE}response_duration_ms=%{NUMBER:macos.event.message.response_duration_ms:long},)?(?:%{SPACE}request_bytes=%{NUMBER:macos.event.message.request_bytes:long},)?(?:%{SPACE}response_bytes=%{NUMBER:macos.event.message.response_bytes:long},)?(?:%{SPACE}cache_hit=%{WORD:macos.event.message.cache_hit:boolean})?\}'
-        - '^%{DATA} \[%{DATA:macos.event.message.connection_identifier}\]%{SPACE}\[%{UUID:macos.event.message.connection_uuid} <private>:%{NUMBER:macos.event.message.src_port:long}<-><private>:%{NUMBER:macos.event.message.dest_port:long}\]%{SPACE}Init: %{NUMBER:macos.event.message.init_flag:long}, Conn_Time: %{DATA:macos.event.message.connection_time}, SYNs: %{NUMBER:macos.event.message.syns:long}, WR_T: %{DATA:macos.event.message.wr_t_in_out}, RD_T: %{DATA:macos.event.message.rd_t_in_out}, TFO: %{DATA:macos.event.message.tfo_in_out_miss}, ECN: %{DATA:macos.event.message.ecn_in_out_miss}, Accurate ECN %{GREEDYDATA}: %{GREEDYDATA:macos.event.message.accurate_ecn}, TS: %{NUMBER:macos.event.message.timestamp_enabled:long}, TSO: %{NUMBER:macos.event.message.tso_enabled:long}%{SPACE}rtt_cache: %{DATA:macos.event.message.rtt_cache}, rtt_upd: %{NUMBER:macos.event.message.rtt_updates:long}, rtt: %{DATA:macos.event.message.rtt}, rtt_var: %{DATA:macos.event.message.rtt_var_ms} rtt_nc: %{DATA:macos.event.message.rtt_nc_ms}, rtt_var_nc: %{DATA:macos.event.message.rtt_var_nc_ms} base rtt: %{GREEDYDATA:macos.event.message.base_rtt_ms}%{SPACE}ACKs-compressed: %{NUMBER:macos.event.message.acks_compressed:long}, ACKs delayed: %{NUMBER:macos.event.message.acks_delayed:long} delayed ACKs sent: %{NUMBER:macos.event.message.delayed_acks_sent:long}'
-        - '^\[C%{NUMBER:macos.event.message.connection_id} %{UUID:macos.event.message.session_uuid} (Hostname\#)?%{DATA:macos.event.message.hostname}:%{NUMBER:macos.event.message.hostname_port:long} %{DATA}(, bundle id: %{DATA:macos.event.message.bundle_id})?(, pid: %{DATA:macos.event.message.pid:long})?(, account id: %{DATA:macos.event.message.account_id})?(, url: %{DATA:macos.event.message.url})?(, url hash: %{BASE16NUM:macos.event.message.url_hash})?(, traffic class: %{NUMBER:macos.event.message.traffic_class})?(, expected workload: %{NUMBER:macos.event.message.expected_workload})?(, %{GREEDYDATA})?, attribution: %{DATA:macos.event.message.attribution}(, %{GREEDYDATA})?\] cancelled\n\t\[C%{DATA:macos.event.message.connection_detail} %{UUID:macos.event.message.connection_uuid} %{IP:macos.event.message.client_ip}:%{NUMBER:macos.event.message.client_port:long}<->(IPv4#)?%{DATA:macos.event.message.server_id}:%{NUMBER:macos.event.message.server_port:long}\]\n\tConnected Path: %{DATA:macos.event.message.path_status}(, %{DATA})?(, interface: %{DATA:macos.event.message.interface})?(, %{GREEDYDATA})?\n\tPrivacy Stance: %{DATA:macos.event.message.privacy_stance}\n\tDuration: %{DATA:macos.event.message.duration}, DNS @%{DATA:macos.event.message.dns_start} took %{DATA:macos.event.message.dns_duration}, TCP @%{DATA:macos.event.message.tcp_start} took %{DATA:macos.event.message.tcp_duration}, TLS %{DATA:macos.event.message.tls_version} took %{DATA:macos.event.message.tls_duration}\n\tbytes in\/out: %{NUMBER:macos.event.message.bytes_in:long}\/%{NUMBER:macos.event.message.bytes_out:long}, packets in\/out: %{NUMBER:macos.event.message.packets_in:long}\/%{NUMBER:macos.event.message.packets_out:long}, rtt: %{DATA:macos.event.message.rtt}, retransmitted bytes: %{NUMBER:macos.event.message.retransmitted_bytes:long}, out-of-order bytes: %{NUMBER:macos.event.message.out_of_order_bytes:long}\n\tecn packets sent\/acked\/marked\/lost: %{NUMBER:macos.event.message.ecn_sent:long}\/%{NUMBER:macos.event.message.ecn_acked:long}\/%{NUMBER:macos.event.message.ecn_marked:long}\/%{NUMBER:macos.event.message.ecn_lost:long}$'
+        - '^nw_protocol_boringssl_signal_connected\(%{NUMBER}\) \[%{DATA:macos.event.message.connection_identifier}\]\[%{DATA}\] TLS connected \[(?:version\(%{DATA:macos.event.message.tls_version}\))?(?:%{SPACE}ciphersuite\(%{DATA:macos.event.message.cipher_suite}\))?(?:%{SPACE}group\(%{DATA:macos.event.message.group}\))?(?:%{SPACE}signature_alg\(%{DATA:process.code_signature.digest_algorithm}\))?(?:%{SPACE}alpn\(%{DATA:macos.event.message.alpn}\))?(?:%{SPACE}resumed\(%{DATA:macos.event.message.resumed}\))?(?:%{SPACE}offered_ticket\(%{DATA:macos.event.message.offered_ticket}\))?(?:%{SPACE}false_started\(%{DATA:macos.event.message.false_started}\))?(?:%{SPACE}ocsp_received\(%{DATA:macos.event.message.ocsp_received}\))?(?:%{SPACE}sct_received\(%{DATA:macos.event.message.sct_received}\))?(?:%{SPACE}connect_time\(%{DATA:macos.event.message.connection_time}\))?(?:%{SPACE}flight_time\(%{DATA:macos.event.message.flight_time}\))?(?:%{SPACE}rtt\(%{DATA:macos.event.message.rtt}\))?(?:%{SPACE}write_stalls\(%{DATA:macos.event.message.write_stalls:long}\))?(?:%{SPACE}read_stalls\(%{DATA:macos.event.message.read_stalls:long}\))?(?:%{SPACE}pake\(%{DATA:macos.event.message.pake}\))?\]'
+        - '^Task \<%{DATA:macos.event.message.task_uid}\>.\<%{NUMBER}\>%{SPACE}summary for %{DATA} \{(?:transaction_duration_ms=%{NUMBER:macos.event.message.transaction_duration_ms:long},)?(?:%{SPACE}response_status=%{NUMBER:http.response.status_code:long},)?(?:%{SPACE}connection=%{NUMBER:macos.event.message.connection:long},)?(?:%{SPACE}protocol=%{DATA:macos.event.message.protocol},)?(?:%{SPACE}domain_lookup_duration_ms=%{NUMBER:macos.event.message.domain_lookup_duration_ms:long},)?(?:%{SPACE}connect_duration_ms=%{NUMBER:macos.event.message.connection_duration_ms:long},)?(?:%{SPACE}secure_connection_duration_ms=%{NUMBER:macos.event.message.secure_connection_duration_ms:long},)?(?:%{SPACE}private_relay=%{WORD:macos.event.message.private_relay:boolean},)?(?:%{SPACE}request_start_ms=%{NUMBER:macos.event.message.request_start_ms:long},)?(?:%{SPACE}request_duration_ms=%{NUMBER:macos.event.message.request_duration_ms:long},)?(?:%{SPACE}response_start_ms=%{NUMBER:macos.event.message.response_start_ms:long},)?(?:%{SPACE}response_duration_ms=%{NUMBER:macos.event.message.response_duration_ms:long},)?(?:%{SPACE}request_bytes=%{NUMBER:http.request.bytes:long},)?(?:%{SPACE}response_bytes=%{NUMBER:http.response.bytes:long},)?(?:%{SPACE}cache_hit=%{WORD:macos.event.message.cache_hit:boolean})?\}'
+        - '^%{DATA} \[%{DATA:macos.event.message.connection_identifier}\]%{SPACE}\[%{UUID:macos.event.message.connection_uuid} <private>:%{NUMBER:source.port:long}<-><private>:%{NUMBER:destination.port:long}\]%{SPACE}Init: %{NUMBER:macos.event.message.init_flag:long}, Conn_Time: %{DATA:macos.event.message.connection_time}, SYNs: %{NUMBER:macos.event.message.syns:long}, WR_T: %{DATA:macos.event.message.wr_t_in_out}, RD_T: %{DATA:macos.event.message.rd_t_in_out}, TFO: %{DATA:macos.event.message.tfo_in_out_miss}, ECN: %{DATA:macos.event.message.ecn_in_out_miss}, Accurate ECN %{GREEDYDATA}: %{GREEDYDATA:macos.event.message.accurate_ecn}, TS: %{NUMBER:macos.event.message.timestamp_enabled:long}, TSO: %{NUMBER:macos.event.message.tso_enabled:long}%{SPACE}rtt_cache: %{DATA:macos.event.message.rtt_cache}, rtt_upd: %{NUMBER:macos.event.message.rtt_updates:long}, rtt: %{DATA:macos.event.message.rtt}, rtt_var: %{DATA:macos.event.message.rtt_var_ms} rtt_nc: %{DATA:macos.event.message.rtt_nc_ms}, rtt_var_nc: %{DATA:macos.event.message.rtt_var_nc_ms} base rtt: %{GREEDYDATA:macos.event.message.base_rtt_ms}%{SPACE}ACKs-compressed: %{NUMBER:macos.event.message.acks_compressed:long}, ACKs delayed: %{NUMBER:macos.event.message.acks_delayed:long} delayed ACKs sent: %{NUMBER:macos.event.message.delayed_acks_sent:long}'
+        - '^\[C%{NUMBER:macos.event.message.connection_id} %{UUID:macos.event.message.session_uuid} (Hostname\#)?%{DATA:host.id}:%{NUMBER:macos.event.message.hostname_port:long} %{DATA}(, bundle id: %{DATA:macos.event.message.bundle_id})?(, pid: %{DATA:process.pid:long})?(, account id: %{DATA:macos.event.message.account_id})?(, url: %{DATA:url.original})?(, url hash: %{BASE16NUM:macos.event.message.url_hash})?(, traffic class: %{NUMBER:macos.event.message.traffic_class})?(, expected workload: %{NUMBER:macos.event.message.expected_workload})?(, %{GREEDYDATA})?, attribution: %{DATA:macos.event.message.attribution}(, %{GREEDYDATA})?\] cancelled\n\t\[C%{DATA:macos.event.message.connection_detail} %{UUID:macos.event.message.connection_uuid} %{IP:source.ip}:%{NUMBER:source.port:long}<->(IPv4#)?%{DATA:macos.event.message.server_id}:%{NUMBER:destination.port:long}\]\n\tConnected Path: %{DATA:macos.event.message.path_status}(, %{DATA})?(, interface: %{DATA:macos.event.message.interface})?(, %{GREEDYDATA})?\n\tPrivacy Stance: %{DATA:macos.event.message.privacy_stance}\n\tDuration: %{DATA:macos.event.message.duration}, DNS @%{DATA:macos.event.message.dns_start} took %{DATA:macos.event.message.dns_duration}, TCP @%{DATA:macos.event.message.tcp_start} took %{DATA:macos.event.message.tcp_duration}, TLS %{DATA:macos.event.message.tls_version} took %{DATA:macos.event.message.tls_duration}\n\tbytes in\/out: %{NUMBER:source.bytes:long}\/%{NUMBER:destination.bytes:long}, packets in\/out: %{NUMBER:source.packets:long}\/%{NUMBER:destination.packets:long}, rtt: %{DATA:macos.event.message.rtt}, retransmitted bytes: %{NUMBER:macos.event.message.retransmitted_bytes:long}, out-of-order bytes: %{NUMBER:macos.event.message.out_of_order_bytes:long}\n\tecn packets sent\/acked\/marked\/lost: %{NUMBER:macos.event.message.ecn_sent:long}\/%{NUMBER:macos.event.message.ecn_acked:long}\/%{NUMBER:macos.event.message.ecn_marked:long}\/%{NUMBER:macos.event.message.ecn_lost:long}$'
         - '%{GREEDYDATA:macos.event.message.original}'
-  - convert:
-      field: macos.event.message.client_ip
-      tag: convert_client_ip_to_ip
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: host.id
-      tag: set_host_id
-      copy_from: macos.event.message.hostname
-      ignore_empty_value: true
-  - set:
-      field: process.pid
-      tag: set_process_pid
-      copy_from: macos.event.message.pid
-      ignore_empty_value: true
-  - set:
-      field: url.original
-      tag: set_url_original
-      copy_from: macos.event.message.url
-      ignore_empty_value: true
-  - set:
-      field: source.ip
-      tag: set_source_ip
-      copy_from: macos.event.message.client_ip
-      ignore_empty_value: true
-  - set:
-      field: source.port
-      tag: set_source_port
-      copy_from: macos.event.message.client_port
-      ignore_empty_value: true
-  - set:
-      field: destination.port
-      tag: set_destination_port
-      copy_from: macos.event.message.server_port
-      ignore_empty_value: true
-  - set:
-      field: source.bytes
-      tag: set_source_bytes
-      copy_from: macos.event.message.bytes_in
-      ignore_empty_value: true
-  - set:
-      field: destination.bytes
-      tag: set_destination_bytes
-      copy_from: macos.event.message.bytes_out
-      ignore_empty_value: true
-  - set:
-      field: source.packets
-      tag: set_source_packets
-      copy_from: macos.event.message.packets_in
-      ignore_empty_value: true
-  - set:
-      field: destination.packets
-      tag: set_destination_packets
-      copy_from: macos.event.message.packets_out
-      ignore_empty_value: true
   - script:
       lang: painless
       tag: calculate_total_bytes
@@ -122,11 +63,6 @@ processors:
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
-  - set:
-      field: process.code_signature.digest_algorithm
-      tag: set_process_code_signature_digest_algorithm
-      copy_from: macos.event.message.signature_alg
-      ignore_empty_value: true
   - set:
       field: macos.event.message.resumed
       tag: set_event_message_resumed_true
@@ -177,31 +113,6 @@ processors:
       tag: set_event_message_sct_received_false
       value: false
       if: ctx.macos?.event?.message?.sct_received == '0'
-  - set:
-      field: http.request.bytes
-      tag: set_http_request_bytes
-      copy_from: macos.event.message.request_bytes
-      ignore_empty_value: true
-  - set:
-      field: http.response.bytes
-      tag: set_http_response_bytes
-      copy_from: macos.event.message.response_bytes
-      ignore_empty_value: true
-  - set:
-      field: http.response.status_code
-      tag: set_http_response_status_code
-      copy_from: macos.event.message.response_status
-      ignore_empty_value: true
-  - set:
-      field: destination.port
-      tag: set_destination_port
-      copy_from: macos.event.message.dest_port
-      ignore_empty_value: true
-  - set:
-      field: source.port
-      tag: set_source_port
-      copy_from: macos.event.message.src_port
-      ignore_empty_value: true
   - dissect:
       field: macos.event.message.ecn_in_out_miss
       tag: dissect_ecn_in_out_miss
@@ -337,27 +248,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - remove:
-      field:
-        - macos.event.message.signature_alg
-        - macos.event.message.request_bytes
-        - macos.event.message.response_bytes
-        - macos.event.message.response_status
-        - macos.event.message.dest_port
-        - macos.event.message.src_port
-        - macos.event.message.hostname
-        - macos.event.message.pid
-        - macos.event.message.url
-        - macos.event.message.client_ip
-        - macos.event.message.client_port
-        - macos.event.message.server_port
-        - macos.event.message.bytes_in
-        - macos.event.message.bytes_out
-        - macos.event.message.packets_in
-        - macos.event.message.packets_out
-      tag: remove_custom_duplicate_fields
-      ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - macos.event.message.original
