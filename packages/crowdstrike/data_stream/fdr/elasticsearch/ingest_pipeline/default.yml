@@ -2,6 +2,15 @@
 description: Pipeline for processing sample logs
 processors:
   - remove:
+      tag: remove_constant_keyword_fields
+      field:
+        - ecs.version
+        - event.dataset
+        - event.module
+        - observer.type
+        - observer.vendor
+      ignore_missing: true
+  - remove:
       field:
         - organization
         - division
@@ -222,6 +231,64 @@ processors:
         ctx.crowdstrike?.EndTime != null &&
         ctx.crowdstrike.EndTime != "" &&
         ctx.crowdstrike.EndTime != "none"
+  - script:
+      tag: date-batch-timestamp-from-nt
+      description: Conditionally convert BatchTimestamp from Windows NT timestamp format to UNIX.
+      lang: painless
+      source: |-
+        if (ctx.crowdstrike?.BatchTimestamp == null) {
+          return;
+        }
+        long timestamp;
+        if (ctx.crowdstrike.BatchTimestamp instanceof long) {
+          timestamp = (long)ctx.crowdstrike.BatchTimestamp;
+        } else if (ctx.crowdstrike.BatchTimestamp instanceof String) {
+          if (!ctx.crowdstrike.BatchTimestamp.contains('.')) {
+            timestamp = Long.parseLong(ctx.crowdstrike.BatchTimestamp);
+          }
+        }
+        if (timestamp > 0x0100000000000000L) { // See https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 for constant.
+          ctx.crowdstrike.BatchTimestamp = (timestamp / 10000000) - 11644473600L;
+        }
+  - date:
+      tag: date-batch-timestamp
+      field: crowdstrike.BatchTimestamp
+      target_field: crowdstrike.BatchTimestamp
+      formats:
+        - UNIX
+      if: >
+        ctx.crowdstrike?.BatchTimestamp != null &&
+        ctx.crowdstrike.BatchTimestamp != "" &&
+        ctx.crowdstrike.BatchTimestamp != "none"
+  - script:
+      tag: date-BrowserExtensionInstalled-timestamp-from-nt
+      description: Conditionally convert BrowserExtensionInstalledTimestamp from Windows NT timestamp format to UNIX.
+      lang: painless
+      source: |-
+        if (ctx.crowdstrike?.BrowserExtensionInstalledTimestamp == null) {
+          return;
+        }
+        long timestamp;
+        if (ctx.crowdstrike.BrowserExtensionInstalledTimestamp instanceof long) {
+          timestamp = (long)ctx.crowdstrike.BrowserExtensionInstalledTimestamp;
+        } else if (ctx.crowdstrike.BrowserExtensionInstalledTimestamp instanceof String) {
+          if (!ctx.crowdstrike.BrowserExtensionInstalledTimestamp.contains('.')) {
+            timestamp = Long.parseLong(ctx.crowdstrike.BrowserExtensionInstalledTimestamp);
+          }
+        }
+        if (timestamp > 0x0100000000000000L) { // See https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 for constant.
+          ctx.crowdstrike.BrowserExtensionInstalledTimestamp = (timestamp / 10000000) - 11644473600L;
+        }
+  - date:
+      tag: date-BrowserExtensionInstalled-timestamp
+      field: crowdstrike.BrowserExtensionInstalledTimestamp
+      target_field: crowdstrike.BrowserExtensionInstalledTimestamp
+      formats:
+        - UNIX
+      if: >
+        ctx.crowdstrike?.BrowserExtensionInstalledTimestamp != null &&
+        ctx.crowdstrike.BrowserExtensionInstalledTimestamp != "" &&
+        ctx.crowdstrike.BrowserExtensionInstalledTimestamp != "none"
   - date:
       tag: date-scores-modified_time
       field: crowdstrike.scores.modified_time
@@ -817,6 +884,10 @@ processors:
           type: [ change ]
           kind: alert
           outcome: unknown
+        FalconProcessHandleOpDetectInfo:
+          category: [ malware, process ]
+          type: [ info, access ]
+          kind: alert
         FalconServiceStatus:
           category: [ package ]
           type: [ info ]
@@ -865,6 +936,11 @@ processors:
         FileTimestampsModified:
           category: [ file ]
           type: [ change ]
+          kind: event
+          outcome: success
+        FileWrittenWithEntropyHigh:
+          category: [ file ]
+          type: [ creation ]
           kind: event
           outcome: success
         FirewallChangeOption:
@@ -1012,6 +1088,10 @@ processors:
           type: [ installation ]
           kind: event
           outcome: success
+        InstalledBrowserExtension:
+          category: [ package ]
+          type: [ installation ]
+          kind: event
         InstalledUpdates:
           category: [ host, package ]
           type: [ change, installation ]
@@ -1052,6 +1132,10 @@ processors:
           type: [ start ]
           kind: event
           outcome: success
+        KernelServiceStarted:
+          category: [ process ]
+          type: [ start ]
+          kind: event
         KextLoad:
           category: [ driver ]
           type: [ start ]
@@ -1137,6 +1221,11 @@ processors:
           type: [ info ]
           kind: event
           outcome: unknown
+        MountedVolume:
+          category: [ file ]
+          type: [ info ]
+          kind: event
+          outcome: success
         NeighborListIP4:
           category: [ host, network ]
           type: [ info ]
@@ -1367,6 +1456,10 @@ processors:
           type: [ access ]
           kind: alert
           outcome: success
+        ReflectiveDotnetModuleLoad:
+          category: [ library ]
+          type: [ start ]
+          kind: event
         RegCrowdstrikeKeyUpdate:
           category: [ registry ]
           type: [ change ]
@@ -1472,14 +1565,31 @@ processors:
           type: [ info ]
           kind: event
           outcome: success
+        SensorAntiTamperState:
+          category: [ configuration ]
+          type: [ info ]
+          kind: state
         SensorHeartbeat:
           category: [ package ]
           type: [ info ]
           kind: event
           outcome: success
+        SensorSettingsUpdate:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+        ServicesStatusInfo:
+          category: [ configuration ]
+          type: [ info ]
+          kind: state
         ServiceStarted:
           category: [ process ]
           type: [ start ]
+          kind: event
+          outcome: success
+        ServiceStopped:
+          category: [ process ]
+          type: [ end ]
           kind: event
           outcome: success
         SetWinEventHookEtw:
@@ -1562,6 +1672,10 @@ processors:
           type: [ creation, info ]
           kind: alert
           outcome: success
+        SuspiciousPrivilegedProcessHandle:
+          category: [ process ]
+          type: [ info ]
+          kind: event
         SuspiciousRegAsepUpdate:
           category: [ malware, registry, configuration ]
           type: [ change, info ]
@@ -1775,12 +1889,47 @@ processors:
       value: true
       if: ctx.event?.category?.contains('driver') == true
 
+  # Can be both string and int, field is mapped as keyword
+  - convert:
+      field: crowdstrike.service
+      type: string
+      tag: convert_service
+      ignore_missing: true
+  # Can be both string and int, field is mapped as keyword
+  - convert:
+      field: crowdstrike.cloudplatform
+      type: string
+      tag: convert_cloudplatform
+      ignore_missing: true
+  # Rename crowdstrike.resource incase of concrete value
+  # field is mapped as object
+  - rename:
+      field: crowdstrike.resource
+      tag: rename_resource_to_resource_name
+      target_field: crowdstrike.resource_name
+      if: ctx.crowdstrike?.resource instanceof String
+      ignore_missing: true
+  - remove:
+      field: cloud
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "cspm_iom" }}'
+      tag: pipeline_cspm_iom
+      if: >-
+        (ctx.crowdstrike?.disposition != null && ctx.crowdstrike.disposition.equalsIgnoreCase('Failed')) ||
+        (ctx.crowdstrike?.event_simpleName != null && ctx.crowdstrike.event_simpleName.equalsIgnoreCase('CloudSecurityIOMEvaluation'))
+  - pipeline:
+      name: '{{ IngestPipeline "cspm_ioa" }}'
+      tag: pipeline_cspm_ioa
+      if: ctx.crowdstrike?.vertex_type != null && ctx.crowdstrike.vertex_type.equalsIgnoreCase('ioa')
+
   ## Event fields.
   - set:
       field: event.id
       description: Concat the fields used in fingerprint.
       tag: set_event_id
       if: ctx.crowdstrike?.id != null || ctx.crowdstrike?.aid != null || ctx.crowdstrike?.cid != null
+      override: false
       value: >-
         {{{#crowdstrike.id}}}{{{ crowdstrike.id }}}{{{/crowdstrike.id}}}|{{{#crowdstrike.aid}}}{{{ crowdstrike.aid }}}{{{/crowdstrike.aid}}}|{{{#crowdstrike.cid}}}{{{ crowdstrike.cid }}}{{{/crowdstrike.cid}}}
   - set:
@@ -1788,9 +1937,14 @@ processors:
       copy_from: crowdstrike.event_simpleName
       tag: construct_message_from_event_simpleName
       ignore_empty_value: true
+      override: false
   - rename:
       field: crowdstrike.event_simpleName
       target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.SuspiciousHandleOpenReason
+      target_field: event.reason
       ignore_missing: true
 
   ## Prepare data.
@@ -2618,12 +2772,17 @@ processors:
       field: crowdstrike.User.Name
       target_field: user.name
       ignore_missing: true
-      if: ctx.crowdstrike?.User?.Name != null && ctx.user?.name == null
+      if: 'ctx.crowdstrike?.User instanceof Map && ctx.crowdstrike.User.Name != null && ctx.user?.name == null'
   - rename:
       field: crowdstrike.UserName
       target_field: user.name
       ignore_missing: true
       if: ctx.crowdstrike?.UserName != null && ctx.user?.name == null
+  - rename:
+      if: ctx.crowdstrike?.User instanceof String && ctx.user?.name == null
+      field: crowdstrike.User
+      target_field: user.name
+      ignore_missing: true
   - split:
       field: crowdstrike.UserPrincipal
       target_field: "_temp.user_parts"
@@ -3273,15 +3432,96 @@ processors:
       tag: set_device_id_from_observer_serial_number
       if: ctx.device?.id == null
 
+  ## Threat Fields.
+  - foreach:
+      field: crowdstrike.Attacks
+      tag: foreach_crowdstrike_Attacks_array
+      if: ctx.crowdstrike?.Attacks instanceof List
+      processor:
+        append:
+          field: threat.technique.name
+          tag: append_crowdstrike_attacks_technique_to_threat_technique
+          value: '{{{_ingest._value.Technique}}}'
+          allow_duplicates: false
+  - foreach:
+      field: crowdstrike.Attacks
+      tag: foreach_crowdstrike_Attacks_array
+      if: ctx.crowdstrike?.Attacks instanceof List
+      processor:
+        append:
+          field: threat.tactic.name
+          tag: append_crowdstrike_attacks_tactic_to_threat_tactic
+          value: '{{{_ingest._value.Tactic}}}'
+          allow_duplicates: false
+
+  ## Package fields.
+  - script:
+      lang: painless
+      tag: set_browser_extension_architecture_value
+      if: ctx.crowdstrike?.BrowserExtensionArchitecture != null
+      params:
+        '0': UNKNOWN
+        '1': MANIFEST_V2
+        '2': MANIFEST_V3
+        '3': SAFARI_APP
+      source: |-
+        ctx.package = ctx.package ?: [:];
+        ctx.package.architecture = params[ctx.crowdstrike.BrowserExtensionArchitecture];
+  - rename:
+      field: crowdstrike.BrowserExtensionInstalledTimestamp
+      tag: rename_crowdstrike_BrowserExtensionInstalledTimestamp
+      target_field: package.installed
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.BrowserExtensionName
+      tag: rename_crowdstrike_BrowserExtensionName
+      target_field: package.name
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.BrowserExtensionPath
+      tag: rename_crowdstrike_BrowserExtensionPath
+      target_field: package.path
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.BrowserExtensionVersion
+      tag: rename_crowdstrike_BrowserExtensionVersion
+      target_field: package.version
+      ignore_missing: true
+
   ## Crowdstrike fields.
-  - json:
-      field: crowdstrike.ResourceAttributes
-      tag: json_crowdstrike_ResourceAttributes
-      if: ctx.crowdstrike?.ResourceAttributes instanceof String
-      on_failure:
-        - remove:
-            field: crowdstrike.ResourceAttributes
-            ignore_missing: true
+  - split:
+      field: crowdstrike.ContextProcessTagsAsString
+      tag: split_crowdstrike_contextprocesstagsasstring
+      separator: ','
+      ignore_missing: true
+  - split:
+      field: crowdstrike.PatternIdList
+      tag: split_crowdstrike_patternidlist
+      separator: ','
+      ignore_missing: true
+  - split:
+      field: crowdstrike.ParentProcessPatternIdList
+      tag: split_crowdstrike_parentprocessPatternidlist
+      separator: ','
+      ignore_missing: true
+  - split:
+      field: crowdstrike.GrandparentProcessPatternIdList
+      tag: split_crowdstrike_gradnparentprocessPatternidlist
+      separator: ','
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: set_browser_extension_install_method_value
+      if: ctx.crowdstrike?.BrowserExtensionInstallMethod != null
+      params:
+        '0': UNIDENTIFIED
+        '1': BROWSER
+        '2': WEBSTORE
+        '3': GPO
+        '4': SIDELOADED
+        '5': WEBSTORE_3RD_PARTY
+      source: |-
+        ctx.crowdstrike.BrowserExtensionInstallMethod = params[ctx.crowdstrike.BrowserExtensionInstallMethod];
   - split:
       field: crowdstrike.FalconGroupingTags
       separator: ",\\s?"
@@ -3693,7 +3933,6 @@ processors:
       ignore_missing: true
   - remove:
       field:
-        - ecs.version
         - _temp
         - crowdstrike.timestamp
         - crowdstrike._time
@@ -3704,6 +3943,7 @@ processors:
         - crowdstrike.UserIsAdmin
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
+        - crowdstrike.BrowserExtensionArchitecture
         - _conf
       ignore_missing: true
   - script:
