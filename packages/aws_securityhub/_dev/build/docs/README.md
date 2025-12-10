@@ -67,6 +67,12 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 
 ### Validation
 
+#### Dashboards populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **AWS Security Hub**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
 #### Transforms healthy
 
 1. In the top search bar in Kibana, search for **Transforms**.

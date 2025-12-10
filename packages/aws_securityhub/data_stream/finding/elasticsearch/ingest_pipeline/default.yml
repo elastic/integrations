@@ -1134,7 +1134,6 @@ processors:
       tag: set_event_kind_to_alert
       if: |-
         ctx.aws_securityhub?.finding?.class_uid != null && (
-          ctx.aws_securityhub.finding.class_uid.equals('2002') ||
           ctx.aws_securityhub.finding.class_uid.equals('2004') ||
           ctx.aws_securityhub.finding.class_uid.equals('2006')
         )
@@ -1142,7 +1141,11 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind_to_state
-      if: ctx.aws_securityhub?.finding?.class_uid != null && ctx.aws_securityhub.finding.class_uid.equals('2003')
+      if: |-
+        ctx.aws_securityhub?.finding?.class_uid != null && (
+          ctx.aws_securityhub.finding.class_uid.equals('2002') ||
+          ctx.aws_securityhub.finding.class_uid.equals('2003')
+        )
       value: state
   - append:
       field: event.category
