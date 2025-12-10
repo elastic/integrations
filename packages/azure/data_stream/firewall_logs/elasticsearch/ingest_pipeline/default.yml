@@ -77,22 +77,11 @@ processors:
       field: json.properties.SourcePort
       target_field: source.port
       ignore_missing: true
-  - rename:
-      field: json.properties.TranslatedIp
-      target_field: destination.ip
-      ignore_missing: true
-      ignore_failure: true
   - set:
       field: destination.nat.ip
       tag: set_destination_nat_ip_from_properties_translated_ip
       copy_from: json.properties.TranslatedIp
       ignore_empty_value: true
-  - rename:
-      field: json.properties.TranslatedPort
-      target_field: destination.port
-      ignore_missing: true
-      ignore_failure: true
-      if: ctx?.azure?.firewall?.properties?.DestinationPort == null
   - set:
       field: destination.nat.port
       tag: set_destination_nat_port_from_properties_translated_port
@@ -244,13 +233,13 @@ processors:
       field: event.type
       tag: append_allowed_into_event_type
       value: allowed
-      if: ctx.event?.action == "Allow"
+      if: ctx.event?.action != null && ctx.event.action.equalsIgnoreCase("Allow")
       allow_duplicates: false
   - append:
       field: event.type
       tag: append_denied_into_event_type
       value: denied
-      if: ctx.event?.action == "Deny"
+      if: ctx.event?.action != null && ctx.event.action.equalsIgnoreCase("Deny")
       allow_duplicates: false
   - grok:
       field: source.address
