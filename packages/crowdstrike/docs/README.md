@@ -26,9 +26,9 @@ The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to easily
 
 - `vulnerability` dataset: It retrieves all the vulnerabilities in your environment, providing information such as severity, status, confidence levels, remediation guidance, and affected hosts, as detected by the CrowdStrike Falcon platform, via the Falcon Spotlight Vulnerability API - `/spotlight/combined/vulnerabilities/v1`.
 
-3. **Falcon Data Replicator**: This Collect events in near real time from your endpoints and cloud workloads, identities and data. CrowdStrike Falcon Data Replicator (FDR) enables you with actionable insights to improve SOC performance. FDR contains near real-time data collected by the Falcon platform's single, lightweight agent. It includes the following datasets for receiving logs:
+3. **Falcon Data Replicator**: This collects events from your endpoints, cloud workloads, identities, and data. CrowdStrike Falcon Data Replicator (FDR) enables you with actionable insights to improve SOC performance. FDR contains data collected by the Falcon platform's single, lightweight agent. It includes the following datasets for receiving logs:
 
-- `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR).
+- `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR). In addition to the existing log types, the integration supports parsing of Cloud Security Posture Management (CSPM). CSPM contains Indicators of Misconfiguration (IOM) and Indicators of Attack (IOA) events.
 
 4. **CrowdStrike Event Stream**: This streams security logs from CrowdStrike Event Stream, including authentication activity, cloud security posture management (CSPM), firewall logs, user activity, and XDR data. It captures real-time security events like user logins, cloud environment changes, network traffic, and advanced threat detections. The streaming integration provides continuous monitoring and analysis for proactive threat detection. It enhances visibility into user behavior, network security, and overall system health. This setup enables faster response capabilities to emerging security incidents. It includes the following datasets for receiving logs:
 
@@ -2091,6 +2091,10 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RemovableDiskFileWrittenCount |  | long |
 | crowdstrike.RequestType |  | keyword |
 | crowdstrike.ResendToCloud |  | keyword |
+| crowdstrike.ResourceAttributes |  | flattened |
+| crowdstrike.ResourceCreateTime |  | date |
+| crowdstrike.ResourceId |  | keyword |
+| crowdstrike.ResourceIdType |  | keyword |
 | crowdstrike.RespondingDnsServer |  | keyword |
 | crowdstrike.ResponseAction |  | keyword |
 | crowdstrike.RetransmitTime |  | keyword |
@@ -2330,25 +2334,74 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.aid |  | keyword |
 | crowdstrike.aipCount |  | integer |
 | crowdstrike.assessments |  | flattened |
+| crowdstrike.attack_types |  | keyword |
+| crowdstrike.aws_account_id |  | keyword |
 | crowdstrike.cid |  | keyword |
+| crowdstrike.cis_benchmark_ids |  | keyword |
+| crowdstrike.cisa_benchmark_ids |  | keyword |
+| crowdstrike.cloud_asset_type |  | long |
+| crowdstrike.cloudplatform |  | keyword |
+| crowdstrike.compliance.benchmarkNames |  | keyword |
+| crowdstrike.compliance.frameworks |  | keyword |
+| crowdstrike.compliance.requirements |  | keyword |
+| crowdstrike.compliance.sections |  | keyword |
+| crowdstrike.compliance.versions |  | keyword |
+| crowdstrike.created |  | date |
+| crowdstrike.crn |  | keyword |
 | crowdstrike.discovererCount |  | integer |
 | crowdstrike.discoverer_aid |  | keyword |
+| crowdstrike.disposition |  | keyword |
 | crowdstrike.eid |  | integer |
+| crowdstrike.event-type |  | keyword |
+| crowdstrike.event_category |  | keyword |
+| crowdstrike.finding |  | keyword |
+| crowdstrike.findings.name |  | keyword |
+| crowdstrike.findings.value |  | keyword |
+| crowdstrike.firstDetected |  | date |
 | crowdstrike.hostname |  | keyword |
 | crowdstrike.id |  | keyword |
 | crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
 | crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
+| crowdstrike.internal_only |  | boolean |
+| crowdstrike.iso_benchmark_ids |  | keyword |
+| crowdstrike.lastDetected |  | date |
+| crowdstrike.legacyPolicyId |  | long |
 | crowdstrike.localipCount |  | integer |
+| crowdstrike.management_event |  | boolean |
 | crowdstrike.monthsincereset |  | keyword |
 | crowdstrike.name |  | keyword |
+| crowdstrike.nist_benchmark_ids |  | keyword |
 | crowdstrike.os_version |  | keyword |
+| crowdstrike.pci_benchmark_ids |  | keyword |
+| crowdstrike.policy_severity |  | long |
 | crowdstrike.product_type_desc |  | keyword |
+| crowdstrike.read_only |  | boolean |
+| crowdstrike.request_id |  | keyword |
+| crowdstrike.request_parameters |  | keyword |
+| crowdstrike.resource.captured |  | date |
+| crowdstrike.resource.legacyResourceId |  | keyword |
+| crowdstrike.resource.legacyResourceTypeId |  | long |
+| crowdstrike.resource.resourceId |  | keyword |
+| crowdstrike.resource.resourceType |  | keyword |
+| crowdstrike.resource_url |  | keyword |
+| crowdstrike.response_elements |  | keyword |
+| crowdstrike.revision |  | long |
 | crowdstrike.scores.modified_time |  | date |
 | crowdstrike.scores.os |  | long |
 | crowdstrike.scores.overall |  | long |
 | crowdstrike.scores.sensor |  | long |
 | crowdstrike.scores.version |  | keyword |
+| crowdstrike.service |  | keyword |
+| crowdstrike.soc2_benchmark_ids |  | keyword |
+| crowdstrike.status |  | keyword |
 | crowdstrike.subnet |  | keyword |
+| crowdstrike.url |  | keyword |
+| crowdstrike.user_identity_access_key_id |  | keyword |
+| crowdstrike.user_identity_account_id |  | keyword |
+| crowdstrike.user_identity_arn |  | keyword |
+| crowdstrike.user_identity_mfa_authenticated |  | boolean |
+| crowdstrike.vertex_id |  | keyword |
+| crowdstrike.vertex_type |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

@@ -1889,12 +1889,47 @@ processors:
       value: true
       if: ctx.event?.category?.contains('driver') == true
 
+  # Can be both string and int, field is mapped as keyword
+  - convert:
+      field: crowdstrike.service
+      type: string
+      tag: convert_service
+      ignore_missing: true
+  # Can be both string and int, field is mapped as keyword
+  - convert:
+      field: crowdstrike.cloudplatform
+      type: string
+      tag: convert_cloudplatform
+      ignore_missing: true
+  # Rename crowdstrike.resource incase of concrete value
+  # field is mapped as object
+  - rename:
+      field: crowdstrike.resource
+      tag: rename_resource_to_resource_name
+      target_field: crowdstrike.resource_name
+      if: ctx.crowdstrike?.resource instanceof String
+      ignore_missing: true
+  - remove:
+      field: cloud
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "cspm_iom" }}'
+      tag: pipeline_cspm_iom
+      if: >-
+        (ctx.crowdstrike?.disposition != null && ctx.crowdstrike.disposition.equalsIgnoreCase('Failed')) ||
+        (ctx.crowdstrike?.event_simpleName != null && ctx.crowdstrike.event_simpleName.equalsIgnoreCase('CloudSecurityIOMEvaluation'))
+  - pipeline:
+      name: '{{ IngestPipeline "cspm_ioa" }}'
+      tag: pipeline_cspm_ioa
+      if: ctx.crowdstrike?.vertex_type != null && ctx.crowdstrike.vertex_type.equalsIgnoreCase('ioa')
+
   ## Event fields.
   - set:
       field: event.id
       description: Concat the fields used in fingerprint.
       tag: set_event_id
       if: ctx.crowdstrike?.id != null || ctx.crowdstrike?.aid != null || ctx.crowdstrike?.cid != null
+      override: false
       value: >-
         {{{#crowdstrike.id}}}{{{ crowdstrike.id }}}{{{/crowdstrike.id}}}|{{{#crowdstrike.aid}}}{{{ crowdstrike.aid }}}{{{/crowdstrike.aid}}}|{{{#crowdstrike.cid}}}{{{ crowdstrike.cid }}}{{{/crowdstrike.cid}}}
   - set:
@@ -1902,6 +1937,7 @@ processors:
       copy_from: crowdstrike.event_simpleName
       tag: construct_message_from_event_simpleName
       ignore_empty_value: true
+      override: false
   - rename:
       field: crowdstrike.event_simpleName
       target_field: event.action
@@ -3486,14 +3522,6 @@ processors:
         '5': WEBSTORE_3RD_PARTY
       source: |-
         ctx.crowdstrike.BrowserExtensionInstallMethod = params[ctx.crowdstrike.BrowserExtensionInstallMethod];
-  - json:
-      field: crowdstrike.ResourceAttributes
-      tag: json_crowdstrike_ResourceAttributes
-      if: ctx.crowdstrike?.ResourceAttributes instanceof String
-      on_failure:
-        - remove:
-            field: crowdstrike.ResourceAttributes
-            ignore_missing: true
   - split:
       field: crowdstrike.FalconGroupingTags
       separator: ",\\s?"
