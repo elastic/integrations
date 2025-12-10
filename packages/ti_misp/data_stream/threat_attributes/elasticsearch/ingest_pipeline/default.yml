@@ -148,10 +148,11 @@ processors:
 # Add default decayed_at to expire all IOCs after duration `ioc_expiration_duration` from `_tmp_max_time`. 
 # If user-provided value of `ioc_expiration_duration` is not in d, h, or m, default to 90d.
 # Set `decayed` as true if decayed_at is before ingest time i.e., already expired during ingestion.
+# This script is skipped when daily_refresh tag is present.
   - script:
       lang: painless
       tag: script-default-decayed_at
-      if: (ctx.misp?.attribute?.decayed_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
+      if: (ctx.misp?.attribute?.decayed_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '' && !(ctx.tags instanceof List && ctx.tags.contains('daily_refresh')))
       description: >
         Add default decayed_at
       source: >
@@ -191,6 +192,24 @@ processors:
           ctx.misp.attribute.decayed_at = _tmp_decayed_at;
         }
         ctx.misp.attribute.decayed = _tmp_decayed_at.isBefore(ZonedDateTime.parse(ctx._tmp.event_ingested))? true : false;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Script for daily refresh mode: set decayed_at to 24 hours after ingestion.
+# When daily_refresh tag is present, all non-decayed attributes will expire 24 hours after ingestion,
+# allowing the next daily refresh cycle to re-ingest them with updated decay scores from MISP.
+# Attributes already marked as decayed by MISP (script-misp_decayed) are not affected.
+  - script:
+      lang: painless
+      tag: script-daily_refresh-decayed_at
+      if: (ctx.misp?.attribute?.decayed != true && ctx.misp?.attribute?.decayed_at == null && ctx.tags instanceof List && ctx.tags.contains('daily_refresh'))
+      description: >
+        Set decayed_at to 24 hours after ingestion for daily refresh mode
+      source: |
+        ZonedDateTime _tmp_event_ingested = ZonedDateTime.parse(ctx._tmp.event_ingested);
+        ctx.misp.attribute.decayed_at = _tmp_event_ingested.plusHours(24L);
+        ctx.tags.remove(ctx.tags.indexOf('daily_refresh'));
       on_failure:
         - append:
             field: error.message

@@ -35,6 +35,15 @@ streams:
         show_user: true
         default: 120h
         description: How far back to look for indicators the first time the agent is started. Supported units for this parameter are h/m/s.
+      - name: daily_refresh
+        type: bool
+        title: Enable Daily Refresh
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: >-
+          When enabled, the integration performs a daily full refresh of all attributes from the MISP API (every 24 hours), ignoring the cursor and re-fetching from Initial Interval. This ensures decay scores are updated and attributes ingested during a daily refresh will expire 24 hours after ingestion, allowing the next refresh cycle to update their decay state from MISP.
       - name: ioc_expiration_duration
         type: text
         title: IOC Expiration Duration
@@ -43,7 +52,7 @@ streams:
         show_user: true
         default: "90d"
         description: >-
-          Enforces all IOCs to expire after this duration. This setting is required to avoid "orphaned" IOCs that never expire. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g 10d)
+          Enforces all IOCs to expire after this duration. This setting applies to ALL ingested attributes (not just orphaned IOCs) and serves as a fail-safe expiration for "orphaned" IOCs that never expire. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g 10d). When `Enable Daily Refresh` is enabled, this setting is ignored and all non-decayed attributes will expire 24 hours after ingestion instead.
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
