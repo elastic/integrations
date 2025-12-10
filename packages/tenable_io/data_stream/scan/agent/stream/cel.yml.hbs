@@ -73,7 +73,15 @@ program: |
                 "worklist": size(state.worklist) > 1 ? tail(state.worklist) : [],
                 "want_more": size(state.worklist) > 1
               })
+            : details_resp.StatusCode == 404 ?
+              // 404 Not Found - skip this scan and continue immediately with remaining worklist
+              {
+                "events": [{"event": {"reason": "want_more"}}],
+                "worklist": size(state.worklist) > 1 ? tail(state.worklist) : [],
+                "want_more": size(state.worklist) > 1
+              }
             :
+              // Other errors - emit error, keep worklist unchanged, sleep until next interval
               {
                 "events": {
                   "error": {
@@ -87,8 +95,8 @@ program: |
                     )
                   }
                 },
-                "worklist": size(state.worklist) > 1 ? tail(state.worklist) : [],
-                "want_more": size(state.worklist) > 1
+                "worklist": state.worklist,
+                "want_more": false
               }
           )
         )
