@@ -21,10 +21,7 @@
       type: integer
       description: Numeric severity level associated with the event.
 
-    - name: severity_text
-      type: keyword
-      description: Textual representation of the severity level.
-
+    # severity_text → ECS log.level
     - name: request_id
       type: keyword
       description: ID of the processed request.
@@ -34,7 +31,7 @@
       description: User prompt text captured by the event.
 
     - name: prompt_hash
-      type: text
+      type: keyword
       description: Hash of the user prompt for deduplication and correlation.
 
     - name: operation
@@ -43,21 +40,18 @@
 
     - name: service_name
       type: keyword
-      description: Name of the service handling the operation.
+      description: Service handling the operation.
 
-    - name: body
+    - name: request_payload
       type: group
       fields:
-        - name: request_payload
-          type: group
-          fields:
-            - name: prompt
-              type: text
-              description: User prompt text extracted from the request payload.
+        - name: actor_id
+          type: keyword
+          description: Actor initiating the request.
 
-            - name: actor_id
-              type: text
-              description: Identifier of the actor initiating the request.
+        - name: prompt
+          type: text
+          description: Prompt extracted from payload.
 
 # Gen AI fields relevant for AgentCore
 - name: gen_ai

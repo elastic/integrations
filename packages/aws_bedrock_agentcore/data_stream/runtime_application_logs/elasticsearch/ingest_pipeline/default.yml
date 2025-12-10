@@ -15,7 +15,7 @@ processors:
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
-      
+
   # Parse JSON if the log comes as a string
   - json:
       tag: parse_json_event_original
@@ -63,31 +63,44 @@ processors:
       target_field: span.id
       ignore_missing: true
       if: ctx.span?.id == null
-  
+
   - rename:
       tag: rename_severity_number
       field: aws.bedrock_agentcore.severityNumber
       target_field: aws.bedrock_agentcore.severity_number
       ignore_missing: true
 
+  # Map severity_text to log.level for ECS compatibility
+  - set:
+      tag: set_log_level
+      field: log.level
+      copy_from: aws.bedrock_agentcore.severityText
+      ignore_failure: true
+
+  # Flatten body.request_payload to request_payload (avoid OTEL-style nesting)
   - rename:
-      tag: rename_severity_text
-      field: aws.bedrock_agentcore.severityText
-      target_field: aws.bedrock_agentcore.severity_text
+      tag: flatten_request_payload
+      field: aws.bedrock_agentcore.body.request_payload
+      target_field: aws.bedrock_agentcore.request_payload
       ignore_missing: true
-      
+
+  - remove:
+      tag: remove_empty_body
+      field: aws.bedrock_agentcore.body
+      ignore_missing: true
+
   # Set ECS version
   - set:
       tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
-      
+
   # Set cloud service metadata
   - set:
       tag: set_cloud_service_name
       field: cloud.service.name
       value: bedrock-agentcore
-      
+
   - set:
       tag: set_cloud_provider
       field: cloud.provider
@@ -128,26 +141,26 @@ processors:
       field: event.outcome
       value: success
       if: ctx.error?.message == null
-      
+
   - set:
       tag: set_event_outcome_failure
-      field: event.outcome  
+      field: event.outcome
       value: failure
       if: ctx.error?.message != null
-      
+
   # Truncate large prompt fields to prevent storage issues
   - script:
       tag: truncate_large_prompts
       description: Truncate large prompts and store hash
       lang: painless
-      if: ctx.aws?.bedrock_agentcore?.body?.request_payload?.prompt != null && ctx.aws?.bedrock_agentcore?.body?.request_payload?.prompt instanceof String
+      if: ctx.aws?.bedrock_agentcore?.request_payload?.prompt != null && ctx.aws?.bedrock_agentcore?.request_payload?.prompt instanceof String
       source: |
-        if (ctx.aws.bedrock_agentcore.body.request_payload.prompt.length() > 32766) {
-          ctx.aws.bedrock_agentcore.prompt_hash = ctx.aws.bedrock_agentcore.body.request_payload.prompt.sha1(); 
-          ctx.aws.bedrock_agentcore.body.request_payload.remove("prompt");
+        if (ctx.aws.bedrock_agentcore.request_payload.prompt.length() > 32766) {
+          ctx.aws.bedrock_agentcore.prompt_hash = ctx.aws.bedrock_agentcore.request_payload.prompt.sha1(); 
+          ctx.aws.bedrock_agentcore.request_payload.remove("prompt");
         }
       ignore_failure: true
-  
+
   - dissect:
       tag: extract_agent_and_endpoint
       field: service.name
@@ -165,8 +178,9 @@ processors:
         - aws.bedrock_agentcore.span_id
         - aws.bedrock_agentcore.event_timestamp
         - aws.bedrock_agentcore.timeUnixNano
+        - aws.bedrock_agentcore.severityText
       ignore_missing: true
-      
+
   # Remove empty/null values
   - script:
       tag: cleanup_null_values
