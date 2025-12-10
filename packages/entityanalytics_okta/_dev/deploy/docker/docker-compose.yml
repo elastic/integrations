@@ -15,3 +15,18 @@ services:
       - --config=/files/config.yml
       - --tls-cert=/files/certificate.crt
       - --tls-key=/files/private.key
+  entityanalytics_okta_oauth2:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: trial-xxxxxxx-admin.okta.com
+    ports:
+      - 443
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "443"
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/files/config_oauth2.yml
+      - --tls-cert=/files/certificate.crt
+      - --tls-key=/files/private.key

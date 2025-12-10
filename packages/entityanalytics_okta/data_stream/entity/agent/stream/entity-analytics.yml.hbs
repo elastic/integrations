@@ -9,7 +9,28 @@ id: {{id}}
 sync_interval: {{sync_interval}}
 update_interval: {{update_interval}}
 okta_domain: {{okta_domain}}
+{{#if client_id}}
+oauth2.client.id: {{client_id}}
+oauth2.token_url: {{okta_domain}}/oauth2/v1/token
+{{#if client_secret}}
+oauth2.client.secret: {{client_secret}}
+{{/if}}
+oauth2.scopes:
+{{#each okta_scopes as |scope|}}
+  - {{scope}}
+{{/each}}
+{{#if jwk_json}}
+oauth2.jwk_json: {{jwk_json}}
+{{/if}}
+{{#if jwk_file}}
+oauth2.jwk_file: {{jwk_file}}
+{{/if}}
+{{#if key_pem}}
+oauth2.jwk_pem: {{escape_string key_pem}}
+{{/if}}
+{{else if okta_token}}
 okta_token: {{okta_token}}
+{{/if}}
 dataset: {{dataset}}
 {{#if enrich_user_roles}}
 {{! We include groups in the list when enriching roles, since the default input is to enrich with groups. }}
