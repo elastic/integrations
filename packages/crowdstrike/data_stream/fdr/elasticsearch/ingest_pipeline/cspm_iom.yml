@@ -11,7 +11,7 @@ processors:
       field: event.kind
       tag: set_event_kind_event
       value: event
-      if: ctx.crowdstrike?.status == 'Passed'
+      if: ctx.crowdstrike?.status != null && ctx.crowdstrike.status.equalsIgnoreCase('Passed')
   - append:
       field: event.category
       value: configuration
@@ -21,7 +21,6 @@ processors:
       tag: append_info_change_type
       value:
         - info
-        - change
 
   # Converts
   - convert:

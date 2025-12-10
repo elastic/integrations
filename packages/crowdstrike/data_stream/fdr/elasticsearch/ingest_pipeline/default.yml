@@ -1916,12 +1916,12 @@ processors:
       name: '{{ IngestPipeline "cspm_iom" }}'
       tag: pipeline_cspm_iom
       if: >-
-        ctx.crowdstrike?.disposition == 'Failed' ||
-        ctx.crowdstrike?.event_simpleName == 'CloudSecurityIOMEvaluation'
+        (ctx.crowdstrike?.disposition != null && ctx.crowdstrike.disposition.equalsIgnoreCase('Failed')) ||
+        (ctx.crowdstrike?.event_simpleName != null && ctx.crowdstrike.event_simpleName.equalsIgnoreCase('CloudSecurityIOMEvaluation'))
   - pipeline:
       name: '{{ IngestPipeline "cspm_ioa" }}'
       tag: pipeline_cspm_ioa
-      if: ctx.crowdstrike?.vertex_type == 'ioa'
+      if: ctx.crowdstrike?.vertex_type != null && ctx.crowdstrike.vertex_type.equalsIgnoreCase('ioa')
 
   ## Event fields.
   - set:
