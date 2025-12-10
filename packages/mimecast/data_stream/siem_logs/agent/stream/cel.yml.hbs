@@ -98,7 +98,22 @@ program: |
                 },
                 "want_more": size(blobs) > 1 || size(work_list) != 0,
               }
+            : (batch.StatusCode == 404) ?
+              // 404 Not Found - skip this blob and continue immediately with remaining blobs
+              {
+                "events": [{"message": "want_more"}],
+                "cursor": {
+                  "blobs": tail(blobs),
+                  "work_list": work_list,
+                },
+                "token": {
+                  "access_token": token.access_token,
+                  "expires": token.expires,
+                },
+                "want_more": size(blobs) > 1 || size(work_list) != 0,
+              }
             :
+              // Other errors - emit error, stop processing
               {
                 "events": {
                   "error": {
