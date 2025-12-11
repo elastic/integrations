@@ -6,12 +6,17 @@ This package contains Kibana assets for monitoring [AWS CloudTrail Logs](https:/
 
 ### EDOT Cloud Forwarder (ECF) for AWS
 
-ECF is the simplest way to configure AWS ELB log collection. Consult the documentation [here](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) for full setup instructions.
+ECF is the simplest way to configure AWS CloudTrail log collection. Refer to the [ECF for AWS documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) for full setup instructions.
 
 ### Standalone OTel Collector
 
-Any OTel-supported collection method is supported provided the required extension is included. A sample configuration which uses the [awss3receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awss3receiver#aws-s3-receiver) and [awslogsencodingextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension#aws-logs-encoding-extension) is given below:
+Any OTel-supported collection method is supported provided the required extension is included.
 
+#### Compatibility
+
+OpenTelemetry components version tested against is `0.138.0`. Components used are [awss3receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awss3receiver#aws-s3-receiver), [awslogsencodingextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension#aws-logs-encoding-extension), and [elasticsearchexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter#elasticsearch-exporter)
+
+#### Sample configuration
 
 ```yaml
 extensions:
