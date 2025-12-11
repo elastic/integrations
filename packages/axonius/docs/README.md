@@ -2,7 +2,7 @@
 
 ## Overview
 
-[Axonius](https://www.axonius.com/) is a cybersecurity asset management platform that automatically collects data from hundreds of IT and security tools through adapters, merges that information, and builds a unified inventory of all assets—devices, users, SaaS apps, cloud instances, and more. By correlating data from multiple systems, Axonius helps organizations identify visibility gaps, missing security controls, risky configurations, and compliance issues. It lets you create powerful queries to answer any security or IT question and automate actions such as sending alerts, creating tickets, or enforcing policies.
+[Axonius](https://www.axonius.com/) is a cybersecurity asset management platform that automatically collects data from hundreds of IT and security tools through adapters, merges that information, and builds a unified inventory of all assets including devices, users, SaaS apps, cloud instances, and more. By correlating data from multiple systems, Axonius helps organizations identify visibility gaps, missing security controls, risky configurations, and compliance issues. It lets you create powerful queries to answer any security or IT question and automate actions such as sending alerts, creating tickets, or enforcing policies.
 
 This integration for Elastic allows you to collect assets and security events data using the Axonius API, then visualize the data in Kibana.
 
@@ -134,6 +134,7 @@ The `adapter` data stream provides adapter logs from axonius.
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
@@ -142,11 +143,11 @@ An example event for `adapter` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-11-27T03:41:01.477Z",
+    "@timestamp": "2025-12-11T08:52:10.919Z",
     "agent": {
-        "ephemeral_id": "c82242be-ad27-4fe4-b1ef-f3ebe8e5c609",
-        "id": "971c2397-ed0e-4464-8ea0-57e783283ec4",
-        "name": "elastic-agent-86163",
+        "ephemeral_id": "feb02a1a-1e2e-4db5-bcf2-2852b754daa7",
+        "id": "860a63f7-985b-4501-90e4-54e329b0fbb5",
+        "name": "elastic-agent-42108",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -186,14 +187,14 @@ An example event for `adapter` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.adapter",
-        "namespace": "86225",
+        "namespace": "40422",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "971c2397-ed0e-4464-8ea0-57e783283ec4",
+        "id": "860a63f7-985b-4501-90e4-54e329b0fbb5",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -201,7 +202,7 @@ An example event for `adapter` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.adapter",
         "id": "a_cloud_guru_adapter",
-        "ingested": "2025-11-27T03:41:04Z",
+        "ingested": "2025-12-11T08:52:13Z",
         "kind": "event",
         "original": "{\"adapter_configs\":{},\"connections\":[{\"active\":true,\"adapter_name\":\"a_cloud_guru_adapter\",\"connection_adapter_config\":{},\"connection_advanced_config\":{},\"connection_config\":{},\"connection_discovery\":{},\"connection_id\":\"conn_12345\",\"curl\":null,\"did_notify_error\":false,\"error\":null,\"failed_connections_limit_exceeded\":false,\"id\":\"conn_12345\",\"last_fetch_time\":\"Sat, 08 Mar 2025 18:53:09 GMT\",\"last_successful_fetch\":\"Sat, 08 Mar 2025 18:53:09 GMT\",\"node_id\":\"c69070d9e5e145e4861f2843d1951ab2\",\"note\":\"\",\"status\":\"success\",\"tunnel_id\":\"khnsjhgvcskdbvnksdjahubnkvdhb\",\"uuid\":\"c69070fgredffedfgrfedcfd9e5e145e4861f2843d1951ab2\"}],\"connections_count\":{\"error_count\":0,\"inactive_count\":0,\"success_count\":1,\"total_count\":1,\"warning_count\":0},\"id\":\"a_cloud_guru_adapter\",\"is_master\":true,\"node_id\":\"c69070d9e5e145e4861f2843d1951ab2\",\"node_name\":\"Primary\",\"plugin_name\":\"a_cloud_guru_adapter\",\"status\":\"success\",\"unique_plugin_name\":\"a_cloud_guru_adapter_0\"}",
         "outcome": "success"
