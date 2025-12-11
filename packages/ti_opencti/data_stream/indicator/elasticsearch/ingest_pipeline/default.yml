@@ -868,6 +868,30 @@ processors:
           ctx.threat.indicator.x509 = mergeListOfMaps(ctx.threat.indicator.x509);
         }
 
+  #####################################
+  # ECS indicator fields from pattern #
+  #####################################
+
+  # If there are no observables, get the indicator from the pattern
+  - split:
+      tag: split_pattern_if_no_observables
+      if: ctx.opencti?.indicator?.observables_count == 0 && ctx.opencti?.indicator?.pattern != null
+      field: opencti.indicator.pattern
+      separator: '\s+AND\s+|\s+OR\s+'
+      target_field: opencti.indicator._patterns
+      ignore_missing: true
+
+  - foreach:
+      field: opencti.indicator._patterns
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_pattern" }}'
+
+  - remove:
+      field: opencti.indicator._patterns
+      ignore_missing: true
+
   ###################################
   # Fingerprint for deduplication   #
   ###################################
