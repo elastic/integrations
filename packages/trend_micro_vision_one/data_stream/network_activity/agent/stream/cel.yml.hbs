@@ -31,10 +31,10 @@ program: |-
         "end_time": now.format(time_layout.RFC3339),
       })
   ).as(state,
-    // use next_link if available, otherwise build initial request
+    // use next.link if available, otherwise build initial request
     (
-      has(state.next_link) && state.next_link != "" ?
-        state.next_link
+      state.?next.link.hasValue() ?
+        state.next.link
       :
         state.url.trim_right("/") + "/v3.0/search/networkActivities?" + {
           "top": [string(state.batch_size)],
@@ -65,13 +65,12 @@ program: |-
                 )
               :
                 [],
-              // next_link will not be available in last paginated call
-              "next_link": body.?nextLink.orValue(""),
-              "want_more": body.?nextLink.orValue("") != "",
+              // next.link will not be available in last paginated call
+              "next": {?"link": body.?nextLink},
+              "want_more": body.?nextLink.hasValue(),
               "api_token": state.api_token,
               "batch_size": state.batch_size,
               "initial_interval": state.initial_interval,
-              "my_value": now - duration("1h"),
               "cursor": {
                 ?"last_timestamp": (has(body.items) && size(body.items) > 0) ?
                   (has(state.?cursor.last_timestamp) ?
@@ -81,11 +80,11 @@ program: |-
                         timestamp(int(timestamp(0)+duration(string(int(body.items[0].eventTime))+"ms")))
                       ]).format("2006-01-02T15:04:05")
                     )
-                    :
+                  :
                     optional.of(timestamp(int(timestamp(0)+duration(string(int(body.items[0].eventTime))+"ms"))).format("2006-01-02T15:04:05"))
                   )
-                  :
-                    state.?cursor.last_timestamp
+                :
+                  state.?cursor.last_timestamp
               }
             }
           )
@@ -95,7 +94,7 @@ program: |-
               "events": [],
               "rate_limited": debug("rate_limit_exceeded", bytes(resp.Body).decode_json().?fail[0].message.orValue("missing message")),
               "want_more": false,
-              "next_link": state.?next_link.orValue(""),
+              "next": state.?next,
               "api_token": state.api_token,
               "initial_interval": state.initial_interval,
               "batch_size": state.batch_size,
@@ -118,7 +117,7 @@ program: |-
                 },
               ],
               "want_more": false,
-              "next_link": state.?next_link.orValue(""),
+              "next": state.?next,
               "api_token": state.api_token,
               "initial_interval": state.initial_interval,
               "batch_size": state.batch_size,
