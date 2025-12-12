@@ -660,6 +660,30 @@ processors:
         pipeline:
           name: '{{ IngestPipeline "ecs_from_artifact" }}'
 
+  #####################################
+  # ECS indicator fields from pattern #
+  #####################################
+
+  # If there are no observables, get the indicator from the pattern
+  - split:
+      tag: split_pattern_if_no_observables
+      if: ctx.opencti?.indicator?.observables_count == 0 && ctx.opencti?.indicator?.pattern != null
+      field: opencti.indicator.pattern
+      separator: '\s+AND\s+|\s+OR\s+'
+      target_field: opencti.indicator._patterns
+      ignore_missing: true
+
+  - foreach:
+      field: opencti.indicator._patterns
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "ecs_from_pattern" }}'
+
+  - remove:
+      field: opencti.indicator._patterns
+      ignore_missing: true
+
   ######################
   # ECS related fields #
   ######################
@@ -676,18 +700,34 @@ processors:
               field: related.hash
               value: "{{{_ingest._value}}}"
               allow_duplicates: false
-  - foreach:
-      field: opencti.observable.file
-      ignore_missing: true
-      processor:
-        foreach:
-          field: _ingest._value.hash
-          ignore_missing: true
-          processor:
-            append:
-              field: related.hash
-              value: "{{{_ingest._value}}}"
-              allow_duplicates: false
+  - script:
+      description: Extract file hashes to related.hash, handling both array and single object cases
+      lang: painless
+      source: |
+        if (ctx.threat?.indicator?.file != null) {
+          def files = ctx.threat.indicator.file instanceof List ? ctx.threat.indicator.file : [ctx.threat.indicator.file];
+          ctx.related = ctx.related ?: [:];
+          ctx.related.hash = ctx.related.hash ?: [];
+          def hashSet = new HashSet(ctx.related.hash);
+          for (def file : files) {
+            if (file?.hash != null) {
+              if (file.hash.md5 != null) {
+                hashSet.add(file.hash.md5);
+              }
+              if (file.hash.sha1 != null) {
+                hashSet.add(file.hash.sha1);
+              }
+              if (file.hash.sha256 != null) {
+                hashSet.add(file.hash.sha256);
+              }
+            }
+          }
+          if (hashSet.size() > 0) {
+            ctx.related.hash = new ArrayList(hashSet);
+          } else {
+            ctx.related.remove('hash');
+          }
+        }
   - foreach:
       field: opencti.observable.artifact
       ignore_missing: true
@@ -740,12 +780,12 @@ processors:
       if: ctx.threat.indicator.ip instanceof List
 
   - foreach:
-      field: opencti.observable.email_addr
+      field: threat.indicator.email.address
       ignore_missing: true
       processor:
         append:
           field: related.user
-          value: "{{{_ingest._value.value}}}"
+          value: "{{{_ingest._value}}}"
           allow_duplicates: false
   - foreach:
       field: threat.indicator.url
@@ -812,6 +852,7 @@ processors:
 
   - script:
       description: Restructure some lists of maps to avoid non-leaf lists
+      tag: merge_maps
       lang: painless
       source: |
         def mergeMaps(Map map1, Map map2) {
@@ -846,51 +887,29 @@ processors:
         }
         if (ctx.opencti?.containsKey('observable') == true) {
           for (def key : ctx.opencti.observable.keySet()) {
-            ctx.opencti.observable[key] = mergeListOfMaps(ctx.opencti.observable[key]);
+            if (ctx.opencti.observable[key] instanceof List) {
+              ctx.opencti.observable[key] = mergeListOfMaps(ctx.opencti.observable[key]);
+            }
           }
         }
-        if (ctx.opencti?.indicator?.containsKey('external_reference') == true) {
+        if (ctx.opencti?.indicator?.containsKey('external_reference') == true && ctx.opencti.indicator.external_reference instanceof List) {
           ctx.opencti.indicator.external_reference = mergeListOfMaps(ctx.opencti.indicator.external_reference);
         }
-        if (ctx.threat.indicator.containsKey('file')) {
+        if (ctx.threat.indicator.containsKey('file') && ctx.threat.indicator.file instanceof List) {
           ctx.threat.indicator.file = mergeListOfMaps(ctx.threat.indicator.file);
         }
-        if (ctx.threat.indicator.containsKey('as')) {
+        if (ctx.threat.indicator.containsKey('as') && ctx.threat.indicator.as instanceof List) {
           ctx.threat.indicator.as = mergeListOfMaps(ctx.threat.indicator.as);
         }
-        if (ctx.threat.indicator.containsKey('url')) {
+        if (ctx.threat.indicator.containsKey('url') && ctx.threat.indicator.url instanceof List) {
           ctx.threat.indicator.url = mergeListOfMaps(ctx.threat.indicator.url);
         }
-        if (ctx.threat.indicator.containsKey('registry')) {
+        if (ctx.threat.indicator.containsKey('registry') && ctx.threat.indicator.registry instanceof List) {
           ctx.threat.indicator.registry = mergeListOfMaps(ctx.threat.indicator.registry);
         }
-        if (ctx.threat.indicator.containsKey('x509')) {
+        if (ctx.threat.indicator.containsKey('x509') && ctx.threat.indicator.x509 instanceof List) {
           ctx.threat.indicator.x509 = mergeListOfMaps(ctx.threat.indicator.x509);
         }
-
-  #####################################
-  # ECS indicator fields from pattern #
-  #####################################
-
-  # If there are no observables, get the indicator from the pattern
-  - split:
-      tag: split_pattern_if_no_observables
-      if: ctx.opencti?.indicator?.observables_count == 0 && ctx.opencti?.indicator?.pattern != null
-      field: opencti.indicator.pattern
-      separator: '\s+AND\s+|\s+OR\s+'
-      target_field: opencti.indicator._patterns
-      ignore_missing: true
-
-  - foreach:
-      field: opencti.indicator._patterns
-      ignore_missing: true
-      processor:
-        pipeline:
-          name: '{{ IngestPipeline "ecs_from_pattern" }}'
-
-  - remove:
-      field: opencti.indicator._patterns
-      ignore_missing: true
 
   ###################################
   # Fingerprint for deduplication   #

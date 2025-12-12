@@ -1,5 +1,5 @@
 ---
-description: Build ECS indicatorfields from an STIX pattern
+description: Build ECS indicator fields from an STIX pattern
 processors:
 
   - grok:
@@ -104,3 +104,25 @@ processors:
   - remove:
       field: _tmp_registry
       ignore_missing: true
+
+  # Convert string fields to arrays for consistency with observable-based extraction
+  - script:
+      tag: convert_strings_to_arrays
+      description: Convert string fields to single-element arrays
+      lang: painless
+      source: |
+        if (ctx.threat?.indicator?.file?.name != null && !(ctx.threat.indicator.file.name instanceof List)) {
+          ctx.threat.indicator.file.name = [ctx.threat.indicator.file.name];
+        }
+        if (ctx.threat?.indicator?.file?.extension != null && !(ctx.threat.indicator.file.extension instanceof List)) {
+          ctx.threat.indicator.file.extension = [ctx.threat.indicator.file.extension];
+        }
+        if (ctx.threat?.indicator?.email?.address != null && !(ctx.threat.indicator.email.address instanceof List)) {
+          ctx.threat.indicator.email.address = [ctx.threat.indicator.email.address];
+        }
+        if (ctx.threat?.indicator?.ip != null && !(ctx.threat.indicator.ip instanceof List)) {
+          ctx.threat.indicator.ip = [ctx.threat.indicator.ip];
+        }
+        if (ctx.threat?.indicator?.url != null && !(ctx.threat.indicator.url instanceof List)) {
+          ctx.threat.indicator.url = [ctx.threat.indicator.url];
+        }
