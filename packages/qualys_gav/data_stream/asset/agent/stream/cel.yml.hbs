@@ -40,7 +40,7 @@ program: |
         base_url + "/auth",
         "application/x-www-form-urlencoded",
         {"username":[state.username],"password":[state.password]}.format_query()
-      ).do_request().as(resp, resp.StatusCode == 201 ?
+      ).do_request().as(resp, (resp.StatusCode == 201 ?
         {
           "access_token": string(resp.Body),
           // Include 30s grace period to manage session expiry.
@@ -62,7 +62,43 @@ program: |
           },
           "want_more": false,
         }
-      )
+      ).with(
+        resp.Header.transformMapEntry(k, v,
+          // Canonicalise header keys to match rate_limit conventions.
+          // -Limit, -Remaining and -Reset are magic suffixes in rate_limit.
+          {
+            k.has_suffix("-Limit") ?
+              (k.trim_suffix("-Limit").to_lower() + "-Limit")
+            : k.has_suffix("-Remaining") ?
+              (k.trim_suffix("-Remaining").to_lower() + "-Remaining")
+            :
+              k.to_lower(): v,
+          }
+        ).as(headers,
+          // Calculate rate limits.
+          rate_limit(
+            headers.with(
+              {
+                "x-ratelimit-Reset": [string(headers[?"x-ratelimit-towait-sec"][0].orValue("3600"))],
+              }
+            ),
+            "x-ratelimit",
+            false,
+            true,
+            duration(string(headers[?"x-ratelimit-window-sec"][0].orValue("3600")) + "s"),
+            0
+          )
+        ).as(rate_headers, rate_headers.with({
+          // Work around inf detection in input.
+          // If the headers are missing or rate_limit failed, rate and
+          // next may be missing. So use optional types.
+          ?"rate": rate_headers.?rate == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
+          ?"next": rate_headers.?next == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
+        })).as(limit, {
+          "header": resp.Header,
+          "rate_limit": limit,
+        })
+      ))
     ).as(token,
       has(token.events) ? token : // Exit early due to failure.
         request(
@@ -70,14 +106,14 @@ program: |
           base_url + "/rest/2.0/search/am/asset?" + {
             "pageSize": [string(state.batch_size)],
             "lastSeenAssetId": [string(int(state.asset_id))],
-            ?"exclude_fields": (state.?exclude_fields.orValue("") != "") ? optional.of([string(state.exclude_fields)]) : optional.none(),
-            ?"include_fields": (state.?include_fields.orValue("") != "") ? optional.of([string(state.include_fields)]) : optional.none(),
+            ?"excludeFields": (state.?exclude_fields.orValue("") != "") ? optional.of([string(state.exclude_fields)]) : optional.none(),
+            ?"includeFields": (state.?include_fields.orValue("") != "") ? optional.of([string(state.include_fields)]) : optional.none(),
           }.format_query()
         ).with({
           "Header":{
             "Authorization": ["Bearer " + token.access_token],
           }
-        }).do_request().as(resp, resp.StatusCode == 200 ?
+        }).do_request().as(resp, (resp.StatusCode == 200 ?
           resp.Body.decode_json().as(body, {
             "events": body.assetListData.asset.map(e,{
               "message": e.encode_json(),
@@ -113,7 +149,43 @@ program: |
               },
               "want_more": false,
             }
-        )
+        ).with(
+          resp.Header.transformMapEntry(k, v,
+            // Canonicalise header keys to match rate_limit conventions.
+            // -Limit, -Remaining and -Reset are magic suffixes in rate_limit.
+            {
+              k.has_suffix("-Limit") ?
+                (k.trim_suffix("-Limit").to_lower() + "-Limit")
+              : k.has_suffix("-Remaining") ?
+                (k.trim_suffix("-Remaining").to_lower() + "-Remaining")
+              :
+                k.to_lower(): v,
+            }
+          ).as(headers,
+            // Calculate rate limits.
+            rate_limit(
+              headers.with(
+                {
+                  "x-ratelimit-Reset": [string(headers[?"x-ratelimit-towait-sec"][0].orValue("3600"))],
+                }
+              ),
+              "x-ratelimit",
+              false,
+              true,
+              duration(string(headers[?"x-ratelimit-window-sec"][0].orValue("3600")) + "s"),
+              0
+            )
+          ).as(rate_headers, rate_headers.with({
+            // Work around inf detection in input.
+            // If the headers are missing or rate_limit failed, rate and
+            // next may be missing. So use optional types.
+            ?"rate": rate_headers.?rate == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
+            ?"next": rate_headers.?next == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
+          })).as(limit, {
+            "header": resp.Header,
+            "rate_limit": limit,
+          })
+        ))
     )
   ))
 tags:

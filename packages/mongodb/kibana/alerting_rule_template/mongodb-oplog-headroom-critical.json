@@ -1,0 +1,31 @@
+{
+    "id": "mongodb-oplog-headroom-critical",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[MongoDB] Oplog headroom critically low",
+        "tags": [
+            "MongoDB"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when oplog headroom drops below 15 minutes, risking replication stalls.\n// Guards against negative values and groups by replica set name.\nFROM metrics-mongodb.replstatus-*\n| STATS oplog_headroom_min=MIN(mongodb.replstatus.headroom.min) BY mongodb.replstatus.set_name\n| WHERE oplog_headroom_min IS NOT NULL\n| EVAL oplog_headroom_min = CASE(oplog_headroom_min >= 0, oplog_headroom_min, 0)\n| EVAL oplog_headroom_minutes = TO_DOUBLE(oplog_headroom_min) / 60.0\n| WHERE oplog_headroom_minutes < 15"
+            },
+            "groupBy": "row",
+            "termSize": 5,
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

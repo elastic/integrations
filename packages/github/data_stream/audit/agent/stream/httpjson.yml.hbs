@@ -49,7 +49,7 @@ request.rate_limit.remaining: '[[ .last_response.header.Get "X-RateLimit-Remaini
 response.pagination:
   - set:
       target: url.value
-      value: '[[ getRFC5988Link "next" .last_response.header.Link ]]'
+      value: '[[ if index .last_response.header "Link" ]][[ getRFC5988Link "next" .last_response.header.Link ]][[ end ]]'
       fail_on_template_error: true
       do_not_log_failure: true
 
@@ -57,7 +57,7 @@ cursor:
   last_timestamp:
     value: >-
       [[- if index .last_event "@timestamp" -]]
-        [[- .last_event.Get "@timestamp" -]]
+        [[- index .last_event "@timestamp" -]]
       [[- else -]]
         [[- .last_event.created_at -]]
       [[- end -]]
