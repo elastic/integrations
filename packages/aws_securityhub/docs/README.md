@@ -1535,9 +1535,9 @@ An example event for `finding` looks as following:
 {
     "@timestamp": "2025-09-19T09:17:19.594Z",
     "agent": {
-        "ephemeral_id": "c72af502-af2a-4135-af7c-29cf1bd5be15",
-        "id": "590bf28e-43ad-4d6d-8c89-acc0ca461735",
-        "name": "elastic-agent-79974",
+        "ephemeral_id": "c45f4e44-9ac2-40ea-a80c-30f7fe97c1e8",
+        "id": "39f82ac2-bf82-49f2-bb71-600abb0389ad",
+        "name": "elastic-agent-45310",
         "type": "filebeat",
         "version": "9.3.0"
     },
@@ -1630,14 +1630,14 @@ An example event for `finding` looks as following:
     },
     "data_stream": {
         "dataset": "aws_securityhub.finding",
-        "namespace": "74883",
+        "namespace": "89285",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "590bf28e-43ad-4d6d-8c89-acc0ca461735",
+        "id": "39f82ac2-bf82-49f2-bb71-600abb0389ad",
         "snapshot": true,
         "version": "9.3.0"
     },
@@ -1647,7 +1647,7 @@ An example event for `finding` looks as following:
         "created": "2025-09-19T09:17:19.594Z",
         "dataset": "aws_securityhub.finding",
         "id": "arn:aws:securityhub:us-east-2:123456789012:security-control/SQS.3/finding/7abcdef4-abcd-1234-5678-501234567894",
-        "ingested": "2025-12-10T04:19:11Z",
+        "ingested": "2025-12-12T06:11:20Z",
         "kind": "state",
         "module": "aws_securityhub",
         "original": "{\"activity_id\":1,\"activity_name\":\"Create\",\"category_name\":\"Findings\",\"category_uid\":2,\"class_name\":\"Compliance Finding\",\"class_uid\":2003,\"cloud\":{\"account\":{\"uid\":\"123456789012\"},\"provider\":\"AWS\",\"region\":\"us-east-2\"},\"compliance\":{\"control\":\"SQS.3\",\"standards\":[\"standards/aws-foundational-security-best-practices/v/1.0.0\"],\"status\":\"Pass\",\"status_id\":1},\"finding_info\":{\"analytic\":{\"category\":\"AWS::Config::ConfigRule\",\"name\":\"securityhub-sqs-queue-no-public-access-abcdef12\",\"type\":\"Rule\",\"type_id\":1},\"created_time\":1758273439594,\"created_time_dt\":\"2025-09-19T09:17:19.594Z\",\"desc\":\"This controls checks whether an Amazon SQS access policy allows public access to an SQS queue. The control fails if an SQS access policy allows public access to the queue.\",\"first_seen_time\":1758273437503,\"first_seen_time_dt\":\"2025-09-19T09:17:17.503Z\",\"last_seen_time\":1758273437503,\"last_seen_time_dt\":\"2025-09-19T09:17:17.503Z\",\"modified_time\":1758273439594,\"modified_time_dt\":\"2025-09-19T09:17:19.594Z\",\"title\":\"SQS queue access policies should not allow public access\",\"types\":[\"Software and Configuration Checks/Industry and Regulatory Standards\",\"Posture Management\"],\"uid\":\"arn:aws:securityhub:us-east-2:123456789012:security-control/SQS.3/finding/7abcdef4-abcd-1234-5678-501234567894\"},\"metadata\":{\"product\":{\"name\":\"Security Hub\",\"uid\":\"arn:aws:securityhub:us-east-2::productv2/aws/securityhub\",\"vendor_name\":\"AWS\"},\"profiles\":[\"cloud\",\"datetime\"],\"uid\":\"d1bc4b01234567890123456789abcdefabcdefabcdefabcdef123456\",\"version\":\"1.6.0\"},\"remediation\":{\"desc\":\"For information on how to correct this issue, consult the AWS Security Hub controls documentation.\",\"references\":[\"https://docs.aws.amazon.com/console/securityhub/SQS.3/remediation\"]},\"resources\":[{\"cloud_partition\":\"aws\",\"owner\":{\"account\":{\"uid\":\"123456789012\"}},\"region\":\"us-east-2\",\"type\":\"AWS::SQS::Queue\",\"uid\":\"https://sqs.us-east-2.amazonaws.com/123456789012/securityhubfinding\",\"uid_alt\":\"arn:aws:sqs:us-east-2:123456789012:securityhubfinding\"}],\"severity\":\"Informational\",\"severity_id\":1,\"status\":\"Resolved\",\"status_id\":4,\"time\":1758273439594,\"time_dt\":\"2025-09-19T09:17:19.594Z\",\"type_name\":\"Compliance Finding: Create\",\"type_uid\":200301,\"vendor_attributes\":{\"severity\":\"Informational\",\"severity_id\":1}}",
@@ -1682,7 +1682,7 @@ An example event for `finding` looks as following:
         "id": "SQS.3",
         "name": "SQS queue access policies should not allow public access",
         "reference": "https://docs.aws.amazon.com/console/securityhub/SQS.3/remediation",
-        "remediation": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.\\r\\nhttps://docs.aws.amazon.com/console/securityhub/SQS.3/remediation"
+        "remediation": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.\nhttps://docs.aws.amazon.com/console/securityhub/SQS.3/remediation"
     },
     "tags": [
         "preserve_original_event",
