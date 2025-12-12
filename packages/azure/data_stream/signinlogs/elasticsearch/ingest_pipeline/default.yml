@@ -62,9 +62,17 @@ processors:
      description: 'Fallback to handle special cases for log category: use `created_date_time` as `time` if `time` is not already set.'
   - date:
       field: azure.signinlogs.time
-      formats:
-          - ISO8601
-          - "MM/dd/yyyy h:mm:ss a"
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
+        - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
       field: azure.signinlogs.time
   - rename:

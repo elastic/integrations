@@ -37,9 +37,17 @@ processors:
       field: azure.identityprotection.time
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
+        - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
         - ISO8601
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
       field: azure.identityprotection.time
       ignore_missing: true
@@ -174,9 +182,17 @@ processors:
       target_field: azure.identityprotection.properties.last_updated_datetime
       ignore_failure: true
       description: "Date and time when the risk detection was last updated."
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
+      - "M/d/yyyy h:mm:ss a XXX"
+      - "M/d/yyyy h:mm:ss a"
+      - "M/d/yyyy H:mm:ss"
   - remove:
       field: azure.identityprotection.properties.lastUpdatedDateTime
       ignore_missing: true
@@ -185,9 +201,17 @@ processors:
       target_field: azure.identityprotection.properties.risk_last_updated_datetime
       ignore_failure: true
       description: "The date and time that the risky user was last updated."
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
+      - "M/d/yyyy h:mm:ss a XXX"
+      - "M/d/yyyy h:mm:ss a"
+      - "M/d/yyyy H:mm:ss"
   - remove:
       field: azure.identityprotection.properties.riskLastUpdatedDateTime
       ignore_missing: true
@@ -263,9 +287,17 @@ processors:
       field: azure.identityprotection.properties.activityDateTime
       target_field: azure.identityprotection.properties.activity_datetime
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
       - ISO8601
-      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
+      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
+      - "M/d/yyyy h:mm:ss a XXX"
+      - "M/d/yyyy h:mm:ss a"
+      - "M/d/yyyy H:mm:ss"
   - remove:
       field: azure.identityprotection.properties.activityDateTime
       ignore_missing: true
@@ -274,9 +306,17 @@ processors:
       field: azure.identityprotection.properties.detectedDateTime
       target_field: azure.identityprotection.properties.detected_datetime
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
       - ISO8601
-      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
+      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
+      - "M/d/yyyy h:mm:ss a XXX"
+      - "M/d/yyyy h:mm:ss a"
+      - "M/d/yyyy H:mm:ss"
   - remove:
       field: azure.identityprotection.properties.detectedDateTime
       ignore_missing: true
@@ -307,7 +347,7 @@ processors:
   - remove:
       field: azure.identityprotection.properties.additionalInfo
       ignore_missing: true
-      if: ctx?.azure.identityprotection.properties.additional_info != null
+      if: ctx?.azure.identityprotection.properties?.additional_info != null
   #
   # Undocumented fields
   # These fields are not documented in the following sources:
