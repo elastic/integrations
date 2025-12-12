@@ -2,8 +2,7 @@
 
 ## Overview
 
-The Microsoft Office 365 integration in Elastic collects activity data using the [Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference)
-. This data enables monitoring, searching, and analyzing user and admin actions across Microsoft Office 365, including activity from services like SharePoint and Exchange.
+The Microsoft Office 365 integration for Elastic collects activity data using the [Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference). This data enables monitoring, searching, and analyzing user and admin actions across Microsoft Office 365, including activity from services like SharePoint and Exchange.
 
 ### How it works
 
