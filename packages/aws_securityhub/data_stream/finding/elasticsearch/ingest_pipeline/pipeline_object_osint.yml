@@ -1,0 +1,996 @@
+---
+description: Pipeline for processing OSINT object.
+# OSINT object docs: https://schema.ocsf.io/1.5.0/objects/osint
+processors:
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.answers
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.ttl
+              tag: convert_osint_answers_ttl_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.ttl
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.answers
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.flag_ids
+              tag: convert_osint_answers_flag_ids_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.answers
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.packet_uid
+              tag: convert_osint_answers_packet_uid_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.autonomous_system.number
+          tag: convert_osint_autonomous_system_number_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.autonomous_system.number
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.confidence_id
+          tag: convert_osint_confidence_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_time_dt
+          tag: date_osint_created_time_dt
+          target_field: _ingest._value.created_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.created_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_time
+          tag: date_osint_created_time
+          target_field: _ingest._value.created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.created_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.creator.has_mfa
+          tag: convert_osint_creator_has_mfa_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.creator.has_mfa
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.creator.risk_level_id
+          tag: convert_osint_creator_risk_level_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.creator.risk_score
+          tag: convert_osint_creator_risk_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.creator.risk_score
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.creator.type_id
+          tag: convert_osint_creator_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.detection_pattern_type_id
+          tag: convert_osint_detection_pattern_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.email.is_read
+          tag: convert_osint_email_is_read_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.email.is_read
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.email.size
+          tag: convert_osint_email_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.email.size
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.x_originating_ip
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_osint_x_originating_ip_to_ip
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.expiration_time_dt
+          tag: date_osint_expiration_time_dt
+          target_field: _ingest._value.expiration_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.expiration_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.expiration_time
+          tag: date_osint_expiration_time
+          target_field: _ingest._value.expiration_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.expiration_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.file.accessed_time_dt
+          tag: date_osint_file_accessed_time_dt
+          target_field: _ingest._value.file.accessed_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.file.accessed_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.file.accessed_time
+          tag: date_osint_file_accessed_time
+          target_field: _ingest._value.file.accessed_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.file.accessed_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.file.attributes
+          tag: convert_osint_file_attributes_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.file.attributes
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.file.confidentiality_id
+          tag: convert_osint_file_confidentiality_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.file.created_time_dt
+          tag: date_osint_file_created_time_dt
+          target_field: _ingest._value.file.created_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.file.created_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.file.created_time
+          tag: date_osint_file_created_time
+          target_field: _ingest._value.file.created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.file.created_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.file.drive_type_id
+          tag: convert_osint_file_drive_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.file.is_deleted
+          tag: convert_osint_file_is_deleted_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.file.is_deleted
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.file.is_encrypted
+          tag: convert_osint_file_is_encrypted_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.file.is_encrypted
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.file.is_system
+          tag: convert_osint_file_is_system_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.file.is_system
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.file.modified_time_dt
+          tag: date_osint_file_modified_time_dt
+          target_field: _ingest._value.file.modified_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.file.modified_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.file.modified_time
+          tag: date_osint_file_modified_time
+          target_field: _ingest._value.file.modified_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.file.modified_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.file.type_id
+          tag: convert_osint_file_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.file.size
+          tag: convert_osint_file_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.file.size
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.kill_chain
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.phase_id
+              tag: convert_osint_kill_chain_phase_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.location.is_on_premises
+          tag: convert_osint_location_is_on_premises_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.location.is_on_premises
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.location.lat
+          tag: convert_osint_location_lat_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.location.lat
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.location.long
+          tag: convert_osint_location_long_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.location.long
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.malware
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.classification_ids
+              tag: convert_osint_malware_classification_ids_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.malware
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.num_infected
+              tag: convert_osint_malware_num_infected_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.num_infected
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.malware
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.severity_id
+              tag: convert_osint_malware_severity_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.modified_time_dt
+          tag: date_osint_modified_time_dt
+          target_field: _ingest._value.modified_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.modified_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.modified_time
+          tag: date_osint_modified_time
+          target_field: _ingest._value.modified_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.modified_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.related_analytics
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.type_id
+              tag: convert_osint_related_analytics_type_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.reputation.base_score
+          tag: convert_osint_reputation_base_score_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.reputation.base_score
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.reputation.score_id
+          tag: convert_osint_reputation_score_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.risk_score
+          tag: convert_osint_risk_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.risk_score
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.script.type_id
+          tag: convert_osint_script_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.severity_id
+          tag: convert_osint_severity_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.signatures
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.algorithm_id
+              tag: convert_osint_signatures_algorithm_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.signatures
+          ignore_missing: true
+          processor:
+            date:
+              field: _ingest._value.created_time_dt
+              tag: date_osint_signatures_created_time_dt
+              target_field: _ingest._value.created_time_dt
+              formats:
+                - ISO8601
+                - UNIX_MS
+                - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+              on_failure:
+                - remove:
+                    field: _ingest._value.created_time_dt
+                    ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.signatures
+          ignore_missing: true
+          processor:
+            date:
+              field: _ingest._value.created_time
+              tag: date_osint_signatures_created_time
+              target_field: _ingest._value.created_time
+              formats:
+                - UNIX_MS
+              on_failure:
+                - remove:
+                    field: _ingest._value.created_time
+                    ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.signatures
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.state_id
+              tag: convert_osint_signatures_state_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.threat_actor.type_id
+          tag: convert_osint_threat_actor_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.type_id
+          tag: convert_osint_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.uploaded_time_dt
+          tag: date_osint_uploaded_time_dt
+          target_field: _ingest._value.uploaded_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.uploaded_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.uploaded_time
+          tag: date_osint_uploaded_time
+          target_field: _ingest._value.uploaded_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.uploaded_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.vulnerabilities
+          ignore_missing: true
+          processor:
+            date:
+              field: _ingest._value.exploit_last_seen_time_dt
+              tag: date_osint_vulnerabilities_exploit_last_seen_time_dt
+              target_field: _ingest._value.exploit_last_seen_time_dt
+              formats:
+                - ISO8601
+                - UNIX_MS
+                - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+              on_failure:
+                - remove:
+                    field: _ingest._value.exploit_last_seen_time_dt
+                    ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.vulnerabilities
+          ignore_missing: true
+          processor:
+            date:
+              field: _ingest._value.exploit_last_seen_time
+              tag: date_osint_vulnerabilities_exploit_last_seen_time
+              target_field: _ingest._value.exploit_last_seen_time
+              formats:
+                - UNIX_MS
+              on_failure:
+                - remove:
+                    field: _ingest._value.exploit_last_seen_time
+                    ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.vulnerabilities
+          ignore_missing: true
+          processor:
+            date:
+              field: _ingest._value.first_seen_time_dt
+              tag: date_osint_vulnerabilities_first_seen_time_dt
+              target_field: _ingest._value.first_seen_time_dt
+              formats:
+                - ISO8601
+                - UNIX_MS
+                - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+              on_failure:
+                - remove:
+                    field: _ingest._value.first_seen_time_dt
+                    ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.vulnerabilities
+          ignore_missing: true
+          processor:
+            date:
+              field: _ingest._value.first_seen_time
+              tag: date_osint_vulnerabilities_first_seen_time
+              target_field: _ingest._value.first_seen_time
+              formats:
+                - UNIX_MS
+              on_failure:
+                - remove:
+                    field: _ingest._value.first_seen_time
+                    ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.vulnerabilities
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.fix_coverage_id
+              tag: convert_osint_vulnerabilities_fix_coverage_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.vulnerabilities
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.is_exploit_available
+              tag: convert_osint_vulnerabilities_is_exploit_available_to_boolean
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.is_exploit_available
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.vulnerabilities
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.is_fix_available
+              tag: convert_osint_vulnerabilities_is_fix_available_to_boolean
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.is_fix_available
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.vulnerabilities
+          ignore_missing: true
+          processor:
+            date:
+              field: _ingest._value.last_seen_time_dt
+              tag: date_osint_vulnerabilities_last_seen_time_dt
+              target_field: _ingest._value.last_seen_time_dt
+              formats:
+                - ISO8601
+                - UNIX_MS
+                - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+              on_failure:
+                - remove:
+                    field: _ingest._value.last_seen_time_dt
+                    ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.vulnerabilities
+          ignore_missing: true
+          processor:
+            date:
+              field: _ingest._value.last_seen_time
+              tag: date_osint_vulnerabilities_last_seen_time
+              target_field: _ingest._value.last_seen_time
+              formats:
+                - UNIX_MS
+              on_failure:
+                - remove:
+                    field: _ingest._value.last_seen_time
+                    ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.whois.created_time_dt
+          tag: date_osint_whois_created_time_dt
+          target_field: _ingest._value.whois.created_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.whois.created_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.whois.created_time
+          tag: date_osint_whois_created_time
+          target_field: _ingest._value.whois.created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.whois.created_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        convert:
+          field: _ingest._value.whois.dnssec_status_id
+          tag: convert_osint_whois_dnssec_status_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.whois.last_seen_time_dt
+          tag: date_osint_whois_last_seen_time_dt
+          target_field: _ingest._value.whois.last_seen_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.whois.last_seen_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.osint
+      if: ctx.aws_securityhub?.finding?.osint instanceof List
+      processor:
+        date:
+          field: _ingest._value.whois.last_seen_time
+          tag: date_osint_whois_last_seen_time
+          target_field: _ingest._value.whois.last_seen_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.whois.last_seen_time
+                ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

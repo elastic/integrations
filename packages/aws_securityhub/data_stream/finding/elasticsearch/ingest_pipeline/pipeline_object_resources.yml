@@ -1,0 +1,342 @@
+---
+description: Pipeline for processing Resource object.
+# Resource Details object docs: https://schema.ocsf.io/1.5.0/objects/resource_details
+processors:
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.agent_list
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.type_id
+              tag: convert_resources_agent_list_type_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_time_dt
+          tag: date_resources_created_time_dt
+          target_field: _ingest._value.created_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.created_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        date:
+          field: _ingest._value.created_time
+          tag: date_resources_created_time
+          target_field: _ingest._value.created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.created_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.data_classifications
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.category_id
+              tag: convert_resources_data_classifications_category_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.data_classifications
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.confidentiality_id
+              tag: convert_resources_data_classifications_confidentiality_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.data_classifications
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.size
+              tag: convert_resources_data_classifications_size_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.size
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.data_classifications
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.status_id
+              tag: convert_resources_data_classifications_status_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.data_classifications
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.total
+              tag: convert_resources_data_classifications_total_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.total
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.data.awsEc2InstanceDetails.ipV4Addresses
+          tag: convert_resources_data_awsEc2InstanceDetails_ipV4Addresses_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.data.awsEc2InstanceDetails.ipV4Addresses
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.data.awsEc2InstanceDetails.ipV6Addresses
+          tag: convert_resources_data_awsEc2InstanceDetails_ipV6Addresses_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.data.awsEc2InstanceDetails.ipV6Addresses
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        date:
+          field: _ingest._value.data.awsEc2InstanceDetails.launchedAt
+          tag: date_resources_data_awsEc2InstanceDetails_launchedAt
+          target_field: _ingest._value.data.awsEc2InstanceDetails.launchedAt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.data.awsEc2InstanceDetails.launchedAt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        date:
+          field: _ingest._value.data.awsLambdaFunctionDetails.lastModifiedAt
+          tag: date_resources_data_awsLambdaFunctionDetails_lastModifiedAt
+          target_field: _ingest._value.data.awsLambdaFunctionDetails.lastModifiedAt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.data.awsLambdaFunctionDetails.lastModifiedAt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.ip
+          tag: convert_resources_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_backed_up
+          tag: convert_resources_is_backed_up_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_backed_up
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        date:
+          field: _ingest._value.modified_time_dt
+          tag: date_resources_modified_time_dt
+          target_field: _ingest._value.modified_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.modified_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        date:
+          field: _ingest._value.modified_time
+          tag: date_resources_modified_time
+          target_field: _ingest._value.modified_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.modified_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.owner.has_mfa
+          tag: convert_resources_owner_has_mfa_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.owner.has_mfa
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.owner.risk_level_id
+          tag: convert_resources_owner_risk_level_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.owner.type_id
+          tag: convert_resources_owner_type_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.owner.risk_score
+          tag: convert_resources_owner_risk_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.owner.risk_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.resource_relationship.is_directed
+          tag: convert_resources_resource_relationship_is_directed_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.resource_relationship.is_directed
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.resources
+      if: ctx.aws_securityhub?.finding?.resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.resource_relationship.query_language_id
+          tag: convert_resources_resource_relationship_query_language_id_to_string
+          type: string
+          ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
