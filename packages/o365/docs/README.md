@@ -1,7 +1,9 @@
 # Microsoft Office 365 Integration
 
 ## Overview
-This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/previous-versions/office/office-365-api/).
+
+The Microsoft Office 365 integration in Elastic collects activity data using the [Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference)
+. This data enables monitoring, searching, and analyzing user and admin actions across Microsoft Office 365, including activity from services like SharePoint and Exchange.
 
 ### How it works
 
@@ -23,7 +25,7 @@ For detailed information on the supported record types within these workloads, p
 
 This integration collects log messages of the following types:
 
-- `Audit`: Uses the [Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference) to retrieve audit messages from Office 365 and Azure AD activity logs. These are the same logs that are available under Audit Log Search in the Microsoft Purview portal.
+- `Audit`: Uses the [Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference) to retrieve audit messages from Office 365 and Azure AD activity logs. These are the same logs that are available under [Audit Log Search](https://learn.microsoft.com/en-us/purview/audit-search) in the Microsoft Purview portal.
 
 ### Supported use cases
 
@@ -585,7 +587,7 @@ An example event for `audit` looks as following:
 
 These inputs are used in this integration:
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
-- [o365-module (DEPRECATED)](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-module-o365)
+- [o365audit (DEPRECATED)](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-o365audit)
 
 ### API usage
 
