@@ -13,7 +13,7 @@
             "timeWindowSize": 10,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert triggers when any country generated requests exceed a threshold (e.g. > 1000 in 5 minutes)\n// You can adjust the threshold value by modifying the req_count in the WHERE clause.\nFROM logs-aws.waf.otel-default\n| WHERE @timestamp > NOW() - 5m\n| STATS req_count = COUNT() BY geo.country.iso_code\n| WHERE req_count > 1000\n| SORT req_count DESC"
+                "esql": "// Alert triggers when any country generated requests exceed a threshold (e.g. > 1000 in 10 minutes)\n// You can adjust the threshold value by modifying the req_count in the WHERE clause.\nFROM logs-aws.waf.otel-default\n| WHERE @timestamp > NOW() - 10m\n| STATS req_count = COUNT() BY geo.country.iso_code\n| WHERE req_count > 1000\n| SORT req_count DESC"
             },
             "groupBy": "row",
             "timeField": "@timestamp"
