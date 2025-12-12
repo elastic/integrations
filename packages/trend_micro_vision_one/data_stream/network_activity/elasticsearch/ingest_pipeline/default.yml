@@ -1,0 +1,659 @@
+---
+description: Pipeline for processing network activity logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.eventTime
+        - json.eventId
+      tag: fingerprint_network_activity
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.application
+      tag: rename_application
+      target_field: trend_micro_vision_one.network_activity.application
+      ignore_missing: true
+  - rename:
+      field: json.companyName
+      tag: rename_company_name
+      target_field: trend_micro_vision_one.network_activity.company_name
+      ignore_missing: true
+  - rename:
+      field: json.customerId
+      tag: rename_customer_id
+      target_field: trend_micro_vision_one.network_activity.customer.id
+      ignore_missing: true
+  - rename:
+      field: json.deviceGUID
+      tag: rename_device_guid
+      target_field: trend_micro_vision_one.network_activity.device.guid
+      ignore_missing: true
+  - rename:
+      field: json.endpointGuid
+      tag: rename_endpoint_guid
+      target_field: trend_micro_vision_one.network_activity.endpoint.guid
+      ignore_missing: true
+  - rename:
+      field: json.endpointHostName
+      tag: rename_endpoint_host_name
+      target_field: trend_micro_vision_one.network_activity.endpoint.host_name
+      ignore_missing: true
+  - rename:
+      field: json.eventName
+      tag: rename_event_name
+      target_field: trend_micro_vision_one.network_activity.event.name
+      ignore_missing: true
+  - rename:
+      field: json.eventSubName
+      tag: rename_event_sub_name
+      target_field: trend_micro_vision_one.network_activity.event.sub_name
+      ignore_missing: true
+  - rename:
+      field: json.fileHash
+      tag: rename_file_hash
+      target_field: trend_micro_vision_one.network_activity.file.hash_sha1
+      ignore_missing: true
+  - rename:
+      field: json.fileHashSha256
+      tag: rename_file_hash_sha256
+      target_field: trend_micro_vision_one.network_activity.file.hash_sha256
+      ignore_missing: true
+  - rename:
+      field: json.fileName
+      tag: rename_file_name
+      target_field: trend_micro_vision_one.network_activity.file.name
+      ignore_missing: true
+  - rename:
+      field: json.fileType
+      tag: rename_file_type
+      target_field: trend_micro_vision_one.network_activity.file.type
+      ignore_missing: true
+  - rename:
+      field: json.malName
+      tag: rename_mal_name
+      target_field: trend_micro_vision_one.network_activity.malware.name
+      ignore_missing: true
+  - rename:
+      field: json.mimeType
+      tag: rename_mime_type
+      target_field: trend_micro_vision_one.network_activity.file.mime_type
+      ignore_missing: true
+  - rename:
+      field: json.objectId
+      tag: rename_object_id
+      target_field: trend_micro_vision_one.network_activity.object.id
+      ignore_missing: true
+  - rename:
+      field: json.osName
+      tag: rename_os_name
+      target_field: trend_micro_vision_one.network_activity.os.name
+      ignore_missing: true
+  - rename:
+      field: json.pname
+      tag: rename_pname
+      target_field: trend_micro_vision_one.network_activity.pname
+      ignore_missing: true
+  - rename:
+      field: json.policyUuid
+      tag: rename_policy_uuid
+      target_field: trend_micro_vision_one.network_activity.policy.uuid
+      ignore_missing: true
+  - rename:
+      field: json.profile
+      tag: rename_profile
+      target_field: trend_micro_vision_one.network_activity.profile
+      ignore_missing: true
+  - rename:
+      field: json.pver
+      tag: rename_pver
+      target_field: trend_micro_vision_one.network_activity.pver
+      ignore_missing: true
+  - rename:
+      field: json.principalName
+      tag: rename_principal_name
+      target_field: trend_micro_vision_one.network_activity.user.principal_name
+      ignore_missing: true
+  - rename:
+      field: json.request
+      tag: rename_request
+      target_field: trend_micro_vision_one.network_activity.request.url
+      ignore_missing: true
+  - rename:
+      field: json.requestBase
+      tag: rename_request_base
+      target_field: trend_micro_vision_one.network_activity.request.base
+      ignore_missing: true
+  - rename:
+      field: json.requestMethod
+      tag: rename_request_method
+      target_field: trend_micro_vision_one.network_activity.request.method
+      ignore_missing: true
+  - rename:
+      field: json.requestMimeType
+      tag: rename_request_mime_type
+      target_field: trend_micro_vision_one.network_activity.request.mime_type
+      ignore_missing: true
+  - rename:
+      field: json.ruleName
+      tag: rename_rule_name
+      target_field: trend_micro_vision_one.network_activity.rule.name
+      ignore_missing: true
+  - rename:
+      field: json.ruleType
+      tag: rename_rule_type
+      target_field: trend_micro_vision_one.network_activity.rule.type
+      ignore_missing: true
+  - rename:
+      field: json.ruleUuid
+      tag: rename_rule_uuid
+      target_field: trend_micro_vision_one.network_activity.rule.uuid
+      ignore_missing: true
+  - rename:
+      field: json.sender
+      tag: rename_sender
+      target_field: trend_micro_vision_one.network_activity.sender
+      ignore_missing: true
+  - rename:
+      field: json.serverProtocol
+      tag: rename_server_protocol
+      target_field: trend_micro_vision_one.network_activity.server.protocol
+      ignore_missing: true
+  - rename:
+      field: json.serverTls
+      tag: rename_server_tls
+      target_field: trend_micro_vision_one.network_activity.server.tls
+      ignore_missing: true
+  - rename:
+      field: json.suid
+      tag: rename_suid
+      target_field: trend_micro_vision_one.network_activity.user.id
+      ignore_missing: true
+  - rename:
+      field: json.tenantGuid
+      tag: rename_tenant_guid
+      target_field: trend_micro_vision_one.network_activity.tenant.guid
+      ignore_missing: true
+  - rename:
+      field: json.userAgent
+      tag: rename_user_agent
+      target_field: trend_micro_vision_one.network_activity.user_agent
+      ignore_missing: true
+  - rename:
+      field: json.userDepartment
+      tag: rename_user_department
+      target_field: trend_micro_vision_one.network_activity.user.department
+      ignore_missing: true
+  - rename:
+      field: json.userDomain
+      tag: rename_user_domain
+      target_field: trend_micro_vision_one.network_activity.user.domain
+      ignore_missing: true
+  - convert:
+      field: json.act
+      tag: convert_act
+      target_field: trend_micro_vision_one.network_activity.act
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.detectionType
+      tag: convert_detection_type
+      target_field: trend_micro_vision_one.network_activity.detection.type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.dpt
+      tag: convert_dpt
+      target_field: trend_micro_vision_one.network_activity.destination.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.duration
+      tag: convert_duration
+      target_field: trend_micro_vision_one.network_activity.duration
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.fileSize
+      tag: convert_file_size
+      target_field: trend_micro_vision_one.network_activity.file.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.rt
+      tag: convert_rt
+      target_field: trend_micro_vision_one.network_activity.rt
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.score
+      tag: convert_score
+      target_field: trend_micro_vision_one.network_activity.score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.spt
+      tag: convert_spt
+      target_field: trend_micro_vision_one.network_activity.source.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.start
+      tag: convert_start
+      target_field: trend_micro_vision_one.network_activity.start
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.clientIp
+      tag: convert_client_ip
+      target_field: trend_micro_vision_one.network_activity.client.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.clientIp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.dst
+      tag: convert_dst
+      target_field: trend_micro_vision_one.network_activity.destination.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.dst != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.src
+      tag: convert_src
+      target_field: trend_micro_vision_one.network_activity.source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.src != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.eventTime
+      tag: date_event_time
+      target_field: trend_micro_vision_one.network_activity.event.time
+      formats:
+        - UNIX
+        - UNIX_MS
+      if: ctx.json?.eventTime != null && ctx.json.eventTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp
+      copy_from: trend_micro_vision_one.network_activity.event.time
+      ignore_empty_value: true
+  - set:
+      field: client.ip
+      tag: set_client_ip
+      copy_from: trend_micro_vision_one.network_activity.client.ip
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      tag: set_destination_ip
+      copy_from: trend_micro_vision_one.network_activity.destination.ip
+      ignore_empty_value: true
+  - set:
+      field: destination.port
+      tag: set_destination_port
+      copy_from: trend_micro_vision_one.network_activity.destination.port
+      ignore_empty_value: true
+  - set:
+      field: event.duration
+      tag: set_event_duration
+      copy_from: trend_micro_vision_one.network_activity.duration
+      ignore_empty_value: true
+  - script:
+      description: Convert duration from milliseconds to nanoseconds.
+      tag: script_duration_ms_to_ns
+      lang: painless
+      if: ctx.trend_micro_vision_one?.network_activity?.duration instanceof Number
+      source: >-
+        ctx.event.duration = ctx.trend_micro_vision_one.network_activity.duration * 1000000;
+  - set:
+      field: event.start
+      tag: set_event_start
+      copy_from: trend_micro_vision_one.network_activity.start
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1
+      copy_from: trend_micro_vision_one.network_activity.file.hash_sha1
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256
+      copy_from: trend_micro_vision_one.network_activity.file.hash_sha256
+      ignore_empty_value: true
+  - set:
+      field: file.mime_type
+      tag: set_file_mime_type
+      copy_from: trend_micro_vision_one.network_activity.file.mime_type
+      ignore_empty_value: true
+  - set:
+      field: file.name
+      tag: set_file_name
+      copy_from: trend_micro_vision_one.network_activity.file.name
+      ignore_empty_value: true
+  - set:
+      field: file.size
+      tag: set_file_size
+      copy_from: trend_micro_vision_one.network_activity.file.size
+      ignore_empty_value: true
+  - set:
+      field: file.type
+      tag: set_file_type
+      copy_from: trend_micro_vision_one.network_activity.file.type
+      ignore_empty_value: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: trend_micro_vision_one.network_activity.endpoint.host_name
+      ignore_empty_value: true
+  - set:
+      field: host.os.name
+      tag: set_host_os_name
+      copy_from: trend_micro_vision_one.network_activity.os.name
+      ignore_empty_value: true
+  - set:
+      field: http.request.method
+      tag: set_http_request_method
+      copy_from: trend_micro_vision_one.network_activity.request.method
+      ignore_empty_value: true
+  - set:
+      field: http.request.mime_type
+      tag: set_http_request_mime_type
+      copy_from: trend_micro_vision_one.network_activity.request.mime_type
+      ignore_empty_value: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol
+      copy_from: trend_micro_vision_one.network_activity.server.protocol
+      ignore_empty_value: true
+  - set:
+      field: organization.name
+      tag: set_organization_name
+      copy_from: trend_micro_vision_one.network_activity.company_name
+      ignore_empty_value: true
+  - set:
+      field: rule.category
+      tag: set_rule_category
+      copy_from: trend_micro_vision_one.network_activity.rule.type
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: trend_micro_vision_one.network_activity.rule.name
+      ignore_empty_value: true
+  - set:
+      field: rule.uuid
+      tag: set_rule_uuid
+      copy_from: trend_micro_vision_one.network_activity.rule.uuid
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip
+      copy_from: trend_micro_vision_one.network_activity.source.ip
+      ignore_empty_value: true
+  - set:
+      field: source.port
+      tag: set_source_port
+      copy_from: trend_micro_vision_one.network_activity.source.port
+      ignore_empty_value: true
+  - set:
+      field: tls.version
+      tag: set_tls_version
+      copy_from: trend_micro_vision_one.network_activity.server.tls
+      ignore_empty_value: true
+  - set:
+      field: url.original
+      tag: set_url_original
+      copy_from: trend_micro_vision_one.network_activity.request.url
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      tag: set_user_domain
+      copy_from: trend_micro_vision_one.network_activity.user.domain
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email
+      copy_from: trend_micro_vision_one.network_activity.user.principal_name
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name
+      copy_from: trend_micro_vision_one.network_activity.user.id
+      ignore_empty_value: true
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original
+      copy_from: trend_micro_vision_one.network_activity.user_agent
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_related_ip_source
+      value: '{{{trend_micro_vision_one.network_activity.source.ip}}}'
+      allow_duplicates: false
+      if: ctx.trend_micro_vision_one?.network_activity?.source?.ip != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_destination
+      value: '{{{trend_micro_vision_one.network_activity.destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.trend_micro_vision_one?.network_activity?.destination?.ip != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_client
+      value: '{{{trend_micro_vision_one.network_activity.client.ip}}}'
+      allow_duplicates: false
+      if: ctx.trend_micro_vision_one?.network_activity?.client?.ip != null
+  - append:
+      field: related.user
+      tag: append_related_user_id
+      value: '{{{trend_micro_vision_one.network_activity.user.id}}}'
+      allow_duplicates: false
+      if: ctx.trend_micro_vision_one?.network_activity?.user?.id != null
+  - append:
+      field: related.user
+      tag: append_related_user_principal_name
+      value: '{{{trend_micro_vision_one.network_activity.user.principal_name}}}'
+      allow_duplicates: false
+      if: ctx.trend_micro_vision_one?.network_activity?.user?.principal_name != null
+  - append:
+      field: related.hash
+      tag: append_related_hash_sha1
+      value: '{{{trend_micro_vision_one.network_activity.file.hash_sha1}}}'
+      allow_duplicates: false
+      if: ctx.trend_micro_vision_one?.network_activity?.file?.hash_sha1 != null
+  - append:
+      field: related.hash
+      tag: append_related_hash_sha256
+      value: '{{{trend_micro_vision_one.network_activity.file.hash_sha256}}}'
+      allow_duplicates: false
+      if: ctx.trend_micro_vision_one?.network_activity?.file?.hash_sha256 != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_endpoint
+      value: '{{{trend_micro_vision_one.network_activity.endpoint.host_name}}}'
+      allow_duplicates: false
+      if: ctx.trend_micro_vision_one?.network_activity?.endpoint?.host_name != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_request_base
+      value: '{{{trend_micro_vision_one.network_activity.request.base}}}'
+      allow_duplicates: false
+      if: ctx.trend_micro_vision_one?.network_activity?.request?.base != null
+  - remove:
+      field:
+        - trend_micro_vision_one.network_activity.client.ip
+        - trend_micro_vision_one.network_activity.company_name
+        - trend_micro_vision_one.network_activity.destination.ip
+        - trend_micro_vision_one.network_activity.destination.port
+        - trend_micro_vision_one.network_activity.endpoint.host_name
+        - trend_micro_vision_one.network_activity.event.time
+        - trend_micro_vision_one.network_activity.file.hash_sha1
+        - trend_micro_vision_one.network_activity.file.hash_sha256
+        - trend_micro_vision_one.network_activity.file.mime_type
+        - trend_micro_vision_one.network_activity.file.name
+        - trend_micro_vision_one.network_activity.file.size
+        - trend_micro_vision_one.network_activity.file.type
+        - trend_micro_vision_one.network_activity.os.name
+        - trend_micro_vision_one.network_activity.request.method
+        - trend_micro_vision_one.network_activity.request.mime_type
+        - trend_micro_vision_one.network_activity.request.url
+        - trend_micro_vision_one.network_activity.rule.name
+        - trend_micro_vision_one.network_activity.rule.type
+        - trend_micro_vision_one.network_activity.rule.uuid
+        - trend_micro_vision_one.network_activity.server.protocol
+        - trend_micro_vision_one.network_activity.server.tls
+        - trend_micro_vision_one.network_activity.source.ip
+        - trend_micro_vision_one.network_activity.source.port
+        - trend_micro_vision_one.network_activity.start
+        - trend_micro_vision_one.network_activity.user.domain
+        - trend_micro_vision_one.network_activity.user.id
+        - trend_micro_vision_one.network_activity.user.principal_name
+        - trend_micro_vision_one.network_activity.user_agent
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
