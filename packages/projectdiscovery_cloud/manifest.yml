@@ -1,0 +1,50 @@
+format_version: 3.4.1
+name: projectdiscovery_cloud
+title: "ProjectDiscovery Cloud"
+version: 0.1.4
+source:
+  license: "Elastic-2.0"
+description: >
+  External Attack Surface Management (EASM) from ProjectDiscovery. Collects vulnerability changelogs and current vulnerability states via the ProjectDiscovery Cloud API.
+
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: "^9.1.0"
+  elastic:
+    subscription: "basic"
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
+# Drives Fleet "Add integration" form and supplies .vars.* to templates.
+policy_templates:
+  - name: projectdiscovery_cloud
+    title: ProjectDiscovery Cloud
+    description: Collect vulnerability changelogs and export results from ProjectDiscovery Cloud
+    inputs:
+      - type: cel
+        title: ProjectDiscovery Cloud API
+        description: Collects vulnerability changelogs and export results from ProjectDiscovery Cloud
+        vars:
+          - name: base_url
+            type: text
+            title: API Base URL
+            description: Base URL for ProjectDiscovery Cloud API
+            default: https://api.projectdiscovery.io
+            required: true
+            show_user: true
+          - name: api_key
+            type: password
+            title: API Key
+            description: API key for authenticating to ProjectDiscovery Cloud
+            secret: true
+            required: true
+            show_user: true
+          - name: team_id
+            type: text
+            title: Team ID
+            description: Team ID for your ProjectDiscovery Cloud account
+            required: true
+            show_user: true
