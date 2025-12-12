@@ -1,0 +1,28 @@
+{
+    "id": "aws-waf-otel-blocked-from-ip-spike",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[AWS WAF OTEL] Excessive BLOCK actions with single source IP",
+        "tags": ["AWS WAF Logs OpenTelemetry Assets"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert triggers when any IP whose blocked requests exceed a threshold (e.g. > 1000 in 5 minutes)\n// You can adjust the threshold value by modifying the block_count in the WHERE clause.\nFROM logs-aws.waf.otel-default\n| WHERE @timestamp > NOW() - 5m\n| STATS block_count = COUNT(aws.waf.action == \"BLOCK\" OR NULL) BY client.address\n| WHERE block_count > 1000\n| SORT block_count DESC"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
