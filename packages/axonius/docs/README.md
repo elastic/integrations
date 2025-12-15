@@ -25,6 +25,10 @@ It also provides insight into connection behavior for each adapter, revealing pa
 
 ## What do I need to use this integration?
 
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
 ### From Axonius
 
 To collect data through the Axonius APIs, you need to provide the **URL**, **API Key** and **API Secret**. Authentication is handled using the **API Key** and **API Secret**, which serves as the required credential.
@@ -74,6 +78,13 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Axonius**, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **Axonius**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
 ## Troubleshooting
 
