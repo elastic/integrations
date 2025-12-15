@@ -990,13 +990,13 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-02T14:58:13.698Z",
+    "@timestamp": "2025-12-15T14:58:14.430Z",
     "agent": {
-        "ephemeral_id": "cec373bd-24d4-48f5-9a22-d7630b36e420",
-        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
-        "name": "elastic-agent-11440",
+        "ephemeral_id": "c6043321-66f4-40e5-8b96-a7e897933c78",
+        "id": "3a4bfc50-c092-48a0-9c31-ec0af2bf63a3",
+        "name": "elastic-agent-28087",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.4"
     },
     "carbon_black_cloud": {
         "asset_vulnerability_summary": {
@@ -1016,21 +1016,21 @@ An example event for `asset_vulnerability_summary` looks as following:
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "namespace": "93728",
+        "namespace": "71940",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
+        "id": "3a4bfc50-c092-48a0-9c31-ec0af2bf63a3",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2025-06-02T14:58:16Z",
+        "ingested": "2025-12-15T14:58:17Z",
         "kind": "state",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },
