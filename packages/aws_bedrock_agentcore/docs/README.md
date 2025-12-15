@@ -313,8 +313,10 @@ An example event for `runtime_application` looks as following:
 | aws.bedrock_agentcore.provider_name | Name of the AI provider or platform. | keyword |
 | aws.bedrock_agentcore.request_id | ID of the processed request. | keyword |
 | aws.bedrock_agentcore.request_payload.actor_id | Actor initiating the request. | keyword |
-| aws.bedrock_agentcore.request_payload.prompt | Prompt extracted from payload. | text |
+| aws.bedrock_agentcore.request_payload.prompt | Prompt extracted from payload when it is a string. | text |
+| aws.bedrock_agentcore.request_payload.prompt_object | Prompt extracted from payload when it is an object, array, or map. | flattened |
 | aws.bedrock_agentcore.resource_arn | Amazon Resource Name (ARN) of the AgentCore runtime resource. | keyword |
+| aws.bedrock_agentcore.response_payload | Response payload from the agent. | flattened |
 | aws.bedrock_agentcore.service_name | Service handling the operation. | keyword |
 | aws.bedrock_agentcore.session_id | Unique identifier for the AgentCore runtime session. | keyword |
 | aws.bedrock_agentcore.severity_number | Numeric severity level associated with the event. | integer |
