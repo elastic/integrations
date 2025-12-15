@@ -24,6 +24,7 @@ state:
   access_token: {{access_token}}
   client_secret: {{client_secret}}
   initial_interval: {{initial_interval}}
+  recovery_interval: {{recovery_interval}}
   event_limit: {{event_limit}}
 
 redact:
@@ -37,7 +38,7 @@ program: |-
     (
       state.?cursor.recovery_mode.orValue(false) ?
         {
-          "from": int(now - duration("12h")),
+          "from": int(now - duration(state.recovery_interval)),
           "to": int(now - duration("1m")),
         }
       : state.?cursor.last_offset.hasValue() ?
@@ -113,6 +114,29 @@ program: |-
                     }
                   )
                 : (resp.StatusCode == 416) ?
+                  {
+                    "events": [
+                      {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + request_url + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      }
+                    ],
+                    "cursor": state.cursor.drop("last_offset").with(
+                      {
+                        "recovery_mode": true,
+                      }
+                    ),
+                    "want_more": true,
+                  }
+                : (resp.StatusCode == 400 && size(resp.Body) != 0 && bytes(resp.Body).decode_json().as(errorBody, has(errorBody.detail) && errorBody.detail.contains("Invalid timestamp"))) ?
                   {
                     "events": [
                       {
