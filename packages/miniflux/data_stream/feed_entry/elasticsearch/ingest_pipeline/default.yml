@@ -6,10 +6,10 @@ processors:
         tag: set_ecs_version
         value: 8.17.0
     
-    - fail:
-        tag: cel_failure
+    - terminate:
+        tag: data_collection_error
         if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-        message: error message set and no data to process
+        description: error message set and no data to process.
     - set:
         field: event.kind
         tag: set_event_kind_1
@@ -296,6 +296,18 @@ processors:
         field: json.title
         tag: rename_title
         target_field: miniflux.title
+    - uri_parts:
+        field: json.url
+        if: ctx.json?.url != null && ctx.json.url != ''
+        on_failure:
+            - set:
+                field: url.original
+                copy_from: url.original
+                if: ctx.json?.url != null && ctx.json.url != ''
+    - set:
+        field: url.full
+        copy_from: url.original
+        if: ctx.url?.original != null && ctx.url.original != ''
     - rename:
         field: json.url
         tag: rename_url

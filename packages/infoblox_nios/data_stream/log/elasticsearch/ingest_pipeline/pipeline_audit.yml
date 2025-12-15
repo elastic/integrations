@@ -111,6 +111,35 @@ processors:
           }
           ctx.infoblox_nios.log.audit[m.getKey()] = value;
         }
+  - script:
+      description: Decode octal escape sequences in IP address.
+      lang: painless
+      if: ctx.infoblox_nios?.log?.audit?.ip != null
+      source: >
+        String s = ctx.infoblox_nios.log.audit.ip;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length();) {
+            if (s.charAt(i) == (char)'\\') {
+                sb.append(':');
+                int b = Integer.parseInt(s.substring(i+1,i+4), 8);
+                if (b != (char)':') {
+                    sb.append((char)b);
+                }
+                i+=4;
+                continue;
+            }
+            sb.append(s.charAt(i));
+            i++;
+        }
+        ctx.infoblox_nios.log.audit.ip = sb.toString();
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
+              failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
       field: infoblox_nios.log.audit.ip
       if: ctx.infoblox_nios?.log?.audit?.ip != null && ctx.infoblox_nios.log.audit.ip != ''

@@ -37,6 +37,10 @@ from logs-nessus.vulnerability*
 | limit 10
 ```
 
+## Upgrading to v1.7.0+
+
+If upgrading from a version of the package before v1.7.0, you will need to re-enter your configuration details and re-enable the package.
+
 ## Logs
 
 ### Vulnerabilities

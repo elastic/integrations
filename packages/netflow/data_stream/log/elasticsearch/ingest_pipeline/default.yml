@@ -3,28 +3,34 @@ description: Pipeline for NetFlow
 
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - convert:
+      tag: convert_network_iana_number_7aa7bdd4
       field: network.iana_number
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_observer_ip_to__tmp__observer_ip_c386a74b
       field: observer.ip
       target_field: _tmp_.observer.ip
       ignore_missing: true
   - append:
+      tag: append_observer_ip_8e1e9214
       field: observer.ip
       value: '{{{_tmp_.observer.ip}}}'
       if: ctx._tmp_?.observer?.ip != null
   - set:
+      tag: set_event_category_1c5ef573
       field: event.category
       value:
         - network
         - session
       if: ctx.event?.category != null && ctx.event?.category == "network_session"
   - append:
+      tag: append_related_ip_695a8007
       field: related.ip
       value: '{{{_tmp_.observer.ip}}}'
       allow_duplicates: false
@@ -83,53 +89,64 @@ processors:
 
       if: ctx.netflow?.tcp_control_bits instanceof Integer
 
-  - set: 
+  - set:
+      tag: set_network_type_0310ffb7
       field: network.type
       value: ipv4
       if: ctx.netflow?.source_ipv4_address != null || ctx.netflow?.destination_ipv4_address != null
-  - set: 
+  - set:
+      tag: set_network_type_0146417f
       field: network.type
       value: ipv6
       if: (ctx.netflow?.source_ipv6_address != null || ctx.netflow?.destination_ipv6_address != null) && ctx.network?.type == null
-  - append: 
+  - append:
+      tag: append_network_type_9e3d8bc5
       field: network.type
       value: ipv6
       if: (ctx.netflow?.source_ipv6_address != null || ctx.netflow?.destination_ipv6_address != null) && ctx.network?.type == "ipv4"
   - set:
+      tag: set_network_direction_742bdd0c
       field: network.direction
       value: inbound
       if: ctx.source?.locality == "external" && ctx.destination?.locality == "internal"
   - set:
+      tag: set_network_direction_ab713cfd
       field: network.direction
       value: outbound
       if: ctx.source?.locality == "internal" && ctx.destination?.locality == "external"
   - set:
+      tag: set_network_direction_ad7f17dc
       field: network.direction
       value: internal
       if: ctx.source?.locality == "internal" && ctx.destination?.locality == "internal"
   - set:
+      tag: set_network_direction_72986b36
       field: network.direction
       value: external
       if: ctx.source?.locality == "external" && ctx.destination?.locality == "external"
   - set:
+      tag: set_network_direction_a298f1f4
       field: network.direction
       value: unknown
       if: ctx.network?.direction == null
 
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_0e79e8a4
       if: ctx.source?.geo == null
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_2f67bd6f
       if: ctx.destination?.geo == null
       field: destination.ip
       target_field: destination.geo
-      ignore_missing: true 
+      ignore_missing: true
 
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -138,6 +155,7 @@ processors:
           - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -146,29 +164,48 @@ processors:
           - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - remove:
-      field: 
+      tag: remove_77aeac25
+      field:
         - _tmp_
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

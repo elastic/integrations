@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Web logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -37,6 +48,34 @@ processors:
       tag: rename_resp_event
       target_field: json
       ignore_missing: true
+  - script:
+      tag: check_template_version
+      params:
+        pkg_version: 3.17.0
+        data_stream: web-log
+        expect:
+          fields: 
+            action|appclass|applayerprotocol|appname|appriskscore|apprulelabel|b64referer|b64url|bamd5|bandwidthclassname|bandwidthrulename|bwthrottle|bypassedtime|bypassedtraffic|client_tls_keyex_alg|client_tls_keyex_hybrid_offers|client_tls_keyex_non_pqc_offers|client_tls_keyex_pqc_offers|client_tls_keyex_unknown_offers|client_tls_sig_alg|client_tls_sig_hybrid_offers|client_tls_sig_non_pqc_offers|client_tls_sig_pqc_offers|client_tls_sig_unknown_offers|cloudname|cltintip|cltip|cltpubip|cltsourceport|cltsslcipher|cltsslfailcount|cltsslfailreason|cltsslsessreuse|clttlsversion|company|contenttype|datacenter|datacentercity|datacentercountry|day|day_of_month|dept|deviceappversion|devicehostname|devicemodel|devicename|deviceostype|deviceosversion|deviceowner|devicetype|df_hosthead|df_hostname|dlpdict|dlpdicthitcount|dlpeng|dlpidentifier|dlpmd5|dlprulename|dstip_country|eedone|epochtime|external_devid|externalsslpolicyreason|fileclass|filename|filesubtype|filetype|flow_type|forward_gateway_ip|forward_gateway_name|forward_type|ft_rulename|host|hour|is_dst_cntry_risky|is_src_cntry_risky|is_sslexpiredca|is_sslselfsigned|is_ssluntrustedca|keyprotectiontype|location|login|malwarecategory|malwareclass|minute|mobappcategory|mobappname|mobdevtype|module|month|month_of_year|nssserviceip|oapprulelabel|obwclassname|ocip|ocpubip|odevicehostname|odevicename|odeviceowner|odlpdict|odlpeng|odlprulename|ofwd_gw_name|ologin|ordr_rulename|ourlcat|ourlfilterrulelabel|ozpa_app_seg_name|productversion|prompt_req|proto|rdr_rulename|reason|recordid|refererhost|reqdatasize|reqheadersize|reqmethod|reqsize|reqversion|respcode|respdatasize|respheadersize|respsize|respversion|riskscore|rulelabel|ruletype|second|server_tls_keyex_alg|server_tls_sig_alg|serverip|serversslsessreuse|sha256|srcip_country|srvcertchainvalpass|srvcertvalidationtype|srvcertvalidityperiod|srvocspresult|srvsslcipher|srvtlsversion|srvwildcardcert|ssl_rulename|ssldecrypted|threatname|threatseverity|throttlereqsize|throttlerespsize|time|totalsize|trafficredirectmethod|tz|unscannabletype|upload_doctypename|upload_fileclass|upload_filename|upload_filesubtype|upload_filetype|urlcatmethod|urlclass|urlfilterrulelabel|urlsubcat|urlsupercat|useragent|useragentclass|useragenttoken|userlocationname|year|zpa_app_seg_name|ztunnelversion
+          version: v11
+      if: ctx.json != null && ctx._conf?.strict_fields == true
+      source: |-
+        if (ctx.resp?.version == null) {
+          def fields = [];
+          for (e in ctx.json.entrySet()) {
+            fields.add(e.getKey());
+          }
+          Collections.sort(fields);
+          String signature = String.join("|", fields);
+          if (signature != params.expect.fields) {
+            ctx.error = ctx.error ?: [:];
+            ctx.error.message = ctx.error.message ?: [];
+            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+          }
+        } else if (ctx.resp.version != params.expect.version) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          ctx.error.message.add("template version mismatch: "+ctx.resp.version.toString()+" is not expected version (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+        }
   - remove:
       field: resp
       tag: remove_resp
@@ -82,7 +121,7 @@ processors:
   - append:
       field: event.type
       tag: append_event_type
-      value: info
+      value: access
   - script:
       description: Drops null/empty/na values recursively.
       tag: script_to_remove_na_values
@@ -126,6 +165,21 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'allowed'
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: ctx.event?.action == 'denied' || ctx.event?.action == 'blocked'
+  - set:
+      tag: set_event_outcome_unknown
+      field: event.outcome
+      value: unknown
+      if: ctx.event?.outcome == null
   - rename:
       field: json.applayerprotocol
       tag: rename_applayerprotocol
@@ -291,6 +345,16 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      field: json.ssl_rulename
+      tag: rename_ssl_rulename
+      target_field: zscaler_zia.web.ssl_rulename
+      ignore_missing: true
+  - rename:
+      field: json.ft_rulename
+      tag: rename_ft_rulename
+      target_field: zscaler_zia.web.ft_rulename
+      ignore_missing: true
+  - rename:
       field: json.cltsslfailreason
       tag: rename_cltsslfailreason
       target_field: zscaler_zia.web.client.ssl.fail_reason
@@ -299,6 +363,104 @@ processors:
       field: json.clttlsversion
       tag: rename_clttlsversion
       target_field: zscaler_zia.web.client.tls_version
+      ignore_missing: true
+  - convert:
+      field: json.client_tls_keyex_pqc_offers
+      tag: convert_client_tls_keyex_pqc_offers
+      target_field: zscaler_zia.web.client.tls_keyex_pqc_offers
+      type: long
+      ignore_missing: true
+      if: ctx.json?.client_tls_keyex_pqc_offers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.client_tls_keyex_non_pqc_offers
+      tag: convert_client_tls_keyex_non_pqc_offers
+      target_field: zscaler_zia.web.client.tls_keyex_non_pqc_offers
+      type: long
+      ignore_missing: true
+      if: ctx.json?.client_tls_keyex_non_pqc_offers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.client_tls_keyex_hybrid_offers
+      tag: convert_client_tls_keyex_hybrid_offers
+      target_field: zscaler_zia.web.client.tls_keyex_hybrid_offers
+      type: long
+      ignore_missing: true
+      if: ctx.json?.client_tls_keyex_hybrid_offers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.client_tls_keyex_unknown_offers
+      tag: convert_client_tls_keyex_unknown_offers
+      target_field: zscaler_zia.web.client.tls_keyex_unknown_offers
+      type: long
+      ignore_missing: true
+      if: ctx.json?.client_tls_keyex_unknown_offers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.client_tls_sig_pqc_offers
+      tag: convert_client_tls_sig_pqc_offers
+      target_field: zscaler_zia.web.client.tls_sig_pqc_offers
+      type: long
+      ignore_missing: true
+      if: ctx.json?.hour != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.client_tls_sig_non_pqc_offers
+      tag: convert_client_tls_sig_non_pqc_offers
+      target_field: zscaler_zia.web.client.tls_sig_non_pqc_offers
+      type: long
+      ignore_missing: true
+      if: ctx.json?.client_tls_sig_non_pqc_offers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.client_tls_sig_hybrid_offers
+      tag: convert_client_tls_sig_hybrid_offers
+      target_field: zscaler_zia.web.client.tls_sig_hybrid_offers
+      type: long
+      ignore_missing: true
+      if: ctx.json?.client_tls_sig_hybrid_offers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.client_tls_sig_unknown_offers
+      tag: convert_client_tls_sig_unknown_offers
+      target_field: zscaler_zia.web.client.tls_sig_unknown_offers
+      type: long
+      ignore_missing: true
+      if: ctx.json?.client_tls_sig_unknown_offers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.client_tls_keyex_alg
+      tag: rename_client_tls_keyex_alg
+      target_field: zscaler_zia.web.client.tls_keyex_alg
+      ignore_missing: true
+  - rename:
+      field: json.client_tls_sig_alg
+      tag: rename_client_tls_sig_alg
+      target_field: zscaler_zia.web.client.tls_sig_alg
       ignore_missing: true
   - rename:
       field: json.cloudname
@@ -678,6 +840,26 @@ processors:
       target_field: zscaler_zia.web.is_ssl_certificate_untrusted
       ignore_missing: true
   - rename:
+      field: json.is_src_cntry_risky
+      tag: rename_is_src_cntry_risky
+      target_field: zscaler_zia.web.is_src_cntry_risky
+      ignore_missing: true
+  - rename:
+      field: json.srcip_country
+      tag: rename_srcip_country
+      target_field: zscaler_zia.web.srcip_country
+      ignore_missing: true
+  - rename:
+      field: json.dstip_country
+      tag: rename_dstip_country
+      target_field: zscaler_zia.web.dstip_country
+      ignore_missing: true
+  - rename:
+      field: json.is_dst_cntry_risky
+      tag: rename_is_dst_cntry_risky
+      target_field: zscaler_zia.web.is_dst_cntry_risky
+      ignore_missing: true
+  - rename:
       field: json.keyprotectiontype
       tag: rename_keyprotectiontype
       target_field: zscaler_zia.web.key_protection_type
@@ -918,6 +1100,11 @@ processors:
       field: json.productversion
       tag: rename_productversion
       target_field: zscaler_zia.web.product_version
+      ignore_missing: true
+  - rename:
+      field: json.prompt_req
+      tag: rename_prompt_req
+      target_field: zscaler_zia.web.prompt_req
       ignore_missing: true
   - rename:
       field: json.proto
@@ -1210,6 +1397,16 @@ processors:
       field: json.srvwildcardcert
       tag: rename_srvwildcardcert
       target_field: zscaler_zia.web.server.wildcard_certificate
+      ignore_missing: true
+  - rename:
+      field: json.server_tls_keyex_alg
+      tag: rename_server_tls_keyex_alg
+      target_field: zscaler_zia.web.server.tls_keyex_alg
+      ignore_missing: true
+  - rename:
+      field: json.server_tls_sig_alg
+      tag: rename_server_tls_sig_alg
+      target_field: zscaler_zia.web.server.tls_sig_alg
       ignore_missing: true
   - rename:
       field: json.sha256
@@ -1555,8 +1752,10 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
-      field: json
-      tag: remove_json
+      field:
+        - json
+        - _conf
+      tag: remove_unused
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values

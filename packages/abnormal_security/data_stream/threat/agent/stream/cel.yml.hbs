@@ -18,6 +18,7 @@ state:
   initial_interval: {{initial_interval}}
   page_size: {{page_size}}
   access_token: {{access_token}}
+  enrichment: {{enable_enrichment}}
   next_page: 1
   child_next_page: 1
 redact:
@@ -49,7 +50,7 @@ program: |
             "Authorization": ["Bearer " + string(state.access_token)],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body, {
+            resp.Body.decode_json().as(body, {
               "worklist": body,
               "next": 0,
             })
@@ -84,9 +85,51 @@ program: |
             "Authorization": ["Bearer " + string(state.access_token)],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body,{
+          resp.Body.decode_json().as(body,{
             "events": body.messages.map(e,{
-              "message": e.encode_json(),
+              "message": state.enrichment ?
+                e.with({
+                  "attachments": request("GET",
+                    state.url.trim_right("/") + "/v1/threats/" + string(state.worklist.threats[state.next].threatId) + "/attachments"
+                  ).with({
+                    "Header": {
+                      "Authorization": ["Bearer " + string(state.access_token)],
+                    }
+                  }).do_request().as(attachResp, attachResp.StatusCode == 200 ?
+                    attachResp.Body.decode_json().as(attachBody,
+                      has(attachBody.attachments) ?
+                        attachBody.attachments.map(a, a.abxMessageIdStr == e.abxMessageIdStr, a.attachmentName)
+                      :
+                        []
+                    )
+                  :
+                    []
+                  ),
+                  "links": request("GET",
+                    state.url.trim_right("/") + "/v1/threats/" + string(state.worklist.threats[state.next].threatId) + "/links"
+                  ).with({
+                    "Header": {
+                      "Authorization": ["Bearer " + string(state.access_token)],
+                    }
+                  }).do_request().as(linkResp, linkResp.StatusCode == 200 ?
+                    linkResp.Body.decode_json().as(linkBody,
+                      has(linkBody.links) ?
+                        linkBody.links.map(l, l.abxMessageIdStr == e.abxMessageIdStr, {
+                          "url": l.linkUrl,
+                          "display_text": l.displayText,
+                          "domain": l.domainLink,
+                          "type": l.linkType,
+                          "source": l.source
+                        })
+                      :
+                        []
+                    )
+                  :
+                    []
+                  )
+                }).encode_json()
+              :
+                e.encode_json()
             }),
             "cursor": {
               "last_timestamp": state.end_time

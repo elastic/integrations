@@ -50,7 +50,8 @@ program: |
       :
         [],
       "counter_map": has(body.pipelines[pipeline_name].vertices) ?
-        body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.long_counters), vertex.long_counters.map(counter, {
+        body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.long_counters) || has(vertex.double_gauges),
+        ((has(vertex.long_counters) ? vertex.long_counters : []) + (has(vertex.double_gauges) ? vertex.double_gauges : [])).map(counter, {
           "plugin_id": vertex.id,
           "name": counter.name,
           "value": counter.value

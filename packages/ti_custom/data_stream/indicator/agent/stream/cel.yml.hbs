@@ -1,6 +1,8 @@
 config_version: 2
 interval: {{interval}}
-resource.timeout: 60s
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
 resource.url: {{url}}
 {{#if ssl}}
 resource.ssl: {{ssl}}
@@ -43,6 +45,9 @@ state:
   want_more: false
 {{#if api_key}}
   api_key: {{api_key}}
+{{#if key_type}}
+  key_type: {{key_type}}
+{{/if}}
 {{/if}}
 {{#if username}}
 {{#if password}}
@@ -89,7 +94,7 @@ program: |
                     "Accept": [string(state.accept_header)],
                     ?"Content-Type": state.?content_header.orValue("") != "" ? optional.of([state.content_header]) : optional.none(),
                     "Authorization": (has(state.api_key) && state.api_key != "") ?
-                        ["Bearer " + string(state.api_key)]
+                        [state.?key_type.orValue("Bearer") + " " + string(state.api_key)]
                     : (state.?username.orValue("") != "" && state.?password.orValue("") != "") ?
                         ["Basic " + (state.username + ":" + state.password).base64()]
                     :

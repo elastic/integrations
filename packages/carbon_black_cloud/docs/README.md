@@ -2,6 +2,11 @@
 
 The VMware Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
 data stream. The default values of file selector regexes have been commented out for this reason. The only reason the global queue now exists is to avoid
@@ -80,11 +85,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-10T16:04:30.263Z",
     "agent": {
-        "ephemeral_id": "a820562f-e713-4f48-81bc-7f329f192335",
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "d9810f80-bccc-4900-886c-c14f1747369d",
+        "id": "e535dae1-9d56-4f72-9e5b-bd456d3edb8f",
+        "name": "elastic-agent-33765",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.18.1"
     },
     "carbon_black_cloud": {
         "audit": {
@@ -95,35 +100,37 @@ An example event for `audit` looks as following:
     "client": {
         "ip": "10.10.10.10",
         "user": {
-            "id": "abc@demo.com"
+            "domain": "demo.com",
+            "email": "abc@demo.com",
+            "id": "abc@demo.com",
+            "name": "abc"
         }
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.audit",
-        "namespace": "ep",
+        "namespace": "18603",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "e535dae1-9d56-4f72-9e5b-bd456d3edb8f",
+        "snapshot": false,
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-04-19T16:30:46.573Z",
         "dataset": "carbon_black_cloud.audit",
         "id": "2122f8ce8xxxxxxxxxxxxx",
-        "ingested": "2023-04-19T16:30:50Z",
+        "ingested": "2025-06-02T15:02:56Z",
         "kind": "event",
         "original": "{\"clientIp\":\"10.10.10.10\",\"description\":\"Logged in successfully\",\"eventId\":\"2122f8ce8xxxxxxxxxxxxx\",\"eventTime\":1644509070263,\"flagged\":false,\"loginName\":\"abc@demo.com\",\"orgName\":\"cb-xxxx-xxxx.com\",\"requestUrl\":null,\"verbose\":false}",
         "outcome": "success",
         "reason": "Logged in successfully"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "organization": {
         "name": "cb-xxxx-xxxx.com"
@@ -131,6 +138,10 @@ An example event for `audit` looks as following:
     "related": {
         "ip": [
             "10.10.10.10"
+        ],
+        "user": [
+            "abc@demo.com",
+            "abc"
         ]
     },
     "tags": [
@@ -171,11 +182,11 @@ An example event for `alert_v7` looks as following:
 {
     "@timestamp": "2024-03-13T08:02:36.578Z",
     "agent": {
-        "ephemeral_id": "9c46ff77-c269-4593-a3d8-efd89fbdca66",
-        "id": "db2930ff-774e-4541-bcd4-1a6a1d656167",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "a14ca29b-52fd-47c3-8c78-eac114e3066b",
+        "id": "56b48df4-ab0d-427b-b3a5-180a58126f21",
+        "name": "elastic-agent-82807",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.18.0"
     },
     "carbon_black_cloud": {
         "alert": {
@@ -286,23 +297,23 @@ An example event for `alert_v7` looks as following:
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.alert_v7",
-        "namespace": "ep",
+        "namespace": "31466",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "db2930ff-774e-4541-bcd4-1a6a1d656167",
+        "id": "56b48df4-ab0d-427b-b3a5-180a58126f21",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "carbon_black_cloud.alert_v7",
         "end": "2024-03-13T08:00:09.894Z",
         "id": "1c6aba68-24cc-41e3-ad8e-4b545a587b55",
-        "ingested": "2024-04-10T09:06:02Z",
+        "ingested": "2025-10-23T08:42:32Z",
         "kind": "alert",
         "original": "{\"alert_notes_present\":false,\"alert_url\":\"defense.conferdeploy.net/alerts?s[c][query_string]=id:1c6aba68-24cc-41e3-ad8e-4b545a587b55\\u0026orgKey=7DESJ9GN\",\"asset_group\":[],\"backend_timestamp\":\"2024-03-13T08:03:29.540Z\",\"backend_update_timestamp\":\"2024-03-13T08:03:29.540Z\",\"childproc_cmdline\":\"\",\"childproc_guid\":\"\",\"childproc_username\":\"\",\"detection_timestamp\":\"2024-03-13T08:02:36.578Z\",\"determination\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"value\":\"NONE\"},\"device_external_ip\":\"75.98.230.194\",\"device_id\":6612391,\"device_internal_ip\":\"172.16.100.140\",\"device_location\":\"UNKNOWN\",\"device_name\":\"EIP\\\\WW-20002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_policy\":\"default\",\"device_policy_id\":6525,\"device_target_value\":\"MEDIUM\",\"device_uem_id\":\"\",\"device_username\":\"EIP\\\\Administrator\",\"first_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"id\":\"1c6aba68-24cc-41e3-ad8e-4b545a587b55\",\"ioc_hit\":\"(fileless_scriptload_cmdline:Register-ScheduledTask OR fileless_scriptload_cmdline:New-ScheduledTask OR scriptload_content:Register-ScheduledTask OR scriptload_content:New-ScheduledTask) AND NOT (process_cmdline:windows\\\\\\\\ccm\\\\\\\\systemtemp OR crossproc_name:windows\\\\\\\\ccm\\\\\\\\ccmexec.exe OR (process_publisher:\\\"VMware, Inc.\\\" AND process_publisher_state:FILE_SIGNATURE_STATE_TRUSTED))\",\"ioc_id\":\"d1080521-e617-4e45-94e0-7a145c62c90a\",\"is_updated\":false,\"last_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"mdr_alert\":false,\"mdr_alert_notes_present\":false,\"mdr_threat_notes_present\":false,\"ml_classification_anomalies\":[],\"ml_classification_final_verdict\":\"NOT_ANOMALOUS\",\"ml_classification_global_prevalence\":\"LOW\",\"ml_classification_org_prevalence\":\"LOW\",\"org_key\":\"7DESJ9GN\",\"parent_cmdline\":\"C:\\\\Windows\\\\system32\\\\svchost.exe -k netsvcs -p -s Schedule\",\"parent_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_guid\":\"7DESJ9GN-0064e5a7-0000077c-00000000-1da5ed7ec07b275\",\"parent_md5\":\"145dcf6706eeea5b066885ee17964c09\",\"parent_name\":\"c:\\\\windows\\\\system32\\\\svchost.exe\",\"parent_pid\":1916,\"parent_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_sha256\":\"f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3\",\"parent_username\":\"NT AUTHORITY\\\\SYSTEM\",\"policy_applied\":\"NOT_APPLIED\",\"primary_event_id\":\"re9M9hp8TbGLqyk6QXqQqA-0\",\"process_cmdline\":\"\\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\" -EP Bypass \\\\\\\\eip.demo\\\\sysvol\\\\EIP.DEMO\\\\scripts\\\\Luminol.ps1\",\"process_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"process_guid\":\"7DESJ9GN-0064e5a7-00001434-00000000-1da751c7354ebfe\",\"process_issuer\":[\"Microsoft Windows Production PCA 2011\"],\"process_md5\":\"2e5a8590cf6848968fc23de3fa1e25f1\",\"process_name\":\"c:\\\\windows\\\\system32\\\\windowspowershell\\\\v1.0\\\\powershell.exe\",\"process_pid\":5172,\"process_publisher\":[\"Microsoft Windows\"],\"process_reputation\":\"TRUSTED_WHITE_LIST\",\"process_sha256\":\"9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"reason\":\"Process powershell.exe was detected by the report \\\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\\\" in watchlist \\\"AMSI Threat Intelligence\\\"\",\"reason_code\":\"c21ca826-573a-3d97-8c1e-93c8471aab7f:8033b29d-81d2-3c47-82d2-f4a7f398b85d\",\"report_description\":\"Newer Powershell versions introduced built-in cmdlets to manage scheduled tasks natively without calling out to typical scheduled task processes like at.exe or schtasks.exe. This detection looks for behaviors related to the fileless execution of scheduled tasks. If you are responding to this alert, be sure to correlate the fileless scriptload events with events typically found in your environment Generally, attackers will create scheduled tasks with binaries that are located in user writable directories like AppData, Temp, or public folders.\",\"report_id\":\"LrKOC7DtQbm4g8w0UFruQg-d1080521-e617-4e45-94e0-7a145c62c90a\",\"report_link\":\"https://attack.mitre.org/techniques/T1053/\",\"report_name\":\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\",\"report_tags\":[\"execution\",\"privesc\",\"persistence\",\"t1053\",\"windows\",\"amsi\",\"attack\",\"attackframework\"],\"run_state\":\"RAN\",\"sensor_action\":\"ALLOW\",\"severity\":5,\"tags\":null,\"threat_id\":\"C21CA826573A8D974C1E93C8471AAB7F\",\"threat_notes_present\":false,\"type\":\"WATCHLIST\",\"user_update_timestamp\":null,\"watchlists\":[{\"id\":\"Ci7w5B4URg6HN60hatQMQ\",\"name\":\"AMSI Threat Intelligence\"}],\"workflow\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"closure_reason\":\"NO_REASON\",\"status\":\"OPEN\"}}",
         "reason": "Process powershell.exe was detected by the report \"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\" in watchlist \"AMSI Threat Intelligence\"",
@@ -375,6 +386,9 @@ An example event for `alert_v7` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | carbon_black_cloud.alert.additional_events_present | Indicator to let API and forwarder users know that they should look up other associated events related to this alert. | boolean |
 | carbon_black_cloud.alert.alert_notes_present | Indicates if notes are associated with the alert. | boolean |
 | carbon_black_cloud.alert.attack_tactic | S tactic from the MITRE ATT&CK framework. | keyword |
@@ -530,68 +544,104 @@ An example event for `endpoint_event` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-02-10T11:45:02.888Z",
+    "agent": {
+        "ephemeral_id": "360b318f-d2d9-4d06-a32c-2e11c4190a54",
+        "id": "16fa3724-9165-48be-bdb0-836c9bd77a07",
+        "name": "elastic-agent-49131",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-carbon-endpoint-bucket-60445",
+                "name": "elastic-package-carbon-endpoint-bucket-60445"
+            },
+            "object": {
+                "key": "test-endpoint.log"
+            }
+        }
+    },
     "carbon_black_cloud": {
         "endpoint_event": {
             "backend": {
-                "timestamp": "2022-02-10 11:52:50 +0000 UTC"
+                "timestamp": "2022-02-10 11:49:36 +0000 UTC"
             },
             "device": {
                 "external_ip": "67.43.156.12",
                 "os": "WINDOWS",
-                "timestamp": "2022-02-10 11:51:35.0684097 +0000 UTC"
+                "timestamp": "2022-02-10 11:45:02.8882089 +0000 UTC"
             },
             "event_origin": "EDR",
             "organization_key": "XXXXXXXX",
             "process": {
-                "duration": 2,
                 "parent": {
                     "reputation": "REP_RESOLVING"
                 },
                 "publisher": [
                     {
-                        "name": "Microsoft Windows",
+                        "name": "Stellar Cyber Inc",
                         "state": [
                             "FILE_SIGNATURE_STATE_SIGNED",
                             "FILE_SIGNATURE_STATE_VERIFIED",
-                            "FILE_SIGNATURE_STATE_TRUSTED",
-                            "FILE_SIGNATURE_STATE_OS",
-                            "FILE_SIGNATURE_STATE_CATALOG_SIGNED"
+                            "FILE_SIGNATURE_STATE_TRUSTED"
                         ]
                     }
                 ],
                 "reputation": "REP_RESOLVING",
-                "terminated": true,
+                "terminated": false,
                 "username": "NT AUTHORITY\\SYSTEM"
             },
             "schema": 1,
             "sensor_action": "ACTION_ALLOW",
-            "target_cmdline": "\"route.exe\" print",
-            "type": "endpoint.event.procend"
+            "type": "endpoint.event.netconn"
         }
+    },
+    "client": {
+        "ip": "127.0.0.1",
+        "port": 9716
+    },
+    "cloud": {
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.endpoint_event",
-        "namespace": "ep",
+        "namespace": "80071",
         "type": "logs"
+    },
+    "destination": {
+        "ip": "127.0.0.1",
+        "port": 9716
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3b20ea47-9610-412d-97e3-47cd19b7e4d5",
-        "snapshot": true,
-        "version": "8.0.0"
+        "id": "16fa3724-9165-48be-bdb0-836c9bd77a07",
+        "snapshot": false,
+        "version": "8.18.0"
     },
     "event": {
-        "action": "ACTION_PROCESS_TERMINATE",
-        "orignal": "{\"type\":\"endpoint.event.procend\",\"process_guid\":\"XXXXXXXX-003d902d-00001310-00000000-1d81e748c4adb37\",\"parent_guid\":\"XXXXXXXX-003d902d-00000694-00000000-1d7540221dedd62\",\"backend_timestamp\":\"2022-02-10 11:52:50 +0000 UTC\",\"org_key\":\"XXXXXXXX\",\"device_id\":\"4034605\",\"device_name\":\"client-cb2\",\"device_external_ip\":\"67.43.156.13\",\"device_os\":\"WINDOWS\",\"device_group\":\"\",\"action\":\"ACTION_PROCESS_TERMINATE\",\"schema\":1,\"device_timestamp\":\"2022-02-10 11:51:35.0684097 +0000 UTC\",\"process_terminated\":true,\"process_duration\":2,\"process_reputation\":\"REP_RESOLVING\",\"parent_reputation\":\"REP_RESOLVING\",\"process_pid\":4880,\"parent_pid\":1684,\"process_publisher\":[{\"name\":\"Microsoft Windows\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED\"}],\"process_path\":\"c:\\\\windows\\\\system32\\\\route.exe\",\"parent_path\":\"c:\\\\windowsazure\\\\guestagent_2.7.41491.1010_2021-05-11_233023\\\\guestagent\\\\windowsazureguestagent.exe\",\"process_hash\":[\"2498272dc48446891182747428d02a30\",\"9e9c7696859b94b1c33a532fa4d5c648226cf3361121dd899e502b8949fb11a6\"],\"parent_hash\":[\"03dd698da2671383c9b4f868c9931879\",\"44a1975b2197484bb22a0eb673e67e7ee9ec20265e9f6347f5e06b6447ac82c5\"],\"process_cmdline\":\"\\\"route.exe\\\" print\",\"parent_cmdline\":\"C:\\\\WindowsAzure\\\\GuestAgent_2.7.41491.1010_2021-05-11_233023\\\\GuestAgent\\\\WindowsAzureGuestAgent.exe\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"sensor_action\":\"ACTION_ALLOW\",\"event_origin\":\"EDR\",\"target_cmdline\":\"\\\"route.exe\\\" print\"}"
+        "action": "ACTION_CONNECTION_LISTEN",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "carbon_black_cloud.endpoint_event",
+        "ingested": "2025-10-23T08:48:15Z",
+        "original": "{\"type\":\"endpoint.event.netconn\",\"process_guid\":\"XXXXXXXX-00442a47-00002328-00000000-1d81e73a30955e7\",\"parent_guid\":\"XXXXXXXX-00442a47-000002d0-00000000-1d807560b2edfc4\",\"backend_timestamp\":\"2022-02-10 11:49:36 +0000 UTC\",\"org_key\":\"XXXXXXXX\",\"device_id\":\"14\",\"device_name\":\"DESKTOP-014\",\"device_external_ip\":\"67.43.156.12\",\"device_os\":\"WINDOWS\",\"device_group\":\"\",\"action\":\"ACTION_CONNECTION_LISTEN\",\"schema\":1,\"device_timestamp\":\"2022-02-10 11:45:02.8882089 +0000 UTC\",\"process_terminated\":false,\"process_reputation\":\"REP_RESOLVING\",\"parent_reputation\":\"REP_RESOLVING\",\"process_pid\":9000,\"parent_pid\":720,\"process_publisher\":[{\"name\":\"Stellar Cyber Inc\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED\"}],\"process_path\":\"c:\\\\program files\\\\aella\\\\aella_conf_win_srv\\\\aella_conf_win_srv.exe\",\"parent_path\":\"c:\\\\windows\\\\system32\\\\services.exe\",\"process_hash\":[\"6174da1a2dd7594456bbb3ae50ac5587\",\"2ad7d1a17ee2dd897a5a45515e5ae46f8b6b61d3f67c90c1fa0c7910f06d0515\"],\"parent_hash\":[\"d8e577bf078c45954f4531885478d5a9\",\"dfbea9e8c316d9bc118b454b0c722cd674c30d0a256340200e2c3a7480cba674\"],\"process_cmdline\":\"\\\"C:\\\\Program Files\\\\Aella\\\\aella_conf_win_srv\\\\aella_conf_win_srv.exe\\\"\",\"parent_cmdline\":\"C:\\\\WINDOWS\\\\system32\\\\services.exe\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"sensor_action\":\"ACTION_ALLOW\",\"event_origin\":\"EDR\",\"remote_port\":9001,\"remote_ip\":\"67.43.156.14\",\"local_port\":9716,\"local_ip\":\"127.0.0.1\",\"netconn_domain\":\"example.com\",\"netconn_inbound\":true,\"netconn_protocol\":\"PROTO_TCP\"}",
+        "type": [
+            "connection"
+        ]
     },
     "host": {
-        "hostname": "client-cb2",
-        "id": "4034605",
+        "hostname": "DESKTOP-014",
+        "id": "14",
         "ip": [
-            "67.43.156.13"
+            "67.43.156.12"
         ],
+        "name": "DESKTOP-014",
         "os": {
             "type": "windows"
         }
@@ -599,30 +649,65 @@ An example event for `endpoint_event` looks as following:
     "input": {
         "type": "aws-s3"
     },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-carbon-endpoint-bucket-60445.s3.us-east-1.amazonaws.com/test-endpoint.log"
+        },
+        "offset": 0
+    },
+    "network": {
+        "direction": "inbound",
+        "transport": "tcp"
+    },
     "process": {
-        "command_line": "\"route.exe\" print",
-        "entity_id": "XXXXXXXX-003d902d-00001310-00000000-1d81e748c4adb37",
-        "executable": "c:\\windows\\system32\\route.exe",
+        "command_line": "\"C:\\Program Files\\Aella\\aella_conf_win_srv\\aella_conf_win_srv.exe\"",
+        "entity_id": "XXXXXXXX-00442a47-00002328-00000000-1d81e73a30955e7",
+        "executable": "c:\\program files\\aella\\aella_conf_win_srv\\aella_conf_win_srv.exe",
         "hash": {
-            "md5": "2498272dc48446891182747428d02a30",
-            "sha256": "9e9c7696859b94b1c33a532fa4d5c648226cf3361121dd899e502b8949fb11a6"
+            "md5": "6174da1a2dd7594456bbb3ae50ac5587",
+            "sha256": "2ad7d1a17ee2dd897a5a45515e5ae46f8b6b61d3f67c90c1fa0c7910f06d0515"
         },
         "parent": {
-            "command_line": "C:\\WindowsAzure\\GuestAgent_2.7.41491.1010_2021-05-11_233023\\GuestAgent\\WindowsAzureGuestAgent.exe",
-            "entity_id": "XXXXXXXX-003d902d-00000694-00000000-1d7540221dedd62",
-            "executable": "c:\\windowsazure\\guestagent_2.7.41491.1010_2021-05-11_233023\\guestagent\\windowsazureguestagent.exe",
+            "command_line": "C:\\WINDOWS\\system32\\services.exe",
+            "entity_id": "XXXXXXXX-00442a47-000002d0-00000000-1d807560b2edfc4",
+            "executable": "c:\\windows\\system32\\services.exe",
             "hash": {
-                "md5": "03dd698da2671383c9b4f868c9931879",
-                "sha256": "44a1975b2197484bb22a0eb673e67e7ee9ec20265e9f6347f5e06b6447ac82c5"
+                "md5": "d8e577bf078c45954f4531885478d5a9",
+                "sha256": "dfbea9e8c316d9bc118b454b0c722cd674c30d0a256340200e2c3a7480cba674"
             },
-            "pid": 1684
+            "pid": 720
         },
-        "pid": 4880
+        "pid": 9000
+    },
+    "related": {
+        "hash": [
+            "2ad7d1a17ee2dd897a5a45515e5ae46f8b6b61d3f67c90c1fa0c7910f06d0515",
+            "6174da1a2dd7594456bbb3ae50ac5587",
+            "d8e577bf078c45954f4531885478d5a9",
+            "dfbea9e8c316d9bc118b454b0c722cd674c30d0a256340200e2c3a7480cba674"
+        ],
+        "hosts": [
+            "DESKTOP-014"
+        ],
+        "ip": [
+            "67.43.156.14",
+            "127.0.0.1",
+            "67.43.156.12"
+        ],
+        "user": [
+            "NT AUTHORITY\\SYSTEM"
+        ]
+    },
+    "source": {
+        "domain": "example.com",
+        "ip": "67.43.156.14",
+        "port": 9001
     },
     "tags": [
+        "collect_sqs_logs",
         "preserve_original_event",
         "forwarded",
-        "carbon_black_cloud-endpoint-event"
+        "carbon_black_cloud-endpoint_event"
     ]
 }
 ```
@@ -632,17 +717,11 @@ An example event for `endpoint_event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | carbon_black_cloud.endpoint_event.alert_id | The ID of the Alert this event is associated with. | keyword |
 | carbon_black_cloud.endpoint_event.backend.timestamp | Time when the backend received the batch of events. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.guid | Unique ID of the child process. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.hash.md5 | Cryptographic MD5 hashes of the executable file backing the child process. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.hash.sha256 | Cryptographic SHA256 hashes of the executable file backing the child process. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.name | Full path to the target of the crossproc event on the device's local file system. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.pid | OS-reported Process ID of the child process. | long |
-| carbon_black_cloud.endpoint_event.childproc.publisher.name | The name of the publisher. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.publisher.state | The state of the publisher. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.reputation | Carbon Black Cloud Reputation string for the childproc. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.username | The username associated with the user context that the child process was started under. | keyword |
 | carbon_black_cloud.endpoint_event.create_time | The time at which the event was ingested in carbon black cloud. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.action | The action taken on cross-process. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.api | Name of the operating system API called by the actor process. | keyword |
@@ -672,11 +751,22 @@ An example event for `endpoint_event` looks as following:
 | carbon_black_cloud.endpoint_event.netconn.proxy.port | UDP/TCP port number associated with the "proxy" end of this network connection. | keyword |
 | carbon_black_cloud.endpoint_event.organization_key | The organization key associated with the console instance. | keyword |
 | carbon_black_cloud.endpoint_event.process.duration | The time difference in seconds between the process start and process terminate event. | long |
+| carbon_black_cloud.endpoint_event.process.grandparent.command_line | Full command line that started the grandparent process, including the absolute path to the executable, and all arguments. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.entity_id | Unique identifier for the grandparent process. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.executable | Absolute path to the process executable. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.hash.md5 | Cryptographic MD5 hashes of the grandparent process. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.hash.sha256 | Cryptographic SHA256 hashes of the grandparent process. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.pid | The grandparent's process id. | keyword |
+| carbon_black_cloud.endpoint_event.process.grandparent.reputation | Reputation of the grandparent process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.publisher.name | The name of the publisher. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.process.parent.reputation | Reputation of the parent process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.terminated | True if parent process was terminated else false. | boolean |
+| carbon_black_cloud.endpoint_event.process.parent.username | The username associated with the user context that the parent process was started under. | keyword |
 | carbon_black_cloud.endpoint_event.process.publisher.name | The name of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.process.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.process.reputation | Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
-| carbon_black_cloud.endpoint_event.process.terminated | True if process was terminated elase false. | boolean |
+| carbon_black_cloud.endpoint_event.process.terminated | True if process was terminated else false. | boolean |
 | carbon_black_cloud.endpoint_event.process.username | The username associated with the user context that this process was started under. | keyword |
 | carbon_black_cloud.endpoint_event.schema | The schema version. The current schema version is "1". This schema version will only be incremented if the field definitions are changed in a backwards-incompatible way. | long |
 | carbon_black_cloud.endpoint_event.scriptload.count | Count of scriptload events across all processes reported by the sensor since last initialization. | long |
@@ -711,133 +801,140 @@ An example event for `watchlist_hit` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-02-10T06:53:45.096Z",
     "agent": {
-        "id": "e0d5f508-9616-400f-b26b-bb1aa6638b80",
+        "ephemeral_id": "8c335d51-58c6-4d1c-b166-4cf713b512ad",
+        "id": "e098aaea-d0a3-428c-8bdd-6908e243f733",
+        "name": "elastic-agent-59512",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.18.0"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-carbon-watchlist-bucket-12116",
+                "name": "elastic-package-carbon-watchlist-bucket-12116"
+            },
+            "object": {
+                "key": "test-watchlist.log"
+            }
+        }
     },
     "carbon_black_cloud": {
         "watchlist_hit": {
             "device": {
-                "external_ip": "67.43.156.12",
-                "internal_ip": "10.10.156.12",
-                "os": "WINDOWS"
+                "external_ip": "81.2.69.145",
+                "os": "LINUX"
             },
             "ioc": {
-                "hit": "((process_name:sc.exe -parent_name:svchost.exe) AND process_cmdline:query) -enriched:true",
-                "id": "565571-0"
+                "hit": "(((process_name:rmdir OR process_name:rm) -process_cmdline:dhclient)) -enriched:true",
+                "id": "480e5065-1ce0-4a6f-ab60-691a7ce0393e-0"
             },
-            "organization_key": "xxxxxxxx",
+            "organization_key": "7xxxxxxN",
             "process": {
                 "parent": {
-                    "publisher": [
-                        {
-                            "name": "Microsoft Windows",
-                            "state": [
-                                "FILE_SIGNATURE_STATE_SIGNED",
-                                "FILE_SIGNATURE_STATE_VERIFIED",
-                                "FILE_SIGNATURE_STATE_TRUSTED",
-                                "FILE_SIGNATURE_STATE_OS",
-                                "FILE_SIGNATURE_STATE_CATALOG_SIGNED"
-                            ]
-                        }
-                    ],
-                    "reputation": "REP_WHITE",
-                    "username": "NT AUTHORITY\\SYSTEM"
+                    "reputation": "REP_RESOLVING",
+                    "username": "root"
                 },
-                "publisher": [
-                    {
-                        "name": "Microsoft Windows",
-                        "state": [
-                            "FILE_SIGNATURE_STATE_SIGNED",
-                            "FILE_SIGNATURE_STATE_VERIFIED",
-                            "FILE_SIGNATURE_STATE_TRUSTED",
-                            "FILE_SIGNATURE_STATE_OS",
-                            "FILE_SIGNATURE_STATE_CATALOG_SIGNED"
-                        ]
-                    }
-                ],
-                "reputation": "REP_WHITE",
-                "username": "NT AUTHORITY\\SYSTEM"
+                "reputation": "REP_RESOLVING",
+                "username": "root"
             },
             "report": {
-                "id": "CFnKBKLTv6hUkBGFobRdg-565571",
-                "name": "Discovery - System Service Discovery Detected",
+                "id": "GUWNtEmJQhKmuOTxoRV8hA-480e5065-1ce0-4a6f-ab60-691a7ce0393e",
+                "name": "Impact - Data Destruction - rmdir and rm Usage",
                 "tags": [
-                    "attack",
+                    "macos",
+                    "mac",
+                    "osx",
                     "attackframework",
-                    "threathunting",
-                    "hunting",
-                    "t1007",
-                    "recon",
-                    "discovery",
-                    "windows"
+                    "linux",
+                    "t1070",
+                    "evasion",
+                    "t1485"
                 ]
             },
             "schema": 1,
             "type": "watchlist.hit",
             "watchlists": [
                 {
-                    "id": "P5f9AW29TGmTOvBW156Cig",
-                    "name": "ATT&CK Framework"
+                    "id": "yY9iugATqCfQMdaUDPQ",
+                    "name": "Carbon Black Endpoint Visibility"
                 }
             ]
         }
     },
+    "cloud": {
+        "region": "us-east-1"
+    },
     "data_stream": {
         "dataset": "carbon_black_cloud.watchlist_hit",
-        "namespace": "default",
+        "namespace": "56238",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "e098aaea-d0a3-428c-8bdd-6908e243f733",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
     "event": {
         "agent_id_status": "verified",
         "dataset": "carbon_black_cloud.watchlist_hit",
-        "ingested": "2022-02-17T07:23:31Z",
+        "ingested": "2025-10-23T08:51:15Z",
         "kind": "event",
-        "original": "{\"schema\":1,\"create_time\":\"2022-02-10T23:54:32.449Z\",\"device_external_ip\":\"205.234.30.196\",\"device_id\":4467271,\"device_internal_ip\":\"10.33.4.214\",\"device_name\":\"Carbonblack-win1\",\"device_os\":\"WINDOWS\",\"ioc_hit\":\"((process_name:sc.exe -parent_name:svchost.exe) AND process_cmdline:query) -enriched:true\",\"ioc_id\":\"565571-0\",\"org_key\":\"7DESJ9GN\",\"parent_cmdline\":\"C:\\\\WINDOWS\\\\system32\\\\cmd.exe /c \\\"sc query aella_conf | findstr RUNNING \\u003e null\\\"\",\"parent_guid\":\"7DESJ9GN-00442a47-00000fec-00000000-1d81ed87d4655d1\",\"parent_hash\":[\"d0fce3afa6aa1d58ce9fa336cc2b675b\",\"4d89fc34d5f0f9babd022271c585a9477bf41e834e46b991deaa0530fdb25e22\"],\"parent_path\":\"c:\\\\windows\\\\syswow64\\\\cmd.exe\",\"parent_pid\":4076,\"parent_publisher\":[{\"name\":\"Microsoft Windows\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED\"}],\"parent_reputation\":\"REP_WHITE\",\"parent_username\":\"NT AUTHORITY\\\\SYSTEM\",\"process_cmdline\":\"sc  query aella_conf \",\"process_guid\":\"7DESJ9GN-00442a47-00001d5c-00000000-1d81ed87d63d2c6\",\"process_hash\":[\"d9d7684b8431a0d10d0e76fe9f5ffec8\",\"4fe6d9eb8109fb79ff645138de7cff37906867aade589bd68afa503a9ab3cfb2\"],\"process_path\":\"c:\\\\windows\\\\syswow64\\\\sc.exe\",\"process_pid\":7516,\"process_publisher\":[{\"name\":\"Microsoft Windows\",\"state\":\"FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED\"}],\"process_reputation\":\"REP_WHITE\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"report_id\":\"CFnKBKLTv6hUkBGFobRdg-565571\",\"report_name\":\"Discovery - System Service Discovery Detected\",\"report_tags\":[\"attack\",\"attackframework\",\"threathunting\",\"hunting\",\"t1007\",\"recon\",\"discovery\",\"windows\"],\"severity\":3,\"type\":\"watchlist.hit\",\"watchlists\":[{\"id\":\"P5f9AW29TGmTOvBW156Cig\",\"name\":\"ATT\\u0026CK Framework\"}]}",
-        "severity": 3
+        "original": "{\"schema\":1,\"create_time\":\"2022-02-10T06:53:45.096Z\",\"device_external_ip\":\"81.2.69.145\",\"device_id\":6,\"device_name\":\"DESKTOP-006\",\"device_os\":\"LINUX\",\"ioc_hit\":\"(((process_name:rmdir OR process_name:rm) -process_cmdline:dhclient)) -enriched:true\",\"ioc_id\":\"480e5065-1ce0-4a6f-ab60-691a7ce0393e-0\",\"org_key\":\"7xxxxxxN\",\"parent_cmdline\":\"/var/lib/dpkg/info/linux-image-5.11.0-49-generic.postinst configure \",\"parent_guid\":\"7DESJ9GN-00428a2d-000019e5-00000000-1d81e49f1416d17\",\"parent_hash\":[\"\",\"\"],\"parent_path\":\"/usr/bin/dash\",\"parent_pid\":6629,\"parent_reputation\":\"REP_RESOLVING\",\"parent_username\":\"root\",\"process_cmdline\":\"rm -f /lib/modules/5.11.0-49-generic/.fresh-install\",\"process_guid\":\"7DESJ9GN-00428a2d-000019e8-00000000-1d81e49f41898df\",\"process_hash\":[\"\",\"\"],\"process_path\":\"/usr/bin/rm\",\"process_pid\":6632,\"process_reputation\":\"REP_RESOLVING\",\"process_username\":\"root\",\"report_id\":\"GUWNtEmJQhKmuOTxoRV8hA-480e5065-1ce0-4a6f-ab60-691a7ce0393e\",\"report_name\":\"Impact - Data Destruction - rmdir and rm Usage\",\"report_tags\":[\"macos\",\"mac\",\"osx\",\"attackframework\",\"linux\",\"t1070\",\"evasion\",\"t1485\"],\"severity\":1,\"type\":\"watchlist.hit\",\"watchlists\":[{\"id\":\"yY9iugATqCfQMdaUDPQ\",\"name\":\"Carbon Black Endpoint Visibility\"}]}",
+        "severity": 1
     },
     "host": {
-        "hostname": "Carbonblack-win1",
-        "id": "4467271",
+        "hostname": "DESKTOP-006",
+        "id": "6",
         "ip": [
-            "10.10.156.12",
-            "67.43.156.12"
+            "81.2.69.145"
         ],
+        "name": "DESKTOP-006",
         "os": {
-            "type": "windows"
+            "type": "linux"
         }
     },
     "input": {
         "type": "aws-s3"
     },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-carbon-watchlist-bucket-12116.s3.us-east-1.amazonaws.com/test-watchlist.log"
+        },
+        "offset": 2045
+    },
     "process": {
-        "command_line": "sc  query aella_conf ",
-        "entity_id": "7DESJ9GN-00442a47-00001d5c-00000000-1d81ed87d63d2c6",
-        "executable": "c:\\windows\\syswow64\\sc.exe",
-        "hash": {
-            "md5": "d9d7684b8431a0d10d0e76fe9f5ffec8",
-            "sha256": "4fe6d9eb8109fb79ff645138de7cff37906867aade589bd68afa503a9ab3cfb2"
-        },
+        "command_line": "rm -f /lib/modules/5.11.0-49-generic/.fresh-install",
+        "entity_id": "7DESJ9GN-00428a2d-000019e8-00000000-1d81e49f41898df",
+        "executable": "/usr/bin/rm",
         "parent": {
-            "command_line": "C:\\WINDOWS\\system32\\cmd.exe /c \"sc query aella_conf | findstr RUNNING > null\"",
-            "entity_id": "7DESJ9GN-00442a47-00000fec-00000000-1d81ed87d4655d1",
-            "executable": "c:\\windows\\syswow64\\cmd.exe",
-            "hash": {
-                "md5": "d0fce3afa6aa1d58ce9fa336cc2b675b",
-                "sha256": "4d89fc34d5f0f9babd022271c585a9477bf41e834e46b991deaa0530fdb25e22"
-            },
-            "pid": 4076
+            "command_line": "/var/lib/dpkg/info/linux-image-5.11.0-49-generic.postinst configure ",
+            "entity_id": "7DESJ9GN-00428a2d-000019e5-00000000-1d81e49f1416d17",
+            "executable": "/usr/bin/dash",
+            "pid": 6629
         },
-        "pid": 7516
+        "pid": 6632
+    },
+    "related": {
+        "hosts": [
+            "DESKTOP-006"
+        ],
+        "ip": [
+            "81.2.69.145"
+        ],
+        "user": [
+            "root"
+        ]
     },
     "tags": [
+        "collect_sqs_logs",
         "preserve_original_event",
         "forwarded",
-        "carbon_black_cloud-watchlist-hit"
+        "carbon_black_cloud-watchlist_hit"
     ]
 }
 ```
@@ -847,6 +944,9 @@ An example event for `watchlist_hit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | carbon_black_cloud.watchlist_hit.device.external_ip | External IP of the device. | ip |
 | carbon_black_cloud.watchlist_hit.device.internal_ip | Internal IP of the device. | ip |
 | carbon_black_cloud.watchlist_hit.device.os | OS Type of device (Windows/OSX/Linux). | keyword |
@@ -890,13 +990,13 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-19T16:29:52.808Z",
+    "@timestamp": "2025-06-02T14:58:13.698Z",
     "agent": {
-        "ephemeral_id": "7a1f920f-4945-405b-9e1f-67f8a3601fdb",
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "cec373bd-24d4-48f5-9a22-d7630b36e420",
+        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
+        "name": "elastic-agent-11440",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.18.1"
     },
     "carbon_black_cloud": {
         "asset_vulnerability_summary": {
@@ -916,22 +1016,21 @@ An example event for `asset_vulnerability_summary` looks as following:
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "namespace": "ep",
+        "namespace": "93728",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
+        "snapshot": false,
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-04-19T16:29:52.808Z",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2023-04-19T16:29:56Z",
+        "ingested": "2025-06-02T14:58:16Z",
         "kind": "state",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },
@@ -946,7 +1045,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "related": {
         "hosts": [

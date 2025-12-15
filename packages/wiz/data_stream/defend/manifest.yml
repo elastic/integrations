@@ -1,0 +1,106 @@
+title: Collect Detection events from Wiz Defend.
+type: logs
+streams:
+  - input: http_endpoint
+    template_path: http_endpoint.yml.hbs
+    enabled: false
+    title: Defend logs
+    description: Collect Detection events from Wiz Defend.
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: Bind address for the listener. Use 0.0.0.0 to listen on all interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The port number the listener binds to.
+        multi: false
+        required: true
+        show_user: true
+        default: 9588
+      - name: url
+        type: text
+        title: URL
+        description: This option specifies which URL path to accept requests on. Defaults to /.
+        multi: false
+        required: false
+        show_user: false
+        default: /
+      - name: basic_auth
+        title: Authentiation (Basic)
+        type: bool
+        default: false
+        description: |
+          Enables or disables HTTP basic auth for each incoming request. If enabled, both the username and password must be configured.
+        required: false
+        show_user: true
+      - name: username
+        type: text
+        title: Username
+        description: If basic_auth is enabled, this is the username used for authentication against the HTTP listener. Requires password to also be set.
+        required: false
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        description: If basic_auth is enabled, this is the password used for authentication against the HTTP listener. Requires username to also be set.
+        required: false
+        show_user: true
+        secret: true
+      - name: token
+        type: password
+        title: Authentiation (Token)
+        description: The token value required to authenticate via `Token`.
+        required: false
+        show_user: true
+        secret: true
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: Options for enabling TLS for the listening webhook endpoint. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # enabled: true
+          # certificate: "/etc/pki/client/cert.pem"
+          # key: "/etc/pki/client/cert.key"
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - wiz-defend
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve wiz.defend fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+

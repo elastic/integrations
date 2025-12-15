@@ -22,7 +22,7 @@ This module has been tested against the latest CSPM version **v2** and CWP versi
 
 ## Data streams
 
-The Prisma Cloud integration collects data for the following five events:
+The Prisma Cloud integration collects data for the following event types:
 
 | Event Type                    |
 |-------------------------------|
@@ -31,68 +31,47 @@ The Prisma Cloud integration collects data for the following five events:
 | Host                          |
 | Host Profile                  |
 | Incident Audit                |
+| Misconfiguration              |
+| Vulnerability                 |
 
 **NOTE**:
 
-1. Alert and Audit data-streams are part of [CSPM](https://pan.dev/prisma-cloud/api/cspm/) module, whereas Host, Host Profile and Incident Audit are part of [CWP](https://pan.dev/prisma-cloud/api/cwpp/) module.
-2. Currently, we are unable to collect logs of Incident Audit datastream via defined API. Hence, we have not added the configuration of Incident Audit data stream via REST API.
+Alert, Audit, Misconfiguration, and Vulnerability data-streams are part of [CSPM](https://pan.dev/prisma-cloud/api/cspm/) module, whereas Host, Host Profile and Incident Audit are part of [CWP](https://pan.dev/prisma-cloud/api/cwpp/) module.
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-### Agentless Enabled Integration
+### Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
 ## Setup
 
-### To collect data through REST API, follow the below steps:
+### To collect data through REST API, follow these steps"
 
 ### CSPM
 
-1. Considering you already have a Prisma Cloud account, to obtain an access key ID and secret access key from the Prisma Cloud system administrator, refer this [link](https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/manage-prisma-cloud-administrators/create-access-keys).
-2. The base URL of your CSPM API request depends on the region of your Prisma Cloud tenant and is similar to your Prisma Cloud administrative console URL. Obtain your URL from this [link](https://pan.dev/prisma-cloud/api/cspm/api-urls/).
+1. Assuming that you already have a Prisma Cloud account, to obtain an access key ID and secret access key from the Prisma Cloud system administrator, check [how to create access keys](https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/manage-prisma-cloud-administrators/create-access-keys).
+2. The base URL of your CSPM API request depends on the region of your Prisma Cloud tenant and is similar to your Prisma Cloud administrative console URL. Check your URL from the [API URLs](https://pan.dev/prisma-cloud/api/cspm/api-urls/).
 
 ### CWP
 
-1. Assuming you've already generated your access key ID and secret access key from the Prisma Cloud Console; if not, see the section above.
-2. The base URL of your CWP API request depends on the console path and the API version of your Prisma Cloud Compute console.
-3. To find your API version, log in to your Prisma Cloud Compute console, click the bell icon in the top right of the page, your API version is displayed.
-4. To get your console path, navigate to Compute > Manage > System > Downloads. you can find your console path listed under Path to Console.
-5. Now you can create your base URL in this format: `https://<CONSOLE>/api/v<VERSION>`.
+1. Assuming that you've already generated your access key ID and secret access key from the Prisma Cloud Console; if not, check the CSPM section. The base URL of your CWP API request depends on the console path and the API version of your Prisma Cloud Compute console.
+3. To find your API version, log in to your Prisma Cloud Compute console and click the bell icon in the top right of the page.
+4. To get your console path, navigate to **Compute** > **Manage** > **System** > **Downloads**. Your console path is listed under **Path to Console**.
+5. Create your base URL in this format: `https://<CONSOLE>/api/v<VERSION>`.
 
 **NOTE**: You can specify a date and time for the access key validity. If you do not select key expiry, the key is set to never expire; if you select it, but do not specify a date, the key expires in a month.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Palo Alto Prisma Cloud.
-3. Click on the "Palo Alto Prisma Cloud" integration from the search results.
-4. Click on the Add Palo Alto Prisma Cloud Integration button to add the integration.
-5. While adding the integration, if you want to collect Alert and Audit data via REST API, then you have to put the following details:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Palo Alto Prisma Cloud**.
+3. Select the **Palo Alto Prisma Cloud** integration and add it.
+4. While adding the integration, if you want to collect Alert and Audit data via REST API, then you have to put the following details:
    - username
    - password
    - url
@@ -109,11 +88,24 @@ There are some minimum requirements for running Elastic Agent and for more infor
    - offset
    - batch size
 
+   or if you want to collect Misconfiguration data via REST API, then you have to put the following details:
+   - username
+   - password
+   - url
+   - interval
+   - batch size
+
+   or if you want to collect Vulnerability data via REST API, then you have to put the following details:
+   - username
+   - password
+   - url
+   - interval
+
   or if you want to collect Host, Host Profile and Incident Audit data via TCP/UDP, then you have to put the following details:
    - listen address
    - listen port
 
-**NOTE**: Your Access key ID is your username and Secret Access key is your password.
+**NOTE**: Your Access key ID is your username and the Secret Access key is your password.
 
 ## Logs Reference
 
@@ -1431,11 +1423,11 @@ An example event for `incident_audit` looks as following:
 {
     "@timestamp": "2023-09-19T07:15:31.899Z",
     "agent": {
-        "ephemeral_id": "2be27553-a973-4cdb-8c8d-e296a788b63a",
-        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "2bcef8c2-6ed9-42d7-9dac-cba99dc89ea3",
+        "id": "7bcfbb54-8fe1-48a5-85cd-23794e360014",
+        "name": "elastic-agent-61906",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.18.0"
     },
     "cloud": {
         "account": {
@@ -1451,7 +1443,7 @@ An example event for `incident_audit` looks as following:
         "region": "string"
     },
     "container": {
-        "id": "string",
+        "id": "container123",
         "image": {
             "name": [
                 "docker.io/library/nginx:latest",
@@ -1460,21 +1452,21 @@ An example event for `incident_audit` looks as following:
         },
         "name": [
             "nginx",
-            "string"
+            "Example Container"
         ]
     },
     "data_stream": {
         "dataset": "prisma_cloud.incident_audit",
-        "namespace": "ep",
+        "namespace": "20978",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
+        "id": "7bcfbb54-8fe1-48a5-85cd-23794e360014",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1483,9 +1475,9 @@ An example event for `incident_audit` looks as following:
         ],
         "dataset": "prisma_cloud.incident_audit",
         "id": "651c46b145d15228585exxxx",
-        "ingested": "2023-11-03T06:39:34Z",
+        "ingested": "2025-05-23T11:09:31Z",
         "kind": "event",
-        "original": "{\"_id\":\"651c46b145d15228585exxxx\",\"accountID\":\"123abc\",\"acknowledged\":false,\"app\":\"string\",\"appID\":\"string\",\"audits\":[{\"_id\":\"651c46b145d15228585exxxx\",\"accountID\":\"abdcsfData\",\"app\":\"string\",\"appID\":\"string\",\"attackTechniques\":[\"exploitationForPrivilegeEscalation\"],\"attackType\":\"cloudMetadataProbing\",\"cluster\":\"string\",\"collections\":[\"string\"],\"command\":\"string\",\"container\":true,\"containerId\":\"5490e85a1a0c1c9f9c74591a9d3fcbf61beb84a952f14a17277be5fcf00xxxxx\",\"containerName\":\"nginx\",\"count\":0,\"country\":\"string\",\"domain\":\"string\",\"effect\":[\"block\",\"prevent\"],\"err\":\"string\",\"filepath\":\"string\",\"fqdn\":\"audits-fqdn-hostname\",\"function\":\"string\",\"functionID\":\"string\",\"hostname\":\"gke-tp-cluster-tp-pool1-9658xxxx-j87v\",\"imageId\":\"sha256:61395b4c586da2b9b3b7ca903ea6a448e6783dfdd7f768ff2c1a0f3360aaxxxx\",\"imageName\":\"docker.io/library/nginx:latest\",\"interactive\":true,\"ip\":\"0.0.0.0\",\"label\":\"string\",\"labels\":{},\"md5\":\"string\",\"msg\":\"string\",\"namespace\":\"string\",\"os\":\"string\",\"pid\":0,\"port\":0,\"processPath\":\"string\",\"profileId\":\"string\",\"provider\":\"alibaba\",\"rawEvent\":\"string\",\"region\":\"string\",\"requestID\":\"string\",\"resourceID\":\"string\",\"ruleName\":\"string\",\"runtime\":[\"python3.6\"],\"severity\":[\"low\",\"medium\",\"high\"],\"time\":\"2023-09-19T07:15:31.899Z\",\"type\":[\"processes\"],\"user\":\"string\",\"version\":\"string\",\"vmID\":\"string\",\"wildFireReportURL\":\"string\"}],\"category\":\"malware\",\"cluster\":\"string\",\"collections\":[\"string\"],\"containerID\":\"string\",\"containerName\":\"string\",\"customRuleName\":\"string\",\"fqdn\":\"string\",\"function\":\"string\",\"functionID\":\"string\",\"hostname\":\"string\",\"imageID\":\"string\",\"imageName\":\"string\",\"labels\":{},\"namespace\":\"string\",\"profileID\":\"string\",\"provider\":\"oci\",\"region\":\"string\",\"resourceID\":\"string\",\"runtime\":\"string\",\"serialNum\":0,\"shouldCollect\":true,\"time\":\"2023-09-19T07:15:31.899Z\",\"type\":\"host\",\"vmID\":\"string\",\"windows\":true}",
+        "original": "{\"_id\":\"651c46b145d15228585exxxx\",\"accountID\":\"123abc\",\"acknowledged\":false,\"app\":\"string\",\"appID\":\"string\",\"audits\":[{\"_id\":\"651c46b145d15228585exxxx\",\"accountID\":\"abdcsfData\",\"app\":\"string\",\"appID\":\"abc123\",\"attackTechniques\":[\"exploitationForPrivilegeEscalation\"],\"attackType\":\"cloudMetadataProbing\",\"cluster\":\"string\",\"collections\":[\"string\"],\"command\":\"string\",\"container\":true,\"containerId\":\"5490e85a1a0c1c9f9c74591a9d3fcbf61beb84a952f14a17277be5fcf00xxxxx\",\"containerName\":\"nginx\",\"count\":0,\"country\":\"string\",\"domain\":\"string\",\"effect\":[\"block\",\"prevent\"],\"err\":\"string\",\"filepath\":\"string\",\"fqdn\":\"audits-fqdn-hostname\",\"function\":\"string\",\"functionID\":\"string\",\"hostname\":\"gke-tp-cluster-tp-pool1-9658xxxx-j87v\",\"imageId\":\"sha256:61395b4c586da2b9b3b7ca903ea6a448e6783dfdd7f768ff2c1a0f3360aaxxxx\",\"imageName\":\"docker.io/library/nginx:latest\",\"interactive\":true,\"ip\":\"0.0.0.0\",\"label\":\"string\",\"labels\":{},\"md5\":\"string\",\"msg\":\"string\",\"namespace\":\"string\",\"os\":\"Debian GNU/Linux 12 (bookworm)\",\"pid\":0,\"port\":0,\"processPath\":\"string\",\"profileId\":\"string\",\"provider\":\"alibaba\",\"rawEvent\":\"string\",\"region\":\"string\",\"requestID\":\"string\",\"resourceID\":\"string\",\"ruleName\":\"string\",\"runtime\":[\"python3.6\"],\"severity\":[\"low\",\"medium\",\"high\"],\"time\":\"2023-09-19T07:15:31.899Z\",\"type\":[\"processes\"],\"user\":\"string\",\"version\":\"string\",\"vmID\":\"string\",\"wildFireReportURL\":\"string\"}],\"category\":\"malware\",\"cluster\":\"string\",\"collections\":[\"string\"],\"containerID\":\"container123\",\"containerName\":\"Example Container\",\"customRuleName\":\"Rule xyz\",\"fqdn\":\"example.com\",\"function\":\"string\",\"functionID\":\"string\",\"hostname\":\"string\",\"imageID\":\"string\",\"imageName\":\"string\",\"labels\":{},\"namespace\":\"string\",\"profileID\":\"string\",\"provider\":\"oci\",\"region\":\"string\",\"resourceID\":\"string\",\"runtime\":\"string\",\"serialNum\":0,\"shouldCollect\":true,\"time\":\"2023-09-19T07:15:31.899Z\",\"type\":\"host\",\"vmID\":\"string\",\"windows\":true}",
         "type": [
             "info"
         ]
@@ -1493,21 +1485,16 @@ An example event for `incident_audit` looks as following:
     "host": {
         "domain": [
             "audits-fqdn-hostname",
-            "string"
+            "example.com"
         ],
         "hostname": "string"
     },
     "input": {
-        "type": "udp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.243.5:50216"
-        }
+        "type": "cel"
     },
     "os": {
         "full": [
-            "string"
+            "Debian GNU/Linux 12 (bookworm)"
         ]
     },
     "prisma_cloud": {
@@ -1525,16 +1512,16 @@ An example event for `incident_audit` looks as following:
                 "string"
             ],
             "container": {
-                "id": "string",
-                "name": "string"
+                "id": "container123",
+                "name": "Example Container"
             },
-            "custom_rule_name": "string",
+            "custom_rule_name": "Rule xyz",
             "data": [
                 {
                     "_id": "651c46b145d15228585exxxx",
                     "account_id": "abdcsfData",
                     "app": {
-                        "id": "string",
+                        "id": "abc123",
                         "value": "string"
                     },
                     "attack": {
@@ -1578,7 +1565,7 @@ An example event for `incident_audit` looks as following:
                     "md5": "string",
                     "msg": "string",
                     "namespace": "string",
-                    "os": "string",
+                    "os": "Debian GNU/Linux 12 (bookworm)",
                     "pid": 0,
                     "port": 0,
                     "process_path": "string",
@@ -1607,7 +1594,7 @@ An example event for `incident_audit` looks as following:
                     "wild_fire_report_url": "string"
                 }
             ],
-            "fqdn": "string",
+            "fqdn": "example.com",
             "function": {
                 "id": "string",
                 "value": "string"
@@ -1635,6 +1622,7 @@ An example event for `incident_audit` looks as following:
         "hosts": [
             "audits-fqdn-hostname",
             "gke-tp-cluster-tp-pool1-9658xxxx-j87v",
+            "example.com",
             "string"
         ],
         "ip": [
@@ -1646,7 +1634,8 @@ An example event for `incident_audit` looks as following:
     },
     "rule": {
         "name": [
-            "string"
+            "string",
+            "Rule xyz"
         ]
     },
     "tags": [
@@ -1763,3 +1752,355 @@ An example event for `incident_audit` looks as following:
 | prisma_cloud.incident_audit.type | Possible values: [host,container,function,appEmbedded,fargate]. | keyword |
 | prisma_cloud.incident_audit.vm_id | Azure unique VM ID on which the incident was found. | keyword |
 | prisma_cloud.incident_audit.windows | Windows indicates if defender OS type is Windows. | boolean |
+
+
+### Misconfiguration
+
+This is the `Misconfiguration` dataset.
+
+#### Example
+
+An example event for `misconfiguration` looks as following:
+
+```json
+{
+    "@timestamp": "2025-11-27T07:15:31.063Z",
+    "agent": {
+        "ephemeral_id": "10e6dcfd-2426-449c-ad88-dd7b950c6ff6",
+        "id": "ef0fcaa5-8765-4499-86d8-6dd2bc23a7fe",
+        "name": "elastic-agent-53293",
+        "type": "filebeat",
+        "version": "8.19.4"
+    },
+    "cloud": {
+        "account": {
+            "id": "aa88885-8888-4444-8fd2-00000000efc3",
+            "name": "Azure Account"
+        },
+        "provider": "azure",
+        "region": "westeurope"
+    },
+    "data_stream": {
+        "dataset": "prisma_cloud.misconfiguration",
+        "namespace": "89870",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "ef0fcaa5-8765-4499-86d8-6dd2bc23a7fe",
+        "snapshot": false,
+        "version": "8.19.4"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "prisma_cloud.misconfiguration",
+        "id": "4b000a6af8c000b000ecd6c91c0000bd|463d8b58-1f01-462c-9e30-eca36d8fa11d",
+        "ingested": "2025-11-27T07:15:34Z",
+        "kind": [
+            "state"
+        ],
+        "original": "{\"accountId\":\"aa88885-8888-4444-8fd2-00000000efc3\",\"accountName\":\"Azure Account\",\"alertStatus\":{\"critical\":0,\"high\":0,\"informational\":0,\"low\":0,\"medium\":1},\"appNames\":[\"CSPM\"],\"assetType\":\"Azure Log Analytics Workspace\",\"cloudType\":\"azure\",\"id\":\"/subscriptions/aa88885-8888-4444-8fd2-00000000efc3/resourceGroups/grpc/providers/Microsoft.OperationalInsights/workspaces/sampleworkpace\",\"name\":\"sampleworkpace\",\"overallPassed\":false,\"regionId\":\"westeurope\",\"regionName\":\"Azure West Europe\",\"resourceConfigJsonAvailable\":true,\"resourceDetailsAvailable\":true,\"rrn\":\"rrn:azure:other:westeurope:aa88885-8888-4444-8fd2-00000000efc3:b3b5eadac382f498db09acc473e5c20a281d420b:%2Fsubscriptions%2Faa88885-8888-4444-8fd2-00000000efc3%2FresourceGroups%2Fgrpc%2Fproviders%2FMicrosoft.OperationalInsights%2Fworkspaces%2Fsampleworkpace\",\"scannedPolicy\":{\"id\":\"463d8b58-1f01-462c-9e30-eca36d8fa11d\",\"labels\":[],\"name\":\"Azure Log Analytics workspace configured with overly permissive network access\",\"passed\":false,\"severity\":\"medium\"},\"unifiedAssetId\":\"4b000a6af8c000b000ecd6c91c0000bd\"}",
+        "outcome": "failure",
+        "severity": 47,
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Prisma Cloud",
+        "vendor": "Palo Alto Networks"
+    },
+    "prisma_cloud": {
+        "misconfiguration": {
+            "account_id": "aa88885-8888-4444-8fd2-00000000efc3",
+            "account_name": "Azure Account",
+            "alert_status": {
+                "critical": 0,
+                "high": 0,
+                "informational": 0,
+                "low": 0,
+                "medium": 1
+            },
+            "app_names": [
+                "CSPM"
+            ],
+            "asset_type": "Azure Log Analytics Workspace",
+            "cloud_type": "azure",
+            "id": "/subscriptions/aa88885-8888-4444-8fd2-00000000efc3/resourceGroups/grpc/providers/Microsoft.OperationalInsights/workspaces/sampleworkpace",
+            "name": "sampleworkpace",
+            "overall_passed": false,
+            "region_id": "westeurope",
+            "region_name": "Azure West Europe",
+            "resource_config_json_available": true,
+            "resource_details_available": true,
+            "rrn": "rrn:azure:other:westeurope:aa88885-8888-4444-8fd2-00000000efc3:b3b5eadac382f498db09acc473e5c20a281d420b:%2Fsubscriptions%2Faa88885-8888-4444-8fd2-00000000efc3%2FresourceGroups%2Fgrpc%2Fproviders%2FMicrosoft.OperationalInsights%2Fworkspaces%2Fsampleworkpace",
+            "scanned_policy": {
+                "id": "463d8b58-1f01-462c-9e30-eca36d8fa11d",
+                "name": "Azure Log Analytics workspace configured with overly permissive network access",
+                "passed": false,
+                "severity": "medium"
+            },
+            "unified_asset_id": "4b000a6af8c000b000ecd6c91c0000bd"
+        }
+    },
+    "resource": {
+        "id": "4b000a6af8c000b000ecd6c91c0000bd",
+        "name": "sampleworkpace",
+        "type": "Azure Log Analytics Workspace"
+    },
+    "result": {
+        "evaluation": "failed"
+    },
+    "rule": {
+        "id": "463d8b58-1f01-462c-9e30-eca36d8fa11d",
+        "name": "Azure Log Analytics workspace configured with overly permissive network access",
+        "uuid": "463d8b58-1f01-462c-9e30-eca36d8fa11d"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "prisma_cloud-misconfiguration"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| prisma_cloud.misconfiguration.account_id | Cloud account ID. | keyword |
+| prisma_cloud.misconfiguration.account_name | Cloud account name. | keyword |
+| prisma_cloud.misconfiguration.alert_status.critical |  | long |
+| prisma_cloud.misconfiguration.alert_status.high |  | long |
+| prisma_cloud.misconfiguration.alert_status.informational |  | long |
+| prisma_cloud.misconfiguration.alert_status.low |  | long |
+| prisma_cloud.misconfiguration.alert_status.medium |  | long |
+| prisma_cloud.misconfiguration.app_names | Application names. | keyword |
+| prisma_cloud.misconfiguration.asset_type | Asset type. | keyword |
+| prisma_cloud.misconfiguration.cloud_type | Cloud type. | keyword |
+| prisma_cloud.misconfiguration.id | Resource ID | keyword |
+| prisma_cloud.misconfiguration.name | Resource name. | keyword |
+| prisma_cloud.misconfiguration.overall_passed | Whether all policies for the resource passed. | boolean |
+| prisma_cloud.misconfiguration.region_id | Region ID. | keyword |
+| prisma_cloud.misconfiguration.region_name | Region name. | keyword |
+| prisma_cloud.misconfiguration.resource_config_json_available | Whether the resource config JSON is available. | boolean |
+| prisma_cloud.misconfiguration.resource_details_available | Whether the resource details are available. | boolean |
+| prisma_cloud.misconfiguration.rrn | RRN of the resource. | keyword |
+| prisma_cloud.misconfiguration.scanned_policy.id |  | keyword |
+| prisma_cloud.misconfiguration.scanned_policy.labels |  | keyword |
+| prisma_cloud.misconfiguration.scanned_policy.name |  | keyword |
+| prisma_cloud.misconfiguration.scanned_policy.passed |  | boolean |
+| prisma_cloud.misconfiguration.scanned_policy.severity |  | keyword |
+| prisma_cloud.misconfiguration.unified_asset_id | Unified asset ID. | keyword |
+| resource.id | The ID of the resource. | keyword |
+| resource.name | The name of the resource. | keyword |
+| resource.type | The type of the resource. | keyword |
+| result.evaluation | The result of the evaluation. | keyword |
+| rule.tags | The tags of the rule. | keyword |
+
+
+### Vulnerability
+
+This is the `Vulnerability` dataset.
+
+#### Example
+
+An example event for `vulnerability` looks as following:
+
+```json
+{
+    "@timestamp": "2025-11-24T11:14:27.343Z",
+    "agent": {
+        "ephemeral_id": "ff38bb76-0d40-45d4-be98-c2d9b41abab6",
+        "id": "d5069261-976a-41c4-aa9b-2213f41fc950",
+        "name": "elastic-agent-54334",
+        "type": "filebeat",
+        "version": "8.19.4"
+    },
+    "cloud": {
+        "account": {
+            "id": "aa8f0000-0000-0000-8fd1-00100000efc3"
+        },
+        "provider": "azure"
+    },
+    "data_stream": {
+        "dataset": "prisma_cloud.vulnerability",
+        "namespace": "86934",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "d5069261-976a-41c4-aa9b-2213f41fc950",
+        "snapshot": false,
+        "version": "8.19.4"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability"
+        ],
+        "dataset": "prisma_cloud.vulnerability",
+        "id": "bb000aa950d40000d5b000a6b0c3a2f|CVE-2024-39298",
+        "ingested": "2025-11-24T11:14:30Z",
+        "kind": [
+            "event"
+        ],
+        "original": "{\"3RD_PARTY_EXPLOIT_SOURCE\":\"N/A\",\"ASSET_ID\":\"bb000aa950d40000d5b000a6b0c3a2f\",\"ASSET_TYPE\":\"host\",\"ATTACK_COMPLEXITY\":\"Low\",\"ATTACK_VECTOR\":\"Local\",\"AT_RISK\":\"N\",\"CISA_KEV\":\"N\",\"CLOUD_ACCOUNT_ID\":\"aa8f0000-0000-0000-8fd1-00100000efc3\",\"CVE_ID\":\"CVE-2024-39298\",\"CVE_LINK\":\"https://nvd.nist.gov/vuln/detail/CVE-2024-39298\",\"CVSS_BASE_SCORE\":\"5.5\",\"DISCOVERED_DATE\":\"Oct 31 2025\",\"DISTRIBUTION\":\"ubuntu\",\"DOS\":\"high\",\"EPSS_SCORE\":\"8.8E-4\",\"EXPLOITABLE\":\"N\",\"FIX_DATE\":\"N/A\",\"FIX_VERSION\":\"[N/A]\",\"INSTALLED_VERSIONS\":\"[5.15.0-161.171]\",\"INTERNET_EXPOSED\":\"Y\",\"OS_RELEASE\":\"jammy\",\"PACKAGE_IN_USE\":\"false\",\"PACKAGE_NAME\":\"linux\",\"PATCHABLE\":\"N\",\"PRIVILEGES_REQUIRED\":\"Low\",\"PUBLISHED_DATE\":\"N/A\",\"REGISTRY\":\"N/A\",\"SERVICE_PROVIDER\":\"azure\",\"SEVERITY\":\"medium\",\"USER_INTERACTION\":\"None\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "id": "bb000aa950d40000d5b000a6b0c3a2f",
+        "os": {
+            "platform": "ubuntu"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Prisma Cloud",
+        "vendor": "Palo Alto Networks"
+    },
+    "package": {
+        "name": "linux",
+        "version": [
+            "5.15.0-161.171"
+        ]
+    },
+    "prisma_cloud": {
+        "vulnerability": {
+            "asset_id": "bb000aa950d40000d5b000a6b0c3a2f",
+            "asset_type": "host",
+            "at_risk": "N",
+            "attack_complexity": "Low",
+            "attack_vector": "Local",
+            "cisa_kev": "N",
+            "cloud_account_id": "aa8f0000-0000-0000-8fd1-00100000efc3",
+            "cve_id": "CVE-2024-39298",
+            "cve_link": "https://nvd.nist.gov/vuln/detail/CVE-2024-39298",
+            "cvss_base_score": 5.5,
+            "discovered_date": "2025-10-31T00:00:00.000Z",
+            "distribution": "ubuntu",
+            "dos": "high",
+            "epss_score": 0.00088,
+            "exploitable": "N",
+            "installed_versions": [
+                "5.15.0-161.171"
+            ],
+            "internet_exposed": "Y",
+            "os_release": "jammy",
+            "package_in_use": false,
+            "package_name": "linux",
+            "patchable": "N",
+            "privileges_required": "Low",
+            "service_provider": "azure",
+            "severity": "medium",
+            "user_interaction": "None"
+        }
+    },
+    "related": {
+        "hosts": [
+            "bb000aa950d40000d5b000a6b0c3a2f"
+        ]
+    },
+    "resource": {
+        "id": "bb000aa950d40000d5b000a6b0c3a2f"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "prisma_cloud-vulnerability"
+    ],
+    "vulnerability": {
+        "classification": "CVSS",
+        "cve": "CVE-2024-39298",
+        "enumeration": "CVE",
+        "id": "CVE-2024-39298",
+        "reference": "https://nvd.nist.gov/vuln/detail/CVE-2024-39298",
+        "scanner": {
+            "vendor": "Palo Alto Networks"
+        },
+        "score": {
+            "base": 5.5
+        },
+        "severity": "Medium",
+        "title": "Vulnerability found in linux versions [5.15.0-161.171] - CVE-2024-39298"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| log.source.address |  | keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| package.fixed_version | In which version of the package the vulnerability was fixed. | keyword |
+| prisma_cloud.vulnerability.3rd_party_exploit_source |  | keyword |
+| prisma_cloud.vulnerability.asset_id |  | keyword |
+| prisma_cloud.vulnerability.asset_type |  | keyword |
+| prisma_cloud.vulnerability.at_risk |  | keyword |
+| prisma_cloud.vulnerability.attack_complexity |  | keyword |
+| prisma_cloud.vulnerability.attack_vector |  | keyword |
+| prisma_cloud.vulnerability.cisa_kev |  | keyword |
+| prisma_cloud.vulnerability.cloud_account_id |  | keyword |
+| prisma_cloud.vulnerability.cve_id |  | keyword |
+| prisma_cloud.vulnerability.cve_link |  | keyword |
+| prisma_cloud.vulnerability.cvss_base_score |  | double |
+| prisma_cloud.vulnerability.discovered_date |  | date |
+| prisma_cloud.vulnerability.distribution |  | keyword |
+| prisma_cloud.vulnerability.dos |  | keyword |
+| prisma_cloud.vulnerability.epss_score |  | double |
+| prisma_cloud.vulnerability.exploitable |  | keyword |
+| prisma_cloud.vulnerability.fix_date |  | date |
+| prisma_cloud.vulnerability.fix_version |  | keyword |
+| prisma_cloud.vulnerability.installed_versions |  | keyword |
+| prisma_cloud.vulnerability.internet_exposed |  | keyword |
+| prisma_cloud.vulnerability.os_release |  | keyword |
+| prisma_cloud.vulnerability.package_in_use |  | boolean |
+| prisma_cloud.vulnerability.package_name |  | keyword |
+| prisma_cloud.vulnerability.patchable |  | keyword |
+| prisma_cloud.vulnerability.privileges_required |  | keyword |
+| prisma_cloud.vulnerability.published_date |  | date |
+| prisma_cloud.vulnerability.service_provider |  | keyword |
+| prisma_cloud.vulnerability.severity |  | keyword |
+| prisma_cloud.vulnerability.user_interaction |  | keyword |
+| resource.id | The ID of the resource. | keyword |
+| resource.name | The name of the resource. | keyword |
+| resource.type | The type of the resource. | keyword |
+| vulnerability.cve | The CVE id of the vulnerability. | keyword |
+| vulnerability.published_date | When the vulnerability was published. | date |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| vulnerability.title | The human readeable title of the vulnerability. | keyword |
+

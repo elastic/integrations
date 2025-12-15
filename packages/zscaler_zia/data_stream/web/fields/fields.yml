@@ -76,6 +76,36 @@
                 - name: fail_reason
                   type: keyword
                   description: The reason for the client SSL handshake failure.
+            - name: tls_keyex_alg
+              type: keyword
+              description: The TLS client key exchange algorithm.
+            - name: tls_keyex_hybrid_offers
+              type: long
+              description: Indicates if the TLS client offered a hybrid key exchange algorithm.
+            - name: tls_keyex_non_pqc_offers
+              type: long
+              description: Indicates if the TLS client offered a non-PQC key exchange algorithm.
+            - name: tls_keyex_pqc_offers
+              type: long
+              description: Indicates if the TLS client offered a post-quantum cryptography (PQC) key exchange algorithm.
+            - name: tls_keyex_unknown_offers
+              type: long
+              description: Indicates if the TLS client offered an unknown key exchange algorithm.
+            - name: tls_sig_alg
+              type: keyword
+              description: The TLS client digital signature algorithm. 
+            - name: tls_sig_hybrid_offers
+              type: long
+              description: Indicates if the TLS client offered a hybrid digital signature algorithm.
+            - name: tls_sig_non_pqc_offers
+              type: long
+              description: Indicates if the TLS client offered a non-PQC digital signature algorithm.
+            - name: tls_sig_pqc_offers
+              type: long
+              description: Indicates if the TLS client offered a PQC digital signature algorithm.
+            - name: tls_sig_unknown_offers
+              type: long
+              description: Indicates if the TLS client offered an unknown digital signature algorithm.
             - name: tls_version
               type: keyword
               description: The TLS version used for communication between the client and Zscaler.
@@ -178,6 +208,9 @@
                 - name: name
                   type: keyword
                   description: The name of the DLP rule applied to the transaction.
+        - name: dstip_country
+          type: keyword
+          description: The country associated with the destination IP address.
         - name: eedone
           type: keyword
           description: Indicates if the characters specified in the Feed Escape Character field of the NSS feed configuration page were hex encoded.
@@ -223,12 +256,21 @@
         - name: forward_type
           type: keyword
           description: The type of forwarding method used.
+        - name: ft_rulename
+          type: keyword
+          description: The name of the File Type Control rule applied to the transaction. Applies only to Allow rules, not Block.
         - name: host
           type: keyword
           description: The destination hostname.
         - name: hour
           type: long
           description: Hours.
+        - name: is_dst_cntry_risky
+          type: keyword
+          description: Indicates whether the country associated with the destination IP address is risky or not.
+        - name: is_src_cntry_risky
+          type: keyword
+          description: Indicates whether the country associated with the source IP address is risky or not.
         - name: is_ssl_certificate_expired
           type: keyword
           description: Indicates whether the certificate presented by the server is expired or not.
@@ -382,6 +424,9 @@
         - name: product_version
           type: keyword
           description: The current version of the product.
+        - name: prompt_req
+          type: keyword
+          description: The prompt entered by the user in the generative AI application.
         - name: prototype
           type: keyword
           description: The protocol type of the transaction.
@@ -490,6 +535,12 @@
             - name: ocsp_result
               type: keyword
               description: The OCSP result/certificate revocation result.
+            - name: tls_keyex_alg
+              type: keyword
+              description: The TLS server key exchange algorithm.
+            - name: tls_sig_alg
+              type: keyword
+              description: The TLS client digital signature algorithm.
             - name: tls_version
               type: keyword
               description: The TLS/SSL version used for communication between the ZIA Public Service Edge and the server.
@@ -499,9 +550,15 @@
         - name: sha256
           type: keyword
           description: The hash of identical files.
+        - name: srcip_country
+          type: keyword
+          description: The country associated with the source IP address.
         - name: ssl_decrypted
           type: keyword
           description: Indicates whether the transaction was SSL inspected or not.
+        - name: ssl_rulename
+          type: keyword
+          description: The name of the SSL Inspection policy rule that was applied to the transaction.
         - name: threat
           type: group
           fields:

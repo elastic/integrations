@@ -1,0 +1,134 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: crowdstrike
+      name: test-traced-crowdstrike
+      streams:
+        - auth.oauth2:
+            client.id: test_client_id
+            client.secret: ${SECRET_0}
+            token_url: http://host.tld/oauth2/token
+          config_version: 2
+          data_stream:
+            dataset: crowdstrike.alert
+          interval: 24h
+          program: |-
+            state.with(
+              (
+                state.?want_more.orValue(false) ?
+                  state.start_time
+                :
+                  state.?cursor.last_timestamp.orValue(
+                    (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
+                  )
+              ).as(start_time,
+                post_request(
+                  state.url.trim_right("/") + "/alerts/combined/alerts/v1?",
+                  "application/json",
+                  {
+                    ?"after": state.?next.page_token,
+                    "limit": int(state.batch_size),
+                    "sort": "updated_timestamp|asc",
+                    "filter": [
+                      "updated_timestamp:>'" + start_time + "'",
+                      ?state.?query.optMap(q, "(" + q + ")"),
+                    ].join("+"),
+                  }.encode_json()
+                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    (size(body.?errors.orValue([])) > 0) ?
+                      {
+                        "events": body.errors.map(error,
+                          {
+                            "error": {
+                              "code": string(error.code),
+                              "message": string(error.message),
+                            },
+                          }
+                        ),
+                        "next": {},
+                        "want_more": false,
+                      }
+                    :
+                      {
+                        "events": has(body.resources) ?
+                          body.resources.map(e,
+                            {
+                              "message": e.encode_json(),
+                            }
+                          )
+                        :
+                          [],
+                        "start_time": start_time,
+                        "next": {
+                          ?"page_token": body.?meta.pagination.after,
+                        },
+                        "cursor": {
+                          // The records are sorted in ascending order based on the value of updated_timestamp,
+                          // in the next interval we start from the last event (newest) time.
+                          ?"last_timestamp": (has(body.resources) && body.resources.size() > 0) ?
+                            optional.of(timestamp(body.resources[size(body.resources) - 1].updated_timestamp).format(time_layout.RFC3339Nano))
+                          :
+                            state.?cursor.last_timestamp,
+                        },
+                        "want_more": has(body.?meta.pagination.after),
+                      }
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "POST " + state.url.trim_right("/") + "/alerts/combined/alerts/v1:" + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "next": {},
+                    "want_more": false,
+                  }
+                )
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields: null
+          resource.ssl: null
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: http://host.tld
+          state:
+            batch_size: 1000
+            initial_interval: 24h
+          tags:
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+            - crowdstrike-alert
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-crowdstrike.alert-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

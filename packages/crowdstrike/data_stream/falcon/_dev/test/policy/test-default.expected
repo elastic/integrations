@@ -1,0 +1,43 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: crowdstrike
+      name: test-default-crowdstrike
+      streams:
+        - allow_deprecated_use: true
+          data_stream:
+            dataset: crowdstrike.falcon
+            type: logs
+          exclude_files:
+            - \.gz$
+          multiline.match: after
+          multiline.max_lines: 5000
+          multiline.negate: true
+          multiline.pattern: ^{
+          multiline.timeout: 10
+          paths:
+            - /var/log/crowdstrike/falconhoseclient/output*
+          publisher_pipeline.disable_host: true
+          tags:
+            - preserve_original_event
+            - forwarded
+            - crowdstrike-falcon
+      type: logfile
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-crowdstrike.falcon-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

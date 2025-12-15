@@ -1,0 +1,146 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  secret_key: {{secret_key}}
+redact:
+  fields:
+    - secret_key
+    - access_token
+program: |
+  (
+    state.?is_token_valid.orValue(false) ?
+      state
+    :
+      state.with(
+        post_request(
+          state.url.trim_right("/") + "/api/v1/access_token/", "application/json", {
+            "secret_key": state.secret_key
+          }.encode_json()
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+            "access_token": body.data.access_token,
+            "is_token_valid": true
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST: "+ state.url.trim_right("/") + "/api/v1/access_token/" + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "is_token_valid": false,
+            "want_more": false
+          }
+        )
+      )
+  ).as(state,
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05")),
+      })
+  ).as(state,
+    !state.?is_token_valid.orValue(false) ?
+      state
+    :
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/api/v1/search/?" + {
+            "length": [string(state.page_size)],
+            "orderBy": ["lastSeen"],
+            ?"from": has(state.offset) && state.offset != null ? optional.of([string(state.offset)]) : optional.none(),
+            "aql": ["in:devices " + "after:" + state.start_time]
+          }.format_query()
+        ).with({
+          "Header":{
+            "Authorization": [state.access_token],
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body, {
+              "events" : body.?data.results.orValue([]).map(e,
+                {
+                  "message": e.encode_json()
+                }
+              ),
+              "is_token_valid": true,
+              "offset":body.?data.next.orValue(null),
+              "cursor": {
+                  ?"last_timestamp": (has(body.?data.results) && size(body.data.results) > 0) ?
+                    optional.of(body.data.results.map(e, e.lastSeen).map(t, timestamp(t)).max().format("2006-01-02T15:04:05"))
+                  :
+                    state.?cursor.last_timestamp,
+              },
+              "want_more": body.data.next != null,
+            })
+          :
+            resp.StatusCode == 401 ?
+              // Armis doesn't support multiple sessions per token; generate a new token on 401 (expired).
+              {
+                "events": [{"message":"retry"}],
+                "is_token_valid": false,
+                "offset": has(state.offset) && state.offset != null ? state.offset : 0,
+                "want_more": true,
+              }
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET: "+ state.url.trim_right("/") + "/api/v1/search/?aql=in:devices" + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    ),
+                  },
+                },
+                "is_token_valid": false,
+                "offset": 0,
+                "want_more": false,
+              }
+        )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

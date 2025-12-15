@@ -1,0 +1,99 @@
+title: Collect Assessments from Microsoft Defender for Cloud
+type: logs
+ilm_policy: logs-microsoft_defender_cloud.assessment-default_policy
+streams:
+  - input: cel
+    title: Microsoft Defender for Cloud Assessment
+    description: Collect Assessments from Microsoft Defender for Cloud via CEL.
+    template_path: cel.yml.hbs
+    enabled: false
+    vars:
+      - name: management_group_name
+        type: text
+        title: Management Group Name
+        description: The name of the management group. Provide either `Subscription ID` or `Management Group Name` as the scope for the request. If both are provided, then `Management Group Name` will take precedence.
+        multi: false
+        required: false
+        show_user: true
+      - name: subscription_id
+        type: text
+        title: Subscription ID
+        description: The unique identifier for the subscription. Provide either `Subscription ID` or `Management Group Name` as the scope for the request. If both are provided, then `Management Group Name` will take precedence.
+        multi: false
+        required: false
+        show_user: true
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum Pages Per Interval is the maximum number of pages that can be collected at each interval.
+        multi: false
+        required: false
+        show_user: false
+        default: 1000
+      - name: resource_rate_limit_limit
+        type: text
+        title: Resource Rate Limit
+        description: The value of the response that specifies the maximum overall resource request rate. This controls the polling frequency.
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_rate_limit_burst
+        type: integer
+        title: Resource Rate Limit Burst
+        description: The maximum burst size. Burst is the maximum number of resource requests that can be made above the overall rate limit.
+        show_user: false
+        multi: false
+        required: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 120s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+          for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - microsoft_defender_cloud-assessment
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve microsoft_defender_cloud.assessment fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

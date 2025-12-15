@@ -1,5 +1,17 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
         "description": "Overview of Google Security Command Center.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
@@ -43,7 +55,9 @@
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    }
+                    },
+                    "title": "Table of Contents",
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 75,
@@ -53,9 +67,7 @@
                     "y": 0
                 },
                 "panelIndex": "637468d9-c5c2-4215-8e31-cc706cf3b5d3",
-                "title": "Table of Contents",
-                "type": "visualization",
-                "version": "8.8.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -69,12 +81,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "7a755caf-3210-4b5a-b2dc-aa7364fb6a4e",
+                                "name": "ea1e3f71-153b-4d80-865b-6d8271a4a1f7",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "c063250f-94f7-4801-b245-192637c38453",
+                                "name": "4fcc5aff-147a-4b17-9a7c-0b1b54756b36",
                                 "type": "index-pattern"
                             }
                         ],
@@ -94,9 +106,9 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
@@ -104,8 +116,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "47d796c8-bbed-4112-8cf4-1e7d0cacfda4": {
                                                     "customLabel": true,
@@ -128,10 +139,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "google_scc.finding.severity"
+                                                    "sourceField": "vulnerability.severity"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -152,7 +164,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "google_scc.finding.class",
-                                        "index": "7a755caf-3210-4b5a-b2dc-aa7364fb6a4e",
+                                        "index": "ea1e3f71-153b-4d80-865b-6d8271a4a1f7",
                                         "key": "google_scc.finding.class",
                                         "negate": false,
                                         "params": {
@@ -174,7 +186,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "c063250f-94f7-4801-b245-192637c38453",
+                                        "index": "4fcc5aff-147a-4b17-9a7c-0b1b54756b36",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -219,8 +231,66 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "google_scc.finding.class",
+                                "index": "ea1e3f71-153b-4d80-865b-6d8271a4a1f7",
+                                "key": "google_scc.finding.class",
+                                "negate": false,
+                                "params": {
+                                    "query": "VULNERABILITY"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "google_scc.finding.class": "VULNERABILITY"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "4fcc5aff-147a-4b17-9a7c-0b1b54756b36",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.finding"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.finding"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Distribution of Vulnerabilities by Severity [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -230,9 +300,7 @@
                     "y": 0
                 },
                 "panelIndex": "3f0d0184-402c-4bd0-bff2-f5e9c8473c7c",
-                "title": "Distribution of Vulnerabilities by Severity [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -246,12 +314,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "b362aa2c-c6eb-44ae-a07e-a06f8f9088e3",
+                                "name": "4147031d-81da-4a3e-88cd-620ffb85730e",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "6fc4577c-6990-49bc-b361-17e0731dddb3",
+                                "name": "17350c2b-6bf5-4295-adf7-c9760b60ac11",
                                 "type": "index-pattern"
                             }
                         ],
@@ -271,9 +339,9 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
@@ -281,8 +349,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "47d796c8-bbed-4112-8cf4-1e7d0cacfda4": {
                                                     "customLabel": true,
@@ -329,7 +396,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "google_scc.finding.class",
-                                        "index": "b362aa2c-c6eb-44ae-a07e-a06f8f9088e3",
+                                        "index": "4147031d-81da-4a3e-88cd-620ffb85730e",
                                         "key": "google_scc.finding.class",
                                         "negate": false,
                                         "params": {
@@ -351,7 +418,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "6fc4577c-6990-49bc-b361-17e0731dddb3",
+                                        "index": "17350c2b-6bf5-4295-adf7-c9760b60ac11",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -396,8 +463,66 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "google_scc.finding.class",
+                                "index": "4147031d-81da-4a3e-88cd-620ffb85730e",
+                                "key": "google_scc.finding.class",
+                                "negate": false,
+                                "params": {
+                                    "query": "THREAT"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "google_scc.finding.class": "THREAT"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "17350c2b-6bf5-4295-adf7-c9760b60ac11",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.finding"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.finding"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Distribution of Threats by Severity [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -407,9 +532,7 @@
                     "y": 0
                 },
                 "panelIndex": "900e1b41-74b2-407f-b02e-6a5709a9f78e",
-                "title": "Distribution of Threats by Severity [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -423,12 +546,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "a68a63c5-5213-4036-9c0a-f49d61a3ec3c",
+                                "name": "61dae901-f6a3-40a2-bd41-bcff314a682f",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "212b890d-a562-4eb6-b6ae-058476da9629",
+                                "name": "7c6bd695-95b1-426a-a5dd-10b10bb75e94",
                                 "type": "index-pattern"
                             }
                         ],
@@ -448,7 +571,7 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Vulnerabilities",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false,
                                                         "format": {
@@ -458,8 +581,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "5b3c5b6f-5737-4b84-a481-c4442a1349cf": {
                                                     "dataType": "date",
@@ -493,7 +615,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "google_scc.finding.class",
-                                        "index": "a68a63c5-5213-4036-9c0a-f49d61a3ec3c",
+                                        "index": "61dae901-f6a3-40a2-bd41-bcff314a682f",
                                         "key": "google_scc.finding.class",
                                         "negate": false,
                                         "params": {
@@ -515,7 +637,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "212b890d-a562-4eb6-b6ae-058476da9629",
+                                        "index": "7c6bd695-95b1-426a-a5dd-10b10bb75e94",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -567,6 +689,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [],
                                     "position": "right",
                                     "shouldTruncate": false,
                                     "showSingleSeries": true
@@ -577,16 +700,73 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide",
-                                "valuesInLegend": false
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "google_scc.finding.class",
+                                "index": "61dae901-f6a3-40a2-bd41-bcff314a682f",
+                                "key": "google_scc.finding.class",
+                                "negate": false,
+                                "params": {
+                                    "query": "VULNERABILITY"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "google_scc.finding.class": "VULNERABILITY"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "7c6bd695-95b1-426a-a5dd-10b10bb75e94",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.finding"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.finding"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Vulnerabilities Over Time [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -596,9 +776,7 @@
                     "y": 15
                 },
                 "panelIndex": "ee737cc7-0f0a-4bf1-a096-7ab168857a46",
-                "title": "Vulnerabilities Over Time [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -612,12 +790,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "75163b0b-6b83-4546-8666-b5570961510e",
+                                "name": "ac72667a-ae6c-46e4-ab92-9b73abbe978f",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "2837fb00-5aa5-4734-9af2-cd04d5fb86a5",
+                                "name": "ad4980e7-34cb-41b4-9346-692a7ae721d0",
                                 "type": "index-pattern"
                             }
                         ],
@@ -637,7 +815,7 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Threats",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false,
                                                         "format": {
@@ -647,8 +825,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "d57d4737-4fa6-4f23-9211-12fe213da73b": {
                                                     "dataType": "date",
@@ -682,7 +859,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "google_scc.finding.class",
-                                        "index": "75163b0b-6b83-4546-8666-b5570961510e",
+                                        "index": "ac72667a-ae6c-46e4-ab92-9b73abbe978f",
                                         "key": "google_scc.finding.class",
                                         "negate": false,
                                         "params": {
@@ -704,7 +881,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "2837fb00-5aa5-4734-9af2-cd04d5fb86a5",
+                                        "index": "ad4980e7-34cb-41b4-9346-692a7ae721d0",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -753,8 +930,66 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "google_scc.finding.class",
+                                "index": "ac72667a-ae6c-46e4-ab92-9b73abbe978f",
+                                "key": "google_scc.finding.class",
+                                "negate": false,
+                                "params": {
+                                    "query": "THREAT"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "google_scc.finding.class": "THREAT"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "ad4980e7-34cb-41b4-9346-692a7ae721d0",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.finding"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.finding"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Threats Over Time [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -764,9 +999,7 @@
                     "y": 15
                 },
                 "panelIndex": "51e9490c-9ec7-4584-824f-15d7cf2a7c76",
-                "title": "Threats Over Time [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -780,12 +1013,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "e5ce0d0d-5146-4820-b1b9-8b3e4a808645",
+                                "name": "492f9f91-1ed8-43fc-8273-77d47315cc83",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "890544c9-35e5-488a-b3e8-c815abbea4bf",
+                                "name": "e470b181-d1f6-4eac-b825-ff59a1ef79c3",
                                 "type": "index-pattern"
                             }
                         ],
@@ -822,19 +1055,20 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "google_scc.finding.severity"
+                                                    "sourceField": "vulnerability.severity"
                                                 },
                                                 "782fe2c5-d6ee-4239-acee-7a02c6fffa1e": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
@@ -842,8 +1076,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "df302724-c08d-40d3-928f-77116d770d50": {
                                                     "customLabel": true,
@@ -890,7 +1123,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "google_scc.finding.class",
-                                        "index": "e5ce0d0d-5146-4820-b1b9-8b3e4a808645",
+                                        "index": "492f9f91-1ed8-43fc-8273-77d47315cc83",
                                         "key": "google_scc.finding.class",
                                         "negate": false,
                                         "params": {
@@ -912,7 +1145,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "890544c9-35e5-488a-b3e8-c815abbea4bf",
+                                        "index": "e470b181-d1f6-4eac-b825-ff59a1ef79c3",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -982,8 +1215,66 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "google_scc.finding.class",
+                                "index": "492f9f91-1ed8-43fc-8273-77d47315cc83",
+                                "key": "google_scc.finding.class",
+                                "negate": false,
+                                "params": {
+                                    "query": "VULNERABILITY"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "google_scc.finding.class": "VULNERABILITY"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "e470b181-d1f6-4eac-b825-ff59a1ef79c3",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.finding"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.finding"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top 5 Categories by Severity for Vulnerabilities  [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -993,9 +1284,7 @@
                     "y": 30
                 },
                 "panelIndex": "57baa938-850f-4426-b004-7548b2c9d005",
-                "title": "Top 5 Categories by Severity for Vulnerabilities  [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1009,12 +1298,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "58f64d29-842e-47fc-aaa4-826b9430110e",
+                                "name": "55154271-dd84-44d5-aeba-f73cd152692e",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "50ffbbfb-4428-421e-94f9-315589709374",
+                                "name": "8fd5a96a-4b60-4cfc-81ea-d67fce8cb646",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1061,9 +1350,9 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
@@ -1071,8 +1360,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "df302724-c08d-40d3-928f-77116d770d50": {
                                                     "customLabel": true,
@@ -1119,7 +1407,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "google_scc.finding.class",
-                                        "index": "58f64d29-842e-47fc-aaa4-826b9430110e",
+                                        "index": "55154271-dd84-44d5-aeba-f73cd152692e",
                                         "key": "google_scc.finding.class",
                                         "negate": false,
                                         "params": {
@@ -1141,7 +1429,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "50ffbbfb-4428-421e-94f9-315589709374",
+                                        "index": "8fd5a96a-4b60-4cfc-81ea-d67fce8cb646",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1211,8 +1499,66 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "google_scc.finding.class",
+                                "index": "55154271-dd84-44d5-aeba-f73cd152692e",
+                                "key": "google_scc.finding.class",
+                                "negate": false,
+                                "params": {
+                                    "query": "THREAT"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "google_scc.finding.class": "THREAT"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "8fd5a96a-4b60-4cfc-81ea-d67fce8cb646",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.finding"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.finding"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top 5 Categories by Severity for Threats [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -1222,9 +1568,7 @@
                     "y": 30
                 },
                 "panelIndex": "7676ce4c-a7e6-4843-9adb-61af3c5dbfed",
-                "title": "Top 5 Categories by Severity for Threats [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1238,12 +1582,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "9710836a-e190-4dce-a7bb-987d73d8aebb",
+                                "name": "423e412f-b55b-494c-a29c-25075269586a",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "5a96e40f-7cf4-4263-a643-74cf0c7bf92f",
+                                "name": "8fdf27cc-21e1-4572-8b75-f24c89877665",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1280,19 +1624,20 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "google_scc.finding.severity"
+                                                    "sourceField": "vulnerability.severity"
                                                 },
                                                 "782fe2c5-d6ee-4239-acee-7a02c6fffa1e": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
@@ -1300,8 +1645,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "df302724-c08d-40d3-928f-77116d770d50": {
                                                     "customLabel": true,
@@ -1328,7 +1672,7 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "google_scc.finding.resource.project.name"
+                                                    "sourceField": "cloud.project.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1349,7 +1693,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "google_scc.finding.class",
-                                        "index": "9710836a-e190-4dce-a7bb-987d73d8aebb",
+                                        "index": "423e412f-b55b-494c-a29c-25075269586a",
                                         "key": "google_scc.finding.class",
                                         "negate": false,
                                         "params": {
@@ -1371,7 +1715,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "5a96e40f-7cf4-4263-a643-74cf0c7bf92f",
+                                        "index": "8fdf27cc-21e1-4572-8b75-f24c89877665",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1441,8 +1785,66 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "google_scc.finding.class",
+                                "index": "423e412f-b55b-494c-a29c-25075269586a",
+                                "key": "google_scc.finding.class",
+                                "negate": false,
+                                "params": {
+                                    "query": "VULNERABILITY"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "google_scc.finding.class": "VULNERABILITY"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "8fdf27cc-21e1-4572-8b75-f24c89877665",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.finding"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.finding"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top 5 Projects by Severity for Vulnerabilities [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -1452,9 +1854,7 @@
                     "y": 45
                 },
                 "panelIndex": "54849140-8efe-46ee-81c3-6accea5aad75",
-                "title": "Top 5 Projects by Severity for Vulnerabilities [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1468,7 +1868,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "e718c354-1213-4a7f-aa1f-1414df86b7e0",
+                                "name": "3a065dd7-6698-416a-9c99-de7d86222c95",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1547,7 +1947,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "e718c354-1213-4a7f-aa1f-1414df86b7e0",
+                                        "index": "3a065dd7-6698-416a-9c99-de7d86222c95",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1584,8 +1984,44 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "3a065dd7-6698-416a-9c99-de7d86222c95",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.asset"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.asset"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top 10 Asset Type [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -1595,9 +2031,7 @@
                     "y": 60
                 },
                 "panelIndex": "6dd32bfc-6f19-48e4-b2ca-a08ce9c5eba9",
-                "title": "Top 10 Asset Type [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1611,12 +2045,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "dcc87497-a982-45ae-b1a4-90772423fd27",
+                                "name": "6da3a92c-aaff-4587-b6b4-860474bd8f5d",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "c130f2b0-1586-4068-8185-0543ee65b110",
+                                "name": "3f892b8b-24f8-4749-98ef-d001c04c68fa",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1663,9 +2097,9 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
@@ -1673,8 +2107,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "df302724-c08d-40d3-928f-77116d770d50": {
                                                     "customLabel": true,
@@ -1701,7 +2134,7 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "google_scc.finding.resource.project.name"
+                                                    "sourceField": "cloud.project.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1722,7 +2155,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "google_scc.finding.class",
-                                        "index": "dcc87497-a982-45ae-b1a4-90772423fd27",
+                                        "index": "6da3a92c-aaff-4587-b6b4-860474bd8f5d",
                                         "key": "google_scc.finding.class",
                                         "negate": false,
                                         "params": {
@@ -1744,7 +2177,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "c130f2b0-1586-4068-8185-0543ee65b110",
+                                        "index": "3f892b8b-24f8-4749-98ef-d001c04c68fa",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1818,8 +2251,66 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "google_scc.finding.class",
+                                "index": "6da3a92c-aaff-4587-b6b4-860474bd8f5d",
+                                "key": "google_scc.finding.class",
+                                "negate": false,
+                                "params": {
+                                    "query": "THREAT"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "google_scc.finding.class": "THREAT"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "3f892b8b-24f8-4749-98ef-d001c04c68fa",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.finding"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.finding"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top 5 Projects by Severity for Threats [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -1829,9 +2320,7 @@
                     "y": 45
                 },
                 "panelIndex": "d423badd-6233-4e45-bbb1-65027aee53e8",
-                "title": "Top 5 Projects by Severity for Threats [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1845,7 +2334,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "1547d46d-92b3-4125-9f93-738609bbdaec",
+                                "name": "88d889ab-b474-41ba-a880-993b3abf537e",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1865,9 +2354,9 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
@@ -1875,8 +2364,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "e794ab9c-e39c-4673-9503-18f5c47b0953": {
                                                     "customLabel": true,
@@ -1923,7 +2411,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "1547d46d-92b3-4125-9f93-738609bbdaec",
+                                        "index": "88d889ab-b474-41ba-a880-993b3abf537e",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1968,8 +2456,44 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "88d889ab-b474-41ba-a880-993b3abf537e",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "google_scc.finding"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "google_scc.finding"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Distribution of Finding by Class [Logs Google SCC]"
                 },
                 "gridData": {
                     "h": 15,
@@ -1979,20 +2503,27 @@
                     "y": 60
                 },
                 "panelIndex": "789daaf2-58af-4a30-8764-2341cfbc2788",
-                "title": "Distribution of Finding by Class [Logs Google SCC]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Google SCC] Overview Dashboard",
-        "version": 1
+        "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2023-07-03T12:00:39.792Z",
+    "created_at": "2025-08-01T10:11:50.715Z",
     "id": "google_scc-62ec9780-05c6-11ee-af70-a35c241bca6a",
-    "managed": false,
     "references": [
+        {
+            "id": "google_scc-security-solution-default",
+            "name": "tag-ref-google_scc-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "google_scc-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
+        },
         {
             "id": "logs-*",
             "name": "3f0d0184-402c-4bd0-bff2-f5e9c8473c7c:indexpattern-datasource-layer-f34514df-1e64-474d-8d78-9015107e6a1b",
@@ -2000,12 +2531,12 @@
         },
         {
             "id": "logs-*",
-            "name": "3f0d0184-402c-4bd0-bff2-f5e9c8473c7c:7a755caf-3210-4b5a-b2dc-aa7364fb6a4e",
+            "name": "3f0d0184-402c-4bd0-bff2-f5e9c8473c7c:ea1e3f71-153b-4d80-865b-6d8271a4a1f7",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "3f0d0184-402c-4bd0-bff2-f5e9c8473c7c:c063250f-94f7-4801-b245-192637c38453",
+            "name": "3f0d0184-402c-4bd0-bff2-f5e9c8473c7c:4fcc5aff-147a-4b17-9a7c-0b1b54756b36",
             "type": "index-pattern"
         },
         {
@@ -2015,12 +2546,12 @@
         },
         {
             "id": "logs-*",
-            "name": "900e1b41-74b2-407f-b02e-6a5709a9f78e:b362aa2c-c6eb-44ae-a07e-a06f8f9088e3",
+            "name": "900e1b41-74b2-407f-b02e-6a5709a9f78e:4147031d-81da-4a3e-88cd-620ffb85730e",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "900e1b41-74b2-407f-b02e-6a5709a9f78e:6fc4577c-6990-49bc-b361-17e0731dddb3",
+            "name": "900e1b41-74b2-407f-b02e-6a5709a9f78e:17350c2b-6bf5-4295-adf7-c9760b60ac11",
             "type": "index-pattern"
         },
         {
@@ -2030,12 +2561,12 @@
         },
         {
             "id": "logs-*",
-            "name": "ee737cc7-0f0a-4bf1-a096-7ab168857a46:a68a63c5-5213-4036-9c0a-f49d61a3ec3c",
+            "name": "ee737cc7-0f0a-4bf1-a096-7ab168857a46:61dae901-f6a3-40a2-bd41-bcff314a682f",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "ee737cc7-0f0a-4bf1-a096-7ab168857a46:212b890d-a562-4eb6-b6ae-058476da9629",
+            "name": "ee737cc7-0f0a-4bf1-a096-7ab168857a46:7c6bd695-95b1-426a-a5dd-10b10bb75e94",
             "type": "index-pattern"
         },
         {
@@ -2045,12 +2576,12 @@
         },
         {
             "id": "logs-*",
-            "name": "51e9490c-9ec7-4584-824f-15d7cf2a7c76:75163b0b-6b83-4546-8666-b5570961510e",
+            "name": "51e9490c-9ec7-4584-824f-15d7cf2a7c76:ac72667a-ae6c-46e4-ab92-9b73abbe978f",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "51e9490c-9ec7-4584-824f-15d7cf2a7c76:2837fb00-5aa5-4734-9af2-cd04d5fb86a5",
+            "name": "51e9490c-9ec7-4584-824f-15d7cf2a7c76:ad4980e7-34cb-41b4-9346-692a7ae721d0",
             "type": "index-pattern"
         },
         {
@@ -2060,12 +2591,12 @@
         },
         {
             "id": "logs-*",
-            "name": "57baa938-850f-4426-b004-7548b2c9d005:e5ce0d0d-5146-4820-b1b9-8b3e4a808645",
+            "name": "57baa938-850f-4426-b004-7548b2c9d005:492f9f91-1ed8-43fc-8273-77d47315cc83",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "57baa938-850f-4426-b004-7548b2c9d005:890544c9-35e5-488a-b3e8-c815abbea4bf",
+            "name": "57baa938-850f-4426-b004-7548b2c9d005:e470b181-d1f6-4eac-b825-ff59a1ef79c3",
             "type": "index-pattern"
         },
         {
@@ -2075,12 +2606,12 @@
         },
         {
             "id": "logs-*",
-            "name": "7676ce4c-a7e6-4843-9adb-61af3c5dbfed:58f64d29-842e-47fc-aaa4-826b9430110e",
+            "name": "7676ce4c-a7e6-4843-9adb-61af3c5dbfed:55154271-dd84-44d5-aeba-f73cd152692e",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "7676ce4c-a7e6-4843-9adb-61af3c5dbfed:50ffbbfb-4428-421e-94f9-315589709374",
+            "name": "7676ce4c-a7e6-4843-9adb-61af3c5dbfed:8fd5a96a-4b60-4cfc-81ea-d67fce8cb646",
             "type": "index-pattern"
         },
         {
@@ -2090,12 +2621,12 @@
         },
         {
             "id": "logs-*",
-            "name": "54849140-8efe-46ee-81c3-6accea5aad75:9710836a-e190-4dce-a7bb-987d73d8aebb",
+            "name": "54849140-8efe-46ee-81c3-6accea5aad75:423e412f-b55b-494c-a29c-25075269586a",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "54849140-8efe-46ee-81c3-6accea5aad75:5a96e40f-7cf4-4263-a643-74cf0c7bf92f",
+            "name": "54849140-8efe-46ee-81c3-6accea5aad75:8fdf27cc-21e1-4572-8b75-f24c89877665",
             "type": "index-pattern"
         },
         {
@@ -2105,7 +2636,7 @@
         },
         {
             "id": "logs-*",
-            "name": "6dd32bfc-6f19-48e4-b2ca-a08ce9c5eba9:e718c354-1213-4a7f-aa1f-1414df86b7e0",
+            "name": "6dd32bfc-6f19-48e4-b2ca-a08ce9c5eba9:3a065dd7-6698-416a-9c99-de7d86222c95",
             "type": "index-pattern"
         },
         {
@@ -2115,12 +2646,12 @@
         },
         {
             "id": "logs-*",
-            "name": "d423badd-6233-4e45-bbb1-65027aee53e8:dcc87497-a982-45ae-b1a4-90772423fd27",
+            "name": "d423badd-6233-4e45-bbb1-65027aee53e8:6da3a92c-aaff-4587-b6b4-860474bd8f5d",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "d423badd-6233-4e45-bbb1-65027aee53e8:c130f2b0-1586-4068-8185-0543ee65b110",
+            "name": "d423badd-6233-4e45-bbb1-65027aee53e8:3f892b8b-24f8-4749-98ef-d001c04c68fa",
             "type": "index-pattern"
         },
         {
@@ -2130,12 +2661,11 @@
         },
         {
             "id": "logs-*",
-            "name": "789daaf2-58af-4a30-8764-2341cfbc2788:1547d46d-92b3-4125-9f93-738609bbdaec",
+            "name": "789daaf2-58af-4a30-8764-2341cfbc2788:88d889ab-b474-41ba-a880-993b3abf537e",
             "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    }
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }

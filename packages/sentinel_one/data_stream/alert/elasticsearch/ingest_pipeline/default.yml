@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing alert logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -58,7 +69,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.agentDetectionInfo.siteId
-      target_field: sentinel_one.alert.agent.site_id
+      target_field: sentinel_one.site.id
       ignore_missing: true
   - rename:
       field: json.agentDetectionInfo.uuid
@@ -489,6 +500,27 @@ processors:
       field: json.ruleInfo.severity
       target_field: sentinel_one.alert.rule.severity
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.sentinel_one?.alert?.rule?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.sentinel_one.alert.rule.severity;
+        if (risk_score_value.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ruleInfo.treatAsThreat
       target_field: sentinel_one.alert.rule.treat_as_threat
@@ -775,6 +807,10 @@ processors:
       field: json.targetProcessInfo.tgtFilePath
       target_field: sentinel_one.alert.target.process.file.path
       ignore_missing: true
+  - set:
+      field: file.path
+      copy_from: sentinel_one.alert.target.process.file.path
+      ignore_empty_value: true
   - remove:
       field: json
   - script:

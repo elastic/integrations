@@ -138,6 +138,55 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-alert" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_vectra_match_v2'
+  # Normalize user fields and append to related fields
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: user.target.name
+      target_field: user.target.email
+      tag: rename_user_target_email
+      if: ctx.user?.target?.email == null && ctx.user?.target?.name != null && ctx.user.target?.name.indexOf("@") > 0
+  - dissect:
+      field: user.target.email
+      pattern: '%{user.target.name}@%{user.target.domain}'
+      tag: dissect_user_target_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.target?.name == null
+  - append:
+      field: related.user
+      value: "{{{user.target.name}}}"
+      if: ctx.user?.target?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.target.email}}}"
+      if: ctx.user?.target?.email != null
+      allow_duplicates: false
+      ignore_failure: true
   - remove:
       field:
         - json

@@ -1,0 +1,118 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  auth_type: {{auth_type}}
+  api_key: {{api_key}}
+  user: {{username}}
+  password: {{password}}
+  bearer_token: {{bearer_token}}
+  index: .alerts-security.alerts-{{space_id}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - user
+    - password
+    - api_key
+    - bearer_token
+program: |
+  state.?cursor.last_timestamp.orValue(
+    (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+  ).as(start_time, state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/" + state.index + "/_search?" + {
+          "sort": ["@timestamp:asc"],
+          "size": [string(state.batch_size)],
+        }.format_query(),
+        {
+          "query": {
+            "range": {
+              "@timestamp": {
+                "gt": start_time,
+                "lte": "now"
+              }
+            }
+          }
+        }.encode_json()
+      ).with({
+        "Header":{
+          "Content-Type": ["application/json"],
+          "Authorization": [
+            state.auth_type == 'api_auth' ?
+              "Apikey " + state.api_key
+            :
+              state.auth_type == 'basic_auth' ?
+                "Basic " + base64(state.user+":"+state.password)
+              :
+                "Bearer " + state.bearer_token
+          ],
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body,{
+          "events": (
+            has(body.?hits.hits) && body.hits.hits.size() > 0 ?
+              body.hits.hits.map(e,{
+                "source_metadata": {
+                   ?"_index": e.?_index,
+                   ?"_id": e.?_id,
+                },
+                "message": e._source.drop(['data_stream', 'event.dataset', 'event.module']).encode_json(),
+              })
+            :
+              []
+          ),
+          "cursor": {
+            ?"last_timestamp": has(body.?hits.hits) && body.hits.hits.size() > 0 ?
+              optional.of(body.hits.hits.map(e, timestamp(e._source['@timestamp'])).max())
+            :
+              state.?cursor.last_timestamp
+          },
+          "want_more": has(body.?hits.hits) && body.hits.hits.size() > 0,
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET "+ state.url.trim_right("/") + "/" + state.index + "/_search: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -28,9 +28,20 @@ use_elastic_package
 pushd packages > /dev/null
 exit_code=0
 if ! process_package "${package}" ; then
-    echo "[${package}] failed"
+    # keep this message as a collapsed group in Buildkite, so it
+    # is not hidden by the previous collapsed group.
+    echo "--- [${package}] failed"
     exit_code=1
 fi
 popd > /dev/null
 
-exit "${exit_code}"
+if [ "${exit_code}" -ne 0 ] ; then
+  exit "${exit_code}"
+fi
+
+custom_package_checker_script_path="${SCRIPTS_BUILDKITE_PATH}/packages/${package}.sh"
+
+if [ -x "$custom_package_checker_script_path" ]; then
+  echo "--- [${package}] Run individual package checker"
+  "$custom_package_checker_script_path"
+fi

@@ -145,6 +145,13 @@ processors:
 ####################################################
 # Handle Ports
 ####################################################
+- set:
+    field: _temp.event_original_lower
+    value: "{{{event.original}}}"
+    if: "ctx.event?.original != null"
+- lowercase:
+    field: _temp.event_original_lower
+    ignore_missing: true
 - grok:
     field: event.original
     patterns: 
@@ -155,7 +162,7 @@ processors:
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
       WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
       PORTACTION: '(?:changed stp role|status changed)'
-    if: ctx.event.original.startsWith('<') && ctx.cisco_meraki?.event_subtype == "port"
+    if: ctx.event.original.startsWith('<') && ctx.cisco_meraki?.event_subtype == "port" && ctx._temp?.event_original_lower != null && (ctx._temp.event_original_lower.contains('status changed') || ctx._temp.event_original_lower.contains('changed stp role'))
 - gsub:
     field: _temp.port_action
     pattern: ' '
@@ -204,14 +211,14 @@ processors:
       SYSLOGVER: '\b(?:\d{1,2})\b'
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
       WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
-    if: ctx.event.original.startsWith('<') && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', 'vpn_connectivity_change', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
+    if: ctx.event.original.startsWith('<') && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', 'vpn_connectivity_change', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_client_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
 - kv:
     field: _temp.rest
     field_split: "[ \t]{1,}"
     value_split: "="
     target_field: cisco_meraki.{{{cisco_meraki.event_subtype}}}
     strip_brackets: true
-    if: ctx?._temp?.rest != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
+    if: ctx?._temp?.rest != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_client_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
 # special case for site-to-site vpn
 - kv:
     field: _temp.rest
@@ -232,13 +239,23 @@ processors:
 - rename:
     field: cisco_meraki.{{{cisco_meraki.event_subtype}}}.client_mac
     target_field: client.mac
-    if: ctx.cisco_meraki?.event_subtype != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_eap_success', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
+    if: ctx.cisco_meraki?.event_subtype != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_client_deauth', '8021x_eap_success', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
     ignore_missing: true
 - rename:
     field: cisco_meraki.{{{cisco_meraki.event_subtype}}}.ip_src
     target_field: source.ip
-    if: ctx.cisco_meraki?.event_subtype != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
+    if: ctx.cisco_meraki?.event_subtype != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_client_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
     ignore_missing: true
+- rename:
+    field: cisco_meraki.{{{cisco_meraki.event_subtype}}}.client_ip
+    target_field: _temp.client_ip
+    if: ctx.cisco_meraki?.event_subtype != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_client_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
+    ignore_missing: true
+- rename:
+    field: cisco_meraki.{{{cisco_meraki.event_subtype}}}.identity
+    target_field: user.name
+    ignore_missing: true
+    if: "['association', 'disassociation', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_client_deauth', '8021x_eap_success'].contains(ctx.cisco_meraki.event_subtype)"
 - rename:
     field: cisco_meraki.multiple_dhcp_servers_detected.original_server_mac
     target_field: server.mac
@@ -284,9 +301,11 @@ processors:
 ####################################################
 # Handle client_vpn_connect
 ####################################################
-- dissect:
+- grok:
     field: event.original
-    pattern: "%{} events client_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{_temp.client_ip}"
+    patterns:
+      - "^%{DATA} events client_vpn_connect user id '%{DATA:user.name}' local ip %{IP:network.forwarded_ip} (reconnected from|connected from) %{IP:_temp.client_ip}$"
+      - "^%{GREEDYDATA}$"
     if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
 - grok:
     field: event.original
@@ -364,9 +383,11 @@ processors:
 ####################################################
 # Handle anyconnect_vpn_connect
 ####################################################
-- dissect:
+- grok:
     field: event.original
-    pattern: "%{} events anyconnect_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} reconnected from %{_temp.client_ip}"
+    patterns:
+      - "^%{DATA} events anyconnect_vpn_connect user id '%{DATA:user.name}' local ip %{IP:network.forwarded_ip} (reconnected from|connected from) %{IP:_temp.client_ip}$"
+      - "^%{GREEDYDATA}$"
     if: ctx?.cisco_meraki?.event_subtype == "anyconnect_vpn_connect"
 - grok:
     field: event.original
@@ -452,6 +473,51 @@ processors:
 - uppercase:
     field: server.mac
     ignore_missing: true
+
+# Normalize user fields
+- lowercase:
+    field: user.name
+    ignore_missing: true
+- rename:
+    field: user.name
+    target_field: user.email
+    tag: rename_user_email
+    if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+- dissect:
+    field: user.email
+    pattern: '%{user.name}@%{user.domain}'
+    tag: dissect_user_email
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.user?.name == null
+- dissect:
+    field: user.name
+    pattern: '%{user.domain}\%{user.name}'
+    tag: dissect_windows_user_name
+    ignore_missing: true
+    if: ctx.user?.name != null && ctx.user.name.contains('\\')
+- append:
+    field: related.user
+    value: "{{{user.name}}}"
+    if: ctx.user?.name != null
+    allow_duplicates: false
+    ignore_failure: true
+- append:
+    field: related.user
+    value: "{{{user.email}}}"
+    if: ctx.user?.email != null
+    allow_duplicates: false
+    ignore_failure: true
+- append:
+    field: related.ip
+    value: "{{{source.ip}}}"
+    if: ctx.source?.ip != null
+    allow_duplicates: false
+- append:
+    field: related.ip
+    value: "{{{client.ip}}}"
+    if: ctx.client?.ip != null
+    allow_duplicates: false
 
 on_failure:
 - set:

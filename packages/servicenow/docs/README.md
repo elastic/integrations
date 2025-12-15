@@ -17,40 +17,40 @@ This module has been tested with the latest(updated as of August 1, 2024) versio
 
 ## Data streams
 
-The ServiceNow integration supports both custom tables and the default tables offered by ServiceNow. Additionally, both types of tables are included in the data stream labeled `event`.
+The ServiceNow integration supports both custom tables and default tables offered by ServiceNow. Additionally, both types of tables are included in the data stream labeled `event`.
 
-Below is a list of the default ones.
+This is the list of the default tables:
 
-- **alm_hardware**
-- **change_request**
-- **change_task**
-- **cmdb**
-- **cmdb_ci**
-- **cmdb_ci_app_server**
-- **cmdb_ci_appl**
-- **cmdb_ci_business_app**
-- **cmdb_ci_computer**
-- **cmdb_ci_db_instance**
-- **cmdb_ci_esx_server**
-- **cmdb_ci_hardware**
-- **cmdb_ci_hyper_v_server**
-- **cmdb_ci_infra_service**
-- **cmdb_ci_linux_server**
-- **cmdb_ci_server**
-- **cmdb_ci_service**
-- **cmdb_ci_vm**
-- **cmdb_ci_win_server**
-- **cmdb_rel_ci**
-- **cmn_department**
-- **cmn_location**
-- **incident**
-- **kb_knowledge**
-- **problem**
-- **sc_req_item**
-- **sys_user**
-- **sys_user_grmember**
-- **sys_user_group**
-- **task_ci**
+- `alm_hardware`
+- `change_request`
+- `change_task`
+- `cmdb`
+- `cmdb_ci`
+- `cmdb_ci_app_server`
+- `cmdb_ci_appl`
+- `cmdb_ci_business_app`
+- `cmdb_ci_computer`
+- `cmdb_ci_db_instance`
+- `cmdb_ci_esx_server`
+- `cmdb_ci_hardware`
+- `cmdb_ci_hyper_v_server`
+- `cmdb_ci_infra_service`
+- `cmdb_ci_linux_server`
+- `cmdb_ci_server`
+- `cmdb_ci_service`
+- `cmdb_ci_vm`
+- `cmdb_ci_win_server`
+- `cmdb_rel_ci`
+- `cmn_department`
+- `cmn_location`
+- `incident`
+- `kb_knowledge`
+- `problem`
+- `sc_req_item`
+- `sys_user`
+- `sys_user_grmember`
+- `sys_user_group`
+- `task_ci`
 
 **Note**:
 
@@ -59,40 +59,20 @@ Below is a list of the default ones.
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API or AWS S3/SQS and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
 
-### To collect logs through REST API, follow the below steps:
+### Collect logs through REST API
 
-- Your instance URL will serve as your base URL and will be formatted as follows: https://\<instance_id\>.service-now.com
-- Additionally, the username and password you use to log into your instance will be required to fetch logs in our integration.
+Your instance URL will serve as your base URL and will be formatted as follows: https://\<instance_id\>.service-now.com
+Additionally, the username and password you use to log into your instance will be required to fetch logs in our integration.
 
-### To collect logs through AWS S3, follow the below steps:
+### Collect logs through AWS S3
 
-- With an AWS S3 bucket that has been set up, you can configure it with ServiceNow by integrating it using your AWS S3 credentials.
+With an AWS S3 bucket that has been set up, you can configure it with ServiceNow by integrating it using your AWS S3 credentials.
 
-### To collect logs through AWS SQS, follow the below steps:
+### Collect logs through AWS SQS
 
 1. Assuming you've already set up a connection to push data into the AWS bucket you can follow the steps below; if not, see the section above.
 2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" as described in the [Amazon S3 user guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
@@ -100,20 +80,21 @@ There are some minimum requirements for running Elastic Agent. For more informat
 3. Configure event notifications for an S3 bucket according to the [Amazon S3 user guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
-### Time Zone Selection:
-- In the Data Collection section, use the `Time Zone Offset` field to set your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
-- Steps to See/Update the timezone in ServiceNow Instance:
-  1. Click the user icon in the top-right corner of the ServiceNow interface.
-  2. Select Profile from the dropdown menu.
-  3. In your Profile settings, locate the Timezone option.
+### Time Zone Selection
 
-### Enabling the integration in Elastic:
+In the Data Collection section, use the `Time Zone Offset` field to set your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type ServiceNow.
-3. Click on the "ServiceNow" integration from the search results.
-4. Click on the "Add ServiceNow" button to add the integration.
-5. While adding the integration, if you want to collect logs via REST API, then you have to put the following details:
+Follow these steps to See/Update the timezone in ServiceNow Instance:
+1. Click the user icon in the top-right corner of the ServiceNow interface.
+2. Select Profile from the dropdown menu.
+3. In your Profile settings, locate the Timezone option.
+
+### Enable the integration in Elastic
+
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **ServiceNow**.
+3. Select the **ServiceNow** integration and add it.
+4. While adding the integration, if you want to collect logs via REST API, then you have to put the following details:
    - collect logs via REST API toggled on
    - API URL
    - username
@@ -139,7 +120,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - table name
    - timestamp field
    - timezone offset
-6. Click on "Save and Continue" to save the integration.
+5. Save the integration.
 
 **Note**: To fetch parquet file data, enable the toggle, `Parquet Codec`
 
@@ -164,24 +145,38 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-23T22:39:40.000-07:00",
+    "@timestamp": "2025-10-24T11:55:59.348Z",
     "agent": {
-        "ephemeral_id": "def1e9fc-c5bf-4313-aebd-00845c9b3d61",
-        "id": "fd63c8e0-f0fc-498e-baaa-319b3609c582",
-        "name": "elastic-agent-43184",
+        "ephemeral_id": "a04ce8bc-c0ad-47b7-83f2-4620529cd218",
+        "id": "fd7cedc6-351f-41d3-9ae4-f2326152c6bc",
+        "name": "elastic-agent-32192",
         "type": "filebeat",
         "version": "8.16.5"
     },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-servicenow-event-bucket-94298",
+                "name": "elastic-package-servicenow-event-bucket-94298"
+            },
+            "object": {
+                "key": "test-event.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
+    },
     "data_stream": {
         "dataset": "servicenow.event",
-        "namespace": "50362",
+        "namespace": "32388",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "fd63c8e0-f0fc-498e-baaa-319b3609c582",
+        "id": "fd7cedc6-351f-41d3-9ae4-f2326152c6bc",
         "snapshot": false,
         "version": "8.16.5"
     },
@@ -191,98 +186,45 @@ An example event for `event` looks as following:
             "configuration",
             "threat"
         ],
-        "created": "2016-12-12T15:19:57.000Z",
         "dataset": "servicenow.event",
-        "id": "1c741bd70b2322007518478d83673af3",
-        "ingested": "2025-04-25T09:46:25Z",
+        "ingested": "2025-10-24T11:56:00Z",
         "kind": "event",
-        "severity": 3,
+        "original": "{\"table_name\":\"incident\",\"expected_start\":{\"display_value\":\"2015-08-11 02:07:57 PM\",\"value\":\"2015-08-11 14:07:57\"},\"reopened_time\":{\"display_value\":\"2015-08-11 09:07:57 PM\",\"value\":\"2015-08-11 21:07:57\"}}",
         "timezone": "America/Los_Angeles",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "cel"
+        "type": "aws-s3"
     },
-    "related": {
-        "user": [
-            "David Loo",
-            "Joe Employee",
-            "employee",
-            "admin"
-        ]
+    "log": {
+        "file": {
+            "path": "https://elastic-package-servicenow-event-bucket-94298.s3.us-east-1.amazonaws.com/test-event.log"
+        },
+        "offset": 1
     },
     "servicenow": {
         "event": {
-            "activity_due": {
-                "display_value": "2016-12-12T17:26:36.000-08:00",
-                "value": "2016-12-13T01:26:36.000Z"
+            "expected_start": {
+                "display_value": "2015-08-11T14:07:57.000-07:00",
+                "value": "2015-08-11T14:07:57.000Z"
             },
-            "assigned_to": {
-                "display_value": "David Loo",
-                "value": "5137153cc611227c000bbd1bd8cd2007"
-            },
-            "closed_at": {
-                "display_value": "2016-12-13T18:46:44.000-08:00",
-                "value": "2016-12-14T02:46:44.000Z"
-            },
-            "opened_at": {
-                "display_value": "2016-12-12T07:19:57.000-08:00",
-                "value": "2016-12-12T15:19:57.000Z"
-            },
-            "opened_by": {
-                "value": "681ccaf9c0a8016400b98a06818d57c7"
-            },
-            "priority": {
-                "display_value": "3 - Moderate",
-                "value": 3
-            },
-            "severity": {
-                "display_value": "3 - Low"
-            },
-            "state": {
-                "display_value": "Closed",
-                "value": "7"
-            },
-            "sys_created_by": {
-                "display_value": "employee",
-                "value": "employee"
-            },
-            "sys_created_on": {
-                "display_value": "2016-12-12T07:19:57.000-08:00"
-            },
-            "sys_domain": {
-                "display_value": "global",
-                "value": "global"
-            },
-            "sys_domain_path": {
-                "display_value": "/",
-                "value": "/"
-            },
-            "sys_id": {
-                "value": "1c741bd70b2322007518478d83673af3"
-            },
-            "sys_updated_by": {
-                "display_value": "admin",
-                "value": "admin"
-            },
-            "sys_updated_on": {
-                "display_value": "2024-09-23T22:39:40.000-07:00",
-                "value": "2024-09-24T05:39:40.000Z"
+            "reopened_time": {
+                "display_value": "2015-08-11T21:07:57.000-07:00",
+                "value": "2015-08-11T21:07:57.000Z"
             },
             "table_name": "incident"
         }
     },
     "tags": [
-        "incident",
+        "collect_sqs_logs",
         "hide_sensitive",
+        "preserve_original_event",
+        "incident",
         "forwarded",
         "servicenow-event"
-    ],
-    "user": {
-        "name": "Joe Employee"
-    }
+    ]
 }
 ```
 
@@ -291,6 +233,9 @@ An example event for `event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

@@ -1,15 +1,19 @@
-format_version: "3.2.3"
+format_version: "3.4.0"
 name: microsoft_defender_endpoint
 title: Microsoft Defender for Endpoint
-version: "2.33.1"
+version: "4.3.0"
 description: Collect logs from Microsoft Defender for Endpoint with Elastic Agent.
 categories:
-  - "security"
-  - "edr_xdr"
+  - security
+  - edr_xdr
+  # Added siem category as Microsoft Defender for Endpoint provides security event data for monitoring and incident response
+  - siem
+  - vulnerability_workflow
+  - cloudsecurity_cdr
 type: integration
 conditions:
   kibana:
-    version: "^8.18.0 || ^9.0.0"
+    version: "^8.19.3 || ^9.1.2"
 policy_templates:
   - name: microsoft_defender_endpoint
     title: Microsoft Defender for Endpoint
@@ -22,6 +26,9 @@ policy_templates:
         organization: security
         division: engineering
         team: security-service-integrations
+        resources:
+          requests:
+            memory: 4Gi # Due to the large volume of data being processed in memory, a 4 GB allocation is required for agentless deployment-anything less may lead to out-of-memory (OOM) issue.
     inputs:
       - type: httpjson
         title: "Collect Microsoft Defender for Endpoint logs via API"
@@ -80,6 +87,13 @@ policy_templates:
             required: true
             show_user: false
             secret: false
+          - name: oauth_endpoint_params
+            type: yaml
+            title: OAuth2 Endpoint Params
+            description: Set of values that will be sent on each resource to the OAuth Server URL. Each param key can have multiple values and they are appended to the URL as query parameters.
+            show_user: false
+            multi: false
+            required: false
           - name: proxy_url
             type: text
             title: Proxy URL
@@ -140,6 +154,10 @@ screenshots:
     type: image/png
   - src: /img/microsoft_defender_endpoint-machine_action_overview.png
     title: Machine Action Overview Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/microsoft_defender_endpoint-vulnerability_overview.png
+    title: Vulnerability Overview Dashboard
     size: 600x600
     type: image/png
 owner:

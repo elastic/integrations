@@ -46,72 +46,55 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-04-26T09:08:48.000Z",
     "agent": {
-        "ephemeral_id": "81553388-678e-4d17-8f75-7c7870f7f06c",
-        "id": "45b4f828-da65-463c-980e-09ba9a67922b",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "520a22ce-a7c9-4d1d-83df-a6abd00f7f74",
+        "id": "13671cfa-49ce-4139-8d65-90166401d5f5",
+        "name": "elastic-agent-83602",
         "type": "filebeat",
-        "version": "8.10.2"
+        "version": "9.0.3"
     },
     "cisco_nexus": {
         "log": {
-            "description": "EARL 0  NF ASIC: Uncorrectable Parity error in Netflow Table.",
-            "facility": "EARL",
+            "description": "last message repeated 3 time",
             "priority_number": 187,
-            "severity": 3,
-            "standby": "SW2_DFC1",
             "switch_name": "switchname",
             "time": "2023-04-26T09:08:48.000Z",
-            "timezone": "UTC",
-            "type": "NF_PARITY_ERROR"
+            "timezone": "UTC"
         }
     },
     "data_stream": {
         "dataset": "cisco_nexus.log",
-        "namespace": "ep",
+        "namespace": "90551",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "45b4f828-da65-463c-980e-09ba9a67922b",
+        "id": "13671cfa-49ce-4139-8d65-90166401d5f5",
         "snapshot": false,
-        "version": "8.10.2"
+        "version": "9.0.3"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": [
-            "network"
-        ],
-        "code": "NF_PARITY_ERROR",
         "dataset": "cisco_nexus.log",
-        "ingested": "2023-10-03T09:37:59Z",
+        "ingested": "2025-07-11T13:14:05Z",
         "kind": "event",
-        "original": "<187>switchname: 2023 Apr 26 09:08:48 UTC: %EARL-SW2_DFC1-3-NF_PARITY_ERROR: EARL 0  NF ASIC: Uncorrectable Parity error in Netflow Table.",
-        "severity": 3,
-        "type": [
-            "info"
-        ]
+        "module": "cisco_nexus",
+        "original": "<187>switchname: 2023 Apr 26 09:08:48 UTC: last message repeated 3 time",
+        "timezone": "UTC"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
-        "level": "error",
         "source": {
-            "address": "192.168.0.5:48836"
+            "address": "172.22.0.3:46916"
         },
         "syslog": {
-            "facility": {
-                "code": 23
-            },
-            "priority": 187,
-            "severity": {
-                "code": 3
-            }
+            "priority": 187
         }
     },
-    "message": "EARL 0  NF ASIC: Uncorrectable Parity error in Netflow Table.",
+    "message": "last message repeated 3 time",
     "observer": {
         "name": "switchname",
         "product": "Nexus",

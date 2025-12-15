@@ -118,12 +118,30 @@ processors:
       copy_from: o365.metrics.groups.activity.group.detail.owner_principal_name
       if: ctx.o365?.metrics?.groups?.activity?.group?.detail?.owner_principal_name != null
       ignore_empty_value: true
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
   - append:
       field: related.user
-      tag: append_related_user_user_name
+      tag: append_related_user_name
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_related_user_email
+      value: "{{{user.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.email != null
   - set:
       field: group.id
       tag: set_group_name

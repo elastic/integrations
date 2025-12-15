@@ -18,7 +18,7 @@ The Tenable Vulnerability Management integration collects logs for five types of
 
 **Vulnerability** is used to retrieve all vulnerabilities on each asset, including the vulnerability state. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-vulns-request-export).
 
-**Scan** is used to retrieve details about existing scans, including scan statuses, assigned targets, and more. See more details in the API documentation [here](https://developer.tenable.com/reference/scans-list).
+**Scan** is used to retrieve details about existing scans and scan details, including scan statuses, assigned targets, and more. See more details in the API documentation for [Scan](https://developer.tenable.com/reference/scans-list) and [Scan Details](https://developer.tenable.com/reference/was-v2-scans-details).
 
 ## Compatibility
 
@@ -26,34 +26,14 @@ This module has been tested against `Tenable Vulnerability Management release` [
 
 ## Requirements
 
-- Elastic Agent must be installed _or_ use [Agentless integration](#agentless-enabled-integration).
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-**Note:**
+**Notes:**
   - In this integration, export and plugin endpoints of vulnerability management are used to fetch data.
   - The default value is the recommended value for a batch size by Tenable. Using a smaller batch size can improve performance. A very large value might not work as intended depending on the API and instance limitations.
   - If any long-running export jobs are stuck in the "PROCESSING" state and reach the user-provided timeout, the export job will be terminated, allowing for the initiation of a new export job after the specified interval.
 
-## Agentless Enabled Integration
+## Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
@@ -61,10 +41,10 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Setup
 
-### To collect data from the Tenable Vulnerability Management REST APIs, follow the below steps:
+### Collect data from the Tenable Vulnerability Management REST APIs
 
-  1. Create a valid user account with appropriate permissions on Tenable Vulnerability Management.
-  2. Generate the API keys for the account to access all Tenable Vulnerability Management APIs.
+1. Create a valid user account with appropriate permissions on Tenable Vulnerability Management.
+2. Generate the API keys for the account to access all Tenable Vulnerability Management APIs.
 
 **Note:**
   - For the Tenable Vulnerability Management asset and vulnerability API, **ADMINISTRATOR [64]** and **Can View** access control is required in  created user's access key and secret key.
@@ -72,14 +52,34 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   - For the Tenable Vulnerability Management audit, **ADMINISTRATOR [64]** user permissions are required in created user's access key and secret key.
   - For more details related to permissions, refer to the link [here](https://developer.tenable.com/docs/permissions).
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Tenable Vulnerability Management.
-3. Click on the "Tenable Vulnerability Management" integration from the search results.
-4. Click on the "Add Tenable Vulnerability Management" button to add the integration.
-5. Add all the required integration configuration parameters according to the enabled input type.
-6. Click on "Save and Continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Tenable Vulnerability Management**.
+3. Select the **Tenable Vulnerability Management** integration and add it.
+4. Add all the required integration configuration parameters according to the enabled input type.
+5. Save the integration.
+
+## Troubleshooting
+
+### Breaking Changes
+
+#### Support for Elastic Vulnerability Findings page.
+
+Version `4.0.0` of the Tenable Vulnerability Management integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of Tenable Vulnerability Management integration to ingest their enriched asset vulnerabilities from Tenable platform into Elastic and get insights directly from Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3).
+This update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest vulnerability findings from source indices matching the pattern `logs-tenable_io.vulnerability-*` into new destination indices matching the pattern `security_solution-tenable_io.vulnerability_latest-*`. The Elastic Vulnerability Findings page will display vulnerabilities based on the destination indices.
+
+For existing users of Tenable Vulnerability Management integration, before upgrading to `4.0.0` please ensure following requirements are met:
+
+1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
+2. To use transforms, users must have:
+   - at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role),
+   - management features visible in the Kibana space, and
+   - security privileges that:
+     - grant use of transforms, and
+     - grant access to source and destination indices
+   For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
+3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
 
 ## Logs reference
 
@@ -364,24 +364,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2018-12-31T01:40:07.000Z",
     "agent": {
-        "ephemeral_id": "38f06019-8401-4ccf-b22e-a32a3c92782a",
-        "id": "50882574-d579-4b3a-a674-50631e963312",
-        "name": "elastic-agent-35966",
+        "ephemeral_id": "2b353f6e-e21d-4e61-a426-9b582471c1fa",
+        "id": "1a70a431-df2f-4f16-9352-a30f75fb1df2",
+        "name": "elastic-agent-83695",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "data_stream": {
         "dataset": "tenable_io.audit",
-        "namespace": "73246",
+        "namespace": "31446",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "50882574-d579-4b3a-a674-50631e963312",
-        "snapshot": true,
-        "version": "8.18.0"
+        "id": "1a70a431-df2f-4f16-9352-a30f75fb1df2",
+        "snapshot": false,
+        "version": "8.18.1"
     },
     "event": {
         "action": "session-delete",
@@ -391,7 +391,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "tenable_io.audit",
         "id": "eaac53481de04f67bc7eeea07d2fb0f5",
-        "ingested": "2025-04-01T11:02:14Z",
+        "ingested": "2025-06-03T16:34:47Z",
         "kind": "event",
         "original": "{\"action\":\"session.delete\",\"actor\":{\"id\":\"d2667922-5a27-4c4a-9207-f591fbdc9d23\",\"name\":\"user2@example.com\"},\"crud\":\"d\",\"description\":null,\"fields\":[{\"key\":\"message\",\"value\":\"session timeout\"}],\"id\":\"eaac53481de04f67bc7eeea07d2fb0f5\",\"is_anonymous\":null,\"is_failure\":false,\"received\":\"2018-12-31T01:40:07Z\",\"target\":{\"id\":\"12d024e\",\"name\":null,\"type\":\"Session\"}}",
         "outcome": "success",
@@ -405,6 +405,7 @@ An example event for `audit` looks as following:
     "related": {
         "user": [
             "d2667922-5a27-4c4a-9207-f591fbdc9d23",
+            "user2",
             "user2@example.com"
         ]
     },
@@ -435,8 +436,10 @@ An example event for `audit` looks as following:
         }
     },
     "user": {
+        "domain": "example.com",
+        "email": "user2@example.com",
         "id": "d2667922-5a27-4c4a-9207-f591fbdc9d23",
-        "name": "user2@example.com"
+        "name": "user2"
     }
 }
 ```
@@ -746,45 +749,47 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2018-12-31T20:59:47.000Z",
     "agent": {
-        "ephemeral_id": "f945f2c2-fbaf-4b93-b6ca-7d51e6a0706d",
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "63b3ce92-be95-4199-9b67-c74f08e2c74b",
+        "id": "7e8cf2c9-64ff-4492-9ac5-4e1891bf1ba8",
+        "name": "elastic-agent-91222",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "tenable_io.vulnerability",
-        "namespace": "ep",
+        "namespace": "65767",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
+        "id": "7e8cf2c9-64ff-4492-9ac5-4e1891bf1ba8",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
+        "created": "2022-11-30T14:09:12.061Z",
         "dataset": "tenable_io.vulnerability",
-        "ingested": "2024-04-02T09:15:52Z",
+        "ingested": "2025-09-19T09:10:30Z",
         "kind": "state",
-        "original": "{\"asset\":{\"fqdn\":\"example.com\",\"hostname\":\"89.160.20.112\",\"ipv4\":\"81.2.69.142\",\"network_id\":\"00000000-0000-0000-0000-000000000000\",\"operating_system\":[\"Test Demo OS X 10.5.8\"],\"tracked\":true,\"uuid\":\"cf165808-6a31-48e1-9cf3-c6c3174df51d\"},\"first_found\":\"2018-12-31T20:59:47Z\",\"indexed\":\"2022-11-30T14:09:12.061Z\",\"last_found\":\"2018-12-31T20:59:47Z\",\"output\":\"The observed version of Test  is : \\n /21.0.1180.90\",\"plugin\":{\"cve\":[\"CVE-2016-1620\",\"CVE-2016-1614\",\"CVE-2016-1613\",\"CVE-2016-1612\",\"CVE-2016-1618\",\"CVE-2016-1617\",\"CVE-2016-1616\",\"CVE-2016-1615\",\"CVE-2016-1619\"],\"cvss_base_score\":9.3,\"cvss_temporal_score\":6.9,\"cvss_temporal_vector\":{\"exploitability\":\"Unproven\",\"raw\":\"E:U/RL:OF/RC:C\",\"remediation_level\":\"Official-fix\",\"report_confidence\":\"Confirmed\"},\"cvss_vector\":{\"access_complexity\":\"Medium\",\"access_vector\":\"Network\",\"authentication\":\"None required\",\"availability_impact\":\"Complete\",\"confidentiality_impact\":\"Complete\",\"integrity_impact\":\"Complete\",\"raw\":\"AV:N/AC:M/Au:N/C:C/I:C/A:C\"},\"description\":\"The version of Test  on the remote host is prior to 48.0.2564.82 and is affected by the following vulnerabilities: \\n\\n - An unspecified vulnerability exists in Test V8 when handling compatible receiver checks hidden behind receptors.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1612)\\n - A use-after-free error exists in `PDFium` due to improper invalidation of `IPWL_FocusHandler` and `IPWL_Provider` upon destruction.  An attacker can exploit this to dereference already freed memory, resulting in the execution of arbitrary code. (CVE-2016-1613)\\n - An unspecified vulnerability exists in `Blink` that is related to the handling of bitmaps.  An attacker can exploit this to access sensitive information.  No other details are available. (CVE-2016-1614)\\n - An unspecified vulnerability exists in `omnibox` that is related to origin confusion.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1615)\\n - An unspecified vulnerability exists that allows an attacker to spoof a displayed URL.  No other details are available. (CVE-2016-1616)\\n - An unspecified vulnerability exists that is related to history sniffing with HSTS and CSP. No other details are available. (CVE-2016-1617)\\n - A flaw exists in `Blink` due to the weak generation of random numbers by the ARC4-based random number generator.  An attacker can exploit this to gain access to sensitive information.  No other details are available. (CVE-2016-1618)\\n - An out-of-bounds read error exists in `PDFium` in file `fx_codec_jpx_opj.cpp` in the `sycc4{22,44}_to_rgb()` functions. An attacker can exploit this to cause a denial of service by crashing the application linked using the library. (CVE-2016-1619)\\n - Multiple vulnerabilities exist, the most serious of which allow an attacker to execute arbitrary code via a crafted web page. (CVE-2016-1620)\\n - A flaw in `objects.cc` is triggered when handling cleared `WeakCells`, which may allow a context-dependent attacker to have an unspecified impact. No further details have been provided. (CVE-2016-2051)\",\"family\":\"Web Clients\",\"family_id\":1000020,\"has_patch\":false,\"id\":9062,\"name\":\"Test  \\u0026lt; 48.0.2564.82 Multiple Vulnerabilities\",\"risk_factor\":\"HIGH\",\"see_also\":[\"http://testreleases.blogspot.com/2016/01/beta-channel-update_20.html\"],\"solution\":\"Update the  browser to 48.0.2564.82 or later.\",\"synopsis\":\"The remote host is utilizing a web browser that is affected by multiple vulnerabilities.\",\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.9,\"updated\":\"2019-12-31T10:08:58Z\"}},\"port\":{\"port\":\"0\",\"protocol\":\"TCP\"},\"scan\":{\"completed_at\":\"2018-12-31T20:59:47Z\",\"schedule_uuid\":\"6f7db010-9cb6-4870-b745-70a2aea2f81ce1b6640fe8a2217b\",\"started_at\":\"2018-12-31T20:59:47Z\",\"uuid\":\"0e55ec5d-c7c7-4673-a618-438a84e9d1b78af3a9957a077904\"},\"severity\":\"low\",\"severity_default_id\":3,\"severity_id\":3,\"severity_modification_type\":\"NONE\",\"state\":\"OPEN\"}",
+        "original": "{\"asset\":{\"fqdn\":\"example.com\",\"hostname\":\"89.160.20.112\",\"ipv4\":\"81.2.69.142\",\"network_id\":\"00000000-0000-0000-0000-000000000000\",\"operating_system\":[\"Test Demo OS X 10.5.8\"],\"tracked\":true,\"uuid\":\"cf165808-6a31-48e1-9cf3-c6c3174df51d\"},\"first_found\":\"2018-12-31T20:59:47Z\",\"indexed\":\"2022-11-30T14:09:12.061Z\",\"last_found\":\"2018-12-31T20:59:47Z\",\"output\":\"\\n  Path              : /opt/jdk-11.0.2/\\n  Installed version : 11.0.2\\n  Fixed version     : Upgrade to a version greater than 11.0.18\\n\\n\\n\\n  Path              : /usr/java/jdk1.8.0_232-cloudera/\\n  Installed version : 8.0.232\\n  Fixed version     : Upgrade to a version greater than 8u362\\n\",\"plugin\":{\"cve\":[\"CVE-2016-1620\",\"CVE-2016-1614\",\"CVE-2016-1613\",\"CVE-2016-1612\",\"CVE-2016-1618\",\"CVE-2016-1617\",\"CVE-2016-1616\",\"CVE-2016-1615\",\"CVE-2016-1619\"],\"cvss_base_score\":9.3,\"cvss_temporal_score\":6.9,\"cvss_temporal_vector\":{\"exploitability\":\"Unproven\",\"raw\":\"E:U/RL:OF/RC:C\",\"remediation_level\":\"Official-fix\",\"report_confidence\":\"Confirmed\"},\"cvss_vector\":{\"access_complexity\":\"Medium\",\"access_vector\":\"Network\",\"authentication\":\"None required\",\"availability_impact\":\"Complete\",\"confidentiality_impact\":\"Complete\",\"integrity_impact\":\"Complete\",\"raw\":\"AV:N/AC:M/Au:N/C:C/I:C/A:C\"},\"description\":\"The version of Test  on the remote host is prior to 48.0.2564.82 and is affected by the following vulnerabilities: \\n\\n - An unspecified vulnerability exists in Test V8 when handling compatible receiver checks hidden behind receptors.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1612)\\n - A use-after-free error exists in `PDFium` due to improper invalidation of `IPWL_FocusHandler` and `IPWL_Provider` upon destruction.  An attacker can exploit this to dereference already freed memory, resulting in the execution of arbitrary code. (CVE-2016-1613)\\n - An unspecified vulnerability exists in `Blink` that is related to the handling of bitmaps.  An attacker can exploit this to access sensitive information.  No other details are available. (CVE-2016-1614)\\n - An unspecified vulnerability exists in `omnibox` that is related to origin confusion.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1615)\\n - An unspecified vulnerability exists that allows an attacker to spoof a displayed URL.  No other details are available. (CVE-2016-1616)\\n - An unspecified vulnerability exists that is related to history sniffing with HSTS and CSP. No other details are available. (CVE-2016-1617)\\n - A flaw exists in `Blink` due to the weak generation of random numbers by the ARC4-based random number generator.  An attacker can exploit this to gain access to sensitive information.  No other details are available. (CVE-2016-1618)\\n - An out-of-bounds read error exists in `PDFium` in file `fx_codec_jpx_opj.cpp` in the `sycc4{22,44}_to_rgb()` functions. An attacker can exploit this to cause a denial of service by crashing the application linked using the library. (CVE-2016-1619)\\n - Multiple vulnerabilities exist, the most serious of which allow an attacker to execute arbitrary code via a crafted web page. (CVE-2016-1620)\\n - A flaw in `objects.cc` is triggered when handling cleared `WeakCells`, which may allow a context-dependent attacker to have an unspecified impact. No further details have been provided. (CVE-2016-2051)\",\"family\":\"Web Clients\",\"family_id\":1000020,\"has_patch\":false,\"id\":9062,\"name\":\"Test  \\u0026lt; 48.0.2564.82 Multiple Vulnerabilities\",\"risk_factor\":\"HIGH\",\"see_also\":[\"http://testreleases.blogspot.com/2016/01/beta-channel-update_20.html\"],\"solution\":\"Update the  browser to 48.0.2564.82 or later.\",\"synopsis\":\"The remote host is utilizing a web browser that is affected by multiple vulnerabilities.\",\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.9,\"updated\":\"2019-12-31T10:08:58Z\"},\"vuln_publication_date\":\"2023-04-18T00:00:00Z\"},\"port\":{\"port\":\"0\",\"protocol\":\"TCP\"},\"scan\":{\"completed_at\":\"2018-12-31T20:59:47Z\",\"schedule_uuid\":\"6f7db010-9cb6-4870-b745-70a2aea2f81ce1b6640fe8a2217b\",\"started_at\":\"2018-12-31T20:59:47Z\",\"uuid\":\"0e55ec5d-c7c7-4673-a618-438a84e9d1b78af3a9957a077904\"},\"severity\":\"low\",\"severity_default_id\":3,\"severity_id\":3,\"severity_modification_type\":\"NONE\",\"state\":\"OPEN\"}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "domain": "example.com",
+        "domain": "com",
         "id": "cf165808-6a31-48e1-9cf3-c6c3174df51d",
         "ip": [
             "89.160.20.112",
             "81.2.69.142"
         ],
+        "name": "example.com",
         "os": {
             "full": [
                 "Test Demo OS X 10.5.8"
@@ -794,6 +799,27 @@ An example event for `vulnerability` looks as following:
     "input": {
         "type": "cel"
     },
+    "observer": {
+        "vendor": "Tenable"
+    },
+    "package": {
+        "fixed_version": [
+            "Upgrade to a version greater than 11.0.18",
+            "Upgrade to a version greater than 8u362"
+        ],
+        "name": [
+            "jdk-11.0.2",
+            "jdk1.8.0_232-cloudera"
+        ],
+        "path": [
+            "/opt/jdk-11.0.2/",
+            "/usr/java/jdk1.8.0_232-cloudera/"
+        ],
+        "version": [
+            "11.0.2",
+            "8.0.232"
+        ]
+    },
     "related": {
         "hosts": [
             "example.com"
@@ -802,6 +828,10 @@ An example event for `vulnerability` looks as following:
             "89.160.20.112",
             "81.2.69.142"
         ]
+    },
+    "resource": {
+        "id": "cf165808-6a31-48e1-9cf3-c6c3174df51d",
+        "name": "example.com"
     },
     "tags": [
         "preserve_original_event",
@@ -825,7 +855,21 @@ An example event for `vulnerability` looks as following:
             "first_found": "2018-12-31T20:59:47.000Z",
             "indexed": "2022-11-30T14:09:12.061Z",
             "last_found": "2018-12-31T20:59:47.000Z",
-            "output": "The observed version of Test  is : \n /21.0.1180.90",
+            "output": "\n  Path              : /opt/jdk-11.0.2/\n  Installed version : 11.0.2\n  Fixed version     : Upgrade to a version greater than 11.0.18\n\n\n\n  Path              : /usr/java/jdk1.8.0_232-cloudera/\n  Installed version : 8.0.232\n  Fixed version     : Upgrade to a version greater than 8u362\n",
+            "package_nested": [
+                {
+                    "fixed_version": "Upgrade to a version greater than 11.0.18",
+                    "name": "jdk-11.0.2",
+                    "path": "/opt/jdk-11.0.2/",
+                    "version": "11.0.2"
+                },
+                {
+                    "fixed_version": "Upgrade to a version greater than 8u362",
+                    "name": "jdk1.8.0_232-cloudera",
+                    "path": "/usr/java/jdk1.8.0_232-cloudera/",
+                    "version": "8.0.232"
+                }
+            ],
             "plugin": {
                 "cve": [
                     "CVE-2016-1620",
@@ -890,7 +934,8 @@ An example event for `vulnerability` looks as following:
                     },
                     "score": 5.9,
                     "updated": "2019-12-31T10:08:58.000Z"
-                }
+                },
+                "vuln_publication_date": "2023-04-18T00:00:00.000Z"
             },
             "port": {
                 "protocol": "TCP",
@@ -929,17 +974,20 @@ An example event for `vulnerability` looks as following:
             "CVE-2016-1615",
             "CVE-2016-1619"
         ],
+        "published_date": "2023-04-18T00:00:00.000Z",
         "reference": [
             "http://testreleases.blogspot.com/2016/01/beta-channel-update_20.html"
         ],
         "report_id": "0e55ec5d-c7c7-4673-a618-438a84e9d1b78af3a9957a077904",
         "scanner": {
+            "name": "Test  &lt; 48.0.2564.82 Multiple Vulnerabilities",
             "vendor": "Tenable"
         },
         "score": {
             "version": "3.0"
         },
-        "severity": "low"
+        "severity": "Low",
+        "title": "The remote host is utilizing a web browser that is affected by multiple vulnerabilities."
     }
 }
 ```
@@ -948,18 +996,25 @@ An example event for `vulnerability` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| package.fixed_version |  | keyword |
+| package.name | Package name | keyword |
+| package.path | Path where the package is installed. | keyword |
+| package.version | Package version | keyword |
+| resource.id |  | keyword |
+| resource.name |  | keyword |
 | tenable_io.vulnerability.asset.agent_uuid | The UUID of the agent that performed the scan where the vulnerability was found. | keyword |
 | tenable_io.vulnerability.asset.bios_uuid | The BIOS UUID of the asset where the vulnerability was found. | keyword |
 | tenable_io.vulnerability.asset.device_type | The type of asset where the vulnerability was found. | keyword |
@@ -982,6 +1037,11 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.last_fixed | The ISO date when a scan no longer detects the previously detected vulnerability on the asset. | date |
 | tenable_io.vulnerability.last_found | The ISO date when a scan last detected the vulnerability on the asset. | date |
 | tenable_io.vulnerability.output | The text output of the Nessus scanner. | keyword |
+| tenable_io.vulnerability.package_nested |  | nested |
+| tenable_io.vulnerability.package_nested.fixed_version |  | keyword |
+| tenable_io.vulnerability.package_nested.name |  | keyword |
+| tenable_io.vulnerability.package_nested.path |  | keyword |
+| tenable_io.vulnerability.package_nested.version |  | keyword |
 | tenable_io.vulnerability.plugin.always_run |  | boolean |
 | tenable_io.vulnerability.plugin.bid | The Bugtraq ID for the plugin. | long |
 | tenable_io.vulnerability.plugin.canvas_package | The name of the CANVAS exploit pack that includes the vulnerability. | keyword |
@@ -1088,8 +1148,13 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.severity.id | The code for the severity assigned when a user recast the risk associated with the vulnerability. Possible values include: 0,1,2,3 and 4. | long |
 | tenable_io.vulnerability.severity.modification_type | The type of modification a user made to the vulnerability's severity. Possible values include:none, recasted and accepted. | keyword |
 | tenable_io.vulnerability.severity.value | The severity of the vulnerability as defined using the Common Vulnerability Scoring System (CVSS) base score. Possible values include info, low, medium, high and critical. | keyword |
+| tenable_io.vulnerability.source | The source of the scans that identified the vulnerability. Sources can include sensors, connectors, and API imports. The values in the source field correspond to the names of the sources as defined in your organization's implementation of Tenable Vulnerability Management. | keyword |
 | tenable_io.vulnerability.state | The state of the vulnerability as determined by the Tenable Vulnerability Management state service. Possible values include: open, reopen and fixed. | keyword |
-| vulnerability.description | The description of the vulnerability. | text |
+| vulnerability.published_date |  | date |
+| vulnerability.scanner.name |  | keyword |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| vulnerability.scanner.version |  | keyword |
+| vulnerability.title |  | keyword |
 
 
 ### scan
@@ -1102,26 +1167,26 @@ An example event for `scan` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-02T09:14:42.329Z",
+    "@timestamp": "2025-12-03T09:35:39.290Z",
     "agent": {
-        "ephemeral_id": "f945f2c2-fbaf-4b93-b6ca-7d51e6a0706d",
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "6c6451c2-8450-4887-a9dc-d0a16453249c",
+        "id": "db19321f-465d-4a59-869c-1b771084aa41",
+        "name": "elastic-agent-46431",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "9.1.3"
     },
     "data_stream": {
         "dataset": "tenable_io.scan",
-        "namespace": "ep",
+        "namespace": "47734",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
+        "id": "db19321f-465d-4a59-869c-1b771084aa41",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "9.1.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1129,9 +1194,10 @@ An example event for `scan` looks as following:
             "configuration"
         ],
         "dataset": "tenable_io.scan",
-        "ingested": "2024-04-02T09:14:52Z",
+        "ingested": "2025-12-03T09:35:42Z",
         "kind": "state",
-        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
+        "module": "tenable_io",
+        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"scan_details\":{\"config_id\":\"a772daba-3d6d-412c-8ee0-3279b19650b2\",\"created_at\":\"2020-02-05T23:11:49.342Z\",\"metadata\":{\"audited_pages\":1,\"crawled_urls\":1,\"queued_pages\":0,\"queued_urls\":0,\"request_count\":74,\"response_time\":0,\"scan_status\":\"stopping\"},\"requested_action\":\"start\",\"scan_id\":\"195\",\"status\":\"completed\",\"target\":\"http://192.0.2.119\",\"updated_at\":\"2020-02-05T23:22:15.510Z\",\"user_id\":\"53e1d711-f18f-4a75-a86e-1c47bccff1b7\"},\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
         "type": [
             "info"
         ]
@@ -1160,6 +1226,25 @@ An example event for `scan` looks as following:
             "progress": 100,
             "read": false,
             "rrules": "FREQ=WEEKLY;INTERVAL=1;BYDAY=FR",
+            "scan_details": {
+                "config_id": "a772daba-3d6d-412c-8ee0-3279b19650b2",
+                "created_at": "2020-02-05T23:11:49.342Z",
+                "metadata": {
+                    "audited_pages": 1,
+                    "crawled_urls": 1,
+                    "queued_pages": 0,
+                    "queued_urls": 0,
+                    "request_count": 74,
+                    "response_time": 0,
+                    "scan_status": "stopping"
+                },
+                "requested_action": "start",
+                "scan_id": "195",
+                "status": "completed",
+                "target": "http://192.0.2.119",
+                "updated_at": "2020-02-05T23:22:15.510Z",
+                "user_id": "53e1d711-f18f-4a75-a86e-1c47bccff1b7"
+            },
             "schedule_uuid": "11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871",
             "shared": true,
             "starttime": "2022-07-08T03:30:00.000Z",
@@ -1213,6 +1298,21 @@ An example event for `scan` looks as following:
 | tenable_io.scan.progress | The progress of the scan ranging from 0 to 100. | long |
 | tenable_io.scan.read | A value indicating whether the user account associated with the request message has viewed the scan in the Tenable Vulnerability Management user interface. If 1, the user account has viewed the scan results. | boolean |
 | tenable_io.scan.rrules | The interval at which the scan repeats. The interval is formatted as a string of three values delimited by semi-colons. These values are the frequency (FREQ=ONETIME or DAILY or WEEKLY or MONTHLY or YEARLY), the interval (INTERVAL=1 or 2 or 3 ... x), and the days of the week (BYDAY=SU,MO,TU,WE,TH,FR,SA). For a scan that runs every three weeks on Monday Wednesday and Friday, the string would be FREQ=WEEKLY;INTERVAL=3;BYDAY=MO,WE,FR. If the scan is not scheduled to recur, this attribute is null. For more information, see rrules Format. | keyword |
+| tenable_io.scan.scan_details.config_id | The unique identifier of the scan configuration. | keyword |
+| tenable_io.scan.scan_details.created_at | The date and time when the scan was created. | date |
+| tenable_io.scan.scan_details.metadata.audited_pages | The number of pages that have been audited. | long |
+| tenable_io.scan.scan_details.metadata.crawled_urls | The number of URLs that have been crawled. | long |
+| tenable_io.scan.scan_details.metadata.queued_pages | The number of pages queued for auditing. | long |
+| tenable_io.scan.scan_details.metadata.queued_urls | The number of URLs queued for scanning. | long |
+| tenable_io.scan.scan_details.metadata.request_count | The total number of requests made during the scan. | long |
+| tenable_io.scan.scan_details.metadata.response_time | The average response time in milliseconds. | long |
+| tenable_io.scan.scan_details.metadata.scan_status | The detailed scan status. | keyword |
+| tenable_io.scan.scan_details.requested_action | The action requested for the scan (e.g., start, stop). | keyword |
+| tenable_io.scan.scan_details.scan_id | The unique identifier for the scan. | keyword |
+| tenable_io.scan.scan_details.status | The current status of the scan. | keyword |
+| tenable_io.scan.scan_details.target | The target URL of the scan. | keyword |
+| tenable_io.scan.scan_details.updated_at | The date and time when the scan was last updated. | date |
+| tenable_io.scan.scan_details.user_id | The unique identifier of the user who created the scan. | keyword |
 | tenable_io.scan.schedule_uuid | The UUID for a specific instance in the scan schedule. | keyword |
 | tenable_io.scan.shared | If true, the scan is shared with users other than the scan owner. The level of sharing is specified in the acls attribute of the scan details. | boolean |
 | tenable_io.scan.starttime | For one-time scans, the starting time and date for the scan. For recurrent scans, the first date on which the scan schedule is active and the time that recurring scans launch based on the rrules attribute. | date |
