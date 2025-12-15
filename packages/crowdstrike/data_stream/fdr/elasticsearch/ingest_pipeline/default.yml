@@ -43,6 +43,13 @@ processors:
             tag: append_error_message_4ef54c75
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Conditionally append routing tag to route metadata to separate data streams.
+  - append:
+      tag: append_route_metadata_tag
+      field: tags
+      value: route_metadata_to_datastreams
+      if: ctx._conf?.route_metadata_to_datastreams == true
+      allow_duplicates: false
   - remove:
       tag: remove_metadata_host_aid_and_user_sid_a4bf7be9
       field:
@@ -1531,6 +1538,12 @@ processors:
       field: crowdstrike.UID
       target_field: user.id
       ignore_missing: true
+  - set:
+      tag: set_user_id_from_crowdstrike_UserSid_readable
+      if: ctx.user?.id == null || ctx.user.id == ""
+      field: user.id
+      copy_from: crowdstrike.UserSid_readable
+      ignore_empty_value: true
   - rename:
       tag: rename_crowdstrike_info_user_UserName_to_user_name_cc930c2f
       if: ctx.crowdstrike?.info?.user?.UserName != null && ctx.user?.name == null
