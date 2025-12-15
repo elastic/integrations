@@ -1,0 +1,24 @@
+---
+description: Benchmark 100000 activity events ingested
+input: httpjson
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+  enable_request_tracer: true
+data_stream:
+  name: activity
+  vars:
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: sentinel_one
+  generator:
+    total_events: 100000
+    template:
+      path: ./activity-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./activity-benchmark/config.yml
+    fields:
+      path: ./activity-benchmark/fields.yml
