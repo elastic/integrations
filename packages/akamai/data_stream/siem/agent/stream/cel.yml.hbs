@@ -109,12 +109,7 @@ program: |-
                           optional.none(),
                         "recovery_mode": false,
                       },
-                      "want_more": (lines.size() > 0) ?
-                        lines[lines.size() - 1].decode_json().as(lastEvent,
-                          has(lastEvent.offset) && lastEvent.offset != ""
-                        )
-                      :
-                        false,
+                      "want_more": lines.size() >= int(state.event_limit),
                     }
                   )
                 : (resp.StatusCode == 416) ?
@@ -163,3 +158,18 @@ program: |-
       )
     )
   )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

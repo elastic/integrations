@@ -1,0 +1,29 @@
+{
+    "id": "aws-bedrock-agentcore-agent-runtime-high-latency",
+    "type": "alerting_rule_template",
+    "attributes": {
+      "name": "[AWS Bedrock AgentCore] Agent runtime high latency",
+      "tags": ["AWS", "Amazon Bedrock AgentCore", "Agent runtime"],
+      "ruleTypeId": ".es-query",
+      "schedule": {
+        "interval": "5m"
+      },
+      "params": {
+        "searchType": "esqlQuery",
+        "timeWindowSize": 5,
+        "timeWindowUnit": "m",
+        "esqlQuery": {
+          "esql": "// Alert triggers when high latency is detected during AWS Bedrock AgentCore runtime invocations.\n//\n// Latency measures the average time elapsed between receiving the request and\n// sending the final response token, measured in milliseconds.\n//\n// The alert is grouped by cloud account, region, and agent endpoint name (aws.dimensions.Name)\n// to pinpoint the specific agent endpoint experiencing high latency.\n//\n// To adjust sensitivity, change the threshold in the WHERE clause (default: 10000ms = 10 seconds).\n\nFROM metrics-aws_bedrock_agentcore.metrics-*\n| WHERE aws.dimensions.Operation == \"InvokeAgentRuntime\"\n| STATS avg_latency_ms = avg(aws.bedrock_agentcore.metrics.Latency.avg) BY cloud.account.id, cloud.region, aws.dimensions.Name\n| WHERE avg_latency_ms > 10000"
+        },
+        "groupBy": "row",
+        "timeField": "event.ingested"
+      },
+      "alertDelay": {
+        "active": 1
+      }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+  }
+
