@@ -96,10 +96,10 @@ processors:
       copy_from: message
       tag: set_rule_description
       if: ctx.message != null
-  - rename:
-      field: crowdstrike.event.FileName
-      target_field: process.name     
-      ignore_missing: true
+  - set:
+      field: process.name
+      copy_from: crowdstrike.event.FileName
+      ignore_empty_value: true
   - rename:
       field: crowdstrike.event.MachineDomain
       target_field: host.domain
@@ -168,7 +168,7 @@ processors:
       target_field: host.mac
       ignore_missing: true
       tag: rename_mac_address
-      if: ctx.cropwdstrike?.event?.MacAddress != null
+      if: ctx.crowdstrike?.event?.MacAddress != null
   - uppercase:
       field: host.mac
       ignore_missing: true
