@@ -1075,7 +1075,7 @@ processors:
       target_field: user.id
       ignore_missing: true
       override: true
-      if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser'
+      if: ctx.user?.id == null && (ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser')
       tag: rename_user_id_assumed_role
   - grok:
       field: aws.cloudtrail.user_identity.arn
