@@ -1072,11 +1072,9 @@ processors:
       tag: rename_user_name_assumed_role
   - rename:
       field: json.userIdentity.sessionContext.sessionIssuer.principalId
-      target_field: user.id
+      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.principal_id
       ignore_missing: true
-      override: true
-      if: ctx.user?.id == null && (ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser')
-      tag: rename_user_id_assumed_role
+      ignore_failure: true
   - grok:
       field: aws.cloudtrail.user_identity.arn
       patterns:
