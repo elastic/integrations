@@ -87,14 +87,14 @@ processors:
   - rename:
       tag: flatten_response_payload
       field: aws.bedrock_agentcore.body.response_payload
-      target_field: aws.bedrock_agentcore.response_payload
+      target_field: aws.bedrock_agentcore.response_payload_object
       ignore_missing: true
 
   # Handle prompt when it comes as object/array/map instead of string
   - rename:
-      tag: rename_prompt_object
-      field: aws.bedrock_agentcore.request_payload.prompt
-      target_field: aws.bedrock_agentcore.request_payload.prompt_object
+      tag: rename_request_payload_object
+      field: aws.bedrock_agentcore.request_payload
+      target_field: aws.bedrock_agentcore.request_payload_object
       ignore_missing: true
       if: ctx.aws?.bedrock_agentcore?.request_payload?.prompt != null && !(ctx.aws.bedrock_agentcore.request_payload.prompt instanceof String)
 
