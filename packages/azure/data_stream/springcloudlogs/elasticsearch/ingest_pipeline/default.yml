@@ -57,15 +57,32 @@ processors:
       field: azure.springcloudlogs.time
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - date:
       field: azure.springcloudlogs.EventTimeString
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
       field: azure.springcloudlogs.time
       ignore_missing: true

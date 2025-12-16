@@ -267,11 +267,11 @@ processors:
       ignore_missing: true
   - rename:
       field: json.agentDetectionInfo.siteId
-      target_field: sentinel_one.threat.detection.agent.site.id
+      target_field: sentinel_one.site.id
       ignore_missing: true
   - rename:
       field: json.agentDetectionInfo.siteName
-      target_field: sentinel_one.threat.detection.agent.site.name
+      target_field: sentinel_one.site.name
       ignore_missing: true
   - rename:
       field: json.agentRealtimeInfo.accountId
@@ -279,7 +279,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.agentRealtimeInfo.accountName
-      target_field: sentinel_one.threat.agent.account.name
+      target_field: sentinel_one.account.name
       ignore_missing: true
   - convert:
       field: json.agentRealtimeInfo.activeThreats
@@ -418,10 +418,18 @@ processors:
       field: json.agentRealtimeInfo.groupId
       target_field: sentinel_one.threat.agent.group.id
       ignore_missing: true
+  - set:
+      field: group.id
+      copy_from: sentinel_one.threat.agent.group.id
+      ignore_empty_value: true
   - rename:
       field: json.agentRealtimeInfo.groupName
       target_field: sentinel_one.threat.agent.group.name
       ignore_missing: true
+  - set:
+      field: group.name
+      copy_from: sentinel_one.threat.agent.group.name
+      ignore_empty_value: true
   - foreach:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
@@ -952,11 +960,11 @@ processors:
       ignore_missing: true
   - rename:
       field: json.threatInfo.classification
-      target_field: sentinel_one.threat.classification
+      target_field: sentinel_one.threat_classification.name
       ignore_missing: true
   - rename:
       field: json.threatInfo.classificationSource
-      target_field: sentinel_one.threat.classification_source
+      target_field: sentinel_one.threat_classification.source
       ignore_missing: true
   - rename:
       field: json.threatInfo.cloudFilesHashVerdict
@@ -1032,6 +1040,10 @@ processors:
       field: json.threatInfo.filePath
       target_field: threat.indicator.file.path
       ignore_missing: true
+  - set:
+      field: file.path
+      copy_from: threat.indicator.file.path
+      ignore_empty_value: true
   - convert:
       field: json.threatInfo.fileSize
       target_field: threat.indicator.file.size
