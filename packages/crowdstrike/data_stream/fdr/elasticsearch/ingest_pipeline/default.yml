@@ -822,18 +822,18 @@ processors:
       copy_from: host.hostname
       ignore_empty_value: true
       ignore_failure: true
+  - append:
+      tag: append_related_hosts_2fa72197
+      if: ctx.crowdstrike?.info?.host?.ComputerName != null
+      field: related.hosts
+      value: '{{{crowdstrike.info.host.ComputerName}}}'
+      allow_duplicates: false
   - rename:
       tag: rename_crowdstrike_info_host_ComputerName_to_host_name_a1ee7f6f
       if: ctx.host?.name == null
       field: crowdstrike.info.host.ComputerName
       target_field: host.name
       ignore_missing: true
-  - append:
-      tag: append_related_hosts_2fa72197
-      if: ctx.host?.name != null
-      field: related.hosts
-      value: '{{{crowdstrike.info.host.ComputerName}}}'
-      allow_duplicates: false
   - append:
       tag: append_related_hosts_452ef445
       if: ctx.host?.name != null
@@ -1097,7 +1097,7 @@ processors:
         float e = Float.parseFloat(ctx.crowdstrike?.ProcessEndTime);
         if (e >= s) {
           if (ctx.process == null) {
-            ctx.process = [];
+            ctx.process = [:];
           }
           ctx.process.uptime = (long) ((e-s)/1000L);
         }
@@ -1616,7 +1616,7 @@ processors:
       ignore_failure: true
   - append:
       tag: append_user_domain_76fba8f0
-      if: ctx.user?.domain != null && ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2 && ctx.user.domain != ctx._temp.user_parts[0]
+      if: ctx.user?.domain != null && ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2 && ctx.user.domain != ctx._temp.user_parts[1]
       field: user.domain
       value: '{{{_temp.user_parts.1}}}'
       allow_duplicates: false
@@ -2256,12 +2256,6 @@ processors:
       copy_from: crowdstrike.ContextImageFileName
       ignore_empty_value: true
   - set:
-      tag: set_process_entity_id_d4090d0f
-      if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'linux'
-      field: process.entity_id
-      copy_from: crowdstrike.ContextProcessId
-      ignore_empty_value: true
-  - set:
       tag: set_file_hash_sha256_1abd2cde
       if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'linux'
       field: file.hash.sha256
@@ -2837,9 +2831,9 @@ processors:
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_preserve_original_event_into_event_kind_a0b8d607
+      tag: append_preserve_original_event_into_tags_a0b8d607
       if: ctx.error?.message != null
-      field: event.kind
+      field: tags
       value: preserve_original_event
       allow_duplicates: false
 on_failure:

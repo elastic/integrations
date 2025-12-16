@@ -254,7 +254,7 @@ processors:
         def idx = ctx.crowdstrike.Filename.lastIndexOf('.');
         if (idx != -1) {
           ctx.file = ctx.file ?: [:];
-          ctx.file.extension = ctx.crowdstrike.Filename.substring(idx).toLowerCase();
+          ctx.file.extension = ctx.crowdstrike.Filename.substring(idx + 1).toLowerCase();
         }
       on_failure:
         - append:
@@ -339,9 +339,9 @@ processors:
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_preserve_original_event_into_event_kind_a0b8d607
+      tag: append_preserve_original_event_into_tags_a0b8d607
       if: ctx.error?.message != null
-      field: event.kind
+      field: tags
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
@@ -354,7 +354,7 @@ on_failure:
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_preserve_original_event_into_event_kind_c274f7a2
-      field: event.kind
+      tag: append_preserve_original_event_into_tags_c274f7a2
+      field: tags
       value: preserve_original_event
       allow_duplicates: false
