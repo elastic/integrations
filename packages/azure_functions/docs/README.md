@@ -209,7 +209,7 @@ Examples:
 
     * **To collect logs via log file**, configure the file path patterns which will be monitored, in the Paths field.
 
-6. Press **Save Integration** to begin collecting logs.
+6. Click **Save Integration** to begin collecting logs.
 
 ### Validate log collection
 

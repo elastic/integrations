@@ -1,0 +1,50 @@
+# AWS ELB Access Logs OpenTelemetry Assets
+
+This package contains Kibana assets for monitoring [AWS ELB load balancers](https://aws.amazon.com/elasticloadbalancing/). We support access logs collected from Application Load Balancers (ALBs), Network Load Balancers (NLBs) and Classic Load Balancers.
+
+## Supported data sources
+
+### EDOT Cloud Forwarder (ECF) for AWS
+
+ECF is the simplest way to configure AWS ELB log collection. Refer to the [ECF for AWS documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) for full setup instructions.
+
+### Standalone OTel Collector
+
+
+Any OTel-supported collection method is supported provided the required extension is included.
+
+#### Compatibility
+
+This package has been tested with OpenTelemetry Collector version `0.138.0`. The OpenTelemetry components used are [awss3receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awss3receiver#aws-s3-receiver), [awslogsencodingextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension#aws-logs-encoding-extension), and [elasticsearchexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter#elasticsearch-exporter).
+
+#### Sample configuration
+
+```yaml
+extensions:
+  awslogs_encoding/elbaccess:
+    format: elbaccess
+
+receivers:
+  awss3:
+    sqs:
+      queue_url: "<sqs-url>"
+      region: "<region>"
+    s3downloader:
+      region: "<region>"
+      s3_bucket: '<bucket_name>'
+      s3_prefix: 'AWSLogs/<account-id>'
+    encodings:
+      - extension: awslogs_encoding/elbaccess
+
+exporters:
+  elasticsearch/otel:
+    endpoints: https://<host>:<port>
+    api_key: <api_key>
+
+service:
+  extensions: [awslogs_encoding/elbaccess]
+  pipelines:
+    logs:
+      exporters: [elasticsearch/otel]
+      receivers: [awss3]
+```

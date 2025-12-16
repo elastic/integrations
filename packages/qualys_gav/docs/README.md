@@ -57,20 +57,35 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-26T13:07:03.724Z",
+    "@timestamp": "2025-12-03T12:44:38.354Z",
     "agent": {
-        "ephemeral_id": "3729163b-132c-437f-b8a8-d4200aef9b6b",
-        "id": "0ef8fd67-1afe-4495-99f1-bae4e45a64b7",
-        "name": "elastic-agent-83075",
+        "ephemeral_id": "dc4e57e9-b7d8-49c5-96ef-b3c4a5902477",
+        "id": "dd13357b-1570-4a0e-aa97-5941f9f32ce9",
+        "name": "elastic-agent-83554",
         "type": "filebeat",
-        "version": "9.1.4"
+        "version": "9.2.1"
     },
     "cloud": {
-        "provider": "aws"
+        "account": {
+            "id": "1234"
+        },
+        "availability_zone": "us-west-2a",
+        "instance": {
+            "id": "instanceId_value",
+            "name": "hostname_value"
+        },
+        "machine": {
+            "type": "m4.large"
+        },
+        "provider": "aws",
+        "region": "us-west-2",
+        "service": {
+            "name": "ec2"
+        }
     },
     "data_stream": {
         "dataset": "qualys_gav.asset",
-        "namespace": "72894",
+        "namespace": "56571",
         "type": "logs"
     },
     "device": {
@@ -83,9 +98,9 @@ An example event for `asset` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "0ef8fd67-1afe-4495-99f1-bae4e45a64b7",
+        "id": "dd13357b-1570-4a0e-aa97-5941f9f32ce9",
         "snapshot": false,
-        "version": "9.1.4"
+        "version": "9.2.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -94,7 +109,7 @@ An example event for `asset` looks as following:
         ],
         "created": "2025-07-09T14:21:12.000Z",
         "dataset": "qualys_gav.asset",
-        "ingested": "2025-09-26T13:07:06Z",
+        "ingested": "2025-12-03T12:44:41Z",
         "kind": "event",
         "module": "qualys_gav",
         "risk_score": 0,
@@ -310,6 +325,13 @@ An example event for `asset` looks as following:
                 "created": "2025-07-09T14:21:12.000Z",
                 "last_updated": "2025-07-11T14:21:10.000Z",
                 "source": "EASM"
+            },
+            "inventory_list_data": {
+                "inventory": {
+                    "created": "2024-01-12T03:40:12.000Z",
+                    "last_updated": "2025-11-04T08:08:04.000Z",
+                    "source": "EASM"
+                }
             },
             "is_container_host": false,
             "isp": "test, Inc.",
@@ -568,7 +590,8 @@ An example event for `asset` looks as following:
         "preserve_duplicate_custom_fields",
         "hide_sensitive",
         "forwarded",
-        "qualys_gav-asset"
+        "qualys_gav-asset",
+        "provider_cloud_data"
     ],
     "user": {
         "name": "test_user"
@@ -742,6 +765,9 @@ An example event for `asset` looks as following:
 | qualys_gav.asset.inventory.created |  | date |
 | qualys_gav.asset.inventory.last_updated |  | date |
 | qualys_gav.asset.inventory.source |  | keyword |
+| qualys_gav.asset.inventory_list_data.inventory.created |  | date |
+| qualys_gav.asset.inventory_list_data.inventory.last_updated |  | date |
+| qualys_gav.asset.inventory_list_data.inventory.source |  | keyword |
 | qualys_gav.asset.is_container_host |  | boolean |
 | qualys_gav.asset.isp |  | keyword |
 | qualys_gav.asset.last_boot |  | date |

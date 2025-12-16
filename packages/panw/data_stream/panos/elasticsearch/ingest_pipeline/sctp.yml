@@ -3,6 +3,7 @@ description: Pipeline for PanOS SCTP Logs.
 # API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/sctp-log-fields
 processors:
   - csv:
+      tag: csv_message_acfcb098
       field: message
       ignore_failure: true
       target_fields:
@@ -65,77 +66,95 @@ processors:
         - panw.panos.rule_uuid
         - _temp_.high_res_timestamp
 
-# Set event.category.
+  # Set event.category.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_38e4ac56
       field: event.category
       value:
         - network
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
+      tag: set_destination_ip_07b53525
       field: destination.ip
       copy_from: panw.panos.destination.ip
       ignore_failure: true
   - set:
+      tag: set_destination_packets_c89f4e4d
       field: destination.packets
       copy_from: panw.panos.packets_received
       ignore_failure: true
   - set:
+      tag: set_destination_port_f95b8fc9
       field: destination.port
       copy_from: panw.panos.destination.port
       ignore_failure: true
   - set:
+      tag: set_log_level_ed3c9f74
       field: log.level
       copy_from: panw.panos.severity
       ignore_failure: true
   - set:
+      tag: set_network_packets_774bb447
       field: network.packets
       copy_from: panw.panos.network.packets
       ignore_failure: true
   - set:
+      tag: set_network_transport_860fbbd0
       field: network.transport
       copy_from: panw.panos.protocol
       ignore_failure: true
   - set:
+      tag: set_observer_egress_interface_name_a7cd428a
       field: observer.egress.interface.name
       copy_from: panw.panos.outbound_interface
       ignore_failure: true
   - set:
+      tag: set_observer_egress_zone_1c62484c
       field: observer.egress.zone
       copy_from: panw.panos.destination.zone
       ignore_failure: true
   - set:
+      tag: set_observer_hostname_5bc96c94
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
   - set:
+      tag: set_observer_ingress_interface_name_0cf960b9
       field: observer.ingress.interface.name
       copy_from: panw.panos.inbound_interface
       ignore_failure: true
   - set:
+      tag: set_observer_ingress_zone_99ce4399
       field: observer.ingress.zone
       copy_from: panw.panos.source.zone
       ignore_failure: true
   - set:
+      tag: set_panw_panos_serial_number_50a6683d
       field: panw.panos.serial_number
       copy_from: observer.serial_number
       ignore_failure: true
   - set:
+      tag: set_rule_uuid_5478ecb2
       field: rule.uuid
       copy_from: panw.panos.rule_uuid
       ignore_failure: true
   - set:
+      tag: set_source_ip_c1b0f423
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
   - set:
+      tag: set_source_packets_b4b8d869
       field: source.packets
       copy_from: panw.panos.packets_sent
       ignore_failure: true
   - set:
+      tag: set_source_port_ed14489b
       field: source.port
       copy_from: panw.panos.source.port
       ignore_failure: true
@@ -147,7 +166,11 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in SCTP pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

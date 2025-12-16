@@ -2,25 +2,31 @@
 description: "Pipeline for parsing fortinet firewall logs for login events"
 processors:
 - set:
+    tag: set_event_kind_de80643c
     field: "event.kind"
     value: "event"
 - set:
+    tag: set_event_action_9396d084
     field: "event.action"
     value: "login"
     override: false
 - append:
+    tag: append_event_category_c182a53a
     field: "event.category"
     value:
     - "authentication"
 - set:
+    tag: set_user_name_7ff007fb
     field: "user.name"
     value: "{{{ source.user.name }}}"
     if: ctx.source?.user?.name != null
 - append:
+    tag: append_user_roles_9f4ec36b
     field: "user.roles"
     value: "{{{ fortinet.firewall.adminprof }}}"
     if: ctx.fortinet?.firewall?.adminprof != null
 - append:
+    tag: append_source_user_roles_fa50adf0
     field: "source.user.roles"
     value: "{{{ fortinet.firewall.adminprof }}}"
     if: ctx.fortinet?.firewall?.adminprof != null
@@ -31,6 +37,7 @@ processors:
     if: "ctx.fortinet?.firewall?.userfrom != null && ctx.fortinet.firewall.userfrom.startsWith('JSON(')"
     on_failure:
       - append:
+          tag: append_error_message_ec5eda80
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "JSON(192.168.0.10)"
@@ -41,6 +48,7 @@ processors:
     tag: "event outcome"
     on_failure:
       - append:
+          tag: append_error_message_1be372ee
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "User login/logout successful"
@@ -51,6 +59,7 @@ processors:
     if: "ctx.message != null && ctx.message.startsWith('Login from ssh:')"
     on_failure:
       - append:
+          tag: append_error_message_3db62f63
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "Login from ssh: Failed for philipp from 192.168.0.10 port 38654"
@@ -61,6 +70,7 @@ processors:
     if: "ctx.message != null && ctx.message.startsWith('Administrator') && !ctx.message.toLowerCase().contains('logged in')"
     on_failure:
       - append:
+          tag: append_error_message_b6df5be7
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "Administrator philipp login failed from ssh(192.168.0.10) because of invalid ssh key"
@@ -68,39 +78,47 @@ processors:
       field: "message"
       tag: "ssh login 3"
       patterns:
-          - "%{WORD:_tmp.user.roles} %{WORD:user.name} logged in %{WORD:event.outcome} from (?:jsconsole|%{WORD}\\(%{IP:source.ip}\\))"
+          - "%{WORD:_tmp.user.roles} %{NOTSPACE:user.name} logged in %{WORD:event.outcome} from (?:jsconsole|%{WORD}\\(%{IP:source.ip}\\))"
       if: "ctx.message != null && ctx.message.startsWith('Administrator') && ctx.message.toLowerCase().contains('logged in')"
       on_failure:
           - append:
+                tag: append_error_message_9b89cd96
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       description: "Administrator admin logged in successfully from jsconsole|ssh(172.16.200.254)"
 - set:
+    tag: set_event_outcome_4b7c0079
     field: "event.outcome"
     value: "failure"
     if: "ctx.event?.outcome != null && ctx.event?.outcome.toLowerCase().startsWith('fail')"
 - set:
+    tag: set_event_outcome_bd391e8b
     field: "event.outcome"
     value: "success"
     if: "ctx.event?.outcome != null && ctx.event?.outcome.toLowerCase().startsWith('success')"
 - rename:
+    tag: rename_fortinet_firewall_log_id_to_event_id_14d08806
     field: "fortinet.firewall.log_id"
     target_field: "event.id"
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_pri_to_log_level_c2c890f0
     field: "fortinet.firewall.pri"
     target_field: "log.level"
     ignore_missing: true
 - rename:
+    tag: rename_fortinet_firewall_device_id_to_observer_serial_number_f8ed8afb
     field: "fortinet.firewall.device_id"
     target_field: "observer.serial_number"
     ignore_missing: true
 - append:
+    tag: append_user_roles_217fc576
     field: user.roles
     value: "{{{ _tmp.user.roles }}}"
     if: ctx._tmp?.user?.roles != null
     allow_duplicates: false
 - append:
+    tag: append_source_user_roles_a2c82efb
     field: source.user.roles
     value: "{{{ _tmp.user.roles }}}"
     if: ctx._tmp?.user?.roles != null
@@ -112,6 +130,7 @@ processors:
     if: ctx.source?.port != null
     on_failure:
       - append:
+          tag: append_error_message_16f8f049
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
@@ -121,9 +140,11 @@ processors:
     if: ctx.fortinet?.firewall?.valid != null
     on_failure:
       - append:
+          tag: append_error_message_8d4e2e43
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - remove:
+    tag: remove_723f70cc
     field:
     - "fortinet.firewall.adminprof"
     - "fortinet.firewall.userfrom"
@@ -139,5 +160,13 @@ on_failure:
     field: "event.kind"
     value: "pipeline_error"
 - append:
-    field: "error.message"
-    value: "{{{ _ingest.on_failure_message }}}"
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

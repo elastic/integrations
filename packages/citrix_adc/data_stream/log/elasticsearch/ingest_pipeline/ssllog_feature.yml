@@ -25,6 +25,7 @@ processors:
       if: ctx.citrix_adc?.log?.valid_from != null && ctx.citrix_adc.log.valid_from != ''
       on_failure:
         - append:
+            tag: append_error_message_b2916adb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -37,6 +38,7 @@ processors:
       if: ctx.citrix_adc?.log?.valid_to != null && ctx.citrix_adc.log.valid_to != ''
       on_failure:
         - append:
+            tag: append_error_message_e714cc46
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -52,6 +54,7 @@ processors:
       if: ctx.citrix_adc?.log?.server?.ip != null && ctx.citrix_adc.log.server.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_1d0bfaaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -66,6 +69,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b0571403
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -85,6 +89,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9171d2b2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -94,6 +99,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f78b59b2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -104,6 +110,7 @@ processors:
       if: ctx.citrix_adc?.log?.ip_address != null && ctx.citrix_adc.log.ip_address != ''
       on_failure:
         - append:
+            tag: append_error_message_8a859f2e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -114,6 +121,7 @@ processors:
       if: ctx.citrix_adc?.log?.client_ip != null && ctx.citrix_adc?.log.client_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_9b6ff6cf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -128,6 +136,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ccf496ee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -143,6 +152,7 @@ processors:
       if: ctx.citrix_adc?.log?.vserver?.ip != null && ctx.citrix_adc.log.vserver.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_e1de26d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -157,6 +167,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_22cfd375
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -171,6 +182,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4bdc29aa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -197,7 +209,7 @@ processors:
       ignore_failure: true
   - grok:
       if: ctx.citrix_adc?.log?.client_version != null && ctx.citrix_adc.log.client_version != ''
-      tag: grok_protocol_version
+      tag: grok_citrix_adc_log_client_version_ddbf2456
       field: citrix_adc.log.client_version
       patterns:
         - "^%{DATA:tls.version_protocol}v%{DATA:tls.version}$"
@@ -213,5 +225,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

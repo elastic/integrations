@@ -1,7 +1,7 @@
 format_version: 3.3.2
 name: cloud_security_posture
 title: "Security Posture Management"
-version: "3.1.0-preview08"
+version: "3.1.2"
 source:
   license: "Elastic-2.0"
 description: "Identify & remediate configuration risks in your Cloud infrastructure"
@@ -11,6 +11,16 @@ categories:
   - cloudsecurity_cdr
   - misconfiguration_workflow
   - vulnerability_workflow
+  # Added containers category to match policy template categories (kspm template references containers subcategory)
+  - containers
+  # Added observability category to match policy template categories (kspm template references kubernetes subcategory which requires observability as parent)
+  - observability
+  # Added google_cloud category to match policy template categories (cspm template references google_cloud as a top-level category)
+  - google_cloud
+  # Added aws category to match policy template categories (kspm and cspm templates reference aws as a top-level category)
+  - aws
+  # Added cloud category to match policy template categories (cspm and vuln_mgmt templates reference cloud as a top-level category)
+  - cloud
 conditions:
   kibana:
     version: "^9.2.0"
@@ -114,7 +124,7 @@ policy_templates:
         is_default: true
         organization: security
         division: engineering
-        team: cloud-security-posture
+        team: contextual-security
     inputs:
       - type: cloudbeat/cis_aws
         title: Amazon Web Services
@@ -220,5 +230,5 @@ policy_templates:
             description: Template URL to Cloud Formation Quick Create Stack
             default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cnvm-9.2.0.yml&stackName=Elastic-Vulnerability-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
 owner:
-  github: elastic/cloud-security-posture
+  github: elastic/contextual-security
   type: elastic

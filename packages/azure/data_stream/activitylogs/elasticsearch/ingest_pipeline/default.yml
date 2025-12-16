@@ -31,8 +31,17 @@ processors:
       field: azure.activitylogs.time
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
       field: azure.activitylogs.time
       ignore_missing: true
@@ -95,6 +104,14 @@ processors:
   - json:
       field: azure.activitylogs.properties
       if: "ctx.azure?.activitylogs?.properties instanceof String"
+      ignore_failure: true
+  - json:
+      field: azure.activitylogs.properties.responseBody
+      if: "ctx.azure?.activitylogs?.properties?.responseBody instanceof String"
+      ignore_failure: true
+  - json:
+      field: azure.activitylogs.properties.requestBody
+      if: "ctx.azure?.activitylogs?.properties?.requestBody instanceof String"
       ignore_failure: true
   - script:
       lang: painless
