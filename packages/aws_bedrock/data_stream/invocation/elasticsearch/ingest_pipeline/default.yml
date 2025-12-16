@@ -225,6 +225,30 @@ processors:
 
         ctx.aws_bedrock = renameKeys(ctx.aws_bedrock, params)
 
+  - script:
+      tag: script_promote_system_to_object
+      if: ctx.aws_bedrock?.invocation?.system instanceof String
+      source: |-
+        Map sys = [:];
+        sys.type = 'text';
+        sys.text = ctx.aws_bedrock.invocation.system;
+        ctx.aws_bedrock.invocation.system = sys;
+  - script:
+      tag: script_promote_messages_content_to_object
+      if: ctx.aws_bedrock?.invocation?.messages?.content instanceof String
+      source: |-
+        Map content = [:];
+        content.type = 'text';
+        content.text = ctx.aws_bedrock.invocation.messages.content;
+        ctx.aws_bedrock.invocation.messages.content = content;
+  - script:
+      tag: script_demote_messages_content_content_to_string
+      if: ctx.aws_bedrock?.invocation?.messages?.content?.content != null && !(ctx.aws_bedrock.invocation.messages.content.content instanceof String)
+      source: |-
+        Map content = [:];
+        content.type = 'text';
+        content.text = Json.dump(ctx.aws_bedrock.invocation.messages.content);
+        ctx.aws_bedrock.invocation.messages.content = content;
   - set:
       if: ctx.aws_bedrock?.invocation?.model_id != null
       field: gen_ai.request.model.id

@@ -304,22 +304,6 @@ processors:
       ignore_missing: true
   - gsub:
       field: powershell.file.script_block_text
-      target_field: _temp.script_block_signature
-      pattern: "(?s).+# SIG # Begin signature block"
-      replacement: "# SIG # Begin signature block"
-      ignore_missing: true
-  - dissect:
-      field: _temp.script_block_signature
-      pattern: "# SIG # Begin signature block%{powershell.file.script_block_signature}# SIG # End signature block"
-      ignore_missing: true
-      ignore_failure: true
-  - gsub:
-      field: powershell.file.script_block_signature
-      pattern: "\\n# |\\n"
-      replacement: ""
-      ignore_missing: true
-  - gsub:
-      field: powershell.file.script_block_text
       target_field: _temp.script_block_no_space
       pattern: "\\s"
       replacement: ""
