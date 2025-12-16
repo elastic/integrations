@@ -113,7 +113,7 @@ program: |-
                       "want_more": lines.size() >= int(state.event_limit),
                     }
                   )
-                : (resp.StatusCode == 416 || (resp.StatusCode == 400 && size(resp.Body) != 0 && bytes(resp.Body).decode_json().as(errorBody, has(errorBody.detail) && errorBody.detail.contains("Invalid timestamp")))) ?
+                : (resp.StatusCode == 416 || (resp.StatusCode == 400 && size(resp.Body) != 0 && bytes(resp.Body).decode_json().as(errorBody, has(errorBody.detail) && errorBody.detail.to_lower().contains("invalid timestamp")))) ?
                   {
                     "events": [
                       {
