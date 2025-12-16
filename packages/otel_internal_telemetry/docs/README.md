@@ -5,11 +5,11 @@ described in the comments.
 
 Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
 */}}
-# OpenTelemetry Collector Internal Telemetry Integration for Elastic
+# OpenTelemetry Internal Telemetry Integration for Elastic
 
 ## Overview
 {{/* Complete this section with a short summary of what data this integration collects and what use cases it enables */}}
-The OpenTelemetry Collector Internal Telemetry integration for Elastic enables collection of ...
+The OpenTelemetry Internal Telemetry integration for Elastic enables collection of ...
 This integration facilitates ...
 
 ### Compatibility
@@ -21,7 +21,7 @@ This integration is compatible with ...
 
 ## What data does this integration collect?
 {{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available */}}
-The OpenTelemetry Collector Internal Telemetry integration collects log messages of the following types:
+The OpenTelemetry Internal Telemetry integration collects log messages of the following types:
 * ...
 
 ### Supported use cases

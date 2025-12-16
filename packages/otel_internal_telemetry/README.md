@@ -1,12 +1,12 @@
-# OpenTelemetry Collector internal telemetry content pack
+# OpenTelemetry internal telemetry content pack
 
 ## Overview
 
-This integration contains dashboards that visualize the internal metrics from OpenTelemetry collectors.
+This integration contains dashboards that visualize the internal metrics from OpenTelemetry components.
 
 ### Compatibility
 
-The dashboards are compatible with the metrics defined [here in the OpenTelemetry collector documentation](https://opentelemetry.io/docs/collector/internal-telemetry/). The oldest tested version of the OpenTelemetry Collector in combination with this integration is v1.44.0.
+The OTel collector dashboards are compatible with the metrics defined [here in the OpenTelemetry collector documentation](https://opentelemetry.io/docs/collector/internal-telemetry/). The oldest tested version of the OpenTelemetry Collector in combination with this integration is v1.44.0.
 
 ### How it works
 
