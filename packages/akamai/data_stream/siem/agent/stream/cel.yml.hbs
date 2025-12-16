@@ -113,30 +113,7 @@ program: |-
                       "want_more": lines.size() >= int(state.event_limit),
                     }
                   )
-                : (resp.StatusCode == 416) ?
-                  {
-                    "events": [
-                      {
-                        "error": {
-                          "code": string(resp.StatusCode),
-                          "id": string(resp.Status),
-                          "message": "GET " + request_url + (
-                            (size(resp.Body) != 0) ?
-                              string(resp.Body)
-                            :
-                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                          ),
-                        },
-                      }
-                    ],
-                    "cursor": state.cursor.drop("last_offset").with(
-                      {
-                        "recovery_mode": true,
-                      }
-                    ),
-                    "want_more": true,
-                  }
-                : (resp.StatusCode == 400 && size(resp.Body) != 0 && bytes(resp.Body).decode_json().as(errorBody, has(errorBody.detail) && errorBody.detail.contains("Invalid timestamp"))) ?
+                : (resp.StatusCode == 416 || (resp.StatusCode == 400 && size(resp.Body) != 0 && bytes(resp.Body).decode_json().as(errorBody, has(errorBody.detail) && errorBody.detail.contains("Invalid timestamp")))) ?
                   {
                     "events": [
                       {
