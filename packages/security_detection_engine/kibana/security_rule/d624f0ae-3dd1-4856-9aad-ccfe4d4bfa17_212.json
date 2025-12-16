@@ -1,0 +1,138 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the deletion of an Amazon CloudWatch log stream using the \"DeleteLogStream\" API. Deleting a log stream permanently removes its associated log events and may disrupt security visibility, break audit trails, or suppress forensic evidence. Adversaries may delete log streams to conceal malicious actions, impair monitoring pipelines, or remove artifacts generated during post-exploitation activity.",
+        "false_positives": [
+            "CloudWatch log streams may be deleted legitimately during log rotation processes, test environment resets, or infrastructure deployments that recreate log groups and streams. Validate the identity, automation pipeline, and IP address associated with the deletion. If deletions are expected from specific CI/CD systems or administrative roles, consider adding targeted exceptions."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS CloudWatch Log Stream Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. \n> While every effort has been made to ensure its quality, validate and adapt it to your operational context.\n\n### Investigating AWS CloudWatch Log Stream Deletion\n\nCloudWatch log streams contain sequential log events from a single application, service, or AWS resource.  \nDeleting a log stream permanently removes its archived log events, which may disable monitoring workflows, eliminate \ncritical telemetry, or disrupt forensic visibility.\n\nAdversaries may delete log streams to cover their tracks after unauthorized actions, break ingestion pipelines feeding SIEM, alerting, or anomaly detection or to remove evidence before escalating privileges or moving laterally. This rule detects successful invocations of the `DeleteLogStream` API from CloudTrail.\n\n#### Possible investigation steps\n\n- **Identify the actor**\n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id`.  \n  - Confirm whether the user or role normally manages CloudWatch Logs resources.\n\n- **Review request details**\n  - Inspect `aws.cloudtrail.request_parameters` to determine which log stream and parent log group were deleted.  \n  - Assess the importance of the deleted stream:\n    - Was it used for VPC Flow Logs, CloudTrail, Lambda functions, ECS tasks, or application logs?  \n    - Did it contain logs used for security detection or compliance auditing?\n\n- **Examine request origin and context**\n  - Review `source.ip` and `user_agent.original` for anomalies (e.g., unfamiliar CLI tools, suspicious automation, \n    unknown IP ranges, or external geolocations).\n  - Validate whether the request originated from a legitimate automation host or jump box.  \n  - Check activity around the same timestamp for related operations such as:\n    - `DeleteLogGroup`\n    - `StopLogging`, `UpdateTrail`, or `DeleteTrail`\n    - GuardDuty detector or CloudWatch alarm deletions\n    - IAM policy or role modifications\n\n- **Determine operational justification**\n  - Consult change management systems or deployment pipelines to confirm whether the deletion was planned.  \n  - Contact application owners or platform teams to determine whether the log stream was part of normal rotation or cleanup.\n\n- **Investigate broader compromise indicators**\n  - Look for suspicious activity by the same identity in the past 24\u201348 hours, such as:\n    - Failed authentication attempts  \n    - IAM privilege escalations  \n    - Unusual STS AssumeRole usage  \n    - Access from new geolocations  \n\n### False positive analysis\n\n- **Log rotation and automation**\n  - Some systems delete log streams automatically when rolling new deployments or recycling compute resources.\n  - CI/CD pipelines managing immutable infrastructure may delete and recreate streams during each deploy.\n\n- **Test and development accounts**\n  - Dev/test environments may frequently create and delete log streams as part of iterative work.\n\n- **Bulk cleanup operations**\n  - Platform engineering teams may delete obsolete log streams during cost-optimization or log-retention management.\n\nIf the rule triggers frequently from known infrastructure accounts or automation hosts, consider adding narrow exceptions using a combination of IAM role, IP range, or user agent.\n\n### Response and remediation\n\n- **Containment**\n  - If the deletion is unauthorized, review other CloudWatch resources for additional tampering (alarms, log groups, metric filters).\n  - Temporarily restrict permissions for the implicated IAM user or role.\n\n- **Investigation**\n  - Reconstruct any missing telemetry from alternative sources (e.g., S3 buckets, application logs, third-party logging systems).\n  - Review CloudTrail and Config timelines for preceding suspicious events.\n  - Validate whether the deleted log stream contained evidence of prior compromise.\n\n- **Recovery and hardening**\n  - Implement IAM least-privilege for `logs:DeleteLogStream`.\n  - Enable AWS Config rules to monitor CloudWatch Logs configuration changes.  \n  - Ensure that business-critical log groups enforce minimum retention periods and prevent accidental deletion.\n  - Integrate log stream lifecycle management into CI/CD to avoid manual deletions.\n  - Establish guardrails using Service Control Policies (SCPs) to block log deletions outside designated automation roles.\n\n### Additional information\n\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "event.dataset: \"aws.cloudtrail\" \n  and event.provider: \"logs.amazonaws.com\" \n  and event.action: \"DeleteLogStream\" \n  and event.outcome: \"success\"\n  and source.ip: * \n  and not user_agent.original : \"AWS Internal\"\n",
+        "references": [
+            "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/delete-log-stream.html",
+            "https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_DeleteLogStream.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d624f0ae-3dd1-4856-9aad-ccfe4d4bfa17",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Amazon CloudWatch",
+            "Use Case: Log Auditing",
+            "Tactic: Defense Evasion",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 212
+    },
+    "id": "d624f0ae-3dd1-4856-9aad-ccfe4d4bfa17_212",
+    "type": "security-rule"
+}

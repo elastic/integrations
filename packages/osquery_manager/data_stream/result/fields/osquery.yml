@@ -206,7 +206,9 @@
           norms: false
           default_field: false
     - name: admindir
-      description: deb_packages.admindir - libdpkg admindir. Defaults to /var/lib/dpkg
+      description: |-
+        deb_package_files.admindir - libdpkg admindir. Defaults to /var/lib/dpkg
+        deb_packages.admindir - libdpkg admindir. Defaults to /var/lib/dpkg
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2538,6 +2540,15 @@
           type: text
           norms: false
           default_field: false
+    - name: data_type
+      description: system_profiler.data_type - The system profiler data type (e.g., SPHardwareDataType)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: data_width
       description: memory_devices.data_width - Data width, in bits, of this memory device
       type: keyword
@@ -3480,6 +3491,15 @@
           default_field: false
     - name: endpoint_id
       description: docker_container_networks.endpoint_id - Endpoint ID
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: entitlements
+      description: signature.entitlements - JSON representation of the code signing entitlements
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7959,6 +7979,7 @@
           default_field: false
     - name: package
       description: |-
+        deb_package_files.package - DEB package name
         portage_keywords.package - Package name
         portage_packages.package - Package name
         portage_use.package - Package name
@@ -8234,6 +8255,7 @@
         chrome_extensions.path - Path to extension folder
         crashes.path - Path to the crashed process
         crontab.path - File parsed
+        deb_package_files.path - File path within the package
         device_file.path - A logical path within the device node
         disk_events.path - Path of the DMG file accessed
         dns_lookup_events.path - Path to binary of process making the lookup (sometimes unavailable for very short-lived processes)
@@ -9919,7 +9941,7 @@
           norms: false
           default_field: false
     - name: rotation
-      description: connected_displays.rotation - The orientation of the display.
+      description: connected_displays.rotation - The rotation of the display (0, 90, 180, or 270 degrees). This field is -1 if display rotation is not supported.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10270,6 +10292,7 @@
           default_field: false
     - name: serial
       description: |-
+        block_devices.serial - Disk serial number
         certificates.serial - Certificate serial number
         chassis_info.serial - The serial number of the chassis.
         disk_info.serial - The serial number of the disk.
@@ -12506,6 +12529,7 @@
         process_envs.value - Environment variable value
         selinux_settings.value - Active value.
         smc_keys.value - A type-encoded representation of the key value
+        system_profiler.value - A JSON representation of the full result dictionary for the data type
         wmi_bios_info.value - Value of the Bios setting
       type: keyword
       ignore_above: 1024
@@ -12743,7 +12767,7 @@
           type: long
           default_field: false
     - name: vscode_edition
-      description: vscode_extensions.vscode_edition - VSCode or VSCode Insiders
+      description: vscode_extensions.vscode_edition - The VSCode edition (vscode, vscode_insiders, vscodium, vscodium_insiders, cursor, windsurf, trae)
       type: keyword
       ignore_above: 1024
       multi_fields:

@@ -154,6 +154,75 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
+                                "id": "46c7c425-6940-4e8a-861d-bdf5ae62a7d7",
+                                "label": "Agentcore runtime",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
+                                "id": "9933e526-6f82-4771-ac36-12c31ea3fd01",
+                                "label": "Gateway",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
+                                "id": "2d7432d1-9823-43ad-a9da-396068481c5f",
+                                "label": "Memory",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 2,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
+                                "id": "c997665a-658e-4fae-b2a4-b253ebd05a46",
+                                "label": "Identity",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 3,
+                                "type": "dashboardLink"
+                            }
+                        ],
+                        "title": "Agentcore panel links"
+                    },
+                    "hidePanelTitles": true,
+                    "title": "Agentcore panel links"
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -182,7 +251,7 @@
                     }
                 },
                 "gridData": {
-                    "h": 55,
+                    "h": 23,
                     "i": "81830832-da0d-45b6-a808-6c3281e6a2a3",
                     "w": 12,
                     "x": 0,
@@ -535,7 +604,7 @@
                                                         "query": "aws.dimensions.Method : \"tools/call\"  and NOT aws.dimensions.Resource :* and NOT aws.dimensions.Name : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Lambda invocations",
+                                                    "label": "Lambda target invocations",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -1022,7 +1091,7 @@
                                                         "query": "aws.dimensions.Method : \"tools/call\"  and NOT aws.dimensions.Resource :* and NOT aws.dimensions.Name : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "MCP invocations",
+                                                    "label": "MCP target invocations",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -1124,30 +1193,88 @@
                                     "layers": {
                                         "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98": {
                                             "columnOrder": [
-                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d"
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2"
                                             ],
                                             "columns": {
                                                 "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and ( NOT aws.dimensions.Name : * ) and ( NOT aws.dimensions.Method : * ) and (NOT aws.dimensions.Resource : * ) and aws.dimensions.Protocol : * "
-                                                    },
                                                     "isBucketed": false,
                                                     "label": "Total errors",
-                                                    "operationType": "sum",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "emptyAsNull": false,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "compact": true,
                                                                 "decimals": 2
                                                             }
+                                                        },
+                                                        "formula": "sum(aws.bedrock_agentcore.metrics.UserErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') + sum(aws.bedrock_agentcore.metrics.SystemErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') ",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2"
+                                                    ]
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.UserErrors.sum"
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.SystemErrors.sum"
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 336,
+                                                                "min": 0
+                                                            },
+                                                            "name": "add",
+                                                            "text": "sum(aws.bedrock_agentcore.metrics.UserErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') + sum(aws.bedrock_agentcore.metrics.SystemErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') ",
+                                                            "type": "function"
                                                         }
                                                     },
-                                                    "sourceField": "aws.bedrock_agentcore.metrics.Errors.sum"
+                                                    "references": [
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1"
+                                                    ]
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1831,71 +1958,474 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "layout": "horizontal",
-                        "links": [
+                        "references": [
                             {
-                                "destinationRefName": "link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
-                                "id": "46c7c425-6940-4e8a-861d-bdf5ae62a7d7",
-                                "label": "Agentcore runtime",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 0,
-                                "type": "dashboardLink"
-                            },
-                            {
-                                "destinationRefName": "link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
-                                "id": "9933e526-6f82-4771-ac36-12c31ea3fd01",
-                                "label": "Gateway",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 1,
-                                "type": "dashboardLink"
-                            },
-                            {
-                                "destinationRefName": "link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
-                                "id": "2d7432d1-9823-43ad-a9da-396068481c5f",
-                                "label": "Memory",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 2,
-                                "type": "dashboardLink"
-                            },
-                            {
-                                "destinationRefName": "link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
-                                "id": "c997665a-658e-4fae-b2a4-b253ebd05a46",
-                                "label": "Identity",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 3,
-                                "type": "dashboardLink"
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "type": "index-pattern"
                             }
                         ],
-                        "title": "Agentcore panel links"
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98": {
+                                            "columnOrder": [
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                                "e2765d64-df85-48e4-bd67-4df0aa6240d9",
+                                                "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                "8a2d1f53-278b-44cc-942e-19fd6798ccfa",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d",
+                                                "a807860c-7bd2-44e6-a4a7-48ce4b5ce9ce",
+                                                "7397497b-1c21-4737-bc9b-9d056aa90f50",
+                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749f",
+                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749fX0",
+                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749fX1",
+                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749fX2"
+                                            ],
+                                            "columns": {
+                                                "7397497b-1c21-4737-bc9b-9d056aa90f50": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Invocations",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Invocations.sum"
+                                                },
+                                                "8a2d1f53-278b-44cc-942e-19fd6798ccfa": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "System errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.SystemErrors.sum"
+                                                },
+                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total errors",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "sum(aws.bedrock_agentcore.metrics.SystemErrors.sum) + sum(aws.bedrock_agentcore.metrics.UserErrors.sum)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "a07cad19-1b0c-400d-b9ce-ae444a3a749fX2"
+                                                    ]
+                                                },
+                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749fX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.SystemErrors.sum"
+                                                },
+                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749fX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.UserErrors.sum"
+                                                },
+                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749fX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749fX0",
+                                                                "a07cad19-1b0c-400d-b9ce-ae444a3a749fX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 103,
+                                                                "min": 0
+                                                            },
+                                                            "name": "add",
+                                                            "text": "sum(aws.bedrock_agentcore.metrics.SystemErrors.sum) + sum(aws.bedrock_agentcore.metrics.UserErrors.sum)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "a07cad19-1b0c-400d-b9ce-ae444a3a749fX0",
+                                                        "a07cad19-1b0c-400d-b9ce-ae444a3a749fX1"
+                                                    ]
+                                                },
+                                                "a72a1939-568a-494f-bd9f-8ae750acb6de": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "User errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.UserErrors.sum"
+                                                },
+                                                "a807860c-7bd2-44e6-a4a7-48ce4b5ce9ce": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Throttles",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Throttles.sum"
+                                                },
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Resource"
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Latency",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Latency.avg"
+                                                },
+                                                "e2765d64-df85-48e4-bd67-4df0aa6240d9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Target",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "temperature",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "temperature",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#6092c0",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#a8bfda",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#ebeff5",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#efb785",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "columnId": "e2765d64-df85-48e4-bd67-4df0aa6240d9",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 438.83333333333337
+                                    },
+                                    {
+                                        "columnId": "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 745
+                                    },
+                                    {
+                                        "columnId": "7397497b-1c21-4737-bc9b-9d056aa90f50",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "warm",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "warm",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#f7e0b8",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f2c596",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#eca976",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#e78c5b",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "8a2d1f53-278b-44cc-942e-19fd6798ccfa",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "warm",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "warm",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#f7e0b8",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f2c596",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#eca976",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#e78c5b",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "a807860c-7bd2-44e6-a4a7-48ce4b5ce9ce",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "warm",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "warm",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#f7e0b8",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f2c596",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#eca976",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#e78c5b",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "columnId": "a07cad19-1b0c-400d-b9ce-ae444a3a749f",
+                                        "hidden": true,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
                     },
-                    "hidePanelTitles": true,
-                    "title": "Agentcore panel links"
+                    "description": "Shows the top 10 invocation counts, user errors, system errors, average latency, and throttles by resource and target for the tool/call method ",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top invocations and error summary - by resource and target"
                 },
                 "gridData": {
-                    "h": 4,
-                    "i": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3",
+                    "h": 11,
+                    "i": "60a2756c-4e9d-486f-b7a1-4ef9d11b2fd9",
                     "w": 48,
                     "x": 0,
-                    "y": 0
+                    "y": 59
                 },
-                "panelIndex": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3",
-                "type": "links"
+                "panelIndex": "60a2756c-4e9d-486f-b7a1-4ef9d11b2fd9",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2006,7 +2536,7 @@
                     "sectionId": "650a11af-b6ce-4270-bdfd-7513807f4d2e",
                     "w": 6,
                     "x": 0,
-                    "y": 0
+                    "y": 6
                 },
                 "panelIndex": "350a14e0-1c44-46bd-b496-ba73817f56db",
                 "type": "lens"
@@ -2119,7 +2649,7 @@
                     "i": "1dbfb1a9-93de-4cbf-aa2d-97b03ca524f4",
                     "sectionId": "650a11af-b6ce-4270-bdfd-7513807f4d2e",
                     "w": 6,
-                    "x": 6,
+                    "x": 0,
                     "y": 0
                 },
                 "panelIndex": "1dbfb1a9-93de-4cbf-aa2d-97b03ca524f4",
@@ -2143,30 +2673,88 @@
                                     "layers": {
                                         "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98": {
                                             "columnOrder": [
-                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d"
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1",
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2"
                                             ],
                                             "columns": {
                                                 "dc7a6ccb-c4d1-4ced-a492-273cd761cc3d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and ( NOT aws.dimensions.Name : * ) and ( NOT aws.dimensions.Method : * ) and (NOT aws.dimensions.Resource : * ) and aws.dimensions.Protocol : * "
-                                                    },
                                                     "isBucketed": false,
                                                     "label": "Total errors",
-                                                    "operationType": "sum",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "emptyAsNull": false,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "compact": true,
                                                                 "decimals": 2
                                                             }
+                                                        },
+                                                        "formula": "sum(aws.bedrock_agentcore.metrics.UserErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') + sum(aws.bedrock_agentcore.metrics.SystemErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') ",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2"
+                                                    ]
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.UserErrors.sum"
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.SystemErrors.sum"
+                                                },
+                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total errors",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                                "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 336,
+                                                                "min": 0
+                                                            },
+                                                            "name": "add",
+                                                            "text": "sum(aws.bedrock_agentcore.metrics.UserErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') + sum(aws.bedrock_agentcore.metrics.SystemErrors.sum, kql='aws.dimensions.Operation : \"InvokeGateway\" and (aws.dimensions.Resource : * ) and (aws.dimensions.Name : * )') ",
+                                                            "type": "function"
                                                         }
                                                     },
-                                                    "sourceField": "aws.bedrock_agentcore.metrics.Errors.sum"
+                                                    "references": [
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX0",
+                                                        "dc7a6ccb-c4d1-4ced-a492-273cd761cc3dX1"
+                                                    ]
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -2232,11 +2820,305 @@
                     "h": 6,
                     "i": "16ca1eff-01e4-435e-90df-8bc42b129519",
                     "sectionId": "650a11af-b6ce-4270-bdfd-7513807f4d2e",
-                    "w": 12,
+                    "w": 6,
                     "x": 0,
-                    "y": 6
+                    "y": 12
                 },
                 "panelIndex": "16ca1eff-01e4-435e-90df-8bc42b129519",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98": {
+                                            "columnOrder": [
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                                "221bf5b7-f8d3-41ea-bec2-fbfabda291b9",
+                                                "e2765d64-df85-48e4-bd67-4df0aa6240d9",
+                                                "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                "8a2d1f53-278b-44cc-942e-19fd6798ccfa"
+                                            ],
+                                            "columns": {
+                                                "221bf5b7-f8d3-41ea-bec2-fbfabda291b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Method",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Method"
+                                                },
+                                                "8a2d1f53-278b-44cc-942e-19fd6798ccfa": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (aws.dimensions.Method : \"tools/call\" ) and (aws.dimensions.Name: * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "System errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.SystemErrors.sum"
+                                                },
+                                                "a72a1939-568a-494f-bd9f-8ae750acb6de": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (aws.dimensions.Method : \"tools/call\" ) and (aws.dimensions.Name: * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "User errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.UserErrors.sum"
+                                                },
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Resource"
+                                                },
+                                                "e2765d64-df85-48e4-bd67-4df0aa6240d9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Target",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "e2765d64-df85-48e4-bd67-4df0aa6240d9",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 463.05
+                                    },
+                                    {
+                                        "columnId": "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 806.8
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "warm",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "warm",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#f7e0b8",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f2c596",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#eca976",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#e78c5b",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "8a2d1f53-278b-44cc-942e-19fd6798ccfa",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "warm",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "warm",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#f7e0b8",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f2c596",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#eca976",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#e78c5b",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "columnId": "221bf5b7-f8d3-41ea-bec2-fbfabda291b9",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 200.05
+                                    }
+                                ],
+                                "layerId": "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Shows the top 10 invocation counts, user errors, system errors, average latency, and throttles",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top tool call errors - by resource and target"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "5dd8a069-848f-4776-a03d-372f9439dfa0",
+                    "sectionId": "650a11af-b6ce-4270-bdfd-7513807f4d2e",
+                    "w": 42,
+                    "x": 6,
+                    "y": 0
+                },
+                "panelIndex": "5dd8a069-848f-4776-a03d-372f9439dfa0",
                 "type": "lens"
             },
             {
@@ -2492,14 +3374,276 @@
                     "title": "Tools call error analysis - by resource and target"
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 13,
                     "i": "e5dd3561-1d5e-4d2f-98ef-1681ec579250",
                     "sectionId": "650a11af-b6ce-4270-bdfd-7513807f4d2e",
-                    "w": 36,
-                    "x": 12,
-                    "y": 0
+                    "w": 42,
+                    "x": 6,
+                    "y": 11
                 },
                 "panelIndex": "e5dd3561-1d5e-4d2f-98ef-1681ec579250",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98": {
+                                            "columnOrder": [
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                                "221bf5b7-f8d3-41ea-bec2-fbfabda291b9",
+                                                "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                "8a2d1f53-278b-44cc-942e-19fd6798ccfa"
+                                            ],
+                                            "columns": {
+                                                "221bf5b7-f8d3-41ea-bec2-fbfabda291b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Method",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [
+                                                            "tools/call"
+                                                        ],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Method"
+                                                },
+                                                "8a2d1f53-278b-44cc-942e-19fd6798ccfa": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (NOT aws.dimensions.Method : \"tools/call\" )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "System errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.SystemErrors.sum"
+                                                },
+                                                "a72a1939-568a-494f-bd9f-8ae750acb6de": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (NOT aws.dimensions.Method : \"tools/call\" )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "User errors",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.UserErrors.sum"
+                                                },
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Resource"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 1120.8
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "a72a1939-568a-494f-bd9f-8ae750acb6de",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "warm",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "warm",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#f7e0b8",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f2c596",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#eca976",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#e78c5b",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "8a2d1f53-278b-44cc-942e-19fd6798ccfa",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "warm",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "warm",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#f7e0b8",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f2c596",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#eca976",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#e78c5b",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "columnId": "221bf5b7-f8d3-41ea-bec2-fbfabda291b9",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Shows the top 10 user errors, system errors associated with non-tool calls by resource and tool method",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top non-tool call errors - by resource and method"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "8e0444fe-c8ad-4924-9ba1-ca421ed77cff",
+                    "sectionId": "650a11af-b6ce-4270-bdfd-7513807f4d2e",
+                    "w": 42,
+                    "x": 6,
+                    "y": 24
+                },
+                "panelIndex": "8e0444fe-c8ad-4924-9ba1-ca421ed77cff",
                 "type": "lens"
             },
             {
@@ -2756,12 +3900,12 @@
                     "title": "Non-Tool call error analysis - by resource and target"
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 13,
                     "i": "0b4a25be-c958-4473-a4de-9ad351c86e1a",
                     "sectionId": "650a11af-b6ce-4270-bdfd-7513807f4d2e",
-                    "w": 36,
-                    "x": 12,
-                    "y": 12
+                    "w": 42,
+                    "x": 6,
+                    "y": 36
                 },
                 "panelIndex": "0b4a25be-c958-4473-a4de-9ad351c86e1a",
                 "type": "lens"
@@ -2989,8 +4133,8 @@
                     "i": "fa4c2d86-e9df-4bd2-9828-d3e2d21b9816",
                     "sectionId": "e556712e-b7f8-4d9f-a995-770f42ee2e02",
                     "w": 6,
-                    "x": 6,
-                    "y": 0
+                    "x": 0,
+                    "y": 6
                 },
                 "panelIndex": "fa4c2d86-e9df-4bd2-9828-d3e2d21b9816",
                 "type": "lens"
@@ -3103,11 +4247,951 @@
                     "h": 6,
                     "i": "696da925-c2c8-4270-99f1-86125a37f3e4",
                     "sectionId": "e556712e-b7f8-4d9f-a995-770f42ee2e02",
-                    "w": 12,
+                    "w": 6,
                     "x": 0,
-                    "y": 6
+                    "y": 12
                 },
                 "panelIndex": "696da925-c2c8-4270-99f1-86125a37f3e4",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-872bed26-4078-473d-895d-a12a067c7388",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-fc8b914e-67e4-48a0-8fd7-679244600446",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "872bed26-4078-473d-895d-a12a067c7388": {
+                                            "columnOrder": [
+                                                "0b158528-1f01-42ee-b387-ddf30ec69a54",
+                                                "d1260c5d-11f5-4cea-b99f-e98f1cafc93d",
+                                                "01580b6c-242a-4823-a2c4-ad9333d91b12"
+                                            ],
+                                            "columns": {
+                                                "01580b6c-242a-4823-a2c4-ad9333d91b12": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and (NOT aws.dimensions.Method : \"tools/call\" ) and (aws.dimensions.Method : *) and (aws.dimensions.Resource : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Latency",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Latency.avg"
+                                                },
+                                                "0b158528-1f01-42ee-b387-ddf30ec69a54": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of aws.dimensions.Method + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "01580b6c-242a-4823-a2c4-ad9333d91b12",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "aws.dimensions.Resource"
+                                                        ],
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Method"
+                                                },
+                                                "d1260c5d-11f5-4cea-b99f-e98f1cafc93d": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        },
+                                        "fc8b914e-67e4-48a0-8fd7-679244600446": {
+                                            "columnOrder": [
+                                                "0af27dbd-aa14-4416-80a2-27a95d46a3da",
+                                                "de7188df-248c-4204-bfb5-89a953c5ba0f",
+                                                "d265e12d-a7ad-49cf-b526-0edfffea7d62"
+                                            ],
+                                            "columns": {
+                                                "0af27dbd-aa14-4416-80a2-27a95d46a3da": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of aws.dimensions.Method + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d265e12d-a7ad-49cf-b526-0edfffea7d62",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "aws.dimensions.Resource"
+                                                        ],
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Method"
+                                                },
+                                                "d265e12d-a7ad-49cf-b526-0edfffea7d62": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and (NOT aws.dimensions.Method : \"tools/call\" ) and (aws.dimensions.Method : *) and (aws.dimensions.Resource : * )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Duration",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Duration.avg"
+                                                },
+                                                "de7188df-248c-4204-bfb5-89a953c5ba0f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "linkToLayers": [],
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "01580b6c-242a-4823-a2c4-ad9333d91b12"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "872bed26-4078-473d-895d-a12a067c7388",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "0b158528-1f01-42ee-b387-ddf30ec69a54",
+                                        "xAccessor": "d1260c5d-11f5-4cea-b99f-e98f1cafc93d"
+                                    },
+                                    {
+                                        "accessors": [
+                                            "d265e12d-a7ad-49cf-b526-0edfffea7d62"
+                                        ],
+                                        "layerId": "fc8b914e-67e4-48a0-8fd7-679244600446",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "splitAccessor": "0af27dbd-aa14-4416-80a2-27a95d46a3da",
+                                        "xAccessor": "de7188df-248c-4204-bfb5-89a953c5ba0f"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 3,
+                                    "position": "bottom",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yTitle": "Latency vs Duration"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Latency: The time elapsed between when the service receives the request and when it begins sending the first response token. In other words, initial response time.\n\nDuration: The total time elapsed between receiving the request and sending the final response token. Represents complete end-to-end processing time of the request.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Non-tool call performance analysis - by resource and target"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "3c595abd-d1d7-4bea-bd79-3b7f6efcbfd8",
+                    "sectionId": "e556712e-b7f8-4d9f-a995-770f42ee2e02",
+                    "w": 42,
+                    "x": 6,
+                    "y": 53
+                },
+                "panelIndex": "3c595abd-d1d7-4bea-bd79-3b7f6efcbfd8",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98": {
+                                            "columnOrder": [
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                                "221bf5b7-f8d3-41ea-bec2-fbfabda291b9",
+                                                "e2765d64-df85-48e4-bd67-4df0aa6240d9",
+                                                "005f49b6-9acd-4803-91b3-67e2b7d6c5e9",
+                                                "c26862bc-d7bb-46d0-8490-9db99f7e3f07",
+                                                "709ebd1e-216b-4570-ae71-6f34b898c87a"
+                                            ],
+                                            "columns": {
+                                                "005f49b6-9acd-4803-91b3-67e2b7d6c5e9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (aws.dimensions.Method : \"tools/call\" )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Latency",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Latency.avg"
+                                                },
+                                                "221bf5b7-f8d3-41ea-bec2-fbfabda291b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Method",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "005f49b6-9acd-4803-91b3-67e2b7d6c5e9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Method"
+                                                },
+                                                "709ebd1e-216b-4570-ae71-6f34b898c87a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (aws.dimensions.Method : \"tools/call\" )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Throttles",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Throttles.sum"
+                                                },
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "005f49b6-9acd-4803-91b3-67e2b7d6c5e9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Resource"
+                                                },
+                                                "c26862bc-d7bb-46d0-8490-9db99f7e3f07": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (aws.dimensions.Method : \"tools/call\" )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Duration",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Duration.avg"
+                                                },
+                                                "e2765d64-df85-48e4-bd67-4df0aa6240d9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Target",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "005f49b6-9acd-4803-91b3-67e2b7d6c5e9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "e2765d64-df85-48e4-bd67-4df0aa6240d9",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 402.84000000000003
+                                    },
+                                    {
+                                        "columnId": "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 730.8
+                                    },
+                                    {
+                                        "columnId": "221bf5b7-f8d3-41ea-bec2-fbfabda291b9",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 128.84
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "005f49b6-9acd-4803-91b3-67e2b7d6c5e9",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "temperature",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "temperature",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#6092c0",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#a8bfda",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#ebeff5",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#efb785",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "c26862bc-d7bb-46d0-8490-9db99f7e3f07",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "temperature",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "temperature",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#6092c0",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#a8bfda",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#ebeff5",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#efb785",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "columnId": "709ebd1e-216b-4570-ae71-6f34b898c87a",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Shows the top tool/call invocations having a high average latency with duration and throttles - by resource, target",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top tool performance analysis - by resource and target"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "1a08fc5e-5484-4c9e-a154-f848dc30f2d6",
+                    "sectionId": "e556712e-b7f8-4d9f-a995-770f42ee2e02",
+                    "w": 42,
+                    "x": 6,
+                    "y": 13
+                },
+                "panelIndex": "1a08fc5e-5484-4c9e-a154-f848dc30f2d6",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98": {
+                                            "columnOrder": [
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                                "55cf6494-68c9-4397-8cc2-47a2f828b814",
+                                                "005f49b6-9acd-4803-91b3-67e2b7d6c5e9",
+                                                "c26862bc-d7bb-46d0-8490-9db99f7e3f07",
+                                                "709ebd1e-216b-4570-ae71-6f34b898c87a"
+                                            ],
+                                            "columns": {
+                                                "005f49b6-9acd-4803-91b3-67e2b7d6c5e9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (NOT aws.dimensions.Method : \"tools/call\" )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Latency",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Latency.avg"
+                                                },
+                                                "55cf6494-68c9-4397-8cc2-47a2f828b814": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Method",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "005f49b6-9acd-4803-91b3-67e2b7d6c5e9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Method"
+                                                },
+                                                "709ebd1e-216b-4570-ae71-6f34b898c87a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (aws.dimensions.Method : \"tools/call\" )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Throttles",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Throttles.sum"
+                                                },
+                                                "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "005f49b6-9acd-4803-91b3-67e2b7d6c5e9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 100
+                                                    },
+                                                    "sourceField": "aws.dimensions.Resource"
+                                                },
+                                                "c26862bc-d7bb-46d0-8490-9db99f7e3f07": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and  ( aws.dimensions.Method : * )  and (aws.dimensions.Resource : * ) and (NOT aws.dimensions.Method : \"tools/call\" )"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Duration",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "aws.bedrock_agentcore.metrics.Duration.avg"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "b48a7d79-929e-4a8c-9610-c61ae3fdb5b8",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 740.8
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "005f49b6-9acd-4803-91b3-67e2b7d6c5e9",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "temperature",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "temperature",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#6092c0",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#a8bfda",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#ebeff5",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#efb785",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "c26862bc-d7bb-46d0-8490-9db99f7e3f07",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "temperature",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "temperature",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#6092c0",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#a8bfda",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#ebeff5",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#efb785",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "709ebd1e-216b-4570-ae71-6f34b898c87a",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "warm",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "warm",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#f7e0b8",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f2c596",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#eca976",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#e78c5b",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#e7664c",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "columnId": "55cf6494-68c9-4397-8cc2-47a2f828b814",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Shows the top non-tool/call invocations having a high average latency with duration and throttles - by resource, method",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top non-tool call performance analysis - by resource and method"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "f15aab56-010d-4ef2-9555-ff2750950c71",
+                    "sectionId": "e556712e-b7f8-4d9f-a995-770f42ee2e02",
+                    "w": 42,
+                    "x": 6,
+                    "y": 40
+                },
+                "panelIndex": "f15aab56-010d-4ef2-9555-ff2750950c71",
                 "type": "lens"
             },
             {
@@ -3317,302 +5401,14 @@
                     "title": "Target execution duration"
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 13,
                     "i": "f5232883-0114-4450-94e4-931f763980df",
                     "sectionId": "e556712e-b7f8-4d9f-a995-770f42ee2e02",
-                    "w": 36,
-                    "x": 12,
+                    "w": 42,
+                    "x": 6,
                     "y": 0
                 },
                 "panelIndex": "f5232883-0114-4450-94e4-931f763980df",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-872bed26-4078-473d-895d-a12a067c7388",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-fc8b914e-67e4-48a0-8fd7-679244600446",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {
-                                        "872bed26-4078-473d-895d-a12a067c7388": {
-                                            "columnOrder": [
-                                                "0b158528-1f01-42ee-b387-ddf30ec69a54",
-                                                "d1260c5d-11f5-4cea-b99f-e98f1cafc93d",
-                                                "01580b6c-242a-4823-a2c4-ad9333d91b12"
-                                            ],
-                                            "columns": {
-                                                "01580b6c-242a-4823-a2c4-ad9333d91b12": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and (NOT aws.dimensions.Method : \"tools/call\" ) and (aws.dimensions.Method : *) and (aws.dimensions.Resource : * )"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Latency",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "duration",
-                                                            "params": {
-                                                                "decimals": 2,
-                                                                "fromUnit": "milliseconds",
-                                                                "toUnit": "humanizePrecise"
-                                                            }
-                                                        }
-                                                    },
-                                                    "sourceField": "aws.bedrock_agentcore.metrics.Latency.avg"
-                                                },
-                                                "0b158528-1f01-42ee-b387-ddf30ec69a54": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top values of aws.dimensions.Method + 1 other",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "01580b6c-242a-4823-a2c4-ad9333d91b12",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "multi_terms"
-                                                        },
-                                                        "secondaryFields": [
-                                                            "aws.dimensions.Resource"
-                                                        ],
-                                                        "size": 100
-                                                    },
-                                                    "sourceField": "aws.dimensions.Method"
-                                                },
-                                                "d1260c5d-11f5-4cea-b99f-e98f1cafc93d": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
-                                            "sampling": 1
-                                        },
-                                        "fc8b914e-67e4-48a0-8fd7-679244600446": {
-                                            "columnOrder": [
-                                                "0af27dbd-aa14-4416-80a2-27a95d46a3da",
-                                                "de7188df-248c-4204-bfb5-89a953c5ba0f",
-                                                "d265e12d-a7ad-49cf-b526-0edfffea7d62"
-                                            ],
-                                            "columns": {
-                                                "0af27dbd-aa14-4416-80a2-27a95d46a3da": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top values of aws.dimensions.Method + 1 other",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "d265e12d-a7ad-49cf-b526-0edfffea7d62",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "multi_terms"
-                                                        },
-                                                        "secondaryFields": [
-                                                            "aws.dimensions.Resource"
-                                                        ],
-                                                        "size": 100
-                                                    },
-                                                    "sourceField": "aws.dimensions.Method"
-                                                },
-                                                "d265e12d-a7ad-49cf-b526-0edfffea7d62": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "aws.dimensions.Operation : \"InvokeGateway\"  and (NOT aws.dimensions.Method : \"tools/call\" ) and (aws.dimensions.Method : *) and (aws.dimensions.Resource : * )"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Duration",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "duration",
-                                                            "params": {
-                                                                "decimals": 2,
-                                                                "fromUnit": "milliseconds",
-                                                                "toUnit": "humanizePrecise"
-                                                            }
-                                                        }
-                                                    },
-                                                    "sourceField": "aws.bedrock_agentcore.metrics.Duration.avg"
-                                                },
-                                                "de7188df-248c-4204-bfb5-89a953c5ba0f": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
-                                            "linkToLayers": [],
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "metrics-*",
-                                            "timeField": "@timestamp",
-                                            "title": "metrics-*"
-                                        }
-                                    ],
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "01580b6c-242a-4823-a2c4-ad9333d91b12"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "default",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "872bed26-4078-473d-895d-a12a067c7388",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_stacked",
-                                        "showGridlines": false,
-                                        "splitAccessor": "0b158528-1f01-42ee-b387-ddf30ec69a54",
-                                        "xAccessor": "d1260c5d-11f5-4cea-b99f-e98f1cafc93d"
-                                    },
-                                    {
-                                        "accessors": [
-                                            "d265e12d-a7ad-49cf-b526-0edfffea7d62"
-                                        ],
-                                        "layerId": "fc8b914e-67e4-48a0-8fd7-679244600446",
-                                        "layerType": "data",
-                                        "seriesType": "area_stacked",
-                                        "splitAccessor": "0af27dbd-aa14-4416-80a2-27a95d46a3da",
-                                        "xAccessor": "de7188df-248c-4204-bfb5-89a953c5ba0f"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 3,
-                                    "position": "bottom",
-                                    "shouldTruncate": false
-                                },
-                                "preferredSeriesType": "area",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "yTitle": "Latency vs Duration"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "Latency: The time elapsed between when the service receives the request and when it begins sending the first response token. In other words, initial response time.\n\nDuration: The total time elapsed between receiving the request and sending the final response token. Represents complete end-to-end processing time of the request.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false,
-                    "title": "Non-tool call performance analysis - by resource and target"
-                },
-                "gridData": {
-                    "h": 13,
-                    "i": "3c595abd-d1d7-4bea-bd79-3b7f6efcbfd8",
-                    "sectionId": "e556712e-b7f8-4d9f-a995-770f42ee2e02",
-                    "w": 24,
-                    "x": 24,
-                    "y": 12
-                },
-                "panelIndex": "3c595abd-d1d7-4bea-bd79-3b7f6efcbfd8",
                 "type": "lens"
             },
             {
@@ -3908,9 +5704,9 @@
                     "h": 13,
                     "i": "6782e715-8783-48c8-825b-ddb155fe1fc6",
                     "sectionId": "e556712e-b7f8-4d9f-a995-770f42ee2e02",
-                    "w": 24,
-                    "x": 0,
-                    "y": 12
+                    "w": 42,
+                    "x": 6,
+                    "y": 27
                 },
                 "panelIndex": "6782e715-8783-48c8-825b-ddb155fe1fc6",
                 "type": "lens"
@@ -3921,7 +5717,7 @@
                 "collapsed": false,
                 "gridData": {
                     "i": "650a11af-b6ce-4270-bdfd-7513807f4d2e",
-                    "y": 59
+                    "y": 70
                 },
                 "title": "Errors"
             },
@@ -3929,7 +5725,7 @@
                 "collapsed": false,
                 "gridData": {
                     "i": "e556712e-b7f8-4d9f-a995-770f42ee2e02",
-                    "y": 60
+                    "y": 71
                 },
                 "title": "Performance"
             }
@@ -3939,9 +5735,8 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-11-12T04:57:02.644Z",
+    "created_at": "2025-11-25T12:46:31.211Z",
     "id": "aws_bedrock_agentcore-b113ff26-879e-4ea2-b0ac-993b98ed06c4",
-    "managed": false,
     "references": [
         {
             "id": "metrics-*",
@@ -3970,7 +5765,17 @@
         },
         {
             "id": "metrics-*",
+            "name": "5dd8a069-848f-4776-a03d-372f9439dfa0:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
             "name": "e5dd3561-1d5e-4d2f-98ef-1681ec579250:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "8e0444fe-c8ad-4924-9ba1-ca421ed77cff:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
             "type": "index-pattern"
         },
         {
@@ -3995,17 +5800,27 @@
         },
         {
             "id": "metrics-*",
-            "name": "f5232883-0114-4450-94e4-931f763980df:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "3c595abd-d1d7-4bea-bd79-3b7f6efcbfd8:indexpattern-datasource-layer-872bed26-4078-473d-895d-a12a067c7388",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
             "name": "3c595abd-d1d7-4bea-bd79-3b7f6efcbfd8:indexpattern-datasource-layer-fc8b914e-67e4-48a0-8fd7-679244600446",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "1a08fc5e-5484-4c9e-a154-f848dc30f2d6:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f15aab56-010d-4ef2-9555-ff2750950c71:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f5232883-0114-4450-94e4-931f763980df:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
             "type": "index-pattern"
         },
         {
@@ -4017,6 +5832,26 @@
             "id": "metrics-*",
             "name": "6782e715-8783-48c8-825b-ddb155fe1fc6:indexpattern-datasource-layer-e47e9a42-e2b0-4ccc-b3f9-cc4fe20e49ee",
             "type": "index-pattern"
+        },
+        {
+            "id": "aws_bedrock_agentcore-3235ab43-8fa0-47f5-9590-b8d7451a4c92",
+            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock_agentcore-b113ff26-879e-4ea2-b0ac-993b98ed06c4",
+            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock_agentcore-1f2ef1c3-afab-4b23-9e8b-b966f2fe40d2",
+            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock_agentcore-b2372a13-4d94-43ec-8623-6c8d226dd071",
+            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
+            "type": "dashboard"
         },
         {
             "id": "metrics-*",
@@ -4074,24 +5909,9 @@
             "type": "index-pattern"
         },
         {
-            "id": "aws_bedrock_agentcore-3235ab43-8fa0-47f5-9590-b8d7451a4c92",
-            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_46c7c425-6940-4e8a-861d-bdf5ae62a7d7_dashboard",
-            "type": "dashboard"
-        },
-        {
-            "id": "aws_bedrock_agentcore-b113ff26-879e-4ea2-b0ac-993b98ed06c4",
-            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_9933e526-6f82-4771-ac36-12c31ea3fd01_dashboard",
-            "type": "dashboard"
-        },
-        {
-            "id": "aws_bedrock_agentcore-1f2ef1c3-afab-4b23-9e8b-b966f2fe40d2",
-            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_2d7432d1-9823-43ad-a9da-396068481c5f_dashboard",
-            "type": "dashboard"
-        },
-        {
-            "id": "aws_bedrock_agentcore-b2372a13-4d94-43ec-8623-6c8d226dd071",
-            "name": "e135f672-8b32-4bbe-a653-3bf4a2bdf0e3:link_c997665a-658e-4fae-b2a4-b253ebd05a46_dashboard",
-            "type": "dashboard"
+            "id": "metrics-*",
+            "name": "60a2756c-4e9d-486f-b7a1-4ef9d11b2fd9:indexpattern-datasource-layer-ef028ce4-1c87-4d2b-b5a9-8f1fbcb5bd98",
+            "type": "index-pattern"
         },
         {
             "id": "metrics-*",

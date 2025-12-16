@@ -85,7 +85,7 @@ response.pagination:
       # error (.last_response.body.NextToken doesn't exist) and the pagination
       # sequence will end (because fail_on_template_error is set).
       target: body.NextToken
-      value: '[[if (eq (.last_response.page) 0)]][["placeholder"]][[else]][[.last_response.body.NextToken]][[end]]'
+      value: '[[if (eq (.last_response.page) 0)]][["placeholder"]][[else]][[if index .last_response.body "NextToken"]][[.last_response.body.NextToken]][[end]][[end]]'
       fail_on_template_error: true
       do_not_log_failure: true
   - delete:
@@ -96,6 +96,7 @@ response.pagination:
       target: body.NextToken
       value: '[[with (index .last_response.body "NextToken")]][[.]][[end]]'
       fail_on_template_error: false
+      do_not_log_failure: true
   - delete:
       target: header.Authorization
   - set:
