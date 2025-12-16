@@ -65,3 +65,14 @@ The metrics include the following dimensions for enhanced filtering and analysis
 
 {{event "metrics"}}
 {{fields "metrics"}}
+
+## Logs
+
+### Memory Application Logs
+
+Amazon Bedrock AgentCore Memory application logs provide detailed insights into memory operations, including data storage, retrieval, and updates performed by your agents. These logs help you monitor memory usage, track changes to stored knowledge, and troubleshoot issues related to agent memory management.
+
+For more details about enabling logs for AgentCore Memory, see the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "memory_application_logs"}}
+{{fields "memory_application_logs"}}
