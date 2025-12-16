@@ -527,7 +527,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.type |  | keyword |
 | cisco_secure_email_gateway.log.unattempted_recipients | Unattempted Recipients. | long |
 | cisco_secure_email_gateway.log.update.timestamp | The date and time at which the file analysis for the file is complete. | date |
-| cisco_secure_email_gateway.log.upload.action | The upload action value recommended by the file reputation server to take on the given file  0 - Need not send for upload. 1 - Send file for upload. Note 	 The email gateway uploads the file when the upload action value is ‘1.’. 2 - Do not send file for upload. 3 - Send only metadata for upload. | keyword |
+| cisco_secure_email_gateway.log.upload.action | Action recommended by the file reputation server for submitting files to File Analysis. Values: 0 (no action required), 1 (send file for analysis), 2 (do not send file), 3 (send only metadata). | keyword |
 | cisco_secure_email_gateway.log.upload.priority | Upload priority values are: High - For all selected file types, except PDF file type. Low - For only PDF file types. | keyword |
 | cisco_secure_email_gateway.log.vendor_action |  | keyword |
 | cisco_secure_email_gateway.log.verdict | The file retrospective verdict value is malicious or clean. | keyword |
