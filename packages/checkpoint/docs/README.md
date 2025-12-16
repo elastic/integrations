@@ -1,139 +1,167 @@
-# Check Point Integration
+# Check Point Integration for Elastic
 
-The Check Point integration allows you to monitor [Check Point](http://checkpoint.com/) Firewall logs from appliances running [Check Point Management](https://sc1.checkpoint.com/documents/latest/APIs/#introduction~v1.9%20).
+## Overview
 
-Use the Check Point integration to collect and parse firewall event logs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the firewall data stream when troubleshooting an issue.
+The Check Point integration for Elastic collects logs from Check Point Security Gateways and Management Servers. This enables comprehensive security monitoring, threat detection, and network traffic analysis within the Elastic Stack. By ingesting Check Point logs, you can gain centralized visibility into firewall traffic, security policies, VPN activity, and system health to enhance your security posture.
 
-For example, you could use the data from this integration to spot unusual network activity and malicious traffic on your network. You could also use the data to review or troubleshoot the rules that have been set up to block these activities. You can do this by looking at additional context in the logs, such as the source of the requests, and more.
+This integration facilitates:
 
-## Data streams
-
-The Check Point integration collects one type of data: logs.
-
-**Logs** help you keep a record of events logged by your firewall device.
-Logs collected by the Check Point integration include all logged network events specified by the firewall's rules. See more details in the [Logs reference](#logs-reference).
- 
-## Requirements
-
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
-
-You will need one or more Check Point Firewall appliances to monitor.
+- Centralized visibility into security policies, blocked connections, accepted connections, and VPN activity.
+- Compliance auditing and reporting by centralizing Check Point logs.
+- Enhanced threat detection and incident response capabilities through real-time log analysis.
+- Monitoring of system health and administrator actions on Check Point appliances.
 
 ### Compatibility
 
-This integration has been tested against Check Point Log Exporter on R81.X.
+This integration is compatible with Check Point Security Gateways and Management Servers running R81.x versions.
 
-## Setup
+This integration is compatible with Elastic Stack versions 8.11.0 or higher.
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+### How it works
 
-In some instances firewall events may have the same Checkpoint `loguid` and arrive during the same timestamp resulting in a fingerprint collision. To avoid this [enable semi-unified logging](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Appendix.htm?TocPath=Log%20Exporter%7C_____9) in the Checkpoint dashboard.
+This integration collects logs from Check Point devices by receiving syslog data over TCP or UDP, or by reading directly from log files. An Elastic Agent is deployed on a host that is configured as a syslog receiver or has access to the log files. The agent forwards the logs to your Elastic deployment, where they can be monitored and analyzed.
 
-### TCP or UDP
+## What data does this integration collect?
 
-Elastic Agent can receive log messages directly via TCP or UDP syslog messages. The Elastic Agent will be used to receive syslog data from your Check Point firewalls and ship the events to Elasticsearch. 
+The Check Point integration collects log messages of the following types:
 
-1. For each firewall device you wish to monitor, create a new [Log Exporter/SIEM object](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C_____2) in Check Point *SmartConsole*. Set the target server and target port to the Elastic Agent IP address and port number. Set the protocol to UDP or TCP, the Check Point integration supports both. Set the format to syslog.
-2. Configure the Management Server or Dedicated Log Server object in *SmartConsole*.
-3. Install the database within *SmartConsole* (steps included in the Checkpoint docs linked above).
-4. Within Kibana, browse to Integrations and locate the Check Point integration, and 'Add Check Point'.
-5. Add Elastic Agent to host with Fleet, or install Elastic Agent manually after configuring the integration.
-6. Configure the TCP or UDP input, depending on the protocol you configured Check Point to use.
-7. Add a certificate if using Secure Syslog over TCP with TLS (optional)
-8. Add integration to a New/Existing policy.
-9. Browse to dashboard/discover to validate data is flowing from Check Point.
+- Check Point Security Gateway and Management Server logs in Syslog format (firewall connections, VPN, audit, system events).
+- Check Point firewall connection logs (accept, drop, reject, etc.).
+- VPN logs.
+- SmartConsole audit logs (administrator actions on the Management Server).
+- Gaia OS system-level logs (e.g., `/var/log/messages`, `/var/log/secure`, `/var/log/dmesg`) for appliance health and activity.
 
-### Logfile
+### Supported use cases
 
-Elastic Agent can process log messages by monitoring a log file on a host receiving syslog messages. The syslog server will receive messages from Check Point, write to a logfile, and Elastic Agent will watch the log file to send to the Elastic Cluster. 
+- **Real-time Threat Detection**: Leverage Elastic SIEM to detect and respond to threats identified in firewall logs.
+- **Network Traffic Analysis**: Use Kibana dashboards to visualize and analyze network traffic patterns, helping to identify anomalies and optimize network performance.
+- **Compliance and Auditing**: Maintain a searchable, long-term archive of firewall logs to meet compliance requirements and conduct security audits.
+- **Incident Response**: Accelerate incident investigation by correlating firewall data with other security and observability data sources within Elastic.
 
-1. Install a syslog server on a host between your Check Point Log Exporter instance and Elastic Cluster. 
-2. Configure the syslog server to write logs to a logfile.
-3. For each firewall device you wish to monitor, create a new [Log Exporter/SIEM object](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C_____2) in Check Point *SmartConsole*. Set the target server and target port to the syslog server. Set the protocol to UDP or TCP, the Check Point integration supports both. Set the format to syslog.
-4. Configure the Management Server or Dedicated Log Server object in *SmartConsole*.
-5. Install the database within *SmartConsole* (steps included in the Checkpoint docs linked above).
-6. Within Kibana, navigate to the Integrations section and locate the Check Point integration. Click on the "Add Check Point" button to initiate the integration process.
-7. Add Elastic Agent to host with Fleet, or install Elastic Agent manually after configuring the integration.
-8. Configure the logfile input, to monitor the logfile pattern that the syslog server will write to.
-9. Add integration to a New/Existing policy.
-10. Browse to dashboard/discover to validate data is flowing from Check Point.
+## What do I need to use this integration?
 
-## Logs reference
+### Vendor prerequisites
 
-### Firewall
+- Administrative access to Check Point SmartConsole.
+- SSH access to Check Point Security Gateways or Management Servers (required for logfile collection and potentially for advanced troubleshooting).
+- Knowledge of your Check Point environment, including IP addresses of Gateways/Management Servers.
+- Ensure network connectivity and open ports (e.g., UDP/TCP 514 or a custom port) between your Check Point devices and the Elastic Agent acting as the log collector.
 
-The Check Point integration collects data in a single data stream, the **firewall** data set. This consists of log entries from the [Log Exporter](https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk122323) in the Syslog format.
+### Elastic prerequisites
 
-An example event for `firewall` looks as following:
+- An active Elastic Stack deployment (Elasticsearch and Kibana) compatible with the integration (Kibana 8.11.0+ or 9.0.0+).
+- An Elastic Agent deployed and enrolled in Fleet, configured to receive logs from Check Point devices.
+- Network connectivity between the Elastic Agent and the Check Point devices.
 
-```json
-{
-    "@timestamp": "2020-03-29T13:19:20.000Z",
-    "agent": {
-        "ephemeral_id": "81d2d360-6c18-4a7e-8eef-cb77b6566cec",
-        "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.5.1"
-    },
-    "checkpoint": {
-        "sys_message": "The eth0 interface is not protected by the anti-spoofing feature. Your network may be at risk"
-    },
-    "data_stream": {
-        "dataset": "checkpoint.firewall",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.17.0"
-    },
-    "elastic_agent": {
-        "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
-        "snapshot": false,
-        "version": "8.5.1"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "network"
-        ],
-        "created": "2023-02-09T03:09:35.057Z",
-        "dataset": "checkpoint.firewall",
-        "id": "{0x5e80a059,0x0,0x6401a8c0,0x3c7878a}",
-        "ingested": "2023-02-09T03:09:36Z",
-        "kind": "event",
-        "sequence": 1,
-        "timezone": "UTC"
-    },
-    "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.32.6:58272"
-        }
-    },
-    "network": {
-        "direction": "inbound"
-    },
-    "observer": {
-        "ingress": {
-            "interface": {
-                "name": "daemon"
-            }
-        },
-        "name": "192.168.1.100",
-        "product": "System Monitor",
-        "type": "firewall",
-        "vendor": "Checkpoint"
-    },
-    "tags": [
-        "forwarded"
-    ]
-}
-```
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed on a host that will act as the syslog or log file receiver. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Set up steps in Check Point
+
+#### For UDP/TCP (Syslog) Collection:
+
+1.  **Configure Log Exporter in SmartConsole:**
+    - For each Check Point Security Gateway or Management Server you wish to monitor, create a new [Log Exporter/SIEM object](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C%5F%5F%5F%5F%5F2) in Check Point SmartConsole.
+    - Navigate to **Objects > More object types > Server > Log Exporter/SIEM**.
+    - **Name:** Provide a descriptive name for the Log Exporter (e.g., `Elastic_Agent_Syslog_Export`).
+    - **Target Server:** Set this to the IP address or hostname of your log collector (e.g., Elastic Agent).
+    - **Target Port:** Specify the port number on which your log collector is listening (e.g., `514` for standard Syslog UDP/TCP, or a custom port like `9001` as often used by Elastic Agent).
+    - **Protocol:** Select either **UDP** or **TCP**. The Check Point integration supports both.
+    - **Format:** Choose **Syslog**.
+    - **Export additional log fields:** (Optional) Select any additional fields you wish to export.
+    - **Filter (Optional):** Define a filter if you only want to send specific log types or severities.
+    - Click **OK** to save the Log Exporter configuration.
+2.  **Install Policy:**
+    - After configuring the Log Exporter, install the updated policy on the relevant Security Gateways or Management Server for the changes to take effect.
+
+#### For Logfile Collection:
+
+1.  **Access the Check Point Appliance:**
+    - Connect to the Check Point Security Gateway or Management Server via SSH.
+2.  **Identify Log File Locations:**
+    - **Gaia OS System Logs:** Standard Linux system logs are located in `/var/log/`. These include:
+      - `/var/log/messages`: General system messages.
+      - `/var/log/secure`: Authentication and authorization messages.
+      - `/var/log/dmesg`: Kernel ring buffer messages.
+    - **Management Server Logs:**
+      - `$FWDIR/log/cpm.elg`: For SmartConsole audit events, which can be useful for auditing administrator actions.
+3.  **Configure your Log Collector:**
+    - Point your log file collector (Elastic Agent) to the desired log file paths on the Check Point appliance. Ensure the collector has appropriate permissions to read these files.
+    - **Important:** For proprietary binary logs (e.g., `$FWDIR/log/fw.log`), a generic log collector will not be able to parse the content effectively. If security events are required, use the Log Exporter (Syslog) method. For standard text-based system logs (e.g., `/var/log/messages`), direct collection is viable.
+
+### Set up steps in Kibana
+
+1.  In Kibana, navigate to **Management > Integrations**.
+2.  Search for "Check Point" and select the integration.
+3.  Click **Add Check Point**.
+4.  Follow the prompts to add the integration to an existing Elastic Agent policy or create a new one.
+5.  Configure the input types based on your vendor setup:
+    - **For UDP/TCP (Syslog)**:
+      - Select **Collect Check Point firewall logs (input: tcp)** or **(input: udp)**.
+      - Specify the `Syslog Host` (The IP address or hostname for the Elastic Agent to listen on. Use `0.0.0.0` to listen on all available network interfaces.).
+      - Specify the `Syslog Port` (e.g., `9001` or `514`), ensuring it matches the `Target Port` configured in your Check Point Log Exporter.
+    - **For Logfile Collection**:
+      - Select **Collect Check Point firewall logs (input: logfile)**.
+      - Provide the `Paths` to the desired log files on the Check Point appliance (e.g., `/var/log/messages`, `$FWDIR/log/cpm.elg`).
+6.  Save the integration. The Elastic Agent will automatically update its configuration and begin ingesting data.
+
+### Validation Steps
+
+After configuring both the Check Point Log Exporter and the Elastic Agent integration:
+
+1.  **Trigger Data Flow on Check Point:**
+    - **For firewall logs**: On a Check Point Security Gateway, generate some network traffic to ensure firewall logs are generated.
+    - **For audit logs**: Perform an action in SmartConsole to generate audit logs on the Management Server.
+    - **For system logs**: Log in/out of the Check Point appliance via SSH or perform routine system commands.
+2.  **Check Data in Kibana:**
+    - Navigate to **Discover** in Kibana.
+    - Filter by `data_stream.dataset : checkpoint.firewall`.
+    - Verify that logs are being ingested and parsed correctly, looking for recent timestamps.
+    - Explore the provided Check Point dashboards (e.g., Overview, Addresses and Ports) to see if data populates as expected.
+
+## Troubleshooting
+
+### Common Configuration Issues
+
+- **No data collected in Kibana**:
+  - **Network Connectivity**: Verify network connectivity between your Check Point device and the Elastic Agent. Check any intermediate firewalls or security groups that might block Syslog traffic.
+  - **Policy Installation**: Ensure the Log Exporter policy has been successfully installed on the relevant Check Point Security Gateway or Management Server.
+  - **Port/IP Mismatch**: Double-check that the `Target Server` IP and `Target Port` in SmartConsole's Log Exporter match the `Syslog Host` and `Syslog Port` in the Elastic Agent integration.
+  - **Elastic Agent Status**: Confirm the Elastic Agent is running and healthy. Check its logs for any errors related to input listeners.
+  - **Logfile Permissions**: For logfile collection, ensure the Elastic Agent has appropriate read permissions on the specified log file paths.
+- **Data collected, but parsing issues or missing fields**:
+  - **Syslog Format**: Ensure the `Format` in Check Point Log Exporter is explicitly set to `Syslog`.
+  - **Input Type Mismatch**: Verify that the correct input type (UDP, TCP, or Logfile) is selected and configured in the Elastic Agent integration.
+
+### Ingestion Errors
+
+- Check the Elastic Agent logs for any specific error messages related to log processing, parsing failures, or communication with Elasticsearch.
+- In Kibana Discover, look for documents with an `error.message` field, which can indicate issues during ingestion or processing.
+- In some instances, firewall events may have the same Checkpoint `loguid` and arrive at the same timestamp, resulting in a fingerprint collision. To avoid this, [enable semi-unified logging](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Appendix.htm?TocPath=Log%20Exporter%7C_____9) in the Checkpoint dashboard.
+
+### Vendor Resources
+
+- [Check Point R81 Logging and Monitoring Administration Guide - Log Exporter Configuration](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C%5F%5F%5F%5F%5F2)
+- [Check Point sk122323: R80.x / R81.x Log Exporter command line utility](https://support.checkpoint.com/results/sk/sk122323)
+
+## Performance and scaling
+
+For high-volume environments, consider deploying multiple Elastic Agents to distribute the log collection load. Check Point's Log Exporter allows for flexible log forwarding, including the ability to send logs to multiple targets, enabling distributed log collection setups.
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### firewall
+
+The `firewall` data stream provides events from Check Point devices, including firewall traffic, VPN logs, audit logs, and system events.
+
+#### firewall fields
 
 **Exported fields**
 
@@ -822,4 +850,156 @@ An example event for `firewall` looks as following:
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id) | keyword |
+
+
+#### firewall sample event
+
+An example event for `firewall` looks as following:
+
+```json
+{
+    "@timestamp": "2020-03-29T13:19:20.000Z",
+    "agent": {
+        "ephemeral_id": "81d2d360-6c18-4a7e-8eef-cb77b6566cec",
+        "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.5.1"
+    },
+    "checkpoint": {
+        "sys_message": "The eth0 interface is not protected by the anti-spoofing feature. Your network may be at risk"
+    },
+    "data_stream": {
+        "dataset": "checkpoint.firewall",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
+        "snapshot": false,
+        "version": "8.5.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "created": "2023-02-09T03:09:35.057Z",
+        "dataset": "checkpoint.firewall",
+        "id": "{0x5e80a059,0x0,0x6401a8c0,0x3c7878a}",
+        "ingested": "2023-02-09T03:09:36Z",
+        "kind": "event",
+        "sequence": 1,
+        "timezone": "UTC"
+    },
+    "input": {
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.32.6:58272"
+        }
+    },
+    "network": {
+        "direction": "inbound"
+    },
+    "observer": {
+        "ingress": {
+            "interface": {
+                "name": "daemon"
+            }
+        },
+        "name": "192.168.1.100",
+        "product": "System Monitor",
+        "type": "firewall",
+        "vendor": "Checkpoint"
+    },
+    "tags": [
+        "forwarded"
+    ]
+}
+```
+
+### Inputs used
+
+These inputs can be used with this integration:
+<details>
+<summary>logfile</summary>
+
+## Setup
+For more details about the logfile input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-log).
+
+### Collecting logs from logfile
+
+To collect logs via logfile, select **Collect logs via the logfile input** and configure the following parameter:
+
+- Paths: List of glob-based paths to crawl and fetch log files from. Supports glob patterns like
+  `/var/log/*.log` or `/var/log/*/*.log` for subfolder matching. Each file found starts a
+  separate harvester.
+</details>
+<details>
+<summary>tcp</summary>
+
+## Setup
+
+For more details about the TCP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp).
+
+### Collecting logs from TCP
+
+To collect logs via TCP, select **Collect logs via TCP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of incoming messages
+- Max Connections - Maximum number of concurrent connections
+- Timeout - How long to wait for data before closing idle connections
+- Line Delimiter - Character(s) that separate log messages
+
+## SSL/TLS Configuration
+
+To enable encrypted connections, configure the following SSL settings:
+
+**SSL Settings:**
+- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
+- Certificate Key - Path to the private key file (`.key`)
+- Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
+- Client Authentication - Require client certificates (`none`, `optional`, or `required`)
+- Supported Protocols - TLS versions to support (e.g., `TLSv1.2`, `TLSv1.3`)
+
+**Example SSL Configuration:**
+```yaml
+ssl.enabled: true
+ssl.certificate: "/path/to/server.crt"
+ssl.key: "/path/to/server.key"
+ssl.certificate_authorities: ["/path/to/ca.crt"]
+ssl.client_authentication: "optional"
+```
+</details>
+<details>
+<summary>udp</summary>
+
+## Setup
+
+For more details about the UDP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp).
+
+### Collecting logs from UDP
+
+To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of UDP packets to accept (default: 10KB, max: 64KB)
+- Read Buffer - UDP socket read buffer size for handling bursts of messages
+- Read Timeout - How long to wait for incoming packets before checking for shutdown
+</details>
 
