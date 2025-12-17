@@ -81,6 +81,13 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Axonius**, and verify the dashboard information is populated.
 
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **axonius**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -110,3 +117,7 @@ The `gateway` data stream provides gateway events from axonius.
 These APIs are used with this integration:
 
 * Gateway (endpoint: `/api/v2/gateway`)
+
+#### ILM Policy
+
+To facilitate gateway data, source data stream-backed indices `.ds-logs-axonius.gateway-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-axonius.gateway-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
