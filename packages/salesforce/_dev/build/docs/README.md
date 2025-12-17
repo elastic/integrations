@@ -321,7 +321,7 @@ This command is useful for debugging and troubleshooting OAuth 2.0 authenticatio
 
 - Collection intervals: Longer intervals reduce API usage and agent load; shorter intervals increase freshness at the cost of API calls and resource usage.
 - Backfill: Use the initial interval to safely ingest historical data. Large backfills may consume significant Salesforce API quotas; consider staging by data stream.
-- Login/Logout sources: EventLogFile is efficient for batched reporting; Platform Events provide lower‑latency signals but may have throughput and retention limits in your org.
+- Login/Logout sources: EventLogFile is efficient for batched reporting; Platform Events provide lower-latency signals but may have throughput and retention limits in your org.
 - Timeouts: Increase the request timeout in Advanced options if Salesforce responses are slow or large result sets are expected.
 
 ## Reference
