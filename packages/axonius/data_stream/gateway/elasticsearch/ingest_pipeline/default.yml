@@ -2,18 +2,18 @@
 description: Pipeline for processing gateway logs.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_to_9_2_0_3273339c
       field: ecs.version
       value: 9.2.0
   - terminate:
       description: error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_4c75f12b
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_44eed408
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -24,153 +24,150 @@ processors:
   # parse the event JSON
   - rename:
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_c74b1d7e
       if: ctx.event?.original == null
       field: message
       target_field: event.original
       ignore_missing: true
   - remove:
       description: The `message` field is no longer required if the document has an `event.original` field.
-      tag: remove_message
+      tag: remove_message_84808ee4
       if: ctx.event?.original != null
       field: message
       ignore_missing: true
   - json:
-      tag: json_event_original_into_axonius_gateway
+      tag: json_event_original_into_axonius_gateway_a21ccdc5
       field: event.original
       target_field: axonius.gateway
 
-  # Add fingerprint
-  - fingerprint:
-      tag: fingerprint_into__id
-      fields:
-        - axonius.gateway.id
-      target_field: _id
-      ignore_missing: true
-
   # Set event.* fields
   - set:
-      tag: set_event_kind_1
+      tag: set_event_kind_to_event_de80643c
       field: event.kind
       value: event
 
   # Convert to Boolean
   - convert:
-      tag: convert_axonius_gateway_default_to_boolean
+      tag: convert_axonius_gateway_default_to_boolean_c2d04259
       field: axonius.gateway.default
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_1
-            field: axonius.gateway.default
+            tag: remove_axonius_gateway_default_c11a59d9
+            field:
+              - axonius.gateway.default
         - append:
-            tag: append_error_message_1
+            tag: append_error_message_3ae1ed0f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_axonius_gateway_email_when_connected_to_boolean
+      tag: convert_axonius_gateway_email_when_connected_to_boolean_26cb764f
       field: axonius.gateway.email_when_connected
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_2
-            field: axonius.gateway.email_when_connected
+            tag: remove_axonius_gateway_email_when_connected_05521d15
+            field:
+              - axonius.gateway.email_when_connected
         - append:
-            tag: append_error_message_2
+            tag: append_error_message_455312cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_axonius_gateway_email_when_disconnected_to_boolean
+      tag: convert_axonius_gateway_email_when_disconnected_to_boolean_297af2e9
       field: axonius.gateway.email_when_disconnected
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_3
-            field: axonius.gateway.email_when_disconnected
+            tag: remove_axonius_gateway_email_when_disconnected_7b3d2d85
+            field:
+              - axonius.gateway.email_when_disconnected
         - append:
-            tag: append_error_message_3
+            tag: append_error_message_b15a6a5f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      tag: convert_axonius_gateway_tunnel_proxy_settings_enabled_to_boolean
+      tag: convert_axonius_gateway_tunnel_proxy_settings_enabled_to_boolean_1b5ece04
       field: axonius.gateway.tunnel_proxy_settings.enabled
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_4
-            field: axonius.gateway.tunnel_proxy_settings.enabled
+            tag: remove_axonius_gateway_tunnel_proxy_settings_enabled_adef553b
+            field:
+              - axonius.gateway.tunnel_proxy_settings.enabled
         - append:
-            tag: append_error_message_4
+            tag: append_error_message_1588e954
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Convert to String
   - convert:
-      tag: convert_axonius_gateway_tunnel_proxy_settings_tunnel_proxy_port_to_string
+      tag: convert_axonius_gateway_tunnel_proxy_settings_tunnel_proxy_port_to_string_a7280139
       field: axonius.gateway.tunnel_proxy_settings.tunnel_proxy_port
       type: string
       ignore_missing: true
 
   # Convert to IP
   - convert:
-      tag: convert_axonius_gateway_dns_server_to_ip
+      tag: convert_axonius_gateway_dns_server_to_ip_33adc7e4
       if: ctx.axonius?.gateway?.dns_server != ''
       field: axonius.gateway.dns_server
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_5
-            field: axonius.gateway.dns_server
+            tag: remove_axonius_gateway_dns_server_98b169c0
+            field:
+              - axonius.gateway.dns_server
         - append:
-            tag: append_error_message_5
+            tag: append_error_message_1d7c45b4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Map custom fields to corresponding ECS and related fields.
   - set:
-      tag: set_event_id
+      tag: set_event_id_from_axonius_gateway_id_fd338e40
       field: event.id
       copy_from: axonius.gateway.id
       ignore_empty_value: true
   - append:
-      tag: append_dns_resolved_ip
+      tag: append_dns_resolved_ip_from_axonius_gateway_dns_server_4f0cc8a9
       if: ctx.axonius?.gateway?.dns_server != null
       field: dns.resolved_ip
       value: '{{{axonius.gateway.dns_server}}}'
       allow_duplicates: false
   - foreach:
-      tag: foreach_of_axonius_gateway_email_recipients
+      tag: foreach_of_axonius_gateway_email_recipients_3ad233a3
       if: ctx.axonius?.gateway?.email_recipients instanceof List
       field: axonius.gateway.email_recipients
       processor:
         append:
-          tag: append_email_to_address
+          tag: append_email_to_address_c3eb569b
           field: email.to.address
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
-      tag: set_event_outcome_1
+      tag: set_event_outcome_to_success_fa577fb7
       if: ctx.axonius?.gateway?.status != null && ctx.axonius.gateway.status.toLowerCase() == 'success'
       field: event.outcome
       value: success
   - set:
-      tag: set_event_outcome_2
+      tag: set_event_outcome_to_failure_d21a5175
       if: ctx.axonius?.gateway?.status != null && ctx.axonius.gateway.status.toLowerCase() == 'error'
       field: event.outcome
       value: failure
   - append:
-      tag: append_related_user
+      tag: append_related_user_from_axonius_gateway_tunnel_proxy_settings_tunnel_proxy_user_dead949b
       if: ctx.axonius?.gateway?.tunnel_proxy_settings?.tunnel_proxy_user != null
       field: related.user
       value: '{{{axonius.gateway.tunnel_proxy_settings.tunnel_proxy_user}}}'
       allow_duplicates: false
   - append:
-      tag: append_related_ip
+      tag: append_related_ip_from_axonius_gateway_dns_server_4242e772
       if: ctx.axonius?.gateway?.dns_server != null
       field: related.ip
       value: '{{{axonius.gateway.dns_server}}}'
@@ -178,7 +175,7 @@ processors:
 
   # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
   - remove:
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_7e246e5f
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       field:
         - axonius.gateway.dns_server
@@ -189,7 +186,7 @@ processors:
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_8360f3de
       lang: painless
       source: |-
         void handleMap(Map map) {
@@ -214,27 +211,27 @@ processors:
         }
         handleMap(ctx);
   - set:
-      tag: set_event_kind_2
+      tag: set_event_kind_to_pipeline_error_92954dfa
       if: ctx.error?.message != null
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags_1
+      tag: append_tags_9fe66b2c
       if: ctx.error?.message != null
       field: tags
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
   - append:
-      tag: append_error_message_6
+      tag: append_error_message_e0c9bd63
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind_3
+      tag: set_event_kind_to_pipeline_error_f51b77ad
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags_2
+      tag: append_tags_d762b9c5
       field: tags
       value: preserve_original_event
       allow_duplicates: false
