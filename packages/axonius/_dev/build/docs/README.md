@@ -32,11 +32,16 @@ This integration collects log messages of the following type:
 - `Incidents`: Collect details of all incident assets including:
     - incidents (endpoint: `/api/v2/incidents`)
 
+- `Storage`: Collect details of all storage assets including:
+    - object_storages (endpoint: `/api/v2/object_storages`)
+    - file_systems (endpoint: `/api/v2/file_systems`)
+    - disks (endpoint: `/api/v2/disks`)
+
 ### Supported use cases
 
-Integrating the Axonius Adapter, User, Gateway, Exposure, and Alert/Incident data streams with Elastic SIEM provides centralized, end-to-end visibility across data ingestion, identity posture, network configuration, vulnerability exposure, and active security events. Together, these data streams help analysts understand how data enters the platform, how it maps to users and access, how gateways operate within the network, where risks exist, and how alerts evolve into incidents.
+Integrating the Axonius Adapter, User, Gateway, Exposure, Alert, Incident, and Storage data streams with Elastic SIEM provides centralized, end-to-end visibility across data ingestion, identity posture, network configuration, vulnerability exposure, security events, and storage assets. Together, these datastreams help analysts understand how data enters the platform, how it maps to users and access, how gateways operate within the network, where risks exist, and how alerts evolve into incidents.
 
-The dashboards surface insights into integration health, connection behavior, user roles, routing context, vulnerability severity, and alert and incident trends, making it easier to detect misconfigurations, high-risk exposures, and suspicious activity. By correlating operational, identity, exposure, and incident data in one place, security teams can reduce blind spots, prioritize remediation, and streamline investigations with complete, actionable context across the environment.
+The dashboards surface insights into integration health, connection behavior, user roles, routing context, vulnerability severity, alert and incident trends, and storage asset distribution across object storages, file systems, and disks. By correlating operational, identity, exposure, incident, and storage data in one place, security teams can detect anomalies, identify misconfigurations, prioritize remediation, and streamline investigations with comprehensive operational and security context across the environment.
 
 ## What do I need to use this integration?
 
@@ -189,6 +194,16 @@ The `incident` data stream provides incident asset logs from axonius.
 
 {{event "incident"}}
 
+### Storage
+
+The `storage` data stream provides storage asset logs from axonius.
+
+#### storage fields
+
+{{ fields "storage" }}
+
+{{event "storage"}}
+
 ### API usage
 
 These APIs are used with this integration:
@@ -204,7 +219,11 @@ These APIs are used with this integration:
     * alert_findings (endpoint: `/api/v2/alert_findings`)
 * Incidents:
     * incidents (endpoint: `/api/v2/incidents`)
+* Storage:
+    * object_storages (endpoint: `/api/v2/object_storages`)
+    * file_systems (endpoint: `/api/v2/file_systems`)
+    * disks (endpoint: `/api/v2/disks`)
 
 ### ILM Policy
 
-To facilitate adapter, user, gateway and assets data including exposures, alert findings and incidents, source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*` and `.ds-logs-axonius.incident-*`  respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy` and `logs-axonius.alert_and_incident-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents and storage source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*` and `.ds-logs-axonius.storage-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
