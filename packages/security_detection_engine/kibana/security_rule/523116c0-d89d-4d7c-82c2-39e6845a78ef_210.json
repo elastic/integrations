@@ -1,0 +1,110 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the deletion of an Amazon GuardDuty detector. GuardDuty provides continuous monitoring for malicious or unauthorized activity across AWS accounts. Deleting the detector disables this visibility, stopping all threat detection and removing existing findings. Adversaries may delete GuardDuty detectors to impair security monitoring and evade detection during or after an intrusion. This rule identifies successful \"DeleteDetector\" API calls and can indicate a deliberate defense evasion attempt.",
+        "false_positives": [
+            "The GuardDuty detector may be deleted by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Detector deletions by unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS GuardDuty Detector Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. \n> While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS GuardDuty Detector Deletion\n\nAmazon GuardDuty is a continuous threat detection service that analyzes CloudTrail, DNS, and VPC Flow Logs to identify malicious activity and compromised resources. Deleting a GuardDuty detector stops this monitoring entirely and permanently removes all historical findings for the affected AWS account. This rule detects successful `DeleteDetector` API calls, which may represent an attacker attempting to impair defenses and evade detection. Such actions should be rare and always performed under controlled administrative change processes.\n\n#### Possible investigation steps\n\n- **Identify the actor**\n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.type` to determine who initiated the deletion.\n  - Verify whether this principal normally performs GuardDuty configuration or administrative tasks.\n\n- **Review request context**\n  - Check `aws.cloudtrail.request_parameters` and `cloud.region` to confirm the targeted GuardDuty detector and scope of impact.\n  - Determine whether multiple detectors or member accounts were affected (especially in delegated admin organizations).\n\n- **Analyze source and access patterns**\n  - Review `source.ip`, `user_agent.original` and `source.geo` fields for anomalous or previously unseen access locations or automation clients.\n  - Check whether the deletion occurred outside standard maintenance windows or during a concurrent suspicious activity window.\n\n- **Correlate with preceding or related activity**\n  - Search for earlier GuardDuty configuration changes:\n    - `StopMonitoringMembers`, `DisassociateMembers`, or `DeleteMembers`\n    - IAM role or policy modifications reducing GuardDuty privileges\n  - Look for other defense evasion indicators such as CloudTrail suspension, Security Hub configuration changes, or disabling of AWS Config rules.\n\n- **Review historical GuardDuty findings**\n  - Examine prior GuardDuty alerts and findings (if still retrievable) to determine whether the deletion followed significant detection activity.\n  - Use centralized logs or security data lakes to recover findings removed from the console.\n\n### False positive analysis\n\n- **Authorized administrative actions**\n  - Verify whether the deletion corresponds to legitimate account decommissioning, region cleanup, or migration activity.\n- **Automation or IaC**\n  - GuardDuty may be disabled temporarily during infrastructure provisioning or teardown in automated environments. \n    Confirm via CI/CD logs or Infrastructure-as-Code templates.\n- **Organizational configuration changes**\n  - Large organizations might consolidate GuardDuty under a delegated administrator account, causing detectors to be deleted in member accounts. \n    Validate these actions against security architecture changes.\n\n### Response and remediation\n\n- **Containment and restoration**\n  - If unauthorized, immediately re-enable GuardDuty in the affected account and region using the `CreateDetector` API or AWS console.\n  - Verify that findings aggregation and member account associations are restored to expected configurations.\n\n- **Investigation**\n  - Review CloudTrail for related privilege escalation or resource tampering events around the deletion time.\n  - Assess whether any attacker activity occurred during the monitoring gap between deletion and restoration.\n\n- **Recovery and hardening**\n  - Restrict `guardduty:DeleteDetector` permissions to a limited administrative role.\n  - Implement AWS Config rules or Security Hub controls to alert on changes to GuardDuty detectors or configuration states.\n  - Enforce least privilege IAM policies, ensuring operational automation cannot disable GuardDuty outside maintenance workflows.\n  - Document approved GuardDuty maintenance activities and correlate them with change tickets for traceability.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "event.dataset: aws.cloudtrail \n  and event.provider: guardduty.amazonaws.com \n  and event.action: DeleteDetector \n  and event.outcome: success\n",
+        "references": [
+            "https://docs.aws.amazon.com/guardduty/latest/APIReference/API_DeleteDetector.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "523116c0-d89d-4d7c-82c2-39e6845a78ef",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS GuardDuty",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 210
+    },
+    "id": "523116c0-d89d-4d7c-82c2-39e6845a78ef_210",
+    "type": "security-rule"
+}
