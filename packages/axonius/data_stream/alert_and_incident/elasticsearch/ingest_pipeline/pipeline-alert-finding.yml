@@ -1,0 +1,96 @@
+---
+description: Pipeline for processing alert_and_incident logs.
+processors:
+  - rename:
+      field: json.event.data.alert_config_id
+      tag: rename_event_data_alert_config_id
+      target_field: axonius.alert_and_incident.event.data.alert_config_id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_alert_and_incident_event_data_alert_config_id
+      copy_from: axonius.alert_and_incident.event.data.alert_config_id
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.alert_id
+      tag: rename_event_data_alert_id
+      target_field: axonius.alert_and_incident.event.data.alert_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.finding_asset_type
+      tag: rename_event_data_finding_asset_type
+      target_field: axonius.alert_and_incident.event.data.finding_asset_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.finding_check_and_notify
+      tag: rename_event_data_finding_check_and_notify
+      target_field: axonius.alert_and_incident.event.data.finding_check_and_notify
+      ignore_missing: true
+  - rename:
+      field: json.event.data.finding_message
+      tag: rename_event_data_finding_message
+      target_field: axonius.alert_and_incident.event.data.finding_message
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_alert_and_incident_event_data_finding_message
+      copy_from: axonius.alert_and_incident.event.data.finding_message
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.finding_name
+      tag: rename_event_data_finding_name
+      target_field: axonius.alert_and_incident.event.data.finding_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.finding_severity
+      tag: rename_event_data_finding_severity
+      target_field: axonius.alert_and_incident.event.data.finding_severity
+      ignore_missing: true
+  - rename:
+      field: json.event.data.plugin_unique_name
+      tag: rename_event_data_plugin_unique_name
+      target_field: axonius.alert_and_incident.event.data.plugin_unique_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.source
+      tag: rename_event_data_source
+      target_field: axonius.alert_and_incident.event.data.source
+      ignore_missing: true
+  - rename:
+      field: json.event.data.status
+      tag: rename_event_data_status
+      target_field: axonius.alert_and_incident.event.data.status
+      ignore_missing: true
+  - date:
+      field: json.event.data.trigger_date
+      tag: date_event_data_trigger_date
+      target_field: axonius.alert_and_incident.event.data.trigger_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.trigger_date != null && ctx.json.event.data.trigger_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_alert_and_incident_event_triger_date
+      copy_from: axonius.alert_and_incident.event.data.trigger_date
+      ignore_empty_value: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
