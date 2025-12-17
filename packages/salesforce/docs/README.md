@@ -77,9 +77,9 @@ The Salesforce integration collects the following data streams:
 
 The Salesforce integration collects the following events using the Salesforce REST API:
 
-- For `login` — [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm) and [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm)
+- For `login` — [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm) and [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm)
 - For `logout` — [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) and [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm)
-- For `apex` — [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm)
+- For `apex` — [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile.htm)
 - For `setupaudittrail` — [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm)
 
 ## What do I need to use this integration?
@@ -205,11 +205,13 @@ When using a Salesforce instance with a security token, append the token directl
 
 #### Token URL
 
-1. Use the token URL to obtain authentication tokens for API access.
-2. For most Salesforce instances, the token URL follows this format: https://login.salesforce.com/services/oauth2/token.
-3. If you're using a Salesforce sandbox environment, use https://test.salesforce.com/services/oauth2/token instead.
-4. For custom Salesforce domains, replace `login.salesforce.com` with your custom domain name. For example, if your custom domain is `mycompany.my.salesforce.com`, the token URL becomes https://mycompany.my.salesforce.com/services/oauth2/token. This applies to Sandbox environments as well.
-5. In the Salesforce integration, we internally append `/services/oauth2/token` to the URL. Make sure that the URL you provide in the Salesforce integration is the base URL without the `/services/oauth2/token` part. For example, if your custom domain is `mycompany.my.salesforce.com`, the complete token URL would be https://mycompany.my.salesforce.com/services/oauth2/token, but the URL you provide in the Salesforce integration should be https://mycompany.my.salesforce.com. In most cases, this is the same as the Salesforce instance URL.
+The Salesforce integration uses the token URL to obtain authentication tokens for API access. **Important:** The integration internally appends `/services/oauth2/token` to the URL you provide, so you should enter only the base URL.
+
+1. For most Salesforce instances, enter: `https://login.salesforce.com`
+2. For Salesforce sandbox environments, enter: `https://test.salesforce.com`
+3. For custom Salesforce domains, enter your custom domain base URL. For example, if your custom domain is `mycompany.my.salesforce.com`, enter: `https://mycompany.my.salesforce.com`
+
+In most cases, the Token URL is the same as the Salesforce instance URL.
 
 NOTE: Salesforce Lightning users must use a URL with the `*.salesforce.com` domain (the same as the instance URL) instead of `*.lightning.force.com` because the Salesforce API does not work with `*.lightning.force.com`.
 
@@ -282,7 +284,7 @@ If you encounter data ingestion errors, you might get the following error messag
 
 > 400 Bad Request
 
-**Solution:** Make sure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. For more information, check the "Requirements" section.
+**Solution:** Make sure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. For more information, check the [What do I need to use this integration?](#what-do-i-need-to-use-this-integration) section.
 
 If the error persists, follow these steps:
 
