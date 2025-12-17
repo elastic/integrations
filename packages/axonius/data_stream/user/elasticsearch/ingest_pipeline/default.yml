@@ -2,18 +2,18 @@
 description: Pipeline for processing user logs.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_to_9_2_0_3273339c
       field: ecs.version
       value: 9.2.0
   - terminate:
       description: error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_4c75f12b
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_44eed408
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -24,39 +24,31 @@ processors:
   # parse the event JSON
   - rename:
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_c74b1d7e
       if: ctx.event?.original == null
       field: message
       target_field: event.original
       ignore_missing: true
   - remove:
       description: The `message` field is no longer required if the document has an `event.original` field.
-      tag: remove_message
+      tag: remove_message_84808ee4
       if: ctx.event?.original != null
       field: message
       ignore_missing: true
   - json:
-      tag: json_event_original_into_axonius_user
+      tag: json_event_original_into_axonius_user_f966e964
       field: event.original
       target_field: axonius.user
 
-  # Add fingerprint
-  - fingerprint:
-      tag: fingerprint_into__id
-      fields:
-        - axonius.user.uuid
-      target_field: _id
-      ignore_missing: true
-
   # Set event.* fields
   - set:
-      tag: set_event_kind_1
+      tag: set_event_kind_to_event_de80643c
       field: event.kind
       value: event
 
   # Date processors
   - date:
-      tag: date_axonius_user_last_updated_into_axonius_user_last_updated
+      tag: date_axonius_user_last_updated_into_axonius_user_last_updated_f5979b5d
       if: ctx.axonius?.user?.last_updated != null && ctx.axonius.user.last_updated != ''
       field: axonius.user.last_updated
       target_field: axonius.user.last_updated
@@ -65,14 +57,15 @@ processors:
         - yyyy-MM-dd
       on_failure:
         - remove:
-            tag: remove_1
-            field: axonius.user.last_updated
+            tag: remove_axonius_user_last_updated_b724d1df
+            field:
+              - axonius.user.last_updated
         - append:
-            tag: append_error_message_1
+            tag: append_error_message_1eeda773
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_axonius_user_last_login_into_axonius_user_last_login
+      tag: date_axonius_user_last_login_into_axonius_user_last_login_d048bf89
       if: ctx.axonius?.user?.last_login != null && ctx.axonius.user.last_login != ''
       field: axonius.user.last_login
       target_field: axonius.user.last_login
@@ -81,76 +74,77 @@ processors:
         - yyyy-MM-dd
       on_failure:
         - remove:
-            tag: remove_2
-            field: axonius.user.last_login
+            tag: remove_axonius_user_last_login_4862e3f9
+            field:
+              - axonius.user.last_login
         - append:
-            tag: append_error_message_2
+            tag: append_error_message_88d433ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Map custom fields to corresponding ECS and related fields.
   - set:
-      tag: set_user_email_1
+      tag: set_user_email_from_axonius_user_email_0ae2ec9a
       field: user.email
       copy_from: axonius.user.email
       ignore_empty_value: true
   - set:
-      tag: set_user_name
+      tag: set_user_name_from_axonius_user_user_name_e9c71082
       field: user.name
       copy_from: axonius.user.user_name
       ignore_empty_value: true
   - set:
-      tag: set_user_id
+      tag: set_user_id_from_axonius_user_uuid_95c9b11e
       field: user.id
       copy_from: axonius.user.uuid
       ignore_empty_value: true
   - append:
-      tag: append_user_roles
+      tag: append_user_roles_from_axonius_user_role_name_33de7d10
       if: ctx.axonius?.user?.role_name != null
       field: user.roles
       value: '{{{axonius.user.role_name}}}'
       allow_duplicates: false
   - set:
-      tag: set_user_full_name
+      tag: set_user_full_name_from_axonius_user_first_name_and_axonius_user_last_name_e0840ddf
       if: ctx.axonius?.user?.first_name != null && ctx.axonius?.user?.last_name != null
       field: user.full_name
       value: '{{{axonius.user.first_name}}} {{{axonius.user.last_name}}}'
   - set:
-      tag: set_user_email_2
+      tag: set_user_email_from_user_name_e02da544
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user?.name.contains('@')
       field: user.email
       copy_from: user.name
   - dissect:
-      tag: dissect_user_email
+      tag: dissect_user_email_6a0555c7
       if: ctx.user?.email != null && ctx.user.email.contains('@')
       field: user.email
       pattern: '%{}@%{user.domain}'
   - append:
-      tag: append_related_user_1
+      tag: append_related_user_from_axonius_user_first_name_3fd45cce
       if: ctx.axonius?.user?.first_name != null
       field: related.user
       value: '{{{axonius.user.first_name}}}'
       allow_duplicates: false
   - append:
-      tag: append_related_user_2
+      tag: append_related_user_from_axonius_user_last_name_3e3b5ad4
       if: ctx.axonius?.user?.last_name != null
       field: related.user
       value: '{{{axonius.user.last_name}}}'
       allow_duplicates: false
   - append:
-      tag: append_related_user_3
+      tag: append_related_user_from_axonius_user_email_65d83a00
       if: ctx.axonius?.user?.email != null
       field: related.user
       value: '{{{axonius.user.email}}}'
       allow_duplicates: false
   - append:
-      tag: append_related_user_4
+      tag: append_related_user_from_axonius_user_user_name_4cbc4dac
       if: ctx.axonius?.user?.user_name != null
       field: related.user
       value: '{{{axonius.user.user_name}}}'
       allow_duplicates: false
   - append:
-      tag: append_related_user_5
+      tag: append_related_user_from_axonius_user_uuid_536e32f8
       if: ctx.axonius?.user?.uuid != null
       field: related.user
       value: '{{{axonius.user.uuid}}}'
@@ -158,7 +152,7 @@ processors:
 
   # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
   - remove:
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_8b053065
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       field:
         - axonius.user.email
@@ -169,7 +163,7 @@ processors:
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_8360f3de
       lang: painless
       source: |-
         void handleMap(Map map) {
@@ -194,27 +188,27 @@ processors:
         }
         handleMap(ctx);
   - set:
-      tag: set_event_kind_2
+      tag: set_event_kind_to_pipeline_error_92954dfa
       if: ctx.error?.message != null
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags_1
+      tag: append_tags_9fe66b2c
       if: ctx.error?.message != null
       field: tags
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
   - append:
-      tag: append_error_message_3
+      tag: append_error_message_e0c9bd63
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: set_event_kind_3
+      tag: set_event_kind_to_pipeline_error_f51b77ad
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags_2
+      tag: append_tags_d762b9c5
       field: tags
       value: preserve_original_event
       allow_duplicates: false

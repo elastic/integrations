@@ -266,6 +266,7 @@ The `user` data stream provides user events from axonius.
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Indicates whether a user is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
@@ -274,11 +275,11 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-11-24T06:28:58.690Z",
+    "@timestamp": "2025-12-17T10:19:23.994Z",
     "agent": {
-        "ephemeral_id": "8005336a-5a7e-4e2f-b950-56af35413f7d",
-        "id": "e15a855b-75fd-4534-991d-31255922e0f7",
-        "name": "elastic-agent-71604",
+        "ephemeral_id": "bad72206-b376-4b34-b9c0-20bd34b8b555",
+        "id": "f5417901-9871-48b3-b93e-006e1c37ec1a",
+        "name": "elastic-agent-68009",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -306,21 +307,21 @@ An example event for `user` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.user",
-        "namespace": "56344",
+        "namespace": "18228",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "e15a855b-75fd-4534-991d-31255922e0f7",
+        "id": "f5417901-9871-48b3-b93e-006e1c37ec1a",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "axonius.user",
-        "ingested": "2025-11-24T06:29:01Z",
+        "ingested": "2025-12-17T10:19:26Z",
         "kind": "event",
         "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}"
     },
