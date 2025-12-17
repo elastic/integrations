@@ -5,6 +5,27 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.17.0
+  - rename:
+      field: interval_id
+      tag: rename_interval_id
+      target_field: qualys_gav.asset.interval_id
+      ignore_missing: true
+  - date:
+      field: interval_start
+      tag: date_interval_start
+      target_field: qualys_gav.asset.interval_start
+      formats:
+        - ISO8601
+      if: ctx.interval_start != null && ctx.interval_start != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      tag: remove_interval_start
+      field:
+        - interval_start
+      ignore_missing: true
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -256,6 +277,19 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor instanceof Map
       source: |
         ctx.qualys_gav.asset.sensor.values().removeIf(v -> { return v == 0 });
+  - date:
+      field: qualys_gav.asset.interval_start
+      tag: date_qualys_gav_asset_interval_start
+      target_field: qualys_gav.asset.interval_start
+      formats:
+        - ISO8601
+      if: ctx.qualys_gav?.asset?.interval_start != null && ctx.qualys_gav.asset.interval_start != ''
+      on_failure:
+        - remove:
+            field: qualys_gav.asset.interval_start
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.last_vmscan
       target_field: qualys_gav.asset.sensor.last_vmscan
