@@ -18,7 +18,7 @@ The Tenable Vulnerability Management integration collects logs for five types of
 
 **Vulnerability** is used to retrieve all vulnerabilities on each asset, including the vulnerability state. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-vulns-request-export).
 
-**Scan** is used to retrieve details about existing scans, including scan statuses, assigned targets, and more. See more details in the API documentation [here](https://developer.tenable.com/reference/scans-list).
+**Scan** is used to retrieve details about existing scans and scan details, including scan statuses, assigned targets, and more. See more details in the API documentation for [Scan](https://developer.tenable.com/reference/scans-list) and [Scan Details](https://developer.tenable.com/reference/was-v2-scans-details).
 
 ## Compatibility
 
@@ -1167,26 +1167,26 @@ An example event for `scan` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-02T09:14:42.329Z",
+    "@timestamp": "2025-12-03T09:35:39.290Z",
     "agent": {
-        "ephemeral_id": "f945f2c2-fbaf-4b93-b6ca-7d51e6a0706d",
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "6c6451c2-8450-4887-a9dc-d0a16453249c",
+        "id": "db19321f-465d-4a59-869c-1b771084aa41",
+        "name": "elastic-agent-46431",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "9.1.3"
     },
     "data_stream": {
         "dataset": "tenable_io.scan",
-        "namespace": "ep",
+        "namespace": "47734",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
+        "id": "db19321f-465d-4a59-869c-1b771084aa41",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "9.1.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1194,9 +1194,10 @@ An example event for `scan` looks as following:
             "configuration"
         ],
         "dataset": "tenable_io.scan",
-        "ingested": "2024-04-02T09:14:52Z",
+        "ingested": "2025-12-03T09:35:42Z",
         "kind": "state",
-        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
+        "module": "tenable_io",
+        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"scan_details\":{\"config_id\":\"a772daba-3d6d-412c-8ee0-3279b19650b2\",\"created_at\":\"2020-02-05T23:11:49.342Z\",\"metadata\":{\"audited_pages\":1,\"crawled_urls\":1,\"queued_pages\":0,\"queued_urls\":0,\"request_count\":74,\"response_time\":0,\"scan_status\":\"stopping\"},\"requested_action\":\"start\",\"scan_id\":\"195\",\"status\":\"completed\",\"target\":\"http://192.0.2.119\",\"updated_at\":\"2020-02-05T23:22:15.510Z\",\"user_id\":\"53e1d711-f18f-4a75-a86e-1c47bccff1b7\"},\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
         "type": [
             "info"
         ]
@@ -1225,6 +1226,25 @@ An example event for `scan` looks as following:
             "progress": 100,
             "read": false,
             "rrules": "FREQ=WEEKLY;INTERVAL=1;BYDAY=FR",
+            "scan_details": {
+                "config_id": "a772daba-3d6d-412c-8ee0-3279b19650b2",
+                "created_at": "2020-02-05T23:11:49.342Z",
+                "metadata": {
+                    "audited_pages": 1,
+                    "crawled_urls": 1,
+                    "queued_pages": 0,
+                    "queued_urls": 0,
+                    "request_count": 74,
+                    "response_time": 0,
+                    "scan_status": "stopping"
+                },
+                "requested_action": "start",
+                "scan_id": "195",
+                "status": "completed",
+                "target": "http://192.0.2.119",
+                "updated_at": "2020-02-05T23:22:15.510Z",
+                "user_id": "53e1d711-f18f-4a75-a86e-1c47bccff1b7"
+            },
             "schedule_uuid": "11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871",
             "shared": true,
             "starttime": "2022-07-08T03:30:00.000Z",
@@ -1278,6 +1298,21 @@ An example event for `scan` looks as following:
 | tenable_io.scan.progress | The progress of the scan ranging from 0 to 100. | long |
 | tenable_io.scan.read | A value indicating whether the user account associated with the request message has viewed the scan in the Tenable Vulnerability Management user interface. If 1, the user account has viewed the scan results. | boolean |
 | tenable_io.scan.rrules | The interval at which the scan repeats. The interval is formatted as a string of three values delimited by semi-colons. These values are the frequency (FREQ=ONETIME or DAILY or WEEKLY or MONTHLY or YEARLY), the interval (INTERVAL=1 or 2 or 3 ... x), and the days of the week (BYDAY=SU,MO,TU,WE,TH,FR,SA). For a scan that runs every three weeks on Monday Wednesday and Friday, the string would be FREQ=WEEKLY;INTERVAL=3;BYDAY=MO,WE,FR. If the scan is not scheduled to recur, this attribute is null. For more information, see rrules Format. | keyword |
+| tenable_io.scan.scan_details.config_id | The unique identifier of the scan configuration. | keyword |
+| tenable_io.scan.scan_details.created_at | The date and time when the scan was created. | date |
+| tenable_io.scan.scan_details.metadata.audited_pages | The number of pages that have been audited. | long |
+| tenable_io.scan.scan_details.metadata.crawled_urls | The number of URLs that have been crawled. | long |
+| tenable_io.scan.scan_details.metadata.queued_pages | The number of pages queued for auditing. | long |
+| tenable_io.scan.scan_details.metadata.queued_urls | The number of URLs queued for scanning. | long |
+| tenable_io.scan.scan_details.metadata.request_count | The total number of requests made during the scan. | long |
+| tenable_io.scan.scan_details.metadata.response_time | The average response time in milliseconds. | long |
+| tenable_io.scan.scan_details.metadata.scan_status | The detailed scan status. | keyword |
+| tenable_io.scan.scan_details.requested_action | The action requested for the scan (e.g., start, stop). | keyword |
+| tenable_io.scan.scan_details.scan_id | The unique identifier for the scan. | keyword |
+| tenable_io.scan.scan_details.status | The current status of the scan. | keyword |
+| tenable_io.scan.scan_details.target | The target URL of the scan. | keyword |
+| tenable_io.scan.scan_details.updated_at | The date and time when the scan was last updated. | date |
+| tenable_io.scan.scan_details.user_id | The unique identifier of the user who created the scan. | keyword |
 | tenable_io.scan.schedule_uuid | The UUID for a specific instance in the scan schedule. | keyword |
 | tenable_io.scan.shared | If true, the scan is shared with users other than the scan owner. The level of sharing is specified in the acls attribute of the scan details. | boolean |
 | tenable_io.scan.starttime | For one-time scans, the starting time and date for the scan. For recurrent scans, the first date on which the scan schedule is active and the time that recurring scans launch based on the rrules attribute. | date |
