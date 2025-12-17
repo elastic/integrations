@@ -24,10 +24,10 @@ Elastic Agent uses the Salesforce input to query the EventLogFile API and Realâ€
 The Salesforce integration collects the following events using the Salesforce REST API:
 
 - [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_eventlogfile\_login.htm)
-- [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform\_events.meta/platform\_events/sforce\_api\_objects\_logineventstream.htm)
+- [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform\_events.meta/platform\_events/sforce\_api\_objects\_logineventstream.htm)
 - [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_eventlogfile\_logout.htm)
 - [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform\_events.meta/platform\_events/sforce\_api\_objects\_logouteventstream.htm)
-- [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object\_reference.meta/object\_reference/sforce\_api\_objects\_apexclass.htm)
+- [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_eventlogfile.htm)
 - [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_setupaudittrail.htm)
 
 ## Compatibility
