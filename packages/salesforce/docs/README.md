@@ -14,7 +14,7 @@ You can use the Salesforce integration for:
 
 ### How it works
 
-Elastic Agent uses the Salesforce input to query the EventLogFile API and Real‑Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username‑Password flow. Collection is interval‑based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
+Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
 
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
