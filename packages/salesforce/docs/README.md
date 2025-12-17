@@ -697,7 +697,7 @@ An example event for `login` looks as following:
 | salesforce.login.transaction_security.policy.id | The ID of the transaction security policy used to evaluate the login event. | keyword |  |  |
 | salesforce.login.transaction_security.policy.outcome | The outcome of the transaction security policy evaluation (e.g., Block, Notified, NoAction). | keyword |  |  |
 | salesforce.login.type | The type of login used to access the session. | keyword |  |  |
-| salesforce.login.uri.id | The 18-character case-safe ID of the URI of the page receiving the login request. | keyword |  |  |
+| salesforce.login.uri.id | The 18-character case-insensitive ID of the URI of the page receiving the login request. | keyword |  |  |
 | salesforce.login.user_id | The 15-character ID of the user logging in to Salesforce. | keyword |  |  |
 
 
