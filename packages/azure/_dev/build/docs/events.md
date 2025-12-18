@@ -47,16 +47,16 @@ The integration v2 preview avoids contention and inefficiencies from using multi
 
 ### Event Hub Processor v2 ✨
 
-The integration v2 preview offers a new processor v2 starting with integration version 1.23.0.
+As of version 1.23.0, the integration preview includes the new Processor v2.
 
-The processor v2 introduces several changes:
+Processor v2 introduces several key improvements:
 
-* It uses the latest Event Hubs SDK from Azure.
-* It uses a more efficient checkpoint store based on Azure Blob Storage metadata.
+* Built on the latest Azure Event Hubs SDK.
+* Features a more efficient checkpoint store leveraging Azure Blob Storage metadata.
 
-The processor v2 is in preview. Processor v1 is still the default and is recommended for typical use cases.
+Processor v2 is now the default and is recommended for most use cases. Processor v1 remains available as a legacy option for backward compatibility until the next major release.
 
-See the "Event Hub Processor v2 only" section in the integration settings for more details about enabling the processor v2.
+For details on configuration, see the "Event Hub Processor v2 only" section in the integration settings.
 
 ### FAQ
 
