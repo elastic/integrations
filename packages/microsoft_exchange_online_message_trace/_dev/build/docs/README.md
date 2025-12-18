@@ -62,18 +62,20 @@ available in your organization. They are usually under the sections [Accepted Do
 
 ## Logfile collection 
 
-**Disclaimer:**  With basic authentication support now disabled, the PowerShell script provided below will not work as is. However, you can 
-see the [guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps) on how 
-to connect to PowerShell using different authentication techniques using the EXO V2 and V3 modules. With a combination of the script below
-and the alternate authentication methods mentioned in the guide, you can possibly perform the logfile collection as usual.
-<br>
+**Disclaimer:** You may need to adapt the authentication method of the script
+below to match your environment. For more information about authentication
+methods available in PowerShell, please see the
+[guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps).
+Note that basic authentication (with `-Authentication Basic`) is no longer
+supported.
 
-The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
-consumed by the logfile input:
+The following example PowerShell script can be adapted to fetch the logs and
+write them into a JSON file that the integration can consume (via the logfile
+input).
 
 Prerequisites:
 
-Install the Exchange Online Management module by running the following command: 
+Install the Exchange Online Management module by running the following command:
 
 ````powershell
 Install-Module -Name ExchangeOnlineManagement
