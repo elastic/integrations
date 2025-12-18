@@ -110,6 +110,21 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" =~ ^(integrations|integrations-test-stack)$ ]
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
     fi
+
+    if [[ "${BUILDKITE_STEP_KEY}" =~ ^test-integrations- ]]; then
+        if [ -f "${GOOGLE_APPLICATION_CREDENTIALS:""}" ]; then
+            # This variable is defined by the buildkite plugin elastic/oblt-google-auth
+            GOOGLE_CREDENTIALS_SECRET="$(cat "${GOOGLE_APPLICATION_CREDENTIALS}")"
+            export GOOGLE_CREDENTIALS_SECRET
+            export GOOGLE_CREDENTIALS="${GOOGLE_CREDENTIALS_SECRET}"
+
+            GOOGLE_CREDENTIAL_SOURCE_FILE_PATH_SECRET=$(cat "${GOOGLE_APPLICATION_CREDENTIALS}" | jq -r '.credential_source.file')
+            if [[ "${GOOGLE_CREDENTIAL_SOURCE_FILE_PATH_SECRET}" != "null" ]]; then
+                export GOOGLE_CREDENTIAL_SOURCE_FILE_PATH_SECRET
+                export GOOGLE_CREDENTIAL_SOURCE_FILE="${GOOGLE_CREDENTIAL_SOURCE_FILE_PATH_SECRET}"
+            fi
+        fi
+    fi
 fi
 
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-serverless" ]]; then
