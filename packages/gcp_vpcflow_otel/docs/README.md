@@ -6,4 +6,4 @@ This package contains Kibana assets for monitoring [GCP Virtual Private Cloud (V
 
 ### EDOT Cloud Forwarder (ECF) for GCP
 
-ECF is the simplest way to configure GCP log collection. Consult the documentation [here](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder) for full setup instructions.
+ECF is the simplest way to configure GCP log collection. For the setup instructions, check the [ECF documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/gcp).
