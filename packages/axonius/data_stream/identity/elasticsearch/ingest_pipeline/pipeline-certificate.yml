@@ -1,0 +1,172 @@
+---
+description: Pipeline for processing certificate logs.
+processors:
+  - rename:
+      field: json.event.data.alt_names
+      tag: rename_event_data_alt_names
+      target_field: axonius.identity.event.data.alt_names
+      ignore_missing: true
+  - date:
+      field: json.event.data.begins_on
+      tag: date_event_data_begins_on
+      target_field: axonius.identity.event.data.begins_on
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.begins_on != null && ctx.json.event.data.begins_on != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_identity_event_data_begins_on
+      copy_from: axonius.identity.event.data.begins_on
+      ignore_empty_value: true
+  - convert:
+      field: json.event.data.bit_size
+      tag: convert_event_data_bit_size_to_long
+      target_field: axonius.identity.event.data.bit_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event.data.expires_on
+      tag: date_event_data_expires_on
+      target_field: axonius.identity.event.data.expires_on
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.expires_on != null && ctx.json.event.data.expires_on != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_identity_event_data_expires_on
+      copy_from: axonius.identity.event.data.expires_on
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.issuer.common_name
+      tag: rename_event_data_issuer_common_name
+      target_field: axonius.identity.event.data.issuer.common_name
+      ignore_missing: true
+  - append:
+      field: file.x509.issuer.common_name
+      tag: append_axonius_identity_event_data_issuer_common_name_into_file_x509_issuer_common_name
+      value: '{{{axonius.identity.event.data.issuer.common_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.issuer?.common_name != null
+  - rename:
+      field: json.event.data.issuer.country_name
+      tag: rename_event_data_issuer_country_name
+      target_field: axonius.identity.event.data.issuer.country_name
+      ignore_missing: true
+  - append:
+      field: file.x509.issuer.country
+      tag: append_axonius_identity_event_data_issuer_country_name_into_file_x509_issuer_country
+      value: '{{{axonius.identity.event.data.issuer.country_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.issuer?.country_name != null
+  - rename:
+      field: json.event.data.issuer.organization
+      tag: rename_event_data_issuer_organization
+      target_field: axonius.identity.event.data.issuer.organization
+      ignore_missing: true
+  - append:
+      field: file.x509.issuer.organization
+      tag: append_axonius_identity_event_data_issuer_organization_into_file_x509_issuer_organization
+      value: '{{{axonius.identity.event.data.issuer.organization}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.issuer?.organization != null
+  - rename:
+      field: json.event.data.serial_number
+      tag: rename_event_data_serial_number
+      target_field: axonius.identity.event.data.serial_number
+      ignore_missing: true
+  - set:
+      field: file.x509.serial_number
+      tag: set_file_x509_serial_number_from_identity_event_data_serial_number
+      copy_from: axonius.identity.event.data.serial_number
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.subject.common_name
+      tag: rename_event_data_subject_common_name
+      target_field: axonius.identity.event.data.subject.common_name
+      ignore_missing: true
+  - append:
+      field: file.x509.subject.common_name
+      tag: append_axonius_identity_event_data_subject_common_name_into_file_x509_subject_common_name
+      value: '{{{axonius.identity.event.data.subject.common_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.subject?.common_name != null
+  - rename:
+      field: json.event.data.subject.country_name
+      tag: rename_event_data_subject_country_name
+      target_field: axonius.identity.event.data.subject.country_name
+      ignore_missing: true
+  - append:
+      field: file.x509.subject.country
+      tag: append_axonius_identity_event_data_subject_country_name_into_file_x509_subject_country
+      value: '{{{axonius.identity.event.data.subject.country_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.subject?.country_name != null
+  - rename:
+      field: json.event.data.subject.locality
+      tag: rename_event_data_subject_locality
+      target_field: axonius.identity.event.data.subject.locality
+      ignore_missing: true
+  - append:
+      field: file.x509.subject.locality
+      tag: append_axonius_identity_event_data_subject_locality_into_file_x509_subject_locality
+      value: '{{{axonius.identity.event.data.subject.locality}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.subject?.locality != null
+  - rename:
+      field: json.event.data.subject.organization
+      tag: rename_event_data_subject_organization
+      target_field: axonius.identity.event.data.subject.organization
+      ignore_missing: true
+  - append:
+      field: file.x509.subject.organization
+      tag: append_axonius_identity_event_data_subject_organization_into_file_x509_subject_organization
+      value: '{{{axonius.identity.event.data.subject.organization}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.subject?.organization != null
+  - rename:
+      field: json.event.data.subject.state
+      tag: rename_event_data_subject_state
+      target_field: axonius.identity.event.data.subject.state
+      ignore_missing: true
+  - append:
+      field: file.x509.subject.state_or_province
+      tag: append_axonius_identity_event_data_subject_state_into_file_x509_subject_state_or_province
+      value: '{{{axonius.identity.event.data.subject.state}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.subject?.state != null
+  - rename:
+      field: json.event.data.version
+      tag: rename_event_data_version
+      target_field: axonius.identity.event.data.version
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
