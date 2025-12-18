@@ -1,0 +1,20 @@
+receivers:
+  httpcheck:
+    collection_interval: {{period}}
+    targets:
+      - method: {{method}}
+        endpoints:
+{{#each endpoints}}
+            - {{this}}
+{{/each}}
+{{#if headers }}
+        headers:
+{{#each headers}}
+          {{this}}
+{{/each}}
+{{/if}}
+
+service:
+  pipelines:
+    metrics:
+      receivers: [httpcheck]

@@ -35,4 +35,13 @@ if ! process_package "${package}" ; then
 fi
 popd > /dev/null
 
-exit "${exit_code}"
+if [ "${exit_code}" -ne 0 ] ; then
+  exit "${exit_code}"
+fi
+
+custom_package_checker_script_path="${SCRIPTS_BUILDKITE_PATH}/packages/${package}.sh"
+
+if [ -x "$custom_package_checker_script_path" ]; then
+  echo "--- [${package}] Run individual package checker"
+  "$custom_package_checker_script_path"
+fi
