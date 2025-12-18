@@ -4,6 +4,31 @@ This integration is for Microsoft Exchange Online Message Trace logs. It include
 
 - `log` dataset: supports Microsoft Exchange Online Message Trace logs.
 
+## Message Trace API Deprecation Notification
+Microsoft has announced the deprecation on March 18th, 2026 of the legacy
+Message Trace API support in the Reporting Webservice, which is used by this
+integration.
+
+However, that legacy API is already unavailable to new Microsoft tenants, and
+the replacement Graph-based Message Trace API is not yet available. It is
+tentatively expected in December 2025.
+
+For the new Message Trace experience, there is an updated PowerShell cmdlet,
+`Get-MessageTraceV2`, in General Availability since June 3rd, 2025.
+
+- If your tenant was created before the API deprecation, you can use the
+  current integration until March 2026.
+
+- If your tenant was created since the API deprecation, you can use a
+  PowerShell script to manully collect data using the new cmdlet, and use this
+  integration to ingest it from a file. For more information, please see the
+  "Logfile collection" section below.
+
+- We're tracking Microsoft's new Graph-based Message Trace API (tentatively
+  expected in December 2025) and plan to update this integration once it's
+  available. Read Microsoft's announcement
+  [here](https://techcommunity.microsoft.com/blog/exchange/announcing-general-availability-ga-of-the-new-message-trace-in-exchange-online/4420243).
+
 ## Basic Auth Deprecation notification
 The basic authentication configuration fields have been removed from this integration as Microsoft has deprecated and disabled basic authentication for Exchange Online. See the [deprecation notification](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-basic-authentication-exchange-online) for details.
 
