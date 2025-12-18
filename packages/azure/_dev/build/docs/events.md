@@ -592,7 +592,7 @@ The following settings are **event hub processor v2 only** and available in the 
 
 `processor_version` :
 _string_
-(processor v2 only) The processor version that the integration should use. Possible values are `v1` and `v2` (preview). The processor v2 is in preview. Using the processor v1 is recommended for typical use cases. Default is `v1`.
+(processor v2 only) The processor version that the integration should use. Possible values are `v1` (legacy) and `v2`. Using the processor v2 is recommended for typical use cases. Default is `v2`.
 
 `processor_update_interval` :
 _string_
@@ -611,7 +611,7 @@ Possible values are `earliest` and `latest`.
 _boolean_
 (processor v2 only) Flag to control whether the processor should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
 
-Default is `false`, which means the processor will not perform the checkpoint migration.
+Default is `true`, which means the processor will attempt to migrate the checkpoint information from v1 to v2 the first time you v1 to v2.
 
 `endpoint_suffix` :
 _string_
