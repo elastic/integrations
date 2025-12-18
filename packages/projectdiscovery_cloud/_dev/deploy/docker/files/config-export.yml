@@ -1,0 +1,50 @@
+rules:
+  # First request returns one vulnerability
+  - path: /v1/scans/results/export
+    methods: ['POST']
+    query_params:
+      type: json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          [
+            {
+              "id": "d340kdgviq0c990u7e5g",
+              "scan_id": "d2o2sn9qccvs73eecu80",
+              "vuln_status": "open",
+              "template_url": "https://cloud.projectdiscovery.io/public/CVE-2025-22457",
+              "template_name": "Ivanti Connect Secure - Stack-based Buffer Overflow",
+              "template_id": "CVE-2025-22457",
+              "vuln_hash": "e5b96ed6bf5c5b2c17e17c90773b3188",
+              "matcher_name": null,
+              "matcher_status": true,
+              "created_at": "2025-09-15T12:44:45.935924Z",
+              "updated_at": "2025-09-17T13:00:42.413800Z",
+              "severity": "critical",
+              "host": "test.elastic.dev",
+              "matched_at": "https://test.elastic.dev",
+              "tags": ["cve", "cve2025", "ivanti", "intrusive", "kev"],
+              "description": "Ivanti Connect Secure versions prior to 22.7R2.6 are vulnerable to a stack-based buffer overflow.",
+              "category": "buffer_overflow",
+              "request": null,
+              "response": null,
+              "remediation": "Update to the latest versions as per Ivanti's security advisory.",
+              "reference": [
+                "https://labs.watchtowr.com/cve-2025-22457",
+                "https://www.cvedetails.com/cve/cve-2025-22457",
+                "https://github.com/securekomodo/cve-2025-22457"
+              ]
+            }
+          ]
+          `}}
+      # Subsequent requests return empty array
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `[]` }}

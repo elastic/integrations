@@ -1,0 +1,121 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: projectdiscovery_cloud
+      name: test-default-projectdiscovery_cloud
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: projectdiscovery_cloud.export
+          interval: 24h
+          program: |-
+            // Check if we've already completed the export
+            state.?cursor.?export_complete.orValue(false) ?
+              {
+                "events": [],
+                "want_more": false,
+                "cursor": state.?cursor.orValue({}),
+                "api_key": state.?api_key.orValue(""),
+                "team_id": state.?team_id.orValue(""),
+                "url": state.?url.orValue(""),
+                "vuln_status": state.?vuln_status.orValue(""),
+                "severity": state.?severity.orValue("")
+              }
+            :
+              state.with(
+                {
+                  "base": state.url.trim_right("/") + "/v1/scans/results/export?type=json",
+                  "payload": {
+                    ?"vuln_status": (string(state.vuln_status) != "") ?
+                      optional.of(string(state.vuln_status)) :
+                      optional.none(),
+                    ?"severity": (string(state.severity) != "") ?
+                      optional.of(string(state.severity).split(",")) :
+                      optional.none(),
+                  }
+                }.as(p,
+                  request(
+                    "POST",
+                    p.base
+                  ).with(
+                    {
+                      "Header": {
+                        ?"X-API-Key": ("api_key" in state && string(state["api_key"]) != "") ?
+                          optional.of([string(state["api_key"])]) :
+                          optional.none(),
+                        ?"X-Team-Id": ("team_id" in state && string(state["team_id"]) != "") ?
+                          optional.of([string(state["team_id"])]) :
+                          optional.none(),
+                        "Content-Type": ["application/json"],
+                      },
+                      "Body": bytes(p.payload.encode_json()),
+                    }
+                  ).do_request().as(resp,
+                    {
+                      "status_ok": resp.StatusCode == 200,
+                      "resp": resp,
+                      "body": (size(resp.Body) != 0) ? bytes(resp.Body).decode_json() : []
+                    }.as(vars,
+                      {
+                        "items": (vars.status_ok && vars.body != null) ? vars.body : []
+                      }.as(x,
+                        {
+                          "events": x.items.map(e, {"message": e.encode_json()}),
+                          "cursor": {"export_complete": true},
+                          "want_more": false,
+                          ?"error": vars.status_ok ?
+                            optional.none() :
+                            optional.of({"message": "HTTP " + string(vars.resp.StatusCode) + " " + string(vars.resp.Body)}),
+                          "api_key": ("api_key" in state) ? state["api_key"] : "",
+                          "team_id": ("team_id" in state) ? state["team_id"] : "",
+                          "url": ("url" in state) ? state["url"] : "",
+                          "vuln_status": state.vuln_status,
+                          "severity": state.severity
+                        }
+                      )
+                    )
+                  )
+                )
+              )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_key
+                - team_id
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://api.projectdiscovery.io
+          state:
+            api_key: ${SECRET_0}
+            severity: low,medium,high,critical
+            team_id: default_team
+            url: https://api.projectdiscovery.io
+            vuln_status: open,triaged,fix_in_progress
+          tags:
+            - projectdiscovery-cloud
+            - vulnerability
+            - export
+            - forwarded
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-projectdiscovery_cloud.export-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
