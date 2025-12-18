@@ -87,10 +87,11 @@ Import the Exchange Online Management module by running the following command:
 Import-Module -Name ExchangeOnlineManagement
 ````
 
-This script would have to be triggered at a certain interval, in accordance with the look-back interval specified.
-In this example script, the look back would be 24 hours, so the interval would need to be daily.
-According to the [Documentation](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetrace?view=exchange-ps),
-it is only possible to get up to 1k pages. If this should be an issue, try reducing the `$looback` or increasing `$pageSize`.
+This script would have to be triggered at a certain interval, in accordance
+with the look-back interval specified.  In this example script, the look back
+is 24 hours, so the interval would need to be daily. For more information about
+the `Get-MessageTraceV2` cmdlet, please refer to its
+[documentation](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetracev2?view=exchange-ps).
 
 ```powershell
 # Username and Password
@@ -98,8 +99,8 @@ $username = "USERNAME@DOMAIN.TLD"
 $password = "PASSWORD"
 # Lookback in Hours
 $lookback = "-24"
-# Page Size, should be no problem with 1k
-$pageSize = "1000"
+# Results per request (maximum 5000)
+$resultSize = "5000"
 # Output of the json file
 # This would then be ingested via the integration
 $output_location = "C:\temp\messageTrace.json"
@@ -110,23 +111,46 @@ $startDate = (Get-Date).AddHours($lookback)
 $endDate = Get-Date
 
 Connect-ExchangeOnline -Credential $Credential
+
 $paginate = 1
-$page = 1
 $output = @()
+
+# Initialize V2-style pagination cursor values
+$startingRecipientAddress = $null
+$currentEndDate = $endDate
+
 while ($paginate -eq 1)
 {
-    $messageTrace = Get-MessageTrace -PageSize $pageSize -StartDate $startDate -EndDate $endDate -Page $page
-    $page
+    if ($startingRecipientAddress) {
+        $messageTrace = Get-MessageTraceV2 -ResultSize $resultSize -StartDate $startDate -EndDate $currentEndDate -StartingRecipientAddress $startingRecipientAddress
+    }
+    else {
+        $messageTrace = Get-MessageTraceV2 -ResultSize $resultSize -StartDate $startDate -EndDate $currentEndDate
+    }
+
     if (!$messageTrace)
     {
         $paginate = 0
     }
     else
     {
-        $page++
         $output = $output + $messageTrace
+
+        # If we got fewer than ResultSize rows, we've reached the end
+        if ($messageTrace.Count -lt [int]$resultSize)
+        {
+            $paginate = 0
+        }
+        else
+        {
+            # Prepare the cursor data for the next query
+            $last = $messageTrace[-1]
+            $startingRecipientAddress = $last.RecipientAddress
+            $currentEndDate = $last.Received
+        }
     }
 }
+
 if (Test-Path $output_location)
 {
     Remove-Item $output_location
@@ -134,8 +158,8 @@ if (Test-Path $output_location)
 foreach ($event in $output)
 {
     $event.StartDate = [Xml.XmlConvert]::ToString(($event.StartDate), [Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.EndDate = [Xml.XmlConvert]::ToString(($event.EndDate), [Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.Received = [Xml.XmlConvert]::ToString(($event.Received), [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.EndDate   = [Xml.XmlConvert]::ToString(($event.EndDate),   [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.Received  = [Xml.XmlConvert]::ToString(($event.Received),  [Xml.XmlDateTimeSerializationMode]::Utc)
     $event = $event | ConvertTo-Json -Compress
     Add-Content $output_location $event -Encoding UTF8
 }
