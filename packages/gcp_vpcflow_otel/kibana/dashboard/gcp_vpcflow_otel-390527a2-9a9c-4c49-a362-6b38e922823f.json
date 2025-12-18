@@ -1,0 +1,1650 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "gcp.vpcflow.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "gcp.vpcflow.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "content": "## GCP VPC Flow Logs Overview\n\nUse this dashboard to visualize VPC Flow Logs (OpenTelemetry):\n- Shows overall traffic volume over time\n- Highlights top source and destination IPs\n- Displays top countries traffic volume\n- Breaks down protocol usage by flows, bytes, and packets\n- Helps identify anomalies and understand network behavior at a glance"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "25898bda-8b45-4761-95e2-df8d5b301b88",
+                    "w": 16,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "25898bda-8b45-4761-95e2-df8d5b301b88",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "50e91101-cf13-4c43-bd06-56fff919b31b": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bytes",
+                                                    "customLabel": true,
+                                                    "fieldName": "bytes",
+                                                    "inMetricDimension": true,
+                                                    "label": "Bytes",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bytes"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "50e91101-cf13-4c43-bd06-56fff919b31b",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "time_bucket",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "auto",
+                                                "forAccessor": "bytes"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isInside": false,
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": false
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Total bytes sent"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "ce292625-4622-4e63-9a56-67dd57a23a5b",
+                    "w": 16,
+                    "x": 16,
+                    "y": 0
+                },
+                "panelIndex": "ce292625-4622-4e63-9a56-67dd57a23a5b",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "50e91101-cf13-4c43-bd06-56fff919b31b": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bytes",
+                                                    "customLabel": true,
+                                                    "fieldName": "bytes",
+                                                    "inMetricDimension": true,
+                                                    "label": "Bytes",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cb4f1c1b-7759-4f53-b8bb-2731dd7266b6",
+                                                    "fieldName": "gcp.vpc.flow.reporter",
+                                                    "label": "gcp.vpc.flow.reporter",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "gcp.vpc.flow.reporter"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), gcp.vpc.flow.reporter"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), gcp.vpc.flow.reporter"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bytes"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "50e91101-cf13-4c43-bd06-56fff919b31b",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "splitAccessor": "cb4f1c1b-7759-4f53-b8bb-2731dd7266b6",
+                                        "xAccessor": "time_bucket",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "auto",
+                                                "forAccessor": "bytes"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isInside": false,
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": false
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), gcp.vpc.flow.reporter"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Total bytes sent per reporter"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "60019902-a863-4595-977c-7ff0cd0f8de2",
+                    "w": 16,
+                    "x": 32,
+                    "y": 0
+                },
+                "panelIndex": "60019902-a863-4595-977c-7ff0cd0f8de2",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "273d3cef-c086-48dd-9715-69c122c7eae6": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bytes",
+                                                    "customLabel": false,
+                                                    "fieldName": "bytes",
+                                                    "inMetricDimension": true,
+                                                    "label": "bytes",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": false,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "time_bucket",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "gcp.vpc.flow.destination.vpc.name",
+                                                    "customLabel": true,
+                                                    "fieldName": "gcp.vpc.flow.destination.vpc.name",
+                                                    "label": "Destination VPC",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| WHERE gcp.vpc.flow.destination.vpc.name IS NOT NULL\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), gcp.vpc.flow.destination.vpc.name"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| WHERE gcp.vpc.flow.destination.vpc.name IS NOT NULL\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), gcp.vpc.flow.destination.vpc.name"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bytes"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "273d3cef-c086-48dd-9715-69c122c7eae6",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "splitAccessor": "gcp.vpc.flow.destination.vpc.name",
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "bytes over time_bucket",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| WHERE gcp.vpc.flow.destination.vpc.name IS NOT NULL\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), gcp.vpc.flow.destination.vpc.name"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Total bytes sent per Destination VPC"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "4e9f5808-7b26-4e97-9683-bb4b4b7e3c5c",
+                    "w": 16,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "4e9f5808-7b26-4e97-9683-bb4b4b7e3c5c",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "19a6d309-716c-4c63-b1c0-bfead8a70801": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bytes",
+                                                    "customLabel": false,
+                                                    "fieldName": "bytes",
+                                                    "inMetricDimension": true,
+                                                    "label": "bytes",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": false,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "time_bucket",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "gcp.vpc.flow.source.vpc.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "gcp.vpc.flow.source.vpc.name",
+                                                    "label": "gcp.vpc.flow.source.vpc.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| WHERE gcp.vpc.flow.source.vpc.name IS NOT NULL\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), gcp.vpc.flow.source.vpc.name"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| WHERE gcp.vpc.flow.source.vpc.name IS NOT NULL\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), gcp.vpc.flow.source.vpc.name"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bytes"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "19a6d309-716c-4c63-b1c0-bfead8a70801",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "splitAccessor": "gcp.vpc.flow.source.vpc.name",
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "bytes over time_bucket",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| WHERE gcp.vpc.flow.source.vpc.name IS NOT NULL\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), gcp.vpc.flow.source.vpc.name"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Total bytes sent per Source VPC"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "72fe3566-4d20-46a5-81e3-b87c803aa53a",
+                    "w": 16,
+                    "x": 16,
+                    "y": 15
+                },
+                "panelIndex": "72fe3566-4d20-46a5-81e3-b87c803aa53a",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "53b56dbf-d85b-4eb4-8747-00e90702389e": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bytes",
+                                                    "customLabel": false,
+                                                    "fieldName": "bytes",
+                                                    "inMetricDimension": true,
+                                                    "label": "bytes",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "84884031-246a-4611-bfa0-252d3db485d7",
+                                                    "customLabel": true,
+                                                    "fieldName": "gcp.vpc.flow.source.geo.country.iso_code.alpha3",
+                                                    "label": "Country ISO code",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "gcp.vpc.flow.source.geo.country.iso_code.alpha3"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY gcp.vpc.flow.source.geo.country.iso_code.alpha3 | SORT bytes DESC | LIMIT 10"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "name": "textBasedLanguages-datasource-layer-53b56dbf-d85b-4eb4-8747-00e90702389e",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs*\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY gcp.vpc.flow.source.geo.country.iso_code.alpha3 | SORT bytes DESC | LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bytes"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "53b56dbf-d85b-4eb4-8747-00e90702389e",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "xAccessor": "84884031-246a-4611-bfa0-252d3db485d7"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "show"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS bytes = SUM(gcp.vpc.flow.bytes_sent) BY gcp.vpc.flow.source.geo.country.iso_code.alpha3 | SORT bytes DESC | LIMIT 10"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top 10 countries by bytes sent"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "a769cf7a-01c0-415a-b7c7-5f3448451a3d",
+                    "w": 16,
+                    "x": 32,
+                    "y": 15
+                },
+                "panelIndex": "a769cf7a-01c0-415a-b7c7-5f3448451a3d",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "3d7277f2-fc51-42b1-8ac0-d7321004ac32": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bytes",
+                                                    "customLabel": false,
+                                                    "fieldName": "bytes",
+                                                    "inMetricDimension": true,
+                                                    "label": "bytes",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "source.address",
+                                                    "customLabel": false,
+                                                    "fieldName": "source.address",
+                                                    "label": "source.address",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS bytes =  SUM(gcp.vpc.flow.bytes_sent) BY source.address | SORT bytes DESC | LIMIT 10"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "name": "textBasedLanguages-datasource-layer-3d7277f2-fc51-42b1-8ac0-d7321004ac32",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs*\n| STATS bytes =  SUM(gcp.vpc.flow.bytes_sent) BY source.address | SORT bytes DESC | LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bytes"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "3d7277f2-fc51-42b1-8ac0-d7321004ac32",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "source.address"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "show"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS bytes =  SUM(gcp.vpc.flow.bytes_sent) BY source.address | SORT bytes DESC | LIMIT 10"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top 10 source IP addresses by total bytes sent"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "60f5931d-9abd-432d-989c-ed026ebdc52a",
+                    "w": 24,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "60f5931d-9abd-432d-989c-ed026ebdc52a",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "c6484d50-98ca-441b-8ad6-eab7074f0612": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bytes",
+                                                    "customLabel": false,
+                                                    "fieldName": "bytes",
+                                                    "inMetricDimension": true,
+                                                    "label": "bytes",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "destination.address",
+                                                    "customLabel": false,
+                                                    "fieldName": "destination.address",
+                                                    "label": "destination.address",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS bytes =  SUM(gcp.vpc.flow.bytes_sent) BY destination.address | SORT bytes DESC | LIMIT 10"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| STATS bytes =  SUM(gcp.vpc.flow.bytes_sent) BY destination.address | SORT bytes DESC | LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bytes"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "c6484d50-98ca-441b-8ad6-eab7074f0612",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "destination.address"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "show"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS bytes =  SUM(gcp.vpc.flow.bytes_sent) BY destination.address | SORT bytes DESC | LIMIT 10"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top 10 destination IP addresses by total bytes sent"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "e03f6d68-c0ef-4974-a8b6-577ce4220f3d",
+                    "w": 24,
+                    "x": 24,
+                    "y": 30
+                },
+                "panelIndex": "e03f6d68-c0ef-4974-a8b6-577ce4220f3d",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "6b78698a-9293-4a6b-b60b-683e063fc43c": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "network.transport",
+                                                    "customLabel": false,
+                                                    "fieldName": "network.transport",
+                                                    "label": "network.transport",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS total = COUNT() BY network.transport | SORT total DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| STATS total = COUNT() BY network.transport | SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "6b78698a-9293-4a6b-b60b-683e063fc43c",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "network.transport"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Treemap",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS total = COUNT() BY network.transport | SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Protocol distribution by count of logs"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "8ab9c780-cdad-494a-a3cd-65dbbd272db7",
+                    "w": 16,
+                    "x": 0,
+                    "y": 45
+                },
+                "panelIndex": "8ab9c780-cdad-494a-a3cd-65dbbd272db7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "3b114eda-c346-444b-a8f1-24de4afef878": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "network.transport",
+                                                    "customLabel": false,
+                                                    "fieldName": "network.transport",
+                                                    "label": "network.transport",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS total = SUM(gcp.vpc.flow.bytes_sent) BY network.transport | SORT total DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| STATS total = SUM(gcp.vpc.flow.bytes_sent) BY network.transport | SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "3b114eda-c346-444b-a8f1-24de4afef878",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "network.transport"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Treemap",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS total = SUM(gcp.vpc.flow.bytes_sent) BY network.transport | SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Protocol distribution by bytes sent"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "18f456a9-8866-4470-86d6-48dd14052081",
+                    "w": 16,
+                    "x": 16,
+                    "y": 45
+                },
+                "panelIndex": "18f456a9-8866-4470-86d6-48dd14052081",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "028ebe18-da9c-4d87-b58a-cbccf9e9d556": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "network.transport",
+                                                    "customLabel": false,
+                                                    "fieldName": "network.transport",
+                                                    "label": "network.transport",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS total = SUM(gcp.vpc.flow.packets_sent) BY network.transport | SORT total DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| STATS total = SUM(gcp.vpc.flow.packets_sent) BY network.transport | SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "028ebe18-da9c-4d87-b58a-cbccf9e9d556",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "network.transport"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Treemap",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS total = SUM(gcp.vpc.flow.packets_sent) BY network.transport | SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Protocol distribution by packets sent"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "7bf48c43-8f74-411f-8d2d-797ea6907305",
+                    "w": 16,
+                    "x": 32,
+                    "y": 45
+                },
+                "panelIndex": "7bf48c43-8f74-411f-8d2d-797ea6907305",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[GCP VPC OTEL] VPC Flow Logs Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-12-18T13:23:53.813Z",
+    "created_by": "u_ZYj7dGTEOgapsGLTf8GS1lTKCU-wzK795nZmlm714so_0",
+    "id": "gcp_vpcflow_otel-390527a2-9a9c-4c49-a362-6b38e922823f",
+    "references": [
+        {
+            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_ZYj7dGTEOgapsGLTf8GS1lTKCU-wzK795nZmlm714so_0"
+}
