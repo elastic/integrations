@@ -14,30 +14,30 @@ This integration supports below API versions to collect data.
   - [Microsoft Graph Security v1.0 REST API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0)
   - [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
   - Supported Microsoft Defender XDR streaming event types:
-      | Resource types            | Description               |
-    |---------------------------|---------------------------|
-    | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts. |
-    | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization. |
-    | DeviceEvents              | Event types, including events triggered by security controls. |
-    | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints. |
-    | DeviceFileEvents          | File creation, modification, and other file system events. |
-    | DeviceImageLoadEvents     | DLL loading events. |
-    | DeviceInfo                | Machine information, including OS information. |
-    | DeviceLogonEvents         | Sign-ins and other authentication events on devices. |
-    | DeviceNetworkEvents       | Network connection and related events. |
-    | DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains. |
-    | DeviceProcessEvents       | Process creation and related events. |
-    | DeviceRegistryEvents      | Creation and modification of registry entries. |
-    | EmailAttachmentInfo       | Information about files attached to emails. |
-    | EmailEvents               | Microsoft 365 email events, including email delivery and blocking events. |
-    | EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox. |
-    | EmailUrlInfo              | Information about URLs in emails. |
-    | IdentityInfo              | Account information from various sources, including Microsoft Entra ID. |
-    | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services. |
-    | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains. |
-    | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
-    | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services. |
-    | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps. |
+      | Resource types            | Description                                                                                                                                                                       |
+      | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+      | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts.                                                                                                              |
+      | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization.                                                                                             |
+      | DeviceEvents              | Event types, including events triggered by security controls.                                                                                                                     |
+      | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints.                                                                               |
+      | DeviceFileEvents          | File creation, modification, and other file system events.                                                                                                                        |
+      | DeviceImageLoadEvents     | DLL loading events.                                                                                                                                                               |
+      | DeviceInfo                | Machine information, including OS information.                                                                                                                                    |
+      | DeviceLogonEvents         | Sign-ins and other authentication events on devices.                                                                                                                              |
+      | DeviceNetworkEvents       | Network connection and related events.                                                                                                                                            |
+      | DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains.                                                                                                         |
+      | DeviceProcessEvents       | Process creation and related events.                                                                                                                                              |
+      | DeviceRegistryEvents      | Creation and modification of registry entries.                                                                                                                                    |
+      | EmailAttachmentInfo       | Information about files attached to emails.                                                                                                                                       |
+      | EmailEvents               | Microsoft 365 email events, including email delivery and blocking events.                                                                                                         |
+      | EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox.                                                                       |
+      | EmailUrlInfo              | Information about URLs in emails.                                                                                                                                                 |
+      | IdentityInfo              | Account information from various sources, including Microsoft Entra ID.                                                                                                           |
+      | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services.                                                                                                          |
+      | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains.                                                                                                |
+      | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
+      | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
+      | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps.                                                                                                                |
   - [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
     - [Vulnerabilities API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
 
