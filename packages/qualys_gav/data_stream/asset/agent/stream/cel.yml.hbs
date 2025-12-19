@@ -124,10 +124,9 @@ program: |
           }).do_request().as(resp, (resp.StatusCode == 200 ?
             resp.Body.decode_json().as(body, {
               "events": body.assetListData.asset.map(e,{
-                "message": e.with({
-                  "interval_start": state.interval.start,
-                  "interval_id": state.interval.id,
-                }).encode_json(),
+                "message": e.encode_json(),
+                "interval_start": state.interval.start,
+                "interval_id": state.interval.id,
               }),
               "want_more": body.hasMore != 0,
               "access_token": token.access_token,

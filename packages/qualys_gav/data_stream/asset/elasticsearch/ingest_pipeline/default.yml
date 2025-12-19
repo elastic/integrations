@@ -132,8 +132,9 @@ processors:
         }
         // Apply the conversion
         ctx.qualys_gav = ctx.qualys_gav ?: [:];
+        ctx.qualys_gav.asset = ctx.qualys_gav.asset ?: [:];
         if (ctx.json != null) {
-          ctx.qualys_gav.asset = convertToSnakeCase(ctx.json);
+          ctx.qualys_gav.asset.putAll(convertToSnakeCase(ctx.json));
         }
         // Remove json field
         ctx.remove('json');
@@ -277,19 +278,6 @@ processors:
       if: ctx.qualys_gav?.asset?.sensor instanceof Map
       source: |
         ctx.qualys_gav.asset.sensor.values().removeIf(v -> { return v == 0 });
-  - date:
-      field: qualys_gav.asset.interval_start
-      tag: date_qualys_gav_asset_interval_start
-      target_field: qualys_gav.asset.interval_start
-      formats:
-        - ISO8601
-      if: ctx.qualys_gav?.asset?.interval_start != null && ctx.qualys_gav.asset.interval_start != ''
-      on_failure:
-        - remove:
-            field: qualys_gav.asset.interval_start
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: qualys_gav.asset.sensor.last_vmscan
       target_field: qualys_gav.asset.sensor.last_vmscan
