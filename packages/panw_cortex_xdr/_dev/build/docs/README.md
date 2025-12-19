@@ -89,16 +89,6 @@ This integration is compatible with Palo Alto Cortex XDR version **V3.13**. For 
 
 ## Logs reference
 
-### Alerts
-
-This is the `Alerts` dataset.
-
-#### Example
-
-{{fields "alerts"}}
-
-{{event "alerts"}}
-
 ### Event
 
 This is the `Event` dataset.
@@ -107,12 +97,3 @@ This is the `Event` dataset.
 
 {{fields "event"}}
 
-### Incidents
-
-This is the `Incidents` dataset.
-
-#### Example
-
-{{fields "incidents"}}
-
-{{event "incidents"}}
