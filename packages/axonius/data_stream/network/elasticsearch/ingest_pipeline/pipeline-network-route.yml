@@ -1,0 +1,323 @@
+---
+description: Pipeline for processing network route logs.
+processors:
+  - rename:
+      field: json.event.data.devices_axon_ids
+      tag: rename_event_data_devices_axon_ids
+      target_field: axonius.network.event.data.devices_axon_ids
+      ignore_missing: true
+  - rename:
+      field: json.event.data.load_balancers_axon_ids
+      tag: rename_event_data_load_balancers_axon_ids
+      target_field: axonius.network.event.data.load_balancers_axon_ids
+      ignore_missing: true
+  - rename:
+      field: json.event.data.nat_rules_axon_ids
+      tag: rename_event_data_nat_rules_axon_ids
+      target_field: axonius.network.event.data.nat_rules_axon_ids
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_host_ipv4s
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.host_ipv4s
+          tag: foreach_event_data_route_host_ipv4s
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_event_data_route_host_ipv4s_to_ip
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_is_end_point
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_end_point
+          tag: convert_event_data_route_is_end_point_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_end_point
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_is_entry_point
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_entry_point
+          tag: convert_event_data_route_is_entry_point_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_entry_point
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_is_public_facing
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_public_facing
+          tag: convert_event_data_route_is_public_facing_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_public_facing
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_from_destination_integer_ip
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.from_destination_integer_ip
+          tag: convert_event_data_route_nat_from_destination_integer_ip_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.from_destination_integer_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_from_destination_ip_address
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.from_destination_ip_address
+          tag: convert_event_data_route_nat_from_destination_ip_address_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.from_destination_ip_address
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_from_destination_ip_address
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        append:
+          field: destination.nat.ip
+          tag: append_event_data_route_nat_from_destination_ip_address_into_destination_nat_ip
+          value: '{{{_ingest._value.nat.from_destination_ip_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_from_source_integer_ip
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.from_source_integer_ip
+          tag: convert_event_data_route_nat_from_source_integer_ip_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.from_source_integer_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_from_source_ip_address
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.from_source_ip_address
+          tag: convert_event_data_route_nat_from_source_ip_address_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.from_source_ip_address
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_from_source_ip_address
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        append:
+          field: source.nat.ip
+          tag: append_event_data_route_nat_from_source_ip_address_into_source_nat_ip
+          value: '{{{_ingest._value.nat.from_source_ip_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_is_destination_ip_range_public
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.is_destination_ip_range_public
+          tag: convert_event_data_route_nat_is_destination_ip_range_public_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.is_destination_ip_range_public
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_is_source_ip_range_public
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.is_source_ip_range_public
+          tag: convert_event_data_route_nat_is_source_ip_range_public_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.is_source_ip_range_public
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_to_destination_integer_ip
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.to_destination_integer_ip
+          tag: convert_event_data_route_nat_to_destination_integer_ip_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.to_destination_integer_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_to_destination_ip_address
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.to_destination_ip_address
+          tag: convert_event_data_route_nat_to_destination_ip_address_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.to_destination_ip_address
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_to_source_integer_ip
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.to_source_integer_ip
+          tag: convert_event_data_route_nat_to_source_integer_ip_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.to_source_integer_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.route
+      tag: foreach_event_data_route_nat_to_source_ip_address
+      if: ctx.json?.event?.data?.route instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nat.to_source_ip_address
+          tag: convert_event_data_route_nat_to_source_ip_address_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nat.to_source_ip_address
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.route
+      tag: rename_event_data_route
+      target_field: axonius.network.event.data.route
+      ignore_missing: true
+  - rename:
+      field: json.event.data.traffic_direction
+      tag: rename_event_data_traffic_direction
+      target_field: axonius.network.event.data.traffic_direction
+      ignore_missing: true
+  - rename:
+      field: json.event.data.urls_axon_ids
+      tag: rename_event_data_urls_axon_ids
+      target_field: axonius.network.event.data.urls_axon_ids
+      ignore_missing: true
+  - foreach:
+      field: axonius.network.event.data.route
+      tag: foreach_axonius_network_event_data_route_/
+      if: ctx.axonius?.network?.event?.data?.route instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.nat.from_destination_ip_address
+            - _ingest._value.nat.from_source_ip_address
+          tag: remove_custom_duplicate_fields_from_axonius_network_event_data_route
+          ignore_missing: true
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

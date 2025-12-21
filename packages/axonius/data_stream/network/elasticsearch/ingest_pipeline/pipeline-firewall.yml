@@ -1,0 +1,72 @@
+---
+description: Pipeline for processing firewall logs.
+processors:
+  - rename:
+      field: json.event.data.action
+      tag: rename_event_data_action
+      target_field: axonius.network.event.data.action
+      ignore_missing: true
+  - rename:
+      field: json.event.data.applications
+      tag: rename_event_data_applications
+      target_field: axonius.network.event.data.applications
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.inbound_rules
+      tag: foreach_event_data_inbound_rules_from_port
+      if: ctx.json?.event?.data?.inbound_rules instanceof List
+      processor:
+        convert:
+          field: _ingest._value.from_port
+          tag: convert_event_data_inbound_rules_from_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.from_port
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.inbound_rules
+      tag: foreach_event_data_inbound_rules_to_port
+      if: ctx.json?.event?.data?.inbound_rules instanceof List
+      processor:
+        convert:
+          field: _ingest._value.to_port
+          tag: convert_event_data_inbound_rules_to_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.to_port
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.inbound_rules
+      tag: rename_event_data_inbound_rules
+      target_field: axonius.network.event.data.inbound_rules
+      ignore_missing: true
+  - rename:
+      field: json.event.data.service
+      tag: rename_event_data_service
+      target_field: axonius.network.event.data.service
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

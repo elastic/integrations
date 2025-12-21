@@ -1,0 +1,271 @@
+---
+description: Pipeline for processing network logs.
+processors:
+  - rename:
+      field: json.event.data.access
+      tag: rename_event_data_access
+      target_field: axonius.network.event.data.access
+      ignore_missing: true
+  - rename:
+      field: json.event.data.cidr_blocks
+      tag: rename_event_data_cidr_blocks
+      target_field: axonius.network.event.data.cidr_blocks
+      ignore_missing: true
+  - date:
+      field: json.event.data.creation_time_stamp
+      tag: date_event_data_creation_time_stamp
+      target_field: axonius.network.event.data.creation_time_stamp
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.creation_time_stamp != null && ctx.json.event.data.creation_time_stamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_network_event_data_creation_time_stamp
+      copy_from: axonius.network.event.data.creation_time_stamp
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.direction
+      tag: rename_event_data_direction
+      target_field: axonius.network.event.data.direction
+      ignore_missing: true
+  - set:
+      field: network.direction
+      tag: set_network_direction_from_network_event_data_direction
+      copy_from: axonius.network.event.data.direction
+      ignore_empty_value: true
+  - lowercase:
+      field: network.direction
+      tag: lowercase_network_direction
+      ignore_missing: true
+  - rename:
+      field: json.event.data.location
+      tag: rename_event_data_location
+      target_field: axonius.network.event.data.location
+      ignore_missing: true
+  - set:
+      field: host.geo.city_name
+      tag: set_host_geo_city_name_from_network_event_data_location
+      copy_from: axonius.network.event.data.location
+      ignore_empty_value: true
+  - convert:
+      field: json.event.data.mtu
+      tag: convert_event_data_mtu_to_long
+      target_field: axonius.network.event.data.mtu
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.network_firewall_policy
+      tag: rename_event_data_network_firewall_policy
+      target_field: axonius.network.event.data.network_firewall_policy
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.peerings
+      tag: foreach_event_data_peerings_exchange_subnet_routes
+      if: ctx.json?.event?.data?.peerings instanceof List
+      processor:
+        convert:
+          field: _ingest._value.exchange_subnet_routes
+          tag: convert_event_data_peerings_exchange_subnet_routes_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.exchange_subnet_routes
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.peerings
+      tag: foreach_event_data_peerings_export_custom_routes
+      if: ctx.json?.event?.data?.peerings instanceof List
+      processor:
+        convert:
+          field: _ingest._value.export_custom_routes
+          tag: convert_event_data_peerings_export_custom_routes_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.export_custom_routes
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.peerings
+      tag: foreach_event_data_peerings_import_custom_routes
+      if: ctx.json?.event?.data?.peerings instanceof List
+      processor:
+        convert:
+          field: _ingest._value.import_custom_routes
+          tag: convert_event_data_peerings_import_custom_routes_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.import_custom_routes
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.peerings
+      tag: foreach_event_data_peerings_peer_mtu
+      if: ctx.json?.event?.data?.peerings instanceof List
+      processor:
+        convert:
+          field: _ingest._value.peer_mtu
+          tag: convert_event_data_peerings_peer_mtu_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.peer_mtu
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.peerings
+      tag: rename_event_data_peerings
+      target_field: axonius.network.event.data.peerings
+      ignore_missing: true
+  - convert:
+      field: json.event.data.priority
+      tag: convert_event_data_priority_to_long
+      target_field: axonius.network.event.data.priority
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.project_id
+      tag: rename_event_data_project_id
+      target_field: axonius.network.event.data.project_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.provisioningState
+      tag: rename_event_data_provisioningState
+      target_field: axonius.network.event.data.provisioningState
+      ignore_missing: true
+  - rename:
+      field: json.event.data.routing_mode
+      tag: rename_event_data_routing_mode
+      target_field: axonius.network.event.data.routing_mode
+      ignore_missing: true
+  - rename:
+      field: json.event.data.state
+      tag: rename_event_data_state
+      target_field: axonius.network.event.data.state
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.subnetworks
+      tag: foreach_event_data_subnetworks_creation_timestamp
+      if: ctx.json?.event?.data?.subnetworks instanceof List
+      processor:
+        date:
+          field: _ingest._value.creation_timestamp
+          tag: date_event_data_subnetworks_creation_timestamp
+          target_field: _ingest._value.creation_timestamp
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.creation_timestamp
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.subnetworks
+      tag: foreach_event_data_subnetworks_gateway_address
+      if: ctx.json?.event?.data?.subnetworks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.gateway_address
+          tag: convert_event_data_subnetworks_gateway_address_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.gateway_address
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.subnetworks
+      tag: foreach_event_data_subnetworks_ip_cidr_range
+      if: ctx.json?.event?.data?.subnetworks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.ip_cidr_range
+          tag: convert_event_data_subnetworks_ip_cidr_range_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ip_cidr_range
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.subnetworks
+      tag: foreach_event_data_subnetworks_private_ip_google_access
+      if: ctx.json?.event?.data?.subnetworks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.private_ip_google_access
+          tag: convert_event_data_subnetworks_private_ip_google_access_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.private_ip_google_access
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.subnetworks
+      tag: rename_event_data_subnetworks
+      target_field: axonius.network.event.data.subnetworks
+      ignore_missing: true
+  - rename:
+      field: json.event.data.subscription_id
+      tag: rename_event_data_subscription_id
+      target_field: axonius.network.event.data.subscription_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.subscription_name
+      tag: rename_event_data_subscription_name
+      target_field: axonius.network.event.data.subscription_name
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
