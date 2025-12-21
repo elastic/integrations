@@ -38,8 +38,9 @@ response.split:
 response.pagination:
 - set:
     target: url.params._cursor
-    value: '[[.last_response.body.scrollCursor]]'
+    value: '[[if index .last_response.body "scrollCursor"]][[.last_response.body.scrollCursor]][[end]]'
     fail_on_template_error: true
+    do_not_log_failure: true
 - set:
       target: url.params.from
       value: '[[.last_response.url.params.Get "from"]]'

@@ -4,6 +4,31 @@ This integration is for Microsoft Exchange Online Message Trace logs. It include
 
 - `log` dataset: supports Microsoft Exchange Online Message Trace logs.
 
+## Message Trace API Deprecation Notification
+Microsoft has announced the deprecation on March 18th, 2026 of the legacy
+Message Trace API support in the Reporting Webservice, which is used by this
+integration.
+
+However, that legacy API is already unavailable to new Microsoft tenants, and
+the replacement Graph-based Message Trace API is not yet available. It is
+tentatively expected in December 2025.
+
+For the new Message Trace experience, there is an updated PowerShell cmdlet,
+`Get-MessageTraceV2`, in General Availability since June 3rd, 2025.
+
+- If your tenant was created before the API deprecation, you can use the
+  current integration until March 2026.
+
+- If your tenant was created since the API deprecation, you can use a
+  PowerShell script to manully collect data using the new cmdlet, and use this
+  integration to ingest it from a file. For more information, please see the
+  "Logfile collection" section below.
+
+- We're tracking Microsoft's new Graph-based Message Trace API (tentatively
+  expected in December 2025) and plan to update this integration once it's
+  available. Read Microsoft's announcement
+  [here](https://techcommunity.microsoft.com/blog/exchange/announcing-general-availability-ga-of-the-new-message-trace-in-exchange-online/4420243).
+
 ## Basic Auth Deprecation notification
 The basic authentication configuration fields have been removed from this integration as Microsoft has deprecated and disabled basic authentication for Exchange Online. See the [deprecation notification](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-basic-authentication-exchange-online) for details.
 
@@ -62,18 +87,20 @@ available in your organization. They are usually under the sections [Accepted Do
 
 ## Logfile collection 
 
-**Disclaimer:**  With basic authentication support now disabled, the PowerShell script provided below will not work as is. However, you can 
-see the [guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps) on how 
-to connect to PowerShell using different authentication techniques using the EXO V2 and V3 modules. With a combination of the script below
-and the alternate authentication methods mentioned in the guide, you can possibly perform the logfile collection as usual.
-<br>
+**Disclaimer:** You may need to adapt the authentication method of the script
+below to match your environment. For more information about authentication
+methods available in PowerShell, please see the
+[guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps).
+Note that basic authentication (with `-Authentication Basic`) is no longer
+supported.
 
-The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
-consumed by the logfile input:
+The following example PowerShell script can be adapted to fetch the logs and
+write them into a JSON file that the integration can consume (via the logfile
+input).
 
 Prerequisites:
 
-Install the Exchange Online Management module by running the following command: 
+Install the Exchange Online Management module by running the following command:
 
 ````powershell
 Install-Module -Name ExchangeOnlineManagement
@@ -85,10 +112,11 @@ Import the Exchange Online Management module by running the following command:
 Import-Module -Name ExchangeOnlineManagement
 ````
 
-This script would have to be triggered at a certain interval, in accordance with the look-back interval specified.
-In this example script, the look back would be 24 hours, so the interval would need to be daily.
-According to the [Documentation](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetrace?view=exchange-ps),
-it is only possible to get up to 1k pages. If this should be an issue, try reducing the `$looback` or increasing `$pageSize`.
+This script would have to be triggered at a certain interval, in accordance
+with the look-back interval specified.  In this example script, the look back
+is 24 hours, so the interval would need to be daily. For more information about
+the `Get-MessageTraceV2` cmdlet, please refer to its
+[documentation](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetracev2?view=exchange-ps).
 
 ```powershell
 # Username and Password
@@ -96,8 +124,8 @@ $username = "USERNAME@DOMAIN.TLD"
 $password = "PASSWORD"
 # Lookback in Hours
 $lookback = "-24"
-# Page Size, should be no problem with 1k
-$pageSize = "1000"
+# Results per request (maximum 5000)
+$resultSize = "5000"
 # Output of the json file
 # This would then be ingested via the integration
 $output_location = "C:\temp\messageTrace.json"
@@ -108,23 +136,46 @@ $startDate = (Get-Date).AddHours($lookback)
 $endDate = Get-Date
 
 Connect-ExchangeOnline -Credential $Credential
+
 $paginate = 1
-$page = 1
 $output = @()
+
+# Initialize V2-style pagination cursor values
+$startingRecipientAddress = $null
+$currentEndDate = $endDate
+
 while ($paginate -eq 1)
 {
-    $messageTrace = Get-MessageTrace -PageSize $pageSize -StartDate $startDate -EndDate $endDate -Page $page
-    $page
+    if ($startingRecipientAddress) {
+        $messageTrace = Get-MessageTraceV2 -ResultSize $resultSize -StartDate $startDate -EndDate $currentEndDate -StartingRecipientAddress $startingRecipientAddress
+    }
+    else {
+        $messageTrace = Get-MessageTraceV2 -ResultSize $resultSize -StartDate $startDate -EndDate $currentEndDate
+    }
+
     if (!$messageTrace)
     {
         $paginate = 0
     }
     else
     {
-        $page++
         $output = $output + $messageTrace
+
+        # If we got fewer than ResultSize rows, we've reached the end
+        if ($messageTrace.Count -lt [int]$resultSize)
+        {
+            $paginate = 0
+        }
+        else
+        {
+            # Prepare the cursor data for the next query
+            $last = $messageTrace[-1]
+            $startingRecipientAddress = $last.RecipientAddress
+            $currentEndDate = $last.Received
+        }
     }
 }
+
 if (Test-Path $output_location)
 {
     Remove-Item $output_location
@@ -132,8 +183,8 @@ if (Test-Path $output_location)
 foreach ($event in $output)
 {
     $event.StartDate = [Xml.XmlConvert]::ToString(($event.StartDate), [Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.EndDate = [Xml.XmlConvert]::ToString(($event.EndDate), [Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.Received = [Xml.XmlConvert]::ToString(($event.Received), [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.EndDate   = [Xml.XmlConvert]::ToString(($event.EndDate),   [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.Received  = [Xml.XmlConvert]::ToString(($event.Received),  [Xml.XmlDateTimeSerializationMode]::Utc)
     $event = $event | ConvertTo-Json -Compress
     Add-Content $output_location $event -Encoding UTF8
 }
@@ -142,17 +193,17 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-21T17:25:30.600Z",
+    "@timestamp": "2022-10-21T17:25:36.969Z",
     "agent": {
-        "ephemeral_id": "1928ec83-7c3a-4ad0-9066-63dae084a2e1",
-        "id": "bd32c689-9c8b-44ea-ae34-b04c1bf3fd7d",
-        "name": "elastic-agent-75168",
+        "ephemeral_id": "11edfb81-b112-45ba-8f01-6e7483e450fa",
+        "id": "1c0788e9-492a-441e-acab-fc8c56281cf1",
+        "name": "elastic-agent-22259",
         "type": "filebeat",
-        "version": "8.15.3"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "namespace": "89156",
+        "namespace": "71098",
         "type": "logs"
     },
     "destination": {
@@ -170,25 +221,25 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bd32c689-9c8b-44ea-ae34-b04c1bf3fd7d",
+        "id": "1c0788e9-492a-441e-acab-fc8c56281cf1",
         "snapshot": false,
-        "version": "8.15.3"
+        "version": "8.19.4"
     },
     "email": {
         "attachments": {
             "file": {
-                "size": 22704
+                "size": 22761
             }
         },
-        "delivery_timestamp": "2022-10-21T17:25:30.6006882Z",
+        "delivery_timestamp": "2022-10-21T17:25:36.969376Z",
         "from": {
             "address": [
                 "noreply@azure.microsoft.com"
             ]
         },
-        "local_id": "a6f62809-5cda-4454-0962-08dab38940d6",
-        "message_id": "<GVAP278MB037518E76F4082DFE9B607B3DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
-        "subject": "testmail 1",
+        "local_id": "a5e6dc0f-23df-4b20-d240-08dab38944a1",
+        "message_id": "<GVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
+        "subject": "testmail 2",
         "to": {
             "address": [
                 "linus@contoso.com"
@@ -200,33 +251,38 @@ An example event for `log` looks as following:
         "category": [
             "email"
         ],
-        "created": "2024-11-04T20:39:54.654Z",
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "ingested": "2024-11-04T20:39:57Z",
-        "original": "{\"EndDate\":\"2022-10-22T09:40:10Z\",\"FromIP\":\"40.107.23.81\",\"Index\":1,\"MessageId\":\"\\u003cGVAP278MB037518E76F4082DFE9B607B3DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"MessageTraceId\":\"a6f62809-5cda-4454-0962-08dab38940d6\",\"Organization\":\"contoso.com\",\"Received\":\"2022-10-21T17:25:30.6006882Z\",\"RecipientAddress\":\"linus@contoso.com\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"Size\":22704,\"StartDate\":\"2022-10-21T09:40:10Z\",\"Status\":\"Delivered\",\"Subject\":\"testmail 1\",\"ToIP\":null}",
+        "ingested": "2025-10-06T13:13:06Z",
+        "original": "{\"Organization\":\"contoso.com\",\"MessageId\":\"\\u003cGVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"Received\":\"2022-10-21T17:25:36.969376Z\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"RecipientAddress\":\"linus@contoso.com\",\"Subject\":\"testmail 2\",\"Status\":\"Delivered\",\"ToIP\":null,\"FromIP\":\"40.107.23.54\",\"Size\":22761,\"MessageTraceId\":\"a5e6dc0f-23df-4b20-d240-08dab38944a1\",\"StartDate\":\"2022-10-21T09:40:10Z\",\"EndDate\":\"2022-10-22T09:40:10Z\",\"Index\":0}",
         "outcome": "success",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/microsoft_exchange_online_message_trace_test.ndjson.log"
+        },
+        "offset": 0
     },
     "microsoft": {
         "online_message_trace": {
             "EndDate": "2022-10-22T09:40:10Z",
-            "FromIP": "40.107.23.81",
-            "Index": 1,
-            "MessageId": "<GVAP278MB037518E76F4082DFE9B607B3DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
-            "MessageTraceId": "a6f62809-5cda-4454-0962-08dab38940d6",
+            "FromIP": "40.107.23.54",
+            "Index": 0,
+            "MessageId": "<GVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
+            "MessageTraceId": "a5e6dc0f-23df-4b20-d240-08dab38944a1",
             "Organization": "contoso.com",
-            "Received": "2022-10-21T17:25:30.6006882Z",
+            "Received": "2022-10-21T17:25:36.969376Z",
             "RecipientAddress": "linus@contoso.com",
             "SenderAddress": "noreply@azure.microsoft.com",
-            "Size": 22704,
+            "Size": 22761,
             "StartDate": "2022-10-21T09:40:10Z",
             "Status": "Delivered",
-            "Subject": "testmail 1"
+            "Subject": "testmail 2"
         }
     },
     "related": {
@@ -239,7 +295,7 @@ An example event for `log` looks as following:
     },
     "source": {
         "domain": "azure.microsoft.com",
-        "ip": "40.107.23.81",
+        "ip": "40.107.23.54",
         "registered_domain": "microsoft.com",
         "subdomain": "azure",
         "top_level_domain": "com",
@@ -252,6 +308,7 @@ An example event for `log` looks as following:
     },
     "tags": [
         "preserve_original_event",
+        "microsoft-defender-endpoint",
         "forwarded"
     ]
 }
@@ -282,3 +339,4 @@ An example event for `log` looks as following:
 | microsoft.online_message_trace.Status | The status of the message in the Office 365 email system. This corresponds to the Detail field of the last processing step recorded for the message.\</p\>\</td\> | keyword |
 | microsoft.online_message_trace.Subject | The subject line of the message, if one was present for the message.\</p\>\</td\> | keyword |
 | microsoft.online_message_trace.ToIP | The IPv4 or IPv6 address that the Office 365 email system sent the message to.\</p\>\</td\> | keyword |
+

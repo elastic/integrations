@@ -1,12 +1,13 @@
 format_version: "3.4.0"
 name: m365_defender
 title: Microsoft Defender XDR
-version: "5.0.0"
+version: "5.4.0"
 description: Collect logs from Microsoft Defender XDR with Elastic Agent.
 categories:
   - "security"
   - "edr_xdr"
   - "vulnerability_workflow"
+  - "cloudsecurity_cdr"
 type: integration
 conditions:
   elastic:
@@ -83,6 +84,13 @@ policy_templates:
             multi: false
             required: true
             show_user: true
+          - name: oauth_endpoint_params
+            type: yaml
+            title: OAuth2 Endpoint Params
+            description: Endpoint Params used for OAuth2 authentication as YAML. See [documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson#_auth_oauth2_endpoint_params_2) for details.
+            show_user: false
+            multi: false
+            required: false
           - name: proxy_url
             type: text
             title: Proxy URL
@@ -174,6 +182,18 @@ policy_templates:
             show_user: false
             default: 
               - "https://securitycenter.onmicrosoft.com/windowsatpservice/.default"
+          - name: oauth_endpoint_params
+            type: yaml
+            title: OAuth2 Endpoint Params
+            description: Set of values that will be sent on each resource to the OAuth Server URL. Each param key can have multiple values and they are appended to the URL as query parameters.
+            show_user: false
+            multi: false
+            required: false
+            default: |
+              #grant_type: client_credentials
+              #refresh_token:
+              #  - refresh_token_1
+              #  - refresh_token_2
           - name: proxy_url
             type: text
             title: Proxy URL

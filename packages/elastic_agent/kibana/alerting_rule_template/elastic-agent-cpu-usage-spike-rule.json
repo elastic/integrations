@@ -1,0 +1,34 @@
+{
+  "id": "elastic-agent-cpu-usage-spike-rule",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Elastic Agent] CPU usage spike",
+    "tags": ["Elastic Agent", "Resource Consumption"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 7,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-system*, *:metrics-system*\n| WHERE TO_LOWER(process.executable) LIKE \"*elastic*agent*\" AND agent.name NOT LIKE \"*agentless*\"\n| STATS cpu_process_pct = MAX(system.process.cpu.total.norm.pct) * 100\n    BY elastic_agent.id, process.name,\n      time_bucket = BUCKET(@timestamp, 1 minute)\n// Count the 1 minute timebuckets that are above 80% by process and agent\n| WHERE cpu_process_pct >= 80\n| STATS count_above_threshold = COUNT(*)\n    BY elastic_agent.id, process.name\n// Alert if there are 5 or more occurences\n| WHERE count_above_threshold >= 5"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
