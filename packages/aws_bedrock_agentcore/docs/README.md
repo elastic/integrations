@@ -18,7 +18,7 @@ This integration is compatible with Amazon Bedrock AgentCore CloudWatch metrics 
 The Amazon Bedrock AgentCore integration collects runtime metrics and observability data from your intelligent agents.
 
 Data streams:
- - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateways, Memory, and Identity.
+ - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateway, Memory, Identity, Browser Tool and Code Interpreter.
 
 ## What do I need to use this integration?
 
@@ -184,6 +184,9 @@ An example event for `metrics` looks as following:
 | aws.bedrock_agentcore.metrics.ResourceAccessTokenFetchThrottles.sum | Total number of throttled OAuth2 token fetch operations from credential providers. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.Sessions.sum | Total number of agent sessions initiated. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.SystemErrors.sum | Total number of server-side errors indicating infrastructure or service issues. | long |  | gauge |
+| aws.bedrock_agentcore.metrics.TakeOverCount.sum | Total number of user taking over control. | long |  | gauge |
+| aws.bedrock_agentcore.metrics.TakeOverReleaseCount.sum | Total number of user releasing control. | long |  | gauge |
+| aws.bedrock_agentcore.metrics.TakerOverDuration.avg | Average duration of user takeover control. | double | ms | gauge |
 | aws.bedrock_agentcore.metrics.TargetExecutionTime.avg | Average execution time for each target type. | double | ms | gauge |
 | aws.bedrock_agentcore.metrics.TargetType_LAMBDA.sum | Total number of invocations targeting AWS Lambda. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.TargetType_MCP.sum | Total number of invocations targeting MCP (Model Context Protocol). | long |  | gauge |
