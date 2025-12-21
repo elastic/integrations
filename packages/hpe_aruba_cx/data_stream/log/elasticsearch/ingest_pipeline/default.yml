@@ -36,8 +36,10 @@ processors:
       patterns:
         - "%{SYSLOG_HEADER}%{GREEDYDATA:message}"
       pattern_definitions:
-        SYSLOG_HEADER: "%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.syslog.appname}\\[%{POSINT:log.syslog.procid}\\]:\\s+%{WORD:aruba.event_type}\\|(?:%{OPTIONAL_HEADER})?"
+        SYSLOG_HEADER: "%{OPTIONAL_PRIORITY}%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.syslog.appname}%{PROC_ID}\\s+%{WORD:aruba.event_type}\\|(?:%{OPTIONAL_HEADER})?"
+        PROC_ID: "(\\[%{POSINT:log.syslog.procid}\\]:|\\s+%{POSINT:log.syslog.procid}\\s+- -)"
         OPTIONAL_HEADER: "%{POSINT:event.code}\\|%{USER:log.level}\\|(?:%{USER:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
+        OPTIONAL_PRIORITY: "(?:<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT})?\\s+)?"
   - grok:
       field: aruba.sequence
       if: ctx.aruba?.sequence != null && ctx.aruba.sequence.contains("/")
@@ -8083,6 +8085,12 @@ processors:
           if( settings[1] != null ) { ctx.event.kind = settings[1]; }
           if( settings[2] != null ) { ctx.event.outcome = settings[2]; }
         }
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
@@ -8094,3 +8102,7 @@ on_failure:
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

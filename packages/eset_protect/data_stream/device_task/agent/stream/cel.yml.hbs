@@ -70,7 +70,8 @@ program: |
               ""
           ),
           "want_more": has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != "",
-          "page_size": state.page_size
+          "page_size": state.page_size,
+          "cursor": {}
         })
       :
         (
@@ -84,7 +85,7 @@ program: |
             })
           :
             state.with({
-              "events": {
+              "events": [{
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
@@ -95,12 +96,10 @@ program: |
                       string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                   ),
                 },
-              },
+              }],
               "page_token": "",
               "want_more": false,
-              "cursor": {
-                "response_id": null
-              }
+              "cursor": {}
             })
         )
     ))

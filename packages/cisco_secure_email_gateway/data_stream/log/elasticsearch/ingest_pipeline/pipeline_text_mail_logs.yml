@@ -46,6 +46,7 @@ processors:
         - '^MID %{NUMBER:email.message_id} SHA %{BASE16NUM:file.hash.sha256} filename %{GREEDYDATA:file.name}\.%{WORD:file.extension} %{GREEDYDATA:cisco_secure_email_gateway.log.details}$'
         - '^MID %{NUMBER:email.message_id} SHA %{BASE16NUM:file.hash.sha256} filename %{DATA:file.name} %{GREEDYDATA:cisco_secure_email_gateway.log.details}$'
         - '^MID %{NUMBER:email.message_id} %{DATA:file.extension} file %{GREEDYDATA:cisco_secure_email_gateway.log.details}$'
+        - 'MID %{NUMBER:email.message_id}(?: ICID %{NUMBER:cisco_secure_email_gateway.log.injection_connection_id})?'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
   - lowercase:
       tag: lowercase_network_protocol_d249a697
@@ -130,3 +131,7 @@ on_failure:
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
