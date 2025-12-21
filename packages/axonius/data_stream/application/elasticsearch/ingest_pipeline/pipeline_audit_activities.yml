@@ -1,0 +1,139 @@
+---
+description: Pipeline for processing audit activities logs.
+processors:
+  - rename:
+      field: json.event.data.action.name
+      tag: rename_event_data_action_name
+      target_field: axonius.application.event.data.action.name
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_application_event_data_action_name
+      copy_from: axonius.application.event.data.action.name
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event.data.action.timestamp
+      tag: date_event_data_action_timestamp
+      target_field: axonius.application.event.data.action.timestamp
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.action?.timestamp != null && ctx.json.event.data.action.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.action.type
+      tag: rename_event_data_action_type
+      target_field: axonius.application.event.data.action.type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.actor.username
+      tag: rename_event_data_actor_username
+      target_field: axonius.application.event.data.actor.username
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_application_event_data_actor_username
+      copy_from: axonius.application.event.data.actor.username
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_application_event_data_actor_username_into_related_user
+      value: '{{{axonius.application.event.data.actor.username}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.actor?.username != null
+  - rename:
+      field: json.event.data.actor_state.location.country
+      tag: rename_event_data_actor_state_location_country
+      target_field: axonius.application.event.data.actor_state.location.country
+      ignore_missing: true
+  - set:
+      field: host.geo.country_name
+      tag: set_host_geo_country_name_from_application_event_data_actor_state_location_country
+      copy_from: axonius.application.event.data.actor_state.location.country
+      ignore_empty_value: true
+  - convert:
+      field: json.event.data.actor_state.location.remote_ip
+      tag: convert_event_data_actor_state_location_remote_ip_to_ip
+      target_field: axonius.application.event.data.actor_state.location.remote_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.event?.data?.actor_state?.location?.remote_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_application_event_data_actor_state_location_remote_ip_into_related_ip
+      value: '{{{axonius.application.event.data.actor_state.location.remote_ip}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.actor_state?.location?.remote_ip != null
+  - convert:
+      field: json.event.data.actor_state.remote_ip
+      tag: convert_event_data_actor_state_remote_ip_to_ip
+      target_field: axonius.application.event.data.actor_state.remote_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.event?.data?.actor_state?.remote_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_application_event_data_actor_state_remote_ip_into_related_ip
+      value: '{{{axonius.application.event.data.actor_state.remote_ip}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.actor_state?.remote_ip != null
+  - convert:
+      field: json.event.data.custom_properties.is_identity
+      tag: convert_event_data_custom_properties_is_identity_to_boolean
+      target_field: axonius.application.event.data.custom_properties.is_identity
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

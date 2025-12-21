@@ -1,0 +1,321 @@
+---
+description: Pipeline for processing application settings logs.
+processors:
+  - foreach:
+      field: json.event.data.configuration_values
+      tag: foreach_event_data_configuration_values_configuration_value
+      if: ctx.json?.event?.data?.configuration_values instanceof List
+      processor:
+        append:
+          field: rule.description
+          tag: append_event_data_configuration_values_configuration_value_into_rule_description
+          value: '{{{_ingest._value.configuration_value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.event.data.configuration_values
+      tag: foreach_event_data_configuration_values_is_valid
+      if: ctx.json?.event?.data?.configuration_values instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_valid
+          tag: convert_event_data_configuration_values_is_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.configuration_values
+      tag: foreach_event_data_configuration_values_role_remote_id
+      if: ctx.json?.event?.data?.configuration_values instanceof List
+      processor:
+        append:
+          field: rule.id
+          tag: append_event_data_configuration_values_role_remote_id_into_rule_id
+          value: '{{{_ingest._value.role.remote_id}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.event.data.configuration_values
+      tag: rename_event_data_configuration_values
+      target_field: axonius.application.event.data.configuration_values
+      ignore_missing: true
+  - rename:
+      field: json.event.data.impact
+      tag: rename_event_data_impact
+      target_field: axonius.application.event.data.impact
+      ignore_missing: true
+  - convert:
+      field: json.event.data.is_excluded
+      tag: convert_event_data_is_excluded_to_boolean
+      target_field: axonius.application.event.data.is_excluded
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.level
+      tag: rename_event_data_level
+      target_field: axonius.application.event.data.level
+      ignore_missing: true
+  - rename:
+      field: json.event.data.link
+      tag: rename_event_data_link
+      target_field: axonius.application.event.data.link
+      ignore_missing: true
+  - rename:
+      field: json.event.data.link_path
+      tag: rename_event_data_link_path
+      target_field: axonius.application.event.data.link_path
+      ignore_missing: true
+  - rename:
+      field: json.event.data.product_name
+      tag: rename_event_data_product_name
+      target_field: axonius.application.event.data.product_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.raw_setting_name
+      tag: rename_event_data_raw_setting_name
+      target_field: axonius.application.event.data.raw_setting_name
+      ignore_missing: true
+  - append:
+      field: rule.name
+      tag: append_axonius_application_event_data_raw_setting_name_into_rule_name
+      value: '{{{axonius.application.event.data.raw_setting_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.raw_setting_name != null
+  - rename:
+      field: json.event.data.raw_setting_value
+      tag: rename_event_data_raw_setting_value
+      target_field: axonius.application.event.data.raw_setting_value
+      ignore_missing: true
+  - rename:
+      field: json.event.data.recommendation
+      tag: rename_event_data_recommendation
+      target_field: axonius.application.event.data.recommendation
+      ignore_missing: true
+  - rename:
+      field: json.event.data.recommendation_description
+      tag: rename_event_data_recommendation_description
+      target_field: axonius.application.event.data.recommendation_description
+      ignore_missing: true
+  - append:
+      field: rule.description
+      tag: append_axonius_application_event_data_recommendation_description_into_rule_description
+      value: '{{{axonius.application.event.data.recommendation_description}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.recommendation_description != null
+  - rename:
+      field: json.event.data.role.display_name
+      tag: rename_event_data_role_display_name
+      target_field: axonius.application.event.data.role.display_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.role.remote_id
+      tag: rename_event_data_role_remote_id
+      target_field: axonius.application.event.data.role.remote_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.setting_description
+      tag: rename_event_data_setting_description
+      target_field: axonius.application.event.data.setting_description
+      ignore_missing: true
+  - append:
+      field: message
+      tag: append_axonius_application_event_data_setting_description_into_message
+      value: '{{{axonius.application.event.data.setting_description}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.setting_description != null
+  - rename:
+      field: json.event.data.setting_name
+      tag: rename_event_data_setting_name
+      target_field: axonius.application.event.data.setting_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.setting_type
+      tag: rename_event_data_setting_type
+      target_field: axonius.application.event.data.setting_type
+      ignore_missing: true
+  - convert:
+      field: json.event.data.settings_score
+      tag: convert_event_data_settings_score_to_double
+      target_field: axonius.application.event.data.settings_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.settings_status
+      tag: rename_event_data_settings_status
+      target_field: axonius.application.event.data.settings_status
+      ignore_missing: true
+  - rename:
+      field: json.event.data.standards
+      tag: rename_event_data_standards
+      target_field: axonius.application.event.data.standards
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_documentation
+      tag: rename_event_data_vendor_documentation
+      target_field: axonius.application.event.data.vendor_documentation
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting._id
+      tag: rename_event_data_vendor_setting__id
+      target_field: axonius.application.event.data.vendor_setting._id
+      ignore_missing: true
+  - append:
+      field: rule.id
+      tag: append_axonius_application_event_data_vendor_setting__id_into_rule_id
+      value: '{{{axonius.application.event.data.vendor_setting._id}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.vendor_setting?._id != null
+  - rename:
+      field: json.event.data.vendor_setting.documentation_link
+      tag: rename_event_data_vendor_setting_documentation_link
+      target_field: axonius.application.event.data.vendor_setting.documentation_link
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.exceptions
+      tag: rename_event_data_vendor_setting_exceptions
+      target_field: axonius.application.event.data.vendor_setting.exceptions
+      ignore_missing: true
+  - convert:
+      field: json.event.data.vendor_setting.is_relevant
+      tag: convert_event_data_vendor_setting_is_relevant_to_boolean
+      target_field: axonius.application.event.data.vendor_setting.is_relevant
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.vendor_setting.lambda_name
+      tag: rename_event_data_vendor_setting_lambda_name
+      target_field: axonius.application.event.data.vendor_setting.lambda_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.lambda_variable
+      tag: rename_event_data_vendor_setting_lambda_variable
+      target_field: axonius.application.event.data.vendor_setting.lambda_variable
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.level
+      tag: rename_event_data_vendor_setting_level
+      target_field: axonius.application.event.data.vendor_setting.level
+      ignore_missing: true
+  - set:
+      field: rule.ruleset
+      tag: set_rule_ruleset_from_application_event_data_vendor_setting_level
+      copy_from: axonius.application.event.data.vendor_setting.level
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.vendor_setting.link
+      tag: rename_event_data_vendor_setting_link
+      target_field: axonius.application.event.data.vendor_setting.link
+      ignore_missing: true
+  - set:
+      field: rule.reference
+      tag: set_rule_reference_from_application_event_data_vendor_setting_link
+      copy_from: axonius.application.event.data.vendor_setting.link
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.vendor_setting.link_path
+      tag: rename_event_data_vendor_setting_link_path
+      target_field: axonius.application.event.data.vendor_setting.link_path
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.product
+      tag: rename_event_data_vendor_setting_product
+      target_field: axonius.application.event.data.vendor_setting.product
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.raw_setting_name
+      tag: rename_event_data_vendor_setting_raw_setting_name
+      target_field: axonius.application.event.data.vendor_setting.raw_setting_name
+      ignore_missing: true
+  - append:
+      field: rule.name
+      tag: append_axonius_application_event_data_vendor_setting_raw_setting_name_into_rule_name
+      value: '{{{axonius.application.event.data.vendor_setting.raw_setting_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.vendor_setting?.raw_setting_name != null
+  - rename:
+      field: json.event.data.vendor_setting.raw_setting_value_type
+      tag: rename_event_data_vendor_setting_raw_setting_value_type
+      target_field: axonius.application.event.data.vendor_setting.raw_setting_value_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.raw_validation_rule
+      tag: rename_event_data_vendor_setting_raw_validation_rule
+      target_field: axonius.application.event.data.vendor_setting.raw_validation_rule
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.recommendation_reason
+      tag: rename_event_data_vendor_setting_recommendation_reason
+      target_field: axonius.application.event.data.vendor_setting.recommendation_reason
+      ignore_missing: true
+  - append:
+      field: rule.description
+      tag: append_axonius_application_event_data_vendor_setting_recommendation_reason_into_rule_description
+      value: '{{{axonius.application.event.data.vendor_setting.recommendation_reason}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.vendor_setting?.recommendation_reason != null
+  - rename:
+      field: json.event.data.vendor_setting.scope
+      tag: rename_event_data_vendor_setting_scope
+      target_field: axonius.application.event.data.vendor_setting.scope
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.setting_description
+      tag: rename_event_data_vendor_setting_setting_description
+      target_field: axonius.application.event.data.vendor_setting.setting_description
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.xsetting._id
+      tag: rename_event_data_vendor_setting_xsetting__id
+      target_field: axonius.application.event.data.vendor_setting.xsetting._id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.vendor_setting.xsetting.impact
+      tag: convert_event_data_vendor_setting_xsetting_impact_to_long
+      target_field: axonius.application.event.data.vendor_setting.xsetting.impact
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.vendor_setting.xsetting.setting_type.name
+      tag: rename_event_data_vendor_setting_xsetting_setting_type_name
+      target_field: axonius.application.event.data.vendor_setting.xsetting.setting_type.name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vendor_setting.xsetting.xsetting_name
+      tag: rename_event_data_vendor_setting_xsetting_xsetting_name
+      target_field: axonius.application.event.data.vendor_setting.xsetting.xsetting_name
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

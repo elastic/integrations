@@ -1,0 +1,174 @@
+---
+description: Pipeline for processing software logs.
+processors:
+  - rename:
+      field: json._id
+      tag: rename__id
+      target_field: axonius.application._id
+      ignore_missing: true
+  - date:
+      field: json.event.data.approval_status_meta.last_modified
+      tag: date_event_data_approval_status_meta_last_modified
+      target_field: axonius.application.event.data.approval_status_meta.last_modified
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.approval_status_meta?.last_modified != null && ctx.json.event.data.approval_status_meta.last_modified != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.approval_status_meta.last_modified_by
+      tag: rename_event_data_approval_status_meta_last_modified_by
+      target_field: axonius.application.event.data.approval_status_meta.last_modified_by
+      ignore_missing: true
+  - rename:
+      field: json.event.data.approval_status_meta.software_name
+      tag: rename_event_data_approval_status_meta_software_name
+      target_field: axonius.application.event.data.approval_status_meta.software_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.approval_status_meta.software_vendor
+      tag: rename_event_data_approval_status_meta_software_vendor
+      target_field: axonius.application.event.data.approval_status_meta.software_vendor
+      ignore_missing: true
+  - rename:
+      field: json.event.data.approval_status_meta.source
+      tag: rename_event_data_approval_status_meta_source
+      target_field: axonius.application.event.data.approval_status_meta.source
+      ignore_missing: true
+  - rename:
+      field: json.event.data.categories
+      tag: rename_event_data_categories
+      target_field: axonius.application.event.data.categories
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.installed_software
+      tag: foreach_event_data_installed_software_end_of_life
+      if: ctx.json?.event?.data?.installed_software instanceof List
+      processor:
+        date:
+          field: _ingest._value.end_of_life
+          tag: date_event_data_installed_software_end_of_life
+          target_field: _ingest._value.end_of_life
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.end_of_life
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.installed_software
+      tag: foreach_event_data_installed_software_end_of_support
+      if: ctx.json?.event?.data?.installed_software instanceof List
+      processor:
+        date:
+          field: _ingest._value.end_of_support
+          tag: date_event_data_installed_software_end_of_support
+          target_field: _ingest._value.end_of_support
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.end_of_support
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.installed_software
+      tag: foreach_event_data_installed_software_has_reached_end_of_life
+      if: ctx.json?.event?.data?.installed_software instanceof List
+      processor:
+        convert:
+          field: _ingest._value.has_reached_end_of_life
+          tag: convert_event_data_installed_software_has_reached_end_of_life_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.has_reached_end_of_life
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.installed_software
+      tag: foreach_event_data_installed_software_has_reached_end_of_support
+      if: ctx.json?.event?.data?.installed_software instanceof List
+      processor:
+        convert:
+          field: _ingest._value.has_reached_end_of_support
+          tag: convert_event_data_installed_software_has_reached_end_of_support_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.has_reached_end_of_support
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.installed_software
+      tag: foreach_event_data_installed_software_last_used_date
+      if: ctx.json?.event?.data?.installed_software instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_used_date
+          tag: date_event_data_installed_software_last_used_date
+          target_field: _ingest._value.last_used_date
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.last_used_date
+                ignore_missing: true
+  - rename:
+      field: json.event.data.installed_software
+      tag: rename_event_data_installed_software
+      target_field: axonius.application.event.data.installed_software
+      ignore_missing: true
+  - date:
+      field: json.event.data.last_used_date
+      tag: date_event_data_last_used_date
+      target_field: axonius.application.event.data.last_used_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.last_used_date != null && ctx.json.event.data.last_used_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.source
+      tag: rename_event_data_source
+      target_field: axonius.application.event.data.source
+      ignore_missing: true
+  - rename:
+      field: json.event.data.sub_category
+      tag: rename_event_data_sub_category
+      target_field: axonius.application.event.data.sub_category
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

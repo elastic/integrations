@@ -1,0 +1,194 @@
+---
+description: Pipeline for processing business applications logs.
+processors:
+  - rename:
+      field: json.event.data.application_type
+      tag: rename_event_data_application_type
+      target_field: axonius.application.event.data.application_type
+      ignore_missing: true
+  - set:
+      field: service.type
+      tag: set_service_type_from_application_event_data_application_type
+      copy_from: axonius.application.event.data.application_type
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.business_criticality
+      tag: rename_event_data_business_criticality
+      target_field: axonius.application.event.data.business_criticality
+      ignore_missing: true
+  - rename:
+      field: json.event.data.business_owner
+      tag: rename_event_data_business_owner
+      target_field: axonius.application.event.data.business_owner
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_application_event_data_business_owner_into_related_user
+      value: '{{{axonius.application.event.data.business_owner}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.business_owner != null
+  - convert:
+      field: json.event.data.devices_count
+      tag: convert_event_data_devices_count_to_long
+      target_field: axonius.application.event.data.devices_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.devices_count_link
+      tag: foreach_event_data_devices_count_link_bracketWeight
+      if: ctx.json?.event?.data?.devices_count_link instanceof List
+      processor:
+        convert:
+          field: _ingest._value.bracketWeight
+          tag: convert_event_data_devices_count_link_bracketWeight_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.bracketWeight
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.devices_count_link
+      tag: foreach_event_data_devices_count_link_compOp
+      if: ctx.json?.event?.data?.devices_count_link instanceof List
+      processor:
+        rename:
+          field: _ingest._value.compOp
+          tag: rename_event_data_devices_count_link_compOp
+          target_field: _ingest._value.comp_op
+          ignore_missing: true
+  - foreach:
+      field: json.event.data.devices_count_link
+      tag: foreach_event_data_devices_count_link_leftBracket
+      if: ctx.json?.event?.data?.devices_count_link instanceof List
+      processor:
+        convert:
+          field: _ingest._value.leftBracket
+          tag: convert_event_data_devices_count_link_leftBracket_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.leftBracket
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.devices_count_link
+      tag: foreach_event_data_devices_count_link_logicOp
+      if: ctx.json?.event?.data?.devices_count_link instanceof List
+      processor:
+        rename:
+          field: _ingest._value.logicOp
+          tag: rename_event_data_devices_count_link_logicOp
+          target_field: _ingest._value.logic_op
+          ignore_missing: true
+  - foreach:
+      field: json.event.data.devices_count_link
+      tag: foreach_event_data_devices_count_link_not
+      if: ctx.json?.event?.data?.devices_count_link instanceof List
+      processor:
+        convert:
+          field: _ingest._value.not
+          tag: convert_event_data_devices_count_link_not_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.not
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.devices_count_link
+      tag: foreach_event_data_devices_count_link_rightBracket
+      if: ctx.json?.event?.data?.devices_count_link instanceof List
+      processor:
+        convert:
+          field: _ingest._value.rightBracket
+          tag: convert_event_data_devices_count_link_rightBracket_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rightBracket
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.devices_count_link
+      tag: rename_event_data_devices_count_link
+      target_field: axonius.application.event.data.devices_count_link
+      ignore_missing: true
+  - rename:
+      field: json.event.data.install_status
+      tag: rename_event_data_install_status
+      target_field: axonius.application.event.data.install_status
+      ignore_missing: true
+  - rename:
+      field: json.event.data.it_application_owner
+      tag: rename_event_data_it_application_owner
+      target_field: axonius.application.event.data.it_application_owner
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_application_event_data_it_application_owner_into_related_user
+      value: '{{{axonius.application.event.data.it_application_owner}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.it_application_owner != null
+  - rename:
+      field: json.event.data.managed_by
+      tag: rename_event_data_managed_by
+      target_field: axonius.application.event.data.managed_by
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_application_event_data_managed_by_into_related_user
+      value: '{{{axonius.application.event.data.managed_by}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.event?.data?.managed_by != null
+  - rename:
+      field: json.event.data.number
+      tag: rename_event_data_number
+      target_field: axonius.application.event.data.number
+      ignore_missing: true
+  - rename:
+      field: json.event.data.operational_status
+      tag: rename_event_data_operational_status
+      target_field: axonius.application.event.data.operational_status
+      ignore_missing: true
+  - rename:
+      field: json.event.data.remote_id
+      tag: rename_event_data_remote_id
+      target_field: axonius.application.event.data.remote_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.short_description
+      tag: rename_event_data_short_description
+      target_field: axonius.application.event.data.short_description
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
