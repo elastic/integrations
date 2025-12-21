@@ -28,8 +28,6 @@
             - name: data
               type: group
               fields:
-                - name: __fields_to_unset__
-                  type: keyword
                 - name: _keep_hostname_empty
                   type: boolean
                 - name: access
@@ -275,6 +273,8 @@
                   type: keyword
                 - name: fetch_time
                   type: date
+                - name: fields_to_unset
+                  type: keyword
                 - name: fingerprint
                   type: keyword
                 - name: firewall_enabled
@@ -288,7 +288,7 @@
                 - name: fqdn
                   type: keyword
                 - name: free_physical_memory
-                  type: long
+                  type: double
                 - name: from_last_fetch
                   type: boolean
                 - name: general
@@ -317,11 +317,11 @@
                   type: group
                   fields:
                     - name: free_size
-                      type: long
+                      type: double
                     - name: is_encrypted
                       type: boolean
                     - name: total_size
-                      type: long
+                      type: double
                 - name: hardware_status
                   type: keyword
                 - name: hostname
@@ -808,6 +808,16 @@
                   type: keyword
                 - name: related_network_route_ids
                   type: keyword
+                - name: relative_path
+                  type: keyword
+                - name: report_date
+                  type: date
+                - name: resource_group
+                  type: keyword
+                - name: risk_level
+                  type: long
+                - name: risk_level_value
+                  type: keyword
                 - name: route
                   type: group
                   fields:
@@ -860,10 +870,142 @@
                   type: keyword
                 - name: rule_type
                   type: keyword
+                - name: scan_results
+                  type: keyword
+                - name: scan_results_objs
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: name
+                      type: keyword
+                    - name: status
+                      type: keyword
+                - name: scanner
+                  type: boolean
+                - name: security_updates_last_changed
+                  type: date
+                - name: security_updates_status
+                  type: keyword
                 - name: server_type
                   type: keyword
                 - name: service
                   type: keyword
+                - name: services
+                  type: keyword
+                - name: severity_critical
+                  type: long
+                - name: severity_high
+                  type: long
+                - name: severity_info
+                  type: long
+                - name: severity_low
+                  type: long
+                - name: severity_medium
+                  type: long
+                - name: share_application
+                  type: boolean
+                - name: share_desktop
+                  type: boolean
+                - name: share_whiteboard
+                  type: boolean
+                - name: sip_status
+                  type: boolean
+                - name: site_name
+                  type: keyword
+                - name: software_cves
+                  type: group
+                  fields:
+                    - name: axonius_risk_score
+                      type: double
+                    - name: axonius_status
+                      type: keyword
+                    - name: axonius_status_last_update
+                      type: date
+                    - name: custom_software_cves_business_unit
+                      type: keyword
+                    - name: cve_from_sw_analysis
+                      type: boolean
+                    - name: cve_id
+                      type: keyword
+                    - name: cve_list
+                      type: keyword
+                    - name: cve_severity
+                      type: keyword
+                    - name: cve_synopsis
+                      type: keyword
+                    - name: cvss
+                      type: float
+                    - name: cvss2_score
+                      type: float
+                    - name: cvss2_score_num
+                      type: float
+                    - name: cvss3_score
+                      type: float
+                    - name: cvss3_score_num
+                      type: float
+                    - name: cvss4_score
+                      type: float
+                    - name: cvss4_score_num
+                      type: float
+                    - name: cvss_str
+                      type: keyword
+                    - name: cvss_vector
+                      type: keyword
+                    - name: cvss_version
+                      type: keyword
+                    - name: cwe_id
+                      type: keyword
+                    - name: epss
+                      type: group
+                      fields:
+                        - name: creation_date
+                          type: date
+                        - name: cve_id
+                          type: keyword
+                        - name: percentile
+                          type: double
+                        - name: score
+                          type: double
+                    - name: exploitability_score
+                      type: double
+                    - name: first_fetch_time
+                      type: date
+                    - name: hash_id
+                      type: keyword
+                    - name: impact_score
+                      type: double
+                    - name: last_fetch_time
+                      type: date
+                    - name: last_modified_date
+                      type: date
+                    - name: mitigated
+                      type: boolean
+                    - name: msrc
+                      type: group
+                      fields:
+                        - name: creation_date
+                          type: keyword
+                        - name: cve_id
+                          type: keyword
+                        - name: title
+                          type: keyword
+                    - name: nvd_publish_age
+                      type: long
+                    - name: publish_date
+                      type: date
+                    - name: software_name
+                      type: keyword
+                    - name: software_type
+                      type: keyword
+                    - name: software_vendor
+                      type: keyword
+                    - name: software_version
+                      type: keyword
+                    - name: solution_hash_id
+                      type: keyword
+                    - name: version_raw
+                      type: keyword
                 - name: source_addresses
                   type: ip
                 - name: source_application
@@ -872,9 +1014,15 @@
                   type: ip
                 - name: source_zone
                   type: keyword
+                - name: speaker
+                  type: keyword
+                - name: special_hint
+                  type: long
+                - name: special_hint_underscore
+                  type: keyword
                 - name: state
                   type: keyword
-                - name: status
+                - name: subnet_tag
                   type: keyword
                 - name: subnetworks
                   type: group
@@ -895,15 +1043,82 @@
                   type: keyword
                 - name: subscription_name
                   type: keyword
+                - name: swap_free
+                  type: double
+                - name: swap_total
+                  type: double
+                - name: sys_id
+                  type: keyword
+                - name: table_type
+                  type: keyword
                 - name: tenant_number
                   type: keyword
+                - name: tenant_tag
+                  type: keyword
+                - name: threat_level
+                  type: keyword
+                - name: threats
+                  type: keyword
+                - name: total
+                  type: long
+                - name: total_number_of_cores
+                  type: long
+                - name: total_physical_memory
+                  type: double
                 - name: traffic_direction
                   type: keyword
                 - name: type
                   type: keyword
+                - name: u_business_owner
+                  type: keyword
+                - name: u_business_unit
+                  type: keyword
+                - name: uniq_sites_count
+                  type: long
+                - name: uri
+                  type: keyword
                 - name: urls_axon_ids
                   type: keyword
+                - name: uuid
+                  type: keyword
+                - name: vendor
+                  type: keyword
+                - name: virtual_host
+                  type: boolean
+                - name: vm_status
+                  type: keyword
+                - name: vm_type
+                  type: keyword
+                - name: vpn_domain
+                  type: keyword
+                - name: vpn_is_local
+                  type: boolean
+                - name: vpn_lifetime
+                  type: long
+                - name: vpn_public_ip
+                  type: ip
+                - name: vpn_tunnel_type
+                  type: keyword
+                - name: vpn_type
+                  type: keyword
+                - name: z_sys_class_name
+                  type: keyword
+                - name: z_table_hierarchy
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                - name: zoom_ip
+                  type: ip
+            - name: enrichment_type
+              type: keyword
+            - name: entity
+              type: keyword
+            - name: hidden_for_gui
+              type: boolean
             - name: initial_plugin_unique_name
+              type: keyword
+            - name: name
               type: keyword
             - name: plugin_name
               type: keyword
@@ -916,4 +1131,6 @@
             - name: type
               type: keyword
         - name: internal_axon_id
+          type: keyword
+        - name: labels
           type: keyword

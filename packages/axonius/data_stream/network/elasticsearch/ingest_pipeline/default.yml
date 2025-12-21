@@ -332,6 +332,16 @@ processors:
           tag: append_event_data_source_addresses_into_source_address
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+  - foreach:
+      field: json.event.data.source_addresses
+      tag: foreach_event_data_source_addresses
+      if: ctx.json?.event?.data?.source_addresses instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_event_data_source_addresses_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
       field: json.event.data.source_addresses
       tag: rename_event_data_source_addresses

@@ -48,11 +48,6 @@ processors:
       tag: rename_event_association_type
       target_field: axonius.network.event.association_type
       ignore_missing: true
-  - rename:
-      field: json.event.data.__fields_to_unset__
-      tag: rename_event_data___fields_to_unset__
-      target_field: axonius.network.event.data.__fields_to_unset__
-      ignore_missing: true
   - convert:
       field: json.event.data._keep_hostname_empty
       tag: convert_event_data__keep_hostname_empty_to_boolean
@@ -298,7 +293,7 @@ processors:
       processor:
         append:
           field: vulnerability.description
-          tag: append_event_data_cisa_vulnerabilities_desc_into_message
+          tag: append_event_data_cisa_vulnerabilities_desc_into_vulnerability_description
           value: '{{{_ingest._value.desc}}}'
           allow_duplicates: false
   - foreach:
@@ -623,6 +618,11 @@ processors:
       target_field: axonius.network.event.data.fetch_proto
       ignore_missing: true
   - rename:
+      field: json.event.data.__fields_to_unset__
+      tag: rename_event_data___fields_to_unset__
+      target_field: axonius.network.event.data.fields_to_unset
+      ignore_missing: true
+  - rename:
       field: json.event.data.fingerprint
       tag: rename_event_data_fingerprint
       target_field: axonius.network.event.data.fingerprint
@@ -660,9 +660,9 @@ processors:
       if: ctx.axonius?.network?.event?.data?.fqdn != null
   - convert:
       field: json.event.data.free_physical_memory
-      tag: convert_event_data_free_physical_memory_to_long
+      tag: convert_event_data_free_physical_memory_to_double
       target_field: axonius.network.event.data.free_physical_memory
-      type: long
+      type: double
       ignore_missing: true
       on_failure:
         - append:
@@ -739,9 +739,9 @@ processors:
       ignore_missing: true
   - convert:
       field: json.event.data.hard_drives.free_size
-      tag: convert_event_data_hard_drives_free_size_to_long
+      tag: convert_event_data_hard_drives_free_size_to_double
       target_field: axonius.network.event.data.hard_drives.free_size
-      type: long
+      type: double
       ignore_missing: true
       on_failure:
         - append:
@@ -759,9 +759,9 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.event.data.hard_drives.total_size
-      tag: convert_event_data_hard_drives_total_size_to_long
+      tag: convert_event_data_hard_drives_total_size_to_double
       target_field: axonius.network.event.data.hard_drives.total_size
-      type: long
+      type: double
       ignore_missing: true
       on_failure:
         - append:
@@ -975,11 +975,6 @@ processors:
       field: json.event.data.jamf_location.real_name
       tag: rename_event_data_jamf_location_real_name
       target_field: axonius.network.event.data.jamf_location.real_name
-      ignore_missing: true
-  - rename:
-      field: json.event.data.jamf_location.room
-      tag: rename_event_data_jamf_location_room
-      target_field: axonius.network.event.data.jamf_location.room
       ignore_missing: true
   - convert:
       field: json.event.data.jamf_location.room
@@ -1371,7 +1366,7 @@ processors:
           processor:
             convert:
               field: _ingest._value
-              tag: convert_event_data_network_interfaces_ips_v4_into_long
+              tag: convert_event_data_network_interfaces_ips_raw_to_long
               type: long
               ignore_missing: true
               on_failure:
@@ -1393,7 +1388,7 @@ processors:
           processor:
             convert:
               field: _ingest._value
-              tag: convert_event_data_network_interfaces_ips_v4_raw_into_long
+              tag: convert_event_data_network_interfaces_ips_v4_raw_to_long
               type: long
               ignore_missing: true
               on_failure:
@@ -1629,7 +1624,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.event.data.os.os_dotted_raw
-      tag: convert_event_data_os_os_dotted_raw_to_float
+      tag: convert_event_data_os_os_dotted_raw_to_long
       target_field: axonius.network.event.data.os.os_dotted_raw
       type: long
       ignore_missing: true
@@ -2221,6 +2216,860 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.relative_path
+      tag: rename_event_data_relative_path
+      target_field: axonius.network.event.data.relative_path
+      ignore_missing: true
+  - date:
+      field: json.event.data.report_date
+      tag: date_event_data_report_date
+      target_field: axonius.network.event.data.report_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.report_date != null && ctx.json.event.data.report_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.resource_group
+      tag: rename_event_data_resource_group
+      target_field: axonius.network.event.data.resource_group
+      ignore_missing: true
+  - convert:
+      field: json.event.data.risk_level
+      tag: convert_event_data_risk_level_to_long
+      target_field: axonius.network.event.data.risk_level
+      type: long
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: json.event.data.risk_level
+            target_field: axonius.network.event.data.risk_level_value
+            ignore_missing: true
+  - foreach:
+      field: json.event.data.scan_results_objs
+      tag: foreach_event_data_scan_results_objs_id
+      if: ctx.json?.event?.data?.scan_results_objs instanceof List
+      processor:
+        convert:
+          field: _ingest._value.id
+          type: string
+          tag: convert_event_data_scan_results_objs_id_into_string
+          ignore_missing: true
+  - rename:
+      field: json.event.data.scan_results
+      tag: rename_event_data_scan_results
+      target_field: axonius.network.event.data.scan_results
+      ignore_missing: true
+  - rename:
+      field: json.event.data.scan_results_objs
+      tag: rename_event_data_scan_results_objs
+      target_field: axonius.network.event.data.scan_results_objs
+      ignore_missing: true
+  - convert:
+      field: json.event.data.scanner
+      tag: convert_event_data_scanner_to_boolean
+      target_field: axonius.network.event.data.scanner
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event.data.security_updates_last_changed
+      tag: date_event_data_security_updates_last_changed
+      target_field: axonius.network.event.data.security_updates_last_changed
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.security_updates_last_changed != null && ctx.json.event.data.security_updates_last_changed != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.security_updates_status
+      tag: rename_event_data_security_updates_status
+      target_field: axonius.network.event.data.security_updates_status
+      ignore_missing: true
+  - rename:
+      field: json.event.data.services
+      tag: rename_event_data_services
+      target_field: axonius.network.event.data.services
+      ignore_missing: true
+  - convert:
+      field: json.event.data.severity_critical
+      tag: convert_event_data_severity_critical_to_long
+      target_field: axonius.network.event.data.severity_critical
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.severity_high
+      tag: convert_event_data_severity_high_to_long
+      target_field: axonius.network.event.data.severity_high
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.severity_info
+      tag: convert_event_data_severity_info_to_long
+      target_field: axonius.network.event.data.severity_info
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.severity_low
+      tag: convert_event_data_severity_low_to_long
+      target_field: axonius.network.event.data.severity_low
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.severity_medium
+      tag: convert_event_data_severity_medium_to_long
+      target_field: axonius.network.event.data.severity_medium
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.share_application
+      tag: convert_event_data_share_application_to_boolean
+      target_field: axonius.network.event.data.share_application
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.share_desktop
+      tag: convert_event_data_share_desktop_to_boolean
+      target_field: axonius.network.event.data.share_desktop
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.share_whiteboard
+      tag: convert_event_data_share_whiteboard_to_boolean
+      target_field: axonius.network.event.data.share_whiteboard
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.sip_status
+      tag: convert_event_data_sip_status_to_boolean
+      target_field: axonius.network.event.data.sip_status
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.site_name
+      tag: rename_event_data_site_name
+      target_field: axonius.network.event.data.site_name
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_axonius_risk_score
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.axonius_risk_score
+          tag: convert_event_data_software_cves_axonius_risk_score_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.axonius_risk_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_axonius_status_last_update
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        date:
+          field: _ingest._value.axonius_status_last_update
+          tag: date_event_data_software_cves_axonius_status_last_update
+          target_field: _ingest._value.axonius_status_last_update
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.axonius_status_last_update
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_cve_from_sw_analysis
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cve_from_sw_analysis
+          tag: convert_event_data_software_cves_cve_from_sw_analysis_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cve_from_sw_analysis
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_cvss2_score
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cvss2_score
+          tag: convert_event_data_software_cves_cvss2_score_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cvss2_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_cvss2_score_num
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cvss2_score_num
+          tag: convert_event_data_software_cves_cvss2_score_num_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cvss2_score_num
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_cvss3_score
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cvss3_score
+          tag: convert_event_data_software_cves_cvss3_score_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cvss3_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_cvss3_score_num
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cvss3_score_num
+          tag: convert_event_data_software_cves_cvss3_score_num_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cvss3_score_num
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_cvss4_score
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cvss4_score
+          tag: convert_event_data_software_cves_cvss4_score_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cvss4_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_cvss4_score_num
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cvss4_score_num
+          tag: convert_event_data_software_cves_cvss4_score_num_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cvss4_score_num
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_cwe_id
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cwe_id
+          tag: convert_event_data_software_cves_cwe_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_epss_creation_date
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        date:
+          field: _ingest._value.epss.creation_date
+          tag: date_event_data_software_cves_epss_creation_date
+          target_field: _ingest._value.epss.creation_date
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.epss.creation_date
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_epss_percentile
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.epss.percentile
+          tag: convert_event_data_software_cves_epss_percentile_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.epss.percentile
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_epss_score
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.epss.score
+          tag: convert_event_data_software_cves_epss_score_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.epss.score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_exploitability_score
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.exploitability_score
+          tag: convert_event_data_software_cves_exploitability_score_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.exploitability_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_first_fetch_time
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        date:
+          field: _ingest._value.first_fetch_time
+          tag: date_event_data_software_cves_first_fetch_time
+          target_field: _ingest._value.first_fetch_time
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.first_fetch_time
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_hash_id
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_event_data_software_cves_hash_id_into_related_hash
+          value: '{{{_ingest._value.hash_id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_impact_score
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.impact_score
+          tag: convert_event_data_software_cves_impact_score_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.impact_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_last_fetch_time
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_fetch_time
+          tag: date_event_data_software_cves_last_fetch_time
+          target_field: _ingest._value.last_fetch_time
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.last_fetch_time
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_last_modified_date
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_modified_date
+          tag: date_event_data_software_cves_last_modified_date
+          target_field: _ingest._value.last_modified_date
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.last_modified_date
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_mitigated
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.mitigated
+          tag: convert_event_data_software_cves_mitigated_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.mitigated
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_nvd_publish_age
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        convert:
+          field: _ingest._value.nvd_publish_age
+          tag: convert_event_data_software_cves_nvd_publish_age_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.nvd_publish_age
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_publish_date
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        date:
+          field: _ingest._value.publish_date
+          tag: date_event_data_software_cves_publish_date
+          target_field: _ingest._value.publish_date
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.publish_date
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.software_cves
+      tag: foreach_event_data_software_cves_solution_hash_id
+      if: ctx.json?.event?.data?.software_cves instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_event_data_software_cves_solution_hash_id_into_related_hash
+          value: '{{{_ingest._value.solution_hash_id}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.event.data.software_cves
+      tag: rename_event_data_software_cves
+      target_field: axonius.network.event.data.software_cves
+      ignore_missing: true
+  - rename:
+      field: json.event.data.speaker
+      tag: rename_event_data_speaker
+      target_field: axonius.network.event.data.speaker
+      ignore_missing: true
+  - convert:
+      field: json.event.data.special_hint
+      tag: convert_event_data_special_hint_to_long
+      target_field: axonius.network.event.data.special_hint
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.special_hint_underscore
+      tag: rename_event_data_special_hint_underscore
+      target_field: axonius.network.event.data.special_hint_underscore
+      ignore_missing: true
+  - rename:
+      field: json.event.data.subnet_tag
+      tag: rename_event_data_subnet_tag
+      target_field: axonius.network.event.data.subnet_tag
+      ignore_missing: true
+  - convert:
+      field: json.event.data.swap_free
+      tag: convert_event_data_swap_free_to_double
+      target_field: axonius.network.event.data.swap_free
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.swap_total
+      tag: convert_event_data_swap_total_to_double
+      target_field: axonius.network.event.data.swap_total
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.sys_id
+      tag: rename_event_data_sys_id
+      target_field: axonius.network.event.data.sys_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.table_type
+      tag: rename_event_data_table_type
+      target_field: axonius.network.event.data.table_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.tenant_tag
+      tag: rename_event_data_tenant_tag
+      target_field: axonius.network.event.data.tenant_tag
+      ignore_missing: true
+  - rename:
+      field: json.event.data.threat_level
+      tag: rename_event_data_threat_level
+      target_field: axonius.network.event.data.threat_level
+      ignore_missing: true
+  - rename:
+      field: json.event.data.threats
+      tag: rename_event_data_threats
+      target_field: axonius.network.event.data.threats
+      ignore_missing: true
+  - convert:
+      field: json.event.data.total
+      tag: convert_event_data_total_to_long
+      target_field: axonius.network.event.data.total
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.total_number_of_cores
+      tag: convert_event_data_total_number_of_cores_to_long
+      target_field: axonius.network.event.data.total_number_of_cores
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.total_physical_memory
+      tag: convert_event_data_total_physical_memory_to_double
+      target_field: axonius.network.event.data.total_physical_memory
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.u_business_owner
+      tag: rename_event_data_u_business_owner
+      target_field: axonius.network.event.data.u_business_owner
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_network_event_data_u_business_owner_into_related_user
+      value: '{{{axonius.network.event.data.u_business_owner}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.network?.event?.data?.u_business_owner != null
+  - rename:
+      field: json.event.data.u_business_unit
+      tag: rename_event_data_u_business_unit
+      target_field: axonius.network.event.data.u_business_unit
+      ignore_missing: true
+  - convert:
+      field: json.event.data.uniq_sites_count
+      tag: convert_event_data_uniq_sites_count_to_long
+      target_field: axonius.network.event.data.uniq_sites_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.uri
+      tag: rename_event_data_uri
+      target_field: axonius.network.event.data.uri
+      ignore_missing: true
+  - set:
+      field: event.url
+      tag: set_event_url_from_network_event_data_uri
+      copy_from: axonius.network.event.data.uri
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.uuid
+      tag: rename_event_data_uuid
+      target_field: axonius.network.event.data.uuid
+      ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_network_event_data_uuid
+      copy_from: axonius.network.event.data.uuid
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_network_event_data_uuid_into_related_hosts
+      value: '{{{axonius.network.event.data.uuid}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.network?.event?.data?.uuid != null
+  - rename:
+      field: json.event.data.vendor
+      tag: rename_event_data_vendor
+      target_field: axonius.network.event.data.vendor
+      ignore_missing: true
+  - convert:
+      field: json.event.data.virtual_host
+      tag: convert_event_data_virtual_host_to_boolean
+      target_field: axonius.network.event.data.virtual_host
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.vm_status
+      tag: rename_event_data_vm_status
+      target_field: axonius.network.event.data.vm_status
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vm_type
+      tag: rename_event_data_vm_type
+      target_field: axonius.network.event.data.vm_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vpn_domain
+      tag: rename_event_data_vpn_domain
+      target_field: axonius.network.event.data.vpn_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_network_event_data_vpn_domain_into_related_hosts
+      value: '{{{axonius.network.event.data.vpn_domain}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.network?.event?.data?.vpn_domain != null
+  - convert:
+      field: json.event.data.vpn_is_local
+      tag: convert_event_data_vpn_is_local_to_boolean
+      target_field: axonius.network.event.data.vpn_is_local
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.vpn_lifetime
+      tag: convert_event_data_vpn_lifetime_to_long
+      target_field: axonius.network.event.data.vpn_lifetime
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.vpn_public_ip
+      tag: convert_event_data_vpn_public_ip_to_ip
+      target_field: axonius.network.event.data.vpn_public_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.event?.data?.vpn_public_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_network_event_data_vpn_public_ip_into_related_ip
+      value: '{{{axonius.network.event.data.vpn_public_ip}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.network?.event?.data?.vpn_public_ip != null
+  - rename:
+      field: json.event.data.vpn_tunnel_type
+      tag: rename_event_data_vpn_tunnel_type
+      target_field: axonius.network.event.data.vpn_tunnel_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.vpn_type
+      tag: rename_event_data_vpn_type
+      target_field: axonius.network.event.data.vpn_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.z_sys_class_name
+      tag: rename_event_data_z_sys_class_name
+      target_field: axonius.network.event.data.z_sys_class_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.z_table_hierarchy
+      tag: rename_event_data_z_table_hierarchy
+      target_field: axonius.network.event.data.z_table_hierarchy
+      ignore_missing: true
+  - convert:
+      field: json.event.data.zoom_ip
+      tag: convert_event_data_zoom_ip_to_ip
+      target_field: axonius.network.event.data.zoom_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.event?.data?.zoom_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_network_event_data_zoom_ip_into_related_ip
+      value: '{{{axonius.network.event.data.zoom_ip}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.network?.event?.data?.zoom_ip != null
+  - rename:
+      field: json.event.enrichment_type
+      tag: rename_event_enrichment_type
+      target_field: axonius.network.event.enrichment_type
+      ignore_missing: true
+  - set:
+      field: vulnerability.enumeration
+      tag: set_vulnerability_enumeration_from_network_event_enrichment_type
+      copy_from: axonius.network.event.enrichment_type
+      ignore_empty_value: true
+  - rename:
+      field: json.event.entity
+      tag: rename_event_entity
+      target_field: axonius.network.event.entity
+      ignore_missing: true
+  - convert:
+      field: json.event.hidden_for_gui
+      tag: convert_event_hidden_for_gui_to_boolean
+      target_field: axonius.network.event.hidden_for_gui
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.name
+      tag: rename_event_name
+      target_field: axonius.network.event.name
+      ignore_missing: true
+  - rename:
+      field: json.labels
+      tag: rename_labels
+      target_field: axonius.network.labels
+      ignore_missing: true
   - foreach:
       field: axonius.network.event.data.cisa_vulnerabilities
       tag: foreach_axonius_network_event_data_cisa_vulnerabilities

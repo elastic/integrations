@@ -125,7 +125,6 @@ The `network` data stream provides network events from axonius.
 | axonius.network.event.associated_adapter_plugin_name |  | keyword |
 | axonius.network.event.association_type |  | keyword |
 | axonius.network.event.client_used |  | keyword |
-| axonius.network.event.data.__fields_to_unset__ |  | keyword |
 | axonius.network.event.data._keep_hostname_empty |  | boolean |
 | axonius.network.event.data.access |  | keyword |
 | axonius.network.event.data.accurate_for_datetime |  | date |
@@ -238,13 +237,14 @@ The `network` data stream provides network events from axonius.
 | axonius.network.event.data.external_nat_ip |  | ip |
 | axonius.network.event.data.fetch_proto |  | keyword |
 | axonius.network.event.data.fetch_time |  | date |
+| axonius.network.event.data.fields_to_unset |  | keyword |
 | axonius.network.event.data.fingerprint |  | keyword |
 | axonius.network.event.data.firewall_enabled |  | boolean |
 | axonius.network.event.data.firewall_rules |  | keyword |
 | axonius.network.event.data.first_fetch_time |  | date |
 | axonius.network.event.data.first_seen |  | date |
 | axonius.network.event.data.fqdn |  | keyword |
-| axonius.network.event.data.free_physical_memory |  | long |
+| axonius.network.event.data.free_physical_memory |  | double |
 | axonius.network.event.data.from_last_fetch |  | boolean |
 | axonius.network.event.data.general.extension_name |  | keyword |
 | axonius.network.event.data.general.extension_value |  | keyword |
@@ -254,9 +254,9 @@ The `network` data stream provides network events from axonius.
 | axonius.network.event.data.guest_family |  | keyword |
 | axonius.network.event.data.guest_name |  | keyword |
 | axonius.network.event.data.guest_state |  | keyword |
-| axonius.network.event.data.hard_drives.free_size |  | long |
+| axonius.network.event.data.hard_drives.free_size |  | double |
 | axonius.network.event.data.hard_drives.is_encrypted |  | boolean |
-| axonius.network.event.data.hard_drives.total_size |  | long |
+| axonius.network.event.data.hard_drives.total_size |  | double |
 | axonius.network.event.data.hardware_status |  | keyword |
 | axonius.network.event.data.hostname |  | keyword |
 | axonius.network.event.data.id |  | keyword |
@@ -476,6 +476,11 @@ The `network` data stream provides network events from axonius.
 | axonius.network.event.data.recording |  | boolean |
 | axonius.network.event.data.relatable_ids |  | keyword |
 | axonius.network.event.data.related_network_route_ids |  | keyword |
+| axonius.network.event.data.relative_path |  | keyword |
+| axonius.network.event.data.report_date |  | date |
+| axonius.network.event.data.resource_group |  | keyword |
+| axonius.network.event.data.risk_level |  | long |
+| axonius.network.event.data.risk_level_value |  | keyword |
 | axonius.network.event.data.route.asset |  | keyword |
 | axonius.network.event.data.route.asset_internal_axon_id |  | keyword |
 | axonius.network.event.data.route.host_ipv4s |  | ip |
@@ -499,14 +504,77 @@ The `network` data stream provides network events from axonius.
 | axonius.network.event.data.routing_mode |  | keyword |
 | axonius.network.event.data.rule_base_type |  | keyword |
 | axonius.network.event.data.rule_type |  | keyword |
+| axonius.network.event.data.scan_results |  | keyword |
+| axonius.network.event.data.scan_results_objs.id |  | keyword |
+| axonius.network.event.data.scan_results_objs.name |  | keyword |
+| axonius.network.event.data.scan_results_objs.status |  | keyword |
+| axonius.network.event.data.scanner |  | boolean |
+| axonius.network.event.data.security_updates_last_changed |  | date |
+| axonius.network.event.data.security_updates_status |  | keyword |
 | axonius.network.event.data.server_type |  | keyword |
 | axonius.network.event.data.service |  | keyword |
+| axonius.network.event.data.services |  | keyword |
+| axonius.network.event.data.severity_critical |  | long |
+| axonius.network.event.data.severity_high |  | long |
+| axonius.network.event.data.severity_info |  | long |
+| axonius.network.event.data.severity_low |  | long |
+| axonius.network.event.data.severity_medium |  | long |
+| axonius.network.event.data.share_application |  | boolean |
+| axonius.network.event.data.share_desktop |  | boolean |
+| axonius.network.event.data.share_whiteboard |  | boolean |
+| axonius.network.event.data.sip_status |  | boolean |
+| axonius.network.event.data.site_name |  | keyword |
+| axonius.network.event.data.software_cves.axonius_risk_score |  | double |
+| axonius.network.event.data.software_cves.axonius_status |  | keyword |
+| axonius.network.event.data.software_cves.axonius_status_last_update |  | date |
+| axonius.network.event.data.software_cves.custom_software_cves_business_unit |  | keyword |
+| axonius.network.event.data.software_cves.cve_from_sw_analysis |  | boolean |
+| axonius.network.event.data.software_cves.cve_id |  | keyword |
+| axonius.network.event.data.software_cves.cve_list |  | keyword |
+| axonius.network.event.data.software_cves.cve_severity |  | keyword |
+| axonius.network.event.data.software_cves.cve_synopsis |  | keyword |
+| axonius.network.event.data.software_cves.cvss |  | float |
+| axonius.network.event.data.software_cves.cvss2_score |  | float |
+| axonius.network.event.data.software_cves.cvss2_score_num |  | float |
+| axonius.network.event.data.software_cves.cvss3_score |  | float |
+| axonius.network.event.data.software_cves.cvss3_score_num |  | float |
+| axonius.network.event.data.software_cves.cvss4_score |  | float |
+| axonius.network.event.data.software_cves.cvss4_score_num |  | float |
+| axonius.network.event.data.software_cves.cvss_str |  | keyword |
+| axonius.network.event.data.software_cves.cvss_vector |  | keyword |
+| axonius.network.event.data.software_cves.cvss_version |  | keyword |
+| axonius.network.event.data.software_cves.cwe_id |  | keyword |
+| axonius.network.event.data.software_cves.epss.creation_date |  | date |
+| axonius.network.event.data.software_cves.epss.cve_id |  | keyword |
+| axonius.network.event.data.software_cves.epss.percentile |  | double |
+| axonius.network.event.data.software_cves.epss.score |  | double |
+| axonius.network.event.data.software_cves.exploitability_score |  | double |
+| axonius.network.event.data.software_cves.first_fetch_time |  | date |
+| axonius.network.event.data.software_cves.hash_id |  | keyword |
+| axonius.network.event.data.software_cves.impact_score |  | double |
+| axonius.network.event.data.software_cves.last_fetch_time |  | date |
+| axonius.network.event.data.software_cves.last_modified_date |  | date |
+| axonius.network.event.data.software_cves.mitigated |  | boolean |
+| axonius.network.event.data.software_cves.msrc.creation_date |  | keyword |
+| axonius.network.event.data.software_cves.msrc.cve_id |  | keyword |
+| axonius.network.event.data.software_cves.msrc.title |  | keyword |
+| axonius.network.event.data.software_cves.nvd_publish_age |  | long |
+| axonius.network.event.data.software_cves.publish_date |  | date |
+| axonius.network.event.data.software_cves.software_name |  | keyword |
+| axonius.network.event.data.software_cves.software_type |  | keyword |
+| axonius.network.event.data.software_cves.software_vendor |  | keyword |
+| axonius.network.event.data.software_cves.software_version |  | keyword |
+| axonius.network.event.data.software_cves.solution_hash_id |  | keyword |
+| axonius.network.event.data.software_cves.version_raw |  | keyword |
 | axonius.network.event.data.source_addresses |  | ip |
 | axonius.network.event.data.source_application |  | keyword |
 | axonius.network.event.data.source_ips |  | ip |
 | axonius.network.event.data.source_zone |  | keyword |
+| axonius.network.event.data.speaker |  | keyword |
+| axonius.network.event.data.special_hint |  | long |
+| axonius.network.event.data.special_hint_underscore |  | keyword |
 | axonius.network.event.data.state |  | keyword |
-| axonius.network.event.data.status |  | keyword |
+| axonius.network.event.data.subnet_tag |  | keyword |
 | axonius.network.event.data.subnetworks.creation_timestamp |  | date |
 | axonius.network.event.data.subnetworks.gateway_address |  | ip |
 | axonius.network.event.data.subnetworks.id |  | keyword |
@@ -515,17 +583,50 @@ The `network` data stream provides network events from axonius.
 | axonius.network.event.data.subnetworks.private_ip_google_access |  | boolean |
 | axonius.network.event.data.subscription_id |  | keyword |
 | axonius.network.event.data.subscription_name |  | keyword |
+| axonius.network.event.data.swap_free |  | double |
+| axonius.network.event.data.swap_total |  | double |
+| axonius.network.event.data.sys_id |  | keyword |
+| axonius.network.event.data.table_type |  | keyword |
 | axonius.network.event.data.tenant_number |  | keyword |
+| axonius.network.event.data.tenant_tag |  | keyword |
+| axonius.network.event.data.threat_level |  | keyword |
+| axonius.network.event.data.threats |  | keyword |
+| axonius.network.event.data.total |  | long |
+| axonius.network.event.data.total_number_of_cores |  | long |
+| axonius.network.event.data.total_physical_memory |  | double |
 | axonius.network.event.data.traffic_direction |  | keyword |
 | axonius.network.event.data.type |  | keyword |
+| axonius.network.event.data.u_business_owner |  | keyword |
+| axonius.network.event.data.u_business_unit |  | keyword |
+| axonius.network.event.data.uniq_sites_count |  | long |
+| axonius.network.event.data.uri |  | keyword |
 | axonius.network.event.data.urls_axon_ids |  | keyword |
+| axonius.network.event.data.uuid |  | keyword |
+| axonius.network.event.data.vendor |  | keyword |
+| axonius.network.event.data.virtual_host |  | boolean |
+| axonius.network.event.data.vm_status |  | keyword |
+| axonius.network.event.data.vm_type |  | keyword |
+| axonius.network.event.data.vpn_domain |  | keyword |
+| axonius.network.event.data.vpn_is_local |  | boolean |
+| axonius.network.event.data.vpn_lifetime |  | long |
+| axonius.network.event.data.vpn_public_ip |  | ip |
+| axonius.network.event.data.vpn_tunnel_type |  | keyword |
+| axonius.network.event.data.vpn_type |  | keyword |
+| axonius.network.event.data.z_sys_class_name |  | keyword |
+| axonius.network.event.data.z_table_hierarchy.name |  | keyword |
+| axonius.network.event.data.zoom_ip |  | ip |
+| axonius.network.event.enrichment_type |  | keyword |
+| axonius.network.event.entity |  | keyword |
+| axonius.network.event.hidden_for_gui |  | boolean |
 | axonius.network.event.initial_plugin_unique_name |  | keyword |
+| axonius.network.event.name |  | keyword |
 | axonius.network.event.plugin_name |  | keyword |
 | axonius.network.event.plugin_type |  | keyword |
 | axonius.network.event.plugin_unique_name |  | keyword |
 | axonius.network.event.quick_id |  | keyword |
 | axonius.network.event.type |  | keyword |
 | axonius.network.internal_axon_id |  | keyword |
+| axonius.network.labels |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -542,32 +643,26 @@ An example event for `network` looks as following:
 {
     "@timestamp": "2025-12-16T00:02:05.000Z",
     "agent": {
-        "ephemeral_id": "84ed2428-8cb3-4451-9b8b-213a5355adca",
-        "id": "6879bea5-a4f5-45ed-b5f4-b3c530ab1976",
-        "name": "elastic-agent-45616",
+        "ephemeral_id": "69231e59-4d1b-4135-a120-8470b0e1ec9f",
+        "id": "f6374adb-d8cd-42be-a634-ec45f978203a",
+        "name": "elastic-agent-71306",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.1.3"
     },
     "axonius": {
         "network": {
             "adapter_list_length": 1,
-            "adapters": [
-                "azure_adapter"
-            ],
+            "adapters": "azure_adapter",
             "asset_type": "networks",
             "event": {
                 "accurate_for_datetime": "2025-12-16T00:02:05.000Z",
-                "adapter_categories": [
-                    "Cloud Infra"
-                ],
+                "adapter_categories": "Cloud Infra",
                 "client_used": "67fd09ca731ccb5730923106",
                 "data": {
                     "access": "Allow",
                     "accurate_for_datetime": "2025-12-16T00:02:05.000Z",
                     "application_and_account_name": "azure/azure-demo",
-                    "connected_assets": [
-                        "subscription_id::64062aef-14a6-42a4-86b1-8a25d0c7cb24"
-                    ],
+                    "connected_assets": "subscription_id::64062aef-14a6-42a4-86b1-8a25d0c7cb24",
                     "direction": "Inbound",
                     "fetch_time": "2025-12-16T00:02:04.000Z",
                     "first_fetch_time": "2025-12-14T16:49:34.000Z",
@@ -587,9 +682,7 @@ An example event for `network` looks as following:
                     "source_application": "Azure",
                     "subscription_id": "b3fa20bb-a9c1-4cb6-80a9-13bcc9d68da5",
                     "subscription_name": "Microsoft Azure Enterprise",
-                    "tenant_number": [
-                        "2"
-                    ],
+                    "tenant_number": "2",
                     "type": "Networks"
                 },
                 "initial_plugin_unique_name": "azure_adapter_0",
@@ -604,16 +697,16 @@ An example event for `network` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.network",
-        "namespace": "76708",
+        "namespace": "37570",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "6879bea5-a4f5-45ed-b5f4-b3c530ab1976",
+        "id": "f6374adb-d8cd-42be-a634-ec45f978203a",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.1.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -621,8 +714,9 @@ An example event for `network` looks as following:
             "network"
         ],
         "dataset": "axonius.network",
-        "ingested": "2025-12-17T10:23:56Z",
+        "ingested": "2025-12-21T07:36:35Z",
         "kind": "event",
+        "module": "axonius",
         "original": "{\"adapter_list_length\":1,\"adapters\":[\"azure_adapter\"],\"asset_type\":\"networks\",\"event\":{\"accurate_for_datetime\":\"Tue, 16 Dec 2025 00:02:05 GMT\",\"adapter_categories\":[\"Cloud Infra\"],\"client_used\":\"67fd09ca731ccb5730923106\",\"data\":{\"access\":\"Allow\",\"accurate_for_datetime\":\"Tue, 16 Dec 2025 00:02:05 GMT\",\"application_and_account_name\":\"azure/azure-demo\",\"connected_assets\":[\"subscription_id::64062aef-14a6-42a4-86b1-8a25d0c7cb24\"],\"direction\":\"Inbound\",\"fetch_time\":\"Tue, 16 Dec 2025 00:02:04 GMT\",\"first_fetch_time\":\"Sun, 14 Dec 2025 16:49:34 GMT\",\"from_last_fetch\":true,\"id\":\"2142ce3eb735930b68a7\",\"id_raw\":\"912b0b56-fb12-4fe9-8f88-214c6c6b32e5\",\"is_fetched_from_adapter\":true,\"last_fetch_connection_id\":\"67fd09ca731ccb5730923106\",\"last_fetch_connection_label\":\"azure-demo\",\"location\":\"New York City\",\"name\":\"FTP-ENABLED-Allowedcb5E-\",\"not_fetched_count\":0,\"pretty_id\":\"AX-1156168648572164619\",\"priority\":1937,\"protocol\":\"UDP\",\"provisioningState\":\"Succeeded\",\"source_application\":\"Azure\",\"subscription_id\":\"b3fa20bb-a9c1-4cb6-80a9-13bcc9d68da5\",\"subscription_name\":\"Microsoft Azure Enterprise\",\"tenant_number\":[\"2\"],\"type\":\"Networks\"},\"initial_plugin_unique_name\":\"azure_adapter_0\",\"plugin_name\":\"azure_adapter\",\"plugin_type\":\"Adapter\",\"plugin_unique_name\":\"azure_adapter_0\",\"quick_id\":\"azure_adapter_0!2142ce3eb735930b68a7\",\"type\":\"entitydata\"},\"internal_axon_id\":\"100b89429e965a0bf70a9bae08c4b679\"}",
         "type": [
             "info"
@@ -636,9 +730,15 @@ An example event for `network` looks as following:
     "input": {
         "type": "cel"
     },
+    "labels": {
+        "is_transform_source": "true"
+    },
     "network": {
         "direction": "inbound",
         "protocol": "udp"
+    },
+    "observer": {
+        "vendor": "Axonius"
     },
     "tags": [
         "preserve_original_event",
