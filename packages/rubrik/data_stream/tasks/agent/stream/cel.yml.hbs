@@ -120,54 +120,52 @@ program: |-
             }
         }.encode_json(),
       }
-    ).do_request().as(resp,(resp.StatusCode == 200) ?
-        bytes(resp.Body).decode_json().as(body,
-          {
-            "events": body.data.reportChartData.chartData.map(chartDataNode,
-              chartDataNode.secondaryGroupBy.map(childNode,
-                childNode.with({
-                  "numVal": (
-                    childNode.value.has("longValue") ? childNode.value.longValue :
-                    (childNode.value.has("intValue") ? childNode.value.intValue :
-                      (childNode.value.has("serializedValue") ?
-                        int(childNode.value.serializedValue) : 0
-                      )
-                    )
-                  )
-                }).as(v,
-                  {
-                    "slaDomainId": v.name.serializedValue,
-                    "slaDomainName": v.name.displayValue,
-                    "succeededTasksValue": chartDataNode.name.serializedValue == "succeeded_tasks" ? v.numVal : null,
-                    "failedTasksValue": chartDataNode.name.serializedValue == "failed_tasks" ? v.numVal : null,
-                    "canceledTasksValue": chartDataNode.name.serializedValue == "canceled_tasks" ? v.numVal : null,
-                    "missedTasksValue": chartDataNode.name.serializedValue == "missed_tasks" ? v.numVal : null,
-                    "metricType": chartDataNode.name.serializedValue
-                  }
-                )
-              )
-            ).flatten().map(event, { "message": event.encode_json() }),
-            "want_more": int(state.index) < (size(state.queries) - 1),
-            "queries": state.queries,
-            "index": (int(state.index) + 1) % size(state.queries)
-          }
-        )
-      :
+    ).do_request().as(resp, (resp.StatusCode == 200) ?
+      bytes(resp.Body).decode_json().as(body,
         {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "POST:" +
-              (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
-            },
-          },
-          "want_more": false,
+          "events": body.data.reportChartData.chartData.map(chartDataNode,
+            chartDataNode.secondaryGroupBy.map(childNode,
+              {
+                "slaDomainId": childNode.name.serializedValue,
+                "slaDomainName": childNode.name.displayValue,
+                
+                "succeededTasksValue": chartDataNode.name.serializedValue == "succeeded_tasks" ? 
+                  (("longValue" in childNode.value) ? childNode.value.longValue : childNode.value.intValue) : null,
+                
+                "failedTasksValue": chartDataNode.name.serializedValue == "failed_tasks" ? 
+                  (("longValue" in childNode.value) ? childNode.value.longValue : childNode.value.intValue) : null,
+                
+                "canceledTasksValue": chartDataNode.name.serializedValue == "canceled_tasks" ? 
+                  (("longValue" in childNode.value) ? childNode.value.longValue : childNode.value.intValue) : null,
+                
+                "missedTasksValue": chartDataNode.name.serializedValue == "missed_tasks" ? 
+                  (("longValue" in childNode.value) ? childNode.value.longValue : childNode.value.intValue) : null,
+
+                "metricType": chartDataNode.name.serializedValue
+              }
+            )
+          ).flatten().map(event, { "message": event.encode_json() }),
+          "want_more": int(state.index) < (size(state.queries) - 1),
+          "queries": state.queries,
+          "index": (int(state.index) + 1) % size(state.queries)
         }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST:" +
+            (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
     )
   )
