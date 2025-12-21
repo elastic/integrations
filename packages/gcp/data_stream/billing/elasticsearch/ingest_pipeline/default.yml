@@ -1,20 +1,14 @@
 ---
 description: Pipeline for parsing GCP Billing metrics.
 processors:
-  - date:
-      field: gcp.billing.usage_start_time
-      formats:
-        - ISO8601
-  - date:
-      field: gcp.billing.usage_end_time
-      formats:
-        - ISO8601
   - set:
       field: event.start
       copy_from: "gcp.billing.usage_start_time"
+      ignore_empty_value: true
   - set:
       field: event.end
       copy_from: "gcp.billing.usage_end_time"
+      ignore_empty_value: true
 on_failure:
 - set:
     field: event.kind
