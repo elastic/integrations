@@ -54,7 +54,7 @@ Processor v2 introduces several key improvements:
 * Built on the latest Azure Event Hubs SDK.
 * Features a more efficient checkpoint store leveraging Azure Blob Storage metadata.
 
-Processor v2 is now the default and is recommended for most use cases. Processor v1 remains available as a legacy option for backward compatibility until the next major release.
+Processor v2 is the default and the recommended standard for all use cases. Processor v1 is being retained as a legacy option to ensure backward compatibility until the next major release.
 
 For details on configuration, see the "Event Hub Processor v2 only" section in the integration settings.
 
