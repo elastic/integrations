@@ -142,11 +142,15 @@ streams:
         show_user: false
         default: true
         description: >-
-          (Processor v2 only) Flag to control if the processor should perform  the checkpoint information migration from processor v1 to v2 at startup.
+          (Processor v2 only) Controls processor behavior upon the initial transition from v1 to v2. If you are
+          starting directly with v2, you can disregard this setting.
 
-          The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+          Defaults to `true`, which means the processor will automatically migrate checkpoint information from the
+          v1 format to v2.
 
-          Default is `true`, which means the processor will attempt to migrate the checkpoint information from v1 to v2 the first time you v1 to v2.
+          If set to `false`, the processor will bypass existing v1 checkpoints and replay all events in the
+          Event Hub from the start of the retention window. For example, if set to `false` on an Event Hub with
+          a 1-hour retention period, the processor will replay the last hour's worth of data.
       - name: endpoint_suffix
         type: text
         default: core.windows.net
