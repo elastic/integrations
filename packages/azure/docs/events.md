@@ -609,7 +609,11 @@ Possible values are `earliest` and `latest`.
 
 `migrate_checkpoint` :
 _boolean_
-(processor v2 only) Controls processor behavior upon the initial transition from v1 to v2. Defaults to `true`, which means the processor will attempt to migrate checkpoint information from the v1 format to v2. If set to `false`, the processor will bypass existing v1 checkpoints and replay all available events in the Event Hub from the start of the retention window. For example, if set to `false` on an Event Hub with a 1-hour retention period, the processor will replay the last hour's worth of data.
+(processor v2 only) Controls processor behavior upon the initial transition from v1 to v2. If you are starting directly with v2, you can disregard this setting.
+
+Defaults to `true`, which means the processor will automatically migrate checkpoint information from the v1 format to v2.
+
+If set to `false`, the processor will bypass existing v1 checkpoints and replay all events in the Event Hub from the start of the retention window. For example, if set to `false` on an Event Hub with a 1-hour retention period, the processor will replay the last hour's worth of data.
 
 `endpoint_suffix` :
 _string_
