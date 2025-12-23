@@ -46,31 +46,31 @@ request.transforms:
 - set:
     target: body.returnFormat
     value: json
-{{#if daily_refresh}}
-# Daily refresh mode: every 24 hours, reset cursor to re-fetch all attributes from initial_interval.
-# When a daily refresh occurs, the timestamp is reset to initial_interval and last_daily_refresh is updated.
+{{#if daily_refetch}}
+# Daily refetch mode: every 24 hours, reset cursor to re-fetch all attributes from initial_interval.
+# When a daily refetch occurs, the timestamp is reset to initial_interval and last_daily_refetch is updated.
 - set:
     target: body.timestamp
     value: |-
-      [[- $dailyRefreshDuration := (parseDuration "24h") -]]
+      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
       [[- $initialInterval := (parseDuration "-{{initial_interval}}") -]]
       [[- $initialTimestamp := (now $initialInterval).Unix -]]
-      [[- $isDailyRefresh := true -]]
-      [[- if index .cursor "last_daily_refresh" -]]
-        [[- $lastRefresh := (parseDate .cursor.last_daily_refresh "RFC3339") -]]
-        [[- $nextRefresh := 0 -]]
-        [[- with $lastRefresh -]]
-          [[- $nextRefresh = .Add $dailyRefreshDuration -]]
+      [[- $isDailyRefetch := true -]]
+      [[- if index .cursor "last_daily_refetch" -]]
+        [[- $lastRefetch := (parseDate .cursor.last_daily_refetch "RFC3339") -]]
+        [[- $nextRefetch := 0 -]]
+        [[- with $lastRefetch -]]
+          [[- $nextRefetch = .Add $dailyRefetchDuration -]]
         [[- end -]]
-        [[- with $nextRefresh -]]
+        [[- with $nextRefetch -]]
           [[- if .Before now -]]
-            [[- $isDailyRefresh = true -]]
+            [[- $isDailyRefetch = true -]]
           [[- else -]]
-            [[- $isDailyRefresh = false -]]
+            [[- $isDailyRefetch = false -]]
           [[- end -]]
         [[- end -]]
       [[- end -]]
-      [[- if $isDailyRefresh -]]
+      [[- if $isDailyRefetch -]]
         [[- $initialTimestamp -]]
       [[- else if index .cursor "timestamp" -]]
         [[- .cursor.timestamp -]]
@@ -121,22 +121,22 @@ response.pagination:
 cursor:
   timestamp:
     value: '[[.last_event.timestamp]]'
-{{#if daily_refresh}}
-  last_daily_refresh:
-    # Track when the last daily refresh started. Updated when 24h has passed since previous refresh.
+{{#if daily_refetch}}
+  last_daily_refetch:
+    # Track when the last daily refetch started. Updated when 24h has passed since previous refetch.
     value: |-
-      [[- $dailyRefreshDuration := (parseDuration "24h") -]]
-      [[- if index .cursor "last_daily_refresh" -]]
-        [[- $lastRefresh := (parseDate .cursor.last_daily_refresh "RFC3339") -]]
-        [[- $nextRefresh := 0 -]]
-        [[- with $lastRefresh -]]
-          [[- $nextRefresh = .Add $dailyRefreshDuration -]]
+      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
+      [[- if index .cursor "last_daily_refetch" -]]
+        [[- $lastRefetch := (parseDate .cursor.last_daily_refetch "RFC3339") -]]
+        [[- $nextRefetch := 0 -]]
+        [[- with $lastRefetch -]]
+          [[- $nextRefetch = .Add $dailyRefetchDuration -]]
         [[- end -]]
-        [[- with $nextRefresh -]]
+        [[- with $nextRefetch -]]
           [[- if .Before now -]]
             [[- formatDate now "RFC3339" -]]
           [[- else -]]
-            [[- $.cursor.last_daily_refresh -]]
+            [[- $.cursor.last_daily_refetch -]]
           [[- end -]]
         [[- end -]]
       [[- else -]]
@@ -147,8 +147,8 @@ tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#if daily_refresh}}
-  - daily_refresh
+{{#if daily_refetch}}
+  - daily_refetch
 {{/if}}
 {{#each tags as |tag i|}}
   - {{tag}}
