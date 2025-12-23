@@ -104,13 +104,49 @@ Use the following table to identify the target data streams for each log categor
 | `logs-azure.graphactivitylog-*`    | `MicrosoftGraphActivityLogs`                                                                                                                                 |
 | `logs-azure.identity_protection-*` | `RiskyUsers`, `UserRiskEvents`                                                                                                                               |
 | `logs-azure.provisioning-*`        | `ProvisioningLogs`                                                                                                                                           |
-| `logs-azure.signinlogs-*`          | `SignInLogs`, `NonInteractiveUserSignInLogs`, `ServicePrincipalSignInLogs`, `ManagedIdentitySignInLogs`                                                      |
+| `logs-azure.signinlogs-*`          | `*SignInLogs`                                                      |
 | `logs-azure.springcloudlogs-*`     | `ApplicationConsole`, `SystemLogs`, `IngressLogs`, `BuildLogs`, `ContainerEventLogs`                                                                         |
 | `logs-azure.platformlogs-*`        | All other log categories                                                                                                                                     |
 
-### What about all other log categories?
+### Question: What about all other log categories?
 
 The integration indexes all other Azure logs categories using the `logs-azure.platformlogs-*` data stream.
+
+### Question: Can I route the log events to a different data stream?
+
+Yes, you can route the log events to a different data stream by creating a `logs-azure.events@custom` pipeline.
+
+The default pipeline extracts the `routing.category` field and hands it off to the custom pipeline, where you can implement your routing logic.
+
+You can create this pipeline via the integration settings (**Change defaults > Advanced options > Ingest pipelines**) or alternatively using **Dev Tools**.
+
+If you prefer using the Dev Tools, here is a sample configuration that routes the `SQLSecurityAuditEvents` category to a dedicated data stream.
+
+First, check for an existing `logs-azure.events@custom` pipeline:
+
+```text
+GET _ingest/pipeline/logs-azure.events@custom
+```
+
+If a pipeline already exists, you will need to update it to include the reroute processor.
+
+To define a new `logs-azure.events@custom` pipeline, use the following:
+
+```text
+PUT _ingest/pipeline/logs-azure.events@custom
+{
+  "processors": [
+    {
+      "reroute": {
+        "if": "ctx?.routing?.category == \"SQLSecurityAuditEvents\"",
+        "dataset": "azure.synapse"
+      }
+    }
+  ]
+}
+```
+
+You can target a new dataset (such as `azure.synapse` shown above) or any of the existing out-of-the-box datasets like `azure.activitylogs`.
 
 ## Requirements
 
