@@ -10,10 +10,17 @@ inputs:
           auth.oauth2.client.secret: ${SECRET_0}
           auth.oauth2.scopes: https://graph.microsoft.com/.default
           auth.oauth2.token_url: http://host.tld/efgh/oauth2/v2.0/token
+          auth.oauth2.endpoint_params:
+            grant_type: client_credentials
           config_version: 2
           cursor:
             last_update_time:
-                value: '[[.last_event.lastUpdateDateTime]]'
+                do_not_log_failure: true
+                fail_on_template_error: true
+                value: |-
+                    [[- if index .last_event "lastUpdateDateTime" -]]
+                      [[- .last_event.lastUpdateDateTime -]]
+                    [[- end -]]
           data_stream:
             dataset: m365_defender.incident
           interval: 30s

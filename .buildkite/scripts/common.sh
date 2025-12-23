@@ -45,12 +45,6 @@ retry() {
   return 0
 }
 
-cleanup() {
-  echo "Deleting temporary files..."
-  rm -rf ${WORKSPACE}/${TMP_FOLDER_TEMPLATE_BASE}.*
-  echo "Done."
-}
-
 unset_secrets () {
   for var in $(printenv | sed 's;=.*;;' | sort); do
     if [[ "$var" == *_SECRET || "$var" == *_TOKEN ]]; then
@@ -261,7 +255,7 @@ check_git_diff() {
 use_elastic_package() {
     echo "--- Installing elastic-package"
     mkdir -p build
-    go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
+    retry 5 go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
 }
 
 elastic_package_verbosity() {
