@@ -976,9 +976,9 @@ An example event for `issue` looks as following:
 {
     "@timestamp": "2023-07-21T06:26:08.708Z",
     "agent": {
-        "ephemeral_id": "0cca0270-98c9-4937-ae94-8cd3b9898589",
-        "id": "def236cf-315a-4fcd-928c-5aa8cce0e670",
-        "name": "elastic-agent-68652",
+        "ephemeral_id": "9008eaae-3456-45c8-9996-e12593b2c6b2",
+        "id": "67cc7f85-76c3-477e-b1ee-49709af2264a",
+        "name": "elastic-agent-68256",
         "type": "filebeat",
         "version": "8.16.6"
     },
@@ -988,14 +988,14 @@ An example event for `issue` looks as following:
     },
     "data_stream": {
         "dataset": "wiz.issue",
-        "namespace": "86907",
+        "namespace": "72538",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "def236cf-315a-4fcd-928c-5aa8cce0e670",
+        "id": "67cc7f85-76c3-477e-b1ee-49709af2264a",
         "snapshot": false,
         "version": "8.16.6"
     },
@@ -1007,9 +1007,9 @@ An example event for `issue` looks as following:
         "created": "2023-08-21T07:56:09.903Z",
         "dataset": "wiz.issue",
         "id": "ggf9cggd-64a7-412c-9445-cf837f4b0b10",
-        "ingested": "2025-12-24T08:27:27Z",
+        "ingested": "2025-12-24T12:53:12Z",
         "kind": "event",
-        "original": "{\"createdAt\":\"2023-08-21T07:56:09.903743Z\",\"dueAt\":\"2023-08-28T21:00:00Z\",\"entitySnapshot\":{\"cloudPlatform\":\"Kubernetes\",\"cloudProviderURL\":\"https://portal.az.com/#@sectest.on.com/resource//subscriptions/\",\"externalId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519sad45/system:aggregate-to-edit/12\",\"id\":\"f307d472-b7da-5t05-9b25-71a271336b14\",\"name\":\"system:aggregate-to-edit\",\"nativeType\":\"ClusterRole\",\"providerId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519bac0f24ae9/system:aggregate-to-edit/12\",\"region\":\"us-01\",\"resourceGroupExternalId\":\"/subscriptions/cfd132be-3bc7-4f86-8efd-ed53ae498fec/resourcegroups/test-selfmanaged-eastus\",\"status\":\"Active\",\"subscriptionExternalId\":\"998231069301\",\"subscriptionName\":\"demo-integrations\",\"subscriptionTags\":{},\"tags\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\",\"rbac.authorization.k8s.io/aggregate-to-edit\":\"true\"},\"type\":\"ACCESS_ROLE\"},\"id\":\"ggf9cggd-64a7-412c-9445-cf837f4b0b10\",\"notes\":[{\"createdAt\":\"2023-08-21T07:56:09.903743Z\",\"serviceAccount\":{\"name\":\"rev-ke\"},\"text\":\"updated\",\"updatedAt\":\"2023-09-09T23:10:22.588721Z\"},{\"createdAt\":\"2023-08-07T23:08:49.918941Z\",\"serviceAccount\":{\"name\":\"rev-ke2\"},\"text\":\"updated\",\"updatedAt\":\"2023-08-09T23:10:22.591487Z\"}],\"projects\":[{\"businessUnit\":\"\",\"id\":\"jf77n35n-a7b6-5762-8a53-8e8f59e68bd8\",\"name\":\"Project 2\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-2\"},{\"businessUnit\":\"Dev\",\"id\":\"af52828c-4eb1-5c4e-847c-ebc3a5ead531\",\"name\":\"project 4\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-4\"},{\"businessUnit\":\"Dev\",\"id\":\"d5h1545-aec0-52fc-80ab-bacd7b02f178\",\"name\":\"Project1\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project1\"}],\"resolvedAt\":\"2023-08-09T23:10:22.588721Z\",\"serviceTickets\":[{\"externalId\":\"638361121bbfdd10f6c1cbf3604bcb7e\",\"name\":\"SIR0010002\",\"url\":\"https://ven05658.testing.com/nav_to.do?uri=%2Fsn_si_incident.do%3Fsys_id%3D6385248sdsae421\"}],\"severity\":\"INFORMATIONAL\",\"sourceRule\":{\"__typename\":\"Control\",\"controlDescription\":\"These EKS principals assume roles that provide bind, escalate and impersonate permissions. \\n\\nThe `bind` permission allows users to create bindings to roles with rights they do not already have. The `escalate` permission allows users effectively escalate their privileges. The `impersonate` permission allows users to impersonate and gain the rights of other users in the cluster. Running containers with these permissions has the potential to effectively allow privilege escalation to the cluster-admin level.\",\"id\":\"wc-id-1335\",\"name\":\"EKS principals assume roles that provide bind, escalate and impersonate permissions\",\"resolutionRecommendation\":\"To follow the principle of least privilege and minimize the risk of unauthorized access and data breaches, it is recommended not to grant `bind`, `escalate` or `impersonate` permissions.\",\"risks\":[\"UNPROTECTED_DATA\",\"RELIABILITY_IMPACT\"],\"securitySubCategories\":[{\"category\":{\"framework\":{\"name\":\"CIS EKS 1.2.0\"},\"name\":\"4.1 RBAC and Service Accounts\"},\"title\":\"4.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster - Level 1 (Manual)\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Identity Management\"},\"title\":\"Privileged principal\"},{\"category\":{\"framework\":{\"name\":\"Wiz\"},\"name\":\"9 Container Security\"},\"title\":\"Container Security\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Container \\u0026 Kubernetes Security\"},\"title\":\"Cluster misconfiguration\"}]},\"status\":\"IN_PROGRESS\",\"statusChangedAt\":\"2023-07-21T06:26:08.708199Z\",\"updatedAt\":\"2023-08-14T06:06:18.331647Z\"}",
+        "original": "{\"createdAt\":\"2023-08-21T07:56:09.903743Z\",\"dueAt\":\"2023-08-28T21:00:00Z\",\"entitySnapshot\":{\"cloudPlatform\":\"Kubernetes\",\"cloudProviderURL\":\"https://portal.az.com/#@sectest.on.com/resource//subscriptions/\",\"externalId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519sad45/system:aggregate-to-edit/12\",\"id\":\"f307d472-b7da-5t05-9b25-71a271336b14\",\"name\":\"system:aggregate-to-edit\",\"nativeType\":\"ClusterRole\",\"providerId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519bac0f24ae9/system:aggregate-to-edit/12\",\"region\":\"us-01\",\"resourceGroupExternalId\":\"/subscriptions/cfd132be-3bc7-4f86-8efd-ed53ae498fec/resourcegroups/test-selfmanaged-eastus\",\"status\":\"Active\",\"subscriptionExternalId\":\"998231069301\",\"subscriptionName\":\"demo-integrations\",\"subscriptionTags\":{},\"tags\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\",\"rbac.authorization.k8s.io/aggregate-to-edit\":\"true\"},\"type\":\"ACCESS_ROLE\"},\"id\":\"ggf9cggd-64a7-412c-9445-cf837f4b0b10\",\"notes\":[{\"createdAt\":\"2023-08-21T07:56:09.903743Z\",\"serviceAccount\":{\"name\":\"rev-ke\"},\"text\":\"updated\",\"updatedAt\":\"2023-09-09T23:10:22.588721Z\"},{\"createdAt\":\"2023-08-07T23:08:49.918941Z\",\"serviceAccount\":{\"name\":\"rev-ke2\"},\"text\":\"updated\",\"updatedAt\":\"2023-08-09T23:10:22.591487Z\"}],\"projects\":[{\"businessUnit\":\"\",\"id\":\"jf77n35n-a7b6-5762-8a53-8e8f59e68bd8\",\"name\":\"Project 2\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-2\"},{\"businessUnit\":\"Dev\",\"id\":\"af52828c-4eb1-5c4e-847c-ebc3a5ead531\",\"name\":\"project 4\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-4\"},{\"businessUnit\":\"Dev\",\"id\":\"d5h1545-aec0-52fc-80ab-bacd7b02f178\",\"name\":\"Project1\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project1\"}],\"resolvedAt\":\"2023-08-09T23:10:22.588721Z\",\"serviceTickets\":[{\"externalId\":\"638361121bbfdd10f6c1cbf3604bcb7e\",\"name\":\"SIR0010002\",\"url\":\"https://ven05658.testing.com/nav_to.do?uri=%2Fsn_si_incident.do%3Fsys_id%3D6385248sdsae421\"}],\"severity\":\"INFORMATIONAL\",\"sourceRules\":[{\"__typename\":\"Control\",\"description\":\"These EKS principals assume roles that provide bind, escalate and impersonate permissions. \\n\\nThe `bind` permission allows users to create bindings to roles with rights they do not already have. The `escalate` permission allows users effectively escalate their privileges. The `impersonate` permission allows users to impersonate and gain the rights of other users in the cluster. Running containers with these permissions has the potential to effectively allow privilege escalation to the cluster-admin level.\",\"id\":\"wc-id-1335\",\"name\":\"EKS principals assume roles that provide bind, escalate and impersonate permissions\",\"resolutionRecommendation\":\"To follow the principle of least privilege and minimize the risk of unauthorized access and data breaches, it is recommended not to grant `bind`, `escalate` or `impersonate` permissions.\",\"risks\":[\"INSECURE_KUBERNETES_CLUSTER\",\"VULNERABILITY\"],\"securitySubCategories\":[{\"category\":{\"framework\":{\"name\":\"CIS EKS 1.2.0\"},\"name\":\"4.1 RBAC and Service Accounts\"},\"title\":\"4.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster - Level 1 (Manual)\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Identity Management\"},\"title\":\"Privileged principal\"},{\"category\":{\"framework\":{\"name\":\"Wiz\"},\"name\":\"9 Container Security\"},\"title\":\"Container Security\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Container \\u0026 Kubernetes Security\"},\"title\":\"Cluster misconfiguration\"}]},{\"__typename\":\"CloudEventRule\",\"description\":\"Process wrote to a security configuration file. This could indicate the presence of a threat actor tampering with security controls.\",\"id\":\"cer-sen-id-002\",\"name\":\"Security configuration file was modified\",\"risks\":[\"INSECURE_KUBERNETES_CLUSTER\",\"VULNERABILITY\"],\"securitySubCategories\":[{\"category\":{\"framework\":{\"name\":\"Wiz for Threat Detection\"},\"name\":\"Defense Evasion\"},\"title\":\"Security tool tampering\"}],\"sourceType\":\"WIZ_SENSOR\",\"type\":\"FILE_INTEGRITY_MONITORING_WORKLOAD_RUNTIME_RULE\"},{\"__typename\":\"CloudEventRule\",\"description\":\"Python process spawned interactive shell. This can indicate the presence of a malicious actor enhancing a basic reverse shell.\",\"id\":\"cer-sen-id-003\",\"name\":\"Python process spawned interactive shell\",\"risks\":[\"INSECURE_KUBERNETES_CLUSTER\",\"VULNERABILITY\"],\"securitySubCategories\":[{\"category\":{\"framework\":{\"name\":\"Wiz for Threat Detection\"},\"name\":\"C2 \\u0026 Exfiltration\"},\"title\":\"Remote shell\"}],\"sourceType\":\"WIZ_SENSOR\",\"type\":\"WORKLOAD_RUNTIME_RULE\"}],\"status\":\"IN_PROGRESS\",\"statusChangedAt\":\"2023-07-21T06:26:08.708199Z\",\"updatedAt\":\"2023-08-14T06:06:18.331647Z\"}",
         "type": [
             "info"
         ],
@@ -1122,8 +1122,8 @@ An example event for `issue` looks as following:
                 "name": "EKS principals assume roles that provide bind, escalate and impersonate permissions",
                 "resolution_recommendation": "To follow the principle of least privilege and minimize the risk of unauthorized access and data breaches, it is recommended not to grant `bind`, `escalate` or `impersonate` permissions.",
                 "risks": [
-                    "UNPROTECTED_DATA",
-                    "RELIABILITY_IMPACT"
+                    "INSECURE_KUBERNETES_CLUSTER",
+                    "VULNERABILITY"
                 ],
                 "security_sub_categories": [
                     {
@@ -1164,6 +1164,103 @@ An example event for `issue` looks as following:
                     }
                 ]
             },
+            "source_rules": [
+                {
+                    "__typename": "Control",
+                    "description": "These EKS principals assume roles that provide bind, escalate and impersonate permissions. \n\nThe `bind` permission allows users to create bindings to roles with rights they do not already have. The `escalate` permission allows users effectively escalate their privileges. The `impersonate` permission allows users to impersonate and gain the rights of other users in the cluster. Running containers with these permissions has the potential to effectively allow privilege escalation to the cluster-admin level.",
+                    "id": "wc-id-1335",
+                    "name": "EKS principals assume roles that provide bind, escalate and impersonate permissions",
+                    "resolution_recommendation": "To follow the principle of least privilege and minimize the risk of unauthorized access and data breaches, it is recommended not to grant `bind`, `escalate` or `impersonate` permissions.",
+                    "risks": [
+                        "INSECURE_KUBERNETES_CLUSTER",
+                        "VULNERABILITY"
+                    ],
+                    "security_sub_categories": [
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "CIS EKS 1.2.0"
+                                },
+                                "name": "4.1 RBAC and Service Accounts"
+                            },
+                            "title": "4.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster - Level 1 (Manual)"
+                        },
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz for Risk Assessment"
+                                },
+                                "name": "Identity Management"
+                            },
+                            "title": "Privileged principal"
+                        },
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz"
+                                },
+                                "name": "9 Container Security"
+                            },
+                            "title": "Container Security"
+                        },
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz for Risk Assessment"
+                                },
+                                "name": "Container & Kubernetes Security"
+                            },
+                            "title": "Cluster misconfiguration"
+                        }
+                    ]
+                },
+                {
+                    "__typename": "CloudEventRule",
+                    "description": "Process wrote to a security configuration file. This could indicate the presence of a threat actor tampering with security controls.",
+                    "id": "cer-sen-id-002",
+                    "name": "Security configuration file was modified",
+                    "risks": [
+                        "INSECURE_KUBERNETES_CLUSTER",
+                        "VULNERABILITY"
+                    ],
+                    "security_sub_categories": [
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz for Threat Detection"
+                                },
+                                "name": "Defense Evasion"
+                            },
+                            "title": "Security tool tampering"
+                        }
+                    ],
+                    "source_type": "WIZ_SENSOR",
+                    "type": "FILE_INTEGRITY_MONITORING_WORKLOAD_RUNTIME_RULE"
+                },
+                {
+                    "__typename": "CloudEventRule",
+                    "description": "Python process spawned interactive shell. This can indicate the presence of a malicious actor enhancing a basic reverse shell.",
+                    "id": "cer-sen-id-003",
+                    "name": "Python process spawned interactive shell",
+                    "risks": [
+                        "INSECURE_KUBERNETES_CLUSTER",
+                        "VULNERABILITY"
+                    ],
+                    "security_sub_categories": [
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz for Threat Detection"
+                                },
+                                "name": "C2 & Exfiltration"
+                            },
+                            "title": "Remote shell"
+                        }
+                    ],
+                    "source_type": "WIZ_SENSOR",
+                    "type": "WORKLOAD_RUNTIME_RULE"
+                }
+            ],
             "status": {
                 "changed_at": "2023-07-21T06:26:08.708Z",
                 "value": "IN_PROGRESS"
@@ -1220,16 +1317,30 @@ An example event for `issue` looks as following:
 | wiz.issue.service_tickets.name |  | keyword |
 | wiz.issue.service_tickets.url |  | keyword |
 | wiz.issue.severity |  | keyword |
-| wiz.issue.source_rule.__typename |  | keyword |
-| wiz.issue.source_rule.cloud_configuration_rule_description |  | keyword |
-| wiz.issue.source_rule.control_description |  | keyword |
-| wiz.issue.source_rule.id |  | keyword |
-| wiz.issue.source_rule.name |  | keyword |
-| wiz.issue.source_rule.resolution_recommendation |  | keyword |
-| wiz.issue.source_rule.risks |  | keyword |
-| wiz.issue.source_rule.security_sub_categories.category.framework.name |  | keyword |
-| wiz.issue.source_rule.security_sub_categories.category.name |  | keyword |
-| wiz.issue.source_rule.security_sub_categories.title |  | keyword |
+| wiz.issue.source_rule.__typename | DEPRECATED. Use `wiz.issue.source_rules.__typename` instead. | keyword |
+| wiz.issue.source_rule.cloud_configuration_rule_description | DEPRECATED. Use `wiz.issue.source_rules.description` instead. | keyword |
+| wiz.issue.source_rule.cloud_event_rule_description | DEPRECATED. Use `wiz.issue.source_rules.description` instead. | keyword |
+| wiz.issue.source_rule.control_description | DEPRECATED. Use `wiz.issue.source_rules.description` instead. | keyword |
+| wiz.issue.source_rule.id | DEPRECATED. Use `wiz.issue.source_rules.id` instead. | keyword |
+| wiz.issue.source_rule.name | DEPRECATED. Use `wiz.issue.source_rules.name` instead. | keyword |
+| wiz.issue.source_rule.resolution_recommendation | DEPRECATED. Use `wiz.issue.source_rules.resolution_recommendation` instead. | keyword |
+| wiz.issue.source_rule.risks | DEPRECATED. Use `wiz.issue.source_rules.risks` instead. | keyword |
+| wiz.issue.source_rule.security_sub_categories.category.framework.name | DEPRECATED. Use `wiz.issue.source_rules.security_sub_categories.category.framework.name` instead. | keyword |
+| wiz.issue.source_rule.security_sub_categories.category.name | DEPRECATED. Use `wiz.issue.source_rules.security_sub_categories.category.name` instead. | keyword |
+| wiz.issue.source_rule.security_sub_categories.title | DEPRECATED. Use `wiz.issue.source_rules.security_sub_categories.title` instead. | keyword |
+| wiz.issue.source_rules.__typename |  | keyword |
+| wiz.issue.source_rules.description |  | keyword |
+| wiz.issue.source_rules.id |  | keyword |
+| wiz.issue.source_rules.name |  | keyword |
+| wiz.issue.source_rules.remediation_instructions |  | keyword |
+| wiz.issue.source_rules.resolution_recommendation |  | keyword |
+| wiz.issue.source_rules.risks |  | keyword |
+| wiz.issue.source_rules.security_sub_categories.category.framework.name |  | keyword |
+| wiz.issue.source_rules.security_sub_categories.category.name |  | keyword |
+| wiz.issue.source_rules.security_sub_categories.title |  | keyword |
+| wiz.issue.source_rules.service_type |  | keyword |
+| wiz.issue.source_rules.source_type |  | keyword |
+| wiz.issue.source_rules.type |  | keyword |
 | wiz.issue.status.changed_at |  | date |
 | wiz.issue.status.value |  | keyword |
 | wiz.issue.type |  | keyword |
