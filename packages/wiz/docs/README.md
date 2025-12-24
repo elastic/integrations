@@ -1317,17 +1317,17 @@ An example event for `issue` looks as following:
 | wiz.issue.service_tickets.name |  | keyword |
 | wiz.issue.service_tickets.url |  | keyword |
 | wiz.issue.severity |  | keyword |
-| wiz.issue.source_rule.__typename |  | keyword |
-| wiz.issue.source_rule.cloud_configuration_rule_description |  | keyword |
-| wiz.issue.source_rule.cloud_event_rule_description |  | keyword |
-| wiz.issue.source_rule.control_description |  | keyword |
-| wiz.issue.source_rule.id |  | keyword |
-| wiz.issue.source_rule.name |  | keyword |
-| wiz.issue.source_rule.resolution_recommendation |  | keyword |
-| wiz.issue.source_rule.risks |  | keyword |
-| wiz.issue.source_rule.security_sub_categories.category.framework.name |  | keyword |
-| wiz.issue.source_rule.security_sub_categories.category.name |  | keyword |
-| wiz.issue.source_rule.security_sub_categories.title |  | keyword |
+| wiz.issue.source_rule.__typename | DEPRECATED. Use `wiz.issue.source_rules.__typename` instead. | keyword |
+| wiz.issue.source_rule.cloud_configuration_rule_description | DEPRECATED. Use `wiz.issue.source_rules.description` instead. | keyword |
+| wiz.issue.source_rule.cloud_event_rule_description | DEPRECATED. Use `wiz.issue.source_rules.description` instead. | keyword |
+| wiz.issue.source_rule.control_description | DEPRECATED. Use `wiz.issue.source_rules.description` instead. | keyword |
+| wiz.issue.source_rule.id | DEPRECATED. Use `wiz.issue.source_rules.id` instead. | keyword |
+| wiz.issue.source_rule.name | DEPRECATED. Use `wiz.issue.source_rules.name` instead. | keyword |
+| wiz.issue.source_rule.resolution_recommendation | DEPRECATED. Use `wiz.issue.source_rules.resolution_recommendation` instead. | keyword |
+| wiz.issue.source_rule.risks | DEPRECATED. Use `wiz.issue.source_rules.risks` instead. | keyword |
+| wiz.issue.source_rule.security_sub_categories.category.framework.name | DEPRECATED. Use `wiz.issue.source_rules.security_sub_categories.category.framework.name` instead. | keyword |
+| wiz.issue.source_rule.security_sub_categories.category.name | DEPRECATED. Use `wiz.issue.source_rules.security_sub_categories.category.name` instead. | keyword |
+| wiz.issue.source_rule.security_sub_categories.title | DEPRECATED. Use `wiz.issue.source_rules.security_sub_categories.title` instead. | keyword |
 | wiz.issue.source_rules.__typename |  | keyword |
 | wiz.issue.source_rules.description |  | keyword |
 | wiz.issue.source_rules.id |  | keyword |
