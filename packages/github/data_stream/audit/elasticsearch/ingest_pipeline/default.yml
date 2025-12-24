@@ -2,9 +2,6 @@
 description: Pipeline for parsing GitHub audit logs
 processors:
   - set:
-      field: event.kind
-      value: event
-  - set:
       field: ecs.version
       value: '8.11.0'
   - append:
@@ -76,6 +73,14 @@ processors:
       field: github.action
       target_field: event.action
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.event?.action?.equalsIgnoreCase('code_scanning.alert_created') == true || ctx.event?.action?.equalsIgnoreCase('secret_scanning_alert.create') == true
+  - set:
+      field: event.kind
+      value: event
+      if: ctx.event?.action == null
   - rename:
       field: github.actor
       target_field: user.name
