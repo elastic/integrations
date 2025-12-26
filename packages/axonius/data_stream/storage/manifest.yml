@@ -1,0 +1,72 @@
+title: Storage
+type: logs
+ilm_policy: logs-axonius.storage-default_policy
+streams:
+  - input: cel
+    title: Storage
+    description: Collect Storage logs from Axonius.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the Axonius API. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Batch size for the response of the Axonius API. The batch size can range from a minimum of 1 to a maximum of 2000.
+        default: 2000
+        multi: false
+        required: true
+        show_user: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        default: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+          for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data-stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - axonius-storage
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 5m
+      - name: preserve_duplicate_custom_fields
+        required: false
+        title: Preserve duplicate custom fields
+        description: Preserve axonius.storage.* fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.
