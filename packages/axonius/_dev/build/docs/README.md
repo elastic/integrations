@@ -30,6 +30,10 @@ These insights enable organizations to maintain accurate storage inventories, st
 
 ## What do I need to use this integration?
 
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
 ### From Axonius
 
 To collect data through the Axonius APIs, you need to provide the **URL**, **API Key** and **API Secret**. Authentication is handled using the **API Key** and **API Secret**, which serves as the required credential.
@@ -40,7 +44,7 @@ To collect data through the Axonius APIs, you need to provide the **URL**, **API
 2. Your instance URL is your Base **URL**.
 3. Navigate to **User Settings > API Key**.
 4. Generate an **API Key**.
-5. If you donâ€™t see the API Key tab in your user settings, follow these steps:
+5. If you do not see the API Key tab in your user settings, follow these steps:
     1.  Go to **System Settings** > **User and Role Management** > **Service Accounts**.
     2. Create a Service Account, and then generate an **API Key**.
 6. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
@@ -85,6 +89,13 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Axonius**, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **Axonius**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
 ## Troubleshooting
 
