@@ -41,6 +41,12 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: json
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_event_original
+      target_field: axonius.application.transform_unique_id
+      ignore_missing: true
   - set:
       tag: set_event_kind
       field: event.kind
@@ -590,11 +596,6 @@ processors:
       tag: rename_event_data_id
       target_field: axonius.application.event.data.id
       ignore_missing: true
-  - set:
-      field: event.id
-      tag: set_event_id_from_application_event_data_id
-      copy_from: axonius.application.event.data.id
-      ignore_empty_value: true
   - rename:
       field: json.event.data.id_raw
       tag: rename_event_data_id_raw
@@ -1474,7 +1475,6 @@ processors:
         - axonius.application.event.data.created
         - axonius.application.event.data.user_account.email
         - axonius.application.event.data.user_account.username
-        - axonius.application.event.data.id
         - axonius.application.event.data.raw_setting_name
         - axonius.application.event.data.recommendation_description
         - axonius.application.event.data.setting_description
@@ -1490,7 +1490,6 @@ processors:
         - axonius.application.event.data.user_email
         - axonius.application.event.data.start_date
         - axonius.application.event.data.description
-        - axonius.application.event.data.domain
         - axonius.application.event.data.action.name
         - axonius.application.event.data.actor.username
         - axonius.application.event.data.actor_state.location.country
