@@ -2,7 +2,7 @@
 
 ## Overview
 
-[Axonius](https://www.axonius.com/) is a cybersecurity asset management platform that automatically collects data from hundreds of IT and security tools through adapters, merges that information, and builds a unified inventory of all assets—devices, users, SaaS apps, cloud instances, and more. By correlating data from multiple systems, Axonius helps organizations identify visibility gaps, missing security controls, risky configurations, and compliance issues. It lets you create powerful queries to answer any security or IT question and automate actions such as sending alerts, creating tickets, or enforcing policies.
+[Axonius](https://www.axonius.com/) is a cybersecurity asset management platform that automatically collects data from hundreds of IT and security tools through adapters, merges that information, and builds a unified inventory of all assets including devices, users, SaaS apps, cloud instances, and more. By correlating data from multiple systems, Axonius helps organizations identify visibility gaps, missing security controls, risky configurations, and compliance issues. It lets you create powerful queries to answer any security or IT question and automate actions such as sending alerts, creating tickets, or enforcing policies.
 
 This integration for Elastic allows you to collect assets and security events data using the Axonius API, then visualize the data in Kibana.
 
@@ -41,7 +41,13 @@ To collect data through the Axonius APIs, you need to provide the **URL**, **API
 2. Your instance URL is your Base **URL**.
 3. Navigate to **User Settings > API Key**.
 4. Generate an **API Key**.
-5. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
+5. If you do not see the API Key tab in your user settings, follow these steps:
+    1.  Go to **System Settings** > **User and Role Management** > **Service Accounts**.
+    2. Create a Service Account, and then generate an **API Key**.
+6. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
+
+**Note:**
+To generate or reset an API key, your role must be **Admin**, and you must have **API Access** permissions, which include **API Access Enabled** and **Reset API Key**.
 
 ## How do I deploy this integration?
 
