@@ -30,6 +30,10 @@ These insights enable organizations to monitor exposure trends, detect escalatin
 
 ## What do I need to use this integration?
 
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
 ### From Axonius
 
 To collect data through the Axonius APIs, you need to provide the **URL**, **API Key** and **API Secret**. Authentication is handled using the **API Key** and **API Secret**, which serves as the required credential.
@@ -40,7 +44,7 @@ To collect data through the Axonius APIs, you need to provide the **URL**, **API
 2. Your instance URL is your Base **URL**.
 3. Navigate to **User Settings > API Key**.
 4. Generate an **API Key**.
-5. If you don’t see the API Key tab in your user settings, follow these steps:
+5. If you do not see the API Key tab in your user settings, follow these steps:
     1.  Go to **System Settings** > **User and Role Management** > **Service Accounts**.
     2. Create a Service Account, and then generate an **API Key**.
 6. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
@@ -86,6 +90,13 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Axonius**, and verify the dashboard information is populated.
 
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **Axonius**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -118,3 +129,7 @@ These APIs are used with this integration:
     * vulnerability_instances (endpoint: `/api/v2/vulnerability_instances`)
     * vulnerabilities (endpoint: `/api/v2/vulnerabilities`)
     * vulnerabilities_repository (endpoint: `/api/v2/vulnerabilities_repository`)
+
+#### ILM Policy
+
+To facilitate exposure data, source data stream-backed indices `.ds-logs-axonius.exposure-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-axonius.exposure-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
