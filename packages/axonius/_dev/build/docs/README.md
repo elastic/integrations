@@ -115,3 +115,7 @@ The `adapter` data stream provides adapter logs from axonius.
 These APIs are used with this integration:
 
 * Adapter (endpoint: `/api/v2/adapters`)
+
+#### ILM Policy
+
+To facilitate adapter data, source data stream-backed indices `.ds-logs-axonius.adapter-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-axonius.adapter-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
