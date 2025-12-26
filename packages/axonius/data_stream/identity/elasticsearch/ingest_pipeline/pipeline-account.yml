@@ -1,0 +1,440 @@
+---
+description: Pipeline for processing account logs.
+processors:
+  - convert:
+      field: json.event.data.active_users
+      tag: convert_event_data_active_users_to_long
+      target_field: axonius.identity.event.data.active_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.active_users_saved_query_id
+      tag: rename_event_data_active_users_saved_query_id
+      target_field: axonius.identity.event.data.active_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.admin_non_operational_users
+      tag: convert_event_data_admin_non_operational_users_to_long
+      target_field: axonius.identity.event.data.admin_non_operational_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.admin_non_operational_users_saved_query_id
+      tag: rename_event_data_admin_non_operational_users_saved_query_id
+      target_field: axonius.identity.event.data.admin_non_operational_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.admin_operational_active_users
+      tag: convert_event_data_admin_operational_active_users_to_long
+      target_field: axonius.identity.event.data.admin_operational_active_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.admin_operational_active_users_saved_query_id
+      tag: rename_event_data_admin_operational_active_users_saved_query_id
+      target_field: axonius.identity.event.data.admin_operational_active_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.admin_operational_inactive_users
+      tag: convert_event_data_admin_operational_inactive_users_to_long
+      target_field: axonius.identity.event.data.admin_operational_inactive_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.admin_operational_inactive_users_saved_query_id
+      tag: rename_event_data_admin_operational_inactive_users_saved_query_id
+      target_field: axonius.identity.event.data.admin_operational_inactive_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.admin_operational_users
+      tag: convert_event_data_admin_operational_users_to_long
+      target_field: axonius.identity.event.data.admin_operational_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.admin_operational_users_saved_query_id
+      tag: rename_event_data_admin_operational_users_saved_query_id
+      target_field: axonius.identity.event.data.admin_operational_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.admins
+      tag: convert_event_data_admins_to_long
+      target_field: axonius.identity.event.data.admins
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.admins_saved_query_id
+      tag: rename_event_data_admins_saved_query_id
+      target_field: axonius.identity.event.data.admins_saved_query_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.application_id
+      tag: rename_event_data_application_id
+      target_field: axonius.identity.event.data.application_id
+      ignore_missing: true
+  - set:
+      field: service.id
+      tag: set_service_id_from_identity_event_data_application_id
+      copy_from: axonius.identity.event.data.application_id
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.application_name
+      tag: rename_event_data_application_name
+      target_field: axonius.identity.event.data.application_name
+      ignore_missing: true
+  - set:
+      field: service.name
+      tag: set_service_name_from_identity_event_data_application_name
+      copy_from: axonius.identity.event.data.application_name
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.asset_entity_info
+      tag: rename_event_data_asset_entity_info
+      target_field: axonius.identity.event.data.asset_entity_info
+      ignore_missing: true
+  - rename:
+      field: json.event.data.connected_assets
+      tag: rename_event_data_connected_assets
+      target_field: axonius.identity.event.data.connected_assets
+      ignore_missing: true
+  - rename:
+      field: json.event.data.connection_label
+      tag: rename_event_data_connection_label
+      target_field: axonius.identity.event.data.connection_label
+      ignore_missing: true
+  - date:
+      field: json.event.data.created_date
+      tag: date_event_data_created_date
+      target_field: axonius.identity.event.data.created_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.created_date != null && ctx.json.event.data.created_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_identity_event_data_created_date
+      copy_from: axonius.identity.event.data.created_date
+      ignore_empty_value: true
+  - convert:
+      field: json.event.data.deleted_users
+      tag: convert_event_data_deleted_users_to_long
+      target_field: axonius.identity.event.data.deleted_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.deleted_users_saved_query_id
+      tag: rename_event_data_deleted_users_saved_query_id
+      target_field: axonius.identity.event.data.deleted_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.direct_not_sso_users
+      tag: convert_event_data_direct_not_sso_users_to_long
+      target_field: axonius.identity.event.data.direct_not_sso_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.direct_not_sso_users_saved_query_id
+      tag: rename_event_data_direct_not_sso_users_saved_query_id
+      target_field: axonius.identity.event.data.direct_not_sso_users_saved_query_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.domains
+      tag: rename_event_data_domains
+      target_field: axonius.identity.event.data.domains
+      ignore_missing: true
+  - rename:
+      field: json.event.data.email
+      tag: rename_event_data_email
+      target_field: axonius.identity.event.data.email
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_identity_event_data_email
+      copy_from: axonius.identity.event.data.email
+      ignore_empty_value: true
+  - dissect:
+      tag: dissect_user_email
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+      field: user.email
+      pattern: '%{}@%{user.domain}'
+  - append:
+      field: related.user
+      tag: append_identity_event_data_email_into_related_user
+      value: '{{{axonius.identity.event.data.email}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.email != null
+  - convert:
+      field: json.event.data.external_users
+      tag: convert_event_data_external_users_to_long
+      target_field: axonius.identity.event.data.external_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.external_users_saved_query_id
+      tag: rename_event_data_external_users_saved_query_id
+      target_field: axonius.identity.event.data.external_users_saved_query_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.gce_account_id
+      tag: rename_event_data_gce_account_id
+      target_field: axonius.identity.event.data.gce_account_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.inactive_users
+      tag: convert_event_data_inactive_users_to_long
+      target_field: axonius.identity.event.data.inactive_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.inactive_users_saved_query_id
+      tag: rename_event_data_inactive_users_saved_query_id
+      target_field: axonius.identity.event.data.inactive_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.is_managed_by_direct_app
+      tag: convert_event_data_is_managed_by_direct_app_to_boolean
+      target_field: axonius.identity.event.data.is_managed_by_direct_app
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event.data.last_enrichment_run
+      tag: date_event_data_last_enrichment_run
+      target_field: axonius.identity.event.data.last_enrichment_run
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.last_enrichment_run != null && ctx.json.event.data.last_enrichment_run != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.managed_non_operational_users
+      tag: convert_event_data_managed_non_operational_users_to_long
+      target_field: axonius.identity.event.data.managed_non_operational_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.managed_non_operational_users_saved_query_id
+      tag: rename_event_data_managed_non_operational_users_saved_query_id
+      target_field: axonius.identity.event.data.managed_non_operational_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.managed_operational_users
+      tag: convert_event_data_managed_operational_users_to_long
+      target_field: axonius.identity.event.data.managed_operational_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.managed_operational_users_saved_query_id
+      tag: rename_event_data_managed_operational_users_saved_query_id
+      target_field: axonius.identity.event.data.managed_operational_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.managed_users
+      tag: convert_event_data_managed_users_to_long
+      target_field: axonius.identity.event.data.managed_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.managed_users_by_app
+      tag: convert_event_data_managed_users_by_app_to_long
+      target_field: axonius.identity.event.data.managed_users_by_app
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.managed_users_by_app_saved_query_id
+      tag: rename_event_data_managed_users_by_app_saved_query_id
+      target_field: axonius.identity.event.data.managed_users_by_app_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.managed_users_by_sso
+      tag: convert_event_data_managed_users_by_sso_to_long
+      target_field: axonius.identity.event.data.managed_users_by_sso
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.managed_users_by_sso_saved_query_id
+      tag: rename_event_data_managed_users_by_sso_saved_query_id
+      target_field: axonius.identity.event.data.managed_users_by_sso_saved_query_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.managed_users_saved_query_id
+      tag: rename_event_data_managed_users_saved_query_id
+      target_field: axonius.identity.event.data.managed_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.orphaned_users
+      tag: convert_event_data_orphaned_users_to_long
+      target_field: axonius.identity.event.data.orphaned_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.orphaned_users_saved_query_id
+      tag: rename_event_data_orphaned_users_saved_query_id
+      target_field: axonius.identity.event.data.orphaned_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.paid_users
+      tag: convert_event_data_paid_users_to_long
+      target_field: axonius.identity.event.data.paid_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.paid_users_saved_query_id
+      tag: rename_event_data_paid_users_saved_query_id
+      target_field: axonius.identity.event.data.paid_users_saved_query_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.project_ids
+      tag: rename_event_data_project_ids
+      target_field: axonius.identity.event.data.project_ids
+      ignore_missing: true
+  - rename:
+      field: json.event.data.project_tags
+      tag: rename_event_data_project_tags
+      target_field: axonius.identity.event.data.project_tags
+      ignore_missing: true
+  - rename:
+      field: json.event.data.projects_roles
+      tag: rename_event_data_projects_roles
+      target_field: axonius.identity.event.data.projects_roles
+      ignore_missing: true
+  - rename:
+      field: json.event.data.relatable_ids
+      tag: rename_event_data_relatable_ids
+      target_field: axonius.identity.event.data.relatable_ids
+      ignore_missing: true
+  - rename:
+      field: json.event.data.remote_account_id
+      tag: rename_event_data_remote_account_id
+      target_field: axonius.identity.event.data.remote_account_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.status
+      tag: rename_event_data_status
+      target_field: axonius.identity.event.data.status
+      ignore_missing: true
+  - convert:
+      field: json.event.data.suspended_users
+      tag: convert_event_data_suspended_users_to_long
+      target_field: axonius.identity.event.data.suspended_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.suspended_users_saved_query_id
+      tag: rename_event_data_suspended_users_saved_query_id
+      target_field: axonius.identity.event.data.suspended_users_saved_query_id
+      ignore_missing: true
+  - convert:
+      field: json.event.data.unlinked_users
+      tag: convert_event_data_unlinked_users_to_long
+      target_field: axonius.identity.event.data.unlinked_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.unlinked_users_saved_query_id
+      tag: rename_event_data_unlinked_users_saved_query_id
+      target_field: axonius.identity.event.data.unlinked_users_saved_query_id
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

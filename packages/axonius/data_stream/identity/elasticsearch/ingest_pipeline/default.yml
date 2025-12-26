@@ -1,0 +1,820 @@
+---
+description: Pipeline for processing identity logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.2.0
+  - terminate:
+      description: error message set and no data to process.
+      tag: terminate_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - drop:
+      if: ctx.message == 'empty_data'
+      tag: drop_empty_data_events
+
+  # remove agentless metadata
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_event_original
+      target_field: axonius.identity.transform_unique_id
+      ignore_missing: true
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: iam
+      tag: category_iam
+  - append:
+      field: event.type
+      value: info
+      tag: type_info
+
+  - convert:
+      field: json.adapter_list_length
+      tag: convert_adapter_list_length_to_long
+      target_field: axonius.identity.adapter_list_length
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.adapters
+      tag: rename_adapters
+      target_field: axonius.identity.adapters
+      ignore_missing: true
+  - rename:
+      field: json.asset_type
+      tag: rename_asset_type
+      target_field: axonius.identity.asset_type
+      ignore_missing: true
+  - date:
+      field: json.event.accurate_for_datetime
+      tag: date_event_accurate_for_datetime
+      target_field: axonius.identity.event.accurate_for_datetime
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.accurate_for_datetime != null && ctx.json.event.accurate_for_datetime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_identity_event_accurate_for_datetime
+      copy_from: axonius.identity.event.accurate_for_datetime
+      ignore_empty_value: true
+  - rename:
+      field: json.event.action_if_exists
+      tag: rename_event_action_if_exists
+      target_field: axonius.identity.event.action_if_exists
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_identity_event_action_if_exists
+      copy_from: axonius.identity.event.action_if_exists
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != null && ctx.event.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.adapter_categories
+      tag: rename_event_adapter_categories
+      target_field: axonius.identity.event.adapter_categories
+      ignore_missing: true
+  - rename:
+      field: json.event.associated_adapters
+      tag: rename_event_associated_adapters
+      target_field: axonius.identity.event.associated_adapters
+      ignore_missing: true
+  - rename:
+      field: json.event.association_type
+      tag: rename_event_association_type
+      target_field: axonius.identity.event.association_type
+      ignore_missing: true
+  - rename:
+      field: json.event.client_used
+      tag: rename_event_client_used
+      target_field: axonius.identity.event.client_used
+      ignore_missing: true
+  - date:
+      field: json.event.data.accurate_for_datetime
+      tag: date_event_data_accurate_for_datetime
+      target_field: axonius.identity.event.data.accurate_for_datetime
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.accurate_for_datetime != null && ctx.json.event.data.accurate_for_datetime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.application_and_account_name
+      tag: rename_event_data_application_and_account_name
+      target_field: axonius.identity.event.data.application_and_account_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.asset_type
+      tag: rename_event_data_asset_type
+      target_field: axonius.identity.event.data.asset_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.aws_arn
+      tag: rename_event_data_aws_arn
+      target_field: axonius.identity.event.data.aws_arn
+      ignore_missing: true
+  - rename:
+      field: json.event.data.display_name
+      tag: rename_event_data_display_name
+      target_field: axonius.identity.event.data.display_name
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_email_from_event_data_display_name
+      copy_from: axonius.identity.event.data.display_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_data_display_name_into_related_user
+      value: '{{{axonius.identity.event.data.display_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.event?.data?.display_name != null
+  - date:
+      field: json.event.data.fetch_time
+      tag: date_event_data_fetch_time
+      target_field: axonius.identity.event.data.fetch_time
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.fetch_time != null && ctx.json.event.data.fetch_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event.data.first_fetch_time
+      tag: date_event_data_first_fetch_time
+      target_field: axonius.identity.event.data.first_fetch_time
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.first_fetch_time != null && ctx.json.event.data.first_fetch_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.from_last_fetch
+      tag: convert_event_data_from_last_fetch_to_boolean
+      target_field: axonius.identity.event.data.from_last_fetch
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.groups
+      tag: rename_event_data_groups
+      target_field: axonius.identity.event.data.groups
+      ignore_missing: true
+  - convert:
+      field: json.event.data.has_administrative_permissions
+      tag: convert_event_data_has_administrative_permissions_to_boolean
+      target_field: axonius.identity.event.data.has_administrative_permissions
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.id
+      tag: rename_event_data_id
+      target_field: axonius.identity.event.data.id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.id_raw
+      tag: rename_event_data_id_raw
+      target_field: axonius.identity.event.data.id_raw
+      ignore_missing: true
+  - convert:
+      field: json.event.data.is_admin
+      tag: convert_event_data_is_admin_to_boolean
+      target_field: axonius.identity.event.data.is_admin
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.is_built_in
+      tag: convert_event_data_is_built_in_to_boolean
+      target_field: axonius.identity.event.data.is_built_in
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.is_fetched_from_adapter
+      tag: convert_event_data_is_fetched_from_adapter_to_boolean
+      target_field: axonius.identity.event.data.is_fetched_from_adapter
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.is_managed_by_sso
+      tag: convert_event_data_is_managed_by_sso_to_boolean
+      target_field: axonius.identity.event.data.is_managed_by_sso
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.is_privileged
+      tag: convert_event_data_is_privileged_to_boolean
+      target_field: axonius.identity.event.data.is_privileged
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.last_fetch_connection_id
+      tag: rename_event_data_last_fetch_connection_id
+      target_field: axonius.identity.event.data.last_fetch_connection_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.last_fetch_connection_label
+      tag: rename_event_data_last_fetch_connection_label
+      target_field: axonius.identity.event.data.last_fetch_connection_label
+      ignore_missing: true
+  - rename:
+      field: json.event.data.name
+      tag: rename_event_data_name
+      target_field: axonius.identity.event.data.name
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_active_from_direct_adapter
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.active_from_direct_adapter
+          tag: convert_event_data_nested_applications_active_from_direct_adapter_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.active_from_direct_adapter
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_has_administrative_permissions
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.has_administrative_permissions
+          tag: convert_event_data_nested_applications_has_administrative_permissions_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.has_administrative_permissions
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_is_deleted
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_deleted
+          tag: convert_event_data_nested_applications_is_deleted_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_deleted
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_is_from_direct_adapter
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_from_direct_adapter
+          tag: convert_event_data_nested_applications_is_from_direct_adapter_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_from_direct_adapter
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_is_managed
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_managed
+          tag: convert_event_data_nested_applications_is_managed_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_managed
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_is_suspended
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_suspended
+          tag: convert_event_data_nested_applications_is_suspended_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_suspended
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_is_unmanaged_extension
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_unmanaged_extension
+          tag: convert_event_data_nested_applications_is_unmanaged_extension_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_unmanaged_extension
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_is_user_external
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_user_external
+          tag: convert_event_data_nested_applications_is_user_external_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_user_external
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_is_user_paid
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_user_paid
+          tag: convert_event_data_nested_applications_is_user_paid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_user_paid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_last_access
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_access
+          tag: date_event_data_nested_applications_last_access
+          target_field: _ingest._value.last_access
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.last_access
+                ignore_missing: true
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_last_access_count
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.last_access_count
+          tag: convert_event_data_nested_applications_last_access_count_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.last_access_count
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_last_access_count_60_days
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.last_access_count_60_days
+          tag: convert_event_data_nested_applications_last_access_count_60_days_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.last_access_count_60_days
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.nested_applications
+      tag: foreach_event_data_nested_applications_last_access_count_90_days
+      if: ctx.json?.event?.data?.nested_applications instanceof List
+      processor:
+        convert:
+          field: _ingest._value.last_access_count_90_days
+          tag: convert_event_data_nested_applications_last_access_count_90_days_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.last_access_count_90_days
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.nested_applications
+      tag: rename_event_data_nested_applications
+      target_field: axonius.identity.event.data.nested_applications
+      ignore_missing: true
+  - rename:
+      field: json.event.data.nested_associated_devices
+      tag: rename_event_data_nested_associated_devices
+      target_field: axonius.identity.event.data.nested_associated_devices
+      ignore_missing: true
+  - date:
+      field: json.event.data.nested_grants_last_updated
+      tag: date_event_data_nested_grants_last_updated
+      target_field: axonius.identity.event.data.nested_grants_last_updated
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.nested_grants_last_updated != null && ctx.json.event.data.nested_grants_last_updated != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.nested_groups
+      tag: rename_event_data_nested_groups
+      target_field: axonius.identity.event.data.nested_groups
+      ignore_missing: true
+  - rename:
+      field: json.event.data.nested_permissions
+      tag: rename_event_data_nested_permissions
+      target_field: axonius.identity.event.data.nested_permissions
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.nested_resources
+      tag: foreach_event_data_nested_resources_value
+      if: ctx.json?.event?.data?.nested_resources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.value
+          tag: convert_event_data_nested_resources_value_to_keyword
+          type: string
+          ignore_missing: true
+  - rename:
+      field: json.event.data.nested_resources
+      tag: rename_event_data_nested_resources
+      target_field: axonius.identity.event.data.nested_resources
+      ignore_missing: true
+  - rename:
+      field: json.event.data.nested_roles
+      tag: rename_event_data_nested_roles
+      target_field: axonius.identity.event.data.nested_roles
+      ignore_missing: true
+  - convert:
+      field: json.event.data.not_fetched_count
+      tag: convert_event_data_not_fetched_count_to_long
+      target_field: axonius.identity.event.data.not_fetched_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.operational_users_count
+      tag: convert_event_data_operational_users_count_to_long
+      target_field: axonius.identity.event.data.operational_users_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.permissions
+      tag: rename_event_data_permissions
+      target_field: axonius.identity.event.data.permissions
+      ignore_missing: true
+  - rename:
+      field: json.event.data.pretty_id
+      tag: rename_event_data_pretty_id
+      target_field: axonius.identity.event.data.pretty_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.remote_id
+      tag: rename_event_data_remote_id
+      target_field: axonius.identity.event.data.remote_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.sm_entity_type
+      tag: rename_event_data_sm_entity_type
+      target_field: axonius.identity.event.data.sm_entity_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.source_application
+      tag: rename_event_data_source_application
+      target_field: axonius.identity.event.data.source_application
+      ignore_missing: true
+  - rename:
+      field: json.event.data.tenant_number
+      tag: rename_event_data_tenant_number
+      target_field: axonius.identity.event.data.tenant_number
+      ignore_missing: true
+  - convert:
+      field: json.event.data.total_users_count
+      tag: convert_event_data_total_users_count_to_long
+      target_field: axonius.identity.event.data.total_users_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.type
+      tag: rename_event_data_type
+      target_field: axonius.identity.event.data.type
+      ignore_missing: true
+  - rename:
+      field: json.event.entity
+      tag: rename_event_entity
+      target_field: axonius.identity.event.entity
+      ignore_missing: true
+  - convert:
+      field: json.event.hidden_for_gui
+      tag: convert_event_hidden_for_gui_to_boolean
+      target_field: axonius.identity.event.hidden_for_gui
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.initial_plugin_unique_name
+      tag: rename_event_initial_plugin_unique_name
+      target_field: axonius.identity.event.initial_plugin_unique_name
+      ignore_missing: true
+  - rename:
+      field: json.event.name
+      tag: rename_event_name
+      target_field: axonius.identity.event.name
+      ignore_missing: true
+  - rename:
+      field: json.event.plugin_name
+      tag: rename_event_plugin_name
+      target_field: axonius.identity.event.plugin_name
+      ignore_missing: true
+  - rename:
+      field: json.event.plugin_type
+      tag: rename_event_plugin_type
+      target_field: axonius.identity.event.plugin_type
+      ignore_missing: true
+  - rename:
+      field: json.event.plugin_unique_name
+      tag: rename_event_plugin_unique_name
+      target_field: axonius.identity.event.plugin_unique_name
+      ignore_missing: true
+  - rename:
+      field: json.event.quick_id
+      tag: rename_event_quick_id
+      target_field: axonius.identity.event.quick_id
+      ignore_missing: true
+  - rename:
+      field: json.event.type
+      tag: rename_event_type
+      target_field: axonius.identity.event.type
+      ignore_missing: true
+  - rename:
+      field: json.internal_axon_id
+      tag: rename_internal_axon_id
+      target_field: axonius.identity.internal_axon_id
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-account" }}'
+      tag: pipeline-account
+      if: >-
+        ctx.axonius?.identity?.asset_type.contains('accounts')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-group" }}'
+      tag: pipeline-group
+      if: >-
+        ctx.axonius?.identity?.asset_type.contains('groups')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-certificate" }}'
+      tag: pipeline-certificate
+      if: >-
+        ctx.axonius?.identity?.asset_type.contains('certificates')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-user" }}'
+      tag: pipeline-user
+      if: >-
+        ctx.axonius?.identity?.asset_type.contains('users')
+  - remove:
+      field:
+        - axonius.identity.event.accurate_for_datetime
+        - axonius.identity.event.data.display_name
+        - axonius.identity.event.data.application_id
+        - axonius.identity.event.data.application_name
+        - axonius.identity.event.data.created_date
+        - axonius.identity.event.data.email
+        - axonius.identity.event.data.begins_on
+        - axonius.identity.event.data.expires_on
+        - axonius.identity.event.data.issuer.common_name
+        - axonius.identity.event.data.issuer.country_name
+        - axonius.identity.event.data.issuer.organization
+        - axonius.identity.event.data.serial_number
+        - axonius.identity.event.data.subject.common_name
+        - axonius.identity.event.data.subject.country_name
+        - axonius.identity.event.data.subject.locality
+        - axonius.identity.event.data.subject.organization
+        - axonius.identity.event.data.subject.state
+        - axonius.identity.event.data.aws_iam_identity_type
+        - axonius.identity.event.data.azure_account_id
+        - axonius.identity.event.data.cloud_provider
+        - axonius.identity.event.data.mail
+        - axonius.identity.event.data.user_created
+        - axonius.identity.event.data.user_full_name
+        - axonius.identity.event.data.username
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

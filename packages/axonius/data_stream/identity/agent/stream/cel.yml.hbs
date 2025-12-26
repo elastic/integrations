@@ -1,0 +1,134 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  api_key: {{api_key}}
+  secret_key: {{secret_key}}
+  batch_size: {{batch_size}}
+  asset_type_list:
+    - users
+    - groups
+    - security_roles
+    - organizational_units
+    - accounts
+    - certificates
+    - permissions
+    - latest_rules
+    - profiles
+    - job_titles
+    - access_review_campaign_instances
+    - access_review_approval_items
+
+redact:
+  fields:
+    - api_key
+    - secret_key
+program: |
+  (
+    state.?worklist.asset_type_list[0].hasValue() ?
+      state
+    :
+      state.drop("worklist").with(
+        {
+          "worklist": {
+            "asset_type_list": state.asset_type_list,
+          }
+        }
+      )
+  ).as(state, state.with(
+    request(
+      "POST",
+      state.url.trim_right("/") + "/api/v2/assets/" + string(state.worklist.asset_type_list[0])
+    ).with(
+      {
+        "Header": {
+          "Content-Type": ["application/json"],
+          "api-key": [state.api_key],
+          "api-secret": [state.secret_key],
+        },
+        "Body": {
+          "include_metadata": true,
+          "page": {
+            "limit": state.batch_size,
+          },
+          ?"next_page": state.?worklist.?next_page,
+          "fields": ["specific_data"],
+          "use_cache_entry": false,
+          "include_details": false,
+        }.encode_json(),
+      }
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body,
+        {
+          "events": (has(body.assets) && size(body.assets) > 0 ?
+            body.assets.map(assets,
+              assets.specific_data.map(d,{
+                "message":{
+                  ?"internal_axon_id": assets.?internal_axon_id,
+                  ?"adapters": assets.?adapters,
+                  ?"adapter_list_length": assets.?adapter_list_length,
+                  ?"labels": assets.?labels,
+                  "asset_type": string(state.worklist.asset_type_list[0]),
+                  "event": d
+                }.encode_json(),
+              })
+            ).flatten()
+          :
+            [{"message":"empty_data"}]
+          ),
+          "worklist": {
+            "asset_type_list": (has(body.meta.page.number) && has(body.meta.page.totalPages) &&
+            int(body.meta.page.number) < int(body.meta.page.totalPages)) ? state.worklist.asset_type_list : tail(state.worklist.asset_type_list),
+            "next_page": (has(body.meta.page.number) && has(body.meta.page.totalPages) &&
+            int(body.meta.page.number) < int(body.meta.page.totalPages)) ? (body.?meta.?next_page) : null,
+          },
+          "want_more": (has(body.meta.page.number) && has(body.meta.page.totalPages) &&
+          int(body.meta.page.number) < int(body.meta.page.totalPages) || size(state.worklist.asset_type_list) > 1),
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST:" + state.url.trim_right("/") + "/api/v2/assets/ " + string(state.worklist.asset_type_list[0]) + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  ))
+tags:
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
