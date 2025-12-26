@@ -1,0 +1,232 @@
+---
+description: Pipeline for processing license logs.
+processors:
+  - date:
+      field: json.event.data.actual_renewal_date
+      tag: date_event_data_actual_renewal_date
+      target_field: axonius.application.event.data.actual_renewal_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.actual_renewal_date != null && ctx.json.event.data.actual_renewal_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.associated_license_users
+      tag: foreach_event_data_associated_license_users_email
+      if: ctx.json?.event?.data?.associated_license_users instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_event_data_associated_license_users_email_into_related_user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.event.data.associated_license_users
+      tag: foreach_event_data_associated_license_users_username
+      if: ctx.json?.event?.data?.associated_license_users instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_event_data_associated_license_users_username_into_related_user
+          value: '{{{_ingest._value.username}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.event.data.associated_license_users
+      tag: rename_event_data_associated_license_users
+      target_field: axonius.application.event.data.associated_license_users
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.associated_users
+      tag: foreach_event_data_associated_users_username
+      if: ctx.json?.event?.data?.associated_users instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_event_data_associated_users_username_into_related_user
+          value: '{{{_ingest._value.username}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.event.data.associated_users
+      tag: rename_event_data_associated_users
+      target_field: axonius.application.event.data.associated_users
+      ignore_missing: true
+  - convert:
+      field: json.event.data.cost
+      tag: convert_event_data_cost_to_double
+      target_field: axonius.application.event.data.cost
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event.data.end_date
+      tag: date_event_data_end_date
+      target_field: axonius.application.event.data.end_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.end_date != null && ctx.json.event.data.end_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.is_active_license
+      tag: convert_event_data_is_active_license_to_boolean
+      target_field: axonius.application.event.data.is_active_license
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.is_active_license_from_adapter
+      tag: convert_event_data_is_active_license_from_adapter_to_boolean
+      target_field: axonius.application.event.data.is_active_license_from_adapter
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.license_estimated_monthly_cost
+      tag: convert_event_data_license_estimated_monthly_cost_to_double
+      target_field: axonius.application.event.data.license_estimated_monthly_cost
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.license_estimated_yearly_cost
+      tag: convert_event_data_license_estimated_yearly_cost_to_double
+      target_field: axonius.application.event.data.license_estimated_yearly_cost
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.license_name
+      tag: rename_event_data_license_name
+      target_field: axonius.application.event.data.license_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.license_type
+      tag: rename_event_data_license_type
+      target_field: axonius.application.event.data.license_type
+      ignore_missing: true
+  - convert:
+      field: json.event.data.number_of_active_associated_users
+      tag: convert_event_data_number_of_active_associated_users_to_long
+      target_field: axonius.application.event.data.number_of_active_associated_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.number_of_associated_users
+      tag: convert_event_data_number_of_associated_users_to_long
+      target_field: axonius.application.event.data.number_of_associated_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.number_of_inactive_associated_users
+      tag: convert_event_data_number_of_inactive_associated_users_to_long
+      target_field: axonius.application.event.data.number_of_inactive_associated_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.possible_savings_of_inactive_associated_users
+      tag: convert_event_data_possible_savings_of_inactive_associated_users_to_double
+      target_field: axonius.application.event.data.possible_savings_of_inactive_associated_users
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.pricing_unit
+      tag: rename_event_data_pricing_unit
+      target_field: axonius.application.event.data.pricing_unit
+      ignore_missing: true
+  - convert:
+      field: json.event.data.quantity
+      tag: convert_event_data_quantity_to_long
+      target_field: axonius.application.event.data.quantity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event.data.start_date
+      tag: date_event_data_start_date
+      target_field: axonius.application.event.data.start_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.start_date != null && ctx.json.event.data.start_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_application_event_data_start_date
+      copy_from: axonius.application.event.data.start_date
+      ignore_empty_value: true
+  - rename:
+      field: json.event.data.subscription_term
+      tag: rename_event_data_subscription_term
+      target_field: axonius.application.event.data.subscription_term
+      ignore_missing: true
+  - convert:
+      field: json.event.data.unit_price
+      tag: convert_event_data_unit_price_to_double
+      target_field: axonius.application.event.data.unit_price
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
