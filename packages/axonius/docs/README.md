@@ -628,12 +628,14 @@ The `exposure` data stream provides exposure logs from axonius.
 | axonius.exposure.event.quick_id |  | keyword |
 | axonius.exposure.event.type |  | keyword |
 | axonius.exposure.internal_axon_id |  | keyword |
+| axonius.exposure.transform_unique_id |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Indicates whether a compute event is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
@@ -644,9 +646,9 @@ An example event for `exposure` looks as following:
 {
     "@timestamp": "2025-12-03T00:02:28.000Z",
     "agent": {
-        "ephemeral_id": "396e3dd3-57a5-4d20-928b-3486b611c6b9",
-        "id": "c718ab58-63bc-4302-ab26-43cfe9380577",
-        "name": "elastic-agent-36262",
+        "ephemeral_id": "080f273f-25b7-4287-9fc7-4bb2e1ef838b",
+        "id": "7e61decf-17ca-4266-8dd7-801a45522a0a",
+        "name": "elastic-agent-65541",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -690,19 +692,20 @@ An example event for `exposure` looks as following:
                 "quick_id": "aws_adapter_0!CVE-2024-32021",
                 "type": "entitydata"
             },
-            "internal_axon_id": "e018a2831e3ab36e86dd7a4a0782c892"
+            "internal_axon_id": "e018a2831e3ab36e86dd7a4a0782c892",
+            "transform_unique_id": "7oVTQrrn+0WjVHu/4YZCgjIyM60="
         }
     },
     "data_stream": {
         "dataset": "axonius.exposure",
-        "namespace": "66124",
+        "namespace": "23091",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "c718ab58-63bc-4302-ab26-43cfe9380577",
+        "id": "7e61decf-17ca-4266-8dd7-801a45522a0a",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -712,9 +715,8 @@ An example event for `exposure` looks as following:
             "vulnerability"
         ],
         "dataset": "axonius.exposure",
-        "ingested": "2025-12-17T10:49:26Z",
+        "ingested": "2025-12-26T09:15:58Z",
         "kind": "event",
-        "original": "{\"adapters\":[\"aws_adapter\",\"adapter_01\"],\"asset_type\":\"vulnerabilities\",\"event\":{\"accurate_for_datetime\":\"Wed, 03 Dec 2025 00:02:28 GMT\",\"client_used\":\"67fd09ab731ccb57309230fc\",\"data\":{\"__fields_to_unset__\":[\"other\"],\"accurate_for_datetime\":\"Wed, 03 Dec 2025 00:02:28 GMT\",\"cve_id\":\"CVE-2024-32021\",\"cve_severity\":\"LOW\",\"cvss\":5,\"cvss3_score\":\"5.0\",\"first_seen\":\"Tue, 29 Apr 2025 12:00:39 GMT\",\"id\":\"CVE-2024-32021\",\"is_cve\":true,\"last_fetch\":\"Wed, 03 Dec 2025 00:02:17 GMT\",\"software_name\":[\"Git\"],\"software_vendor\":[\"The Git Project\"],\"software_version\":[\"2.39.2\"]},\"initial_plugin_unique_name\":\"aws_adapter_0\",\"plugin_name\":\"aws_adapter\",\"plugin_type\":\"Adapter\",\"plugin_unique_name\":\"aws_adapter_0\",\"quick_id\":\"aws_adapter_0!CVE-2024-32021\",\"type\":\"entitydata\"},\"internal_axon_id\":\"e018a2831e3ab36e86dd7a4a0782c892\"}",
         "type": [
             "info"
         ]
@@ -723,7 +725,6 @@ An example event for `exposure` looks as following:
         "type": "cel"
     },
     "tags": [
-        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-exposure"
