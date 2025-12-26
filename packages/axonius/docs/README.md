@@ -31,11 +31,15 @@ This integration collects log messages of the following type:
 
 ### Supported use cases
 
-Integrating the Axonius Identity Datastream with Elastic SIEM provides a unified view of users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access-review activity. Metrics and breakdowns help teams quickly assess identity posture by highlighting active, inactive, suspended, and external users, as well as patterns across user types and departments.
+Integrating the Axonius Identity Datastream with Elastic SIEM provides a unified view of users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access review activity. Metrics and breakdowns help teams quickly assess identity posture by highlighting active, inactive, suspended, and external users, as well as patterns across user types and departments.
 
 Tables showing top email addresses and cloud providers add context into frequently used identities and their sources. These insights help security and IAM teams detect identity anomalies, validate account hygiene, and maintain strong visibility into access across the organization.
 
 ## What do I need to use this integration?
+
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
 
 ### From Axonius
 
@@ -47,7 +51,13 @@ To collect data through the Axonius APIs, you need to provide the **URL**, **API
 2. Your instance URL is your Base **URL**.
 3. Navigate to **User Settings > API Key**.
 4. Generate an **API Key**.
-5. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
+5. If you do not see the API Key tab in your user settings, follow these steps:
+    1.  Go to **System Settings** > **User and Role Management** > **Service Accounts**.
+    2. Create a Service Account, and then generate an **API Key**.
+6. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
+
+**Note:**
+To generate or reset an API key, your role must be **Admin**, and you must have **API Access** permissions, which include **API Access Enabled** and **Reset API Key**.
 
 ## How do I deploy this integration?
 
@@ -86,6 +96,13 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Axonius**, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **axonius**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
 ## Troubleshooting
 
@@ -530,12 +547,14 @@ The `identity` data stream provides identity asset logs from axonius.
 | axonius.identity.event.quick_id |  | keyword |
 | axonius.identity.event.type |  | keyword |
 | axonius.identity.internal_axon_id |  | keyword |
+| axonius.identity.transform_unique_id |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
@@ -546,9 +565,9 @@ An example event for `identity` looks as following:
 {
     "@timestamp": "2025-12-09T12:02:11.000Z",
     "agent": {
-        "ephemeral_id": "fa5bf2ae-a8ba-4b17-8ea6-c1f94cf39fd0",
-        "id": "9e2501d5-affe-4b18-9946-d7093484df30",
-        "name": "elastic-agent-38295",
+        "ephemeral_id": "ba91a9bf-40c9-4bab-8184-9be7d6c2ad8f",
+        "id": "f7715edc-eff0-4526-b250-1a56517c01e0",
+        "name": "elastic-agent-41335",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -659,7 +678,8 @@ An example event for `identity` looks as following:
                 "quick_id": "azure_ad_adapter_0!c8103abe-eda9-472b-894a-6260bb2ba8cc",
                 "type": "entitydata"
             },
-            "internal_axon_id": "bc11b2989fc0f69708b6865d172a49fe"
+            "internal_axon_id": "bc11b2989fc0f69708b6865d172a49fe",
+            "transform_unique_id": "N8G3qDAOmSElCdviQ3d6FpD76pE="
         }
     },
     "cloud": {
@@ -670,14 +690,14 @@ An example event for `identity` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.identity",
-        "namespace": "52700",
+        "namespace": "56452",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "9e2501d5-affe-4b18-9946-d7093484df30",
+        "id": "f7715edc-eff0-4526-b250-1a56517c01e0",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -688,9 +708,8 @@ An example event for `identity` looks as following:
         ],
         "created": "2024-06-28T08:49:28.000Z",
         "dataset": "axonius.identity",
-        "ingested": "2025-12-18T12:07:36Z",
+        "ingested": "2025-12-26T10:17:19Z",
         "kind": "event",
-        "original": "{\"adapter_list_length\":12,\"adapters\":[\"aws_adapter\",\"zoom_adapter\"],\"asset_type\":\"users\",\"event\":{\"accurate_for_datetime\":\"Tue, 09 Dec 2025 12:02:11 GMT\",\"adapter_categories\":[\"Directory\",\"IAM\",\"SaaS Management\"],\"client_used\":\"67fd09bbfe1c8e812a176bb5\",\"data\":{\"account_disabled\":true,\"accurate_for_datetime\":\"Tue, 09 Dec 2025 12:02:11 GMT\",\"application_and_account_name\":\"microsoft/azure_ad-demo\",\"associated_groups\":[{\"display_name\":\"developers-group\",\"remote_id\":\"a3e70162\"}],\"azure_account_id\":\"c8103abe-eda9-472b-894a-6260bb2ba8cc\",\"cloud_provider\":\"Azure\",\"email_activity\":{\"is_deleted\":false,\"product_license\":\"MICROSOFT FABRIC (FREE)+MICROSOFT TEAMS PHONE STANDARD+MICROSOFT DEFENDER FOR OFFICE365 (PLAN 2)+MICROSOFT 365 AUDIO CONFERENCING+ENTERPRISE MOBILITY + SECURITY E3+OFFICE365 E3+MICROSOFT 365 E3 EXTRA FEATURES\",\"read_count\":2321,\"receive_count\":6965,\"report_date\":\"Fri, 10 Jan 2025 20:34:43 GMT\",\"report_period\":90,\"send_count\":3030},\"fetch_time\":\"Tue, 09 Dec 2025 12:02:03 GMT\",\"first_fetch_time\":\"Mon, 14 Apr 2025 13:27:00 GMT\",\"from_last_fetch\":true,\"has_administrative_permissions\":true,\"id\":\"c8103abe-eda9-472b-894a-6260bb2ba8cc\",\"internal_is_admin\":false,\"is_admin\":false,\"is_fetched_from_adapter\":true,\"is_latest_last_seen\":true,\"is_managed_by_application\":true,\"is_permission_adapter\":true,\"is_saas_user\":true,\"is_user_external\":false,\"last_fetch_connection_id\":\"67fd09bbfe1c8e812a176bb5\",\"last_fetch_connection_label\":\"azure_ad-demo\",\"last_logon\":\"Sun, 30 Nov 2025 18:50:39 GMT\",\"last_seen\":\"Mon, 10 Nov 2025 22:18:25 GMT\",\"mail\":\"helen.jordan@demo.local\",\"nested_applications\":[{\"app_display_name\":\"Calendly\",\"assignment_type\":\"Direct\",\"extension_type\":\"User Consent\",\"is_managed\":false,\"is_unmanaged_extension\":true,\"name\":\"Calendly\",\"parents\":[{\"name\":\"\",\"value\":\"\"}],\"permissions\":[{\"name\":\"openid\"}],\"relation_extension_name\":\"Calendly\",\"source_application\":\"Microsoft\",\"value\":\"2E2a2e7c9f758BDcC0E2\",\"vendor_category\":\"Productivity\"}],\"nested_associated_devices\":[],\"nested_grants_last_updated\":\"Tue, 09 Dec 2025 12:10:06 GMT\",\"nested_grants_managers_last_updated\":\"Tue, 09 Dec 2025 12:10:10 GMT\",\"nested_groups\":[{\"assignment_type\":\"Direct\",\"name\":\"Office365 Users\",\"parents\":[{\"name\":\"\",\"value\":\"\"}],\"value\":\"d8e66837\"}],\"nested_managers\":[],\"nested_resources\":[],\"nested_roles\":[],\"not_fetched_count\":0,\"sm_entity_type\":\"saas_user\",\"source_application\":\"Microsoft\",\"tenant_number\":[\"2\"],\"user_apps\":[],\"user_created\":\"Fri, 28 Jun 2024 08:49:28 GMT\",\"user_permissions\":[{\"is_admin\":false,\"name\":\"OnlineMeetings.ReadWrite\"}],\"user_remote_id\":\"63d52bb0-7ce0-4467-9004-2b19c06b86ae\",\"user_type\":\"Member\",\"username\":\"helen.jordan@demo.local\"},\"initial_plugin_unique_name\":\"azure_ad_adapter_0\",\"plugin_name\":\"azure_ad_adapter\",\"plugin_type\":\"Adapter\",\"plugin_unique_name\":\"azure_ad_adapter_0\",\"quick_id\":\"azure_ad_adapter_0!c8103abe-eda9-472b-894a-6260bb2ba8cc\",\"type\":\"entitydata\"},\"internal_axon_id\":\"bc11b2989fc0f69708b6865d172a49fe\"}",
         "type": [
             "info"
         ]
@@ -705,7 +724,6 @@ An example event for `identity` looks as following:
         ]
     },
     "tags": [
-        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-identity"
@@ -764,3 +782,7 @@ These APIs are used with this integration:
     * job_titles (endpoint: `/api/v2/job_titles`)
     * access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
     * access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
+
+#### ILM Policy
+
+To facilitate identity data, source data stream-backed indices `.ds-logs-axonius.identity-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-axonius.identity-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.

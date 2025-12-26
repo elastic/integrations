@@ -31,11 +31,15 @@ This integration collects log messages of the following type:
 
 ### Supported use cases
 
-Integrating the Axonius Identity Datastream with Elastic SIEM provides a unified view of users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access-review activity. Metrics and breakdowns help teams quickly assess identity posture by highlighting active, inactive, suspended, and external users, as well as patterns across user types and departments.
+Integrating the Axonius Identity Datastream with Elastic SIEM provides a unified view of users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access review activity. Metrics and breakdowns help teams quickly assess identity posture by highlighting active, inactive, suspended, and external users, as well as patterns across user types and departments.
 
 Tables showing top email addresses and cloud providers add context into frequently used identities and their sources. These insights help security and IAM teams detect identity anomalies, validate account hygiene, and maintain strong visibility into access across the organization.
 
 ## What do I need to use this integration?
+
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
 
 ### From Axonius
 
@@ -47,7 +51,13 @@ To collect data through the Axonius APIs, you need to provide the **URL**, **API
 2. Your instance URL is your Base **URL**.
 3. Navigate to **User Settings > API Key**.
 4. Generate an **API Key**.
-5. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
+5. If you do not see the API Key tab in your user settings, follow these steps:
+    1.  Go to **System Settings** > **User and Role Management** > **Service Accounts**.
+    2. Create a Service Account, and then generate an **API Key**.
+6. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
+
+**Note:**
+To generate or reset an API key, your role must be **Admin**, and you must have **API Access** permissions, which include **API Access Enabled** and **Reset API Key**.
 
 ## How do I deploy this integration?
 
@@ -86,6 +96,13 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Axonius**, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **axonius**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
 ## Troubleshooting
 
@@ -128,3 +145,7 @@ These APIs are used with this integration:
     * job_titles (endpoint: `/api/v2/job_titles`)
     * access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
     * access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
+
+#### ILM Policy
+
+To facilitate identity data, source data stream-backed indices `.ds-logs-axonius.identity-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-axonius.identity-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
