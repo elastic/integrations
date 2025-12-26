@@ -123,6 +123,7 @@ Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
 | `logs-axonius.gateway-*`           | `logs-axonius_latest.dest_gateway-*`             | `logs-axonius_latest.gateway`           |
 | `logs-axonius.incident-*`          | `logs-axonius_latest.dest_incident-*`            | `logs-axonius_latest.incident`          |
 | `logs-axonius.user-*`              | `logs-axonius_latest.dest_user-*`                | `logs-axonius_latest.user`              |
+| `logs-axonius.storage-*`              | `logs-axonius_latest.dest_storage-*`                | `logs-axonius_latest.storage`              |
 
 ## Troubleshooting
 
@@ -1108,12 +1109,14 @@ The `storage` data stream provides storage asset logs from axonius.
 | axonius.storage.event.quick_id |  | keyword |
 | axonius.storage.event.type |  | keyword |
 | axonius.storage.internal_axon_id |  | keyword |
+| axonius.storage.transform_unique_id |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Indicates whether a storage is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
@@ -1124,9 +1127,9 @@ An example event for `storage` looks as following:
 {
     "@timestamp": "2025-12-09T00:02:06.000Z",
     "agent": {
-        "ephemeral_id": "f0e29e80-6376-452c-9bd6-534281c73eac",
-        "id": "3e845599-3408-43ba-a163-d317c1e83f82",
-        "name": "elastic-agent-64200",
+        "ephemeral_id": "38d860f6-9122-4541-a71c-cf60942f0c9c",
+        "id": "8572bf92-b04c-4939-90c3-2403c7c97497",
+        "name": "elastic-agent-67200",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1171,19 +1174,20 @@ An example event for `storage` looks as following:
                 "quick_id": "aws_adapter_0!140649f1bb9614f2254f",
                 "type": "entitydata"
             },
-            "internal_axon_id": "7e8e5d4db0c7aa12d3b15c556b4513eb"
+            "internal_axon_id": "7e8e5d4db0c7aa12d3b15c556b4513eb",
+            "transform_unique_id": "Y55e0DbHhziiAfhMWXWz91rs+40="
         }
     },
     "data_stream": {
         "dataset": "axonius.storage",
-        "namespace": "59577",
+        "namespace": "46787",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "3e845599-3408-43ba-a163-d317c1e83f82",
+        "id": "8572bf92-b04c-4939-90c3-2403c7c97497",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1191,7 +1195,7 @@ An example event for `storage` looks as following:
         "agent_id_status": "verified",
         "created": "2024-12-13T02:59:39.000Z",
         "dataset": "axonius.storage",
-        "ingested": "2025-12-17T14:00:06Z",
+        "ingested": "2025-12-26T06:40:20Z",
         "kind": "event",
         "original": "{\"adapter_list_length\":1,\"adapters\":[\"aws_adapter\"],\"asset_type\":\"disks\",\"event\":{\"accurate_for_datetime\":\"Tue, 09 Dec 2025 00:02:06 GMT\",\"adapter_categories\":[\"Cloud Infra\"],\"client_used\":\"67fd09ab731ccb57309230fc\",\"data\":{\"accurate_for_datetime\":\"Tue, 09 Dec 2025 00:02:06 GMT\",\"application_and_account_name\":\"aws/aws-demo\",\"asset_type\":\"EBS Volume\",\"create_time\":\"Fri, 13 Dec 2024 02:59:39 GMT\",\"fetch_time\":\"Tue, 09 Dec 2025 00:02:06 GMT\",\"first_fetch_time\":\"Mon, 14 Apr 2025 13:27:02 GMT\",\"from_last_fetch\":true,\"id\":\"140649f1bb9614f2254f\",\"id_raw\":\"47c9b542-36de-4415-ad96-5840a082f9dd\",\"is_fetched_from_adapter\":true,\"last_fetch_connection_id\":\"67fd09ab731ccb57309230fc\",\"last_fetch_connection_label\":\"aws-demo\",\"not_fetched_count\":0,\"size\":40,\"source_application\":\"AWS\",\"tenant_number\":[\"1\"],\"type\":\"Disk\"},\"initial_plugin_unique_name\":\"aws_adapter_0\",\"plugin_name\":\"aws_adapter\",\"plugin_type\":\"Adapter\",\"plugin_unique_name\":\"aws_adapter_0\",\"quick_id\":\"aws_adapter_0!140649f1bb9614f2254f\",\"type\":\"entitydata\"},\"internal_axon_id\":\"7e8e5d4db0c7aa12d3b15c556b4513eb\"}"
     },

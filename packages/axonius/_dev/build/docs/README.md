@@ -123,6 +123,7 @@ Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
 | `logs-axonius.gateway-*`           | `logs-axonius_latest.dest_gateway-*`             | `logs-axonius_latest.gateway`           |
 | `logs-axonius.incident-*`          | `logs-axonius_latest.dest_incident-*`            | `logs-axonius_latest.incident`          |
 | `logs-axonius.user-*`              | `logs-axonius_latest.dest_user-*`                | `logs-axonius_latest.user`              |
+| `logs-axonius.storage-*`              | `logs-axonius_latest.dest_storage-*`                | `logs-axonius_latest.storage`              |
 
 ## Troubleshooting
 
