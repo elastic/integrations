@@ -1,0 +1,34 @@
+{
+    "id": "aws-bedrock-agentcore-code-interpreter-high-latency",
+    "type": "alerting_rule_template",
+    "attributes": {
+      "name": "[AWS Bedrock AgentCore] Code interpreter high latency",
+      "tags": ["AWS", "Amazon Bedrock AgentCore", "Code Interpreter"],
+      "ruleTypeId": ".es-query",
+      "schedule": {
+        "interval": "5m"
+      },
+      "params": {
+        "searchType": "esqlQuery",
+        "timeWindowSize": 5,
+        "timeWindowUnit": "m",
+        "esqlQuery": {
+          "esql": "// Alert triggers when high execution duration is detected during AWS Bedrock AgentCore Code Interpreter operations.\n//\n// Code Interpreter executes code within secure, isolated sessions. High duration\n// can indicate complex computations, resource constraints, or inefficient code.\n//\n// Duration measures the average execution time for code interpreter operations\n// in milliseconds.\n//\n// High latency in code execution can impact:\n// - Agent response times\n// - User experience\n// - Session timeouts\n//\n// The alert is grouped by cloud account, region, and resource.\n//\n// To adjust sensitivity, change the threshold (default: 30000ms = 30 seconds).\n// For more details, see: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-observability.html\n\nFROM metrics-aws_bedrock_agentcore.metrics-*\n| WHERE aws.dimensions.Operation IN (\"InvokeCodeInterpreter\", \"CodeInterpreterSession\")\n| STATS avg_duration_ms = avg(aws.bedrock_agentcore.metrics.Duration.avg) BY cloud.account.id, cloud.region, aws.dimensions.Resource\n| WHERE avg_duration_ms > 30000"
+        },
+        "groupBy": "row",
+        "timeField": "event.ingested"
+      },
+      "alertDelay": {
+        "active": 1
+      }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+  }
+
+
+
+
+
+
