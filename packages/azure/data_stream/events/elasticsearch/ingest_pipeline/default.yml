@@ -3,18 +3,18 @@ description: Pipeline for parsing Azure logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: "8.11.0"
   # TODO: we can remove this processor when https://github.com/elastic/beats/issues/40561
   # is fixed and released.
   - rename:
       field: azure
       target_field: azure-eventhub
-      if: 'ctx.azure?.eventhub != null'
+      if: "ctx.azure?.eventhub != null"
       ignore_missing: true
   - set:
       field: event.kind
       value: event
-  
+
   #
   # Set `event.dataset` value based on the event category.
   # ------------------------------------------------------
@@ -23,12 +23,18 @@ processors:
   # `event.dataset` value to route the event to
   # the appropriate data stream.
   #
-  
+
   - json:
       field: message
       target_field: tmp_json
-      description: 'Parses the message field as JSON and stores it in a temporary field to identify the event dataset.'
-  
+      description: "Parses the message field as JSON and stores it in a temporary field to identify the event dataset."
+
+  - rename:
+      field: tmp_json.category
+      target_field: routing.category
+      ignore_missing: true
+      description: "Set routing.category to tmp_json.category if it exists"
+
   # Unfortunately, some Azure services produce logs with field names capitalized,
   # violating the spec [1].
   #
@@ -40,81 +46,82 @@ processors:
   # [1]: https://learn.microsoft.com/en-us/azure/azure-monitor/platform/resource-logs-schema#top-level-common-schema
   - rename:
       field: tmp_json.Category
-      target_field: tmp_json.category
-      if: 'ctx.tmp_json?.category == null'
+      target_field: routing.category
+      if: "ctx.routing?.category == null"
       ignore_missing: true
-      description: 'Rename the invalid `Category` field to `category` to apply the correct routing rules.'
+      description: "Rename the invalid `Category` field to `category` to apply the correct routing rules."
+
   # Unfortunately, some Azure services generate logs with
   # `CategoryValue` field instead of `Category` field.
   #
   # We need to rename `CategoryValue` as `category` to
   # apply the correct routing rules.
-  # 
+  #
   # Refs;
   # - https://github.com/elastic/integrations/issues/15206
   - rename:
       field: tmp_json.CategoryValue
-      target_field: tmp_json.category
-      if: ctx.tmp_json?.category == null
+      target_field: routing.category
+      if: ctx.routing?.category == null
       ignore_missing: true
-      description: 'Rename the invalid `CategoryValue` field to `category` to apply the correct routing rules.'
+      description: "Rename the invalid `CategoryValue` field to `category` to apply the correct routing rules."
+
+  # Remove the temporary field used to identify the event dataset.
+  - remove:
+      field: tmp_json
+      ignore_missing: true
+      description: "Removes the temporary field used to identify the event dataset."
 
   # Defaults to azure.events if the `category` field is not present.
   - set:
       field: event.dataset
       value: azure.events
-      description: 'Sets the default event dataset.'
-  
+      description: "Sets the default event dataset."
+
   # Sets the event dataset based on the `category` field.
   - set:
       field: event.dataset
       value: azure.platformlogs
-      if: 'ctx.tmp_json?.category != null'
-      description: 'If the event has a category field, we consider it a platform log.'
+      if: "ctx.routing?.category != null"
+      description: "If the event has a category field, we consider it a platform log."
   - set:
       field: event.dataset
       value: azure.activitylogs
-      if: 'ctx.tmp_json?.category == "Administrative" || ctx.tmp_json?.category == "Security" || ctx.tmp_json?.category == "ServiceHealth" || ctx.tmp_json?.category == "Alert" || ctx.tmp_json?.category == "Recommendation" || ctx.tmp_json?.category == "Policy" || ctx.tmp_json?.category == "Autoscale" || ctx.tmp_json?.category == "ResourceHealth"'
+      if: 'ctx.routing?.category == "Administrative" || ctx.routing?.category == "Security" || ctx.routing?.category == "ServiceHealth" || ctx.routing?.category == "Alert" || ctx.routing?.category == "Recommendation" || ctx.routing?.category == "Policy" || ctx.routing?.category == "Autoscale" || ctx.routing?.category == "ResourceHealth"'
   - set:
       field: event.dataset
       value: azure.application_gateway
-      if: 'ctx.tmp_json?.category == "ApplicationGatewayFirewallLog" || ctx.tmp_json?.category == "ApplicationGatewayAccessLog"'
+      if: 'ctx.routing?.category == "ApplicationGatewayFirewallLog" || ctx.routing?.category == "ApplicationGatewayAccessLog"'
   - set:
       field: event.dataset
       value: azure.auditlogs
-      if: 'ctx.tmp_json?.category == "AuditLogs"'
+      if: 'ctx.routing?.category == "AuditLogs"'
   - set:
       field: event.dataset
       value: azure.firewall_logs
-      if: 'ctx.tmp_json?.category == "AzureFirewallApplicationRule" || ctx.tmp_json?.category == "AzureFirewallNetworkRule" || ctx.tmp_json?.category == "AzureFirewallDnsProxy" || ctx.tmp_json?.category == "AZFWApplicationRule" || ctx.tmp_json?.category == "AZFWNetworkRule" || ctx.tmp_json?.category == "AZFWNatRule" || ctx.tmp_json?.category == "AZFWDnsQuery"'
+      if: 'ctx.routing?.category == "AzureFirewallApplicationRule" || ctx.routing?.category == "AzureFirewallNetworkRule" || ctx.routing?.category == "AzureFirewallDnsProxy" || ctx.routing?.category == "AZFWApplicationRule" || ctx.routing?.category == "AZFWNetworkRule" || ctx.routing?.category == "AZFWNatRule" || ctx.routing?.category == "AZFWDnsQuery"'
   - set:
       field: event.dataset
       value: azure.graphactivitylogs
-      if: 'ctx.tmp_json?.category == "MicrosoftGraphActivityLogs"'
+      if: 'ctx.routing?.category == "MicrosoftGraphActivityLogs"'
   - set:
       field: event.dataset
       value: azure.identity_protection
-      if: 'ctx.tmp_json?.category == "RiskyUsers" || ctx.tmp_json?.category == "UserRiskEvents"'
+      if: 'ctx.routing?.category == "RiskyUsers" || ctx.routing?.category == "UserRiskEvents"'
   - set:
       field: event.dataset
       value: azure.provisioning
-      if: 'ctx.tmp_json?.category == "ProvisioningLogs"'
+      if: 'ctx.routing?.category == "ProvisioningLogs"'
   - set:
       field: event.dataset
       value: azure.signinlogs
       # Use same logic as the `signinlogs` stream that drops any document that doesn't end with `SignInLogs`.
-      if: 'ctx.tmp_json?.category.endsWith("SignInLogs")'
+      if: 'ctx.routing?.category.endsWith("SignInLogs")'
   - set:
       field: event.dataset
       value: azure.springcloudlogs
-      if: 'ctx.tmp_json?.category == "SystemLogs" || ctx.tmp_json?.category == "ApplicationConsole" || ctx.tmp_json?.category == "IngressLogs" || ctx.tmp_json?.category == "BuildLogs" || ctx.tmp_json?.category == "ContainerEventLogs"'
-      description: 'Azure Spring Apps log categories (refs: https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-logs/microsoft-appplatform-spring-logs)'
-  
-  # Remove the temporary field used to identify the event dataset.
-  - remove:
-      field: tmp_json
-      ignore_missing: true
-      description: 'Removes the temporary field used to identify the event dataset.'
+      if: 'ctx.routing?.category == "SystemLogs" || ctx.routing?.category == "ApplicationConsole" || ctx.routing?.category == "IngressLogs" || ctx.routing?.category == "BuildLogs" || ctx.routing?.category == "ContainerEventLogs"'
+      description: "Azure Spring Apps log categories (refs: https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-logs/microsoft-appplatform-spring-logs)"
 
 #
 #
@@ -124,4 +131,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: "{{ _ingest.on_failure_message }}"
