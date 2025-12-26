@@ -29,6 +29,10 @@ These insights enable organizations to monitor operational issues, identify work
 
 ## What do I need to use this integration?
 
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
 ### From Axonius
 
 To collect data through the Axonius APIs, you need to provide the **URL**, **API Key** and **API Secret**. Authentication is handled using the **API Key** and **API Secret**, which serves as the required credential.
@@ -39,7 +43,7 @@ To collect data through the Axonius APIs, you need to provide the **URL**, **API
 2. Your instance URL is your Base **URL**.
 3. Navigate to **User Settings > API Key**.
 4. Generate an **API Key**.
-5. If you donâ€™t see the API Key tab in your user settings, follow these steps:
+5. If you do not see the API Key tab in your user settings, follow these steps:
     1.  Go to **System Settings** > **User and Role Management** > **Service Accounts**.
     2. Create a Service Account, and then generate an **API Key**.
 6. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
@@ -84,6 +88,13 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Axonius**, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **axonius**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
 ## Troubleshooting
 
@@ -144,12 +155,14 @@ The `ticket` data stream provides ticket asset logs from axonius.
 | axonius.ticket.event.quick_id |  | keyword |
 | axonius.ticket.event.type |  | keyword |
 | axonius.ticket.internal_axon_id |  | keyword |
+| axonius.ticket.transform_unique_id |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Indicates whether a ticket is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
@@ -160,18 +173,16 @@ An example event for `ticket` looks as following:
 {
     "@timestamp": "2024-08-10T16:21:10.000Z",
     "agent": {
-        "ephemeral_id": "f9e376c8-76a8-4e38-a63b-00cb03eed15f",
-        "id": "27b87eaa-1d45-4729-938a-c512585a1dc8",
-        "name": "elastic-agent-69478",
+        "ephemeral_id": "8595f742-3c68-4ea6-be53-0d7fa627d053",
+        "id": "b70d6af0-60a8-4f4a-8ec9-28a17c841a89",
+        "name": "elastic-agent-49380",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.1.3"
     },
     "axonius": {
         "ticket": {
             "adapter_list_length": 1,
-            "adapters": [
-                "service_now_adapter"
-            ],
+            "adapters": "service_now_adapter",
             "asset_type": "tickets",
             "event": {
                 "accurate_for_datetime": "2025-12-08T00:02:48.000Z",
@@ -204,9 +215,7 @@ An example event for `ticket` looks as following:
                     "status": "Resolved",
                     "summary": "Access Reviewer",
                     "sys_class_name": "incident",
-                    "tenant_number": [
-                        "1"
-                    ],
+                    "tenant_number": "1",
                     "ticket_id": "b59da9ea-6814-4ee9-b7b1-ad9088b601cd",
                     "type": "Tickets",
                     "updated": "2024-08-10T16:21:10.000Z"
@@ -218,35 +227,43 @@ An example event for `ticket` looks as following:
                 "quick_id": "service_now_adapter_0!b59da9ea-6814-4ee9-b7b1-ad9088b601cd",
                 "type": "entitydata"
             },
-            "internal_axon_id": "3bd6051f3dd4493796aaf0d55dbcbe1f"
+            "internal_axon_id": "3bd6051f3dd4493796aaf0d55dbcbe1f",
+            "transform_unique_id": "17k4++79l2/seCorLsaz4cuv6tA="
         }
     },
     "data_stream": {
         "dataset": "axonius.ticket",
-        "namespace": "75649",
+        "namespace": "58044",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "27b87eaa-1d45-4729-938a-c512585a1dc8",
+        "id": "b70d6af0-60a8-4f4a-8ec9-28a17c841a89",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.1.3"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2024-07-14T23:21:10.000Z",
         "dataset": "axonius.ticket",
         "end": "2024-08-10T16:21:10.000Z",
-        "ingested": "2025-12-17T13:36:48Z",
+        "ingested": "2025-12-22T12:24:52Z",
         "kind": "event",
+        "module": "axonius",
         "original": "{\"adapter_list_length\":1,\"adapters\":[\"service_now_adapter\"],\"asset_type\":\"tickets\",\"event\":{\"accurate_for_datetime\":\"Mon, 08 Dec 2025 00:02:48 GMT\",\"adapter_categories\":[\"CMDB\",\"ITAM/ITSM\",\"Ticketing\",\"SaaS Management\"],\"client_used\":\"67fd0999fe1c8e812a176ba2\",\"data\":{\"accurate_for_datetime\":\"Mon, 08 Dec 2025 00:02:48 GMT\",\"application_and_account_name\":\"servicenow/servicenow-dev\",\"category\":\"Access Reviewer\",\"closed\":\"Sat, 10 Aug 2024 16:21:10 GMT\",\"created\":\"Sun, 14 Jul 2024 23:21:10 GMT\",\"description\":\"Access Reviewer - Needs addressing\",\"display_id\":\"INC3566938\",\"fetch_time\":\"Mon, 08 Dec 2025 00:02:42 GMT\",\"first_fetch_time\":\"Sat, 30 Aug 2025 12:00:42 GMT\",\"from_last_fetch\":true,\"id\":\"b59da9ea-6814-4ee9-b7b1-ad9088b601cd\",\"is_fetched_from_adapter\":true,\"last_fetch_connection_id\":\"67fd0999fe1c8e812a176ba2\",\"last_fetch_connection_label\":\"servicenow-dev\",\"not_fetched_count\":0,\"priority\":\"5 - Planning\",\"reporter\":\"Randy Mason\",\"source_application\":\"ServiceNow\",\"status\":\"Resolved\",\"summary\":\"Access Reviewer\",\"sys_class_name\":\"incident\",\"tenant_number\":[\"1\"],\"ticket_id\":\"b59da9ea-6814-4ee9-b7b1-ad9088b601cd\",\"type\":\"Tickets\",\"updated\":\"Sat, 10 Aug 2024 16:21:10 GMT\"},\"initial_plugin_unique_name\":\"service_now_adapter_0\",\"plugin_name\":\"service_now_adapter\",\"plugin_type\":\"Adapter\",\"plugin_unique_name\":\"service_now_adapter_0\",\"quick_id\":\"service_now_adapter_0!b59da9ea-6814-4ee9-b7b1-ad9088b601cd\",\"type\":\"entitydata\"},\"internal_axon_id\":\"3bd6051f3dd4493796aaf0d55dbcbe1f\"}"
     },
     "input": {
         "type": "cel"
     },
+    "labels": {
+        "is_transform_source": "true"
+    },
     "message": "Access Reviewer - Needs addressing",
+    "observer": {
+        "vendor": "Axonius"
+    },
     "related": {
         "user": [
             "Randy Mason"
@@ -297,3 +314,7 @@ These APIs are used with this integration:
 * Ticket:
     * tickets (endpoint: `/api/v2/tickets`)
     * cases (endpoint: `/api/v2/cases`)
+
+#### ILM Policy
+
+To facilitate ticket data, source data stream-backed indices `.ds-logs-axonius.ticket-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-axonius.ticket-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
