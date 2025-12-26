@@ -1,0 +1,524 @@
+---
+description: Pipeline for processing network asset common logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.2.0
+  - terminate:
+      description: error message set and no data to process.
+      tag: terminate_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - drop:
+      if: ctx.message == 'empty_data'
+      tag: drop_empty_data_events
+
+  # remove agentless metadata
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_event_original
+      target_field: axonius.network.transform_unique_id
+      ignore_missing: true
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+      tag: category_network
+  - append:
+      field: event.type
+      value: info
+      tag: type_info
+  - convert:
+      field: json.adapter_list_length
+      tag: convert_adapter_list_length_to_long
+      target_field: axonius.network.adapter_list_length
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.adapters
+      tag: rename_adapters
+      target_field: axonius.network.adapters
+      ignore_missing: true
+  - rename:
+      field: json.asset_type
+      tag: rename_asset_type
+      target_field: axonius.network.asset_type
+      ignore_missing: true
+  - date:
+      field: json.event.accurate_for_datetime
+      tag: date_event_accurate_for_datetime
+      target_field: axonius.network.event.accurate_for_datetime
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.accurate_for_datetime != null && ctx.json.event.accurate_for_datetime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_network_event_accurate_for_datetime
+      copy_from: axonius.network.event.accurate_for_datetime
+      ignore_empty_value: true
+  - rename:
+      field: json.event.adapter_categories
+      tag: rename_event_adapter_categories
+      target_field: axonius.network.event.adapter_categories
+      ignore_missing: true
+  - rename:
+      field: json.event.client_used
+      tag: rename_event_client_used
+      target_field: axonius.network.event.client_used
+      ignore_missing: true
+  - date:
+      field: json.event.data.accurate_for_datetime
+      tag: date_event_data_accurate_for_datetime
+      target_field: axonius.network.event.data.accurate_for_datetime
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.accurate_for_datetime != null && ctx.json.event.data.accurate_for_datetime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.application_and_account_name
+      tag: rename_event_data_application_and_account_name
+      target_field: axonius.network.event.data.application_and_account_name
+      ignore_missing: true
+  - rename:
+      field: json.event.data.asset_entity_info
+      tag: rename_event_data_asset_entity_info
+      target_field: axonius.network.event.data.asset_entity_info
+      ignore_missing: true
+  - rename:
+      field: json.event.data.asset_type
+      tag: rename_event_data_asset_type
+      target_field: axonius.network.event.data.asset_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.connected_assets
+      tag: rename_event_data_connected_assets
+      target_field: axonius.network.event.data.connected_assets
+      ignore_missing: true
+  - rename:
+      field: json.event.data.destination_addresses
+      tag: rename_event_data_destination_addresses
+      target_field: axonius.network.event.data.destination_addresses
+      ignore_missing: true
+  - rename:
+      field: json.event.data.destination_zone
+      tag: rename_event_data_destination_zone
+      target_field: axonius.network.event.data.destination_zone
+      ignore_missing: true
+  - rename:
+      field: json.event.data.device_group
+      tag: rename_event_data_device_group
+      target_field: axonius.network.event.data.device_group
+      ignore_missing: true
+  - date:
+      field: json.event.data.fetch_time
+      tag: date_event_data_fetch_time
+      target_field: axonius.network.event.data.fetch_time
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.fetch_time != null && ctx.json.event.data.fetch_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event.data.first_fetch_time
+      tag: date_event_data_first_fetch_time
+      target_field: axonius.network.event.data.first_fetch_time
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.first_fetch_time != null && ctx.json.event.data.first_fetch_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event.data.first_seen
+      tag: date_event_data_first_seen
+      target_field: axonius.network.event.data.first_seen
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.first_seen != null && ctx.json.event.data.first_seen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.from_last_fetch
+      tag: convert_event_data_from_last_fetch_to_boolean
+      target_field: axonius.network.event.data.from_last_fetch
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.id
+      tag: rename_event_data_id
+      target_field: axonius.network.event.data.id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.id_raw
+      tag: rename_event_data_id_raw
+      target_field: axonius.network.event.data.id_raw
+      ignore_missing: true
+  - convert:
+      field: json.event.data.is_exposing_public_traffic
+      tag: convert_event_data_is_exposing_public_traffic_to_boolean
+      target_field: axonius.network.event.data.is_exposing_public_traffic
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.event.data.is_fetched_from_adapter
+      tag: convert_event_data_is_fetched_from_adapter_to_boolean
+      target_field: axonius.network.event.data.is_fetched_from_adapter
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.last_fetch_connection_id
+      tag: rename_event_data_last_fetch_connection_id
+      target_field: axonius.network.event.data.last_fetch_connection_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.last_fetch_connection_label
+      tag: rename_event_data_last_fetch_connection_label
+      target_field: axonius.network.event.data.last_fetch_connection_label
+      ignore_missing: true
+  - date:
+      field: json.event.data.last_seen
+      tag: date_event_data_last_seen
+      target_field: axonius.network.event.data.last_seen
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.json?.event?.data?.last_seen != null && ctx.json.event.data.last_seen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.name
+      tag: rename_event_data_name
+      target_field: axonius.network.event.data.name
+      ignore_missing: true
+  - convert:
+      field: json.event.data.not_fetched_count
+      tag: convert_event_data_not_fetched_count_to_long
+      target_field: axonius.network.event.data.not_fetched_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.data.pretty_id
+      tag: rename_event_data_pretty_id
+      target_field: axonius.network.event.data.pretty_id
+      ignore_missing: true
+  - rename:
+      field: json.event.data.protocol
+      tag: rename_event_data_protocol
+      target_field: axonius.network.event.data.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_network_event_data_protocol
+      copy_from: axonius.network.event.data.protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - rename:
+      field: json.event.data.relatable_ids
+      tag: rename_event_data_relatable_ids
+      target_field: axonius.network.event.data.relatable_ids
+      ignore_missing: true
+  - rename:
+      field: json.event.data.related_network_route_ids
+      tag: rename_event_data_related_network_route_ids
+      target_field: axonius.network.event.data.related_network_route_ids
+      ignore_missing: true
+  - rename:
+      field: json.event.data.rule_base_type
+      tag: rename_event_data_rule_base_type
+      target_field: axonius.network.event.data.rule_base_type
+      ignore_missing: true
+  - rename:
+      field: json.event.data.rule_type
+      tag: rename_event_data_rule_type
+      target_field: axonius.network.event.data.rule_type
+      ignore_missing: true
+  - foreach:
+      field: json.event.data.source_addresses
+      tag: foreach_event_data_source_addresses
+      if: ctx.json?.event?.data?.source_addresses instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_event_data_source_addresses_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event.data.source_addresses
+      tag: foreach_event_data_source_addresses
+      if: ctx.json?.event?.data?.source_addresses instanceof List
+      processor:
+        append:
+          field: source.address
+          tag: append_event_data_source_addresses_into_source_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.event.data.source_addresses
+      tag: foreach_event_data_source_addresses
+      if: ctx.json?.event?.data?.source_addresses instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_event_data_source_addresses_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.event.data.source_addresses
+      tag: rename_event_data_source_addresses
+      target_field: axonius.network.event.data.source_addresses
+      ignore_missing: true
+  - rename:
+      field: json.event.data.source_application
+      tag: rename_event_data_source_application
+      target_field: axonius.network.event.data.source_application
+      ignore_missing: true
+  - rename:
+      field: json.event.data.source_zone
+      tag: rename_event_data_source_zone
+      target_field: axonius.network.event.data.source_zone
+      ignore_missing: true
+  - rename:
+      field: json.event.data.status
+      tag: rename_event_data_status
+      target_field: axonius.network.event.data.status
+      ignore_missing: true
+  - rename:
+      field: json.event.data.tenant_number
+      tag: rename_event_data_tenant_number
+      target_field: axonius.network.event.data.tenant_number
+      ignore_missing: true
+  - rename:
+      field: json.event.data.type
+      tag: rename_event_data_type
+      target_field: axonius.network.event.data.type
+      ignore_missing: true
+  - rename:
+      field: json.event.initial_plugin_unique_name
+      tag: rename_event_initial_plugin_unique_name
+      target_field: axonius.network.event.initial_plugin_unique_name
+      ignore_missing: true
+  - rename:
+      field: json.event.plugin_name
+      tag: rename_event_plugin_name
+      target_field: axonius.network.event.plugin_name
+      ignore_missing: true
+  - rename:
+      field: json.event.plugin_type
+      tag: rename_event_plugin_type
+      target_field: axonius.network.event.plugin_type
+      ignore_missing: true
+  - rename:
+      field: json.event.plugin_unique_name
+      tag: rename_event_plugin_unique_name
+      target_field: axonius.network.event.plugin_unique_name
+      ignore_missing: true
+  - rename:
+      field: json.event.quick_id
+      tag: rename_event_quick_id
+      target_field: axonius.network.event.quick_id
+      ignore_missing: true
+  - rename:
+      field: json.event.type
+      tag: rename_event_type
+      target_field: axonius.network.event.type
+      ignore_missing: true
+  - rename:
+      field: json.internal_axon_id
+      tag: rename_internal_axon_id
+      target_field: axonius.network.internal_axon_id
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-network" }}'
+      tag: pipeline_network
+      if: >-
+        ctx.axonius?.network?.asset_type.contains('networks')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-load-balancer" }}'
+      tag: pipeline_load_balancer
+      if: >-
+        ctx.axonius?.network?.asset_type.contains('load_balancers')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-network-device" }}'
+      tag: pipeline_network_device
+      if: >-
+        ctx.axonius?.network?.asset_type.contains('network_devices')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-firewall" }}'
+      tag: pipeline_firewall
+      if: >-
+        ctx.axonius?.network?.asset_type.contains('firewalls')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-nat-rule" }}'
+      tag: pipeline_nat_rule
+      if: >-
+        ctx.axonius?.network?.asset_type.contains('nat_rules')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-network-route" }}'
+      tag: pipeline_network_route
+      if: >-
+        ctx.axonius?.network?.asset_type.contains('network_routes')
+  - remove:
+      field:
+        - axonius.network.event.accurate_for_datetime
+        - axonius.network.event.data.protocol
+        - axonius.network.event.data.destination_port
+        - axonius.network.event.action_if_exists
+        - axonius.network.event.data.agent_version
+        - axonius.network.event.data.cloud_provider_account_id
+        - axonius.network.event.data.device_manufacturer
+        - axonius.network.event.data.device_serial
+        - axonius.network.event.data.device_type
+        - axonius.network.event.data.domain
+        - axonius.network.event.data.fqdn
+        - axonius.network.event.data.guest_dns_name
+        - axonius.network.event.data.hostname
+        - axonius.network.event.data.os.distribution_name
+        - axonius.network.event.data.os.latest_os_version
+        - axonius.network.event.data.os.type_distribution
+        - axonius.network.event.data.creation_time_stamp
+        - axonius.network.event.data.direction
+        - axonius.network.event.data.location
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
