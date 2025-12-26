@@ -48,7 +48,13 @@ To collect data through the Axonius APIs, you need to provide the **URL**, **API
 2. Your instance URL is your Base **URL**.
 3. Navigate to **User Settings > API Key**.
 4. Generate an **API Key**.
-5. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
+5. If you do not see the API Key tab in your user settings, follow these steps:
+    1.  Go to **System Settings** > **User and Role Management** > **Service Accounts**.
+    2. Create a Service Account, and then generate an **API Key**.
+6. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
+
+**Note:**
+To generate or reset an API key, your role must be **Admin**, and you must have **API Access** permissions, which include **API Access Enabled** and **Reset API Key**.
 
 ## How do I deploy this integration?
 
@@ -627,12 +633,14 @@ The `network` data stream provides network events from axonius.
 | axonius.network.event.type |  | keyword |
 | axonius.network.internal_axon_id |  | keyword |
 | axonius.network.labels |  | keyword |
+| axonius.network.transform_unique_id |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
@@ -643,9 +651,9 @@ An example event for `network` looks as following:
 {
     "@timestamp": "2025-12-16T00:02:05.000Z",
     "agent": {
-        "ephemeral_id": "69231e59-4d1b-4135-a120-8470b0e1ec9f",
-        "id": "f6374adb-d8cd-42be-a634-ec45f978203a",
-        "name": "elastic-agent-71306",
+        "ephemeral_id": "6f10dc02-e214-4fe8-aac7-75f2655c9de3",
+        "id": "2032ce7d-4d83-416e-9228-8e7eddd0c9ac",
+        "name": "elastic-agent-87669",
         "type": "filebeat",
         "version": "9.1.3"
     },
@@ -692,19 +700,20 @@ An example event for `network` looks as following:
                 "quick_id": "azure_adapter_0!2142ce3eb735930b68a7",
                 "type": "entitydata"
             },
-            "internal_axon_id": "100b89429e965a0bf70a9bae08c4b679"
+            "internal_axon_id": "100b89429e965a0bf70a9bae08c4b679",
+            "transform_unique_id": "+d3LsTUHSgxeH1GKpDIbo8Oh1Jk="
         }
     },
     "data_stream": {
         "dataset": "axonius.network",
-        "namespace": "37570",
+        "namespace": "67215",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "f6374adb-d8cd-42be-a634-ec45f978203a",
+        "id": "2032ce7d-4d83-416e-9228-8e7eddd0c9ac",
         "snapshot": false,
         "version": "9.1.3"
     },
@@ -714,10 +723,9 @@ An example event for `network` looks as following:
             "network"
         ],
         "dataset": "axonius.network",
-        "ingested": "2025-12-21T07:36:35Z",
+        "ingested": "2025-12-24T10:43:02Z",
         "kind": "event",
         "module": "axonius",
-        "original": "{\"adapter_list_length\":1,\"adapters\":[\"azure_adapter\"],\"asset_type\":\"networks\",\"event\":{\"accurate_for_datetime\":\"Tue, 16 Dec 2025 00:02:05 GMT\",\"adapter_categories\":[\"Cloud Infra\"],\"client_used\":\"67fd09ca731ccb5730923106\",\"data\":{\"access\":\"Allow\",\"accurate_for_datetime\":\"Tue, 16 Dec 2025 00:02:05 GMT\",\"application_and_account_name\":\"azure/azure-demo\",\"connected_assets\":[\"subscription_id::64062aef-14a6-42a4-86b1-8a25d0c7cb24\"],\"direction\":\"Inbound\",\"fetch_time\":\"Tue, 16 Dec 2025 00:02:04 GMT\",\"first_fetch_time\":\"Sun, 14 Dec 2025 16:49:34 GMT\",\"from_last_fetch\":true,\"id\":\"2142ce3eb735930b68a7\",\"id_raw\":\"912b0b56-fb12-4fe9-8f88-214c6c6b32e5\",\"is_fetched_from_adapter\":true,\"last_fetch_connection_id\":\"67fd09ca731ccb5730923106\",\"last_fetch_connection_label\":\"azure-demo\",\"location\":\"New York City\",\"name\":\"FTP-ENABLED-Allowedcb5E-\",\"not_fetched_count\":0,\"pretty_id\":\"AX-1156168648572164619\",\"priority\":1937,\"protocol\":\"UDP\",\"provisioningState\":\"Succeeded\",\"source_application\":\"Azure\",\"subscription_id\":\"b3fa20bb-a9c1-4cb6-80a9-13bcc9d68da5\",\"subscription_name\":\"Microsoft Azure Enterprise\",\"tenant_number\":[\"2\"],\"type\":\"Networks\"},\"initial_plugin_unique_name\":\"azure_adapter_0\",\"plugin_name\":\"azure_adapter\",\"plugin_type\":\"Adapter\",\"plugin_unique_name\":\"azure_adapter_0\",\"quick_id\":\"azure_adapter_0!2142ce3eb735930b68a7\",\"type\":\"entitydata\"},\"internal_axon_id\":\"100b89429e965a0bf70a9bae08c4b679\"}",
         "type": [
             "info"
         ]
@@ -741,7 +749,6 @@ An example event for `network` looks as following:
         "vendor": "Axonius"
     },
     "tags": [
-        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-network"
