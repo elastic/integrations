@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-11-20T15:30:00.000Z",
         "created_by": "elastic",
-        "description": "Investigate Windows Prefetch artifacts for execution history (MITRE ATT&CK T1204 User Execution). Prefetch files (.pf) track application launches, execution counts, and associated file/directory access patterns. This query uses the native Osquery prefetch table to parse .pf files and extract forensic intelligence including executable names, run counts, last execution times, and accessed resources. Limited to executables run in the last 90 days. Excludes high-volume low-forensic-value Windows processes (SearchIndexer, RuntimeBroker, BackgroundTaskHost, etc.) while preserving forensically important binaries.",
+        "description": "Investigate Windows Prefetch artifacts for execution history. Prefetch files (.pf) track application launches, execution counts, and associated file/directory access patterns. This query uses the native Osquery prefetch table to parse .pf files and extract forensic intelligence including executable names, run counts, last execution times, and accessed resources. Limited to executables run in the last 90 days. Excludes high-volume low-forensic-value Windows processes (SearchIndexer, RuntimeBroker, BackgroundTaskHost, etc.) while preserving forensically important binaries.",
         "ecs_mapping": [
             {
                 "key": "event.category",
@@ -17,13 +17,7 @@
                 }
             },
             {
-                "key": "event.module",
-                "value": {
-                    "value": "osquery"
-                }
-            },
-            {
-                "key": "event.dataset",
+                "key": "event.action",
                 "value": {
                     "value": "osquery.prefetch"
                 }
@@ -35,21 +29,9 @@
                 }
             },
             {
-                "key": "host.os.type",
-                "value": {
-                    "value": "windows"
-                }
-            },
-            {
                 "key": "file.name",
                 "value": {
                     "field": "filename"
-                }
-            },
-            {
-                "key": "file.hash.md5",
-                "value": {
-                    "field": "hash"
                 }
             },
             {
@@ -67,37 +49,7 @@
             {
                 "key": "tags",
                 "value": {
-                    "value": ["execution_artifacts", "forensics", "prefetch", "osquery", "windows", "mitre_t1204"]
-                }
-            },
-            {
-                "key": "threat.framework",
-                "value": {
-                    "value": "MITRE ATT&CK"
-                }
-            },
-            {
-                "key": "threat.tactic.id",
-                "value": {
-                    "value": ["TA0002"]
-                }
-            },
-            {
-                "key": "threat.tactic.name",
-                "value": {
-                    "value": ["Execution"]
-                }
-            },
-            {
-                "key": "threat.technique.id",
-                "value": {
-                    "value": ["T1204"]
-                }
-            },
-            {
-                "key": "threat.technique.name",
-                "value": {
-                    "value": ["User Execution"]
+                    "value": ["osquery", "execution_artifacts", "forensics", "prefetch", "windows"]
                 }
             }
         ],
