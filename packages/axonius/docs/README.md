@@ -813,12 +813,14 @@ The `alert_and_incident` data stream provides alert findings and incident asset 
 | axonius.alert_and_incident.event.quick_id |  | keyword |
 | axonius.alert_and_incident.event.type |  | keyword |
 | axonius.alert_and_incident.internal_axon_id |  | keyword |
+| axonius.alert_and_incident.transform_unique_id |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Indicates whether an alert and incident are in the raw source data stream, or in the latest destination index. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
@@ -829,9 +831,9 @@ An example event for `alert_and_incident` looks as following:
 {
     "@timestamp": "2025-04-14T13:38:49.000Z",
     "agent": {
-        "ephemeral_id": "547b93f3-e3de-4a33-9857-969a5229a943",
-        "id": "0572ed83-3264-4082-9096-37eaf63541a2",
-        "name": "elastic-agent-77501",
+        "ephemeral_id": "75b1cfdf-ae0c-40a8-9d99-62cefac0f26c",
+        "id": "df2f55f5-9ed0-46f7-81aa-76e2347d5e98",
+        "name": "elastic-agent-29558",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -861,19 +863,20 @@ An example event for `alert_and_incident` looks as following:
                 "plugin_unique_name": "axonius_findings_adapter",
                 "quick_id": "axonius_findings_adapter!d919d74b380c16c8ea9d"
             },
-            "internal_axon_id": "f8b16b93ecf0c0c4d7d10b797b9f839a"
+            "internal_axon_id": "f8b16b93ecf0c0c4d7d10b797b9f839a",
+            "transform_unique_id": "WVspmVr9FseKluRKa6N3CIRZsb0="
         }
     },
     "data_stream": {
         "dataset": "axonius.alert_and_incident",
-        "namespace": "90668",
+        "namespace": "47334",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "0572ed83-3264-4082-9096-37eaf63541a2",
+        "id": "df2f55f5-9ed0-46f7-81aa-76e2347d5e98",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -881,15 +884,13 @@ An example event for `alert_and_incident` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.alert_and_incident",
         "id": "66447fe5e6c4840f32a5b94f",
-        "ingested": "2025-12-17T12:41:18Z",
-        "kind": "alert",
-        "original": "{\"adapter_list_length\":1,\"adapters\":[\"axonius_findings_adapter\"],\"asset_type\":\"alert_findings\",\"event\":{\"adapters.$.data.id_raw\":\"67fd0fe9c0cc9f012ad936ad\",\"adapters.$.quick_id\":\"axonius_findings_adapter!d919d74b380c16c8ea9d\",\"data\":{\"alert_config_id\":\"66447fe5e6c4840f32a5b94f\",\"alert_id\":\"984\",\"finding_asset_type\":\"adapters_fetch_history\",\"finding_check_and_notify\":\"Every global discovery cycle\",\"finding_message\":\"\",\"finding_name\":\"Failed Adapters\",\"finding_severity\":\"high\",\"id\":\"d919d74b380c16c8ea9d\",\"id_raw\":\"67fd0fe9c0cc9f012ad936ad\",\"plugin_unique_name\":\"axonius_findings_adapter\",\"source\":\"alert_rule\",\"status\":\"open\",\"trigger_date\":\"Mon, 14 Apr 2025 13:38:49 GMT\"},\"plugin_name\":\"axonius_findings_adapter\",\"plugin_unique_name\":\"axonius_findings_adapter\",\"quick_id\":\"axonius_findings_adapter!d919d74b380c16c8ea9d\"},\"internal_axon_id\":\"f8b16b93ecf0c0c4d7d10b797b9f839a\"}"
+        "ingested": "2025-12-29T06:05:21Z",
+        "kind": "alert"
     },
     "input": {
         "type": "cel"
     },
     "tags": [
-        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-alert_and_incident"
