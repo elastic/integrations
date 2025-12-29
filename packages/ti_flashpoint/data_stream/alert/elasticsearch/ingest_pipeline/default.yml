@@ -1,0 +1,514 @@
+---
+description: Pipeline for processing alert logs.
+processors:
+  - drop:
+      tag: drop_empty_events_placeholder_1f3e6c12
+      if: ctx.message == 'empty_events_placeholder'
+  - set:
+      tag: set_ecs_version_to_9_2_0_3273339c
+      field: ecs.version
+      value: 9.2.0
+  - terminate:
+      description: error message set and no data to process.
+      tag: terminate_data_collection_error_4c75f12b
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+
+  # remove agentless metadata
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags_44eed408
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+
+  # parse the event JSON
+  - rename:
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      tag: rename_message_to_event_original_c74b1d7e
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      tag: remove_message_84808ee4
+      if: ctx.event?.original != null
+      field:
+        - message
+      ignore_missing: true
+  - json:
+      tag: json_event_original_into_json_5e54dc16
+      field: event.original
+      target_field: json
+
+  # Add fingerprint
+  - fingerprint:
+      tag: fingerprint_into__id_29432682
+      fields:
+        - json.id
+      target_field: _id
+      ignore_missing: true
+
+  # Set event.* fields
+  - set:
+      tag: set_event_kind_to_alert_39295792
+      field: event.kind
+      value: alert
+
+  # rename fields to snake_case (hyphen to underscore)
+  - script:
+      description: Convert field names from hyphen to underscore.
+      tag: script_normalize_field_names_9f4e694c
+      lang: painless
+      source: |-
+        // Replace '-' with '_' in field names
+        String normalize(String str) {
+          return str.replace('-', '_');
+        }
+
+        // Recursive function to process objects
+        def normalizeFields(def obj) {
+          if (obj instanceof Map) {
+            def newObj = new HashMap();
+            for (entry in obj.entrySet()) {
+              String newKey = normalize(entry.getKey());
+              newObj.put(newKey, normalizeFields(entry.getValue()));
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = new ArrayList();
+            for (item in obj) {
+              newList.add(normalizeFields(item));
+            }
+            return newList;
+          }
+          return obj;
+        }
+
+        // Apply transformation
+        if (ctx.json != null) {
+          ctx.ti_flashpoint = ctx.ti_flashpoint ?: [:];
+          ctx.ti_flashpoint.alert = normalizeFields(ctx.json);
+          ctx.remove('json');
+        }
+
+  # Date processors
+  - date:
+      tag: date_ti_flashpoint_alert_created_at_into_ti_flashpoint_alert_created_at_20fe7d61
+      if: ctx.ti_flashpoint?.alert?.created_at != null && ctx.ti_flashpoint.alert.created_at != ''
+      field: ti_flashpoint.alert.created_at
+      target_field: ti_flashpoint.alert.created_at
+      formats:
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd' 'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
+        - yyyy-MM-dd'T'HH:mm:ssXXXXX
+        - yyyy-MM-dd' 'HH:mm:ssXXXXX
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_alert_created_at_51709117
+            field:
+              - ti_flashpoint.alert.created_at
+        - append:
+            tag: append_error_message_ca0f3ee7
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ti_flashpoint_alert_generated_at_into_ti_flashpoint_alert_generated_at_9448b857
+      if: ctx.ti_flashpoint?.alert?.generated_at != null && ctx.ti_flashpoint.alert.generated_at != ''
+      field: ti_flashpoint.alert.generated_at
+      target_field: ti_flashpoint.alert.generated_at
+      formats:
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd' 'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
+        - yyyy-MM-dd'T'HH:mm:ssXXXXX
+        - yyyy-MM-dd' 'HH:mm:ssXXXXX
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_alert_generated_at_b31b7376
+            field:
+              - ti_flashpoint.alert.generated_at
+        - append:
+            tag: append_error_message_c1605d45
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ti_flashpoint_alert_resource_sort_date_into_ti_flashpoint_alert_resource_sort_date_c561a9d0
+      if: ctx.ti_flashpoint?.alert?.resource?.sort_date != null && ctx.ti_flashpoint.alert.resource.sort_date != ''
+      field: ti_flashpoint.alert.resource.sort_date
+      target_field: ti_flashpoint.alert.resource.sort_date
+      formats:
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd' 'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
+        - yyyy-MM-dd'T'HH:mm:ssXXXXX
+        - yyyy-MM-dd' 'HH:mm:ssXXXXX
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_alert_resource_sort_date_7047e135
+            field:
+              - ti_flashpoint.alert.resource.sort_date
+        - append:
+            tag: append_error_message_d2ba01c0
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ti_flashpoint_alert_resource_created_at_date_time_into_ti_flashpoint_alert_resource_created_at_384a797f
+      if: ctx.ti_flashpoint?.alert?.resource?.created_at?.date_time != null && ctx.ti_flashpoint.alert.resource.created_at.date_time != ''
+      field: ti_flashpoint.alert.resource.created_at.date_time
+      target_field: ti_flashpoint.alert.resource.created_at
+      formats:
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd' 'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
+        - yyyy-MM-dd'T'HH:mm:ssXXXXX
+        - yyyy-MM-dd' 'HH:mm:ssXXXXX
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_alert_resource_created_at_date_time_71d68711
+            field:
+              - ti_flashpoint.alert.resource.created_at.date_time
+        - append:
+            tag: append_error_message_a649b53d
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Long
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_4f9463ee
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        convert:
+          tag: convert__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_adult_to_long_edf0408c
+          field: _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.adult
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_adult_3a2917f7
+                field:
+                  - _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.adult
+            - append:
+                tag: append_error_message_da8c3f2c
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_4e94625b
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        convert:
+          tag: convert__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_medical_to_long_400543e1
+          field: _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.medical
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_medical_23bec407
+                field:
+                  - _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.medical
+            - append:
+                tag: append_error_message_c6281267
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_4d9460c8
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        convert:
+          tag: convert__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_racy_to_long_f34e64b1
+          field: _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.racy
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_racy_110678e7
+                field:
+                  - _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.racy
+            - append:
+                tag: append_error_message_92aefeb7
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_54946bcd
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        convert:
+          tag: convert__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_spoof_to_long_a6af8703
+          field: _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.spoof
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_spoof_643021eb
+                field:
+                  - _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.spoof
+            - append:
+                tag: append_error_message_b1f82e31
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_53946a3a
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        convert:
+          tag: convert__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_violence_to_long_4517615d
+          field: _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.violence
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_image_enrichment_enrichments_v1_image_analysis_safe_search_violence_3c96564f
+                field:
+                  - _ingest._value.image_enrichment.enrichments.v1.image_analysis.safe_search.violence
+            - append:
+                tag: append_error_message_e2baf973
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Boolean
+  - convert:
+      tag: convert_ti_flashpoint_alert_is_read_to_boolean_7b4e36be
+      field: ti_flashpoint.alert.is_read
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_alert_is_read_4cbff047
+            field:
+              - ti_flashpoint.alert.is_read
+        - append:
+            tag: append_error_message_6f9d072e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to String
+  - convert:
+      tag: convert_ti_flashpoint_alert_reason_id_to_string_316a93cd
+      field: ti_flashpoint.alert.reason.id
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_ti_flashpoint_alert_resource_container_container_native_id_to_string_9656b5dd
+      field: ti_flashpoint.alert.resource.container.container.native_id
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_ti_flashpoint_alert_resource_container_native_id_to_string_354f4d16
+      field: ti_flashpoint.alert.resource.container.native_id
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_ti_flashpoint_alert_resource_site_actor_native_id_to_string_c200f184
+      field: ti_flashpoint.alert.resource.site_actor.native_id
+      type: string
+      ignore_missing: true
+
+  # Map custom fields to corresponding ECS and related fields.
+  - set:
+      tag: set_event_created_from_ti_flashpoint_alert_created_at_13465d21
+      field: event.created
+      copy_from: ti_flashpoint.alert.created_at
+      ignore_empty_value: true
+  - set:
+      tag: set_@timestamp_from_ti_flashpoint_alert_created_at_3ef47d75
+      field: '@timestamp'
+      copy_from: ti_flashpoint.alert.created_at
+      ignore_empty_value: true
+  - set:
+      tag: set_event_id_from_ti_flashpoint_alert_id_1a35b175
+      field: event.id
+      copy_from: ti_flashpoint.alert.id
+      ignore_empty_value: true
+  - set:
+      tag: set_event_reason_from_ti_flashpoint_alert_reason_name_a3c940ac
+      field: event.reason
+      copy_from: ti_flashpoint.alert.reason.name
+      ignore_empty_value: true
+  - set:
+      tag: set_user_name_from_ti_flashpoint_alert_resource_author_53cf9bf2
+      field: user.name
+      copy_from: ti_flashpoint.alert.resource.author
+      ignore_empty_value: true
+  - set:
+      tag: set_container_name_from_ti_flashpoint_alert_resource_container_name_84f1e459
+      field: container.name
+      copy_from: ti_flashpoint.alert.resource.container.name
+      ignore_empty_value: true
+  - set:
+      tag: set_container_id_from_ti_flashpoint_alert_resource_container_native_id_32f7eccb
+      field: container.id
+      copy_from: ti_flashpoint.alert.resource.container.native_id
+      ignore_empty_value: true
+  - set:
+      tag: set_event_url_from_ti_flashpoint_alert_resource_link_a6602e82
+      field: event.url
+      copy_from: ti_flashpoint.alert.resource.link
+      ignore_empty_value: true
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_12d375a3
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        append:
+          tag: append_file_mime_type_fe55ae27
+          field: file.mime_type
+          value: '{{{_ingest._value.mime_type}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_13d37736
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        append:
+          tag: append_file_hash_sha256_6ef886dd
+          field: file.hash.sha256
+          value: '{{{_ingest._value.phash256}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_14d378c9
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        append:
+          tag: append_file_hash_sha1_c937ae03
+          field: file.hash.sha1
+          value: '{{{_ingest._value.sha1}}}'
+          allow_duplicates: false
+  - append:
+      tag: append_related_user_from_ti_flashpoint_alert_resource_author_c3f04661
+      if: ctx.ti_flashpoint?.alert?.resource?.author != null
+      field: related.user
+      value: '{{{ti_flashpoint.alert.resource.author}}}'
+      allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_authors_c4becc2a
+      if: ctx.ti_flashpoint?.alert?.resource?.authors instanceof List
+      field: ti_flashpoint.alert.resource.authors
+      processor:
+        append:
+          tag: append_related_user_38200aeb
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_15d37a5c
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        append:
+          tag: append_related_hash_0e227c8c
+          field: related.hash
+          value: '{{{_ingest._value.phash}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_16d37bef
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        append:
+          tag: append_related_hash_a0128d9f
+          field: related.hash
+          value: '{{{_ingest._value.phash256}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_17d37d82
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        append:
+          tag: append_related_hash_224c210b
+          field: related.hash
+          value: '{{{_ingest._value.sha1}}}'
+          allow_duplicates: false
+
+  # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
+  - foreach:
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_ea27702d
+      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field: ti_flashpoint.alert.resource.media_v2
+      processor:
+        remove:
+          tag: remove_custom_duplicate_fields_for_media_v2_020834ca
+          field:
+            - _ingest._value.mime_type
+            - _ingest._value.phash256
+            - _ingest._value.sha1
+          ignore_missing: true
+  - remove:
+      tag: remove_custom_duplicate_fields_c637c818
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - ti_flashpoint.alert.created_at
+        - ti_flashpoint.alert.id
+        - ti_flashpoint.alert.reason.name
+        - ti_flashpoint.alert.resource.author
+        - ti_flashpoint.alert.resource.container.name
+        - ti_flashpoint.alert.resource.container.native_id
+        - ti_flashpoint.alert.resource.link
+      ignore_missing: true
+
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values_8360f3de
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+        map.values().removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        void handleList(List list) {
+        list.removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        handleMap(ctx);
+  - set:
+      tag: set_event_kind_to_pipeline_error_92954dfa
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_9fe66b2c
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message_e0c9bd63
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_to_pipeline_error_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
