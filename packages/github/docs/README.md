@@ -97,8 +97,10 @@ For Filebeat input documentation, refer to the following pages:
 | github.login_method |  | keyword |
 | github.logout_reason |  | keyword |
 | github.message |  | keyword |
+| github.multi_repo |  | boolean |
 | github.name |  | keyword |
 | github.new_role |  | keyword |
+| github.number |  | long |
 | github.old_role |  | keyword |
 | github.operation_type |  | keyword |
 | github.org | GitHub organization name. | keyword |
@@ -106,6 +108,7 @@ For Filebeat input documentation, refer to the following pages:
 | github.permission | GitHub user permissions for the event. | keyword |
 | github.programmatic_access_type | Type of authentication used. | keyword |
 | github.public_repo |  | boolean |
+| github.publicly_leaked |  | boolean |
 | github.pull_request_id |  | keyword |
 | github.pull_request_title |  | keyword |
 | github.pull_request_url |  | keyword |
@@ -120,6 +123,8 @@ For Filebeat input documentation, refer to the following pages:
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
 | github.request_category |  | keyword |
+| github.secret_type |  | keyword |
+| github.secret_type_display_name |  | keyword |
 | github.secrets_updated |  | keyword |
 | github.source_branch |  | keyword |
 | github.target_branch |  | keyword |
