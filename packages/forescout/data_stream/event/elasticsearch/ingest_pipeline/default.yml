@@ -1,0 +1,127 @@
+---
+description: Pipeline for processing event logs.
+processors:
+  - set:
+      tag: set_ecs_version_to_9_2_0_3273339c
+      field: ecs.version
+      value: 9.2.0
+
+  # Set event.* fields
+  - set:
+      tag: set_event_kind_to_event_de80643c
+      field: event.kind
+      value: event
+
+  # extract fields from message
+  - dissect:
+      description: Extract fields from the `message` field using the Dissect processor.
+      tag: dissect_message_2db7ab01
+      if: ctx.message != null
+      field: message
+      pattern: '%{forescout.event.service} : TTY=%{forescout.event.tty} ; PWD=%{forescout.event.pwd} ; USER=%{forescout.event.user} ; COMMAND=%{forescout.event.command}'
+      ignore_failure: true
+
+  # Map custom fields to corresponding ECS and related fields.
+  - set:
+      tag: set_forescout_event_message_to_message_903253c7
+      field: forescout.event.message
+      copy_from: message
+      ignore_empty_value: true
+  - set:
+      tag: set_process_working_directory_from_forescout_event_pwd_a9dce622
+      field: process.working_directory
+      copy_from: forescout.event.pwd
+      ignore_empty_value: true
+  - set:
+      tag: set_user_name_from_forescout_event_user_40cd5918
+      field: user.name
+      copy_from: forescout.event.user
+      ignore_empty_value: true
+  - set:
+      tag: set_process_user_name_from_forescout_event_user_162cc9a1
+      field: process.user.name
+      copy_from: forescout.event.user
+      ignore_empty_value: true
+  - set:
+      tag: set_process_command_line_from_forescout_event_command_6d140bfb
+      field: process.command_line
+      copy_from: forescout.event.command
+      ignore_empty_value: true
+
+  # Append related.* fields
+  - append:
+      tag: append_related_user_b1d91a7c
+      if: ctx.forescout?.event?.user != null
+      field: related.user
+      value: '{{{process.user.name}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_bb491624
+      if: ctx.log?.syslog?.hostname != null
+      field: related.hosts
+      value: '{{{log.syslog.hostname}}}'
+      allow_duplicates: false
+
+  # Remove duplicate custom fields
+  - remove:
+      tag: remove_custom_duplicate_fields_6d3cc57d
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - forescout.event.message
+        - forescout.event.pwd
+        - forescout.event.user
+        - forescout.event.command
+      ignore_missing: true
+
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values_b72900e6
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+        	map.values().removeIf(v -> {
+        		if (v instanceof Map) {
+        			handleMap(v);
+        		} else if (v instanceof List) {
+        			handleList(v);
+        		}
+        		return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        	});
+        }
+        void handleList(List list) {
+        	list.removeIf(v -> {
+        		if (v instanceof Map) {
+        			handleMap(v);
+        		} else if (v instanceof List) {
+        			handleList(v);
+        		}
+        		return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        	});
+        }
+        handleMap(ctx);
+  - set:
+      tag: set_event_kind_to_pipeline_error_92954dfa
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_9fe66b2c
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message_e0c9bd63
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_to_pipeline_error_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
