@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-11-20T00:00:00.000Z",
         "created_by": "elastic",
-        "description": "Comprehensive Windows LNK shortcut file forensics across all critical locations: user/system Startup folders (persistence), Desktop folders, Recent Items (user activity), Quick Launch, SendTo menu, and Start Menu Programs. Extracts full shortcut metadata (target path, target type, location, start_in, run mode, comment/arguments) enriched with hash values and authenticode signatures for both LNK files and their targets. Detects risky executables (LOLBins), suspicious command-line arguments (encoded commands, download cradles, UNC paths, hidden windows), HTTP/HTTPS URLs, and large LNK files. Uses the users table to dynamically enumerate all user directories. Uses path LIKE pattern instead of directory filter to ensure shortcut metadata is populated (osquery #8727 workaround). Maps to MITRE ATT&CK: T1547.001 (Boot or Logon Autostart Execution), T1204.002 (User Execution: Malicious File), T1059.001 (PowerShell), T1059.003 (Windows Command Shell), T1105 (Ingress Tool Transfer).",
+        "description": "Comprehensive Windows LNK shortcut file forensics across all critical locations: user/system Startup folders (persistence), Desktop folders, Recent Items (user activity), Quick Launch, SendTo menu, and Start Menu Programs. Extracts full shortcut metadata (target path, target type, location, start_in, run mode, comment/arguments) enriched with hash values and authenticode signatures for both LNK files and their targets. Detects risky executables (LOLBins), suspicious command-line arguments (encoded commands, download cradles, UNC paths, hidden windows), HTTP/HTTPS URLs, and large LNK files. Uses the users table to dynamically enumerate all user directories. Uses path LIKE pattern instead of directory filter to ensure shortcut metadata is populated (osquery #8727 workaround).",
         "ecs_mapping": [
             {
                 "key": "event.category",
@@ -17,21 +17,9 @@
                 }
             },
             {
-                "key": "event.module",
-                "value": {
-                    "value": "osquery"
-                }
-            },
-            {
-                "key": "event.dataset",
+                "key": "event.action",
                 "value": {
                     "value": "osquery.lnk_forensics"
-                }
-            },
-            {
-                "key": "host.os.type",
-                "value": {
-                    "value": "windows"
                 }
             },
             {
@@ -139,37 +127,7 @@
             {
                 "key": "tags",
                 "value": {
-                    "value": ["osquery", "forensics", "persistence", "file-analysis", "malware-detection", "mitre_t1547_001", "mitre_t1204_002", "mitre_t1059_001", "mitre_t1059_003", "mitre_t1105", "windows"]
-                }
-            },
-            {
-                "key": "threat.framework",
-                "value": {
-                    "value": "MITRE ATT&CK"
-                }
-            },
-            {
-                "key": "threat.tactic.id",
-                "value": {
-                    "value": ["TA0003", "TA0002", "TA0008", "TA0011"]
-                }
-            },
-            {
-                "key": "threat.tactic.name",
-                "value": {
-                    "value": ["Persistence", "Execution", "Lateral Movement", "Command and Control"]
-                }
-            },
-            {
-                "key": "threat.technique.id",
-                "value": {
-                    "value": ["T1547.001", "T1204.002", "T1059.001", "T1059.003", "T1021", "T1105"]
-                }
-            },
-            {
-                "key": "threat.technique.name",
-                "value": {
-                    "value": ["Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder", "User Execution: Malicious File", "Command and Scripting Interpreter: PowerShell", "Command and Scripting Interpreter: Windows Command Shell", "Remote Services", "Ingress Tool Transfer"]
+                    "value": ["osquery", "forensics", "persistence", "file-analysis", "windows"]
                 }
             }
         ],
@@ -187,44 +145,6 @@
             "file-analysis",
             "malware-detection",
             "command-and-control"
-        ],
-        "mitre_attack": [
-            {
-                "id": "T1547.001",
-                "tactic": "Persistence",
-                "technique": "Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
-                "reference": "https://attack.mitre.org/techniques/T1547/001/"
-            },
-            {
-                "id": "T1204.002",
-                "tactic": "Execution",
-                "technique": "User Execution: Malicious File",
-                "reference": "https://attack.mitre.org/techniques/T1204/002/"
-            },
-            {
-                "id": "T1021",
-                "tactic": "Lateral Movement",
-                "technique": "Remote Services",
-                "reference": "https://attack.mitre.org/techniques/T1021/"
-            },
-            {
-                "id": "T1059.001",
-                "tactic": "Execution",
-                "technique": "Command and Scripting Interpreter: PowerShell",
-                "reference": "https://attack.mitre.org/techniques/T1059/001/"
-            },
-            {
-                "id": "T1059.003",
-                "tactic": "Execution",
-                "technique": "Command and Scripting Interpreter: Windows Command Shell",
-                "reference": "https://attack.mitre.org/techniques/T1059/003/"
-            },
-            {
-                "id": "T1105",
-                "tactic": "Command and Control",
-                "technique": "Ingress Tool Transfer",
-                "reference": "https://attack.mitre.org/techniques/T1105/"
-            }
         ]
     },
     "coreMigrationVersion": "9.2.0",
