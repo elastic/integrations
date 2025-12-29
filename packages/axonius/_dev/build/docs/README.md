@@ -29,6 +29,10 @@ These insights enable organizations to monitor alert patterns, identify recurrin
 
 ## What do I need to use this integration?
 
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
 ### From Axonius
 
 To collect data through the Axonius APIs, you need to provide the **URL**, **API Key** and **API Secret**. Authentication is handled using the **API Key** and **API Secret**, which serves as the required credential.
@@ -85,6 +89,13 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Axonius**, and verify the dashboard information is populated.
 
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **Axonius**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -116,3 +127,7 @@ These APIs are used with this integration:
 * Alert Findings and Incidents:
     * alert_findings (endpoint: `/api/v2/alert_findings`)
     * incidents (endpoint: `/api/v2/incidents`)
+
+#### ILM Policy
+
+To facilitate alert findings and incident data, source data stream-backed indices `.ds-logs-axonius.alert_and_incident-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-axonius.alert_and_incident-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
