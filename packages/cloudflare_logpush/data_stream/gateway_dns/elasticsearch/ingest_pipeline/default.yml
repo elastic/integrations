@@ -21,14 +21,14 @@ processors:
   - set:
       field: event.type
       value: [info]
-## AWS S3 input does _id-Based Deduplication and generates "_id" by default.
+## AWS S3 input does _id Based Deduplication and generates "_id" by default.
 ## When "Data Deduplication" is not enabled, this field must be removed.
 ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
       description: >
-        When data deduplication is disabled, the _id field (used for _id-Based Deduplication)
+        When data deduplication is disabled, the _id field (used for _id Based Deduplication)
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
