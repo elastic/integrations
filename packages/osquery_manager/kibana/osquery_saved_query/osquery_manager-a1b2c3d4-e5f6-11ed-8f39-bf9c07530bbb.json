@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-11-21T00:00:00.000Z",
         "created_by": "elastic",
-        "description": "Comprehensive PowerShell forensic monitoring query using hybrid approach: powershell_events table for Event ID 4104 (Script Block Logging) with automatic script reconstruction, plus windows_eventlog for Event ID 4103 (Module Logging) and Event ID 4688 (Process Creation). Detects obfuscated commands, fileless malware, and captures parent/child process relationships. Note: cosine_similarity anomaly detection is not available as it requires 'feature_vectors' config which is not supported by Elastic Agent's osquery integration. MITRE ATT&CK: T1059.001 (PowerShell).",
+        "description": "Comprehensive PowerShell forensic monitoring query using hybrid approach: powershell_events table for Event ID 4104 (Script Block Logging) with automatic script reconstruction, plus windows_eventlog for Event ID 4103 (Module Logging) and Event ID 4688 (Process Creation). Detects obfuscated commands, fileless malware, and captures parent/child process relationships.",
         "ecs_mapping": [
             {
                 "key": "event.category",
@@ -17,27 +17,9 @@
                 }
             },
             {
-                "key": "event.kind",
-                "value": {
-                    "value": "signal"
-                }
-            },
-            {
-                "key": "event.module",
-                "value": {
-                    "value": "osquery"
-                }
-            },
-            {
-                "key": "event.dataset",
+                "key": "event.action",
                 "value": {
                     "value": "osquery.powershell_history"
-                }
-            },
-            {
-                "key": "host.os.type",
-                "value": {
-                    "value": "windows"
                 }
             },
             {
@@ -80,12 +62,6 @@
                 "key": "process.thread.id",
                 "value": {
                     "field": "tid"
-                }
-            },
-            {
-                "key": "event.action",
-                "value": {
-                    "field": "task"
                 }
             },
             {
@@ -157,58 +133,15 @@
             {
                 "key": "tags",
                 "value": {
-                    "value": ["osquery", "powershell", "execution", "fileless_malware", "script_block_logging", "mitre_t1059_001", "windows"]
-                }
-            },
-            {
-                "key": "threat.framework",
-                "value": {
-                    "value": "MITRE ATT&CK"
-                }
-            },
-            {
-                "key": "threat.tactic.id",
-                "value": {
-                    "value": ["TA0002"]
-                }
-            },
-            {
-                "key": "threat.tactic.name",
-                "value": {
-                    "value": ["Execution"]
-                }
-            },
-            {
-                "key": "threat.technique.id",
-                "value": {
-                    "value": ["T1059"]
-                }
-            },
-            {
-                "key": "threat.technique.name",
-                "value": {
-                    "value": ["Command and Scripting Interpreter"]
-                }
-            },
-            {
-                "key": "threat.technique.subtechnique.id",
-                "value": {
-                    "value": ["T1059.001"]
-                }
-            },
-            {
-                "key": "threat.technique.subtechnique.name",
-                "value": {
-                    "value": ["PowerShell"]
+                    "value": ["osquery", "powershell", "execution", "windows"]
                 }
             }
         ],
         "id": "powershell_history_windows_elastic",
         "interval": "300",
         "platform": "windows",
-        "query": "-- Comprehensive PowerShell Forensic Monitoring Query (Hybrid Approach)\n-- Uses powershell_events for Event ID 4104 (Script Block Logging) with automatic reconstruction\n-- Uses windows_eventlog for Event ID 4103 (Module Logging) and 4688 (Process Creation)\n-- Focus: Fileless malware detection, obfuscated command tracking\n-- MITRE ATT&CK: T1059.001 (PowerShell)\n-- Last updated: 2025-12-09\n--\n-- PREREQUISITES:\n-- 1. Windows Script Block Logging must be enabled (GPO or registry)\n-- 2. Elastic Agent osquery integration requires this config in Fleet policy:\n--    { \"options\": { \"disable_events\": \"false\", \"enable_powershell_events_subscriber\": \"true\", \"enable_windows_events_subscriber\": \"true\" } }\n--\n-- PERFORMANCE TIP: For large environments, add time filter to powershell_events:\n-- WHERE time > (strftime('%s', 'now') - 86400)  -- last 24 hours\n\n-- Part 1: Script Block Logging (Event ID 4104) via powershell_events\n-- Benefits: Automatic script reconstruction across fragmented blocks\nSELECT\n    datetime AS event_time,\n    time,\n    4104 AS eventid,\n    'Microsoft-Windows-PowerShell' AS provider_name,\n    NULL AS level,\n    NULL AS task,\n    NULL AS computer_name,\n    'Microsoft-Windows-PowerShell/Operational' AS channel,\n    NULL AS pid,\n    NULL AS tid,\n    NULL AS data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    script_block_id,\n    script_block_count,\n    script_text,\n    script_name,\n    script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM powershell_events\n\nUNION ALL\n\n-- Part 2: Module Logging (Event ID 4103) via windows_eventlog\n-- Captures obfuscated command context and payload\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    json_extract(data, '$.EventData.ProviderName') AS ps_provider_name,\n    json_extract(data, '$.EventData.ContextInfo') AS context_info,\n    json_extract(data, '$.EventData.Payload') AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Microsoft-Windows-PowerShell/Operational'\n    AND eventid = 4103\n\nUNION ALL\n\n-- Part 3: Process Creation (Event ID 4688) via windows_eventlog\n-- Captures command line and parent/child process relationships\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    json_extract(data, '$.EventData.CommandLine') AS command_line,\n    json_extract(data, '$.EventData.NewProcessName') AS process_name,\n    json_extract(data, '$.EventData.ParentProcessName') AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Security'\n    AND eventid = 4688\n    AND data LIKE '%powershell%'\n\nORDER BY event_time DESC;",
+        "query": "-- Comprehensive PowerShell Forensic Monitoring Query (Hybrid Approach)\n-- Uses powershell_events for Event ID 4104 (Script Block Logging) with automatic reconstruction\n-- Uses windows_eventlog for Event ID 4103 (Module Logging) and 4688 (Process Creation)\n-- Focus: Fileless malware detection, obfuscated command tracking\n-- Last updated: 2025-12-09\n--\n-- PREREQUISITES:\n-- 1. Windows Script Block Logging must be enabled (GPO or registry)\n-- 2. Elastic Agent osquery integration requires this config in Fleet policy:\n--    { \"options\": { \"disable_events\": \"false\", \"enable_powershell_events_subscriber\": \"true\", \"enable_windows_events_subscriber\": \"true\" } }\n--\n-- PERFORMANCE TIP: For large environments, add time filter to powershell_events:\n-- WHERE time > (strftime('%s', 'now') - 86400)  -- last 24 hours\n\n-- Part 1: Script Block Logging (Event ID 4104) via powershell_events\n-- Benefits: Automatic script reconstruction across fragmented blocks\nSELECT\n    datetime AS event_time,\n    time,\n    4104 AS eventid,\n    'Microsoft-Windows-PowerShell' AS provider_name,\n    NULL AS level,\n    NULL AS task,\n    NULL AS computer_name,\n    'Microsoft-Windows-PowerShell/Operational' AS channel,\n    NULL AS pid,\n    NULL AS tid,\n    NULL AS data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    script_block_id,\n    script_block_count,\n    script_text,\n    script_name,\n    script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM powershell_events\n\nUNION ALL\n\n-- Part 2: Module Logging (Event ID 4103) via windows_eventlog\n-- Captures obfuscated command context and payload\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    json_extract(data, '$.EventData.ProviderName') AS ps_provider_name,\n    json_extract(data, '$.EventData.ContextInfo') AS context_info,\n    json_extract(data, '$.EventData.Payload') AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Microsoft-Windows-PowerShell/Operational'\n    AND eventid = 4103\n\nUNION ALL\n\n-- Part 3: Process Creation (Event ID 4688) via windows_eventlog\n-- Captures command line and parent/child process relationships\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    json_extract(data, '$.EventData.CommandLine') AS command_line,\n    json_extract(data, '$.EventData.NewProcessName') AS process_name,\n    json_extract(data, '$.EventData.ParentProcessName') AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Security'\n    AND eventid = 4688\n    AND data LIKE '%powershell%'\n\nORDER BY event_time DESC;",
         "tags": [
-            "T1059.001",
             "PowerShell",
             "Execution",
             "Fileless Malware",
@@ -216,7 +149,7 @@
             "Module Logging",
             "Process Auditing"
         ],
-        "updated_at": "2025-12-09T00:00:00.000Z",
+        "updated_at": "2025-12-29T00:00:00.000Z",
         "updated_by": "elastic",
         "version": "1.0.0"
     },
@@ -224,6 +157,6 @@
     "id": "osquery_manager-a1b2c3d4-e5f6-11ed-8f39-bf9c07530bbb",
     "references": [],
     "type": "osquery-saved-query",
-    "updated_at": "2025-12-09T00:00:00.000Z",
+    "updated_at": "2025-12-29T00:00:00.000Z",
     "version": "WzEwNTUzLDJd"
 }
