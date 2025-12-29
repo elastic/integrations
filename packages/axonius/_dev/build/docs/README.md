@@ -2,7 +2,7 @@
 
 ## Overview
 
-[Axonius](https://www.axonius.com/) is a cybersecurity asset management platform that automatically collects data from hundreds of IT and security tools through adapters, merges that information, and builds a unified inventory of all assetsâ€”devices, users, SaaS apps, cloud instances, and more. By correlating data from multiple systems, Axonius helps organizations identify visibility gaps, missing security controls, risky configurations, and compliance issues. It lets you create powerful queries to answer any security or IT question and automate actions such as sending alerts, creating tickets, or enforcing policies.
+[Axonius](https://www.axonius.com/) is a cybersecurity asset management platform that automatically collects data from hundreds of IT and security tools through adapters, merges that information, and builds a unified inventory of all assets including devices, users, SaaS apps, cloud instances, and more. By correlating data from multiple systems, Axonius helps organizations identify visibility gaps, missing security controls, risky configurations, and compliance issues. It lets you create powerful queries to answer any security or IT question and automate actions such as sending alerts, creating tickets, or enforcing policies.
 
 This integration for Elastic allows you to collect assets and security events data using the Axonius API, then visualize the data in Kibana.
 
@@ -32,6 +32,10 @@ Tables highlight the most active data centers, users, hosts, vendors, manufactur
 
 ## What do I need to use this integration?
 
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
 ### From Axonius
 
 To collect data through the Axonius APIs, you need to provide the **URL**, **API Key** and **API Secret**. Authentication is handled using the **API Key** and **API Secret**, which serves as the required credential.
@@ -42,7 +46,7 @@ To collect data through the Axonius APIs, you need to provide the **URL**, **API
 2. Your instance URL is your Base **URL**.
 3. Navigate to **User Settings > API Key**.
 4. Generate an **API Key**.
-5. If you don’t see the API Key tab in your user settings, follow these steps:
+5. If you do not see the API Key tab in your user settings, follow these steps:
     1.  Go to **System Settings** > **User and Role Management** > **Service Accounts**.
     2. Create a Service Account, and then generate an **API Key**.
 6. Copy both values including **API Key and Secret Key** and store them securely for use in the Integration configuration.
@@ -88,6 +92,13 @@ For more information, refer to [Agentless integrations](https://www.elastic.co/g
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **Axonius**, and verify the dashboard information is populated.
 
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **Axonius**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -124,3 +135,7 @@ These APIs are used with this integration:
     * serverless_functions (endpoint: `/api/v2/serverless_functions`)
     * compute_images (endpoint: `/api/v2/compute_images`)
     * configurations (endpoint: `/api/v2/configurations`)
+
+#### ILM Policy
+
+To facilitate compute data, source data stream-backed indices `.ds-logs-axonius.compute-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-axonius.compute-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
