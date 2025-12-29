@@ -120,6 +120,18 @@ processors:
       value: failure
       if: ctx.aws?.bedrock_agentcore?.body?.isError == true || ctx.error?.message != null
 
+  - rename:
+      tag: flatten_request_payload
+      field: aws.bedrock_agentcore.body
+      target_field: aws.bedrock_agentcore.payload_object
+      ignore_missing: true
+
+  - set:
+      tag: set_message_from_log
+      field: message
+      copy_from: aws.bedrock_agentcore.payload_object.log
+      ignore_empty_value: true
+
   - remove:
       tag: remove_unused_fields
       field:
