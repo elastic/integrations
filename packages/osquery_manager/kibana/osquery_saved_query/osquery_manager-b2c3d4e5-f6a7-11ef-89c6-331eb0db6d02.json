@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-11-07T00:00:00.000Z",
         "created_by": "elastic",
-        "description": "Retrieves enriched ARP cache entries with local interface details including local IP addresses and MAC addresses. Combines ARP cache data with network interface configuration to provide complete neighbor relationship context. This enriched view helps investigate network communications, detect ARP spoofing, and understand both source and destination network endpoints. Relevant MITRE ATT&CK techniques: T1016 (System Network Configuration Discovery), T1018 (Remote System Discovery).",
+        "description": "Retrieves enriched ARP cache entries with local interface details including local IP addresses and MAC addresses. Combines ARP cache data with network interface configuration to provide complete neighbor relationship context. This enriched view helps investigate network communications, detect ARP spoofing, and understand both source and destination network endpoints.",
         "ecs_mapping": [
             {
                 "key": "event.category",
@@ -17,13 +17,7 @@
                 }
             },
             {
-                "key": "event.module",
-                "value": {
-                    "value": "osquery"
-                }
-            },
-            {
-                "key": "event.dataset",
+                "key": "event.action",
                 "value": {
                     "value": "osquery.arp_cache"
                 }
@@ -59,12 +53,6 @@
                 }
             },
             {
-                "key": "event.provider",
-                "value": {
-                    "field": "entry_state"
-                }
-            },
-            {
                 "key": "network.type",
                 "value": {
                     "field": "address_family"
@@ -73,43 +61,13 @@
             {
                 "key": "tags",
                 "value": {
-                    "value": ["network_discovery", "arp_cache", "asset_inventory", "mitre_t1016", "mitre_t1018", "osquery"]
-                }
-            },
-            {
-                "key": "threat.framework",
-                "value": {
-                    "value": "MITRE ATT&CK"
-                }
-            },
-            {
-                "key": "threat.tactic.id",
-                "value": {
-                    "value": ["TA0007"]
-                }
-            },
-            {
-                "key": "threat.tactic.name",
-                "value": {
-                    "value": ["Discovery"]
-                }
-            },
-            {
-                "key": "threat.technique.id",
-                "value": {
-                    "value": ["T1016", "T1018"]
-                }
-            },
-            {
-                "key": "threat.technique.name",
-                "value": {
-                    "value": ["System Network Configuration Discovery", "Remote System Discovery"]
+                    "value": ["osquery", "network", "arp_cache", "asset_inventory"]
                 }
             }
         ],
         "id": "arp_cache_elastic",
         "interval": "3600",
-        "query": "-- ARP Cache with Local Interface Information\n-- Provides complete network neighbor context by joining ARP cache with interface details\n-- Source: arp_cache + interface_details + interface_addresses tables\n-- Cross-platform: Windows uses MAC in arp_cache.interface, Linux/macOS use interface name\n-- MITRE ATT&CK: T1016 (System Network Configuration Discovery), T1018 (Remote System Discovery)\n\nWITH arp_entries AS (\n    SELECT\n        a.address AS remote_address,\n        a.mac AS remote_mac,\n        a.interface AS interface_identifier,\n        CASE\n            WHEN a.permanent = '1' THEN 'persistent'\n            ELSE 'active'\n        END AS entry_state,\n        CASE\n            WHEN a.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS address_family\n    FROM arp_cache a\n),\nlocal_interfaces AS (\n    SELECT\n        id.interface AS interface_index,\n        id.mac AS local_mac,\n        ia.address AS local_address,\n        CASE\n            WHEN ia.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS address_family\n    FROM interface_details id\n    LEFT JOIN interface_addresses ia ON id.interface = ia.interface\n    WHERE id.mac IS NOT NULL\n        AND ia.address IS NOT NULL\n)\nSELECT\n    ae.remote_address,\n    ae.remote_mac,\n    COALESCE(li.interface_index, ae.interface_identifier) AS interface_name,\n    ae.entry_state,\n    ae.address_family,\n    li.local_address,\n    li.local_mac\nFROM arp_entries ae\nLEFT JOIN local_interfaces li ON\n    (ae.interface_identifier = li.interface_index OR LOWER(ae.interface_identifier) = LOWER(li.local_mac))\n    AND ae.address_family = li.address_family\nORDER BY interface_name, ae.remote_address;",
+        "query": "-- ARP Cache with Local Interface Information\n-- Provides complete network neighbor context by joining ARP cache with interface details\n-- Source: arp_cache + interface_details + interface_addresses tables\n-- Cross-platform: Windows uses MAC in arp_cache.interface, Linux/macOS use interface name\n\nWITH arp_entries AS (\n    SELECT\n        a.address AS remote_address,\n        a.mac AS remote_mac,\n        a.interface AS interface_identifier,\n        CASE\n            WHEN a.permanent = '1' THEN 'persistent'\n            ELSE 'active'\n        END AS entry_state,\n        CASE\n            WHEN a.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS address_family\n    FROM arp_cache a\n),\nlocal_interfaces AS (\n    SELECT\n        id.interface AS interface_index,\n        id.mac AS local_mac,\n        ia.address AS local_address,\n        CASE\n            WHEN ia.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS address_family\n    FROM interface_details id\n    LEFT JOIN interface_addresses ia ON id.interface = ia.interface\n    WHERE id.mac IS NOT NULL\n        AND ia.address IS NOT NULL\n)\nSELECT\n    ae.remote_address,\n    ae.remote_mac,\n    COALESCE(li.interface_index, ae.interface_identifier) AS interface_name,\n    ae.entry_state,\n    ae.address_family,\n    li.local_address,\n    li.local_mac\nFROM arp_entries ae\nLEFT JOIN local_interfaces li ON\n    (ae.interface_identifier = li.interface_index OR LOWER(ae.interface_identifier) = LOWER(li.local_mac))\n    AND ae.address_family = li.address_family\nORDER BY interface_name, ae.remote_address;",
         "platform": "linux,darwin,windows",
         "updated_at": "2025-11-07T00:00:00.000Z",
         "updated_by": "elastic"
