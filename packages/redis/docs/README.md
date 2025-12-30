@@ -292,6 +292,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.clients.max_input_buffer | Biggest input buffer among current client connections (on redis 5.0). | long | gauge |
 | redis.info.clients.max_output_buffer | Longest output list among current client connections. | long | gauge |
 | redis.info.cluster.enabled | Indicates that the Redis cluster is enabled. | boolean |  |
+| redis.info.commandstats.\*.calls | The number of calls that reached command execution (not rejected). | long |  |
+| redis.info.commandstats.\*.failed_calls | The number of failed calls (on redis 6.2-rc2). | long |  |
+| redis.info.commandstats.\*.rejected_calls | The number of rejected calls (on redis 6.2-rc2). | long |  |
+| redis.info.commandstats.\*.usec | The total CPU time consumed by these commands. | long |  |
+| redis.info.commandstats.\*.usec_per_call | The average CPU consumed per command execution. | float |  |
 | redis.info.cpu.used.sys | System CPU consumed by the Redis server. | scaled_float | gauge |
 | redis.info.cpu.used.sys_children | User CPU consumed by the Redis server. | scaled_float | gauge |
 | redis.info.cpu.used.user | System CPU consumed by the background processes. | scaled_float | gauge |
