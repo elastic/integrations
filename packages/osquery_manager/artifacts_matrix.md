@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2024-12-02
+**Total Core Artifacts**: 2 available + 38 in progress + 6 not available = 46 total variants
+**Total Queries**: 31 (4 core forensic variants + 27 additional)
+**Completion Rate**: 4.3% (2/46 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
+| ✅ Available (Fully Supported) | 2     | 4.3%       |
+| ⚠️ In Progress (Needs Validation) | 38    | 82.6%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
@@ -59,8 +59,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 17a | Process Listing         | ⚠️ | Linux | -     | -    | processes table                                                                                                                  |
 | 17b | Process Listing         | ⚠️ | Mac | -     | -    | processes table                                                                                                                  |
 | 18 | Registry                | ⚠️ | Win | -     | -    | registry table                                                                                                                   |
-| 19 | Shell History           | ⚠️ | Linux | -     | -    | shell_history table                                                                                                              |
-| 19a | Shell History           | ⚠️ | Mac | -     | -    | shell_history table                                                                                                              |
+| 19 | Shell History           | ✅ | Linux | shell_history_linux_macos_elastic | [8476](kibana/osquery_saved_query/osquery_manager-8476c6fe-9c0b-447b-a334-c5ecc0779d9d.json) | shell_history table with LEFT JOIN for anti-forensics detection (users with no history). MITRE: T1059.004, T1552.003, T1070.003, T1105, T1562.001 |
+| 19a | Shell History           | ✅ | Mac | shell_history_linux_macos_elastic | [8476](kibana/osquery_saved_query/osquery_manager-8476c6fe-9c0b-447b-a334-c5ecc0779d9d.json) | shell_history table with LEFT JOIN for anti-forensics detection (users with no history). MITRE: T1059.004, T1552.003, T1070.003, T1105, T1562.001 |
 | 20 | Shellbags               | ⚠️ | Win | -     | -    | shellbags table                                                                                                                  |
 | 21 | Tasks                   | ⚠️ | Win | -     | -    | scheduled_tasks table                                                                                                            |
 | 21a | Tasks                   | ⚠️ | Linux | -     | -    | scheduled_tasks table                                                                                                            |
@@ -105,6 +105,7 @@ These queries existed in the original repository and provide additional coverage
 | 24 | unsigned_startup_items_vt | ✅ | Win | [b068](kibana/osquery_saved_query/osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135.json) | Unsigned startup items with VirusTotal integration |
 | 25 | unsigned_dlls_on_system_folders_vt | ✅ | Win | [63c1](kibana/osquery_saved_query/osquery_manager-63c1fe20-176f-11ed-89c6-331eb0db6d01.json) | Unsigned DLLs in system folders with VirusTotal integration |
 | 26 | executables_in_temp_folder_vt | ✅ | Win | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration |
+| 27 | shell_history | ✅ | Linux+Mac | [8476](kibana/osquery_saved_query/osquery_manager-8476c6fe-9c0b-447b-a334-c5ecc0779d9d.json) | Shell command history with anti-forensics detection (LEFT JOIN to identify users with no history). MITRE: T1059.004, T1552.003, T1070.003, T1105, T1562.001 |
 
 **Note**: Queries with VirusTotal integration require the VirusTotal extension configured in osquery.
 
@@ -168,7 +169,7 @@ While some artifacts are not directly available, the existing queries provide st
 
 ### User Activity
 - ⚠️ LNK files (Windows: shortcut_files, file, recent_files tables)
-- ⚠️ Shell History (Linux/Mac: shell_history table)
+- ✅ Shell History (Linux/Mac: shell_history table with anti-forensics detection)
 - ⚠️ Shellbags (Windows: shellbags table)
 - ⚠️ User Assist (Windows: userassist table)
 - ⚠️ Browser URL History (All platforms: via ATC custom tables)
