@@ -1,0 +1,133 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  api_token: {{api_token}}
+redact:
+  fields:
+    - api_token
+program: |
+  state.with(
+    request(
+      "GET",
+      state.?next.url.orValue(
+        state.url.trim_right("/") + "/technical-intelligence/v2/indicators?" + {
+          "size": [string(state.page_size)],
+          "modified_after": [state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05")) + "Z"],
+        }.format_query()
+      )
+    ).with({
+      "Header": {
+        "Accept": ["application/json"],
+        "Authorization": ["Bearer " + state.api_token],
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body,
+        {
+          // Publish events
+          "events": ((has(body.items) && size(body.items) > 0) ?
+            body.items.map(e, {
+              "message": e.encode_json()
+            })
+          :
+            // Added placeholder to ensure cursor gets stored
+            // This will be dropped later in the pipeline
+            [{"message": "empty_events_placeholder"}]
+          ),
+          "cursor": {
+            // 'max_modified_at' tracks the maximum 'modified_at' timestamp
+            // encountered across all pages within the current polling cycle.
+            ?"max_modified_at": (has(body.items) && size(body.items) > 0) ?
+              (has(state.?cursor.max_modified_at) ?
+                optional.of(
+                  max([
+                    state.cursor.max_modified_at.parse_time("2006-01-02T15:04:05"),
+                    body.items.map(e, timestamp(e.modified_at)).max()
+                  ]).format("2006-01-02T15:04:05")
+                )
+              :
+                optional.of(body.items.map(e, timestamp(e.modified_at)).max().format("2006-01-02T15:04:05"))
+              )
+            :
+              state.?cursor.max_modified_at,
+
+            // 'last_timestamp' is finalized only on the last page of pagination
+            // and is used as the starting point for the next scheduled run.
+            ?"last_timestamp": (has(body.?pagination.next) && body.pagination.next == null) ?
+              ((has(body.items) && size(body.items) > 0) ?
+                (has(state.?cursor.max_modified_at) ?
+                  optional.of(
+                    max([
+                      state.cursor.max_modified_at.parse_time("2006-01-02T15:04:05"),
+                      body.items.map(e, timestamp(e.modified_at)).max(),
+                    ]).format("2006-01-02T15:04:05")
+                  )
+                :
+                  optional.of(body.items.map(e, timestamp(e.modified_at)).max().format("2006-01-02T15:04:05"))
+                )
+              :
+                state.?cursor.max_modified_at)
+            :
+              state.?cursor.last_timestamp
+          },
+          "next": {
+            ?"url": has(body.?pagination.next) && body.pagination.next != null ? body.?pagination.next : optional.none()
+          },
+          "want_more": has(body.?pagination.next) && body.pagination.next != null
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/technical-intelligence/v2/indicators: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "next": {},
+        "want_more": false
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
