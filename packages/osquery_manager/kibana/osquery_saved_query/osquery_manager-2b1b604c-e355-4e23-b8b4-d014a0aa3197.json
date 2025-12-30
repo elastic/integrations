@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-01-06T10:00:00.000Z",
         "created_by": "elastic",
-        "description": "Identifies macOS processes with suspicious characteristics: unsigned executables, execution from /tmp or hidden directories, osascript abuse, quarantine bypass, crypto-miners, and suspicious interpreters. Enriched with code signatures and file hashes for threat intelligence correlation. MITRE ATT&CK: T1059 (Command and Scripting Interpreter), T1553.001 (Gatekeeper Bypass), T1059.002 (AppleScript), T1496 (Resource Hijacking).",
+        "description": "Identifies macOS processes with suspicious characteristics: unsigned executables, execution from /tmp or hidden directories, osascript abuse, quarantine bypass, crypto-miners, and suspicious interpreters. Enriched with code signatures and file hashes for threat intelligence correlation.",
         "ecs_mapping": [
             {
                 "key": "event.category",
@@ -23,21 +23,9 @@
                 }
             },
             {
-                "key": "event.module",
-                "value": {
-                    "value": "osquery"
-                }
-            },
-            {
-                "key": "event.dataset",
+                "key": "event.action",
                 "value": {
                     "value": "osquery.suspicious_processes"
-                }
-            },
-            {
-                "key": "host.os.type",
-                "value": {
-                    "value": "macos"
                 }
             },
             {
@@ -145,44 +133,14 @@
             {
                 "key": "tags",
                 "value": {
-                    "value": ["suspicious_process", "threat_hunting", "mitre_t1059", "mitre_t1553_001", "mitre_t1059_002", "mitre_t1496", "macos"]
-                }
-            },
-            {
-                "key": "threat.framework",
-                "value": {
-                    "value": "MITRE ATT&CK"
-                }
-            },
-            {
-                "key": "threat.tactic.id",
-                "value": {
-                    "value": ["TA0002", "TA0005"]
-                }
-            },
-            {
-                "key": "threat.tactic.name",
-                "value": {
-                    "value": ["Execution", "Defense Evasion"]
-                }
-            },
-            {
-                "key": "threat.technique.id",
-                "value": {
-                    "value": ["T1059", "T1059.002", "T1553.001", "T1496"]
-                }
-            },
-            {
-                "key": "threat.technique.name",
-                "value": {
-                    "value": ["Command and Scripting Interpreter", "AppleScript", "Gatekeeper Bypass", "Resource Hijacking"]
+                    "value": ["osquery", "process", "suspicious_process", "threat_hunting", "macos"]
                 }
             }
         ],
         "id": "suspicious_processes_macos_elastic",
         "interval": "3600",
         "platform": "darwin",
-        "query": "-- macOS Suspicious Process Detection\n-- Identifies processes with potentially malicious characteristics\n-- MITRE ATT&CK: T1059, T1553.001, T1059.002, T1496\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.on_disk,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    s.signed AS signature_status,\n    s.authority AS signature_signer,\n    s.identifier AS bundle_identifier,\n    s.team_identifier,\n    CASE\n        WHEN s.signed = 0 OR s.signed IS NULL THEN 'unsigned_binary'\n        WHEN p.path LIKE '/tmp/%' OR p.path LIKE '/var/tmp/%' THEN 'suspicious_path_tmp'\n        WHEN p.path LIKE '/private/tmp/%' THEN 'suspicious_path_private_tmp'\n        WHEN p.path LIKE '/Users/Shared/%' THEN 'suspicious_path_shared'\n        WHEN p.path LIKE '%/.%' THEN 'hidden_path'\n        WHEN p.path LIKE '/Users/%/Library/%' AND s.signed = 0 THEN 'unsigned_in_library'\n        WHEN p.name = 'osascript' AND (p.cmdline LIKE '%JavaScript%' OR p.cmdline LIKE '%do shell script%') THEN 'osascript_abuse'\n        WHEN p.name = 'curl' AND (p.cmdline LIKE '%|%sh%' OR p.cmdline LIKE '%|%bash%') THEN 'curl_pipe_shell'\n        WHEN p.cmdline LIKE '%xattr -d com.apple.quarantine%' OR p.cmdline LIKE '%xattr -c%' THEN 'quarantine_removal'\n        WHEN p.name IN ('python', 'python3', 'perl', 'ruby') AND p.cmdline LIKE '%socket%' THEN 'script_socket'\n        WHEN p.cmdline LIKE '%base64%' AND p.cmdline LIKE '%-D%' THEN 'base64_decode'\n        WHEN p.name LIKE '.%' THEN 'hidden_process_name'\n        WHEN p.cmdline LIKE '%stratum%' OR p.cmdline LIKE '%xmr%' OR p.cmdline LIKE '%monero%' OR p.cmdline LIKE '%nicehash%' OR p.cmdline LIKE '%pool.%' THEN 'crypto_miner'\n        WHEN p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' AND p.path NOT LIKE '/System/%' AND p.path NOT LIKE '/Applications/%' THEN 'root_unusual_path'\n        WHEN p.on_disk = 0 THEN 'process_not_on_disk'\n        ELSE 'other_suspicious'\n    END AS detection_reason\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN signature s ON p.path = s.path\nWHERE p.path != ''\nAND (\n    -- Unsigned or ad-hoc signed binaries\n    s.signed = 0 OR s.signed IS NULL\n    -- Suspicious execution paths\n    OR p.path LIKE '/tmp/%'\n    OR p.path LIKE '/var/tmp/%'\n    OR p.path LIKE '/private/tmp/%'\n    OR p.path LIKE '/Users/Shared/%'\n    OR p.path LIKE '%/.%'\n    -- osascript abuse (AppleScript for command execution)\n    OR (p.name = 'osascript' AND (\n        p.cmdline LIKE '%JavaScript%'\n        OR p.cmdline LIKE '%do shell script%'\n        OR p.cmdline LIKE '%NSAppleScript%'\n    ))\n    -- Download and execute patterns\n    OR (p.name = 'curl' AND (p.cmdline LIKE '%|%sh%' OR p.cmdline LIKE '%|%bash%'))\n    OR (p.name = 'wget' AND (p.cmdline LIKE '%|%sh%' OR p.cmdline LIKE '%|%bash%'))\n    -- Quarantine attribute removal (Gatekeeper bypass)\n    OR p.cmdline LIKE '%xattr -d com.apple.quarantine%'\n    OR p.cmdline LIKE '%xattr -c%'\n    OR p.cmdline LIKE '%xattr -r -d%'\n    -- Script interpreters with network activity\n    OR (p.name IN ('python', 'python3', 'python2', 'perl', 'ruby', 'php') AND p.cmdline LIKE '%socket%')\n    -- Base64 decode (obfuscation)\n    OR (p.cmdline LIKE '%base64%' AND p.cmdline LIKE '%-D%')\n    -- Hidden process names\n    OR p.name LIKE '.%'\n    -- Running from memory\n    OR p.on_disk = 0\n    -- Crypto-miner indicators (T1496 Resource Hijacking)\n    OR p.cmdline LIKE '%stratum%'\n    OR p.cmdline LIKE '%xmr%'\n    OR p.cmdline LIKE '%monero%'\n    OR p.cmdline LIKE '%nicehash%'\n    OR p.cmdline LIKE '%pool.%mining%'\n    OR p.cmdline LIKE '%cryptonight%'\n    OR p.cmdline LIKE '%randomx%'\n    -- Root processes from unusual locations\n    OR (p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' AND p.path NOT LIKE '/System/%' AND p.path NOT LIKE '/Applications/%' AND p.path NOT LIKE '/Library/%')\n);",
+        "query": "-- macOS Suspicious Process Detection\n-- Identifies processes with potentially malicious characteristics\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.on_disk,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    s.signed AS signature_status,\n    s.authority AS signature_signer,\n    s.identifier AS bundle_identifier,\n    s.team_identifier,\n    CASE\n        WHEN s.signed = 0 OR s.signed IS NULL THEN 'unsigned_binary'\n        WHEN p.path LIKE '/tmp/%' OR p.path LIKE '/var/tmp/%' THEN 'suspicious_path_tmp'\n        WHEN p.path LIKE '/private/tmp/%' THEN 'suspicious_path_private_tmp'\n        WHEN p.path LIKE '/Users/Shared/%' THEN 'suspicious_path_shared'\n        WHEN p.path LIKE '%/.%' THEN 'hidden_path'\n        WHEN p.path LIKE '/Users/%/Library/%' AND s.signed = 0 THEN 'unsigned_in_library'\n        WHEN p.name = 'osascript' AND (p.cmdline LIKE '%JavaScript%' OR p.cmdline LIKE '%do shell script%') THEN 'osascript_abuse'\n        WHEN p.name = 'curl' AND (p.cmdline LIKE '%|%sh%' OR p.cmdline LIKE '%|%bash%') THEN 'curl_pipe_shell'\n        WHEN p.cmdline LIKE '%xattr -d com.apple.quarantine%' OR p.cmdline LIKE '%xattr -c%' THEN 'quarantine_removal'\n        WHEN p.name IN ('python', 'python3', 'perl', 'ruby') AND p.cmdline LIKE '%socket%' THEN 'script_socket'\n        WHEN p.cmdline LIKE '%base64%' AND p.cmdline LIKE '%-D%' THEN 'base64_decode'\n        WHEN p.name LIKE '.%' THEN 'hidden_process_name'\n        WHEN p.cmdline LIKE '%stratum%' OR p.cmdline LIKE '%xmr%' OR p.cmdline LIKE '%monero%' OR p.cmdline LIKE '%nicehash%' OR p.cmdline LIKE '%pool.%' THEN 'crypto_miner'\n        WHEN p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' AND p.path NOT LIKE '/System/%' AND p.path NOT LIKE '/Applications/%' THEN 'root_unusual_path'\n        WHEN p.on_disk = 0 THEN 'process_not_on_disk'\n        ELSE 'other_suspicious'\n    END AS detection_reason\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN signature s ON p.path = s.path\nWHERE p.path != ''\nAND (\n    -- Unsigned or ad-hoc signed binaries\n    s.signed = 0 OR s.signed IS NULL\n    -- Suspicious execution paths\n    OR p.path LIKE '/tmp/%'\n    OR p.path LIKE '/var/tmp/%'\n    OR p.path LIKE '/private/tmp/%'\n    OR p.path LIKE '/Users/Shared/%'\n    OR p.path LIKE '%/.%'\n    -- osascript abuse (AppleScript for command execution)\n    OR (p.name = 'osascript' AND (\n        p.cmdline LIKE '%JavaScript%'\n        OR p.cmdline LIKE '%do shell script%'\n        OR p.cmdline LIKE '%NSAppleScript%'\n    ))\n    -- Download and execute patterns\n    OR (p.name = 'curl' AND (p.cmdline LIKE '%|%sh%' OR p.cmdline LIKE '%|%bash%'))\n    OR (p.name = 'wget' AND (p.cmdline LIKE '%|%sh%' OR p.cmdline LIKE '%|%bash%'))\n    -- Quarantine attribute removal (Gatekeeper bypass)\n    OR p.cmdline LIKE '%xattr -d com.apple.quarantine%'\n    OR p.cmdline LIKE '%xattr -c%'\n    OR p.cmdline LIKE '%xattr -r -d%'\n    -- Script interpreters with network activity\n    OR (p.name IN ('python', 'python3', 'python2', 'perl', 'ruby', 'php') AND p.cmdline LIKE '%socket%')\n    -- Base64 decode (obfuscation)\n    OR (p.cmdline LIKE '%base64%' AND p.cmdline LIKE '%-D%')\n    -- Hidden process names\n    OR p.name LIKE '.%'\n    -- Running from memory\n    OR p.on_disk = 0\n    -- Crypto-miner indicators (T1496 Resource Hijacking)\n    OR p.cmdline LIKE '%stratum%'\n    OR p.cmdline LIKE '%xmr%'\n    OR p.cmdline LIKE '%monero%'\n    OR p.cmdline LIKE '%nicehash%'\n    OR p.cmdline LIKE '%pool.%mining%'\n    OR p.cmdline LIKE '%cryptonight%'\n    OR p.cmdline LIKE '%randomx%'\n    -- Root processes from unusual locations\n    OR (p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' AND p.path NOT LIKE '/System/%' AND p.path NOT LIKE '/Applications/%' AND p.path NOT LIKE '/Library/%')\n);",
         "timeout": 180,
         "updated_at": "2025-01-06T10:00:00.000Z",
         "updated_by": "elastic"
