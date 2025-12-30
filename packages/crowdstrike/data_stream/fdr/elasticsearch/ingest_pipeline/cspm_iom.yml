@@ -288,59 +288,119 @@ processors:
       field: crowdstrike.cloudplatform
       target_field: cloud.provider
       ignore_missing: true
+  - append:
+      tag: append_cloud_provider_from_crowdstrike_cloudplatform_fbe812c3
+      if: ctx.crowdstrike?.cloudplatform != null
+      field: cloud.provider
+      value: '{{{crowdstrike.cloudplatform}}}'
+      allow_duplicates: false
   - rename:
       tag: rename_crowdstrike_resource_cloudProvider_to_cloud_provider_e78d6077
       if: ctx.cloud?.provider == null
       field: crowdstrike.resource.cloudProvider
       target_field: cloud.provider
       ignore_missing: true
+  - append:
+      tag: append_cloud_provider_from_crowdstrike_resource_cloudProvider_70f564de
+      if: ctx.crowdstrike?.resource?.cloudProvider != null
+      field: cloud.provider
+      value: '{{{crowdstrike.resource.cloudProvider}}}'
+      allow_duplicates: false
   # CloudSecurityIOMEvaluation events use `ruleId`, IOM events use `policy_id`
   - rename:
       tag: rename_crowdstrike_policy_id_to_rule_id_6a562b4e
       field: crowdstrike.policy_id
       target_field: rule.id
       ignore_missing: true
+  - append:
+      tag: append_rule_id_from_crowdstrike_policy_id_5527ec40
+      if: ctx.crowdstrike?.policy_id != null
+      field: rule.id
+      value: '{{{crowdstrike.policy_id}}}'
+      allow_duplicates: false
   - rename:
       tag: rename_crowdstrike_ruleId_to_rule_id_7392c4e8
       if: ctx.rule?.id == null
       field: crowdstrike.ruleId
       target_field: rule.id
       ignore_missing: true
+  - append:
+      tag: append_rule_id_from_crowdstrike_ruleId_39fca7b0
+      if: ctx.crowdstrike?.ruleId != null
+      field: rule.id
+      value: '{{{crowdstrike.ruleId}}}'
+      allow_duplicates: false
   - rename:
       tag: rename_crowdstrike_ruleName_to_rule_name_09ff9f3a
       if: ctx.rule?.name == null
       field: crowdstrike.ruleName
       target_field: rule.name
       ignore_missing: true
+  - append:
+      tag: append_rule_name_from_crowdstrike_ruleName_9f105302
+      if: ctx.crowdstrike?.ruleName != null
+      field: rule.name
+      value: '{{{crowdstrike.ruleName}}}'
+      allow_duplicates: false
   - rename:
       tag: rename_crowdstrike_CloudService_to_cloud_service_name_cad180a2
       field: crowdstrike.CloudService
       target_field: cloud.service.name
       ignore_missing: true
+  - append:
+      tag: append_cloud_service_name_from_crowdstrike_CloudService_502b8518
+      if: ctx.crowdstrike?.CloudService != null
+      field: cloud.service.name
+      value: '{{{crowdstrike.CloudService}}}'
+      allow_duplicates: false
   # CloudSecurityIOMEvaluation events use `resource.accountId`, IOM events use `AccountId`
   - rename:
       tag: rename_crowdstrike_AccountId_to_cloud_account_id_7a667ede
       field: crowdstrike.AccountId
       target_field: cloud.account.id
       ignore_missing: true
+  - append:
+      tag: append_cloud_account_id_from_crowdstrike_AccountId_e0946632
+      if: ctx.crowdstrike?.AccountId != null
+      field: cloud.account.id
+      value: '{{{crowdstrike.AccountId}}}'
+      allow_duplicates: false
   - rename:
       tag: rename_crowdstrike_resource_accountId_to_cloud_account_id_ed136ada
       if: ctx.cloud?.account?.id == null
       field: crowdstrike.resource.accountId
       target_field: cloud.account.id
       ignore_missing: true
+  - append:
+      tag: append_cloud_account_id_from_crowdstrike_resource_accountId_8c8510ad
+      if: ctx.crowdstrike?.resource?.accountId != null
+      field: cloud.account.id
+      value: '{{{crowdstrike.resource.accountId}}}'
+      allow_duplicates: false
   # CloudSecurityIOMEvaluation events use `resource.region`, IOM events use `region`
   - rename:
       tag: rename_crowdstrike_region_to_cloud_region_a2be859e
       field: crowdstrike.region
       target_field: cloud.region
       ignore_missing: true
+  - append:
+      tag: append_cloud_region_from_crowdstrike_region_e4a0d590
+      if: ctx.crowdstrike?.region != null
+      field: cloud.region
+      value: '{{{crowdstrike.region}}}'
+      allow_duplicates: false
   - rename:
       tag: rename_crowdstrike_resource_region_to_cloud_region_54502abf
       if: ctx.cloud?.region == null
       field: crowdstrike.resource.region
       target_field: cloud.region
       ignore_missing: true
+  - append:
+      tag: append_cloud_region_from_crowdstrike_resource_region_747cc2eb
+      if: ctx.crowdstrike?.resource?.region != null
+      field: cloud.region
+      value: '{{{crowdstrike.resource.region}}}'
+      allow_duplicates: false
   # Override severity set in default.yml as Cloud Security has a different range.
   - script:
       tag: set_severity_name_from_crowdstrike_Severity_a1e4ce46
