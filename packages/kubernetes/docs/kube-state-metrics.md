@@ -176,6 +176,7 @@ An example event for `state_container` looks as following:
 | kubernetes.container.memory.limit.bytes | Container memory limit in bytes | long | byte | gauge |
 | kubernetes.container.memory.request.bytes | Container requested memory in bytes | long | byte | gauge |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.container.status.last_terminated_exitcode | The exit code for the last container in terminated state. | integer |  |  |
 | kubernetes.container.status.last_terminated_reason | The last reason the container was in terminated state (Completed, ContainerCannotRun, Error or OOMKilled). | keyword |  |  |
 | kubernetes.container.status.last_terminated_timestamp | Last terminated time (epoch) of the container | double |  |  |
 | kubernetes.container.status.phase | Container phase (running, waiting, terminated) | keyword |  |  |
