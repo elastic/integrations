@@ -309,10 +309,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.memory.fragmentation.ratio | Ratio between used_memory_rss and used_memory | float | gauge |
 | redis.info.memory.max.policy | Eviction policy to use when memory limit is reached. | keyword |  |
 | redis.info.memory.max.value | Memory limit. | long | gauge |
+| redis.info.memory.total_system | Total amount in bytes of memory available to Redis. | long |  |
 | redis.info.memory.used.dataset | The size in bytes of the dataset | long | gauge |
 | redis.info.memory.used.lua | Used memory by the Lua engine. | long | gauge |
 | redis.info.memory.used.peak | Peak memory consumed by Redis. | long | gauge |
 | redis.info.memory.used.rss | Number of bytes that Redis allocated as seen by the operating system (a.k.a resident set size). | long | gauge |
+| redis.info.memory.used.scripts | Used memory by Lua scripts. | long |  |
 | redis.info.memory.used.value | Total number of bytes allocated by Redis. | long | gauge |
 | redis.info.persistence.aof.bgrewrite.last_status | Status of the last AOF rewrite operatio | keyword |  |
 | redis.info.persistence.aof.buffer.size | Size of the AOF buffer | long | gauge |
@@ -363,6 +365,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.server.lru_clock |  | long |  |
 | redis.info.server.mode |  | keyword |  |
 | redis.info.server.multiplexing_api |  | keyword |  |
+| redis.info.server.number_of_cached_scripts |  | long |  |
 | redis.info.server.run_id |  | keyword |  |
 | redis.info.server.tcp_port |  | long |  |
 | redis.info.server.uptime |  | long | gauge |
@@ -391,6 +394,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.stats.sync.full | The number of full resyncs with slaves | long | gauge |
 | redis.info.stats.sync.partial.err | The number of denied partial resync requests | long | gauge |
 | redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long | gauge |
+| redis.info.stats.tracking.total_items | Total number of tracked items. | long |  |
+| redis.info.stats.tracking.total_keys | Total number of keys being tracked. | long |  |
+| redis.info.stats.tracking.total_prefixes | Total number of tracked prefixes. | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
