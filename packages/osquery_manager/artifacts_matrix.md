@@ -2,9 +2,9 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
+**Last Updated**: 2025-12-02
 **Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 30 (3 core forensic variants + 27 additional)
+**Total Queries**: 31 (3 core forensic variants + 28 additional)
 **Completion Rate**: 2.2% (1/46 core artifacts fully supported)
 
 ---
@@ -13,9 +13,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 0     | 0%         |
-| ⚠️ In Progress (Needs Validation) | 39    | 87.0%      |
-| ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
+| ✅ Available (Fully Supported) | 1     | 2.2%       |
+| ⚠️ In Progress (Needs Validation) | 38    | 84.4%      |
+| ❌ Not Available (Requires Extensions) | 6     | 13.3%      |
 
 ---
 
@@ -58,7 +58,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 17 | Process Listing         | ⚠️ | Win | -     | -    | processes table                                                                                                                  |
 | 17a | Process Listing         | ⚠️ | Linux | -     | -    | processes table                                                                                                                  |
 | 17b | Process Listing         | ⚠️ | Mac | -     | -    | processes table                                                                                                                  |
-| 18 | Registry                | ⚠️ | Win | -     | -    | registry table                                                                                                                   |
+| 18 | Registry                | ✅ | Win | registry_persistence_windows_elastic | [5dd4](kibana/osquery_saved_query/osquery_manager-5dd4e2a9-eea7-4740-a1ec-1b1b7d120d77.json) | registry table - Persistence detection covering Run, RunOnce, Policy Run, Winlogon (Shell/Userinit), Active Setup with hash/signature enrichment. MITRE T1547.001, T1547.014 |
 | 19 | Shell History           | ⚠️ | Linux | -     | -    | shell_history table                                                                                                              |
 | 19a | Shell History           | ⚠️ | Mac | -     | -    | shell_history table                                                                                                              |
 | 20 | Shellbags               | ⚠️ | Win | -     | -    | shellbags table                                                                                                                  |
@@ -105,6 +105,7 @@ These queries existed in the original repository and provide additional coverage
 | 24 | unsigned_startup_items_vt | ✅ | Win | [b068](kibana/osquery_saved_query/osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135.json) | Unsigned startup items with VirusTotal integration |
 | 25 | unsigned_dlls_on_system_folders_vt | ✅ | Win | [63c1](kibana/osquery_saved_query/osquery_manager-63c1fe20-176f-11ed-89c6-331eb0db6d01.json) | Unsigned DLLs in system folders with VirusTotal integration |
 | 26 | executables_in_temp_folder_vt | ✅ | Win | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration |
+| 27 | registry_persistence_windows_elastic | ✅ | Win | [5dd4](kibana/osquery_saved_query/osquery_manager-5dd4e2a9-eea7-4740-a1ec-1b1b7d120d77.json) | Registry persistence detection covering Run, RunOnce, Policy Run, Winlogon (Shell/Userinit), Active Setup with hash/signature enrichment. MITRE T1547.001, T1547.014 |
 
 **Note**: Queries with VirusTotal integration require the VirusTotal extension configured in osquery.
 
@@ -160,7 +161,7 @@ While some artifacts are not directly available, the existing queries provide st
 ### Persistence Mechanisms
 - ⚠️ Installed Services (All platforms: services table)
 - ⚠️ Persistence (All platforms: multiple tables)
-- ⚠️ Registry (Windows: registry table)
+- ✅ Registry (Windows: registry table) - **Production-ready persistence query with hash/signature enrichment**
 - ⚠️ Tasks (All platforms: scheduled_tasks table)
 - ⚠️ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
 - ⚠️ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
