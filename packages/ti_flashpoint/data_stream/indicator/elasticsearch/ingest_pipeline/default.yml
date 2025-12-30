@@ -1,0 +1,496 @@
+---
+description: Pipeline for processing indicator logs.
+processors:
+  - drop:
+      tag: drop_empty_events_placeholder_1f3e6c12
+      if: ctx.message == 'empty_events_placeholder'
+  - set:
+      tag: set_ecs_version_to_9_2_0_3273339c
+      field: ecs.version
+      value: 9.2.0
+  - terminate:
+      description: error message set and no data to process.
+      tag: terminate_data_collection_error_4c75f12b
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+
+  # remove agentless metadata
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags_44eed408
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+
+  # parse the event JSON
+  - rename:
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      tag: rename_message_to_event_original_c74b1d7e
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      tag: remove_message_84808ee4
+      if: ctx.event?.original != null
+      field: message
+      ignore_missing: true
+  - json:
+      tag: json_event_original_into_json_5e54dc16
+      field: event.original
+      target_field: json
+
+  # Add fingerprint
+  - fingerprint:
+      tag: fingerprint_into__id_b67cc53d
+      fields:
+        - json.id
+        - json.modified_at
+      target_field: _id
+      ignore_missing: true
+
+  # Set event.* fields
+  - set:
+      tag: set_event_kind_to_enrichment_a131107f
+      field: event.kind
+      value: enrichment
+  - append:
+      tag: Append_event_type_to_indicator_7779ef85
+      field: event.type
+      value: indicator
+  - append:
+      tag: Append_event_category_to_threat_4cc22c32
+      field: event.category
+      value: threat
+
+  # rename fields to snake_case (hyphen to underscore)
+  - script:
+      description: Convert field names from hyphen to underscore.
+      tag: script_normalize_field_names_53b23f1f
+      lang: painless
+      source: |-
+        // Replace '-' with '_' in field names
+        String normalize(String str) {
+          return str.replace('-', '_');
+        }
+
+        // Recursive function to process objects
+        def normalizeFields(def obj) {
+          if (obj instanceof Map) {
+            def newObj = new HashMap();
+            for (entry in obj.entrySet()) {
+              String newKey = normalize(entry.getKey());
+              newObj.put(newKey, normalizeFields(entry.getValue()));
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = new ArrayList();
+            for (item in obj) {
+              newList.add(normalizeFields(item));
+            }
+            return newList;
+          }
+          return obj;
+        }
+
+        // Apply transformation
+        if (ctx.json != null) {
+          ctx.ti_flashpoint = ctx.ti_flashpoint ?: [:];
+          ctx.ti_flashpoint.indicator = normalizeFields(ctx.json);
+          ctx.remove('json');
+        }
+
+  # Date processors
+  - date:
+      tag: date_ti_flashpoint_indicator_created_at_into_ti_flashpoint_indicator_created_at_425aeb53
+      if: ctx.ti_flashpoint?.indicator?.created_at != null && ctx.ti_flashpoint.indicator.created_at != ''
+      field: ti_flashpoint.indicator.created_at
+      target_field: ti_flashpoint.indicator.created_at
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_indicator_created_at_95cd5660
+            field:
+              - ti_flashpoint.indicator.created_at
+        - append:
+            tag: append_error_message_baa27281
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ti_flashpoint_indicator_last_seen_at_into_ti_flashpoint_indicator_last_seen_at_89fe6397
+      if: ctx.ti_flashpoint?.indicator?.last_seen_at != null && ctx.ti_flashpoint.indicator.last_seen_at != ''
+      field: ti_flashpoint.indicator.last_seen_at
+      target_field: ti_flashpoint.indicator.last_seen_at
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_indicator_last_seen_at_5940c3d6
+            field:
+              - ti_flashpoint.indicator.last_seen_at
+        - append:
+            tag: append_error_message_47620885
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ti_flashpoint_indicator_modified_at_into_ti_flashpoint_indicator_modified_at_ab37f0f7
+      if: ctx.ti_flashpoint?.indicator?.modified_at != null && ctx.ti_flashpoint.indicator.modified_at != ''
+      field: ti_flashpoint.indicator.modified_at
+      target_field: ti_flashpoint.indicator.modified_at
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_indicator_modified_at_8c5e049f
+            field:
+              - ti_flashpoint.indicator.modified_at
+        - append:
+            tag: append_error_message_740fcf65
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ti_flashpoint_indicator_score_last_scored_at_into_ti_flashpoint_indicator_score_last_scored_at_3a1841be
+      if: ctx.ti_flashpoint?.indicator?.score?.last_scored_at != null && ctx.ti_flashpoint.indicator.score.last_scored_at != ''
+      field: ti_flashpoint.indicator.score.last_scored_at
+      target_field: ti_flashpoint.indicator.score.last_scored_at
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_indicator_score_last_scored_at_1a0438a4
+            field:
+              - ti_flashpoint.indicator.score.last_scored_at
+        - append:
+            tag: append_error_message_71aa282e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_ti_flashpoint_indicator_sort_date_into_ti_flashpoint_indicator_sort_date_5dd8c107
+      if: ctx.ti_flashpoint?.indicator?.sort_date != null && ctx.ti_flashpoint.indicator.sort_date != ''
+      field: ti_flashpoint.indicator.sort_date
+      target_field: ti_flashpoint.indicator.sort_date
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_indicator_sort_date_414e9947
+            field:
+              - ti_flashpoint.indicator.sort_date
+        - append:
+            tag: append_error_message_98946ff5
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ti_flashpoint_indicator_sightings_13d2b5ab
+      if: ctx.ti_flashpoint?.indicator?.sightings instanceof List
+      field: ti_flashpoint.indicator.sightings
+      processor:
+        date:
+          tag: date__ingest__value_sighted_at_into__ingest__value_sighted_at_2c9dd7b3
+          field: _ingest._value.sighted_at
+          target_field: _ingest._value.sighted_at
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_sighted_at_85e819ec
+                field:
+                  - _ingest._value.sighted_at
+  - foreach:
+      tag: foreach_of_ti_flashpoint_indicator_latest_sighting_3d61fe51
+      if: ctx.ti_flashpoint?.indicator?.latest_sighting instanceof List
+      field: ti_flashpoint.indicator.latest_sighting
+      processor:
+        date:
+          tag: date__ingest__value_sighted_at_into__ingest__value_sighted_at_8774a83d
+          field: _ingest._value.sighted_at
+          target_field: _ingest._value.sighted_at
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_sighted_at_950bd05e
+                field:
+                  - _ingest._value.sighted_at
+  - foreach:
+      tag: foreach_of_ti_flashpoint_indicator_latest_sighting_related_iocs_a72ddbb6
+      if: ctx.ti_flashpoint?.indicator?.latest_sighting?.related_iocs instanceof List
+      field: ti_flashpoint.indicator.latest_sighting.related_iocs
+      processor:
+        date:
+          tag: date__ingest__value_score_last_scored_at_into__ingest__value_score_last_scored_at_5db754c4
+          field: _ingest._value.score.last_scored_at
+          target_field: _ingest._value.score.last_scored_at
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_score_last_scored_at_93d3417c
+                field:
+                  - _ingest._value.score.last_scored_at
+
+  # Convert to Long
+  - convert:
+      tag: convert_ti_flashpoint_indicator_total_sightings_to_long_398da6b1
+      field: ti_flashpoint.indicator.total_sightings
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_ti_flashpoint_indicator_total_sightings_55a7fc15
+            field:
+              - ti_flashpoint.indicator.total_sightings
+        - append:
+            tag: append_error_message_ce86c4b7
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ti_flashpoint_indicator_latest_sighting_related_iocs_ee788865
+      if: ctx.ti_flashpoint?.indicator?.latest_sighting?.related_iocs instanceof List
+      field: ti_flashpoint.indicator.latest_sighting.related_iocs
+      processor:
+        convert:
+          tag: convert__ingest__value_score_raw_score_to_long_bbda34b7
+          field: _ingest._value.score.raw_score
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_score_raw_score_58094a09
+                field:
+                  - _ingest._value.score.raw_score
+            - append:
+                tag: append_error_message_ddbc8225
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_ti_flashpoint_indicator_sightings_bf81c939
+      if: ctx.ti_flashpoint?.indicator?.sightings instanceof List
+      field: ti_flashpoint.indicator.sightings
+      processor:
+        foreach:
+          tag: foreach_of__ingest__value_related_iocs_ba1974d0
+          field: _ingest._value.related_iocs
+          processor:
+            convert:
+              tag: convert__ingest__value_score_raw_score_to_long_56228ea4
+              field: _ingest._value.score.raw_score
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    tag: remove__ingest__value_score_raw_score_5220b972
+                    field:
+                      - _ingest._value.score.raw_score
+                - append:
+                    tag: append_error_message_9040f274
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+          ignore_failure: true
+
+  # Map custom fields to corresponding ECS and related fields.
+  - set:
+      tag: set_event_created_from_ti_flashpoint_indicator_created_at_62fd2dee
+      field: event.created
+      copy_from: ti_flashpoint.indicator.created_at
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_file_hash_md5_from_ti_flashpoint_indicator_hashes_md5_2230d5b7
+      field: threat.indicator.file.hash.md5
+      copy_from: ti_flashpoint.indicator.hashes.md5
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_file_hash_sha1_from_ti_flashpoint_indicator_hashes_sha1_f4ef28dd
+      field: threat.indicator.file.hash.sha1
+      copy_from: ti_flashpoint.indicator.hashes.sha1
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_file_hash_sha256_from_ti_flashpoint_indicator_hashes_sha256_53b07ad1
+      field: threat.indicator.file.hash.sha256
+      copy_from: ti_flashpoint.indicator.hashes.sha256
+      ignore_empty_value: true
+  - set:
+      tag: set_event_id_from_ti_flashpoint_indicator_id_88145a00
+      field: event.id
+      copy_from: ti_flashpoint.indicator.id
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_last_seen_from_ti_flashpoint_indicator_last_seen_at_63a6f25f
+      field: threat.indicator.last_seen
+      copy_from: ti_flashpoint.indicator.last_seen_at
+      ignore_empty_value: true
+  - set:
+      tag: set_message_from_ti_flashpoint_indicator_malware_description_16878ebf
+      field: message
+      copy_from: ti_flashpoint.indicator.malware_description
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_description_from_ti_flashpoint_indicator_malware_description_fecf7f9f
+      field: threat.indicator.description
+      copy_from: ti_flashpoint.indicator.malware_description
+      ignore_empty_value: true
+  - set:
+      tag: set_@timestamp_from_ti_flashpoint_indicator_modified_at_e54167e1
+      field: '@timestamp'
+      copy_from: ti_flashpoint.indicator.modified_at
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_modified_at_from_ti_flashpoint_indicator_modified_at_f4859e7d
+      field: threat.indicator.modified_at
+      copy_from: ti_flashpoint.indicator.modified_at
+      ignore_empty_value: true
+  - append:
+      tag: append_threat_indicator_id_from_ti_flashpoint_indicator_id_211ee5c8
+      if: ctx.ti_flashpoint?.indicator?.id != null
+      field: threat.indicator.id
+      value: '{{{ti_flashpoint.indicator.id}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_indicator_reference_from_ti_flashpoint_indicator_platform_urls_ignite_dc588b53
+      if: ctx.ti_flashpoint?.indicator?.platform_urls?.ignite != null
+      field: threat.indicator.reference
+      value: '{{{ti_flashpoint.indicator.platform_urls.ignite}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_indicator_reference_from_ti_flashpoint_indicator_href_4429b4b6
+      if: ctx.ti_flashpoint?.indicator?.href != null
+      field: threat.indicator.reference
+      value: '{{{ti_flashpoint.indicator.href}}}'
+      allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ti_flashpoint_indicator_mitre_attack_ids_9fa64b00
+      if: ctx.ti_flashpoint?.indicator?.mitre_attack_ids instanceof List
+      field: ti_flashpoint.indicator.mitre_attack_ids
+      processor:
+        append:
+          tag: append_threat_tactic_id_9f70a472
+          field: threat.tactic.id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_ti_flashpoint_indicator_mitre_attack_ids_a2a64fb9
+      if: ctx.ti_flashpoint?.indicator?.mitre_attack_ids instanceof List
+      field: ti_flashpoint.indicator.mitre_attack_ids
+      processor:
+        append:
+          tag: append_threat_tactic_name_1d8be2da
+          field: threat.tactic.name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - script:
+      description: set threat.indicator.type from ti_flashpoint.indicator.type.
+      tag: set_threat_indicator_type_from_ti_flashpoint_indicator_type_a104217c
+      if: ctx.ti_flashpoint?.indicator?.type != null
+      lang: painless
+      params:
+        domain: domain-name
+        file: file
+        ipv4: ipv4-addr
+        url: url
+      source: |-
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
+        ctx.threat.indicator.type = params[ctx.ti_flashpoint.indicator.type];
+  - append:
+      tag: append_related_hash_from_ti_flashpoint_indicator_hashes_md5_1124ea58
+      if: ctx.ti_flashpoint?.indicator?.hashes?.md5 != null
+      field: related.hash
+      value: '{{{ti_flashpoint.indicator.hashes.md5}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_hash_from_ti_flashpoint_indicator_hashes_sha1_1de15f42
+      if: ctx.ti_flashpoint?.indicator?.hashes?.sha1 != null
+      field: related.hash
+      value: '{{{ti_flashpoint.indicator.hashes.sha1}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_hash_from_ti_flashpoint_indicator_hashes_sha256_9c2edb02
+      if: ctx.ti_flashpoint?.indicator?.hashes?.sha256 != null
+      field: related.hash
+      value: '{{{ti_flashpoint.indicator.hashes.sha256}}}'
+      allow_duplicates: false
+
+  # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
+  - foreach:
+      tag: foreach_of_ti_flashpoint_indicator_mitre_attack_ids_7ebdc010
+      if: ctx.ti_flashpoint?.indicator?.mitre_attack_ids instanceof List && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field: ti_flashpoint.indicator.mitre_attack_ids
+      processor:
+        remove:
+          tag: remove_custom_duplicate_fields_for_mitre_attack_ids_5c8b8597
+          field:
+            - _ingest._value.id
+            - _ingest._value.name
+          ignore_missing: true
+  - remove:
+      tag: remove_custom_duplicate_fields_e33cc5ba
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - ti_flashpoint.indicator.created_at
+        - ti_flashpoint.indicator.hashes.md5
+        - ti_flashpoint.indicator.hashes.sha1
+        - ti_flashpoint.indicator.hashes.sha256
+        - ti_flashpoint.indicator.href
+        - ti_flashpoint.indicator.id
+        - ti_flashpoint.indicator.last_seen_at
+        - ti_flashpoint.indicator.malware_description
+        - ti_flashpoint.indicator.modified_at
+        - ti_flashpoint.indicator.platform_urls.ignite
+      ignore_missing: true
+
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values_8360f3de
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+        map.values().removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        void handleList(List list) {
+        list.removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        handleMap(ctx);
+  - set:
+      tag: set_event_kind_to_pipeline_error_92954dfa
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_9fe66b2c
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message_e0c9bd63
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_to_pipeline_error_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
