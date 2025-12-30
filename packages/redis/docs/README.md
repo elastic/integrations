@@ -554,4 +554,5 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.keyspace.expires |  | long |  |
 | redis.keyspace.id | Keyspace identifier. | keyword |  |
 | redis.keyspace.keys | Number of keys in the keyspace. | long |  |
+| redis.keyspace.subexpiry | Number of sub-keys with an expiry set (0 when not reported). | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
