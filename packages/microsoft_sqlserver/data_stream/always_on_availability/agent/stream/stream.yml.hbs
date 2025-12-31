@@ -1,0 +1,38 @@
+metricsets: ["query"]
+# Specify hosts in the below format. TODO: hosts need to be updated to support multiple entries.
+hosts: 
+  - sqlserver://{{username}}:{{password}}@{{hosts}}
+period: {{period}}
+raw_data.enabled: true
+merge_results: false
+driver: "mssql"
+sql_queries:
+  - query: "SELECT
+    CONVERT(NVARCHAR(36), group_id) AS group_id,
+    name,
+    resource_id,
+    resource_group_id,
+    failure_condition_level,
+    health_check_timeout,
+    automated_backup_preference,
+    automated_backup_preference_desc,
+    version,
+    basic_features,
+    dtc_support,
+    db_failover,
+    is_distributed,
+    cluster_type,
+    cluster_type_desc,
+    required_synchronized_secondaries_to_commit,
+    sequence_number,
+    is_contained
+FROM dbo.mock_availability_groups;"
+    response_format: table
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+tags:
+{{#if preserve_sql_queries}}
+- preserve_sql_queries
+{{/if}}
