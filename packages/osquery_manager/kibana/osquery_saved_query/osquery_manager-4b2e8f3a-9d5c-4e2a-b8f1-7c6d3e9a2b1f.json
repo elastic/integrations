@@ -1,0 +1,93 @@
+{
+  "attributes": {
+    "created_at": "2025-11-07T10:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Monitor BITS (Background Intelligent Transfer Service) file transfers to detect potential data exfiltration or malware downloads via suspicious external hosts. Identifies: (1) BITS transfers to non-whitelisted domains, (2) Downloads from unusual/suspicious sources, (3) File transfer activity outside typical enterprise patterns. Allowlist filtering excludes known-good vendors (Microsoft, Adobe, Google, Oracle, HP, Mozilla) and private IP ranges to reduce false positives.",
+    "ecs_mapping": [
+      {
+        "key": "event.category",
+        "value": {
+          "value": ["network"]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": ["connection", "info"]
+        }
+      },
+      {
+        "key": "event.action",
+        "value": {
+          "value": "osquery.bits_monitoring"
+        }
+      },
+      {
+        "key": "event.code",
+        "value": {
+          "field": "event_id"
+        }
+      },
+      {
+        "key": "event.provider",
+        "value": {
+          "field": "provider_name"
+        }
+      },
+      {
+        "key": "event.created",
+        "value": {
+          "field": "event_time"
+        }
+      },
+      {
+        "key": "url.full",
+        "value": {
+          "field": "url_full"
+        }
+      },
+      {
+        "key": "url.domain",
+        "value": {
+          "field": "url_domain"
+        }
+      },
+      {
+        "key": "event.reason",
+        "value": {
+          "field": "filename"
+        }
+      },
+      {
+        "key": "process.pid",
+        "value": {
+          "field": "pid"
+        }
+      },
+      {
+        "key": "process.thread.id",
+        "value": {
+          "field": "tid"
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": ["osquery", "network", "persistence", "defense_evasion", "windows"]
+        }
+      }
+    ],
+    "id": "bits_monitoring_windows_elastic",
+    "interval": "3600",
+    "platform": "windows",
+    "query": "-- Monitor BITS (Background Intelligent Transfer Service) file transfers\n-- Source: Windows Event Log (Microsoft-Windows-Bits-Client/Operational)\n-- Event ID 59: BITS transfer completion events\n-- Focus: External/suspicious download sources (filters out known-good vendors and private IPs)\n\nWITH extracted AS (\n    SELECT\n        datetime AS event_time,\n        provider_name,\n        eventid AS event_id,\n        json_extract(data, '$.EventData.url') AS url_full,\n        -- Robust Host Extraction:\n        -- 1. Remove protocol headers\n        -- 2. Split by slash to get the domain\n        -- 3. Split by colon to remove ports (e.g. :8080) if present\n        split(\n            split(\n                replace(\n                    replace(json_extract(data, '$.EventData.url'), 'https://', ''),\n                    'http://', ''\n                ),\n                '/', 0\n            ),\n            ':', 0\n        ) AS url_domain,\n        json_extract(data, '$.EventData.name') AS filename,\n        json_extract(data, '$.EventData.processId') AS pid,\n        json_extract(data, '$.EventData.threadId') AS tid\n    FROM windows_eventlog\n    WHERE channel = 'Microsoft-Windows-Bits-Client/Operational'\n      AND eventid = 59\n)\n\nSELECT *\nFROM extracted\nWHERE regex_match(\n    url_domain,\n    '^(.*\\\\.)?(office365\\\\.com|office\\\\.net|windowsupdate\\\\.com|live\\\\.com|mozilla\\\\.com|adobe\\\\.com|microsoft\\\\.com|google\\\\.com|oracle\\\\.com|hp\\\\.com|aka\\\\.ms|gvt1\\\\.com|oneclient\\\\.sfx\\\\.ms)$|^(10\\\\.|192\\\\.168\\\\.|172\\\\.(1[6-9]|2[0-9]|3[0-1])\\\\.).*',\n    0\n) IS NULL;",
+    "updated_at": "2025-11-07T10:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.2.0",
+  "id": "osquery_manager-4b2e8f3a-9d5c-4e2a-b8f1-7c6d3e9a2b1f",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-11-07T10:00:00.000Z",
+  "version": "WzEwMCwyXQ=="
+}
