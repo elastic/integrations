@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-12-09T10:00:00.000Z",
         "created_by": "elastic",
-        "description": "Enumerates files with hash values and code signature validation in common staging/temp directories on Windows (MITRE ATT&CK T1036, T1105, T1564.001). Detects suspicious files, renamed executables (original_filename comparison), hidden/system files, and unsigned binaries. Includes PE metadata, file attributes, and authenticode signature verification. Target directories: C:\\Users\\Public, C:\\Windows\\Temp, C:\\ProgramData, User temp folders.",
+        "description": "Enumerates files with hash values and code signature validation in common staging/temp directories on Windows. Detects suspicious files, renamed executables (original_filename comparison), hidden/system files, and unsigned binaries. Includes PE metadata, file attributes, and authenticode signature verification. Target directories: C:\\Users\\Public, C:\\Windows\\Temp, C:\\ProgramData, User temp folders.",
         "ecs_mapping": [
             {
                 "key": "event.category",
@@ -17,27 +17,9 @@
                 }
             },
             {
-                "key": "event.kind",
-                "value": {
-                    "value": "state"
-                }
-            },
-            {
-                "key": "event.module",
-                "value": {
-                    "value": "osquery"
-                }
-            },
-            {
-                "key": "event.dataset",
+                "key": "event.action",
                 "value": {
                     "value": "osquery.file_hash_info"
-                }
-            },
-            {
-                "key": "host.os.type",
-                "value": {
-                    "value": "windows"
                 }
             },
             {
@@ -175,44 +157,14 @@
             {
                 "key": "tags",
                 "value": {
-                    "value": ["osquery", "file_forensics", "hash_analysis", "code_signature", "mitre_t1036", "mitre_t1036_003", "mitre_t1105", "mitre_t1564_001", "windows"]
-                }
-            },
-            {
-                "key": "threat.framework",
-                "value": {
-                    "value": "MITRE ATT&CK"
-                }
-            },
-            {
-                "key": "threat.tactic.id",
-                "value": {
-                    "value": ["TA0005", "TA0011"]
-                }
-            },
-            {
-                "key": "threat.tactic.name",
-                "value": {
-                    "value": ["Defense Evasion", "Command and Control"]
-                }
-            },
-            {
-                "key": "threat.technique.id",
-                "value": {
-                    "value": ["T1036", "T1036.003", "T1105", "T1564.001"]
-                }
-            },
-            {
-                "key": "threat.technique.name",
-                "value": {
-                    "value": ["Masquerading", "Masquerading: Rename System Utilities", "Ingress Tool Transfer", "Hidden Files and Directories"]
+                    "value": ["osquery", "file_forensics", "hash_analysis", "code_signature", "windows"]
                 }
             }
         ],
         "id": "file_hash_info_windows_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "-- File Hash Information with Code Signature Validation - Windows (T1036, T1105, T1564.001)\n-- Enumerates files in common staging/temp directories with hash values and authenticode validation\n-- Detects suspicious files, renamed executables, hidden files, and unsigned binaries\n\nSELECT\n    f.path,\n    f.directory,\n    f.filename,\n    f.size,\n    f.type,\n    f.attributes,\n    f.original_filename,\n    f.file_version,\n    f.product_version,\n    f.volume_serial,\n    f.file_id,\n    f.shortcut_target_path,\n    f.uid,\n    f.gid,\n    f.mode,\n    f.inode,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    a.serial_number AS signature_serial,\n    a.issuer_name AS signature_issuer,\n    CASE\n        WHEN f.attributes LIKE '%H%' THEN 'hidden'\n        WHEN f.attributes LIKE '%S%' THEN 'system'\n        ELSE 'normal'\n    END AS file_visibility,\n    CASE\n        WHEN f.original_filename != '' AND f.original_filename != f.filename THEN 'renamed'\n        ELSE 'original'\n    END AS rename_status\nFROM file f\nLEFT JOIN hash h ON h.path = f.path\nLEFT JOIN authenticode a ON a.path = f.path\nWHERE (\n    f.path LIKE 'C:\\Users\\Public\\%'\n    OR f.path LIKE 'C:\\Windows\\Temp\\%'\n    OR f.path LIKE 'C:\\ProgramData\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Temp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\Downloads\\%'\n)\nAND f.type = 'regular'\nAND f.size > 0",
+        "query": "-- File Hash Information with Code Signature Validation - Windows\n-- Enumerates files in common staging/temp directories with hash values and authenticode validation\n-- Detects suspicious files, renamed executables, hidden files, and unsigned binaries\n\nSELECT\n    f.path,\n    f.directory,\n    f.filename,\n    f.size,\n    f.type,\n    f.attributes,\n    f.original_filename,\n    f.file_version,\n    f.product_version,\n    f.volume_serial,\n    f.file_id,\n    f.shortcut_target_path,\n    f.uid,\n    f.gid,\n    f.mode,\n    f.inode,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    a.serial_number AS signature_serial,\n    a.issuer_name AS signature_issuer,\n    CASE\n        WHEN f.attributes LIKE '%H%' THEN 'hidden'\n        WHEN f.attributes LIKE '%S%' THEN 'system'\n        ELSE 'normal'\n    END AS file_visibility,\n    CASE\n        WHEN f.original_filename != '' AND f.original_filename != f.filename THEN 'renamed'\n        ELSE 'original'\n    END AS rename_status\nFROM file f\nLEFT JOIN hash h ON h.path = f.path\nLEFT JOIN authenticode a ON a.path = f.path\nWHERE (\n    f.path LIKE 'C:\\Users\\Public\\%'\n    OR f.path LIKE 'C:\\Windows\\Temp\\%'\n    OR f.path LIKE 'C:\\ProgramData\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Temp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\Downloads\\%'\n)\nAND f.type = 'regular'\nAND f.size > 0",
         "updated_at": "2025-12-09T10:00:00.000Z",
         "updated_by": "elastic"
     },
@@ -223,4 +175,3 @@
     "updated_at": "2025-12-09T10:00:00.000Z",
     "version": "WzEsMV0="
 }
-
