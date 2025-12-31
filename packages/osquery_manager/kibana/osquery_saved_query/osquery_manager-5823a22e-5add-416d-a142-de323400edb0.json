@@ -53,25 +53,25 @@
         }
       },
       {
-        "key": "file.hash.md5",
+        "key": "process.hash.md5",
         "value": {
           "field": "md5"
         }
       },
       {
-        "key": "file.hash.sha256",
+        "key": "process.hash.sha256",
         "value": {
           "field": "sha256"
         }
       },
       {
-        "key": "file.code_signature.subject_name",
+        "key": "process.code_signature.subject_name",
         "value": {
           "field": "signature_signer"
         }
       },
       {
-        "key": "file.code_signature.status",
+        "key": "process.code_signature.status",
         "value": {
           "field": "signature_status"
         }
@@ -93,7 +93,7 @@
     "interval": "3600",
     "timeout": 120,
     "platform": "darwin",
-    "query": "-- macOS LaunchD Persistence Detection\n-- Enumerates non-Apple and suspicious launchd services for threat hunting\n-- T1543.001 (Launch Agent), T1543.004 (Launch Daemon)\n\nWITH services_base AS (\n  SELECT\n    l.label,\n    l.name,\n    l.path,\n    l.program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    COALESCE(NULLIF(l.username, ''), 'root') AS username,\n    CASE\n      WHEN l.program IS NOT NULL AND l.program != '' THEN l.program\n      WHEN l.program_arguments IS NOT NULL AND l.program_arguments != '' THEN\n        CASE\n          WHEN INSTR(l.program_arguments, ' ') > 0\n            THEN SUBSTR(l.program_arguments, 1, INSTR(l.program_arguments, ' ') - 1)\n          ELSE l.program_arguments\n        END\n      ELSE NULL\n    END AS executable_path,\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'system_daemon'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'system_agent'\n      WHEN l.path LIKE '%/Library/LaunchAgents/%' THEN 'user_agent'\n      ELSE 'other'\n    END AS launchd_type\n  FROM launchd l\n  WHERE l.path IS NOT NULL\n    AND l.path != ''\n),\nservices_enriched AS (\n  SELECT\n    sb.*,\n    (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) AS signature_signer,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 1 ELSE 0\n    END AS is_signed,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 'signed' ELSE 'unsigned'\n    END AS signature_status,\n    (SELECT md5 FROM hash WHERE path = sb.executable_path LIMIT 1) AS md5,\n    (SELECT sha256 FROM hash WHERE path = sb.executable_path LIMIT 1) AS sha256\n  FROM services_base sb\n)\n\nSELECT *\nFROM services_enriched\nWHERE\n  regex_match(path, '^(/System/|/Library/Apple/|/usr/libexec/)', 0) IS NULL\n  AND (\n    regex_match(COALESCE(signature_signer, ''), '(Apple|Software Signing)', 0) IS NULL\n    OR regex_match(COALESCE(executable_path, ''), '(^/Users/|^/tmp/|^/var/tmp/|^/private/tmp/|/[.])', 0) IS NOT NULL\n  )\nORDER BY\n  is_signed ASC,\n  launchd_type,\n  label;",
+    "query": "-- macOS LaunchD Persistence Detection\n-- Enumerates non-Apple and suspicious launchd services for threat hunting\n\nWITH services_base AS (\n  SELECT\n    l.label,\n    l.name,\n    l.path,\n    l.program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    COALESCE(NULLIF(l.username, ''), 'root') AS username,\n    CASE\n      WHEN l.program IS NOT NULL AND l.program != '' THEN l.program\n      WHEN l.program_arguments IS NOT NULL AND l.program_arguments != '' THEN\n        CASE\n          WHEN INSTR(l.program_arguments, ' ') > 0\n            THEN SUBSTR(l.program_arguments, 1, INSTR(l.program_arguments, ' ') - 1)\n          ELSE l.program_arguments\n        END\n      ELSE NULL\n    END AS executable_path,\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'system_daemon'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'system_agent'\n      WHEN l.path LIKE '%/Library/LaunchAgents/%' THEN 'user_agent'\n      ELSE 'other'\n    END AS launchd_type\n  FROM launchd l\n  WHERE l.path IS NOT NULL\n    AND l.path != ''\n),\nservices_enriched AS (\n  SELECT\n    sb.*,\n    (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) AS signature_signer,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 1 ELSE 0\n    END AS is_signed,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 'signed' ELSE 'unsigned'\n    END AS signature_status,\n    (SELECT md5 FROM hash WHERE path = sb.executable_path LIMIT 1) AS md5,\n    (SELECT sha256 FROM hash WHERE path = sb.executable_path LIMIT 1) AS sha256,\n    concat('https://www.virustotal.com/gui/file/', (SELECT sha256 FROM hash WHERE path = sb.executable_path LIMIT 1)) AS vt_link\n  FROM services_base sb\n)\n\nSELECT *\nFROM services_enriched\nWHERE\n  regex_match(path, '^(/System/|/Library/Apple/|/usr/libexec/)', 0) IS NULL\n  AND (\n    regex_match(COALESCE(signature_signer, ''), '(Apple|Software Signing)', 0) IS NULL\n    OR regex_match(COALESCE(executable_path, ''), '(^/Users/|^/tmp/|^/var/tmp/|^/private/tmp/|/[.])', 0) IS NOT NULL\n  )\nORDER BY\n  is_signed ASC,\n  launchd_type,\n  label;",
     "updated_at": "2025-12-05T10:00:00.000Z",
     "updated_by": "elastic"
   },
