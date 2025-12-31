@@ -18,7 +18,7 @@ This integration is compatible with Amazon Bedrock AgentCore CloudWatch metrics 
 The Amazon Bedrock AgentCore integration collects runtime metrics and observability data from your intelligent agents.
 
 Data streams:
- - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateways, Memory, and Identity.
+ - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateway, Memory, Identity, Browser Tool and Code Interpreter.
 
 ## What do I need to use this integration?
 

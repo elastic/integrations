@@ -468,7 +468,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 ## Alerting Rule Template
 Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
 
-For more information, refer to the [Elastic documentation](https://www.elastic.co/docs).
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
 Alert rule templates require Elastic Stack version 9.2.0 or later.
 
