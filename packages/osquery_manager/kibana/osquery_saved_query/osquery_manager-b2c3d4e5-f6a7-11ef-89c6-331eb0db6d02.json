@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "created_at": "2025-11-07T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Retrieves enriched ARP cache entries with local interface details including local IP addresses and MAC addresses. Combines ARP cache data with network interface configuration to provide complete neighbor relationship context. This enriched view helps investigate network communications, detect ARP spoofing, and understand both source and destination network endpoints.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["network"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.arp_cache"
+                }
+            },
+            {
+                "key": "destination.ip",
+                "value": {
+                    "field": "remote_address"
+                }
+            },
+            {
+                "key": "destination.mac",
+                "value": {
+                    "field": "remote_mac"
+                }
+            },
+            {
+                "key": "source.ip",
+                "value": {
+                    "field": "local_address"
+                }
+            },
+            {
+                "key": "source.mac",
+                "value": {
+                    "field": "local_mac"
+                }
+            },
+            {
+                "key": "interface.name",
+                "value": {
+                    "field": "interface_name"
+                }
+            },
+            {
+                "key": "network.type",
+                "value": {
+                    "field": "address_family"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "network", "arp_cache", "asset_inventory"]
+                }
+            }
+        ],
+        "id": "arp_cache_elastic",
+        "interval": "3600",
+        "query": "-- ARP Cache with Local Interface Information\n-- Provides complete network neighbor context by joining ARP cache with interface details\n-- Source: arp_cache + interface_details + interface_addresses tables\n-- Cross-platform: Windows uses MAC in arp_cache.interface, Linux/macOS use interface name\n\nWITH arp_entries AS (\n    SELECT\n        a.address AS remote_address,\n        CASE WHEN a.mac IS NULL OR a.mac = '' OR LOWER(a.mac) LIKE '%incomplete%' THEN NULL ELSE UPPER(REPLACE(a.mac, ':', '-')) END AS remote_mac,\n        a.interface AS interface_identifier,\n        CASE\n            WHEN a.permanent = '1' THEN 'persistent'\n            ELSE 'active'\n        END AS entry_state,\n        CASE\n            WHEN a.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS address_family\n    FROM arp_cache a\n),\nlocal_interfaces AS (\n    SELECT\n        id.interface AS interface_index,\n        CASE WHEN id.mac IS NULL OR id.mac = '' OR LOWER(id.mac) LIKE '%incomplete%' THEN NULL ELSE UPPER(REPLACE(id.mac, ':', '-')) END AS local_mac,\n        ia.address AS local_address,\n        CASE\n            WHEN ia.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS address_family\n    FROM interface_details id\n    LEFT JOIN interface_addresses ia ON id.interface = ia.interface\n    WHERE id.mac IS NOT NULL\n        AND ia.address IS NOT NULL\n)\nSELECT\n    ae.remote_address,\n    ae.remote_mac,\n    COALESCE(li.interface_index, ae.interface_identifier) AS interface_name,\n    ae.entry_state,\n    ae.address_family,\n    li.local_address,\n    li.local_mac\nFROM arp_entries ae\nLEFT JOIN local_interfaces li ON\n    (ae.interface_identifier = li.interface_index OR LOWER(ae.interface_identifier) = LOWER(li.local_mac))\n    AND ae.address_family = li.address_family\nORDER BY interface_name, ae.remote_address;",
+        "platform": "linux,darwin,windows",
+        "updated_at": "2025-11-07T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-b2c3d4e5-f6a7-11ef-89c6-331eb0db6d02",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-07T00:00:00.000Z",
+    "version": "WzEsNV0="
+}
