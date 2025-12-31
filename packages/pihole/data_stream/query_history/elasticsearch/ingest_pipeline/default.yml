@@ -1,0 +1,71 @@
+---
+description: Pipeline for processing Pi-hole query history metrics
+processors:
+  # Convert Unix timestamp to @timestamp
+  - date:
+      field: timestamp
+      target_field: '@timestamp'
+      formats:
+        - UNIX
+      if: ctx.timestamp != null
+
+  # Set event fields
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.category
+      value: ["network"]
+  - set:
+      field: event.type
+      value: ["info"]
+  - set:
+      field: event.module
+      value: pihole
+  - set:
+      field: event.dataset
+      value: pihole.query_history
+
+  # Set observer fields
+  - set:
+      field: observer.vendor
+      value: Pi-hole
+  - set:
+      field: observer.product
+      value: Pi-hole
+  - set:
+      field: observer.type
+      value: dns
+
+  # Rename metric fields to pihole.query_history namespace
+  - rename:
+      field: total
+      target_field: pihole.query_history.total
+      ignore_missing: true
+  - rename:
+      field: cached
+      target_field: pihole.query_history.cached
+      ignore_missing: true
+  - rename:
+      field: blocked
+      target_field: pihole.query_history.blocked
+      ignore_missing: true
+  - rename:
+      field: forwarded
+      target_field: pihole.query_history.forwarded
+      ignore_missing: true
+
+  # Remove the raw timestamp field
+  - remove:
+      field: timestamp
+      ignore_missing: true
+
+  # Remove any error fields if present (from successful requests)
+  - remove:
+      field: error
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

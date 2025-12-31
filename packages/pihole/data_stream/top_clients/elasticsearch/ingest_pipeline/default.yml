@@ -1,0 +1,62 @@
+---
+description: Pipeline for processing Pi-hole top clients statistics
+processors:
+  # Set event fields
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.category
+      value: ["network"]
+  - set:
+      field: event.type
+      value: ["info"]
+  - set:
+      field: event.module
+      value: pihole
+  - set:
+      field: event.dataset
+      value: pihole.top_clients
+
+  # Set observer fields
+  - set:
+      field: observer.vendor
+      value: Pi-hole
+  - set:
+      field: observer.product
+      value: Pi-hole
+  - set:
+      field: observer.type
+      value: dns
+
+  # Map client fields to ECS
+  - rename:
+      field: client_ip
+      target_field: client.ip
+      ignore_missing: true
+  - rename:
+      field: client_name
+      target_field: client.domain
+      ignore_missing: true
+
+  # Map query count to pihole namespace
+  - rename:
+      field: query_count
+      target_field: pihole.top_clients.query_count
+      ignore_missing: true
+
+  # Map query action to pihole namespace
+  - rename:
+      field: query_action
+      target_field: pihole.top_clients.query_action
+      ignore_missing: true
+
+  # Remove any error fields if present (from successful requests)
+  - remove:
+      field: error
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
