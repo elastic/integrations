@@ -114,34 +114,35 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2021-05-21T10:22:12.000Z",
     "agent": {
-        "ephemeral_id": "4ec820f2-c626-43cc-b3db-568e6ad9b30a",
-        "id": "3faf71dc-932a-4b95-a008-0d898b8d33bb",
-        "name": "elastic-agent-17637",
+        "ephemeral_id": "8b246fe9-01d2-4eca-9fbf-c44c7ab815a2",
+        "id": "24203e73-bb5e-4816-9ac3-b8e3b0d7174b",
+        "name": "elastic-agent-22844",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "9.2.1"
     },
     "data_stream": {
         "dataset": "ti_misp.threat",
-        "namespace": "95126",
+        "namespace": "41648",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3faf71dc-932a-4b95-a008-0d898b8d33bb",
+        "id": "24203e73-bb5e-4816-9ac3-b8e3b0d7174b",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "9.2.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2025-12-03T07:51:45.031Z",
+        "created": "2025-12-23T16:15:30.344Z",
         "dataset": "ti_misp.threat",
-        "ingested": "2025-12-03T07:51:48Z",
+        "ingested": "2025-12-23T16:15:33Z",
         "kind": "enrichment",
+        "module": "ti_misp",
         "original": "{\"Event\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Payload delivery\",\"comment\":\"filename content for test event 3\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"3633\",\"first_seen\":null,\"id\":\"266263\",\"last_seen\":null,\"object_id\":\"0\",\"object_relation\":null,\"sharing_group_id\":\"0\",\"timestamp\":\"1621589229\",\"to_ids\":false,\"type\":\"filename\",\"uuid\":\"3b322e1a-1dd8-490c-ab96-12e1bc3ee6a3\",\"value\":\"thetestfile.txt\"},\"EventReport\":[],\"Galaxy\":[],\"Object\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Payload delivery\",\"comment\":\"\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"3633\",\"first_seen\":null,\"id\":\"266265\",\"last_seen\":null,\"object_id\":\"18207\",\"object_relation\":\"sha256\",\"sharing_group_id\":\"0\",\"timestamp\":\"1621589548\",\"to_ids\":true,\"type\":\"sha256\",\"uuid\":\"657c5f2b-9d68-4ff7-a9ad-ab9e6a6c953e\",\"value\":\"f33c27745f2bd87344be790465ef984a972fd539dc83bd4f61d4242c607ef1ee\"},\"ObjectReference\":[],\"comment\":\"File object for event 3\",\"deleted\":false,\"description\":\"File object describing a file with meta-information\",\"distribution\":\"5\",\"event_id\":\"3633\",\"first_seen\":null,\"id\":\"18207\",\"last_seen\":null,\"meta-category\":\"file\",\"name\":\"file\",\"sharing_group_id\":\"0\",\"template_uuid\":\"688c46fb-5edb-40a3-8273-1af7923e2215\",\"template_version\":\"22\",\"timestamp\":\"1621589548\",\"uuid\":\"42a88ad4-6834-46a9-a18b-aff9e078a4ea\"},\"Org\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"78acad2d-cc2d-4785-94d6-b428a0070488\"},\"Orgc\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"78acad2d-cc2d-4785-94d6-b428a0070488\"},\"RelatedEvent\":[{\"Event\":{\"Org\":{\"id\":\"1\",\"name\":\"ORGNAME\",\"uuid\":\"78acad2d-cc2d-4785-94d6-b428a0070488\"},\"Orgc\":{\"id\":\"1\",\"name\":\"ORGNAME\",\"uuid\":\"78acad2d-cc2d-4785-94d6-b428a0070488\"},\"analysis\":\"0\",\"date\":\"2021-05-21\",\"distribution\":\"1\",\"id\":\"3631\",\"info\":\"Test event 1 just atrributes\",\"org_id\":\"1\",\"orgc_id\":\"1\",\"published\":false,\"threat_level_id\":\"1\",\"timestamp\":\"1621588162\",\"uuid\":\"8ca56ae9-3747-4172-93d2-808da1a4eaf3\"}}],\"ShadowAttribute\":[],\"analysis\":\"0\",\"attribute_count\":\"6\",\"date\":\"2021-05-21\",\"disable_correlation\":false,\"distribution\":\"1\",\"event_creator_email\":\"admin@admin.test\",\"extends_uuid\":\"\",\"id\":\"3633\",\"info\":\"Test event 3 objects and attributes\",\"locked\":false,\"org_id\":\"1\",\"orgc_id\":\"1\",\"proposal_email_lock\":false,\"publish_timestamp\":\"0\",\"published\":false,\"sharing_group_id\":\"0\",\"threat_level_id\":\"1\",\"timestamp\":\"1621592532\",\"uuid\":\"4edb20c7-8175-484d-bdcd-fce6872c1ef3\"}}",
         "type": [
             "indicator"
@@ -187,7 +188,7 @@ An example event for `threat` looks as following:
         },
         "event": {
             "attribute_count": 6,
-            "date": "2021-05-21",
+            "date": "2021-05-21T00:00:00.000Z",
             "disable_correlation": false,
             "distribution": 1,
             "extends_uuid": "",
@@ -232,6 +233,7 @@ An example event for `threat` looks as following:
     ],
     "threat": {
         "feed": {
+            "dashboard_id": "ti_misp-56ed8040-6c7d-11ec-9bce-f7a4dc94c294",
             "name": "MISP"
         },
         "indicator": {
@@ -261,6 +263,19 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 
 #### Expiration of Indicators of Compromise (IOCs)
 The ingested IOCs expire after certain duration which is indicated by the `decayed` field. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_misp_latest.dest_threat_attributes-*` which only contains active and unexpired IOCs. The latest destination index also has an alias named `logs-ti_misp_latest.threat_attributes`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. Dashboards for `Threat Attributes` datastream are also pointing to the latest destination indices containing active IoCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source datastream `.ds-logs-ti_misp.threat_attributes-*` indices.
+
+#### Daily Refetch Mode
+By default, the integration uses incremental updates, only fetching attributes that have been modified since the last poll (tracked via an internal cursor). However, MISP's decay scores are dynamic and decrease over time, which means an attribute's decay status may change without the attribute itself being modified. In such cases, incremental updates would not capture the updated decay state.
+
+To address this, users can enable the `Enable Daily Refetch` toggle. When enabled, the integration will:
+1. **Perform a daily full refetch**: Every 24 hours, the cursor is reset and all attributes from the configured `Initial Interval` are re-fetched from MISP.
+2. **Update decay states**: Thanks to the re-ingest of all attributes with their current decay scores from MISP, it removes any that have since been marked as decayed from destination indices.
+
+This approach ensures that:
+- The destination indices stay aligned with MISP's current view of valid indicators
+- Attributes that become decayed in MISP are automatically removed in the next refetch cycle from destination indices
+
+**Note**: This mode will re-ingest all attributes within the `Initial Interval` window, which may result in higher data volume during the refetch period. The transform handles deduplication via unique keys. Attributes already marked as decayed by MISP's decay models during ingestion will be removed immediately.
 
 #### Handling Orphaned IOCs
 Some IOCs may never get decayed/expired and will continue to stay in the latest destination indices `logs-ti_misp_latest.dest_threat_attributes-*`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination indices `logs-ti_misp_latest.dest_threat_attributes-*` after this specified duration is reached, defaults to `90d` after attribute's `max(last_seen, timestamp)`. Note that `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case IOCs never expire.

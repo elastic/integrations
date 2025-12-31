@@ -1019,7 +1019,7 @@ processors:
       field: message
       description: "717022"
       patterns:
-        - 'Certificate was successfully validated. serial number:\s*%{NOTSPACE:_temp_.cisco.serial_number}, subject name:\s*%{NOTSPACE:_temp_.cisco.distinguished_name}\.'
+        - 'Certificate was successfully validated. serial number:%{SPACE}%{DATA:_temp_.cisco.serial_number}, subject name:%{SPACE}%{DATA:_temp_.cisco.distinguished_name}\.'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '721016'"
       tag: parse_721016
@@ -1344,6 +1344,18 @@ processors:
             }
           });
           ctx._temp_.cisco.dn_parts = parts;
+
+  - remove:
+      if: 'ctx._temp_?.cisco?.distinguished_name != null && ctx._temp_.cisco.distinguished_name.isEmpty()'
+      tag: remove_empty_distinguished_name
+      field: _temp_.cisco.distinguished_name
+      ignore_missing: true
+
+  - remove:
+      if: 'ctx._temp_?.cisco?.serial_number != null && ctx._temp_.cisco.serial_number.isEmpty()'
+      tag: remove_empty_serial_number
+      field: _temp_.cisco.serial_number
+      ignore_missing: true
 
   - rename:
       description: Rename found x509 parts into ECS.
