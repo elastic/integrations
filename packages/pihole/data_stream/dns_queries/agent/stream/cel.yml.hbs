@@ -1,0 +1,146 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  url: {{url}}
+  cursor:
+    last_timestamp: 0.0
+program: |
+  // Authenticate and collect queries in a single flow
+  post_request(
+    state.url.trim_right("/") + "/api/auth",
+    "application/json",
+    {
+      "password": "{{api_password}}"
+    }.encode_json()
+  ).do_request().as(auth_resp,
+    auth_resp.StatusCode != 200 ?
+      {
+        "events": [{
+          "error": {
+            "message": "Authentication failed: HTTP " + string(auth_resp.StatusCode)
+          }
+        }],
+        "want_more": false
+      }
+    :
+      auth_resp.Body.decode_json().as(auth_body,
+        !has(auth_body.session) || !has(auth_body.session.sid) ?
+          {
+            "events": [{
+              "error": {
+                "message": "Authentication failed: invalid session response"
+              }
+            }],
+            "want_more": false
+          }
+        :
+          // Got valid session, now fetch queries
+          auth_body.session.sid.as(session_id,
+            // Use session token to collect queries with timestamp-based pagination
+            ((has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp > 0) ?
+              // We have a timestamp from previous run, use it to get only newer records
+              request(
+                "GET",
+                state.url.trim_right("/") + "/api/queries?length=1000&from=" + string(state.cursor.last_timestamp)
+              )
+            :
+              // First run or state lost, start from beginning
+              request(
+                "GET",
+                state.url.trim_right("/") + "/api/queries?length=1000"
+              )
+            ).with({
+              "Header": {
+                "X-FTL-SID": [session_id]
+              }
+            }).do_request().as(queries_resp,
+              // Process queries response first
+              queries_resp.StatusCode != 200 ?
+                // Query request failed, still try to logout before returning error
+                request(
+                  "DELETE",
+                  state.url.trim_right("/") + "/api/auth"
+                ).with({
+                  "Header": {
+                    "X-FTL-SID": [session_id]
+                  }
+                }).do_request().as(logout_resp, {
+                  "events": [{
+                    "error": {
+                      "message": "Failed to collect queries: HTTP " + string(queries_resp.StatusCode)
+                    }
+                  }],
+                  "want_more": false,
+                  "cursor": has(state.cursor) ? state.cursor : {"last_timestamp": 0.0}
+                })
+              :
+                // Query request succeeded, process response
+                queries_resp.Body.decode_json().as(queries_body,
+                  // Check if queries field exists and has data
+                  has(queries_body.queries) && size(queries_body.queries) > 0 ?
+                    // Capture newest (first) timestamp from this batch
+                    queries_body.queries[0].time.as(newest_ts,
+                      // Logout after successful collection
+                      request(
+                        "DELETE",
+                        state.url.trim_right("/") + "/api/auth"
+                      ).with({
+                        "Header": {
+                          "X-FTL-SID": [session_id]
+                        }
+                      }).do_request().as(logout_resp,
+                        // Force logout to complete by checking status, but always emit events
+                        logout_resp.StatusCode == 204 ? {
+                          "cursor": {"last_timestamp": newest_ts},
+                          "events": queries_body.queries.map(query, {"id": query.id, "type": query.type, "domain": query.domain, "status": query.status, "dnssec": query.dnssec, "reply_time": query.reply.time, "client_ip": query.client.ip, "client_name": query.client.name, "upstream_name": query.upstream, "reply_type": query.reply.type, "cname": query.cname, "list_id": query.list_id, "ede_code": query.ede.code, "ede_text": query.ede.text, "time": query.time})
+                        } : {
+                          "cursor": {"last_timestamp": newest_ts},
+                          "events": queries_body.queries.map(query, {"id": query.id, "type": query.type, "domain": query.domain, "status": query.status, "dnssec": query.dnssec, "reply_time": query.reply.time, "client_ip": query.client.ip, "client_name": query.client.name, "upstream_name": query.upstream, "reply_type": query.reply.type, "cname": query.cname, "list_id": query.list_id, "ede_code": query.ede.code, "ede_text": query.ede.text, "time": query.time, "_logout_failed": "HTTP " + string(logout_resp.StatusCode)})
+                        }
+                      )
+                    )
+                  :
+                    // No queries in response, logout and preserve existing cursor
+                    request(
+                      "DELETE",
+                      state.url.trim_right("/") + "/api/auth"
+                    ).with({
+                      "Header": {
+                        "X-FTL-SID": [session_id]
+                      }
+                    }).do_request().as(logout_resp, {
+                      "cursor": has(state.cursor) ? state.cursor : {"last_timestamp": 0.0},
+                      "events": []
+                    })
+                )
+            )
+          )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if tags}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
