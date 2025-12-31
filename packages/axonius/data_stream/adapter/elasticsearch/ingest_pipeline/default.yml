@@ -1,0 +1,309 @@
+---
+description: Pipeline for processing adapter logs.
+processors:
+  - set:
+      tag: set_ecs_version_to_9_2_0_3273339c
+      field: ecs.version
+      value: 9.2.0
+  - terminate:
+      description: error message set and no data to process.
+      tag: terminate_data_collection_error_4c75f12b
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+
+  # remove agentless metadata
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags_44eed408
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+
+  # parse the event JSON
+  - rename:
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      tag: rename_message_to_event_original_c74b1d7e
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      tag: remove_message_84808ee4
+      if: ctx.event?.original != null
+      field: message
+      ignore_missing: true
+  - json:
+      tag: json_event_original_into_axonius_adapter_5856a7a6
+      field: event.original
+      target_field: axonius.adapter
+
+  # Set event.* fields
+  - set:
+      tag: set_event_kind_to_event_de80643c
+      field: event.kind
+      value: event
+
+  # Date processors
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_353465ea
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        date:
+          tag: date__ingest__value_last_fetch_time_into__ingest__value_last_fetch_time_5e9adcb1
+          field: _ingest._value.last_fetch_time
+          target_field: _ingest._value.last_fetch_time
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_last_fetch_time_9f748b35
+                field:
+                  - _ingest._value.last_fetch_time
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_34346457
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        date:
+          tag: date__ingest__value_last_successful_fetch_into__ingest__value_last_successful_fetch_f1eb08fb
+          field: _ingest._value.last_successful_fetch
+          target_field: _ingest._value.last_successful_fetch
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_last_successful_fetch_716a5a02
+                field: _ingest._value.last_successful_fetch
+            - append:
+                tag: append_error_message_last_successful_fetch
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Long
+  - convert:
+      tag: convert_axonius_adapter_connections_count_error_count_to_long_d0ce7cc2
+      field: axonius.adapter.connections_count.error_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_axonius_adapter_connections_count_error_count_b7ece095
+            field:
+              - axonius.adapter.connections_count.error_count
+        - append:
+            tag: append_error_message_0a867372
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_axonius_adapter_connections_count_inactive_count_to_long_2590bc7d
+      field: axonius.adapter.connections_count.inactive_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_axonius_adapter_connections_count_inactive_count_b4380489
+            field:
+              - axonius.adapter.connections_count.inactive_count
+        - append:
+            tag: append_error_message_5a532f13
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_axonius_adapter_connections_count_success_count_to_long_ab029cdd
+      field: axonius.adapter.connections_count.success_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_axonius_adapter_connections_count_success_count_bc22b855
+            field:
+              - axonius.adapter.connections_count.success_count
+        - append:
+            tag: append_error_message_ba522bf3
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_axonius_adapter_connections_count_total_count_to_long_8d13b03e
+      field: axonius.adapter.connections_count.total_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_axonius_adapter_connections_count_total_count_e46f4a2d
+            field:
+              - axonius.adapter.connections_count.total_count
+        - append:
+            tag: append_error_message_3d28f3ae
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_axonius_adapter_connections_count_warning_count_to_long_15f6f3d8
+      field: axonius.adapter.connections_count.warning_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_axonius_adapter_connections_count_warning_count_ce3456f9
+            field:
+              - axonius.adapter.connections_count.warning_count
+        - append:
+            tag: append_error_message_27daee38
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to Boolean
+  - convert:
+      tag: convert_axonius_adapter_is_master_to_boolean_5189ef0a
+      field: axonius.adapter.is_master
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_axonius_adapter_is_master_72015f27
+            field:
+              - axonius.adapter.is_master
+        - append:
+            tag: append_error_message_c9a9afea
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_0b7a9bd1
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        convert:
+          tag: convert__ingest__value_active_to_boolean_bbd0d64d
+          field: _ingest._value.active
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_active_a3bacaa4
+                field:
+                  - _ingest._value.active
+            - append:
+                tag: append_error_message_d9b0b163
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_087a9718
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        convert:
+          tag: convert__ingest__value_failed_connections_limit_exceeded_to_boolean_5ae08afa
+          field: _ingest._value.failed_connections_limit_exceeded
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_failed_connections_limit_exceeded_edb2100e
+                field:
+                  - _ingest._value.failed_connections_limit_exceeded
+            - append:
+                tag: append_error_message_10c463da
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_axonius_adapter_connections_097a98ab
+      if: ctx.axonius?.adapter?.connections instanceof List
+      field: axonius.adapter.connections
+      processor:
+        convert:
+          tag: convert__ingest__value_did_notify_error_to_boolean_fb5c941d
+          field: _ingest._value.did_notify_error
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_did_notify_error_fd5b1508
+                field:
+                  - _ingest._value.did_notify_error
+            - append:
+                tag: append_error_message_76d5d333
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Map custom fields to corresponding ECS and related fields.
+  - set:
+      tag: set_event_id_from_axonius_adapter_id_b3864d1f
+      field: event.id
+      copy_from: axonius.adapter.id
+      ignore_empty_value: true
+  - set:
+      tag: set_event_outcome_to_success_c04d2ca5
+      if: ctx.axonius?.adapter?.status != null && ctx.axonius.adapter.status.toLowerCase() == 'success'
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_event_outcome_to_failure_4bd493eb
+      if: ctx.axonius?.adapter?.status != null && ctx.axonius.adapter.status.toLowerCase() == 'error'
+      field: event.outcome
+      value: failure
+
+  # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
+  - remove:
+      tag: remove_custom_duplicate_fields_81d63dd6
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - axonius.adapter.id
+      ignore_missing: true
+
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values_8360f3de
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+          	  handleMap(v);
+          	  } else if (v instanceof List) {
+          	      handleList(v);
+          	  }
+          	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+          	if (v instanceof Map) {
+          	  handleMap(v);
+          	  } else if (v instanceof List) {
+          	      handleList(v);
+          	  }
+          	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      tag: set_event_kind_to_pipeline_error_92954dfa
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_9fe66b2c
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message_e0c9bd63
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_to_pipeline_error_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
