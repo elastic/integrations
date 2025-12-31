@@ -484,6 +484,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long | gauge |
 | redis.key.name | Key name. | keyword |  |
 | redis.key.type | Key type as shown by `TYPE` command. | keyword |  |
+| redis.keyspace.id | Keyspace identifier. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
