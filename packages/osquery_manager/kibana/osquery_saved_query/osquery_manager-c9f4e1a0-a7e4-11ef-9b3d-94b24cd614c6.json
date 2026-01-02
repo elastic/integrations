@@ -1,0 +1,69 @@
+{
+    "attributes": {
+        "created_at": "2025-11-20T15:30:00.000Z",
+        "created_by": "elastic",
+        "description": "Investigate Windows Prefetch artifacts for execution history. Prefetch files (.pf) track application launches, execution counts, and associated file/directory access patterns. This query uses the native Osquery prefetch table to parse .pf files and extract forensic intelligence including executable names, run counts, last execution times, and accessed resources. Limited to executables run in the last 90 days. Excludes high-volume low-forensic-value Windows processes (SearchIndexer, RuntimeBroker, BackgroundTaskHost, etc.) while preserving forensically important binaries.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.prefetch"
+                }
+            },
+            {
+                "key": "event.created",
+                "value": {
+                    "field": "last_execution"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "filename"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "prefetch_file_path"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "execution_artifacts", "forensics", "prefetch", "windows"]
+                }
+            }
+        ],
+        "id": "prefetch_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Windows Prefetch Execution Artifacts Analysis\n-- Source: Native osquery table (prefetch)\n-- Parses .pf files to extract executable names, run counts, timestamps, and accessed resources\n-- Focus: Evidence of program execution history for forensic investigation (malware, lateral movement tools, deleted executables)\nSELECT\n  datetime(last_run_time, 'unixepoch') AS last_execution,\n  filename,\n  hash,\n  run_count,\n  other_run_times,\n  size,\n  volume_serial,\n  datetime(volume_creation, 'unixepoch') AS volume_creation_time,\n  accessed_files_count,\n  accessed_directories_count,\n  accessed_files,\n  accessed_directories,\n  path AS prefetch_file_path\nFROM prefetch\nWHERE last_run_time > (strftime('%s', 'now') - 7776000)\n  AND filename NOT LIKE 'SEARCHINDEXER%'\n  AND filename NOT LIKE 'SEARCHPROTOCOLHOST%'\n  AND filename NOT LIKE 'SEARCHFILTERHOST%'\n  AND filename NOT LIKE 'RUNTIMEBROKER%'\n  AND filename NOT LIKE 'BACKGROUNDTASKHOST%'\n  AND filename NOT LIKE 'WMIPRVSE%'\n  AND filename NOT LIKE 'DLLHOST%'\n  AND filename NOT LIKE 'TASKHOSTW%'\nORDER BY last_run_time DESC",
+        "updated_at": "2025-11-20T15:30:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-c9f4e1a0-a7e4-11ef-9b3d-94b24cd614c6",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-20T15:30:00.000Z",
+    "version": "WzEwMCwxXQ=="
+}
