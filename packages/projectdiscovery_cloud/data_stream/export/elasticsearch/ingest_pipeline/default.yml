@@ -138,6 +138,11 @@ processors:
       field: json.scan_id
       target_field: projectdiscovery.scan_id
       ignore_missing: true
+  - set:
+      field: vulnerability.report_id
+      copy_from: projectdiscovery.scan_id
+      ignore_empty_value: true
+      if: ctx.projectdiscovery?.scan_id != null
   - rename:
       field: json.vuln_hash
       target_field: projectdiscovery.vuln_hash
@@ -171,16 +176,19 @@ processors:
       target_field: projectdiscovery.updated_at
       ignore_missing: true
   - rename:
-      field: json.host
-      target_field: projectdiscovery.host
-      ignore_missing: true
-  - rename:
       field: json.matched_at
       target_field: projectdiscovery.matched_at
       ignore_missing: true
-  - rename:
+  - foreach:
       field: json.tags
-      target_field: projectdiscovery.tags
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      ignore_missing: true
+  - remove:
+      field: json.tags
       ignore_missing: true
   - rename:
       field: json.category
@@ -188,27 +196,20 @@ processors:
       ignore_missing: true
   - rename:
       field: json.request
-      target_field: projectdiscovery.request
+      target_field: http.request.body.content
       ignore_missing: true
   - rename:
       field: json.response
-      target_field: projectdiscovery.response
+      target_field: http.response.body.content
       ignore_missing: true
   - rename:
       field: json.remediation
       target_field: projectdiscovery.remediation
       ignore_missing: true
   - rename:
-      field: json.reference
-      target_field: projectdiscovery.reference
-      ignore_missing: true
-  - rename:
       field: json.vuln_status
       target_field: projectdiscovery.vuln_status
       ignore_missing: true
-  - set:
-      field: projectdiscovery.scanner_type
-      value: nuclei
 
   # Final message
   - set:

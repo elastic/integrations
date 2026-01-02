@@ -97,9 +97,6 @@ processors:
   - set:
       field: vulnerability.scanner.vendor
       value: ProjectDiscovery
-  - set:
-      field: vulnerability.scanner.type
-      value: nuclei
 
   # Ports
   - convert:
@@ -122,6 +119,25 @@ processors:
       field: json.target
       target_field: projectdiscovery.target
       ignore_missing: true
+
+  # ECS destination mapping
+  - set:
+      field: destination.address
+      copy_from: projectdiscovery.target
+      ignore_empty_value: true
+      if: ctx.projectdiscovery?.target != null
+  - convert:
+      description: Copy destination.address to either destination.ip or destination.domain
+      tag: convert_destination_address
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - set:
+            copy_from: destination.address
+            field: destination.domain
+            override: true
 
   # Optional: Sanitize malformed target field (gated by tag)
   # Fixes upstream API issue where delimiters are replaced with numeric ASCII codes
@@ -156,6 +172,11 @@ processors:
       field: json.scan_id
       target_field: projectdiscovery.scan_id
       ignore_missing: true
+  - set:
+      field: vulnerability.report_id
+      copy_from: projectdiscovery.scan_id
+      ignore_empty_value: true
+      if: ctx.projectdiscovery?.scan_id != null
   - rename:
       field: json.template_url
       target_field: projectdiscovery.template_url
