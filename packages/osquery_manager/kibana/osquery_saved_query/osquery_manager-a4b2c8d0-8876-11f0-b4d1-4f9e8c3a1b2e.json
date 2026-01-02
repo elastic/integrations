@@ -2,18 +2,18 @@
     "attributes": {
         "created_at": "2025-11-20T00:00:00.000Z",
         "created_by": "elastic",
-        "description": "Windows Shellbags forensic analysis - tracks directories accessed via Windows Explorer for user activity investigation. Useful for identifying folder browsing history and user behavior patterns.",
+        "description": "Windows Shellbags forensic analysis - extracts registry-based folder access history from Windows Explorer. Returns shell item identifiers (paths or Known Folder GUIDs) representing directories the user navigated to. Note: Some entries may contain Windows Known Folder GUIDs instead of decoded paths due to osquery limitations. Useful for user activity investigation and behavior analysis.",
         "ecs_mapping": [
             {
                 "key": "event.category",
                 "value": {
-                    "value": ["file"]
+                    "value": ["registry"]
                 }
             },
             {
                 "key": "event.type",
                 "value": {
-                    "value": ["access"]
+                    "value": ["info"]
                 }
             },
             {
@@ -26,18 +26,6 @@
                 "key": "user.id",
                 "value": {
                     "field": "user_sid"
-                }
-            },
-            {
-                "key": "file.name",
-                "value": {
-                    "field": "source"
-                }
-            },
-            {
-                "key": "file.path",
-                "value": {
-                    "field": "path"
                 }
             },
             {
@@ -67,7 +55,7 @@
             {
                 "key": "tags",
                 "value": {
-                    "value": ["osquery", "shellbags", "user_activity", "forensics", "windows"]
+                    "value": ["osquery", "shellbags", "user_activity", "forensics", "registry", "windows"]
                 }
             }
         ],
