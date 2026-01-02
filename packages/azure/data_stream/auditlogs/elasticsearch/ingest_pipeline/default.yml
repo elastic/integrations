@@ -8,6 +8,10 @@ processors:
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
+  - remove:
+      field: routing.category
+      ignore_missing: true
+      description: Remove the routing.category field if it exists.
   - rename:
       field: message
       target_field: event.original
@@ -43,10 +47,24 @@ processors:
       field: azure.auditlogs.resourceId
       target_field: azure.resource_id
       ignore_missing: true
+  - convert:
+      field: azure.auditlogs.durationMs
+      target_field: event.duration
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx.azure?.auditlogs?.durationMs != null && ctx.azure.auditlogs.durationMs instanceof String"
+      description: 'Convert durationMs to event.duration as long (if it is a string).'
   - rename:
       field: azure.auditlogs.durationMs
       target_field: event.duration
       ignore_missing: true
+      if: "ctx.azure?.auditlogs?.durationMs != null && !(ctx.azure.auditlogs.durationMs instanceof String)"
+      description: 'Rename durationMs to event.duration (if it is not a string).'
+  - remove:
+      field: azure.auditlogs.durationMs
+      ignore_missing: true
+      description: 'Clean up durationMs field, if it is still there after the conversion.'
   - script:
       if: ctx.event?.duration != null
       lang: painless
