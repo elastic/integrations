@@ -1,0 +1,75 @@
+{
+    "attributes": {
+        "created_at": "2025-11-20T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Windows Shellbags forensic analysis - extracts registry-based folder access history from Windows Explorer. Returns shell item identifiers (paths or Known Folder GUIDs) representing directories the user navigated to. Note: Some entries may contain Windows Known Folder GUIDs instead of decoded paths due to osquery limitations. Useful for user activity investigation and behavior analysis.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["registry"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.shellbags"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "user_sid"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "created_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "file.inode",
+                "value": {
+                    "field": "mft_entry"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "shellbags", "user_activity", "forensics", "registry", "windows"]
+                }
+            }
+        ],
+        "id": "shellbags_windows_elastic",
+        "interval": "3600",
+        "query": "SELECT\n  sid AS user_sid,\n  source,\n  path,\n  datetime(modified_time, 'unixepoch') AS modified_time,\n  datetime(created_time, 'unixepoch') AS created_time,\n  datetime(accessed_time, 'unixepoch') AS accessed_time,\n  mft_entry,\n  mft_sequence\nFROM shellbags\nWHERE path != '' AND path IS NOT NULL\nORDER BY modified_time DESC;",
+        "platform": "windows",
+        "updated_at": "2025-11-20T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-a4b2c8d0-8876-11f0-b4d1-4f9e8c3a1b2e",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-11-20T00:00:00.000Z",
+    "version": "WzEsMV0="
+}
