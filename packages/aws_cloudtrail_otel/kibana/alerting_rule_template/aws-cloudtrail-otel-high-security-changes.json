@@ -1,0 +1,28 @@
+{
+    "id": "aws-cloudtrail-otel-high-security-changes",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[AWS CLOUDTRAIL OTEL] Excessive high-risk actions succeed",
+        "tags": ["AWS CloudTrail Logs OpenTelemetry Assets"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert triggers when any high risk actions succeded within a given threshold time from a single user or IP\nFROM logs-aws.cloudtrail.otel-default | WHERE @timestamp > NOW()- 10m | WHERE rpc.method IN (\"StopLogging\", \"DeleteTrail\",\"AttachUserPolicy\", \"AttachRolePolicy\",\"CreateAccessKey\", \"CreateUser\",\"AuthorizeSecurityGroupIngress\",\"DisableKey\", \"ScheduleKeyDeletion\")| STATS change_count = COUNT(*),changes = VALUES(rpc.method) BY user.name, source.address"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

@@ -1,0 +1,28 @@
+{
+    "id": "aws-cloudtrail-otel-multiple-failed-login-ip",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[AWS CLOUDTRAIL OTEL] Multiple failed login attempts from same IP",
+        "tags": ["AWS CloudTrail Logs OpenTelemetry Assets"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert triggers when any source IP address whose reject requests exceed a threshold (e.g. > 100 in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.cloudtrail.otel-default | WHERE @timestamp > NOW()- 10m | WHERE rpc.method == \"ConsoleLogin\" | WHERE aws.error.code IS NOT NULL | STATS failed_count = COUNT(*), users_tried = VALUES(user.name) BY source.address | WHERE failed_count >= 100 | SORT failed_count DESC"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
