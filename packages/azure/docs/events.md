@@ -47,16 +47,16 @@ The integration v2 preview avoids contention and inefficiencies from using multi
 
 ### Event Hub Processor v2 ✨
 
-The integration v2 preview offers a new processor v2 starting with integration version 1.23.0.
+As of version 1.23.0, the integration preview includes the new Processor v2.
 
-The processor v2 introduces several changes:
+Processor v2 introduces several key improvements:
 
-* It uses the latest Event Hubs SDK from Azure.
-* It uses a more efficient checkpoint store based on Azure Blob Storage metadata.
+* Built on the latest Azure Event Hubs SDK.
+* Features a more efficient checkpoint store leveraging Azure Blob Storage metadata.
 
-The processor v2 is in preview. Processor v1 is still the default and is recommended for typical use cases.
+Processor v2 is the default and the recommended standard for all use cases. Processor v1 is being retained as a legacy option to ensure backward compatibility until the next major release.
 
-See the "Event Hub Processor v2 only" section in the integration settings for more details about enabling the processor v2.
+For details on configuration, see the "Event Hub Processor v2 only" section in the integration settings.
 
 ### FAQ
 
@@ -108,9 +108,45 @@ Use the following table to identify the target data streams for each log categor
 | `logs-azure.springcloudlogs-*`     | `ApplicationConsole`, `SystemLogs`, `IngressLogs`, `BuildLogs`, `ContainerEventLogs`                                                                         |
 | `logs-azure.platformlogs-*`        | All other log categories                                                                                                                                     |
 
-### What about all other log categories?
+### Question: What about all other log categories?
 
 The integration indexes all other Azure logs categories using the `logs-azure.platformlogs-*` data stream.
+
+### Question: Can I route the log events to a different data stream?
+
+Yes, you can route the log events to a different data stream by creating a `logs-azure.events@custom` pipeline.
+
+The default pipeline extracts the `routing.category` field and hands it off to the custom pipeline, where you can implement your routing logic.
+
+You can create this pipeline via the integration settings (**Change defaults > Advanced options > Ingest pipelines**) or alternatively using **Dev Tools**.
+
+If you prefer using the Dev Tools, here is a sample configuration that routes the `SQLSecurityAuditEvents` category to a dedicated data stream.
+
+First, check for an existing `logs-azure.events@custom` pipeline:
+
+```text
+GET _ingest/pipeline/logs-azure.events@custom
+```
+
+If a pipeline already exists, you will need to update it to include the reroute processor.
+
+To define a new `logs-azure.events@custom` pipeline, use the following:
+
+```text
+PUT _ingest/pipeline/logs-azure.events@custom
+{
+  "processors": [
+    {
+      "reroute": {
+        "if": "ctx?.routing?.category == \"SQLSecurityAuditEvents\"",
+        "dataset": "azure.synapse"
+      }
+    }
+  ]
+}
+```
+
+You can target a new dataset (such as `azure.synapse` shown above) or any of the existing out-of-the-box datasets like `azure.activitylogs`.
 
 ## Requirements
 
@@ -556,7 +592,7 @@ The following settings are **event hub processor v2 only** and available in the 
 
 `processor_version` :
 _string_
-(processor v2 only) The processor version that the integration should use. Possible values are `v1` and `v2` (preview). The processor v2 is in preview. Using the processor v1 is recommended for typical use cases. Default is `v1`.
+(processor v2 only) The processor version that the integration should use. Possible values are `v1` (legacy) and `v2`. Using the processor v2 is recommended for typical use cases. Default is `v2`.
 
 `processor_update_interval` :
 _string_
@@ -573,9 +609,11 @@ Possible values are `earliest` and `latest`.
 
 `migrate_checkpoint` :
 _boolean_
-(processor v2 only) Flag to control whether the processor should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+(processor v2 only) Controls processor behavior upon the initial transition from v1 to v2. If you are starting directly with v2, you can disregard this setting.
 
-Default is `false`, which means the processor will not perform the checkpoint migration.
+Defaults to `true`, which means the processor will automatically migrate checkpoint information from the v1 format to v2.
+
+If set to `false`, the processor will bypass existing v1 checkpoints and replay all events in the Event Hub from the start of the retention window. For example, if set to `false` on an Event Hub with a 1-hour retention period, the processor will replay the last hour's worth of data.
 
 `endpoint_suffix` :
 _string_
