@@ -17,7 +17,7 @@ processors:
       if: ctx.crowdstrike?.event?.ItemType == null
   - set:
       field: event.action
-      value: "recon-notification-{{{ctx.crowdstrike.event.ItemType}}}"
+      value: "recon-notification-{{{crowdstrike.event.ItemType}}}"
       if: ctx.crowdstrike?.event?.ItemType != null
   - rename:
       field: crowdstrike.event.ItemId
@@ -34,11 +34,11 @@ processors:
       target_field: rule.name
       ignore_missing: true
       tag: rename_rule_name
-  - rename:
-      field: crowdstrike.event.RuleTopic
-      target_field: rule.ruleset
-      ignore_missing: true
-      tag: rename_rule_topic
+  - set:
+      field: rule.ruleset
+      copy_from: crowdstrike.event.RuleTopic
+      ignore_empty_value: true
+      tag: set_rule_ruleset
   - rename:
       field: crowdstrike.event.RuleTopic
       target_field: rule.description
