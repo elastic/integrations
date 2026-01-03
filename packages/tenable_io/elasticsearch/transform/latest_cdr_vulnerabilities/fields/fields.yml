@@ -230,12 +230,71 @@
                   type: keyword
                 - name: user_interaction
                   type: keyword
+        - name: cvss4
+          type: group
+          fields:
+            - name: base_score
+              type: double
+              description: The CVSS version 4 (CVSSv4) base score, representing the intrinsic and fundamental characteristics of a vulnerability that remain constant over time and across different user environments. The score ranges from 0 to 10, with higher values indicating greater severity.
+            - name: threat_vector
+              type: group
+              fields:
+                - name: threat_score
+                  type: double
+                - name: exploit_maturity
+                  type: keyword
+                  description: The CVSS v4.0 Exploit Maturity (E) metric, indicating the current development status of exploit techniques or code for the vulnerability.
+                - name: raw
+                  type: keyword
+                  description: The complete cvss4_threat_vector metrics and their result values for the vulnerability, expressed as a concise, coded string. This threat vector is typically appended to the CVSSv4 Base vector. For example, CVSS:4.0/E:U.
+            - name: vector
+              type: group
+              fields:
+                - name: attack_vector
+                  type: keyword
+                  description: The CVSSv4 Attack Vector (AV) metric, which describes the context by which the vulnerability can be exploited.
+                - name: attack_complexity
+                  type: keyword
+                  description: The CVSSv4 Attack Complexity (AC) metric, which indicates the conditions beyond the attacker's control that must exist to exploit the vulnerability.
+                - name: attack_requirements
+                  type: keyword
+                  description: The CVSSv4 Attack Requirements (AR) metric specifies prerequisite conditions of the vulnerable component that must be met for an attack to succeed.
+                - name: privileges_required
+                  type: keyword
+                  description: The CVSSv4 Privileges Required (PR) metric indicates the level of privileges an attacker must have to successfully exploit the vulnerability.
+                - name: user_interaction
+                  type: keyword
+                  description: The CVSSv4 User Interaction (UI) metric describes the level of user interaction required for an attack to succeed.
+                - name: vulnerable_system_confidentiality
+                  type: keyword
+                  description: The CVSSv4 Vulnerable System Confidentiality (VC) metric measures the impact on the confidentiality of information on the vulnerable system.
+                - name: vulnerable_system_integrity
+                  type: keyword
+                  description: The CVSSv4 Vulnerable System Integrity (VI) metric measures the impact on the integrity of information on the vulnerable system.
+                - name: vulnerable_system_availability
+                  type: keyword
+                  description: The CVSSv4 Vulnerable System Availability (VA) metric measures the impact on the availability of the vulnerable system.
+                - name: subsequent_system_confidentiality
+                  type: keyword
+                  description: The CVSSv4 Subsequent System Confidentiality (SC) metric measures the impact on the confidentiality of information on systems subsequent to the vulnerable component.
+                - name: subsequent_system_integrity
+                  type: keyword
+                  description: The CVSSv4 Subsequent System Integrity (SI) metric measures the impact on the integrity of information on systems subsequent to the vulnerable component.
+                - name: subsequent_system_availability
+                  type: keyword
+                  description: The CVSSv4 Subsequent System Availability (SA) metric measures the impact on the availability of systems subsequent to the vulnerable component.
+                - name: raw
+                  type: keyword
+                  description: The complete CVSSv4 Base vector string representing all metric values in a compact, standardized format. This includes metrics such as Attack Vector, Attack Complexity, Privileges Required, and others. For example, AV:N/AC:L/AT:P/PR:H/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:H.
         - name: d2_elliot_name
           type: keyword
           description: The name of the exploit in the D2 Elliot Web Exploitation framework.
         - name: description
           type: text
           description: Full text description of the vulnerability plugin.
+        - name: epss_score
+          type: double
+          description: The Exploit Prediction Scoring System (EPSS) score estimates the likelihood (as a percentage) that a software vulnerability will be exploited in the wild within the next 30 days. The score ranges from 0 to 100, with higher values indicating a greater probability of exploitation.
         - name: exploit_available
           type: boolean
           description: A value specifying whether a public exploit exists for the vulnerability.
@@ -388,6 +447,60 @@
             - name: updated
               type: date
               description: The ISO timestamp when Tenable Vulnerability Management last imported the VPR for this vulnerability. Tenable Vulnerability Management imports updated VPR values every time you run a scan.
+        - name: vpr_v2
+          type: group
+          fields:
+            - name: score
+              type: double
+              description: The Vulnerability Priority Rating (VPR) version 2 score assigned to the vulnerability. This enhanced version is labeled VPR (Beta) in the user interface. If a plugin detects multiple vulnerabilities, this score reflects the highest VPR among them.
+            - name: vpr_percentile
+              type: double
+              description: The percentile ranking of the Vulnerability Priority Rating (VPR) v2 score, indicating how the vulnerability compares in severity to all other scored vulnerabilities.
+            - name: vpr_severity
+              type: keyword
+              description: The severity level associated with the Vulnerability Priority Rating (VPR) v2 score. This label reflects the relative risk of the vulnerability based on its VPR score.
+            - name: exploit_probability
+              type: double
+              description: The likelihood (as a decimal value between 0 and 1) that this vulnerability will be exploited in the wild, as determined by the VPR v2 model. This value contributes to the overall VPR score and reflects real-world exploit potential based on threat intelligence and predictive analytics.
+            - name: cve_id
+              type: keyword
+              description: The Common Vulnerability and Exposure (CVE) identifier associated with the vulnerability that the Vulnerability Priority Rating (VPR) V2 score is based on. This standardized identifier allows for consistent reference across security tools and databases.
+            - name: exploit_code_maturity
+              type: keyword
+              description: The maturity level of publicly available exploit code for the vulnerability, as factored into the Vulnerability Priority Rating (VPR) V2. This metric helps assess how likely it is for the vulnerability to be actively exploited.
+            - name: on_cisa_kev
+              type: boolean
+              description: Indicates whether the vulnerability is listed in the Cybersecurity and Infrastructure Security Agency's (CISA) Known Exploited Vulnerabilities (KEV) catalog. Presence on the KEV list highlights critical vulnerabilities that are actively exploited and prioritized for remediation.
+            - name: exploit_chain
+              type: keyword
+              description: A list of Common Vulnerability and Exposure (CVE) identifiers representing vulnerabilities that are part of an exploit chain involving this vulnerability.
+            - name: in_the_news_intensity_last30
+              type: keyword
+              description: Indicates the frequency and prominence of news coverage related to this vulnerability over the past 30 days. This metric reflects the level of public and media attention, which can correlate with increased exploitability and urgency for remediation.
+            - name: in_the_news_recency
+              type: keyword
+              description: Indicates how recently this vulnerability has appeared in news coverage or public discussions. A more recent mention suggests increased current attention and potential exploitation risk.
+            - name: in_the_news_sources_last30
+              type: keyword
+              description: A list of source categories from trending vulnerability data where this CVE has been mentioned in the past 30 days.
+            - name: malware_observations_intensity_last30
+              type: keyword
+              description: The intensity level of malware observations related to this vulnerability in the past 30 days. This metric reflects how actively malware exploiting this vulnerability has been detected during that period.
+            - name: malware_observations_recency
+              type: keyword
+              description: Indicates how recently malware exploiting this vulnerability has been observed. This value reflects the freshness of malware activity related to the vulnerability.
+            - name: targeted_industries
+              type: keyword
+              description: A list of industries that have been targeted for exploitation via this CVE.
+            - name: targeted_regions
+              type: keyword
+              description: A list of geographic regions where this CVE has been targeted for exploitation.
+            - name: threat_summary
+              type: flattened
+              description: Summary information about the threat posed by the vulnerability, including relevant details that contribute to its Vulnerability Priority Rating (VPR) v2 score.
+            - name: remediation
+              type: flattened
+              description: Information and recommended actions for mitigating or resolving the vulnerability. This may include patches, configuration changes, or other remediation guidance.
         - name: vuln_publication_date
           type: date
           description: The publication date of the plugin.

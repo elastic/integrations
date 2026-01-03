@@ -348,6 +348,28 @@ processors:
       field: host.os.name
       copy_from: tenable_io.asset.operating_systems
       ignore_empty_value: true
+  - convert:
+      field: json.ratings.acr.score
+      tag: convert_acr_score_to_long
+      type: long
+      target_field: tenable_io.asset.ratings.acr.score
+      ignore_missing: true
+      if: ctx.json?.ratings?.acr?.score != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ratings.aes.score
+      tag: convert_aes_score_to_long
+      type: long
+      target_field: tenable_io.asset.ratings.aes.score
+      ignore_missing: true
+      if: ctx.json?.ratings?.aes?.score != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.system_types
       target_field: tenable_io.asset.system_types
