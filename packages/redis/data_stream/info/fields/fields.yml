@@ -90,11 +90,21 @@
           format: bytes
           metric_type: gauge
           description: "Used memory by the Lua engine.        \n"
+        - name: used.scripts
+          type: long
+          format: bytes
+          description: >
+            Used memory by Lua scripts.
         - name: used.dataset
           type: long
           format: bytes
           metric_type: gauge
           description: "The size in bytes of the dataset \n"
+        - name: total_system
+          type: long
+          format: bytes
+          description: >
+            Total amount in bytes of memory available to Redis.
         - name: max.value
           type: long
           format: bytes
@@ -401,6 +411,8 @@
           type: long
         - name: config_file
           type: keyword
+        - name: number_of_cached_scripts
+          type: long
     - name: stats
       type: group
       fields:
@@ -519,11 +531,53 @@
           metric_type: gauge
           description: |
             Number of keys that were skipped by the active defragmentation process
+        - name: tracking
+          type: group
+          description: >
+            Redis client side caching tracking stats.
+          fields:
+            - name: total_keys
+              type: long
+              description: >
+                Total number of keys being tracked.
+            - name: total_items
+              type: long
+              description: >
+                Total number of tracked items.
+            - name: total_prefixes
+              type: long
+              description: >
+                Total number of tracked prefixes.
     - name: slowlog.count
       type: long
       metric_type: gauge
       description: |
         Count of slow operations
+    - name: commandstats
+      type: group
+      description: >
+        Redis command statistics
+      fields:
+        - name: "*.calls"
+          type: long
+          description: >
+            The number of calls that reached command execution (not rejected).
+        - name: "*.usec"
+          type: long
+          description: >
+            The total CPU time consumed by these commands.
+        - name: "*.usec_per_call"
+          type: float
+          description: >
+            The average CPU consumed per command execution.
+        - name: "*.rejected_calls"
+          type: long
+          description: >
+            The number of rejected calls (on redis 6.2-rc2).
+        - name: "*.failed_calls"
+          type: long
+          description: >
+            The number of failed calls (on redis 6.2-rc2).
 - name: os
   type: group
   description: The OS fields contain information about the operating system.

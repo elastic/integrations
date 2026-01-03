@@ -73,13 +73,15 @@ An example event for `info` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "@timestamp": "2025-12-31T13:03:46.990Z",
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "redis.info",
-        "duration": 374411,
+        "duration": 1360250,
+        "ingested": "2025-12-31T13:03:48Z",
         "module": "redis"
     },
     "metricset": {
@@ -89,43 +91,93 @@ An example event for `info` looks as following:
     "redis": {
         "info": {
             "clients": {
-                "biggest_input_buf": 0,
                 "blocked": 0,
-                "connected": 5,
-                "longest_output_list": 0,
+                "connected": 3,
                 "max_input_buffer": 0,
                 "max_output_buffer": 0
             },
             "cluster": {
                 "enabled": false
             },
+            "commandstats": {
+                "config|get": {
+                    "calls": 2,
+                    "failed_calls": 0,
+                    "rejected_calls": 0,
+                    "usec": 4,
+                    "usec_per_call": 2
+                },
+                "info": {
+                    "calls": 54,
+                    "failed_calls": 0,
+                    "rejected_calls": 0,
+                    "usec": 8183,
+                    "usec_per_call": 151.54
+                },
+                "scan": {
+                    "calls": 3,
+                    "failed_calls": 0,
+                    "rejected_calls": 0,
+                    "usec": 12,
+                    "usec_per_call": 4
+                },
+                "select": {
+                    "calls": 4,
+                    "failed_calls": 0,
+                    "rejected_calls": 0,
+                    "usec": 10,
+                    "usec_per_call": 2.5
+                },
+                "slowlog|len": {
+                    "calls": 45,
+                    "failed_calls": 0,
+                    "rejected_calls": 0,
+                    "usec": 78,
+                    "usec_per_call": 1.73
+                }
+            },
             "cpu": {
                 "used": {
-                    "sys": 1.66,
-                    "sys_children": 0,
-                    "user": 0.39,
-                    "user_children": 0.01
+                    "sys": 0.213,
+                    "sys_children": 0.001,
+                    "user": 0.903,
+                    "user_children": 0.005
                 }
             },
             "memory": {
-                "active_defrag": {},
-                "allocator": "jemalloc-4.0.3",
+                "active_defrag": {
+                    "is_running": false
+                },
+                "allocator": "jemalloc-5.3.0",
                 "allocator_stats": {
-                    "fragmentation": {},
-                    "rss": {}
+                    "active": 15073280,
+                    "allocated": 4412336,
+                    "fragmentation": {
+                        "bytes": 7413072,
+                        "ratio": 4.15
+                    },
+                    "resident": 16449536,
+                    "rss": {
+                        "bytes": 1376256,
+                        "ratio": 1.09
+                    }
                 },
                 "fragmentation": {
-                    "ratio": 2.71
+                    "bytes": 19869600,
+                    "ratio": 19.03
                 },
                 "max": {
                     "policy": "noeviction",
                     "value": 0
                 },
+                "total_system": 16731578368,
                 "used": {
-                    "lua": 37888,
-                    "peak": 945016,
-                    "rss": 2453504,
-                    "value": 904992
+                    "dataset": 31264,
+                    "lua": 32768,
+                    "peak": 1148168,
+                    "rss": 20971520,
+                    "scripts": 192,
+                    "value": 1103880
                 }
             },
             "persistence": {
@@ -133,12 +185,11 @@ An example event for `info` looks as following:
                     "bgrewrite": {
                         "last_status": "ok"
                     },
-                    "buffer": {},
-                    "copy_on_write": {},
+                    "copy_on_write": {
+                        "last_size": 0
+                    },
                     "enabled": false,
-                    "fsync": {},
                     "rewrite": {
-                        "buffer": {},
                         "current_time": {
                             "sec": -1
                         },
@@ -148,7 +199,6 @@ An example event for `info` looks as following:
                         },
                         "scheduled": false
                     },
-                    "size": {},
                     "write": {
                         "last_status": "ok"
                     }
@@ -165,10 +215,12 @@ An example event for `info` looks as following:
                             "sec": -1
                         }
                     },
-                    "copy_on_write": {},
+                    "copy_on_write": {
+                        "last_size": 0
+                    },
                     "last_save": {
-                        "changes_since": 35,
-                        "time": 1548663522
+                        "changes_since": 0,
+                        "time": 1767185772
                     }
                 }
             },
@@ -182,77 +234,88 @@ An example event for `info` looks as following:
                 "connected_slaves": 0,
                 "master": {
                     "offset": 0,
-                    "sync": {}
+                    "second_offset": -1
                 },
-                "master_offset": 0,
-                "role": "master",
-                "slave": {}
+                "role": "master"
             },
             "server": {
                 "arch_bits": "64",
-                "build_id": "b9a4cd86ce8027d3",
+                "build_id": "ad6b706b81f82e04",
                 "config_file": "",
-                "gcc_version": "6.4.0",
-                "git_dirty": "0",
+                "gcc_version": "14.2.0",
+                "git_dirty": "1",
                 "git_sha1": "00000000",
                 "hz": 10,
-                "lru_clock": 5159690,
+                "lru_clock": 5578546,
                 "mode": "standalone",
                 "multiplexing_api": "epoll",
-                "run_id": "0f681cb959aa47413ec40ff383715c923f9cbefd",
+                "number_of_cached_scripts": 0,
+                "run_id": "7c52d5e16e392e2c059c567833498a2dd53f32f7",
                 "tcp_port": 6379,
-                "uptime": 707
+                "uptime": 455
             },
             "slowlog": {
                 "count": 0
             },
             "stats": {
-                "active_defrag": {},
-                "commands_processed": 265,
+                "active_defrag": {
+                    "hits": 0,
+                    "key_hits": 0,
+                    "key_misses": 0,
+                    "misses": 0
+                },
+                "commands_processed": 108,
                 "connections": {
-                    "received": 848,
+                    "received": 4,
                     "rejected": 0
                 },
                 "instantaneous": {
-                    "input_kbps": 0.18,
-                    "ops_per_sec": 6,
-                    "output_kbps": 1.39
+                    "input_kbps": 0,
+                    "ops_per_sec": 0,
+                    "output_kbps": 0
                 },
                 "keys": {
                     "evicted": 0,
                     "expired": 0
                 },
                 "keyspace": {
-                    "hits": 15,
+                    "hits": 0,
                     "misses": 0
                 },
                 "latest_fork_usec": 0,
                 "migrate_cached_sockets": 0,
                 "net": {
                     "input": {
-                        "bytes": 7300
+                        "bytes": 2521
                     },
                     "output": {
-                        "bytes": 219632
+                        "bytes": 304894
                     }
                 },
                 "pubsub": {
                     "channels": 0,
                     "patterns": 0
                 },
+                "slave_expires_tracked_keys": 0,
                 "sync": {
                     "full": 0,
                     "partial": {
                         "err": 0,
                         "ok": 0
                     }
+                },
+                "tracking": {
+                    "total_items": 0,
+                    "total_keys": 0,
+                    "total_prefixes": 0
                 }
             }
         }
     },
     "service": {
-        "address": "localhost:6379",
-        "type": "redis"
+        "address": "redis://127.0.0.1:6379",
+        "type": "redis",
+        "version": "8.2.3"
     }
 }
 ```
@@ -292,6 +355,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.clients.max_input_buffer | Biggest input buffer among current client connections (on redis 5.0). | long | gauge |
 | redis.info.clients.max_output_buffer | Longest output list among current client connections. | long | gauge |
 | redis.info.cluster.enabled | Indicates that the Redis cluster is enabled. | boolean |  |
+| redis.info.commandstats.\*.calls | The number of calls that reached command execution (not rejected). | long |  |
+| redis.info.commandstats.\*.failed_calls | The number of failed calls (on redis 6.2-rc2). | long |  |
+| redis.info.commandstats.\*.rejected_calls | The number of rejected calls (on redis 6.2-rc2). | long |  |
+| redis.info.commandstats.\*.usec | The total CPU time consumed by these commands. | long |  |
+| redis.info.commandstats.\*.usec_per_call | The average CPU consumed per command execution. | float |  |
 | redis.info.cpu.used.sys | System CPU consumed by the Redis server. | scaled_float | gauge |
 | redis.info.cpu.used.sys_children | User CPU consumed by the Redis server. | scaled_float | gauge |
 | redis.info.cpu.used.user | System CPU consumed by the background processes. | scaled_float | gauge |
@@ -309,10 +377,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.memory.fragmentation.ratio | Ratio between used_memory_rss and used_memory | float | gauge |
 | redis.info.memory.max.policy | Eviction policy to use when memory limit is reached. | keyword |  |
 | redis.info.memory.max.value | Memory limit. | long | gauge |
+| redis.info.memory.total_system | Total amount in bytes of memory available to Redis. | long |  |
 | redis.info.memory.used.dataset | The size in bytes of the dataset | long | gauge |
 | redis.info.memory.used.lua | Used memory by the Lua engine. | long | gauge |
 | redis.info.memory.used.peak | Peak memory consumed by Redis. | long | gauge |
 | redis.info.memory.used.rss | Number of bytes that Redis allocated as seen by the operating system (a.k.a resident set size). | long | gauge |
+| redis.info.memory.used.scripts | Used memory by Lua scripts. | long |  |
 | redis.info.memory.used.value | Total number of bytes allocated by Redis. | long | gauge |
 | redis.info.persistence.aof.bgrewrite.last_status | Status of the last AOF rewrite operatio | keyword |  |
 | redis.info.persistence.aof.buffer.size | Size of the AOF buffer | long | gauge |
@@ -363,6 +433,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.server.lru_clock |  | long |  |
 | redis.info.server.mode |  | keyword |  |
 | redis.info.server.multiplexing_api |  | keyword |  |
+| redis.info.server.number_of_cached_scripts |  | long |  |
 | redis.info.server.run_id |  | keyword |  |
 | redis.info.server.tcp_port |  | long |  |
 | redis.info.server.uptime |  | long | gauge |
@@ -391,6 +462,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.stats.sync.full | The number of full resyncs with slaves | long | gauge |
 | redis.info.stats.sync.partial.err | The number of denied partial resync requests | long | gauge |
 | redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long | gauge |
+| redis.info.stats.tracking.total_items | Total number of tracked items. | long |  |
+| redis.info.stats.tracking.total_keys | Total number of keys being tracked. | long |  |
+| redis.info.stats.tracking.total_prefixes | Total number of tracked prefixes. | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
@@ -411,13 +485,15 @@ An example event for `key` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "@timestamp": "2025-12-31T13:20:46.958Z",
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "redis.key",
-        "duration": 374411,
+        "duration": 9857625,
+        "ingested": "2025-12-31T13:20:48Z",
         "module": "redis"
     },
     "metricset": {
@@ -427,16 +503,19 @@ An example event for `key` looks as following:
     "redis": {
         "key": {
             "expire": {
-                "ttl": 360
+                "ttl": -1
             },
-            "id": "0:foo",
-            "length": 3,
-            "name": "foo",
+            "id": "0:test",
+            "length": 1,
+            "name": "test",
             "type": "string"
+        },
+        "keyspace": {
+            "id": "db0"
         }
     },
     "service": {
-        "address": "localhost:6379",
+        "address": "redis://127.0.0.1:6379",
         "type": "redis"
     }
 }
@@ -473,6 +552,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long | gauge |
 | redis.key.name | Key name. | keyword |  |
 | redis.key.type | Key type as shown by `TYPE` command. | keyword |  |
+| redis.keyspace.id | Keyspace identifier. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
@@ -543,4 +623,5 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.keyspace.expires |  | long |  |
 | redis.keyspace.id | Keyspace identifier. | keyword |  |
 | redis.keyspace.keys | Number of keys in the keyspace. | long |  |
+| redis.keyspace.subexpiry | Number of sub-keys with an expiry set (0 when not reported). | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
