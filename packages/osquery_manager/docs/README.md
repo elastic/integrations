@@ -11,9 +11,8 @@ This integration adds an Osquery UI in Kibana where you can:
 
 Osquery results are stored in Elasticsearch, so that you can use the power of the stack to search, analyze, and visualize Osquery data.
 
-## Documentation
+## Investigate with Osquery
 For information about using Osquery, see the [Osquery Kibana documentation](https://www.elastic.co/guide/en/kibana/current/osquery.html). 
 This includes information about required privileges; how to run, schedule, and save queries; how to map osquery fields to ECS; and other useful information about managing Osquery with this integration.
 
-## Exported Fields
-For a full list of fields that can be returned in osquery results, see the [Exported Fields reference](https://www.elastic.co/guide/en/kibana/current/exported-fields-osquery.html) in the Kibana documentation. 
+For information about Osquery tables, refer to the [Osquery schema documentation](https://osquery.io/schema) and [Osquery Extension for Elastic](https://github.com/elastic/beats/blob/main/x-pack/osquerybeat/ext/osquery-extension/README.md).
