@@ -1,0 +1,48 @@
+{{- $vuln_id := generate "vuln_id" }}
+{{- $vuln_status := generate "vuln_status" }}
+{{- $created_at := generate "created_at" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $updated_at := generate "updated_at" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $target := generate "target" }}
+{{- $vuln_hash := generate "vuln_hash" }}
+{{- $scan_id := generate "scan_id" }}
+{{- $template_url := generate "template_url" }}
+{{- $matcher_status := generate "matcher_status" }}
+{{- $change_event := generate "change_event" }}
+{{- $port := generate "event.port" }}
+{{- $description := generate "event.info.description" }}
+{{- $reference := generate "event.info.reference" }}
+{{- $severity := generate "event.info.severity" }}
+{{- $timestamp := generate "timestamp" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "{{ $vuln_hash }}",
+        "id": "benchmark-agent",
+        "name": "benchmark-fleet-agent",
+        "type": "filebeat",
+        "version": "9.2.0"
+    },
+    "data_stream": {
+        "dataset": "projectdiscovery_cloud.changelogs",
+        "namespace": "benchmark",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "benchmark-agent",
+        "snapshot": false,
+        "version": "9.2.0"
+    },
+    "event": {
+        "dataset": "projectdiscovery_cloud.changelogs"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "message": "{\"vuln_id\":\"{{ $vuln_id }}\",\"vuln_status\":\"{{ $vuln_status }}\",\"created_at\":\"{{ $created_at }}\",\"updated_at\":\"{{ $updated_at }}\",\"target\":\"{{ $target }}\",\"vuln_hash\":\"{{ $vuln_hash }}\",\"scan_id\":\"{{ $scan_id }}\",\"template_url\":\"https://templates.nuclei.sh/{{ $template_url }}\",\"matcher_status\":\"{{ $matcher_status }}\",\"change_event\":\"{{ $change_event }}\",\"event\":{\"info\":{\"description\":\"{{ $description }}\",\"reference\":[\"https://nvd.nist.gov/vuln/detail/{{ $reference }}\"],\"severity\":\"{{ $severity }}\"},\"port\":{{ $port }}}}",
+    "tags": [
+        "forwarded",
+        "projectdiscovery-cloud",
+        "vulnerability",
+        "changelogs"
+    ]
+}
