@@ -178,7 +178,7 @@ program: |
     ).as(state, state.with(
       !has(state.worklist) ? state :
         has(state.worklist.HOST_QID_LIST) && size(state.worklist.HOST_QID_LIST) > 0 ?
-          request("GET", state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/?" +
+          request("GET", state.url.trim_right("/") + "/api/4.0/fo/knowledge_base/vuln/?" +
             {
               "ids": [front(state.worklist.HOST_QID_LIST, int(state.query_limit)).join(",")],
               "action": ["list"],
@@ -189,7 +189,7 @@ program: |
               "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
             }
           }).do_request().as(resp, (resp.StatusCode == 200 ?
-            resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_kb'), "decode_xml_error_kb").as(kb_body,
+            resp.Body.as(xml, try(xml.decode_xml('qualys_api_4_0_kb'), "decode_xml_error_kb").as(kb_body,
               !has(kb_body.decode_xml_error_kb)
               ?
                 (
@@ -280,7 +280,7 @@ program: |
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
-                  "message": "GET "+state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/: "+(
+                  "message": "GET "+state.url.trim_right("/") + "/api/4.0/fo/knowledge_base/vuln/: "+(
                     size(resp.Body) != 0 ?
                       string(resp.Body)
                     :
@@ -879,7 +879,7 @@ xsd:
       </xsd:element>
       </xsd:schema>
 
-  qualys_api_3_0_kb: |
+  qualys_api_4_0_kb: |
     <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
 
       <xsd:element name='KNOWLEDGE_BASE_VULN_LIST_OUTPUT'>
