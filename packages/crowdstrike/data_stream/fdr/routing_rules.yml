@@ -1,0 +1,12 @@
+- source_dataset: crowdstrike.fdr
+  rules:
+    - target_dataset: crowdstrike.fdr_aidmaster
+      if: ctx.tags != null && ctx.tags.contains('route_metadata_to_datastreams') && ((ctx.log?.file?.path != null && ctx.log.file.path.contains('aidmaster')) || (ctx.aws?.s3?.object?.key != null && ctx.aws.s3.object.key.contains('aidmaster')))
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: crowdstrike.fdr_userinfo
+      if: ctx.tags != null && ctx.tags.contains('route_metadata_to_datastreams') && ((ctx.log?.file?.path != null && ctx.log.file.path.contains('userinfo')) || (ctx.aws?.s3?.object?.key != null && ctx.aws.s3.object.key.contains('userinfo')))
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default

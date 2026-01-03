@@ -1,6 +1,10 @@
 title: "Falcon Data Replicator"
 type: logs
+dataset: crowdstrike.fdr
 elasticsearch:
+  # Ensures agents have permissions to write data to `logs-*-*`
+  dynamic_dataset: true
+  dynamic_namespace: true
   index_template:
     settings:
       index:
@@ -55,6 +59,14 @@ streams:
         show_user: false
         title: Keep Original Host and User Metadata
         description: Keep the aidmaster and userinfo documents after they have been used for event enrichment.
+        type: bool
+        multi: false
+        default: false
+      - name: route_metadata_to_datastreams
+        required: true
+        show_user: true
+        title: Route Metadata to Separate Data Streams
+        description: When enabled, aidmaster (host metadata) events are routed to the `fdr_aidmaster` data stream and userinfo (user metadata) events are routed to the `fdr_userinfo` data stream. When disabled, all events remain in the `fdr` data stream.
         type: bool
         multi: false
         default: false
@@ -249,6 +261,14 @@ streams:
         show_user: false
         title: Keep Original Host and User Metadata
         description: Keep the aidmaster and userinfo documents after they have been used for event enrichment.
+        type: bool
+        multi: false
+        default: false
+      - name: route_metadata_to_datastreams
+        required: true
+        show_user: true
+        title: Route Metadata to Separate Data Streams
+        description: When enabled, aidmaster (host metadata) events are routed to the `fdr_aidmaster` data stream and userinfo (user metadata) events are routed to the `fdr_userinfo` data stream. When disabled, all events remain in the `fdr` data stream.
         type: bool
         multi: false
         default: false
