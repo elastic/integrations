@@ -1,189 +1,191 @@
-# Fortinet FortiProxy Integration
+# Fortinet FortiProxy Integration for Elastic
 
-This integration is for Fortinet FortiProxy logs sent in the syslog format.
+## Overview
 
-## Compatibility
+The Fortinet FortiProxy integration for Elastic enables the collection of logs from Fortinet FortiProxy devices. FortiProxy serves as a high-performance secure web gateway, protecting users from online threats through advanced URL filtering, SSL/SSH inspection, and content analysis. By ingesting these logs, users can gain visibility into web traffic patterns, security events, and system performance.
+
+This integration facilitates:
+- **Secure Web Gateway Monitoring**: specific insights into how the proxy protects users from threats.
+- **Web Traffic Analysis**: monitoring user behavior and application usage across the network.
+- **Data Loss Prevention (DLP)**: visibility into sensitive data leakage prevention events.
+- **Application Control**: monitoring of blocked malware and enforced web application policies.
+- **Security Event Detection**: detection of intrusion attempts, malware, and policy violations.
+
+### Compatibility
 
 This integration has been tested against FortiProxy versions 7.x up to 7.4.3. Newer versions are expected to work but have not been tested.
 
-## Note
+### How it works
 
-- When using the TCP input, be careful with the configured TCP framing. According to the [FortiProxy reference](https://docs.fortinet.com/document/fortiproxy/7.4.3/cli-reference/294620/config-log-syslogd-setting), framing should be set to `rfc6587` when the syslog mode is `reliable`.
+This integration collects logs from FortiProxy via Elastic Agent. The agent can receive logs through:
+*   **Syslog (TCP/UDP)**: FortiProxy streams logs to the Elastic Agent's listening port.
+*   **Filestream**: Elastic Agent reads logs from a file (useful if logs are written to a shared location).
 
-## Configuration
+The collected logs are parsed and mapped to the Elastic Common Schema (ECS) for unified analysis.
 
-On Fortinet FortiProxy, `syslogd` should be configured for either `udp` or `reliable` modes and use the `default` format. 
+## What data does this integration collect?
 
-| Setting  | Value          |
-|----------|----------------|
-| mode     | udp / reliable |
-| format   | default        |
+The Fortinet FortiProxy integration collects the following types of log data:
 
-### Log
+- **Traffic logs**: Network traffic information including source/destination IPs, ports, protocols, bytes transferred, and session details.
+- **HTTP transaction logs**: Detailed HTTP/HTTPS request and response data including URLs, methods, status codes, user agents, and timing information.
+- **UTM (Unified Threat Management) logs**: Security-related logs from antivirus, web filtering, application control, DLP, and SSL inspection features.
+- **Event logs**: System events, administrative actions, user authentication events, configuration changes, and system performance statistics.
+- **Security Rating logs**: Security posture assessment results with audit scores and compliance metrics.
 
-The `log` dataset collects Fortinet FortiProxy logs.
+### Supported use cases
 
-An example event for `log` looks as following:
+*   **Security Operations**: Detect and investigate security incidents like malware downloads or intrusion attempts.
+*   **Compliance Auditing**: Retain and search logs for regulatory compliance and policy enforcement verification.
+*   **Network Troubleshooting**: Analyze traffic flows and connection errors to resolve connectivity issues.
+*   **User Behavior Analytics**: Monitor web usage to identify anomalous behavior or policy violations.
 
-```json
-{
-    "@timestamp": "2024-04-11T02:56:17.000Z",
-    "agent": {
-        "ephemeral_id": "5bdc4789-78f8-49b0-807e-5a6c1e876d58",
-        "id": "5b7ea00b-603f-4de7-b7f7-240330ab7d50",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.13.2"
-    },
-    "client": {
-        "bytes": 798,
-        "ip": "10.0.0.3",
-        "nat": {
-            "ip": "10.0.128.2",
-            "port": 53184
-        },
-        "port": 47886
-    },
-    "data_stream": {
-        "dataset": "fortinet_fortiproxy.log",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "destination": {
-        "bytes": 125800732,
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.10",
-        "port": 443
-    },
-    "ecs": {
-        "version": "8.17.0"
-    },
-    "elastic_agent": {
-        "id": "5b7ea00b-603f-4de7-b7f7-240330ab7d50",
-        "snapshot": false,
-        "version": "8.13.2"
-    },
-    "event": {
-        "action": "accept",
-        "agent_id_status": "verified",
-        "category": [
-            "network"
-        ],
-        "code": "0000000010",
-        "dataset": "fortinet_fortiproxy.log",
-        "duration": 8089000000000,
-        "ingested": "2024-06-07T14:49:44Z",
-        "kind": "event",
-        "original": "<189>date=2024-04-10 time=19:56:17 devname=\"TEST-PXY01\" devid=\"FPXTESTPXY01\" eventtime=1712771778239212440 tz=\"-0700\" logid=\"0000000010\" type=\"traffic\" subtype=\"forward\" level=\"notice\" vd=\"root\" srcip=10.0.0.3 srcport=47886 srcintf=\"port2\" srcintfrole=\"lan\" dstcountry=\"United States\" srccountry=\"Reserved\" dstip=67.43.156.10 dstport=443 dstintf=\"port1\" dstintfrole=\"undefined\" sessionid=1781818019 service=\"HTTPS\" proxyapptype=\"web-proxy\" proto=6 action=\"accept\" policyid=1 policytype=\"proxy-policy\" poluuid=\"27b09930-033d-51ef-0c72-6c1221a8d893\" policyname=\"test-proxy\" trandisp=\"snat\" transip=10.0.128.2 transport=53184 clientip=10.0.0.3 duration=8089 wanin=125800732 rcvdbyte=125800732 wanout=632 lanin=798 sentbyte=798 lanout=125824455 appcat=\"unscanned\" utmaction=\"allow\"",
-        "start": "2024-04-10T17:56:18.239Z",
-        "timezone": "-0700"
-    },
-    "fortinet": {
-        "proxy": {
-            "dstintfrole": "undefined",
-            "lanin": 798,
-            "lanout": 125824455,
-            "proxyapptype": "web-proxy",
-            "sessionid": "1781818019",
-            "srcintfrole": "lan",
-            "subtype": "forward",
-            "trandisp": "snat",
-            "type": "traffic",
-            "utmaction": "allow",
-            "vd": "root",
-            "wanin": 125800732,
-            "wanout": 632
-        }
-    },
-    "input": {
-        "type": "filestream"
-    },
-    "log": {
-        "file": {
-            "device_id": "35",
-            "inode": "80",
-            "path": "/tmp/service_logs/fortinet-fortiproxy.log"
-        },
-        "level": "notice",
-        "offset": 15140,
-        "syslog": {
-            "facility": {
-                "code": 23
-            },
-            "priority": 189,
-            "severity": {
-                "code": 5
-            }
-        }
-    },
-    "network": {
-        "bytes": 125801530,
-        "iana_number": "6",
-        "protocol": "https",
-        "transport": "tcp"
-    },
-    "observer": {
-        "egress": {
-            "interface": {
-                "name": "port1"
-            }
-        },
-        "hostname": "TEST-PXY01",
-        "ingress": {
-            "interface": {
-                "name": "port2"
-            }
-        },
-        "product": "FortiProxy",
-        "serial_number": "FPXTESTPXY01",
-        "type": "proxy",
-        "vendor": "Fortinet"
-    },
-    "rule": {
-        "category": "unscanned",
-        "id": "1",
-        "name": "test-proxy",
-        "ruleset": "proxy-policy",
-        "uuid": "27b09930-033d-51ef-0c72-6c1221a8d893"
-    },
-    "server": {
-        "bytes": 125800732,
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.10",
-        "port": 443
-    },
-    "source": {
-        "bytes": 798,
-        "ip": "10.0.0.3",
-        "nat": {
-            "ip": "10.0.128.2",
-            "port": 53184
-        },
-        "port": 47886
-    },
-    "tags": [
-        "preserve_original_event",
-        "fortinet-fortiproxy",
-        "forwarded"
-    ]
-}
-```
+## What do I need to use this integration?
+
+### Vendor prerequisites
+
+*   **FortiProxy Device**: A configured and accessible FortiProxy instance.
+*   **Syslog Configuration**: FortiProxy must be configured to send syslog messages to the Elastic Agent using either UDP or TCP mode with the default format.
+
+### Elastic prerequisites
+
+*   **Elastic Agent**: Must be installed and running on a system that can receive syslog messages from the FortiProxy device.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Onboard and configure
+
+### Set up steps in Fortinet FortiProxy
+
+#### Configure Syslog on FortiProxy
+
+1.  Access the FortiProxy CLI or GUI.
+
+2.  Configure the syslog settings using the CLI:
+
+    ```bash
+    config log syslogd setting
+        set status enable
+        set server "<Elastic_Agent_IP>"
+        set port 514
+        set mode <udp|reliable>
+        set format default
+    end
+    ```
+
+    *   Replace `<Elastic_Agent_IP>` with the IP address of your Elastic Agent.
+    *   Set `mode` to `udp` for UDP transport or `reliable` for TCP transport.
+    *   **Important**: Keep `format` set to `default`.
+
+3.  **TCP Reliability Note**: When using TCP input with `reliable` mode, the TCP framing in the Elastic Agent configuration (in Kibana) must be set to `rfc6587`.
+
+#### Configure Log Settings (Optional)
+
+To control which logs are sent and their verbosity:
+
+1.  Navigate to **Log & Report** > **Log Settings** in the FortiProxy GUI.
+2.  Enable logging for the desired event types (traffic, security events, system events).
+3.  Set the appropriate severity level for each log type.
+
+### Set up steps in Kibana
+
+1.  In the integration configuration page, choose the appropriate input type based on your FortiProxy setup:
+    *   **TCP input**: For reliable syslog transmission.
+        *   Set **Listen Address** (default: `localhost`, or `0.0.0.0` to bind to all interfaces).
+        *   Set **Listen Port** (default: `514`).
+        *   **Critical**: Ensure TCP framing is set to `rfc6587` if FortiProxy is configured with `mode reliable`.
+    *   **UDP input**: For standard syslog transmission.
+        *   Set **Listen Address** (default: `localhost`, or `0.0.0.0` to bind to all interfaces).
+        *   Set **Listen Port** (default: `514`).
+    *   **Filestream input**: For reading logs from a file.
+        *   Specify the path to the log file.
+
+2.  Configure optional settings:
+    *   Enable **Preserve original event** to keep a copy of the raw log in `event.original`.
+    *   Add custom tags if needed.
+    *   Configure SSL/TLS settings for encrypted TCP connections (if required).
+
+3.  Save and deploy the integration.
+
+## Validation Steps
+
+1.  **Verify FortiProxy is sending logs**:
+    *   Generate some web traffic through the FortiProxy device.
+    *   Check the FortiProxy logs to confirm syslog is enabled and active.
+    *   Verify network connectivity between FortiProxy and the Elastic Agent (check firewall rules, port accessibility).
+
+2.  **Check data ingestion in Kibana**:
+    *   Navigate to **Discover** in Kibana.
+    *   Select the `logs-fortinet_fortiproxy.log-*` index pattern.
+    *   Confirm that logs are appearing with recent timestamps.
+    *   Verify that fields are being parsed correctly (check `fortinet.proxy.*`, `source.ip`, `destination.ip`, etc.).
+
+3.  **Review the dashboard**:
+    *   Navigate to **Dashboards** in Kibana.
+    *   Open the "Fortinet FortiProxy" dashboard.
+    *   Verify that visualizations are displaying data correctly.
+    *   Check that traffic patterns, top sources/destinations, and security events are visible.
+
+4.  **Test with specific log types**:
+    *   Generate traffic logs by accessing websites through the proxy.
+    *   Trigger security events (e.g., blocked URLs) to verify UTM log collection.
+    *   Perform administrative actions to verify system event logs are collected.
+
+## Troubleshooting
+
+### Common Configuration Issues
+
+**Issue: No data collected / Logs not appearing in Kibana**
+*   Verify that syslog is enabled on FortiProxy: `show log syslogd setting`.
+*   Check network connectivity between FortiProxy and Elastic Agent (ping, telnet to the syslog port).
+*   Verify firewall rules allow traffic on the configured syslog port.
+*   Confirm the Elastic Agent is listening on the correct IP address and port.
+*   Check the Elastic Agent logs for connection errors or parsing issues.
+*   Ensure the FortiProxy server IP and Elastic Agent IP are correctly configured.
+
+**Issue: TCP framing errors**
+*   When using FortiProxy in `reliable` mode (TCP), ensure the TCP input framing is set to `rfc6587` in the integration settings.
+*   Check the Elastic Agent configuration for the correct `framing` setting under `tcp_options`.
+
+**Issue: Incomplete or malformed log messages**
+*   Verify that FortiProxy syslog format is set to `default`.
+*   Check for network packet loss or truncation issues.
+*   Increase the `max_message_size` setting in the input configuration if logs are being truncated.
+
+### Ingestion Errors
+
+**Issue: Parsing errors in `error.message` field**
+*   Check the `event.original` field to see the raw log format.
+*   Verify that the log format matches what the integration expects (syslog format with key=value pairs).
+*   Check for recent FortiProxy firmware updates that may have changed the log format.
+
+**Issue: Missing fields or incorrect field mappings**
+*   Verify that the FortiProxy log contains the expected fields.
+*   Check the ingest pipeline processing for any dropped fields.
+
+### API Authentication Errors
+
+This integration collects logs via syslog and does not use API authentication. If you see API-related errors, they may be from a different integration or misconfiguration.
+
+## Performance and scaling
+
+FortiProxy is designed for high scalability and can handle large volumes of web traffic. For cloud deployments, FortiProxy supports active-passive high availability configurations to ensure continuous protection and uptime.
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### log
+
+The `log` data stream collects all log types from FortiProxy, including traffic, UTM, event, and security rating logs.
+
+#### log fields
 
 **Exported fields**
 
@@ -914,4 +916,250 @@ An example event for `log` looks as following:
 | user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
+
+
+#### log sample event
+
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2024-04-11T02:56:17.000Z",
+    "agent": {
+        "ephemeral_id": "5bdc4789-78f8-49b0-807e-5a6c1e876d58",
+        "id": "5b7ea00b-603f-4de7-b7f7-240330ab7d50",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.2"
+    },
+    "client": {
+        "bytes": 798,
+        "ip": "10.0.0.3",
+        "nat": {
+            "ip": "10.0.128.2",
+            "port": 53184
+        },
+        "port": 47886
+    },
+    "data_stream": {
+        "dataset": "fortinet_fortiproxy.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 125800732,
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.10",
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "5b7ea00b-603f-4de7-b7f7-240330ab7d50",
+        "snapshot": false,
+        "version": "8.13.2"
+    },
+    "event": {
+        "action": "accept",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "code": "0000000010",
+        "dataset": "fortinet_fortiproxy.log",
+        "duration": 8089000000000,
+        "ingested": "2024-06-07T14:49:44Z",
+        "kind": "event",
+        "original": "<189>date=2024-04-10 time=19:56:17 devname=\"TEST-PXY01\" devid=\"FPXTESTPXY01\" eventtime=1712771778239212440 tz=\"-0700\" logid=\"0000000010\" type=\"traffic\" subtype=\"forward\" level=\"notice\" vd=\"root\" srcip=10.0.0.3 srcport=47886 srcintf=\"port2\" srcintfrole=\"lan\" dstcountry=\"United States\" srccountry=\"Reserved\" dstip=67.43.156.10 dstport=443 dstintf=\"port1\" dstintfrole=\"undefined\" sessionid=1781818019 service=\"HTTPS\" proxyapptype=\"web-proxy\" proto=6 action=\"accept\" policyid=1 policytype=\"proxy-policy\" poluuid=\"27b09930-033d-51ef-0c72-6c1221a8d893\" policyname=\"test-proxy\" trandisp=\"snat\" transip=10.0.128.2 transport=53184 clientip=10.0.0.3 duration=8089 wanin=125800732 rcvdbyte=125800732 wanout=632 lanin=798 sentbyte=798 lanout=125824455 appcat=\"unscanned\" utmaction=\"allow\"",
+        "start": "2024-04-10T17:56:18.239Z",
+        "timezone": "-0700"
+    },
+    "fortinet": {
+        "proxy": {
+            "dstintfrole": "undefined",
+            "lanin": 798,
+            "lanout": 125824455,
+            "proxyapptype": "web-proxy",
+            "sessionid": "1781818019",
+            "srcintfrole": "lan",
+            "subtype": "forward",
+            "trandisp": "snat",
+            "type": "traffic",
+            "utmaction": "allow",
+            "vd": "root",
+            "wanin": 125800732,
+            "wanout": 632
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "device_id": "35",
+            "inode": "80",
+            "path": "/tmp/service_logs/fortinet-fortiproxy.log"
+        },
+        "level": "notice",
+        "offset": 15140,
+        "syslog": {
+            "facility": {
+                "code": 23
+            },
+            "priority": 189,
+            "severity": {
+                "code": 5
+            }
+        }
+    },
+    "network": {
+        "bytes": 125801530,
+        "iana_number": "6",
+        "protocol": "https",
+        "transport": "tcp"
+    },
+    "observer": {
+        "egress": {
+            "interface": {
+                "name": "port1"
+            }
+        },
+        "hostname": "TEST-PXY01",
+        "ingress": {
+            "interface": {
+                "name": "port2"
+            }
+        },
+        "product": "FortiProxy",
+        "serial_number": "FPXTESTPXY01",
+        "type": "proxy",
+        "vendor": "Fortinet"
+    },
+    "rule": {
+        "category": "unscanned",
+        "id": "1",
+        "name": "test-proxy",
+        "ruleset": "proxy-policy",
+        "uuid": "27b09930-033d-51ef-0c72-6c1221a8d893"
+    },
+    "server": {
+        "bytes": 125800732,
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.10",
+        "port": 443
+    },
+    "source": {
+        "bytes": 798,
+        "ip": "10.0.0.3",
+        "nat": {
+            "ip": "10.0.128.2",
+            "port": 53184
+        },
+        "port": 47886
+    },
+    "tags": [
+        "preserve_original_event",
+        "fortinet-fortiproxy",
+        "forwarded"
+    ]
+}
+```
+
+### Inputs used
+
+These inputs can be used with this integration:
+<details>
+<summary>filestream</summary>
+
+## Setup
+
+For more details about the Filestream input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-filestream).
+
+
+### Collecting logs from Filestream
+
+To collect logs via Filestream, select **Collect logs via Filestream** and configure the following parameters:
+
+- Filestream paths: The full path to the related log file.
+</details>
+<details>
+<summary>tcp</summary>
+
+## Setup
+
+For more details about the TCP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp).
+
+### Collecting logs from TCP
+
+To collect logs via TCP, select **Collect logs via TCP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of incoming messages
+- Max Connections - Maximum number of concurrent connections
+- Timeout - How long to wait for data before closing idle connections
+- Line Delimiter - Character(s) that separate log messages
+
+## SSL/TLS Configuration
+
+To enable encrypted connections, configure the following SSL settings:
+
+**SSL Settings:**
+- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
+- Certificate Key - Path to the private key file (`.key`)
+- Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
+- Client Authentication - Require client certificates (`none`, `optional`, or `required`)
+- Supported Protocols - TLS versions to support (e.g., `TLSv1.2`, `TLSv1.3`)
+
+**Example SSL Configuration:**
+```yaml
+ssl.enabled: true
+ssl.certificate: "/path/to/server.crt"
+ssl.key: "/path/to/server.key"
+ssl.certificate_authorities: ["/path/to/ca.crt"]
+ssl.client_authentication: "optional"
+```
+</details>
+<details>
+<summary>udp</summary>
+
+## Setup
+
+For more details about the UDP input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp).
+
+### Collecting logs from UDP
+
+To collect logs via UDP, select **Collect logs via UDP** and configure the following parameters:
+
+**Required Settings:**
+- Host
+- Port
+
+**Common Optional Settings:**
+- Max Message Size - Maximum size of UDP packets to accept (default: 10KB, max: 64KB)
+- Read Buffer - UDP socket read buffer size for handling bursts of messages
+- Read Timeout - How long to wait for incoming packets before checking for shutdown
+</details>
+
 
