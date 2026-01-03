@@ -249,6 +249,23 @@ processors:
         content.type = 'text';
         content.text = Json.dump(ctx.aws_bedrock.invocation.messages.content);
         ctx.aws_bedrock.invocation.messages.content = content;
+  - gsub:
+      tag: gsub_remove_braces_from_string_content
+      field: aws_bedrock.invocation.messages.content.content
+      pattern: '^\{|\}$'
+      replacement: ''
+      if: ctx.aws_bedrock?.invocation?.messages?.content?.content instanceof String && ctx.aws_bedrock.invocation.messages.content.content.startsWith('{')
+      ignore_missing: true
+  - rename:
+      field: aws_bedrock.invocation.messages.content.content
+      target_field: aws_bedrock.invocation.messages.content.text
+      ignore_missing: true
+      if: ctx.aws_bedrock?.invocation?.messages?.content?.content instanceof String
+  - set:
+      field: aws_bedrock.invocation.messages.content.type
+      value: 'text'
+      ignore_failure: true
+      if: ctx.aws_bedrock?.invocation?.messages?.content?.type == null && ctx.aws_bedrock?.invocation?.messages?.content?.text != null
   - set:
       if: ctx.aws_bedrock?.invocation?.model_id != null
       field: gen_ai.request.model.id
