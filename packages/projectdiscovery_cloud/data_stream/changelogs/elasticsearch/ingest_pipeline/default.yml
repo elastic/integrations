@@ -74,26 +74,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # ECS vulnerability mapping
-  - rename:
-      field: json.vuln_id
-      target_field: vulnerability.id
-      ignore_missing: true
-  - rename:
-      field: json.vuln_status
-      target_field: vulnerability.status
-      ignore_missing: true
-  - rename:
-      field: json.event.info.description
-      target_field: vulnerability.description
-      ignore_missing: true
-  - rename:
-      field: json.event.info.reference
-      target_field: vulnerability.reference
-      ignore_missing: true
-  - rename:
-      field: json.event.info.severity
-      target_field: vulnerability.severity
-      ignore_missing: true
+  - set:
+      field: vulnerability.id
+      copy_from: json.vuln_id
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.description
+      copy_from: json.event.info.description
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.reference
+      copy_from: json.event.info.reference
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.severity
+      copy_from: json.event.info.severity
+      ignore_empty_value: true
   - set:
       field: vulnerability.scanner.vendor
       value: ProjectDiscovery
@@ -118,6 +114,10 @@ processors:
   - rename:
       field: json.target
       target_field: projectdiscovery.target
+      ignore_missing: true
+  - rename:
+      field: json.vuln_status
+      target_field: projectdiscovery.vuln_status
       ignore_missing: true
 
   # ECS destination mapping
@@ -205,8 +205,8 @@ processors:
   # Final message
   - set:
       field: message
-      value: 'ProjectDiscovery changelog: {{vulnerability.id}} → {{vulnerability.status}}'
-      if: ctx.vulnerability?.id != null && ctx.vulnerability?.status != null
+      value: 'ProjectDiscovery changelog: {{vulnerability.id}} → {{projectdiscovery.vuln_status}}'
+      if: ctx.vulnerability?.id != null && ctx.projectdiscovery?.vuln_status != null
   - set:
       field: message
       value: ProjectDiscovery vulnerability changelog event
