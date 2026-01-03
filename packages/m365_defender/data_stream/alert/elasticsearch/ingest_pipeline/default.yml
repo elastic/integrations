@@ -339,11 +339,6 @@ processors:
       tag: rename_threatFamilyName
       target_field: m365_defender.alert.threat_family_name
       ignore_missing: true
-  - set:
-      field: threat.group.name
-      tag: set_threat_group_name
-      copy_from: m365_defender.alert.threat_family_name
-      ignore_empty_value: true
   - rename:
       field: json.category
       tag: rename_category
@@ -462,6 +457,36 @@ processors:
           tag: rename_foreach_ip_interfaces
           target_field: _ingest._value.ip_interfaces
           ignore_missing: true
+  - foreach:
+      field: json.evidence
+      tag: foreach_evidence_ip_interfaces_to_host_ip
+      if: ctx.json?.evidence instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ip_interfaces
+          tag: foreach_append_ip_interfaces_to_host_ip
+          ignore_missing: true
+          processor:
+            append:
+              field: host.ip
+              tag: append_ip_interfaces_to_host_ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: json.evidence
+      tag: foreach_evidence_ip_interfaces_to_related_ip
+      if: ctx.json?.evidence instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ip_interfaces
+          tag: foreach_append_ip_interfaces_to_related_ip
+          ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              tag: append_ip_interfaces_to_related_ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
   - foreach:
       field: json.evidence
       tag: foreach_evidence_detailedRoles
@@ -1174,6 +1199,16 @@ processors:
           allow_duplicates: false
   - foreach:
       field: json.evidence
+      tag: foreach_evidence_append_device_dns_name_to_host_hostname
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: host.hostname
+          tag: append_foreach_evidence_device_dns_name_to_host_hostname
+          value: '{{{_ingest._value.device_dns_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
       tag: foreach_date_firstSeenDateTime
       if: ctx.json?.evidence instanceof List
       processor:
@@ -1635,6 +1670,41 @@ processors:
           allow_duplicates: false
   - foreach:
       field: json.evidence
+      tag: foreach_evidence_append_countryLetterCode_to_geo_country_iso_code
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: source.geo.country_iso_code
+          tag: append_foreach_evidence_countryLetterCode_to_geo_country_iso_code
+          value: '{{{_ingest._value.country_letter_code}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
+      tag: foreach_evidence_append_url_to_url_original
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: url.original
+          tag: append_foreach_evidence_url_to_url_original
+          value: '{{{_ingest._value.url}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
+      tag: foreach_evidence_urls_array_to_url_original
+      if: ctx.json?.evidence instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.urls
+          tag: foreach_append_urls_array_to_url_original
+          ignore_missing: true
+          processor:
+            append:
+              field: url.original
+              tag: append_urls_array_to_url_original
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: json.evidence
       tag: foreach_evidence_dot_expander_userAccount
       if: ctx.json?.evidence instanceof List
       processor:
@@ -1723,6 +1793,26 @@ processors:
           tag: rename_foreach_evidence_primaryAddress
           target_field: _ingest._value.primary_address
           ignore_missing: true
+  - foreach:
+      field: json.evidence
+      tag: foreach_evidence_append_primary_address_to_user_email
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: user.email
+          tag: append_foreach_evidence_primary_address_to_user_email
+          value: '{{{_ingest._value.primary_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
+      tag: foreach_evidence_append_primary_address_to_related_user
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_foreach_evidence_primary_address_to_related_user
+          value: '{{{_ingest._value.primary_address}}}'
+          allow_duplicates: false
   - foreach:
       field: json.evidence
       tag: foreach_evidence_rename_useraccount_accountname
@@ -2161,6 +2251,38 @@ processors:
           tag: rename_foreach_evidence_imageFile_signer
           target_field: _ingest._value.image_file.signer
           ignore_missing: true
+  - script:
+      description: Set process.executable from evidence image_file path and name.
+      tag: script_set_process_executable_from_image_file
+      lang: painless
+      if: ctx.json?.evidence instanceof List
+      source: |
+        def processExecutable = new HashSet();
+        for (evidence in ctx.json.evidence) {
+          if (evidence?.image_file?.path != null && evidence?.image_file?.name != null) {
+            String path = evidence.image_file.path;
+            String name = evidence.image_file.name;
+            String separator = path.contains("\\") ? "\\" : "/";
+            if (!path.endsWith(separator)) {
+              path = path + separator;
+            }
+            processExecutable.add(path + name);
+          } else if (evidence?.image_file?.name != null) {
+            processExecutable.add(evidence.image_file.name);
+          }
+        }
+        if (!processExecutable.isEmpty()) {
+          if (!(ctx.process instanceof HashMap)) {
+            ctx.process = new HashMap();
+          }
+          def execList = new ArrayList(processExecutable);
+          Collections.sort(execList);
+          if (execList.size() == 1) {
+            ctx.process.executable = execList.get(0);
+          } else {
+            ctx.process.executable = execList;
+          }
+        }
   - foreach:
       field: json.evidence
       tag: foreach_evidence_rename_parentProcessImageFile_filename
@@ -2228,6 +2350,41 @@ processors:
           tag: rename_foreach_evidence_parentProcessImageFile_signer
           target_field: _ingest._value.parent_process.image_file.signer
           ignore_missing: true
+  - script:
+      description: Set process.parent.executable from evidence parent_process image_file path and name.
+      tag: script_set_process_parent_executable_from_image_file
+      lang: painless
+      if: ctx.json?.evidence instanceof List
+      source: |
+        def processParentExecutable = new HashSet();
+        for (evidence in ctx.json.evidence) {
+          if (evidence?.parent_process?.image_file?.path != null && evidence?.parent_process?.image_file?.name != null) {
+            String path = evidence.parent_process.image_file.path;
+            String name = evidence.parent_process.image_file.name;
+            String separator = path.contains("\\") ? "\\" : "/";
+            if (!path.endsWith(separator)) {
+              path = path + separator;
+            }
+            processParentExecutable.add(path + name);
+          } else if (evidence?.parent_process?.image_file?.name != null) {
+            processParentExecutable.add(evidence.parent_process.image_file.name);
+          }
+        }
+        if (!processParentExecutable.isEmpty()) {
+          if (!(ctx.process instanceof HashMap)) {
+            ctx.process = new HashMap();
+          }
+          if (!(ctx.process.parent instanceof HashMap)) {
+            ctx.process.parent = new HashMap();
+          }
+          def execList = new ArrayList(processParentExecutable);
+          Collections.sort(execList);
+          if (execList.size() == 1) {
+            ctx.process.parent.executable = execList.get(0);
+          } else {
+            ctx.process.parent.executable = execList;
+          }
+        }
   - foreach:
       field: json.evidence
       tag: foreach_evidence_rename_registryHive
