@@ -1,0 +1,153 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  url: {{url}}
+redact:
+  fields:
+    - api_password
+program: |
+  // Authenticate with Pi-hole API
+  post_request(
+    state.url.trim_right("/") + "/api/auth",
+    "application/json",
+    {
+      "password": "{{api_password}}"
+    }.encode_json()
+  ).do_request().as(auth_resp,
+    auth_resp.StatusCode != 200 ?
+      {
+        "events": [{
+          "error": {
+            "message": "Authentication failed: HTTP " + string(auth_resp.StatusCode)
+          }
+        }],
+        "want_more": false
+      }
+    :
+      auth_resp.Body.decode_json().as(auth_body,
+        !has(auth_body.session) || !has(auth_body.session.sid) ?
+          {
+            "events": [{
+              "error": {
+                "message": "Authentication response missing session ID"
+              }
+            }],
+            "want_more": false
+          }
+        :
+          // Get top allowed clients using session ID
+          request(
+            "GET",
+            state.url.trim_right("/") + "/api/stats/top_clients?blocked=false"
+          ).with({
+            "Header": {
+              "X-FTL-SID": [auth_body.session.sid]
+            }
+          }).do_request().as(allowed_resp,
+            // Check if first request failed - if so, logout immediately
+            allowed_resp.StatusCode != 200 ?
+              request("DELETE", state.url.trim_right("/") + "/api/auth").with({
+                "Header": {"X-FTL-SID": [auth_body.session.sid]}
+              }).do_request().as(cleanup, {
+                "events": [{
+                  "error": {
+                    "message": "Failed to fetch top allowed clients: HTTP " + string(allowed_resp.StatusCode)
+                  }
+                }],
+                "want_more": false
+              })
+            :
+              allowed_resp.Body.decode_json().as(allowed_body,
+                // Get top blocked clients using session ID
+                request(
+                  "GET",
+                  state.url.trim_right("/") + "/api/stats/top_clients?blocked=true"
+                ).with({
+                  "Header": {
+                    "X-FTL-SID": [auth_body.session.sid]
+                  }
+                }).do_request().as(blocked_resp,
+                  // Process blocked response first
+                  blocked_resp.StatusCode != 200 ?
+                    // Blocked request failed, still try to logout before returning error
+                    request("DELETE", state.url.trim_right("/") + "/api/auth").with({
+                      "Header": {"X-FTL-SID": [auth_body.session.sid]}
+                    }).do_request().as(logout_resp, {
+                      "events": [{
+                        "error": {
+                          "message": "Failed to fetch top blocked clients: HTTP " + string(blocked_resp.StatusCode)
+                        }
+                      }],
+                      "want_more": false
+                    })
+                  :
+                    // Blocked request succeeded, process both responses
+                    blocked_resp.Body.decode_json().as(blocked_body,
+                      // Logout after successful collection
+                      request("DELETE", state.url.trim_right("/") + "/api/auth").with({
+                        "Header": {"X-FTL-SID": [auth_body.session.sid]}
+                      }).do_request().as(logout_resp,
+                        // Force logout completion by checking status
+                        logout_resp.StatusCode == 204 ? {
+                          "events": (has(allowed_body.clients) ? allowed_body.clients.map(client, {
+                            "client_name": has(client.name) && client.name != "" ? string(client.name) : "",
+                            "client_ip": has(client.ip) ? string(client.ip) : "",
+                            "query_count": has(client.count) ? int(client.count) : 0,
+                            "query_action": "allowed"
+                          }) : []) + (has(blocked_body.clients) ? blocked_body.clients.map(client, {
+                            "client_name": has(client.name) && client.name != "" ? string(client.name) : "",
+                            "client_ip": has(client.ip) ? string(client.ip) : "",
+                            "query_count": has(client.count) ? int(client.count) : 0,
+                            "query_action": "blocked"
+                          }) : []),
+                          "want_more": false
+                        } : {
+                          "events": (has(allowed_body.clients) ? allowed_body.clients.map(client, {
+                            "client_name": has(client.name) && client.name != "" ? string(client.name) : "",
+                            "client_ip": has(client.ip) ? string(client.ip) : "",
+                            "query_count": has(client.count) ? int(client.count) : 0,
+                            "query_action": "allowed",
+                            "_logout_failed": "HTTP " + string(logout_resp.StatusCode)
+                          }) : []) + (has(blocked_body.clients) ? blocked_body.clients.map(client, {
+                            "client_name": has(client.name) && client.name != "" ? string(client.name) : "",
+                            "client_ip": has(client.ip) ? string(client.ip) : "",
+                            "query_count": has(client.count) ? int(client.count) : 0,
+                            "query_action": "blocked",
+                            "_logout_failed": "HTTP " + string(logout_resp.StatusCode)
+                          }) : []),
+                          "want_more": false
+                        }
+                      )
+                    )
+                )
+              )
+          )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if tags}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
