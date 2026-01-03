@@ -1,0 +1,71 @@
+---
+description: Pipeline for processing file STIX patterns including SHA-512 and file size
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_file_pattern
+      patterns:
+        - "(?i:^\\[?file:hashes\\.'?MD5'?%{SPACE}=%{SPACE}'%{DATA:_tmp.md5}'\\]?)"
+        - "(?i:^\\[?file:hashes\\.'?SHA-?1'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha1}'\\]?)"
+        - "(?i:^\\[?file:hashes\\.'?SHA-?256'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha256}'\\]?)"
+        - "(?i:^\\[?file:hashes\\.'?SHA-?512'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha512}'\\]?)"
+        - "^\\[?file:name%{SPACE}=%{SPACE}'%{DATA:_tmp.filename}'\\]?"
+        - "^\\[?file:size%{SPACE}=%{SPACE}'%{NUMBER:_tmp.size}'\\]?"
+      ignore_failure: true
+
+  # Append file hashes
+  - append:
+      field: threat.indicator.file.hash.md5
+      value: '{{{ _tmp.md5 }}}'
+      if: ctx._tmp?.md5 != null
+  - append:
+      field: threat.indicator.file.hash.sha1
+      value: '{{{ _tmp.sha1 }}}'
+      if: ctx._tmp?.sha1 != null
+  - append:
+      field: threat.indicator.file.hash.sha256
+      value: '{{{ _tmp.sha256 }}}'
+      if: ctx._tmp?.sha256 != null
+  - append:
+      field: threat.indicator.file.hash.sha512
+      value: '{{{ _tmp.sha512 }}}'
+      if: ctx._tmp?.sha512 != null
+
+  # Append file name
+  - append:
+      field: threat.indicator.file.name
+      value: '{{{ _tmp.filename }}}'
+      if: ctx._tmp?.filename != null
+
+  # Append file size (as integer)
+  - append:
+      field: threat.indicator.file.size
+      value: '{{{ _tmp.size }}}'
+      if: ctx._tmp?.size != null
+
+  # Add related hashes (deduplicated)
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.md5 }}}'
+      if: ctx._tmp?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.sha1 }}}'
+      if: ctx._tmp?.sha1 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.sha256 }}}'
+      if: ctx._tmp?.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.sha512 }}}'
+      if: ctx._tmp?.sha512 != null
+      allow_duplicates: false
+
+  # Clean up
+  - remove:
+      field: _tmp
+      ignore_missing: true
