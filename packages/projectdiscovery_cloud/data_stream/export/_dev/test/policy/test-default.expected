@@ -11,48 +11,58 @@ inputs:
             dataset: projectdiscovery_cloud.export
           interval: 24h
           program: |-
-            // Check if we've already completed the export
-            state.?cursor.?export_complete.orValue(false) ?
+            // Early validation: fail fast if required credentials are missing
+            !has(state.api_key) || string(state.api_key) == "" ?
               {
                 "events": [],
                 "want_more": false,
-                "cursor": state.?cursor.orValue({}),
-                "api_key": state.?api_key.orValue(""),
-                "team_id": state.?team_id.orValue(""),
-                "url": state.?url.orValue(""),
-                "vuln_status": state.?vuln_status.orValue(""),
-                "severity": state.?severity.orValue("")
+                "error": {"message": "api_key is required but was not provided"},
+              }
+            : !has(state.team_id) || string(state.team_id) == "" ?
+              {
+                "events": [],
+                "want_more": false,
+                "error": {"message": "team_id is required but was not provided"},
               }
             :
-              state.with(
+              // Check if we've already completed the export
+              state.?cursor.?export_complete.orValue(false) ?
                 {
-                  "base": state.url.trim_right("/") + "/v1/scans/results/export?type=json",
-                  "payload": {
-                    ?"vuln_status": (string(state.vuln_status) != "") ?
-                      optional.of(string(state.vuln_status)) :
-                      optional.none(),
-                    ?"severity": (string(state.severity) != "") ?
-                      optional.of(string(state.severity).split(",")) :
-                      optional.none(),
-                  }
-                }.as(p,
-                  request(
-                    "POST",
-                    p.base
-                  ).with(
-                    {
-                      "Header": {
-                        ?"X-API-Key": ("api_key" in state && string(state["api_key"]) != "") ?
-                          optional.of([string(state["api_key"])]) :
-                          optional.none(),
-                        ?"X-Team-Id": ("team_id" in state && string(state["team_id"]) != "") ?
-                          optional.of([string(state["team_id"])]) :
-                          optional.none(),
-                        "Content-Type": ["application/json"],
-                      },
-                      "Body": bytes(p.payload.encode_json()),
+                  "events": [],
+                  "want_more": false,
+                  "cursor": state.?cursor.orValue({}),
+                  "api_key": state.?api_key.orValue(""),
+                  "team_id": state.?team_id.orValue(""),
+                  "url": state.?url.orValue(""),
+                  "vuln_status": state.?vuln_status.orValue(""),
+                  "severity": state.?severity.orValue("")
+                }
+              :
+                state.with(
+                  {
+                    "base": state.url.trim_right("/") + "/v1/scans/results/export?type=json",
+                    "payload": {
+                      ?"vuln_status": (string(state.vuln_status) != "") ?
+                        optional.of(string(state.vuln_status)) :
+                        optional.none(),
+                      ?"severity": (string(state.severity) != "") ?
+                        optional.of(string(state.severity).split(",")) :
+                        optional.none(),
                     }
-                  ).do_request().as(resp,
+                  }.as(req,
+                    request(
+                      "POST",
+                      req.base
+                    ).with(
+                      {
+                        "Header": {
+                          "X-API-Key": [string(state.api_key)],
+                          "X-Team-Id": [string(state.team_id)],
+                          "Content-Type": ["application/json"],
+                        },
+                        "Body": bytes(req.payload.encode_json()),
+                      }
+                    ).do_request().as(resp,
                     {
                       "status_ok": resp.StatusCode == 200,
                       "resp": resp,
@@ -78,7 +88,6 @@ inputs:
                     )
                   )
                 )
-              )
           publisher_pipeline.disable_host: true
           redact:
             fields:

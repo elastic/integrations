@@ -115,12 +115,16 @@ The integration authenticates with ProjectDiscovery Cloud using two HTTP headers
 
 Both headers are automatically set by the integration based on your configuration.
 
-### Pagination
+### Pagination and Incremental Ingestion
 
-The integration uses **offset-based pagination** to collect all events:
-- Initial request: `offset=0`
-- Subsequent requests: `offset` increments by the number of events received
+The `changelogs` data stream uses **offset-based incremental ingestion** to efficiently collect only new events:
+- Initial request starts at `offset=0`
+- Each polling cycle fetches events since the last recorded offset
+- The cursor tracks progress between polling intervals
+- Subsequent requests increment `offset` by the number of events received
 - Continues until no more events are returned
+
+This incremental approach allows for aggressive polling intervals (e.g., 5 minutes) without re-ingesting duplicate data. The optional `time_window` filter further limits the time range of changelogs fetched.
 
 ### HTTP Request Tracing
 
@@ -143,44 +147,30 @@ The `changelogs` data stream provides changelog events from ProjectDiscovery Clo
 - **event.category**: `["vulnerability"]`
 - **event.type**: `["info"]`
 
-#### ECS Field Mappings
+#### Exported Fields
 
-| ECS Field | Description | Type |
-|-----------|-------------|------|
-| `@timestamp` | Event timestamp (from `created_at`) | date |
-| `event.module` | Always `projectdiscovery_cloud` | keyword |
-| `event.dataset` | Always `projectdiscovery_cloud.changelogs` | keyword |
-| `event.kind` | Always `event` | keyword |
-| `event.category` | Always `["vulnerability"]` | keyword |
-| `event.type` | Always `["info"]` | keyword |
-| `vulnerability.id` | Unique vulnerability identifier | keyword |
-| `vulnerability.status` | Current status (open, fixed, etc.) | keyword |
-| `vulnerability.description` | Vulnerability description | text |
-| `vulnerability.reference` | Reference URLs | keyword |
-| `vulnerability.severity` | Severity level (low, medium, high, critical) | keyword |
-| `vulnerability.scanner.vendor` | Always `ProjectDiscovery` | keyword |
-| `vulnerability.scanner.type` | Always `nuclei` | keyword |
-| `server.port` | Target server port | long |
-| `message` | Human-readable event description | text |
-| `tags` | Tags: `["projectdiscovery-cloud", "vulnerability", "changelogs", "forwarded"]` | keyword |
-
-#### Vendor-Specific Fields
-
-Additional fields in the `projectdiscovery.*` namespace:
+**Exported fields**
 
 | Field | Description | Type |
-|-------|-------------|------|
-| `projectdiscovery.target` | Target hostname | keyword |
-| `projectdiscovery.vuln_hash` | Vulnerability hash | keyword |
-| `projectdiscovery.scan_id` | Scan identifier | keyword |
-| `projectdiscovery.template_url` | Nuclei template URL | keyword |
-| `projectdiscovery.matcher_status` | Matcher status | boolean |
-| `projectdiscovery.created_at` | Creation timestamp (optional) | date |
-| `projectdiscovery.updated_at` | Update timestamp (optional) | date |
-| `projectdiscovery.change_event` | Array of change objects | flattened |
-| `projectdiscovery.event.*` | Full Nuclei event details | group |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| projectdiscovery.change_event |  | flattened |
+| projectdiscovery.created_at |  | date |
+| projectdiscovery.event |  | flattened |
+| projectdiscovery.matcher_status |  | boolean |
+| projectdiscovery.scan_id |  | keyword |
+| projectdiscovery.target |  | keyword |
+| projectdiscovery.template_url |  | keyword |
+| projectdiscovery.updated_at |  | date |
+| projectdiscovery.vuln_hash |  | keyword |
+| projectdiscovery.vuln_status |  | keyword |
 
-**Note:** `projectdiscovery.created_at` and `projectdiscovery.updated_at` are only retained if the `preserve_duplicate_custom_fields` tag is set, as these values are also copied to `@timestamp`.
 
 ## License
 

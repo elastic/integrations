@@ -1,19 +1,18 @@
 config_version: 2
 interval: {{interval}}
-resource.max_executions: 1000
 
 # HTTP client settings (not visible inside CEL)
 resource.url: {{base_url}}
 resource.timeout: {{http_client_timeout}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
 
 # NEW — drive request tracing from var
 resource.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
   maxbackups: 5
-
-# Avoid host enrichment (useful for agentless)
-publisher_pipeline.disable_host: true
 
 # Redact these keys in tracer logs by name
 redact:
@@ -32,36 +31,46 @@ state:
   time_window: "{{time_window}}"
 
 program: |-
-  state.?cursor.?offset.orValue(int(state.offset)).as(current_offset,
-    state.with(
-      {
-        "base": state.url.trim_right("/") + "/v1/scans/vuln/changelogs",
-        "q": {
-          "limit": [string(state.batch_size)],
-          "offset": [string(current_offset)],
-          "event_type": ["vuln_status"],
-          "sort_desc": ["created_at"],
-          ?"time": (state.time_window != "") ?
-            optional.of([string(state.time_window)])
-          :
-            optional.none(),
-        },
-      }.as(p,
-        request(
-          "GET",
-          p.base + "?" + p.q.format_query()
-        ).with(
-          {
-            "Header": {
-              ?"X-API-Key": ("api_key" in state && string(state["api_key"]) != "") ?
-                optional.of([string(state["api_key"])]) :
-                optional.none(),
-              ?"X-Team-Id": ("team_id" in state && string(state["team_id"]) != "") ?
-                optional.of([string(state["team_id"])]) :
-                optional.none(),
-            },
+  // Early validation: fail fast if required credentials are missing
+  !has(state.api_key) || string(state.api_key) == "" ?
+    {
+      "events": [],
+      "want_more": false,
+      "error": {"message": "api_key is required but was not provided"}
+    }
+  : !has(state.team_id) || string(state.team_id) == "" ?
+    {
+      "events": [],
+      "want_more": false,
+      "error": {"message": "team_id is required but was not provided"}
+    }
+  :
+    state.?cursor.?offset.orValue(int(state.offset)).as(current_offset,
+      state.with(
+        {
+          "base": state.url.trim_right("/") + "/v1/scans/vuln/changelogs",
+          "query": {
+            "limit": [string(state.batch_size)],
+            "offset": [string(current_offset)],
+            "event_type": ["vuln_status"],
+            "sort_desc": ["created_at"],
+            ?"time": (state.time_window != "") ?
+              optional.of([string(state.time_window)])
+            :
+              optional.none()
           }
-        ).do_request().as(resp,
+        }.as(req,
+          request(
+            "GET",
+            req.base + "?" + req.query.format_query()
+          ).with(
+            {
+              "Header": {
+                "X-API-Key": [string(state.api_key)],
+                "X-Team-Id": [string(state.team_id)]
+              }
+            }
+          ).do_request().as(resp,
           {
             "status_ok": resp.StatusCode == 200,
             "resp": resp,
@@ -81,7 +90,7 @@ program: |-
                 "team_id": ("team_id" in state) ? state["team_id"] : "",
                 "url": ("url" in state) ? state["url"] : "",
                 "batch_size": state.batch_size,
-                "time_window": state.time_window,
+                "time_window": state.time_window
               }
             )
           )

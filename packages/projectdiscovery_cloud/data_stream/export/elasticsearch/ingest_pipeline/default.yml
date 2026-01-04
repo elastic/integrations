@@ -61,27 +61,8 @@ processors:
       value:
         - info
 
-  # Timestamp - use created_at or updated_at
-  - date:
-      field: json.created_at
-      target_field: '@timestamp'
-      formats:
-        - ISO8601
-      if: ctx.json?.created_at != null && ctx.json.created_at != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: json.updated_at
-      target_field: '@timestamp'
-      formats:
-        - ISO8601
-      if: ctx.json?.created_at == null && ctx.json?.updated_at != null && ctx.json.updated_at != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # @timestamp will use ingestion time for snapshot exports
+  # Vendor timestamps preserved in projectdiscovery.created_at and projectdiscovery.updated_at
 
   # ECS vulnerability mapping (copy, don't rename yet)
   - set:
@@ -221,14 +202,8 @@ processors:
       value: ProjectDiscovery vulnerability export event
       if: ctx.vulnerability?.id == null
 
-  # Remove duplicate custom fields if tag is not set
-  - remove:
-      field:
-        - projectdiscovery.created_at
-        - projectdiscovery.updated_at
-      tag: remove_custom_duplicate_fields
-      ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  # Vendor timestamps (created_at, updated_at) are preserved as they are not duplicated in ECS
+  # @timestamp uses ingestion time for snapshot exports
 
   # Remove json temporary field
   - remove:
