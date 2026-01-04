@@ -1,0 +1,28 @@
+{
+    "id": "aws-vpcflow-otel-massive-data-transfer",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[AWS VPC_FLOW OTEL] Excessive data transfer from a single source",
+        "tags": ["AWS VPC_FLOW Logs OpenTelemetry Assets"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert triggers when any source IP address whose bytes exceed a threshold (e.g. > 50GB in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.vpcflow.otel-default | WHERE @timestamp > NOW()- 10m | STATS total_bytes = SUM(aws.vpc.flow.bytes) BY source.address | WHERE total_bytes > 53687091200 | SORT total_bytes DESC"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
