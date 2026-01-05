@@ -1,0 +1,28 @@
+{
+    "id": "aws-elb-backend-target-failures",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[AWS ELB OTEL] Backend target failures",
+        "tags": ["AWS Elb Logs OpenTelemetry Assets"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert triggers when any source IP address whose backend error count exceed a threshold (e.g. > 100 in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.elbaccess.otel-default | WHERE aws.error.code IS NOT NULL | WHERE @timestamp > NOW()- 15m | WHERE aws.elb.backend.status.code != 200| | STATS backend_error_count = COUNT(*), BY cloud.resource_id | WHERE backend_error_count >= 50 | SORT backend_error_count DESC"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
