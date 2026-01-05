@@ -1,0 +1,118 @@
+config_version: 2
+interval: {{interval}}
+
+# HTTP client settings
+resource.url: {{base_url}}
+resource.timeout: {{http_client_timeout}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+
+# Request tracing for debugging
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+
+# Redact sensitive fields in logs
+redact:
+  fields:
+    - api_key
+    - team_id
+
+# State contains API credentials and filter configuration
+state:
+  url: {{base_url}}
+  api_key: "{{api_key}}"
+  team_id: "{{team_id}}"
+  vuln_status: "{{vuln_status}}"
+  severity: "{{severity}}"
+
+# CEL program for POST /v1/scans/results/export
+# This endpoint returns a snapshot of all vulnerabilities matching the filter.
+# We track whether we've already fetched the export to avoid duplicate polling.
+program: |-
+  // Early validation: fail fast if required credentials are missing
+  !has(state.api_key) || string(state.api_key) == "" ?
+    {
+      "events": [],
+      "want_more": false,
+      "error": {"message": "api_key is required but was not provided"}
+    }
+  : !has(state.team_id) || string(state.team_id) == "" ?
+    {
+      "events": [],
+      "want_more": false,
+      "error": {"message": "team_id is required but was not provided"}
+    }
+  :
+    // Check if we've already completed the export
+    state.?cursor.?export_complete.orValue(false) ?
+      {
+        "events": [],
+        "want_more": false,
+        "cursor": state.?cursor.orValue({}),
+        "api_key": state.?api_key.orValue(""),
+        "team_id": state.?team_id.orValue(""),
+        "url": state.?url.orValue(""),
+        "vuln_status": state.?vuln_status.orValue(""),
+        "severity": state.?severity.orValue("")
+      }
+    :
+      state.with(
+        {
+          "base": state.url.trim_right("/") + "/v1/scans/results/export?type=json",
+          "payload": {
+            ?"vuln_status": (string(state.vuln_status) != "") ?
+              optional.of(string(state.vuln_status)) :
+              optional.none(),
+            ?"severity": (string(state.severity) != "") ?
+              optional.of(string(state.severity).split(",")) :
+              optional.none()
+          }
+        }.as(req,
+          request(
+            "POST",
+            req.base
+          ).with(
+            {
+              "Header": {
+                "X-API-Key": [string(state.api_key)],
+                "X-Team-Id": [string(state.team_id)],
+                "Content-Type": ["application/json"]
+              },
+              "Body": bytes(req.payload.encode_json())
+            }
+          ).do_request().as(resp,
+          {
+            "status_ok": resp.StatusCode == 200,
+            "resp": resp,
+            "body": (size(resp.Body) != 0) ? bytes(resp.Body).decode_json() : []
+          }.as(vars,
+            {
+              "items": (vars.status_ok && vars.body != null) ? vars.body : []
+            }.as(x,
+              {
+                "events": x.items.map(e, {"message": e.encode_json()}),
+                "cursor": {"export_complete": true},
+                "want_more": false,
+                ?"error": vars.status_ok ?
+                  optional.none() :
+                  optional.of({"message": "HTTP " + string(vars.resp.StatusCode) + " " + string(vars.resp.Body)}),
+                "api_key": ("api_key" in state) ? state["api_key"] : "",
+                "team_id": ("team_id" in state) ? state["team_id"] : "",
+                "url": ("url" in state) ? state["url"] : "",
+                "vuln_status": state.vuln_status,
+                "severity": state.severity
+              }
+            )
+          )
+        )
+      )
+    )
+
+tags:
+  - projectdiscovery-cloud
+  - vulnerability
+  - export
+  - forwarded
