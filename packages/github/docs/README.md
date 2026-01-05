@@ -780,6 +780,11 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 
 **Note**: The Issues API can fetch a maximum of 30,000 issues when querying at the organization level. No limitation exists when querying for the repository level.
 
+**Note**: Ensure the GitHub Personal Access Token includes those permission for the repository:
+- At least `Read-only` permission on Issues
+- At least `Read-only` permission on Metadata
+If not configured, you may encounter an error like: `Failed to execute template labels: the template result is empty.` (See [GitHub issue](https://github.com/elastic/integrations/issues/15555)).
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
