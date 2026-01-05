@@ -196,6 +196,29 @@ An example event for `metrics` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
 
 
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[AWS Bedrock AgentCore] Agent runtime high latency**
+
+
+
+**[AWS Bedrock AgentCore] Agent runtime system errors**
+
+
+
+**[AWS Bedrock AgentCore] Agent runtime user errors**
+
+
+
+
+
 ## Logs
 
 ### Memory Application Logs

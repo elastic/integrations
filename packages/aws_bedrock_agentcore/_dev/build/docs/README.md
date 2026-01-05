@@ -66,6 +66,9 @@ The metrics include the following dimensions for enhanced filtering and analysis
 {{event "metrics"}}
 {{fields "metrics"}}
 
+## Alerting Rule Template
+{{alertRuleTemplates}}
+
 ## Logs
 
 ### Memory Application Logs
