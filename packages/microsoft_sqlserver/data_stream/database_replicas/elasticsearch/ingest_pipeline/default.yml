@@ -1,0 +1,21 @@
+---
+description: Pipeline for processing mssql always on availability group metrics
+processors:
+- remove:
+    field: sql.driver
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: sql
+    target_field: mssql.database_replicas
+    ignore_missing: true
+    ignore_failure: true
+- remove:
+    field: mssql.query
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_sql_queries'))"
+    ignore_missing: true
+    ignore_failure: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

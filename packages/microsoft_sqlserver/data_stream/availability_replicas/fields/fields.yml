@@ -1,0 +1,51 @@
+- name: mssql.availability_replicas
+  type: group
+  fields:
+    - name: metrics
+      type: group
+      fields:
+        - name: server_name
+          type: keyword
+          description: SQL Server instance name where metrics were collected.
+        - name: name
+          type: keyword
+          description: Availability group name.
+        - name: group_id
+          type: keyword
+          description: Unique identifier (GUID) of the availability group.
+        - name: replica_server_name
+          type: keyword
+          description: Server name of this replica.
+        - name: availability_mode_desc
+          type: keyword
+          description: Availability mode of the replica (SYNCHRONOUS_COMMIT or ASYNCHRONOUS_COMMIT)
+        - name: failover_mode_desc
+          type: keyword
+          description: Failover mode of the replica (AUTOMATIC or MANUAL)
+        - name: role_desc
+          type: keyword
+          description: Current role of the replica (PRIMARY, SECONDARY, or RESOLVING)
+        - name: connected_state
+          type: long
+          metric_type: gauge
+          description: Replica connection state (0 = DISCONNECTED, 1 = CONNECTED)
+        - name: connected_state_desc
+          type: keyword
+          description: Text description of replica connection state.
+        - name: operational_state
+          type: long
+          metric_type: gauge
+          description: Replica operational state (0 = PENDING_FAILOVER, 1 = PENDING, 2 = ONLINE).
+        - name: operational_state_desc
+          type: keyword
+          description: Text description of replica operational state.
+        - name: synchronization_health
+          type: long
+          metric_type: gauge
+          description: Replica synchronization health (0 = NOT_HEALTHY, 1 = PARTIALLY_HEALTHY, 2 = HEALTHY)
+        - name: synchronization_health_desc
+          type: keyword
+          description: Text description of replica synchronization health.
+    - name: query
+      type: keyword
+      description: The SQL queries executed.
