@@ -21,7 +21,7 @@ This integration collects log messages of the following type:
 
 ### Supported use cases
 
-Integrating the Axonius Adapters and User Datastreams with Elastic SIEM provides centralized visibility into both data-collection health and user identity context across the environment. Together, these datastreams help analysts understand how data is being ingested through adapters and how that data maps to user identities and access posture.
+Integrating the Axonius Adapter and User Data streams with Elastic SIEM provides centralized visibility into both data-collection health and user identity context across the environment. Together, these data streams help analysts understand how data is being ingested through adapters and how that data maps to user identities and access posture.
 
 The dashboards highlight overall adapter status and connection behavior, making it easy to identify healthy integrations, failing plugins, and error-prone connections that may impact asset visibility. At the same time, user-focused views surface role distribution and essential identity attributes, helping analysts quickly assess access patterns and identify high-privileged or unusual user activity. Consolidated user details and source information provide clarity on where identity data originates and whether coverage gaps exist.
 
@@ -281,11 +281,11 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-11-24T06:28:58.690Z",
+    "@timestamp": "2026-01-05T09:31:18.314Z",
     "agent": {
-        "ephemeral_id": "8005336a-5a7e-4e2f-b950-56af35413f7d",
-        "id": "e15a855b-75fd-4534-991d-31255922e0f7",
-        "name": "elastic-agent-71604",
+        "ephemeral_id": "6be29bb7-8260-424e-932e-b14aa7f1fdda",
+        "id": "718d4ca7-c29e-4508-be01-a3b7ef816c4b",
+        "name": "elastic-agent-14268",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -313,21 +313,21 @@ An example event for `user` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.user",
-        "namespace": "56344",
+        "namespace": "36432",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "e15a855b-75fd-4534-991d-31255922e0f7",
+        "id": "718d4ca7-c29e-4508-be01-a3b7ef816c4b",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "axonius.user",
-        "ingested": "2025-11-24T06:29:01Z",
+        "ingested": "2026-01-05T09:31:21Z",
         "kind": "event",
         "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}"
     },
@@ -336,8 +336,7 @@ An example event for `user` looks as following:
     },
     "related": {
         "user": [
-            "alias",
-            "doe",
+            "alias doe",
             "alias.doe@example.com",
             "alias.doe",
             "63622d93d274ihvbngvbhd9489db6a1cf"
@@ -398,6 +397,6 @@ These APIs are used with this integration:
 * Adapter (endpoint: `/api/v2/adapters`)
 * User (endpoint: `/api/v2/users`)
 
-#### ILM Policy
+### ILM Policy
 
 To facilitate adapter and user data, source data stream-backed indices `.ds-logs-axonius.adapter-*` and `.ds-logs-axonius.user-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy` and `logs-axonius.user-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.

@@ -21,7 +21,7 @@ This integration collects log messages of the following type:
 
 ### Supported use cases
 
-Integrating the Axonius Adapters and User Datastreams with Elastic SIEM provides centralized visibility into both data-collection health and user identity context across the environment. Together, these datastreams help analysts understand how data is being ingested through adapters and how that data maps to user identities and access posture.
+Integrating the Axonius Adapter and User Data streams with Elastic SIEM provides centralized visibility into both data-collection health and user identity context across the environment. Together, these data streams help analysts understand how data is being ingested through adapters and how that data maps to user identities and access posture.
 
 The dashboards highlight overall adapter status and connection behavior, making it easy to identify healthy integrations, failing plugins, and error-prone connections that may impact asset visibility. At the same time, user-focused views surface role distribution and essential identity attributes, helping analysts quickly assess access patterns and identify high-privileged or unusual user activity. Consolidated user details and source information provide clarity on where identity data originates and whether coverage gaps exist.
 
@@ -137,6 +137,6 @@ These APIs are used with this integration:
 * Adapter (endpoint: `/api/v2/adapters`)
 * User (endpoint: `/api/v2/users`)
 
-#### ILM Policy
+### ILM Policy
 
 To facilitate adapter and user data, source data stream-backed indices `.ds-logs-axonius.adapter-*` and `.ds-logs-axonius.user-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy` and `logs-axonius.user-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
