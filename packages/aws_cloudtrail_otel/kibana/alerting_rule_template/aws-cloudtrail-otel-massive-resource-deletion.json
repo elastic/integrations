@@ -13,7 +13,7 @@
             "timeWindowSize": 10,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert triggers when any source IP address whose delete requests exceed a threshold (e.g. > 1000 in 15 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.cloudtrail.otel-default | WHERE @timestamp > NOW()- 15m | WHERE aws.error.code IS NULL | WHERE rpc.method IN (\"TerminateInstances\",\"DeleteBucket\",\"DeleteDBInstance\",\"DeleteFunction\",\"DeleteVolume\",\"DeleteSnapshot\") | STATS deletion_count = COUNT(*) BY user.name, source.address | WHERE deletion_count >= 100 | SORT deletion_count DESC"
+                "esql": "// Alert triggers when any source IP address whose delete requests exceed a threshold (e.g. > 1000 in 15 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.cloudtrail.otel-default | WHERE @timestamp > NOW()- 15m | WHERE aws.error.code IS NULL | WHERE rpc.method IN (\"TerminateInstances\",\"DeleteBucket\",\"DeleteDBInstance\",\"DeleteFunction\",\"DeleteVolume\",\"DeleteSnapshot\") | STATS deletion_count = COUNT(*) BY user.name, source.address | WHERE deletion_count >= 1000 | SORT deletion_count DESC"
             },
             "groupBy": "row",
             "timeField": "@timestamp"
