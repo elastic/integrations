@@ -23,33 +23,33 @@
                 }
             },
             {
-                "key": "host.disk.device.name",
+                "key": "file.device",
                 "value": {
-                    "field": "device_name"
+                    "field": "name"
                 }
             },
             {
-                "key": "host.disk.device.serial_number",
+                "key": "device.serial_number",
                 "value": {
                     "field": "serial"
                 }
             },
             {
-                "key": "host.disk.device.vendor",
+                "key": "device.vendor.name",
                 "value": {
                     "field": "vendor"
                 }
             },
             {
-                "key": "host.disk.device.model",
+                "key": "device.model.name",
                 "value": {
                     "field": "model"
                 }
             },
             {
-                "key": "host.disk.device.type",
+                "key": "device.type",
                 "value": {
-                    "field": "device_type"
+                    "field": "type"
                 }
             },
             {
@@ -62,7 +62,7 @@
         "id": "disk_info_windows_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "-- Windows physical disk hardware inventory\n-- Source: disk_info table (WMI Win32_DiskDrive)\n-- Use case: Asset inventory, hardware verification\nSELECT\n    disk_index,\n    name AS device_name,\n    id,\n    pnp_device_id,\n    type AS device_type,\n    manufacturer AS vendor,\n    hardware_model AS model,\n    serial,\n    description,\n    partitions,\n    disk_size,\n    -- Convert to human-readable size\n    ROUND(disk_size / 1073741824.0, 2) AS disk_size_gb\nFROM disk_info;",
+        "query": "-- Windows physical disk hardware inventory\n-- Source: disk_info table (WMI Win32_DiskDrive)\n-- Use case: Asset inventory, hardware verification\nSELECT\n    disk_index,\n    name,\n    id,\n    pnp_device_id,\n    type,\n    manufacturer AS vendor,\n    hardware_model AS model,\n    serial,\n    description,\n    partitions,\n    disk_size,\n    -- Convert to human-readable size\n    ROUND(disk_size / 1073741824.0, 2) AS disk_size_gb\nFROM disk_info;",
         "updated_at": "2025-11-29T00:00:00.000Z",
         "updated_by": "elastic"
     },
