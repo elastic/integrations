@@ -16,13 +16,13 @@ inputs:
               {
                 "events": [],
                 "want_more": false,
-                "error": {"message": "api_key is required but was not provided"},
+                "error": {"message": "api_key is required but was not provided"}
               }
             : !has(state.team_id) || string(state.team_id) == "" ?
               {
                 "events": [],
                 "want_more": false,
-                "error": {"message": "team_id is required but was not provided"},
+                "error": {"message": "team_id is required but was not provided"}
               }
             :
               // Check if we've already completed the export
@@ -47,7 +47,7 @@ inputs:
                         optional.none(),
                       ?"severity": (string(state.severity) != "") ?
                         optional.of(string(state.severity).split(",")) :
-                        optional.none(),
+                        optional.none()
                     }
                   }.as(req,
                     request(
@@ -58,9 +58,9 @@ inputs:
                         "Header": {
                           "X-API-Key": [string(state.api_key)],
                           "X-Team-Id": [string(state.team_id)],
-                          "Content-Type": ["application/json"],
+                          "Content-Type": ["application/json"]
                         },
-                        "Body": bytes(req.payload.encode_json()),
+                        "Body": bytes(req.payload.encode_json())
                       }
                     ).do_request().as(resp,
                     {
@@ -88,11 +88,12 @@ inputs:
                     )
                   )
                 )
-          publisher_pipeline.disable_host: true
+              )
           redact:
             fields:
                 - api_key
                 - team_id
+          resource.ssl: null
           resource.timeout: 30s
           resource.tracer:
             enabled: false

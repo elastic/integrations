@@ -16,13 +16,13 @@ inputs:
               {
                 "events": [],
                 "want_more": false,
-                "error": {"message": "api_key is required but was not provided"},
+                "error": {"message": "api_key is required but was not provided"}
               }
             : !has(state.team_id) || string(state.team_id) == "" ?
               {
                 "events": [],
                 "want_more": false,
-                "error": {"message": "team_id is required but was not provided"},
+                "error": {"message": "team_id is required but was not provided"}
               }
             :
               state.?cursor.?offset.orValue(int(state.offset)).as(current_offset,
@@ -37,8 +37,8 @@ inputs:
                       ?"time": (state.time_window != "") ?
                         optional.of([string(state.time_window)])
                       :
-                        optional.none(),
-                    },
+                        optional.none()
+                    }
                   }.as(req,
                     request(
                       "GET",
@@ -47,8 +47,8 @@ inputs:
                       {
                         "Header": {
                           "X-API-Key": [string(state.api_key)],
-                          "X-Team-Id": [string(state.team_id)],
-                        },
+                          "X-Team-Id": [string(state.team_id)]
+                        }
                       }
                     ).do_request().as(resp,
                     {
@@ -70,18 +70,19 @@ inputs:
                           "team_id": ("team_id" in state) ? state["team_id"] : "",
                           "url": ("url" in state) ? state["url"] : "",
                           "batch_size": state.batch_size,
-                          "time_window": state.time_window,
+                          "time_window": state.time_window
                         }
                       )
                     )
                   )
                 )
               )
-          publisher_pipeline.disable_host: true
+            )
           redact:
             fields:
                 - api_key
                 - team_id
+          resource.ssl: null
           resource.timeout: 10s
           resource.tracer:
             enabled: true
