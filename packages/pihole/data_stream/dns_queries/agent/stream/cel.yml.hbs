@@ -55,13 +55,13 @@ program: |
               // We have a timestamp from previous run, use it to get only newer records
               request(
                 "GET",
-                state.url.trim_right("/") + "/api/queries?length=1000&from=" + string(state.cursor.last_timestamp)
+                state.url.trim_right("/") + "/api/queries?length={{max_queries_per_request}}&from=" + string(state.cursor.last_timestamp)
               )
             :
               // First run or state lost, start from beginning
               request(
                 "GET",
-                state.url.trim_right("/") + "/api/queries?length=1000"
+                state.url.trim_right("/") + "/api/queries?length={{max_queries_per_request}}"
               )
             ).with({
               "Header": {
