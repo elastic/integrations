@@ -163,11 +163,6 @@ processors:
       target_field: crowdstrike.alert.child_process_ids
       ignore_missing: true
   - rename:
-      field: json.aggregate_id
-      tag: rename_aggregate_id
-      target_field: crowdstrike.alert.aggregate_id
-      ignore_missing: true
-  - rename:
       field: json.cid
       tag: rename_cid
       target_field: crowdstrike.alert.cid
@@ -1151,7 +1146,7 @@ processors:
       ignore_missing: true
   - append:
       field: crowdstrike.alert.ioc_values
-      tag: append_ioc_context_ioc_value_to_ioc_values
+      tag: append_ioc_value_to_ioc_values
       value: '{{{crowdstrike.alert.ioc_value}}}'
       if: ctx.crowdstrike?.alert?.ioc_value != null
       allow_duplicates: false
@@ -2121,7 +2116,7 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_from_severity
       if: ctx.crowdstrike?.alert?.severity instanceof long && ctx.crowdstrike.alert.severity_name == null
       source: |-
         long severity = ctx.crowdstrike.alert.severity;
@@ -2143,7 +2138,7 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_from_severity_name
       if: ctx.crowdstrike?.alert?.severity_name instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -2812,7 +2807,7 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_processor
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
