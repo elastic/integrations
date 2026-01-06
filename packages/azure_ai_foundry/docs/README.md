@@ -464,3 +464,25 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | dataset.namespace | Dataset namespace. | constant_keyword |  |  |
 | dataset.type | Dataset type. | constant_keyword |  |  |
 
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[Azure AI Foundry] Latency high**
+
+
+
+**[Azure AI Foundry] Model Availability above threshold**
+
+
+
+**[Azure AI Foundry] Provisioned Utilization above threshold**
+
+
+
