@@ -92,10 +92,10 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 
 **Note**: The Issues API can fetch a maximum of 30,000 issues when querying at the organization level. No limitation exists when querying for the repository level.
 
-**Note**: Ensure the GitHub Personal Access Token includes those permission for the repository:
+**Note**: Ensure the GitHub Personal Access Token includes following fine-grained permission for the repository:
 - At least `Read-only` permission on Issues
 - At least `Read-only` permission on Metadata
-If not properly configured, the integration may start successfully without any data being ingested.
+If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
 
 {{fields "issues"}}
 
