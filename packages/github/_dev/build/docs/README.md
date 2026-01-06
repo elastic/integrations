@@ -95,7 +95,7 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 **Note**: Ensure the GitHub Personal Access Token includes those permission for the repository:
 - At least `Read-only` permission on Issues
 - At least `Read-only` permission on Metadata
-If not configured, you may encounter an error like: `Failed to execute template labels: the template result is empty.` (See [GitHub issue](https://github.com/elastic/integrations/issues/15555)).
+If not properly configured, the integration may start successfully without any data being ingested.
 
 {{fields "issues"}}
 
