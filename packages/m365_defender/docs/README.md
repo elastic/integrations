@@ -181,9 +181,9 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-10-20T09:54:07.503Z",
     "agent": {
-        "ephemeral_id": "a2caf979-5593-4107-9e28-cd4ef17283b7",
-        "id": "b5da90d0-e63a-4e23-8326-22ddb0813be4",
-        "name": "elastic-agent-69310",
+        "ephemeral_id": "f0b1ddcf-5c43-49cb-be37-acefdf4372d0",
+        "id": "d6e963cc-04ee-46b8-af02-520891431883",
+        "name": "elastic-agent-85133",
         "type": "filebeat",
         "version": "8.19.4"
     },
@@ -194,7 +194,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "m365_defender.alert",
-        "namespace": "27389",
+        "namespace": "57227",
         "type": "logs"
     },
     "device": {
@@ -206,7 +206,7 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b5da90d0-e63a-4e23-8326-22ddb0813be4",
+        "id": "d6e963cc-04ee-46b8-af02-520891431883",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -220,7 +220,7 @@ An example event for `alert` looks as following:
         "duration": 2478000000,
         "end": "2023-10-20T09:51:41.993Z",
         "id": "daefa1828b-dd4e-405c-8a3b-aa28596830dd_1",
-        "ingested": "2025-12-23T09:45:59Z",
+        "ingested": "2026-01-05T12:04:28Z",
         "kind": "alert",
         "original": "{\"actorDisplayName\":null,\"additionalData\":null,\"alertPolicyId\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/daefa1828b-dd4e-405c-8a3b-aa28596830dd_1?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"assignedTo\":null,\"category\":\"Execution\",\"classification\":null,\"comments\":[],\"createdDateTime\":\"2023-10-20T09:53:09.8839373Z\",\"description\":\"A suspicious PowerShell activity was observed on the machine. \\nThis behavior may indicate that PowerShell was used during installation, exploration, or in some cases in lateral movement activities which are used by attackers to invoke modules, download external payloads, or get more information about the system. Attackers usually use PowerShell to bypass security protection mechanisms by executing their payload in memory without touching the disk and leaving any trace.\",\"detectionSource\":\"microsoftDefenderForEndpoint\",\"detectorId\":\"7f1c3609-a3ff-40e2-995b-c01770161d68\",\"determination\":null,\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":\"f18bd540-d5e4-46e0-8ddd-3d03a59e4e14\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"defenderAvStatus\":\"notSupported\",\"detailedRoles\":[\"PrimaryDevice\"],\"deviceDnsName\":\"clw555test\",\"firstSeenDateTime\":\"2023-10-20T09:50:17.7383987Z\",\"healthStatus\":\"inactive\",\"ipInterfaces\":[\"192.168.5.65\",\"fe80::cfe4:80b:615c:38fb\",\"127.0.0.1\",\"::1\"],\"loggedOnUsers\":[{\"accountName\":\"CDPUserIS-38411\",\"domainName\":\"AzureAD\"}],\"mdeDeviceId\":\"505d70d89cfa3428f7aac7d2eb3a64c60fd3d843\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22621,\"osPlatform\":\"Windows11\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"high\",\"roles\":[],\"tags\":[],\"verdict\":\"unknown\",\"version\":\"22H2\",\"vmMetadata\":null}],\"firstActivityDateTime\":\"2023-10-20T09:51:39.5154802Z\",\"id\":\"daefa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"incidentId\":\"23\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/23?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"lastActivityDateTime\":\"2023-10-20T09:51:41.9939003Z\",\"lastUpdateDateTime\":\"2023-10-20T09:54:07.5033333Z\",\"mitreTechniques\":[\"T1059.001\"],\"productName\":\"Microsoft Defender for Endpoint\",\"providerAlertId\":\"efa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"recommendedActions\":\"1. Examine the PowerShell command line to understand what commands were executed. Note: the content may need to be decoded if it is Base64-encoded.\\n2. Search the script for more indicators to investigate - for example IP addresses (potential C\\u0026C servers), target computers etc.\\n3. Explore the timeline of this and other related machines for additional suspect activities around the time of the alert.\\n4. Look for the process that invoked this PowerShell run and their origin. Consider submitting any suspect files in the chain for deep analysis for detailed behavior information.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"medium\",\"status\":\"new\",\"tenantId\":\"3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious PowerShell command line\"}",
         "provider": "microsoftDefenderForEndpoint",
@@ -1322,24 +1322,24 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-06T19:49:51.000Z",
+    "@timestamp": "2026-01-05T12:06:57.268Z",
     "agent": {
-        "ephemeral_id": "19528c94-1744-443f-9f26-e0a12af2c995",
-        "id": "b158674f-8299-4b4d-b7ad-18a7139ca1fb",
-        "name": "elastic-agent-82449",
+        "ephemeral_id": "15548e80-a8ea-4a4c-baab-48929ef5392c",
+        "id": "d54bb79c-84f4-4b99-abc8-fc8158cedafe",
+        "name": "elastic-agent-64195",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "m365_defender.vulnerability",
-        "namespace": "66992",
+        "namespace": "60777",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "b158674f-8299-4b4d-b7ad-18a7139ca1fb",
+        "id": "d54bb79c-84f4-4b99-abc8-fc8158cedafe",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1349,17 +1349,12 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "m365_defender.vulnerability",
-        "id": "bbbbbbbbbbbbbb_vmware_tools_12.0.6.0_CVE-2022-31676",
-        "ingested": "2025-12-23T09:51:36Z",
+        "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
+        "ingested": "2026-01-05T12:06:58Z",
         "kind": "event",
-        "original": "{\"CveBatchTitle\":\"Vmware August 2022 Vulnerabilities\",\"CveBatchUrl\":\"https://www.vmware.com/security/advisories/VMSA-2022-0024.1.html\",\"CveId\":\"CVE-2022-31676\",\"CvssScore\":7,\"DeviceId\":\"bbbbbbbbbbbbbb\",\"DeviceName\":\"host-4\",\"DiskPaths\":[\"C:\\\\Program Files\\\\VMware\\\\VMware Tools\\\\VMware VGAuth\\\\VMwareAliasImport.exe\"],\"ExploitabilityLevel\":\"NoExploit\",\"FirstSeenTimestamp\":\"2025-08-02 15:09:51\",\"Id\":\"bbbbbbbbbbbbbb_vmware_tools_12.0.6.0_CVE-2022-31676\",\"IsOnboarded\":true,\"LastSeenTimestamp\":\"2025-10-06 19:49:51\",\"OSArchitecture\":\"x64\",\"OSPlatform\":\"Windows10\",\"OSVersion\":\"10.0.19045.6332\",\"RbacGroupId\":0,\"RbacGroupName\":\"Unassigned\",\"RecommendationReference\":\"va-_-vmware-_-tools\",\"RecommendedSecurityUpdate\":\"VMware Tools update addresses a local privilege escalation vulnerability (CVE-2022-31676)\",\"RegistryPaths\":[],\"SecurityUpdateAvailable\":true,\"SoftwareName\":\"tools\",\"SoftwareVendor\":\"vmware\",\"SoftwareVersion\":\"12.0.6.0\",\"VulnerabilitySeverityLevel\":\"High\"}",
+        "original": "{\"CveBatchTitle\":\"Red_hat February 2025 Vulnerabilities\",\"CveBatchUrl\":\"https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2\",\"CveId\":\"CVE-2022-49226\",\"CvssScore\":5.5,\"DeviceId\":\"1212121212121212121212\",\"DeviceName\":\"sample-host-1\",\"ExploitabilityLevel\":\"NoExploit\",\"FirstSeenTimestamp\":\"2025-10-06 10:43:58\",\"Id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"IsOnboarded\":true,\"LastSeenTimestamp\":\"2025-10-06 22:45:00\",\"OSArchitecture\":\"x64\",\"OSPlatform\":\"Linux\",\"OSVersion\":\"enterprise_linux_9.4\",\"RbacGroupId\":0,\"RbacGroupName\":\"Unassigned\",\"RecommendationReference\":\"va-_-red_hat-_-kernel\",\"RecommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"RecommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"RecommendedSecurityUpdateUrl\":\"https://access.redhat.com/errata/RHSA-2024:9315\",\"RegistryPaths\":[],\"SecurityUpdateAvailable\":true,\"SoftwareName\":\"kernel\",\"SoftwareVendor\":\"red_hat\",\"SoftwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"VulnerabilitySeverityLevel\":\"Medium\"}",
         "type": [
             "info"
-        ]
-    },
-    "file": {
-        "path": [
-            "C:\\Program Files\\VMware\\VMware Tools\\VMware VGAuth\\VMwareAliasImport.exe"
         ]
     },
     "group": {
@@ -1368,14 +1363,14 @@ An example event for `vulnerability` looks as following:
     },
     "host": {
         "architecture": "x64",
-        "hostname": "host-4",
-        "id": "bbbbbbbbbbbbbb",
-        "name": "host-4",
+        "hostname": "sample-host-1",
+        "id": "1212121212121212121212",
+        "name": "sample-host-1",
         "os": {
-            "name": "Windows10 10.0.19045.6332",
-            "platform": "Windows10",
-            "type": "windows",
-            "version": "10.0.19045.6332"
+            "name": "Linux enterprise_linux_9.4",
+            "platform": "Linux",
+            "type": "linux",
+            "version": "enterprise_linux_9.4"
         }
     },
     "input": {
@@ -1383,52 +1378,50 @@ An example event for `vulnerability` looks as following:
     },
     "m365_defender": {
         "vulnerability": {
-            "cve_batch_title": "Vmware August 2022 Vulnerabilities",
-            "cve_batch_url": "https://www.vmware.com/security/advisories/VMSA-2022-0024.1.html",
-            "cve_id": "CVE-2022-31676",
-            "cvss_score": 7,
-            "device_id": "bbbbbbbbbbbbbb",
-            "device_name": "host-4",
-            "disk_paths": [
-                "C:\\Program Files\\VMware\\VMware Tools\\VMware VGAuth\\VMwareAliasImport.exe"
-            ],
+            "cve_batch_title": "Red_hat February 2025 Vulnerabilities",
+            "cve_batch_url": "https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2",
+            "cve_id": "CVE-2022-49226",
+            "cvss_score": 5.5,
+            "device_id": "1212121212121212121212",
+            "device_name": "sample-host-1",
             "exploitability_level": "NoExploit",
-            "first_seen_timestamp": "2025-08-02T15:09:51.000Z",
-            "id": "bbbbbbbbbbbbbb_vmware_tools_12.0.6.0_CVE-2022-31676",
+            "first_seen_timestamp": "2025-10-06T10:43:58.000Z",
+            "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
             "is_onboarded": true,
-            "last_seen_timestamp": "2025-10-06T19:49:51.000Z",
+            "last_seen_timestamp": "2025-10-06T22:45:00.000Z",
             "os_architecture": "x64",
-            "os_platform": "Windows10",
-            "os_version": "10.0.19045.6332",
+            "os_platform": "Linux",
+            "os_version": "enterprise_linux_9.4",
             "rbac_group_id": "0",
             "rbac_group_name": "Unassigned",
-            "recommendation_reference": "va-_-vmware-_-tools",
-            "recommended_security_update": "VMware Tools update addresses a local privilege escalation vulnerability (CVE-2022-31676)",
+            "recommendation_reference": "va-_-red_hat-_-kernel",
+            "recommended_security_update": "CVE-2022-49226_oval:com.redhat.rhsa:def:20249315",
+            "recommended_security_update_id": "RHSA-2024:9315",
             "security_update_available": true,
-            "severity_level": "High",
-            "software_name": "tools",
-            "software_vendor": "vmware",
-            "software_version": "12.0.6.0"
+            "severity_level": "Medium",
+            "software_name": "kernel",
+            "software_vendor": "red_hat",
+            "software_version": "0:5.14.0-427.42.1.el9_4"
         }
     },
-    "message": "Vmware August 2022 Vulnerabilities",
+    "message": "Red_hat February 2025 Vulnerabilities",
     "observer": {
         "product": "Microsoft 365 Defender",
         "vendor": "Microsoft"
     },
     "package": {
-        "name": "tools",
-        "version": "12.0.6.0"
+        "name": "kernel",
+        "version": "0:5.14.0-427.42.1.el9_4"
     },
     "related": {
         "hosts": [
-            "bbbbbbbbbbbbbb",
-            "host-4"
+            "1212121212121212121212",
+            "sample-host-1"
         ]
     },
     "resource": {
-        "id": "bbbbbbbbbbbbbb",
-        "name": "host-4"
+        "id": "1212121212121212121212",
+        "name": "sample-host-1"
     },
     "tags": [
         "preserve_original_event",
@@ -1438,18 +1431,18 @@ An example event for `vulnerability` looks as following:
     ],
     "vulnerability": {
         "classification": "CVSS",
-        "cve": "CVE-2022-31676",
+        "cve": "CVE-2022-49226",
         "enumeration": "CVE",
-        "id": "CVE-2022-31676",
-        "reference": "https://www.cve.org/CVERecord?id=CVE-2022-31676",
+        "id": "CVE-2022-49226",
+        "reference": "https://www.cve.org/CVERecord?id=CVE-2022-49226",
         "scanner": {
             "vendor": "Microsoft"
         },
         "score": {
-            "base": 7
+            "base": 5.5
         },
-        "severity": "High",
-        "title": "Vulnerability found in tools 12.0.6.0 - CVE-2022-31676"
+        "severity": "Medium",
+        "title": "Vulnerability found in kernel 0:5.14.0-427.42.1.el9_4 - CVE-2022-49226"
     }
 }
 ```

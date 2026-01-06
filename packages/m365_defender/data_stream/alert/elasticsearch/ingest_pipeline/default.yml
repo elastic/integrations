@@ -2259,7 +2259,7 @@ processors:
       source: |
         def processExecutable = new HashSet();
         for (evidence in ctx.json.evidence) {
-          if (evidence?.image_file?.path != null && evidence?.image_file?.name != null) {
+          if (evidence?.image_file?.path != null && evidence.image_file.name != null) {
             String path = evidence.image_file.path;
             String name = evidence.image_file.name;
             String separator = path.contains("\\") ? "\\" : "/";
@@ -2272,11 +2272,8 @@ processors:
           }
         }
         if (!processExecutable.isEmpty()) {
-          if (!(ctx.process instanceof HashMap)) {
-            ctx.process = new HashMap();
-          }
+          ctx.process = ctx.process ?: [:];
           def execList = new ArrayList(processExecutable);
-          Collections.sort(execList);
           if (execList.size() == 1) {
             ctx.process.executable = execList.get(0);
           } else {
@@ -2358,7 +2355,7 @@ processors:
       source: |
         def processParentExecutable = new HashSet();
         for (evidence in ctx.json.evidence) {
-          if (evidence?.parent_process?.image_file?.path != null && evidence?.parent_process?.image_file?.name != null) {
+          if (evidence?.parent_process?.image_file?.path != null && evidence.parent_process.image_file.name != null) {
             String path = evidence.parent_process.image_file.path;
             String name = evidence.parent_process.image_file.name;
             String separator = path.contains("\\") ? "\\" : "/";
@@ -2371,14 +2368,9 @@ processors:
           }
         }
         if (!processParentExecutable.isEmpty()) {
-          if (!(ctx.process instanceof HashMap)) {
-            ctx.process = new HashMap();
-          }
-          if (!(ctx.process.parent instanceof HashMap)) {
-            ctx.process.parent = new HashMap();
-          }
+          ctx.process = ctx.process ?: [:];
+          ctx.process.parent = ctx.process.parent ?: [:];
           def execList = new ArrayList(processParentExecutable);
-          Collections.sort(execList);
           if (execList.size() == 1) {
             ctx.process.parent.executable = execList.get(0);
           } else {
@@ -2721,7 +2713,6 @@ processors:
         - m365_defender.alert.first_activity_datetime
         - m365_defender.alert.web_url
         - m365_defender.alert.assigned_to
-        - m365_defender.alert.threat_family_name
         - m365_defender.alert.category
         - m365_defender.alert.mitre_techniques
         - m365_defender.alert.tenant_id
