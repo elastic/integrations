@@ -2251,35 +2251,6 @@ processors:
           tag: rename_foreach_evidence_imageFile_signer
           target_field: _ingest._value.image_file.signer
           ignore_missing: true
-  - script:
-      description: Set process.executable from evidence image_file path and name.
-      tag: script_set_process_executable_from_image_file
-      lang: painless
-      if: ctx.json?.evidence instanceof List
-      source: |
-        def processExecutable = new HashSet();
-        for (evidence in ctx.json.evidence) {
-          if (evidence?.image_file?.path != null && evidence.image_file.name != null) {
-            String path = evidence.image_file.path;
-            String name = evidence.image_file.name;
-            String separator = path.contains("\\") ? "\\" : "/";
-            if (!path.endsWith(separator)) {
-              path = path + separator;
-            }
-            processExecutable.add(path + name);
-          } else if (evidence?.image_file?.name != null) {
-            processExecutable.add(evidence.image_file.name);
-          }
-        }
-        if (!processExecutable.isEmpty()) {
-          ctx.process = ctx.process ?: [:];
-          def execList = new ArrayList(processExecutable);
-          if (execList.size() == 1) {
-            ctx.process.executable = execList.get(0);
-          } else {
-            ctx.process.executable = execList;
-          }
-        }
   - foreach:
       field: json.evidence
       tag: foreach_evidence_rename_parentProcessImageFile_filename
@@ -2348,28 +2319,91 @@ processors:
           target_field: _ingest._value.parent_process.image_file.signer
           ignore_missing: true
   - script:
-      description: Set process.parent.executable from evidence parent_process image_file path and name.
-      tag: script_set_process_parent_executable_from_image_file
+      description: Set process and file ECS fields from evidence (executables, pids, file size).
+      tag: script_set_process_fields_from_evidence
       lang: painless
       if: ctx.json?.evidence instanceof List
       source: |
+        def convertToOrderedArray(def list) {
+          def result = new ArrayList();
+          for (element in list) {
+            result.add(element);
+          }
+          Collections.sort(result);
+          return result;
+        }
+
+        String joinPathAndName(String path, String name) {
+          if (path == null || name == null) {
+            return null;
+          }
+          String separator = path.contains("\\") ? "\\" : "/";
+          if (!path.endsWith(separator)) {
+            path = path + separator;
+          }
+          return path + name;
+        }
+
+        void maybeAddExecutable(def destination, def imageFile) {
+          if (imageFile == null) {
+            return;
+          }
+          if (imageFile?.path != null && imageFile?.name != null) {
+            destination.add(joinPathAndName(imageFile.path, imageFile.name));
+          } else if (imageFile?.name != null) {
+            destination.add(imageFile.name);
+          }
+        }
+
+        def processExecutable = new HashSet();
         def processParentExecutable = new HashSet();
+        def fileSize = new HashSet();
+        def processPid = new HashSet();
+        def processParentPid = new HashSet();
+
         for (evidence in ctx.json.evidence) {
-          if (evidence?.parent_process?.image_file?.path != null && evidence.parent_process.image_file.name != null) {
-            String path = evidence.parent_process.image_file.path;
-            String name = evidence.parent_process.image_file.name;
-            String separator = path.contains("\\") ? "\\" : "/";
-            if (!path.endsWith(separator)) {
-              path = path + separator;
+          maybeAddExecutable(processExecutable, evidence?.image_file);
+          maybeAddExecutable(processParentExecutable, evidence?.parent_process?.image_file);
+
+          if (evidence?.odata_type == null) {
+            continue;
+          }
+          if (evidence.odata_type == '#microsoft.graph.security.fileEvidence') {
+            if (evidence?.file_details?.size != null) {
+              fileSize.add(evidence.file_details.size);
             }
-            processParentExecutable.add(path + name);
-          } else if (evidence?.parent_process?.image_file?.name != null) {
-            processParentExecutable.add(evidence.parent_process.image_file.name);
+          } else if (evidence.odata_type == '#microsoft.graph.security.processEvidence') {
+            if (evidence?.process?.id != null) {
+              processPid.add(evidence.process.id);
+            }
+            if (evidence?.parent_process?.id != null) {
+              processParentPid.add(evidence.parent_process.id);
+            }
+          }
+        }
+
+        ctx.file = ctx.file ?: [:];
+        ctx.process = ctx.process ?: [:];
+        ctx.process.parent = ctx.process.parent ?: [:];
+
+        if (!fileSize.isEmpty()) {
+          ctx.file.size = convertToOrderedArray(fileSize);
+        }
+        if (!processPid.isEmpty()) {
+          ctx.process.pid = convertToOrderedArray(processPid);
+        }
+        if (!processParentPid.isEmpty()) {
+          ctx.process.parent.pid = convertToOrderedArray(processParentPid);
+        }
+        if (!processExecutable.isEmpty()) {
+          def execList = new ArrayList(processExecutable);
+          if (execList.size() == 1) {
+            ctx.process.executable = execList.get(0);
+          } else {
+            ctx.process.executable = execList;
           }
         }
         if (!processParentExecutable.isEmpty()) {
-          ctx.process = ctx.process ?: [:];
-          ctx.process.parent = ctx.process.parent ?: [:];
           def execList = new ArrayList(processParentExecutable);
           if (execList.size() == 1) {
             ctx.process.parent.executable = execList.get(0);
@@ -2592,58 +2626,6 @@ processors:
         }
         if (!processUserName.isEmpty()) {
           ctx.process.user.name = convertToOrderedArray(processUserName);
-        }
-  - script:
-      description: Set file.size, process.id, process.parent.id fields.
-      tag: script_to_set_file_process_and_process_parent_fields
-      lang: painless
-      if: ctx.json?.evidence instanceof List
-      source: |
-        def convertToOrderedArray(def list) {
-          def result = new ArrayList();
-          for (element in list) {
-            result.add(element);
-          }
-          Collections.sort(result);
-          return result;
-        }
-        if (!(ctx.file instanceof HashMap)) {
-          ctx.file = new HashMap();
-        }
-        if (!(ctx.process instanceof HashMap)) {
-          ctx.process = new HashMap();
-        }
-        if (!(ctx.process.parent instanceof HashMap)) {
-          ctx.process.parent = new HashMap();
-        }
-        def fileSize = new HashSet();
-        def processPid = new HashSet();
-        def processParentPid = new HashSet();
-        for (evidence in ctx.json.evidence) {
-          if (evidence?.odata_type == null) {
-            continue
-          }
-          if (evidence?.odata_type == '#microsoft.graph.security.fileEvidence') {
-            if (evidence?.file_details?.size != null) {
-              fileSize.add(evidence.file_details.size);
-            }
-          } else if (evidence?.odata_type == '#microsoft.graph.security.processEvidence') {
-            if (evidence?.process?.id != null) {
-              processPid.add(evidence.process.id);
-            }
-            if (evidence?.parent_process?.id != null) {
-              processParentPid.add(evidence.parent_process.id);
-            }
-          }
-        }
-        if (!fileSize.isEmpty()) {
-          ctx.file.size = convertToOrderedArray(fileSize);
-        }
-        if (!processPid.isEmpty()) {
-          ctx.process.pid = convertToOrderedArray(processPid);
-        }
-        if (!processParentPid.isEmpty()) {
-          ctx.process.parent.pid = convertToOrderedArray(processParentPid);
         }
   - foreach:
       field: process.pid
