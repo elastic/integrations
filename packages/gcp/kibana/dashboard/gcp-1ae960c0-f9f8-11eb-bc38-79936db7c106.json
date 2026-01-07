@@ -352,14 +352,15 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Container restarts",
-                                                    "operationType": "median",
+                                                    "operationType": "last_value",
                                                     "params": {
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 0
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gcp.gke.container.restart.count"
@@ -817,7 +818,8 @@
                                             "columnOrder": [
                                                 "18e2e114-77eb-4a85-afdb-ddd837e6f05a",
                                                 "3153e211-b16a-4f92-b775-6d06a4edaf44",
-                                                "a5747581-91b4-4c4b-b021-0a525d0fe20e"
+                                                "a5747581-91b4-4c4b-b021-0a525d0fe20e",
+                                                "a5747581-91b4-4c4b-b021-0a525d0fe20eX0"
                                             ],
                                             "columns": {
                                                 "18e2e114-77eb-4a85-afdb-ddd837e6f05a": {
@@ -854,8 +856,31 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "CPU usage (seconds)",
-                                                    "operationType": "median",
+                                                    "label": "CPU usage per second",
+                                                    "operationType": "differences",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "a5747581-91b4-4c4b-b021-0a525d0fe20eX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a5747581-91b4-4c4b-b021-0a525d0fe20eX0": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "gcp.gke.container.cpu.core_usage_time.sec",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "sortField": "@timestamp"
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "gcp.gke.container.cpu.core_usage_time.sec"
                                                 }
@@ -1125,7 +1150,8 @@
                                             "columnOrder": [
                                                 "7cbf9dda-019f-43c8-b28f-803caab15753",
                                                 "0c6dd97f-1cda-4c02-abd4-0197e1c8ec16",
-                                                "5a2c10be-3c75-4a75-90f1-26dd30e1d98b"
+                                                "5a2c10be-3c75-4a75-90f1-26dd30e1d98b",
+                                                "5a2c10be-3c75-4a75-90f1-26dd30e1d98bX0"
                                             ],
                                             "columns": {
                                                 "0c6dd97f-1cda-4c02-abd4-0197e1c8ec16": {
@@ -1150,8 +1176,31 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Median of CPU usage",
-                                                    "operationType": "median",
+                                                    "label": "CPU usage per second",
+                                                    "operationType": "differences",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "5a2c10be-3c75-4a75-90f1-26dd30e1d98bX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "5a2c10be-3c75-4a75-90f1-26dd30e1d98bX0": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "gcp.gke.node.cpu.core_usage_time.sec",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "sortField": "@timestamp"
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "gcp.gke.node.cpu.core_usage_time.sec"
                                                 },
@@ -1773,11 +1822,14 @@
                                             "columnOrder": [
                                                 "3edc2106-5cd3-4271-8421-b2f1197c27ca",
                                                 "4b8bacc6-872f-47a5-b721-541e8cf2d00a",
+                                                "4b8bacc6-872f-47a5-b721-541e8cf2d00aX0",
                                                 "eedcb41e-d3d7-4f66-b688-cc189fc93035",
+                                                "eedcb41e-d3d7-4f66-b688-cc189fc93035X0",
                                                 "cc552381-d8b0-4376-9331-e8a320441314",
-                                                "cc552381-d8b0-4376-9331-e8a320441314X2",
+                                                "cc552381-d8b0-4376-9331-e8a320441314X0",
                                                 "cc552381-d8b0-4376-9331-e8a320441314X1",
-                                                "cc552381-d8b0-4376-9331-e8a320441314X0"
+                                                "cc552381-d8b0-4376-9331-e8a320441314X2",
+                                                "cc552381-d8b0-4376-9331-e8a320441314X3"
                                             ],
                                             "columns": {
                                                 "3edc2106-5cd3-4271-8421-b2f1197c27ca": {
@@ -1797,15 +1849,30 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Median of received bytes",
-                                                    "operationType": "median",
+                                                    "label": "Received bytes per second",
+                                                    "operationType": "differences",
                                                     "params": {
                                                         "format": {
-                                                            "id": "number",
+                                                            "id": "bytes",
                                                             "params": {
-                                                                "decimals": 0
+                                                                "decimals": 2
                                                             }
                                                         }
+                                                    },
+                                                    "references": [
+                                                        "4b8bacc6-872f-47a5-b721-541e8cf2d00aX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "4b8bacc6-872f-47a5-b721-541e8cf2d00aX0": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "gcp.gke.node.network.received_bytes.count",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gcp.gke.node.network.received_bytes.count"
@@ -1814,61 +1881,17 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Median of all network traffic",
+                                                    "label": "Total network traffic per second",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "median(gcp.gke.node.network.received_bytes.count) + median(gcp.gke.node.network.sent_bytes.count)",
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "differences(max(gcp.gke.node.network.received_bytes.count)) + differences(max(gcp.gke.node.network.sent_bytes.count))",
                                                         "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "cc552381-d8b0-4376-9331-e8a320441314X2"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "cc552381-d8b0-4376-9331-e8a320441314X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Median of all network traffic",
-                                                    "operationType": "median",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "gcp.gke.node.network.received_bytes.count"
-                                                },
-                                                "cc552381-d8b0-4376-9331-e8a320441314X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Median of all network traffic",
-                                                    "operationType": "median",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "gcp.gke.node.network.sent_bytes.count"
-                                                },
-                                                "cc552381-d8b0-4376-9331-e8a320441314X2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Median of all network traffic",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "cc552381-d8b0-4376-9331-e8a320441314X0",
-                                                                "cc552381-d8b0-4376-9331-e8a320441314X1"
-                                                            ],
-                                                            "location": {
-                                                                "max": 97,
-                                                                "min": 0
-                                                            },
-                                                            "name": "add",
-                                                            "text": "median(gcp.gke.node.network.received_bytes.count) + median(gcp.gke.node.network.sent_bytes.count)",
-                                                            "type": "function"
-                                                        }
                                                     },
                                                     "references": [
                                                         "cc552381-d8b0-4376-9331-e8a320441314X0",
@@ -1876,19 +1899,84 @@
                                                     ],
                                                     "scale": "ratio"
                                                 },
+                                                "cc552381-d8b0-4376-9331-e8a320441314X0": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total network traffic per second",
+                                                    "operationType": "differences",
+                                                    "params": {},
+                                                    "references": [
+                                                        "cc552381-d8b0-4376-9331-e8a320441314X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "cc552381-d8b0-4376-9331-e8a320441314X1": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total network traffic per second",
+                                                    "operationType": "differences",
+                                                    "params": {},
+                                                    "references": [
+                                                        "cc552381-d8b0-4376-9331-e8a320441314X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "cc552381-d8b0-4376-9331-e8a320441314X2": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "gcp.gke.node.network.received_bytes.count",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gcp.gke.node.network.received_bytes.count"
+                                                },
+                                                "cc552381-d8b0-4376-9331-e8a320441314X3": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "gcp.gke.node.network.sent_bytes.count",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gcp.gke.node.network.sent_bytes.count"
+                                                },
                                                 "eedcb41e-d3d7-4f66-b688-cc189fc93035": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Median of sent bytes",
-                                                    "operationType": "median",
+                                                    "label": "Sent bytes per second",
+                                                    "operationType": "differences",
                                                     "params": {
                                                         "format": {
-                                                            "id": "number",
+                                                            "id": "bytes",
                                                             "params": {
-                                                                "decimals": 0
+                                                                "decimals": 2
                                                             }
                                                         }
+                                                    },
+                                                    "references": [
+                                                        "eedcb41e-d3d7-4f66-b688-cc189fc93035X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "eedcb41e-d3d7-4f66-b688-cc189fc93035X0": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "gcp.gke.node.network.sent_bytes.count",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gcp.gke.node.network.sent_bytes.count"
@@ -2017,8 +2105,17 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Media received bytes count",
-                                                    "operationType": "median",
+                                                    "label": "Received bytes count",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "gcp.gke.node.network.received_bytes.count"
                                                 }
