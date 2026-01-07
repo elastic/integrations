@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-12-08T00:00:00.000Z",
         "created_by": "elastic",
-        "description": "Detects suspicious macOS Launch Agents and Launch Daemons using dual-detection approach: (1) Non-whitelisted launch agents/daemons not in known-good allowlist and (2) Living off the Land (LOTL) attack indicators. Identifies both non-standard persistence mechanisms AND abuse of legitimate macOS/Unix tools (curl, osascript, bash -c, base64 -d, etc.) for persistence, privilege escalation, and lateral movement. Uses path-based and code signature whitelist filtering to auto-exclude legitimate Apple system agents/daemons and known-good third-party software, while flagging suspicious patterns and unsigned binaries. Final filter focuses on LOTL indicators, unsigned binaries, or non-Apple signed code. Note: This query is macOS-only (launchd table). For Windows persistence, use scheduled_tasks queries. For Linux persistence, use crontab queries. Maps to MITRE ATT&CK T1543.001 (Launch Agent), T1543.004 (Launch Daemon), T1059.004 (Unix Shell), T1105 (Ingress Tool Transfer), T1547.011 (Plist Modification).",
+        "description": "Detects suspicious macOS Launch Agents and Launch Daemons using dual-detection approach: (1) Non-whitelisted launch agents/daemons not in known-good allowlist and (2) Living off the Land (LOTL) attack indicators. Identifies both non-standard persistence mechanisms AND abuse of legitimate macOS/Unix tools (curl, osascript, bash -c, base64 -d, etc.) for persistence, privilege escalation, and lateral movement. Uses path-based and code signature whitelist filtering to auto-exclude legitimate Apple system agents/daemons and known-good third-party software, while flagging suspicious patterns and unsigned binaries. Final filter focuses on LOTL indicators, unsigned binaries, or non-Apple signed code. Note: This query is macOS-only (launchd table). For Windows persistence, use scheduled_tasks queries. For Linux persistence, use crontab queries.",
         "ecs_mapping": [
             {
                 "key": "event.category",
@@ -134,6 +134,12 @@
                 "key": "file.code_signature.signed",
                 "value": {
                     "field": "is_signed"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
                 }
             },
             {
