@@ -249,24 +249,24 @@ An example event for `saml` looks as following:
 {
     "@timestamp": "2021-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "1693aa26-5c75-4375-ad3d-3eec4df9c152",
-        "id": "10f5303c-a7b9-427c-bde2-1bc17e1b5f62",
-        "name": "elastic-agent-70610",
+        "ephemeral_id": "bd2a0047-3e89-4390-83a9-05d25b51f0af",
+        "id": "3955c167-c2de-4a5d-a4c5-2a6338f14976",
+        "name": "elastic-agent-28992",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.saml",
-        "namespace": "79209",
+        "namespace": "71531",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "10f5303c-a7b9-427c-bde2-1bc17e1b5f62",
+        "id": "3955c167-c2de-4a5d-a4c5-2a6338f14976",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "login_failure",
@@ -275,10 +275,10 @@ An example event for `saml` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2025-11-12T09:33:24.654Z",
+        "created": "2025-12-08T05:14:30.997Z",
         "dataset": "google_workspace.saml",
         "id": "1",
-        "ingested": "2025-11-12T09:33:27Z",
+        "ingested": "2025-12-08T05:14:33Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"login_failure\",\"parameters\":[{\"name\":\"application_name\",\"value\":\"app\"},{\"name\":\"failure_type\",\"value\":\"failure_app_not_configured_for_user\"},{\"name\":\"initiated_by\",\"value\":\"idp\"},{\"name\":\"orgunit_path\",\"value\":\"ounit\"},{\"name\":\"saml_second_level_status_code\",\"value\":\"SUCCESS_URI\"},{\"name\":\"saml_status_code\",\"value\":\"SUCCESS_URI\"}],\"type\":\"login\"},\"id\":{\"applicationName\":\"saml\",\"customerId\":\"1\",\"time\":\"2021-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "outcome": "failure",
@@ -385,24 +385,24 @@ An example event for `user_accounts` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "e8229c15-2d86-4ef5-9675-a6083d53576d",
-        "id": "efba0153-8b9d-401d-86ef-045fb5374ab1",
-        "name": "elastic-agent-81708",
+        "ephemeral_id": "2584ee05-3825-4d30-aa4a-f5cb5079a86b",
+        "id": "b7fad8f9-bc41-411b-bffe-af86756ad274",
+        "name": "elastic-agent-20157",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.user_accounts",
-        "namespace": "36846",
+        "namespace": "15617",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "efba0153-8b9d-401d-86ef-045fb5374ab1",
+        "id": "b7fad8f9-bc41-411b-bffe-af86756ad274",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "2sv_disable",
@@ -410,10 +410,10 @@ An example event for `user_accounts` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2025-11-12T09:35:53.826Z",
+        "created": "2025-12-08T05:17:05.124Z",
         "dataset": "google_workspace.user_accounts",
         "id": "1",
-        "ingested": "2025-11-12T09:35:56Z",
+        "ingested": "2025-12-08T05:17:08Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"2sv_disable\",\"type\":\"2sv_change\"},\"id\":{\"applicationName\":\"user_accounts\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "user_accounts",
@@ -507,24 +507,24 @@ An example event for `login` looks as following:
 {
     "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "8b74cdb0-0bd2-4233-91d8-eec966d84bf3",
-        "id": "fc7d0803-69bd-46c3-909c-70199b6eb4b4",
-        "name": "elastic-agent-61498",
+        "ephemeral_id": "6bfca960-9021-4a33-b298-1b6854b1e312",
+        "id": "5b3e320e-19d9-4dd3-9df2-ac99d545b1c5",
+        "name": "elastic-agent-45845",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.login",
-        "namespace": "93794",
+        "namespace": "27499",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "fc7d0803-69bd-46c3-909c-70199b6eb4b4",
+        "id": "5b3e320e-19d9-4dd3-9df2-ac99d545b1c5",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "account_disabled_password_leak",
@@ -532,10 +532,10 @@ An example event for `login` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2025-11-12T09:30:46.427Z",
+        "created": "2025-12-08T05:12:21.961Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2025-11-12T09:30:49Z",
+        "ingested": "2025-12-08T05:12:24Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"account_disabled_password_leak\",\"parameters\":[{\"name\":\"affected_email_address\",\"value\":\"foo@elastic.co\"}],\"type\":\"account_warning\"},\"id\":{\"applicationName\":\"login\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "login",
@@ -649,32 +649,32 @@ An example event for `rules` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "2f135bec-fbd4-4d2e-8eef-ab35e73e56d0",
-        "id": "f0a04289-8933-4e22-b0e3-6a9f6a440f12",
-        "name": "elastic-agent-50837",
+        "ephemeral_id": "afeffc94-1ad8-47d1-8fcf-40e838558833",
+        "id": "aace98bd-8a95-4d13-a919-0a9d6f7f8093",
+        "name": "elastic-agent-65365",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.rules",
-        "namespace": "14857",
+        "namespace": "63851",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "f0a04289-8933-4e22-b0e3-6a9f6a440f12",
+        "id": "aace98bd-8a95-4d13-a919-0a9d6f7f8093",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "rule_match",
         "agent_id_status": "verified",
-        "created": "2025-11-12T09:32:05.597Z",
+        "created": "2025-12-08T05:13:21.070Z",
         "dataset": "google_workspace.rules",
         "id": "1",
-        "ingested": "2025-11-12T09:32:08Z",
+        "ingested": "2025-12-08T05:13:24Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"rule_match\",\"parameters\":[{\"boolValue\":\"true\",\"name\":\"has_alert\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"intValue\":\"1234\",\"name\":\"resource_recipients_omitted_count\"},{\"multiValue\":[\"managers\"],\"name\":\"rule_name\"},{\"multiIntValue\":[\"12\"],\"name\":\"rule_id\"}],\"type\":\"rule_match_type\"},\"id\":{\"applicationName\":\"rules\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "rules"
@@ -854,24 +854,24 @@ An example event for `admin` looks as following:
 {
     "@timestamp": "2022-04-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "14b6ad66-8af9-429d-b327-3fee869369e5",
-        "id": "752f45e8-5f63-4dca-ab63-ec8e8f790d4a",
-        "name": "elastic-agent-14522",
+        "ephemeral_id": "be759c1f-b7df-401c-a439-301ce669e1cf",
+        "id": "7bbc0968-e2bd-4ea0-9ad6-0d1905db8cc0",
+        "name": "elastic-agent-22757",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.admin",
-        "namespace": "51420",
+        "namespace": "34629",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "752f45e8-5f63-4dca-ab63-ec8e8f790d4a",
+        "id": "7bbc0968-e2bd-4ea0-9ad6-0d1905db8cc0",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "CHANGE_APPLICATION_SETTING",
@@ -880,10 +880,10 @@ An example event for `admin` looks as following:
             "iam",
             "configuration"
         ],
-        "created": "2025-11-12T09:21:44.692Z",
+        "created": "2025-12-08T04:30:23.548Z",
         "dataset": "google_workspace.admin",
         "id": "1",
-        "ingested": "2025-11-12T09:21:47Z",
+        "ingested": "2025-12-08T04:30:26Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"CHANGE_APPLICATION_SETTING\",\"parameters\":[{\"name\":\"APPLICATION_EDITION\",\"value\":\"basic\"},{\"name\":\"APPLICATION_NAME\",\"value\":\"drive\"},{\"name\":\"GROUP_EMAIL\",\"value\":\"group@example.com\"},{\"name\":\"NEW_VALUE\",\"value\":\"new\"},{\"name\":\"OLD_VALUE\",\"value\":\"old\"},{\"name\":\"ORG_UNIT_NAME\",\"value\":\"org\"},{\"name\":\"SETTING_NAME\",\"value\":\"setting\"}],\"type\":\"APPLICATION_SETTINGS\"},\"id\":{\"applicationName\":\"admin\",\"customerId\":\"1\",\"time\":\"2022-04-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "admin",
@@ -1070,12 +1070,15 @@ An example event for `admin` looks as following:
 | google_workspace.admin.rule.name | The rule name. | keyword |
 | google_workspace.admin.service.name | The service name. | keyword |
 | google_workspace.admin.setting.description | The setting name. | keyword |
+| google_workspace.admin.setting.metadata.description |  | keyword |
+| google_workspace.admin.setting.metadata.rule.key |  | keyword |
+| google_workspace.admin.setting.metadata.rule.type |  | keyword |
+| google_workspace.admin.setting.metadata.user_defined.name | The name of the user-defined setting. | keyword |
 | google_workspace.admin.setting.name | The setting name. | keyword |
 | google_workspace.admin.url.name | The website name. | keyword |
 | google_workspace.admin.user.birthdate | The user's birth date. | date |
 | google_workspace.admin.user.email | The user's primary email address. | keyword |
 | google_workspace.admin.user.nickname | The user's nickname. | keyword |
-| google_workspace.admin.user_defined_setting.name | The name of the user-defined setting. | keyword |
 | google_workspace.admin.verification_method | Related verification method. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-security-settings and https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-domain-settings | keyword |
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
@@ -1094,24 +1097,24 @@ An example event for `drive` looks as following:
 {
     "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "f63cc477-4c17-460f-8a39-f41fc874d461",
-        "id": "b588c116-db18-4768-9791-d2e179c06bbc",
-        "name": "elastic-agent-51764",
+        "ephemeral_id": "adf02247-dcaf-4bf6-9ec8-20f39a74d728",
+        "id": "6e518c72-e44d-4d00-9c53-ff9a1193bdfd",
+        "name": "elastic-agent-22865",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.drive",
-        "namespace": "47185",
+        "namespace": "52337",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "b588c116-db18-4768-9791-d2e179c06bbc",
+        "id": "6e518c72-e44d-4d00-9c53-ff9a1193bdfd",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "add_to_folder",
@@ -1119,10 +1122,10 @@ An example event for `drive` looks as following:
         "category": [
             "file"
         ],
-        "created": "2025-11-12T09:25:35.165Z",
+        "created": "2025-12-08T04:35:12.992Z",
         "dataset": "google_workspace.drive",
         "id": "1",
-        "ingested": "2025-11-12T09:25:38Z",
+        "ingested": "2025-12-08T04:35:15Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"add_to_folder\",\"parameters\":[{\"boolValue\":false,\"name\":\"billable\"},{\"name\":\"destination_folder_id\",\"value\":\"1234\"},{\"name\":\"destination_folder_title\",\"value\":\"folder title\"},{\"name\":\"doc_id\",\"value\":\"1234\"},{\"name\":\"doc_title\",\"value\":\"document title\"},{\"name\":\"doc_type\",\"value\":\"document\"},{\"name\":\"originating_app_id\",\"value\":\"1234\"},{\"name\":\"owner\",\"value\":\"owner@example.com\"},{\"boolValue\":false,\"name\":\"owner_is_shared_drive\"},{\"boolValue\":true,\"name\":\"primary_event\"},{\"name\":\"visibility\",\"value\":\"people_with_link\"}],\"type\":\"access\"},\"id\":{\"applicationName\":\"drive\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "drive",
@@ -1274,24 +1277,24 @@ An example event for `groups` looks as following:
 {
     "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "ac082999-e2f3-476d-ad3c-70427e9663c0",
-        "id": "8d55ed60-ac39-4451-8c49-411fcb39b5c7",
-        "name": "elastic-agent-94393",
+        "ephemeral_id": "36d67a37-e085-4f66-919c-062e051e3b89",
+        "id": "6f70996c-b0bd-44a8-adb2-3830bda3945c",
+        "name": "elastic-agent-11905",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.groups",
-        "namespace": "91857",
+        "namespace": "49558",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "8d55ed60-ac39-4451-8c49-411fcb39b5c7",
+        "id": "6f70996c-b0bd-44a8-adb2-3830bda3945c",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "change_acl_permission",
@@ -1299,10 +1302,10 @@ An example event for `groups` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2025-11-12T09:29:24.121Z",
+        "created": "2025-12-08T04:40:03.193Z",
         "dataset": "google_workspace.groups",
         "id": "1",
-        "ingested": "2025-11-12T09:29:27Z",
+        "ingested": "2025-12-08T04:40:06Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"change_acl_permission\",\"parameters\":[{\"name\":\"acl_permission\",\"value\":\"can_add_members\"},{\"name\":\"group_email\",\"value\":\"group@example.com\"},{\"multiValue\":[\"managers\",\"members\"],\"name\":\"new_value_repeated\"},{\"multiValue\":[\"managers\"],\"name\":\"old_value_repeated\"}],\"type\":\"acl_change\"},\"id\":{\"applicationName\":\"groups\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "groups",
@@ -1427,24 +1430,24 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-07-01T10:49:29.436Z",
     "agent": {
-        "ephemeral_id": "245194a8-7787-44f7-ac57-201f8c49a9a0",
-        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e52a3dcd-cf85-4324-a66a-6525ae8abd72",
+        "id": "aba87649-9561-497c-92d7-4d386a9b472a",
+        "name": "elastic-agent-24009",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.alert",
-        "namespace": "62301",
+        "namespace": "21414",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
+        "id": "aba87649-9561-497c-92d7-4d386a9b472a",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "email": {
         "attachments": {
@@ -1483,11 +1486,11 @@ An example event for `alert` looks as following:
             "threat",
             "malware"
         ],
-        "created": "2024-08-01T21:52:26.588Z",
+        "created": "2025-12-08T04:31:43.486Z",
         "dataset": "google_workspace.alert",
         "end": "2022-07-01T10:47:04.530Z",
         "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7",
-        "ingested": "2024-08-01T21:52:38Z",
+        "ingested": "2025-12-08T04:31:46Z",
         "kind": "alert",
         "original": "{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"createTime\":\"2022-07-01T10:49:29.436394Z\",\"customerId\":\"02umwv6u\",\"data\":{\"@type\":\"type.googleapis.com/google.apps.alertcenter.type.MailPhishing\",\"domainId\":{\"customerPrimaryDomain\":\"example.com\"},\"isInternal\":true,\"maliciousEntity\":{\"displayName\":\"string\",\"entity\":{\"displayName\":\"example\",\"emailAddress\":\"example@example.com\"},\"fromHeader\":\"header@example.com\"},\"messages\":[{\"attachmentsSha256Hash\":[\"50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c\",\"228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2\"],\"date\":\"2022-07-01T10:38:13.194711Z\",\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings from sales \",\"messageId\":\"decedih843@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"Sales\"},{\"attachmentsSha256Hash\":[\"5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56\"],\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings \",\"messageId\":\"decedih@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"RE: Example salesorderspca JSON request\"}],\"systemActionType\":\"NO_OPERATION\"},\"deleted\":false,\"endTime\":\"2022-07-01T10:47:04.530834Z\",\"etag\":\"wF2Ix2DWDv8=\",\"metadata\":{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"assignee\":\"example@example.com\",\"customerId\":\"02umwv6u\",\"etag\":\"wF2Ix2DWDv8=\",\"severity\":\"HIGH\",\"status\":\"NOT_STARTED\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"},\"securityInvestigationToolLink\":\"string\",\"source\":\"Gmail phishing\",\"startTime\":\"2022-07-01T10:38:13.194711Z\",\"type\":\"User reported phishing\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"}",
         "start": "2022-07-01T10:38:13.194Z",
@@ -1743,32 +1746,32 @@ An example event for `device` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "7aa421c8-d815-4e38-bd60-cb57bc5846b5",
-        "id": "60de190d-6628-47a3-afea-6a73703cb75b",
-        "name": "elastic-agent-72403",
+        "ephemeral_id": "bd04308b-2f70-430a-883a-4e7cd10123d7",
+        "id": "10c458fc-acd6-4cca-8d04-2263ff81c7e6",
+        "name": "elastic-agent-75163",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.device",
-        "namespace": "60770",
+        "namespace": "34729",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "60de190d-6628-47a3-afea-6a73703cb75b",
+        "id": "10c458fc-acd6-4cca-8d04-2263ff81c7e6",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "APPLICATION_EVENT",
         "agent_id_status": "verified",
-        "created": "2025-11-12T09:24:24.919Z",
+        "created": "2025-12-08T04:34:13.648Z",
         "dataset": "google_workspace.device",
         "id": "1",
-        "ingested": "2025-11-12T09:24:27Z",
+        "ingested": "2025-12-08T04:34:16Z",
         "kind": [
             "event"
         ],
@@ -2014,32 +2017,32 @@ An example event for `group_enterprise` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "fa3bc4f0-f8d5-480f-8a60-8e52dd8da2a4",
-        "id": "cee25b90-4c20-47fa-9206-bdf6781c3784",
-        "name": "elastic-agent-62126",
+        "ephemeral_id": "1e96a41d-fab8-4711-b3b7-2c80d7684821",
+        "id": "a4ef7a22-cfd6-4e87-aaa9-ea58e64ca9b3",
+        "name": "elastic-agent-82451",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.group_enterprise",
-        "namespace": "82423",
+        "namespace": "18098",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "cee25b90-4c20-47fa-9206-bdf6781c3784",
+        "id": "a4ef7a22-cfd6-4e87-aaa9-ea58e64ca9b3",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "add_info_setting",
         "agent_id_status": "verified",
-        "created": "2025-11-12T09:28:16.086Z",
+        "created": "2025-12-08T04:39:03.176Z",
         "dataset": "google_workspace.group_enterprise",
         "id": "1",
-        "ingested": "2025-11-12T09:28:19Z",
+        "ingested": "2025-12-08T04:39:06Z",
         "kind": [
             "event"
         ],
@@ -2203,24 +2206,24 @@ An example event for `token` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "ad8fd964-2106-456f-b67d-d15f242b974a",
-        "id": "0e4ae03a-fed5-4929-af01-acbf3c28e835",
-        "name": "elastic-agent-54687",
+        "ephemeral_id": "e3f81d0d-57f7-4597-98e1-a27a45dbaa60",
+        "id": "a57d3ab2-14fb-4207-b547-3353fbc53323",
+        "name": "elastic-agent-87330",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.token",
-        "namespace": "51431",
+        "namespace": "63063",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "0e4ae03a-fed5-4929-af01-acbf3c28e835",
+        "id": "a57d3ab2-14fb-4207-b547-3353fbc53323",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "authorize",
@@ -2228,10 +2231,10 @@ An example event for `token` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2025-11-12T09:34:42.588Z",
+        "created": "2025-12-08T05:15:55.348Z",
         "dataset": "google_workspace.token",
         "id": "1",
-        "ingested": "2025-11-12T09:34:45Z",
+        "ingested": "2025-12-08T05:15:58Z",
         "kind": [
             "event"
         ],
@@ -2422,32 +2425,32 @@ An example event for `access_transparency` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "e71ef9cb-072e-48d2-9130-96f1d4bce4d3",
-        "id": "2da80338-c8c6-4300-9470-025fe55de0c1",
-        "name": "elastic-agent-58418",
+        "ephemeral_id": "b5224f0a-b775-4fd3-b708-360f265f6c72",
+        "id": "20e7e144-e83e-440c-84fb-80d2dc4e9789",
+        "name": "elastic-agent-81103",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.access_transparency",
-        "namespace": "21501",
+        "namespace": "42882",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "2da80338-c8c6-4300-9470-025fe55de0c1",
+        "id": "20e7e144-e83e-440c-84fb-80d2dc4e9789",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "APPLICATION_EVENT",
         "agent_id_status": "verified",
-        "created": "2025-11-12T09:20:36.555Z",
+        "created": "2025-12-08T04:22:56.428Z",
         "dataset": "google_workspace.access_transparency",
         "id": "1",
-        "ingested": "2025-11-12T09:20:39Z",
+        "ingested": "2025-12-08T04:22:59Z",
         "kind": [
             "event"
         ],
@@ -2603,32 +2606,32 @@ An example event for `context_aware_access` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "01101cd7-b942-4061-8dcf-8488f5b64461",
-        "id": "10bdbb6c-0cff-4af9-866d-64a6bb61e845",
-        "name": "elastic-agent-67948",
+        "ephemeral_id": "98e152de-6cca-41b4-a96c-7d524ad1d520",
+        "id": "e28183dc-9502-4bc0-b6f9-057d8093d53f",
+        "name": "elastic-agent-23811",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.context_aware_access",
-        "namespace": "38010",
+        "namespace": "31084",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "10bdbb6c-0cff-4af9-866d-64a6bb61e845",
+        "id": "e28183dc-9502-4bc0-b6f9-057d8093d53f",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "APPLICATION_EVENT",
         "agent_id_status": "verified",
-        "created": "2025-11-12T09:23:14.570Z",
+        "created": "2025-12-08T04:33:03.762Z",
         "dataset": "google_workspace.context_aware_access",
         "id": "1",
-        "ingested": "2025-11-12T09:23:17Z",
+        "ingested": "2025-12-08T04:33:06Z",
         "kind": [
             "event"
         ],
@@ -2773,32 +2776,32 @@ An example event for `gcp` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "ea5f2721-a5c8-44f7-9f90-d4e84d70f5ce",
-        "id": "78e1ae1d-8b1a-4ec2-85b0-c613aba4cfe4",
-        "name": "elastic-agent-48565",
+        "ephemeral_id": "0505a3b2-62e8-4aef-a980-f0528788398b",
+        "id": "ee5f48ab-58d5-424d-97af-ce9077453cee",
+        "name": "elastic-agent-76346",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.gcp",
-        "namespace": "98365",
+        "namespace": "72783",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "78e1ae1d-8b1a-4ec2-85b0-c613aba4cfe4",
+        "id": "ee5f48ab-58d5-424d-97af-ce9077453cee",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "IMPORT_SSH_PUBLIC_KEY",
         "agent_id_status": "verified",
-        "created": "2025-11-12T09:27:05.101Z",
+        "created": "2025-12-08T04:36:32.150Z",
         "dataset": "google_workspace.gcp",
         "id": "1",
-        "ingested": "2025-11-12T09:27:08Z",
+        "ingested": "2025-12-08T04:36:35Z",
         "kind": [
             "event"
         ],

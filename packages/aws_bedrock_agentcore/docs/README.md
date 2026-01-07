@@ -18,7 +18,7 @@ This integration is compatible with Amazon Bedrock AgentCore CloudWatch metrics 
 The Amazon Bedrock AgentCore integration collects runtime metrics and observability data from your intelligent agents.
 
 Data streams:
- - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateways, Memory, and Identity.
+ - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateway, Memory, Identity, Browser Tool and Code Interpreter.
 
 ## What do I need to use this integration?
 
@@ -155,6 +155,8 @@ An example event for `metrics` looks as following:
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| aws.bedrock_agentcore.agent_name | The name of the agent runtime. | keyword |  |  |
+| aws.bedrock_agentcore.endpoint_name | The endpoint name of the agent runtime. | keyword |  |  |
 | aws.bedrock_agentcore.metrics.ApiKeyFetchFailures.sum | Total number of failed API key fetch operations from credential providers. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.ApiKeyFetchSuccess.sum | Total number of successful API key fetch operations from credential providers. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.ApiKeyFetchThrottles.sum | Total number of throttled API key fetch operations from credential providers. | long |  | gauge |
@@ -171,6 +173,9 @@ An example event for `metrics` looks as following:
 | aws.bedrock_agentcore.metrics.ResourceAccessTokenFetchThrottles.sum | Total number of throttled OAuth2 token fetch operations from credential providers. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.Sessions.sum | Total number of agent sessions initiated. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.SystemErrors.sum | Total number of server-side errors indicating infrastructure or service issues. | long |  | gauge |
+| aws.bedrock_agentcore.metrics.TakeOverCount.sum | Total number of user taking over control. | long |  | gauge |
+| aws.bedrock_agentcore.metrics.TakeOverReleaseCount.sum | Total number of user releasing control. | long |  | gauge |
+| aws.bedrock_agentcore.metrics.TakerOverDuration.avg | Average duration of user takeover control. | double | ms | gauge |
 | aws.bedrock_agentcore.metrics.TargetExecutionTime.avg | Average execution time for each target type. | double | ms | gauge |
 | aws.bedrock_agentcore.metrics.TargetType_LAMBDA.sum | Total number of invocations targeting AWS Lambda. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.TargetType_MCP.sum | Total number of invocations targeting MCP (Model Context Protocol). | long |  | gauge |
@@ -189,3 +194,74 @@ An example event for `metrics` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[AWS Bedrock AgentCore] Agent runtime high latency**
+
+
+
+**[AWS Bedrock AgentCore] Agent runtime system errors**
+
+
+
+**[AWS Bedrock AgentCore] Agent runtime user errors**
+
+
+
+**[AWS Bedrock AgentCore] Browser errors**
+
+
+
+**[AWS Bedrock AgentCore] Browser session throttles**
+
+
+
+**[AWS Bedrock AgentCore] Code interpreter errors**
+
+
+
+**[AWS Bedrock AgentCore] Code interpreter high latency**
+
+
+
+**[AWS Bedrock AgentCore] Code interpreter throttles**
+
+
+
+**[AWS Bedrock AgentCore] Gateway errors**
+
+
+
+**[AWS Bedrock AgentCore] Gateway high latency**
+
+
+
+**[AWS Bedrock AgentCore] Gateway throttles**
+
+
+
+**[AWS Bedrock AgentCore] Identity throttles**
+
+
+
+**[AWS Bedrock AgentCore] Identity token fetch failures**
+
+
+
+**[AWS Bedrock AgentCore] Memory errors**
+
+
+
+**[AWS Bedrock AgentCore] Memory high latency**
+
+
+
