@@ -1,9 +1,16 @@
 version: '2.3'
 services:
-  google-cloud-storage-emulator:
-    image: fsouza/fake-gcs-server:latest
-    command: -host=0.0.0.0 -public-host=elastic-package-service_google-cloud-storage-emulator_1 -port=4443 -scheme=http
+  gcs-mock-service:
+    image: golang:1.24.7-alpine
+    working_dir: /app
     volumes:
-      - ./sample_logs:/data
+      - ./gcs-mock-service:/app
+      - ./files/manifest.yml:/files/manifest.yml:ro
+      - ./sample_logs/:/data:ro
     ports:
-      - 4443/tcp
+      - "4443/tcp"
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:4443/health || exit 1"
+      interval: 10s
+      timeout: 5s
+    command: go run main.go -manifest /files/manifest.yml
