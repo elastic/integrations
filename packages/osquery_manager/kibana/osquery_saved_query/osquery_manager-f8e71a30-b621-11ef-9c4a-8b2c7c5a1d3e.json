@@ -2,7 +2,7 @@
     "attributes": {
         "created_at": "2025-12-09T10:00:00.000Z",
         "created_by": "elastic",
-        "description": "Enumerates files with hash values and code signature validation in common staging/temp directories on Windows. Detects suspicious files, renamed executables (original_filename comparison), hidden/system files, and unsigned binaries. Includes PE metadata, file attributes, and authenticode signature verification. Target directories: C:\\Users\\Public, C:\\Windows\\Temp, C:\\ProgramData, User temp folders.",
+        "description": "Enumerates files with hash values and code signature validation in common staging/temp directories on Windows. Detects suspicious files, renamed executables (original_filename comparison), hidden/system files, and unsigned binaries. Includes PE metadata, file attributes, and authenticode signature verification. Target directories: C:\\Users\\Public, C:\\Windows\\Temp, C:\\ProgramData, User temp folders.\n\nNote: osquery exposes Windows file attributes as compact letter-codes (for example, \"HSR\") in the `attributes` column. We intentionally do not map this value into ECS `file.attributes` (which ECS documents as an array of keywords like [\"hidden\",\"system\",\"readonly\"]) unless/until a normalization transform is introduced.",
         "ecs_mapping": [
             {
                 "key": "event.category",
@@ -92,12 +92,6 @@
                 "key": "file.inode",
                 "value": {
                     "field": "inode"
-                }
-            },
-            {
-                "key": "file.attributes",
-                "value": {
-                    "field": "attributes"
                 }
             },
             {
