@@ -1,4 +1,4 @@
-ARG SERVICE_VERSION
+ARG SERVICE_VERSION=${SERVICE_VERSION:-8.2.3}
 FROM redis:${SERVICE_VERSION}-alpine
 HEALTHCHECK --interval=1s --retries=90 CMD nc -z localhost 6379
 
