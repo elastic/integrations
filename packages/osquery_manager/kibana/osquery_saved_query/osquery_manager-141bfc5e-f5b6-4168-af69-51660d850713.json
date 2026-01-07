@@ -1,0 +1,149 @@
+{
+    "attributes": {
+        "created_at": "2026-01-07T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Comprehensive file enumeration with hash values and code signature validation across all directories on macOS. Returns all regular files on the system with Gatekeeper signature verification and BSD flags analysis. Use for complete filesystem forensics and malware hunting when location is unknown.\n\nNote: This query returns ALL files and may produce very large result sets (potentially millions of files on production systems). Use with caution and consider the storage/ingestion impact. For targeted analysis, use file_hash_info_darwin_elastic instead.\n\nInterval: This query defaults to every 12 hours (43200 seconds). Adjust based on your environment size and change detection needs.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.file_hash_listing"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "directory"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "filename"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "changed_time"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "created_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "file.uid",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "file.gid",
+                "value": {
+                    "field": "gid"
+                }
+            },
+            {
+                "key": "file.mode",
+                "value": {
+                    "field": "mode"
+                }
+            },
+            {
+                "key": "file.inode",
+                "value": {
+                    "field": "inode"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "file.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "file_forensics", "hash_analysis", "code_signature", "gatekeeper", "macos", "comprehensive"]
+                }
+            }
+        ],
+        "id": "file_hash_listing_darwin_elastic",
+        "interval": "43200",
+        "platform": "darwin",
+        "query": "-- Comprehensive File Hash Listing with Code Signature Validation - macOS\n-- Enumerates ALL regular files with hash values and Gatekeeper signature validation\n-- Warning: unfiltered enumeration may be expensive and produce large result sets\n\nSELECT\n    f.path,\n    f.directory,\n    f.filename,\n    f.size,\n    f.type,\n    f.bsd_flags,\n    f.uid,\n    f.gid,\n    f.mode,\n    f.inode,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    'https://www.virustotal.com/gui/file/' || h.sha256 AS vt_link,\n    s.authority AS signature_signer,\n    CASE\n        WHEN s.signed = 1 THEN 'valid'\n        WHEN s.signed = 0 THEN 'unsigned'\n        ELSE 'unknown'\n    END AS signature_status,\n    s.identifier AS signature_identifier,\n    s.cdhash AS signature_cdhash,\n    s.team_identifier AS signature_team_id,\n    CASE\n        WHEN f.bsd_flags LIKE '%HIDDEN%' OR f.filename LIKE '.%' THEN 'hidden'\n        WHEN f.bsd_flags LIKE '%IMMUTABLE%' THEN 'immutable'\n        WHEN f.bsd_flags LIKE '%APPEND%' THEN 'append_only'\n        ELSE 'normal'\n    END AS file_visibility\nFROM file f\nLEFT JOIN hash h ON h.path = f.path\nLEFT JOIN signature s ON s.path = f.path\nWHERE f.type = 'regular'\nAND f.size > 0",
+        "updated_at": "2026-01-07T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-141bfc5e-f5b6-4168-af69-51660d850713",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-07T00:00:00.000Z",
+    "version": "WzEsMV0="
+}
+
+
