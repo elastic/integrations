@@ -1,17 +1,14 @@
 {
     "attributes": {
         "columns": [
-            "host.id",
-            "host.name",
-            "host.os.name",
-            "vulnerability.id",
-            "m365_defender.vulnerability.exploitability_level",
-            "vulnerability.severity",
-            "m365_defender.vulnerability.software_vendor",
-            "package.name",
-            "package.version"
+            "@timestamp",
+            "event.action",
+            "m365_defender.event.operation_name",
+            "m365_defender.event.category",
+            "m365_defender.event.action.trigger",
+            "application.name"
         ],
-        "description": "",
+        "description": "This contains the alerts essential details collected through the event dataset.",
         "grid": {},
         "hideChart": false,
         "isTextBasedQuery": false,
@@ -30,33 +27,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "m365_defender.vulnerability"
+                                "query": "m365_defender.event"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "m365_defender.vulnerability"
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "field": "event.id",
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "event.id",
-                            "negate": false,
-                            "type": "exists",
-                            "value": "exists"
-                        },
-                        "query": {
-                            "exists": {
-                                "field": "event.id"
+                                "data_stream.dataset": "m365_defender.event"
                             }
                         }
                     }
@@ -75,11 +52,11 @@
             ]
         ],
         "timeRestore": false,
-        "title": "Affected Machines Essential Details [Logs Microsoft Defender XDR]"
+        "title": "Alert Essential Details"
     },
     "coreMigrationVersion": "8.8.0",
     "created_at": "2026-01-06T07:07:12.635Z",
-    "id": "m365_defender-c35e286e-43e6-46f4-a449-ab8a1be7bcd9",
+    "id": "m365_defender-e16d5fb3-36aa-4ee3-bb47-18d44d56c3b2",
     "references": [
         {
             "id": "logs-*",
@@ -92,9 +69,9 @@
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-            "type": "index-pattern"
+            "id": "m365_defender-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
     "type": "search",
