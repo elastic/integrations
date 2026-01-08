@@ -276,6 +276,8 @@ The following alert rule templates are available:
 
 
 
+
+
 ## Logs
 
 ### Runtime Application Logs
@@ -404,3 +406,4 @@ An example event for `runtime_application` looks as following:
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset | long |
+
