@@ -3,9 +3,17 @@ source:
     - "logs-cloud_security_posture.findings-*"
   query:
     bool:
+      must:
+        range:
+          "@timestamp":
+            gte: "now-26h"
       must_not:
         exists:
           field: error.message
+        terms:
+            _tier:
+              - data_frozen
+              - data_cold
 dest:
   index: "security_solution-cloud_security_posture.misconfiguration_latest-v1"
   aliases:
@@ -28,8 +36,10 @@ retention_policy:
     max_age: 26h
 settings:
   unattended: true
+  docs_per_second: 100
+  max_page_search_size: 100
 _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.2.1
+  fleet_transform_version: 0.2.2
