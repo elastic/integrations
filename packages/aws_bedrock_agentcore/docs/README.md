@@ -228,6 +228,52 @@ The following alert rule templates are available:
 
 
 
+**[AWS Bedrock AgentCore] Browser errors**
+
+
+
+**[AWS Bedrock AgentCore] Browser session throttles**
+
+
+
+**[AWS Bedrock AgentCore] Code interpreter errors**
+
+
+
+**[AWS Bedrock AgentCore] Code interpreter high latency**
+
+
+
+**[AWS Bedrock AgentCore] Code interpreter throttles**
+
+
+
+**[AWS Bedrock AgentCore] Gateway errors**
+
+
+
+**[AWS Bedrock AgentCore] Gateway high latency**
+
+
+
+**[AWS Bedrock AgentCore] Gateway throttles**
+
+
+
+**[AWS Bedrock AgentCore] Identity throttles**
+
+
+
+**[AWS Bedrock AgentCore] Identity token fetch failures**
+
+
+
+**[AWS Bedrock AgentCore] Memory errors**
+
+
+
+**[AWS Bedrock AgentCore] Memory high latency**
+
 
 
 ## Logs
@@ -358,4 +404,3 @@ An example event for `runtime_application` looks as following:
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset | long |
-
