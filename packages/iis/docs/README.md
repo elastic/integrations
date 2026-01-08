@@ -419,7 +419,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | iis.webserver.network.total_get_requests | The total number of GET requests. | float |  | counter |
 | iis.webserver.network.total_non_anonymous_users | The total number of non anonymous users. | float |  | counter |
 | iis.webserver.network.total_post_requests | The total number of POST requests. | float |  | counter |
-| iis.webserver.process.cpu_usage_perc | The CPU usage percentage. | float |  | gauge |
+| iis.webserver.process.cpu_usage_perc | The CPU usage percentage. | float | percent | gauge |
 | iis.webserver.process.handle_count | The number of handles. | float |  |  |
 | iis.webserver.process.io_read_operations_per_sec | IO read operations per sec. | float |  | gauge |
 | iis.webserver.process.io_write_operations_per_sec | IO write operations per sec. | float |  | gauge |
@@ -646,7 +646,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | iis.application_pool.net_clr.memory.total_committed_bytes | Number of total committed bytes. | float | byte |  |
 | iis.application_pool.net_clr.throw_to_catch_depth_per_sec | Throw to catch depth count per sec. | float |  | gauge |
 | iis.application_pool.net_clr.total_exceptions_thrown | Total number of exceptions thrown. | long |  | counter |
-| iis.application_pool.process.cpu_usage_perc | The CPU usage percentage. | float |  | gauge |
+| iis.application_pool.process.cpu_usage_perc | The CPU usage percentage. | float | percent | gauge |
 | iis.application_pool.process.handle_count | The number of handles. | long |  |  |
 | iis.application_pool.process.io_read_operations_per_sec | IO read operations per sec. | float |  | gauge |
 | iis.application_pool.process.io_write_operations_per_sec | IO write operations per sec. | float |  | gauge |
