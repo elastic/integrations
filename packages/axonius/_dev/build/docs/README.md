@@ -23,7 +23,7 @@ This integration collects log messages of the following type:
 
 ### Supported use cases
 
-Integrating the Axonius Adapter, User, and Gateway Datastreams with Elastic SIEM provides centralized visibility into data ingestion health, user identity context, and gateway configuration across the environment. Together, these datastreams help analysts understand how data flows into the platform, how it maps to user access and roles, and how gateways operate within the network.
+Integrating the Axonius Adapter, User, and Gateway data streams with Elastic SIEM provides centralized visibility into data ingestion health, user identity context, and gateway configuration across the environment. Together, these data streams help analysts understand how data flows into the platform, how it maps to user access and roles, and how gateways operate within the network.
 
 The dashboards surface key insights into adapter and gateway status, connection behavior, and routing context, making it easy to identify failing integrations, misconfigurations, or irregular network behavior. At the same time, user-focused views highlight role distribution and essential identity attributes, supporting quick assessment of access posture and detection of unusual or high-privileged activity.
 

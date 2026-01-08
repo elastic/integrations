@@ -23,7 +23,7 @@ This integration collects log messages of the following type:
 
 ### Supported use cases
 
-Integrating the Axonius Adapter, User, and Gateway Datastreams with Elastic SIEM provides centralized visibility into data ingestion health, user identity context, and gateway configuration across the environment. Together, these datastreams help analysts understand how data flows into the platform, how it maps to user access and roles, and how gateways operate within the network.
+Integrating the Axonius Adapter, User, and Gateway data streams with Elastic SIEM provides centralized visibility into data ingestion health, user identity context, and gateway configuration across the environment. Together, these data streams help analysts understand how data flows into the platform, how it maps to user access and roles, and how gateways operate within the network.
 
 The dashboards surface key insights into adapter and gateway status, connection behavior, and routing context, making it easy to identify failing integrations, misconfigurations, or irregular network behavior. At the same time, user-focused views highlight role distribution and essential identity attributes, supporting quick assessment of access posture and detection of unusual or high-privileged activity.
 
@@ -402,11 +402,11 @@ An example event for `gateway` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-11-26T07:13:10.629Z",
+    "@timestamp": "2026-01-08T06:38:18.036Z",
     "agent": {
-        "ephemeral_id": "594a7f0e-4997-4f55-9396-b711f61561db",
-        "id": "bf9a635e-aa7c-4820-8563-bc0a1a5a6139",
-        "name": "elastic-agent-13247",
+        "ephemeral_id": "e272fa8a-259e-402a-a60b-a70cd1e2daef",
+        "id": "08ff75a2-4f86-4772-9dae-093f237744d1",
+        "name": "elastic-agent-30491",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -436,19 +436,14 @@ An example event for `gateway` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.gateway",
-        "namespace": "83710",
+        "namespace": "28244",
         "type": "logs"
-    },
-    "dns": {
-        "resolved_ip": [
-            "1.128.0.0"
-        ]
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "bf9a635e-aa7c-4820-8563-bc0a1a5a6139",
+        "id": "08ff75a2-4f86-4772-9dae-093f237744d1",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -463,7 +458,7 @@ An example event for `gateway` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.gateway",
         "id": "tunnel3",
-        "ingested": "2025-11-26T07:13:13Z",
+        "ingested": "2026-01-08T06:38:20Z",
         "kind": "event",
         "original": "{\"backup_ids\":[\"backup1\",\"backup2\"],\"default\":false,\"dns_server\":\"1.128.0.0\",\"email_recipients\":[\"john.doe@example.com\"],\"email_when_connected\":false,\"email_when_disconnected\":false,\"id\":\"tunnel3\",\"name\":\"Gateway_1\",\"status\":\"pending\",\"tunnel_proxy_settings\":{\"enabled\":false,\"tunnel_proxy_addr\":\"addr\",\"tunnel_proxy_port\":8080,\"tunnel_proxy_user\":\"tunnel-proxy-01\"}}"
     },
