@@ -21,13 +21,16 @@ This integration collects log messages of the following type:
 
 - `Gateway`: Collect details of all Gateway (endpoint: `/api/v2/gateway`).
 
+- `Exposure`: Collect details of all exposure assets including:
+    - vulnerability_instances (endpoint: `/api/v2/vulnerability_instances`)
+    - vulnerabilities (endpoint: `/api/v2/vulnerabilities`)
+    - vulnerabilities_repository (endpoint: `/api/v2/vulnerabilities_repository`)
+
 ### Supported use cases
 
-Integrating the Axonius Adapter, User, and Gateway data streams with Elastic SIEM provides centralized visibility into data ingestion health, user identity context, and gateway configuration across the environment. Together, these data streams help analysts understand how data flows into the platform, how it maps to user access and roles, and how gateways operate within the network.
+Integrating the Axonius Adapter, User, Gateway, and Exposure data streams with Elastic SIEM provides centralized visibility into data ingestion health, user identity context, gateway configuration, and vulnerability exposure across the environment. Together, these datastreams help analysts understand how data enters the platform, how it maps to user access and roles, how gateways function within the network, and where critical security risks are present.
 
-The dashboards surface key insights into adapter and gateway status, connection behavior, and routing context, making it easy to identify failing integrations, misconfigurations, or irregular network behavior. At the same time, user-focused views highlight role distribution and essential identity attributes, supporting quick assessment of access posture and detection of unusual or high-privileged activity.
-
-By correlating integration health, identity context, and gateway configuration, security teams can reduce blind spots, detect anomalies more effectively, and streamline investigations with accurate, end-to-end operational and security context.
+The dashboards surface key insights into integration and gateway status, connection behavior, routing context, and vulnerability severity, making it easier to identify failing integrations, misconfigurations, or high-risk exposures. User-focused views highlight role distribution and essential identity attributes, while exposure data enables teams to assess risk levels and prioritize remediation efforts. By correlating these insights, security teams can reduce blind spots, detect anomalies more effectively, and streamline investigations with accurate, end-to-end operational and security context.
 
 ## What do I need to use this integration?
 
@@ -138,6 +141,16 @@ The `gateway` data stream provides gateway events from axonius.
 
 {{ event "gateway" }}
 
+### Exposure
+
+The `exposure` data stream provides exposure logs from axonius.
+
+#### exposure fields
+
+{{ fields "exposure" }}
+
+{{event "exposure"}}
+
 ### Inputs used
 {{/* All inputs used by this package will be automatically listed here. */}}
 {{ inputDocs }}
@@ -149,7 +162,11 @@ These APIs are used with this integration:
 * Adapter (endpoint: `/api/v2/adapters`)
 * User (endpoint: `/api/v2/users`)
 * Gateway (endpoint: `/api/v2/gateway`)
+* Exposure:
+    * vulnerability_instances (endpoint: `/api/v2/vulnerability_instances`)
+    * vulnerabilities (endpoint: `/api/v2/vulnerabilities`)
+    * vulnerabilities_repository (endpoint: `/api/v2/vulnerabilities_repository`)
 
 ### ILM Policy
 
-To facilitate adapter, user and gateway data, source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*` and `.ds-logs-axonius.gateway-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy` amd `logs-axonius.gateway-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter, user, gateway and assets data including exposures, source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*` and `.ds-logs-axonius.exposure-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy` and `logs-axonius.exposure-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
