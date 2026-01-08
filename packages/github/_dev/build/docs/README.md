@@ -90,6 +90,13 @@ All issues including `closed` are retrieved by default. If users want to retriev
 
 To use this integration, users must use GitHub Apps or Personal Access Token with `read` permission to repositories or organization. Refer to [GitHub Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
 
+**Note**: The Issues API can fetch a maximum of 30,000 issues when querying at the organization level. No limitation exists when querying for the repository level.
+
+**Note**: Ensure the GitHub Personal Access Token includes following fine-grained permission for the repository:
+- At least `Read-only` permission on Issues
+- At least `Read-only` permission on Metadata
+If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
+
 {{fields "issues"}}
 
 {{event "issues"}}

@@ -2,19 +2,23 @@
 
 ## Overview
 
-The [Trend Micro Vision One](https://www.trendmicro.com/en_in/business/products/detection-response.html) integration allows you to monitor Alert, Audit, Detection and Telemetry activity. Trend Micro Vision One refers to the ability to do detection and response across email, endpoints, servers, cloud workloads, and networks via a single Trend Micro Vision One platform or the managed Trend Micro Vision One service.
+The [Trend Micro Vision One](https://www.trendmicro.com/en_in/business/products/detection-response.html) integration allows you to monitor Alert, Audit, Detection, Endpoint activity, Network activity, and Telemetry activity. Trend Micro Vision One refers to the ability to do detection and response across email, endpoints, servers, cloud workloads, and networks via a single Trend Micro Vision One platform or the managed Trend Micro Vision One service.
 
 Use the Trend Micro Vision One integration to collects and parses data from the REST APIs. Then visualize that data in Kibana.
 
 ## Data streams
 
-The Trend Micro Vision One integration collects logs for four types of events: Alert, Audit, Detection and Telemetry.
+The Trend Micro Vision One integration collects logs for four types of events: Alert, Audit, Detection, Endpoint activity, Network activity, and Telemetry.
 
 **Alert** Displays information about workbench alerts. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3#tag/Workbench/paths/~1v3.0~1workbench~1alerts/get).
 
 **Audit** Displays log entries that match the specified search criteria. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3#tag/Audit-Logs).
 
 **Detection** Displays search results from the Detection Data source. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3#tag/Search/paths/~1v3.0~1search~1detections/get).
+
+**Endpoint activity** Displays search results from the Endpoint activity Data source. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3/#tag/Search/paths/~1v3.0~1search~1endpointActivities/get).
+
+**Network activity** Displays search results from the Network activity Data source. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3/#tag/Search/paths/~1v3.0~1search~1networkActivities/get).
 
 **Telemetry** Displays telemetry events from the Datalake Pipeline API. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3/#tag/Datalake-Pipeline).
 
@@ -39,12 +43,14 @@ This module has been tested against `Trend Micro Vision One API version 3.0`.
     - **Name**: A meaningful name that can help you identify the API key.
     - **Role**: The user role assigned to the key. API keys can use either predefined or custom user roles. Custom roles can be created by navigating to **Administration -> User Roles -> Add Role**. The role must have appropriate API access permission to fetch relevant data. The following table outlines the access permissions to apps and features needed to fetch relevant data from Trend Vision API.
 
-        | Datastream   | Section                                                      | Permissions                                        |
-        |--------------|--------------------------------------------------------------|----------------------------------------------------|
-        | Alert        | Platform Capabilities > XDR Threat Investigation > Workbench | `View, filter, and search`.                        |
-        | Audit        | Settings > Administration > Audit Logs                       | `View, filter, and search`, `Export and Download`. |
-        | Detection    | Platform Capabilities > XDR Threat Investigation > Search    | `View, filter, and search`.                        |
-        | Telemetry    | Platform Capabilities > XDR Threat Investigation > Search    | `View, filter, and search`.                        |
+        | Datastream        | Section                                                      | Permissions                                                  |
+        |-------------------|--------------------------------------------------------------|--------------------------------------------------------------|
+        | Alert             | Platform Capabilities > XDR Threat Investigation > Workbench | `View, filter, and search`.                                  |
+        | Audit             | Settings > Administration > Audit Logs                       | `View, filter, and search`, `Export and Download`.           |
+        | Detection         | Platform Capabilities > XDR Threat Investigation > Search    | `View, filter, and search`.                                  |
+        | Endpoint activity | Agentic SIEM and XDR > XDR Data Explorer                     | `View queries and Watchlist, and filter and search queries`. |
+        | Network activity  | Agentic SIEM and XDR > XDR Data Explorer                     | `View queries and Watchlist, and filter and search queries`. |
+        | Telemetry         | Platform Capabilities > XDR Threat Investigation > Search    | `View, filter, and search`.                                  |
 
         Refer to [Account Role Permissions](https://automation.trendmicro.com/xdr/Guides/Authentication) for more details.
 
@@ -75,34 +81,34 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-04-30T00:01:16.000Z",
     "agent": {
-        "ephemeral_id": "332ba8f3-c3fa-4c28-a2db-d290177c13e5",
-        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b7aea720-4612-436f-8df5-44bf5015c942",
+        "id": "d9e18280-ac4f-4a04-8545-b7b95e96929b",
+        "name": "elastic-agent-50030",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.alert",
-        "namespace": "19452",
+        "namespace": "70405",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
+        "id": "d9e18280-ac4f-4a04-8545-b7b95e96929b",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "email"
         ],
-        "created": "2024-06-12T03:27:26.911Z",
+        "created": "2025-12-22T03:11:33.969Z",
         "dataset": "trend_micro_vision_one.alert",
         "id": "WB-9002-20200427-0002",
-        "ingested": "2024-06-12T03:27:38Z",
+        "ingested": "2025-12-22T03:11:36Z",
         "kind": "alert",
         "original": "{\"alertProvider\":\"SAE\",\"createdDateTime\":\"2020-04-30T00:01:15Z\",\"description\":\"A backdoor was possibly implanted after a user received a possible spear phishing email message.\",\"id\":\"WB-9002-20200427-0002\",\"impactScope\":{\"accountCount\":0,\"desktopCount\":0,\"emailAddressCount\":0,\"entities\":[{\"entityId\":\"5257b401-2fd7-469c-94fa-39a4f11eb925\",\"entityType\":\"host\",\"entityValue\":\"user@email.com\",\"provenance\":[\"Alert\"],\"relatedEntities\":[\"CODERED\\\\\\\\user\"],\"relatedIndicatorIds\":[1]}],\"serverCount\":0},\"indicators\":[{\"field\":\"request url\",\"filterIds\":[\"f862df72-7f5e-4b2b-9f7f-9148e875f908\"],\"id\":1,\"provenance\":[\"Alert\"],\"relatedEntities\":[\"user@example.com\"],\"type\":\"url\",\"value\":\"http://www.example.com/ab001.zip\"}],\"investigationStatus\":\"New\",\"matchedRules\":[{\"id\":\"5f52d1f1-53e7-411a-b74f-745ee81fa30b\",\"matchedFilters\":[{\"id\":\"ccf86fc1-688f-4131-a46f-1d7a6ee2f88e\",\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"matchedEvents\":[{\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"type\":\"TELEMETRY_REGISTRY\",\"uuid\":\"fa9ff47c-e1b8-459e-a3d0-a5b104b854a5\"}],\"mitreTechniqueIds\":[\"T1192\"],\"name\":\"(T1192) Spearphishing Link\"}],\"name\":\"Possible SpearPhishing Email\"}],\"model\":\"Possible APT Attack\",\"schemaVersion\":\"1.0\",\"score\":63,\"severity\":\"critical\",\"updatedDateTime\":\"2023-04-30T00:01:16Z\",\"workbenchLink\":\"https://THE_WORKBENCH_URL\"}",
         "severity": 63,
@@ -295,33 +301,33 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-24T07:29:48.000Z",
     "agent": {
-        "ephemeral_id": "652abe8f-556a-4a24-9e9d-dc2990f84a38",
-        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "3a61b87e-4159-4a9f-9a7f-723e5c6bbaab",
+        "id": "6d60ddd6-f53b-43c5-b9d8-bac4c8d13b12",
+        "name": "elastic-agent-94461",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.audit",
-        "namespace": "46929",
+        "namespace": "88685",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
+        "id": "6d60ddd6-f53b-43c5-b9d8-bac4c8d13b12",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
-        "created": "2024-06-12T03:28:27.263Z",
+        "created": "2025-12-22T03:12:20.272Z",
         "dataset": "trend_micro_vision_one.audit",
-        "ingested": "2024-06-12T03:28:39Z",
+        "ingested": "2025-12-22T03:12:23Z",
         "kind": "event",
         "original": "{\"accessType\":\"Console\",\"activity\":\"string\",\"category\":\"Logon and Logoff\",\"details\":{\"property1\":\"string\",\"property2\":\"string\"},\"loggedDateTime\":\"2022-02-24T07:29:48Z\",\"loggedRole\":\"Master Administrator\",\"loggedUser\":\"Root Account\",\"result\":\"Unsuccessful\"}",
         "outcome": "failure",
@@ -405,15 +411,15 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2020-10-15T01:16:32.000Z",
     "agent": {
-        "ephemeral_id": "bd3fc9d8-6469-4e65-a30b-8a4c5f097211",
-        "id": "3cd29859-0418-4f1f-8ace-5d3fbdeff827",
-        "name": "elastic-agent-45727",
+        "ephemeral_id": "6f78e8f4-45e9-499d-9044-3fd3e004dc49",
+        "id": "669ede77-9c4c-4d9c-bb8d-529c43347791",
+        "name": "elastic-agent-82902",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.detection",
-        "namespace": "37271",
+        "namespace": "40599",
         "type": "logs"
     },
     "destination": {
@@ -427,9 +433,9 @@ An example event for `detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3cd29859-0418-4f1f-8ace-5d3fbdeff827",
+        "id": "669ede77-9c4c-4d9c-bb8d-529c43347791",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "clean",
@@ -437,10 +443,10 @@ An example event for `detection` looks as following:
         "category": [
             "intrusion_detection"
         ],
-        "created": "2025-05-26T12:39:55.938Z",
+        "created": "2025-12-22T03:13:02.337Z",
         "dataset": "trend_micro_vision_one.detection",
         "id": "100117",
-        "ingested": "2025-05-26T12:39:58Z",
+        "ingested": "2025-12-22T03:13:05Z",
         "kind": "event",
         "original": "{\"act\":\"Clean\",\"actResult\":\"Quarantined successfully\",\"app\":\"HTTP\",\"appGroup\":\"HTTP\",\"aptRelated\":\"0\",\"behaviorCat\":\"Grey-Detection\",\"blocking\":\"Web reputation\",\"cat\":50,\"cccaDetection\":\"Yes\",\"cccaDetectionSource\":\"GLOBAL_INTELLIGENCE\",\"cccaRiskLevel\":3,\"clientFlag\":\"dst\",\"cnt\":\"1\",\"component\":[\"PATTERN_VSAPI 17.101.92 2021-09-30 04:23:27-07:00\"],\"compressedFileSize\":\"0\",\"detectionType\":\"File\",\"deviceDirection\":\"outbound\",\"deviceGUID\":\"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\",\"deviceMacAddress\":\"00-00-5E-00-53-23\",\"deviceProcessName\":\"/snap/core/10126/usr/lib/snapd/snapd\",\"dhost\":\"samplehost\",\"domainName\":\"Workgroup\",\"dpt\":53,\"dst\":[\"81.2.69.142\"],\"dstGroup\":\"Default\",\"end\":\"2021-09-30T09:40:04-08:00\",\"endpointGUID\":\"1234-1234-1234\",\"endpointHostName\":\"abc-docker\",\"endpointIp\":[\"81.2.69.142\"],\"endpointMacAddress\":\"00-00-5E-00-53-23\",\"engType\":\"Virus Scan Engine (OS 2003, x64)\",\"engVer\":\"12.500.1004\",\"eventId\":\"100117\",\"eventName\":\"INTEGRITY_MONITORING_EVENT\",\"eventSubName\":\"Attack Discovery\",\"eventTime\":1602724592000,\"eventTimeDT\":\"2021-06-10T01:38:38+00:00\",\"fileHash\":\"3395856ce81f2b7382dee72602f798b642f14140\",\"fileName\":[\"Unconfirmed 145081.crdownload\"],\"fileOperation\":\"Deleted\",\"filePath\":\"/etc/systemd/system\",\"filePathName\":\"/etc/systemd/system/snap-xxxx-1246.xxxx\",\"fileSize\":\"0\",\"firstAct\":\"Clean\",\"firstActResult\":\"Unable to clean file\",\"fullPath\":\"C:\\\\\\\\Users\\\\\\\\user1\\\\\\\\Downloads\\\\\\\\Unconfirmed 145081.crdownload\",\"hostName\":\"samplehost\",\"httpReferer\":\"http://www.example.com/\",\"interestedHost\":\"abc-docker\",\"interestedIp\":[\"81.2.69.192\"],\"interestedMacAddress\":\"00-00-5E-00-53-23\",\"mDevice\":[\"81.2.69.192\"],\"mDeviceGUID\":\"C5B09EDD-C725-907F-29D9-B8C30D18C48F\",\"malName\":\"Eicar_test_1\",\"malType\":\"Virus/Malware\",\"mitreMapping\":[\"T1090 (TA0005)\"],\"mitreVersion\":\"v6\",\"mpname\":\"Cloud One - Workload Security\",\"mpver\":\"Deep Security/20.0.222\",\"objectCmd\":[\"C:\\\\\\\\Program Files (x86)\\\\\\\\Microsoft\\\\\\\\Edge\\\\\\\\Application\\\\\\\\msedge.exe --profile-directory=Default\"],\"objectFileHashMd5\":\"761AEFF7E6B110970285B9C20C9E1DCA\",\"objectFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"objectFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"objectFileName\":\"Unconfirmed 142899.crdownload:SmartScreen\",\"objectFilePath\":\"C:\\\\\\\\Users\\\\\\\\user1\\\\\\\\Downloads\\\\\\\\Unconfirmed 142899.crdownload:SmartScreen\",\"objectName\":\"CloudEndpointService.exe\",\"objectPid\":7660,\"objectSigner\":[\"OS\"],\"parentCmd\":\"C:\\\\\\\\os\\\\\\\\system32\\\\\\\\svchost.exe -k DcomLaunch -p\",\"parentFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"parentFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"parentFilePath\":\"C:\\\\\\\\os\\\\\\\\System32\\\\\\\\svchost.exe\",\"peerHost\":\"samplehost\",\"peerIp\":[\"81.2.69.192\"],\"pname\":\"Apex One\",\"processCmd\":\"-ServerName:App.AppX9yct9q388jvt4h7y0gn06smzkxcsnt8m.mca\",\"processFileHashMd5\":\"761AEFF7E6B110970285B9C20C9E1DCA\",\"processFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"processFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"processFilePath\":\"C:\\\\\\\\Program Files (x86)\\\\\\\\os\\\\\\\\Application\\\\\\\\msedge.exe\",\"processName\":\"string\",\"processPid\":0,\"processSigner\":\"OS Publisher\",\"productCode\":\"sao\",\"pver\":\"20.0.0.877\",\"request\":\"https://example.com\",\"requestClientApplication\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1\",\"rt\":\"2020-10-15T01:16:32.000Z\",\"rt_utc\":\"2020-10-15T01:16:32.000Z\",\"searchDL\":\"DDL\",\"spt\":58871,\"src\":\"81.2.69.192\",\"srcGroup\":\"Default\",\"tacticId\":[\"TA0005\"],\"tags\":[\"XSAE.F2140\",\"XSAE.F3066\"],\"threatName\":\"Malicious_identified_CnC_querying_on_UDP_detected\",\"uuid\":\"1234-1234-1234\"}",
         "severity": 50,
@@ -841,6 +847,553 @@ An example event for `detection` looks as following:
 | trend_micro_vision_one.detection.url_cat | URL cat. | keyword |
 | trend_micro_vision_one.detection.user.domain | User domain. | keyword |
 | trend_micro_vision_one.detection.uuid | Log unique id. | keyword |
+
+
+### endpoint activity
+
+This is the `endpoint activity` dataset.
+
+#### Example
+
+An example event for `endpoint_activity` looks as following:
+
+```json
+{
+    "@timestamp": "2023-11-13T10:15:43.210Z",
+    "agent": {
+        "ephemeral_id": "e3104ef5-8982-48d9-a9ec-3f6c451df799",
+        "id": "fca8de1b-d200-49c4-9272-7088e4a986bb",
+        "name": "elastic-agent-21907",
+        "type": "filebeat",
+        "version": "8.19.7"
+    },
+    "data_stream": {
+        "dataset": "trend_micro_vision_one.endpoint_activity",
+        "namespace": "48188",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "81.2.69.142",
+        "port": 442
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "fca8de1b-d200-49c4-9272-7088e4a986bb",
+        "snapshot": true,
+        "version": "8.19.7"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "code": "4624",
+        "dataset": "trend_micro_vision_one.endpoint_activity",
+        "id": "29",
+        "ingested": "2025-12-02T12:31:41Z",
+        "kind": "event",
+        "original": "{\"dpt\":442,\"dst\":\"81.2.69.142\",\"endpointGuid\":\"72436165-b5a5-471a-9389-0bdc3647bc33\",\"endpointHostName\":\"workstation-pc01\",\"endpointIp\":[\"1.128.0.0\"],\"eventId\":\"29\",\"eventSubId\":2,\"eventTime\":1699876543210,\"eventTimeDT\":\"2023-11-13T10:15:43.210000+00:00\",\"hostName\":\"workstation-pc01\",\"logonUser\":[\"john.doe@example.com\"],\"objectCmd\":\"C:\\\\Windows\\\\System32\\\\cmd.exe /c whoami\",\"objectFileHashSha1\":\"A1B2C3D4E5F6789012345678901234567890ABCD\",\"objectFilePath\":\"C:\\\\Windows\\\\System32\\\\cmd.exe\",\"objectHostName\":\"api.example.com\",\"objectIntegrityLevel\":8192,\"objectIp\":\"81.2.69.144\",\"objectIps\":[\"81.2.69.144\",\"175.16.199.0\"],\"objectPort\":8080,\"objectRegistryData\":\"C:\\\\Program Files\\\\MyApp\\\\startup.exe\",\"objectRegistryKeyHandle\":\"hklm\\\\software\\\\microsoft\\\\windows\\\\currentversion\\\\run\",\"objectRegistryValue\":\"MyAppStartup\",\"objectSigner\":[\"Microsoft Windows\"],\"objectSignerValid\":[true],\"objectSubTrueType\":7002,\"objectTrueType\":7,\"objectUser\":\"DOMAIN\\\\john.doe\",\"os\":\"Windows 10\",\"parentCmd\":\"C:\\\\Windows\\\\explorer.exe\",\"parentFileHashSha1\":\"B2C3D4E5F67890123456789012345678901ABCDE\",\"parentFilePath\":\"C:\\\\Windows\\\\explorer.exe\",\"processCmd\":\"C:\\\\Windows\\\\System32\\\\cmd.exe /c whoami\",\"processFileHashSha1\":\"C3D4E5F678901234567890123456789012ABCDEF\",\"processFilePath\":\"C:\\\\Windows\\\\System32\\\\cmd.exe\",\"request\":\"https://api.example.com/v1/auth\",\"searchDL\":\"EDR\",\"spt\":49152,\"src\":\"1.128.0.0\",\"srcFileHashSha1\":\"D4E5F6789012345678901234567890123ABCDEFG\",\"srcFilePath\":\"C:\\\\Users\\\\john.doe\\\\Downloads\\\\installer.exe\",\"tags\":[\"MITRE.T1059.001\",\"XSAE.F1001\"],\"uuid\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"winEventId\":4624}"
+    },
+    "file": {
+        "hash": {
+            "sha1": "A1B2C3D4E5F6789012345678901234567890ABCD"
+        },
+        "path": "C:\\Windows\\System32\\cmd.exe"
+    },
+    "host": {
+        "hostname": "workstation-pc01",
+        "ip": [
+            "1.128.0.0"
+        ],
+        "name": "workstation-pc01",
+        "os": {
+            "name": "Windows 10"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "process": {
+        "command_line": "C:\\Windows\\System32\\cmd.exe /c whoami",
+        "executable": "C:\\Windows\\System32\\cmd.exe",
+        "hash": {
+            "sha1": "C3D4E5F678901234567890123456789012ABCDEF"
+        },
+        "parent": {
+            "command_line": "C:\\Windows\\explorer.exe",
+            "executable": "C:\\Windows\\explorer.exe",
+            "hash": {
+                "sha1": "B2C3D4E5F67890123456789012345678901ABCDE"
+            }
+        }
+    },
+    "registry": {
+        "path": "hklm\\software\\microsoft\\windows\\currentversion\\run",
+        "value": "MyAppStartup"
+    },
+    "related": {
+        "hash": [
+            "A1B2C3D4E5F6789012345678901234567890ABCD",
+            "C3D4E5F678901234567890123456789012ABCDEF",
+            "B2C3D4E5F67890123456789012345678901ABCDE",
+            "D4E5F6789012345678901234567890123ABCDEFG"
+        ],
+        "hosts": [
+            "workstation-pc01",
+            "api.example.com"
+        ],
+        "ip": [
+            "1.128.0.0",
+            "81.2.69.144",
+            "175.16.199.0",
+            "81.2.69.142"
+        ],
+        "user": [
+            "john.doe@example.com",
+            "DOMAIN\\john.doe"
+        ]
+    },
+    "source": {
+        "ip": "1.128.0.0",
+        "port": 49152
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "trend_micro_vision_one-endpoint_activity"
+    ],
+    "trend_micro_vision_one": {
+        "endpoint_activity": {
+            "destination": {
+                "address": "81.2.69.142",
+                "port": 442
+            },
+            "endpoint": {
+                "guid": "72436165-b5a5-471a-9389-0bdc3647bc33",
+                "host_name": "workstation-pc01",
+                "ip": [
+                    "1.128.0.0"
+                ]
+            },
+            "event": {
+                "id": "29",
+                "sub_id": 2,
+                "time": "2023-11-13T11:55:43.210Z",
+                "time_dt": "2023-11-13T10:15:43.210Z"
+            },
+            "host_name": "workstation-pc01",
+            "logon_user": [
+                "john.doe@example.com"
+            ],
+            "object": {
+                "cmd": "C:\\Windows\\System32\\cmd.exe /c whoami",
+                "file": {
+                    "hash_sha1": "A1B2C3D4E5F6789012345678901234567890ABCD",
+                    "path": "C:\\Windows\\System32\\cmd.exe"
+                },
+                "host_name": "api.example.com",
+                "integrity_level": 8192,
+                "ip": "81.2.69.144",
+                "ips": [
+                    "81.2.69.144",
+                    "175.16.199.0"
+                ],
+                "port": 8080,
+                "registry": {
+                    "data": "C:\\Program Files\\MyApp\\startup.exe",
+                    "key_handle": "hklm\\software\\microsoft\\windows\\currentversion\\run",
+                    "value": "MyAppStartup"
+                },
+                "signer": [
+                    "Microsoft Windows"
+                ],
+                "signer_valid": [
+                    true
+                ],
+                "sub_true_type": 7002,
+                "true_type": 7,
+                "user": "DOMAIN\\john.doe"
+            },
+            "os": "Windows 10",
+            "parent": {
+                "cmd": "C:\\Windows\\explorer.exe",
+                "file": {
+                    "hash_sha1": "B2C3D4E5F67890123456789012345678901ABCDE",
+                    "path": "C:\\Windows\\explorer.exe"
+                }
+            },
+            "process": {
+                "cmd": "C:\\Windows\\System32\\cmd.exe /c whoami",
+                "file": {
+                    "hash_sha1": "C3D4E5F678901234567890123456789012ABCDEF",
+                    "path": "C:\\Windows\\System32\\cmd.exe"
+                }
+            },
+            "request": "https://api.example.com/v1/auth",
+            "search_dl": "EDR",
+            "source": {
+                "ip": "1.128.0.0",
+                "port": 49152
+            },
+            "source_file": {
+                "hash_sha1": "D4E5F6789012345678901234567890123ABCDEFG",
+                "path": "C:\\Users\\john.doe\\Downloads\\installer.exe"
+            },
+            "tags": [
+                "MITRE.T1059.001",
+                "XSAE.F1001"
+            ],
+            "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "win_event_id": 4624
+        }
+    },
+    "url": {
+        "original": "https://api.example.com/v1/auth"
+    },
+    "user": {
+        "name": [
+            "john.doe@example.com"
+        ],
+        "target": {
+            "name": "DOMAIN\\john.doe"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| trend_micro_vision_one.endpoint_activity.destination.address | Destination IP address. | keyword |
+| trend_micro_vision_one.endpoint_activity.destination.port | Destination port. | long |
+| trend_micro_vision_one.endpoint_activity.endpoint.guid | Endpoint GUID for identity. | keyword |
+| trend_micro_vision_one.endpoint_activity.endpoint.host_name | Hostname of the endpoint on which the event was generated. | keyword |
+| trend_micro_vision_one.endpoint_activity.endpoint.ip | Endpoint IP address list. | ip |
+| trend_micro_vision_one.endpoint_activity.event.id | Event ID for data field mapping. | keyword |
+| trend_micro_vision_one.endpoint_activity.event.sub_id | Event sub ID for data field mapping. | long |
+| trend_micro_vision_one.endpoint_activity.event.time | Log collect time utc format. | date |
+| trend_micro_vision_one.endpoint_activity.event.time_dt | Log collect time. | date |
+| trend_micro_vision_one.endpoint_activity.host_name | Hostname of the endpoint on which the event was generated. | keyword |
+| trend_micro_vision_one.endpoint_activity.logon_user | Logon user name. | keyword |
+| trend_micro_vision_one.endpoint_activity.object.cmd | Command line entry of target process. | keyword |
+| trend_micro_vision_one.endpoint_activity.object.file.hash_sha1 | The SHA1 hash of target process image or target file. | keyword |
+| trend_micro_vision_one.endpoint_activity.object.file.path | File path location of target process image or target file. | keyword |
+| trend_micro_vision_one.endpoint_activity.object.host_name | Server name where Internet event was detected. | keyword |
+| trend_micro_vision_one.endpoint_activity.object.integrity_level | Object integrity level for data field mapping. | long |
+| trend_micro_vision_one.endpoint_activity.object.ip | IP address of internet event. | ip |
+| trend_micro_vision_one.endpoint_activity.object.ips | IP address list of internet event. | ip |
+| trend_micro_vision_one.endpoint_activity.object.port | The port number used by internet event. | long |
+| trend_micro_vision_one.endpoint_activity.object.registry.data | The registry value data. | keyword |
+| trend_micro_vision_one.endpoint_activity.object.registry.key_handle | The registry key. | keyword |
+| trend_micro_vision_one.endpoint_activity.object.registry.value | Registry value name. | keyword |
+| trend_micro_vision_one.endpoint_activity.object.signer | Certificate signer of object process or file. | keyword |
+| trend_micro_vision_one.endpoint_activity.object.signer_valid | Validity of certificate signer. | boolean |
+| trend_micro_vision_one.endpoint_activity.object.sub_true_type | Object sub true type for data field mapping. | long |
+| trend_micro_vision_one.endpoint_activity.object.true_type | Object true type for data field mapping. | long |
+| trend_micro_vision_one.endpoint_activity.object.user | The owner name of target process / The logon user name. | keyword |
+| trend_micro_vision_one.endpoint_activity.os | Operating system. | keyword |
+| trend_micro_vision_one.endpoint_activity.parent.cmd | The command line that parent process. | keyword |
+| trend_micro_vision_one.endpoint_activity.parent.file.hash_sha1 | The SHA1 hash of parent process. | keyword |
+| trend_micro_vision_one.endpoint_activity.parent.file.path | The file path location of parent process. | keyword |
+| trend_micro_vision_one.endpoint_activity.process.cmd | The command line used to launch this process. | keyword |
+| trend_micro_vision_one.endpoint_activity.process.file.hash_sha1 | The process file sha1. | keyword |
+| trend_micro_vision_one.endpoint_activity.process.file.path | The process file path. | keyword |
+| trend_micro_vision_one.endpoint_activity.request | Request URL (normally detected by Web Reputation Services). | keyword |
+| trend_micro_vision_one.endpoint_activity.search_dl | Search data lake. | keyword |
+| trend_micro_vision_one.endpoint_activity.source.ip | Source IP address. | ip |
+| trend_micro_vision_one.endpoint_activity.source.port | Source port. | long |
+| trend_micro_vision_one.endpoint_activity.source_file.hash_sha1 | Source file sha1. | keyword |
+| trend_micro_vision_one.endpoint_activity.source_file.path | Source file path. | keyword |
+| trend_micro_vision_one.endpoint_activity.tags | Detected by Security Analytics Engine filters. | keyword |
+| trend_micro_vision_one.endpoint_activity.uuid | Log unique identity. | keyword |
+| trend_micro_vision_one.endpoint_activity.win_event_id | Windows event ID for data field mapping. | long |
+
+
+### network activity
+
+This is the `network activity` dataset.
+
+#### Example
+
+An example event for `network_activity` looks as following:
+
+```json
+{
+    "@timestamp": "2023-11-13T11:55:43.000Z",
+    "agent": {
+        "ephemeral_id": "76c92ca8-86e3-4b6e-983a-07da450d1d19",
+        "id": "e91d68b9-ae62-485d-85b7-813f8a96d54c",
+        "name": "elastic-agent-66717",
+        "type": "filebeat",
+        "version": "8.19.7"
+    },
+    "client": {
+        "ip": "175.16.199.0"
+    },
+    "data_stream": {
+        "dataset": "trend_micro_vision_one.network_activity",
+        "namespace": "83537",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": "81.2.69.142",
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "e91d68b9-ae62-485d-85b7-813f8a96d54c",
+        "snapshot": true,
+        "version": "8.19.7"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "trend_micro_vision_one.network_activity",
+        "duration": 45,
+        "ingested": "2025-12-02T12:45:21Z",
+        "kind": "event",
+        "original": "{\"act\":1,\"application\":\"Microsoft 365\",\"clientIp\":\"175.16.199.0\",\"companyName\":\"Acme Corporation\",\"customerId\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"detectionType\":10,\"deviceGUID\":\"c3d4e5f6-7890-1234-cdef-345678901234\",\"dpt\":443,\"dst\":\"81.2.69.142\",\"duration\":45,\"endpointGuid\":\"72436165-b5a5-471a-9389-0bdc3647bc33\",\"endpointHostName\":\"workstation-pc01\",\"eventName\":\"SWG_ACTIVITY_LOG\",\"eventSubName\":\"SharePoint file download\",\"eventTime\":1699876543,\"fileHash\":\"a1b2c3d4e5f6789012345678901234567890abcd\",\"fileHashSha256\":\"ba9edecdd09de1307714564c24409bd25508e22fe11c768053a08f173f263e93\",\"fileName\":\"quarterly_report.xlsx\",\"fileSize\":245678,\"fileType\":\"Microsoft Excel\",\"malName\":\"\",\"mimeType\":\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\",\"objectId\":\"e5f67890-1234-5678-ef01-567890123456\",\"osName\":\"Windows 10\",\"pname\":\"2200\",\"policyUuid\":\"f6789012-3456-7890-f012-678901234567\",\"principalName\":\"john.doe@example.com\",\"profile\":\"standard\",\"pver\":\"2.1\",\"request\":\"https://portal.example.com/dashboard\",\"requestBase\":\"portal.example.com\",\"requestMethod\":\"GET\",\"requestMimeType\":\"application/json\",\"rt\":1699876545,\"ruleName\":\"Corporate_Access_Policy\",\"ruleType\":\"access\",\"ruleUuid\":\"d4e5f678-9012-3456-def0-456789012345\",\"score\":95,\"sender\":\"Corporate Gateway\",\"serverProtocol\":\"HTTP/2\",\"serverTls\":\"TLS 1.3\",\"spt\":49152,\"src\":\"1.128.0.0\",\"start\":1699876500,\"suid\":\"John Doe\",\"tenantGuid\":\"b2c3d4e5-f678-9012-bcde-f23456789012\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36\",\"userDepartment\":\"Finance\",\"userDomain\":\"example.com\"}",
+        "start": 1699876500
+    },
+    "file": {
+        "hash": {
+            "sha1": "a1b2c3d4e5f6789012345678901234567890abcd",
+            "sha256": "ba9edecdd09de1307714564c24409bd25508e22fe11c768053a08f173f263e93"
+        },
+        "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "name": "quarterly_report.xlsx",
+        "size": 245678,
+        "type": "Microsoft Excel"
+    },
+    "host": {
+        "hostname": "workstation-pc01",
+        "os": {
+            "name": "Windows 10"
+        }
+    },
+    "http": {
+        "request": {
+            "method": "GET",
+            "mime_type": "application/json"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "network": {
+        "protocol": "HTTP/2"
+    },
+    "organization": {
+        "name": "Acme Corporation"
+    },
+    "related": {
+        "hash": [
+            "a1b2c3d4e5f6789012345678901234567890abcd",
+            "ba9edecdd09de1307714564c24409bd25508e22fe11c768053a08f173f263e93"
+        ],
+        "hosts": [
+            "workstation-pc01",
+            "portal.example.com"
+        ],
+        "ip": [
+            "1.128.0.0",
+            "81.2.69.142",
+            "175.16.199.0"
+        ],
+        "user": [
+            "John Doe",
+            "john.doe@example.com"
+        ]
+    },
+    "rule": {
+        "category": "access",
+        "name": "Corporate_Access_Policy",
+        "uuid": "d4e5f678-9012-3456-def0-456789012345"
+    },
+    "source": {
+        "ip": "1.128.0.0",
+        "port": 49152
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "trend_micro_vision_one-network_activity"
+    ],
+    "tls": {
+        "version": "TLS 1.3"
+    },
+    "trend_micro_vision_one": {
+        "network_activity": {
+            "act": 1,
+            "application": "Microsoft 365",
+            "client": {
+                "ip": "175.16.199.0"
+            },
+            "company_name": "Acme Corporation",
+            "customer": {
+                "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            },
+            "destination": {
+                "ip": "81.2.69.142",
+                "port": 443
+            },
+            "detection": {
+                "type": 10
+            },
+            "device": {
+                "guid": "c3d4e5f6-7890-1234-cdef-345678901234"
+            },
+            "duration": 45,
+            "endpoint": {
+                "guid": "72436165-b5a5-471a-9389-0bdc3647bc33",
+                "host_name": "workstation-pc01"
+            },
+            "event": {
+                "name": "SWG_ACTIVITY_LOG",
+                "sub_name": "SharePoint file download",
+                "time": "2023-11-13T11:55:43.000Z"
+            },
+            "file": {
+                "hash_sha1": "a1b2c3d4e5f6789012345678901234567890abcd",
+                "hash_sha256": "ba9edecdd09de1307714564c24409bd25508e22fe11c768053a08f173f263e93",
+                "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "name": "quarterly_report.xlsx",
+                "size": 245678,
+                "type": "Microsoft Excel"
+            },
+            "object": {
+                "id": "e5f67890-1234-5678-ef01-567890123456"
+            },
+            "os": {
+                "name": "Windows 10"
+            },
+            "pname": "2200",
+            "policy": {
+                "uuid": "f6789012-3456-7890-f012-678901234567"
+            },
+            "profile": "standard",
+            "pver": "2.1",
+            "request": {
+                "base": "portal.example.com",
+                "method": "GET",
+                "mime_type": "application/json",
+                "url": "https://portal.example.com/dashboard"
+            },
+            "rt": 1699876545,
+            "rule": {
+                "name": "Corporate_Access_Policy",
+                "type": "access",
+                "uuid": "d4e5f678-9012-3456-def0-456789012345"
+            },
+            "score": 95,
+            "sender": "Corporate Gateway",
+            "server": {
+                "protocol": "HTTP/2",
+                "tls": "TLS 1.3"
+            },
+            "source": {
+                "ip": "1.128.0.0",
+                "port": 49152
+            },
+            "start": 1699876500,
+            "tenant": {
+                "guid": "b2c3d4e5-f678-9012-bcde-f23456789012"
+            },
+            "user": {
+                "department": "Finance",
+                "domain": "example.com",
+                "id": "John Doe",
+                "principal_name": "john.doe@example.com"
+            },
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+        }
+    },
+    "url": {
+        "original": "https://portal.example.com/dashboard"
+    },
+    "user": {
+        "domain": "example.com",
+        "email": "john.doe@example.com",
+        "name": "John Doe"
+    },
+    "user_agent": {
+        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| trend_micro_vision_one.network_activity.act | Action taken for the violation. | long |
+| trend_micro_vision_one.network_activity.application | Name of the requested application. | keyword |
+| trend_micro_vision_one.network_activity.client.ip | Internal IP address of source endpoint. | ip |
+| trend_micro_vision_one.network_activity.company_name | Company name. | keyword |
+| trend_micro_vision_one.network_activity.customer.id | Company ID. | keyword |
+| trend_micro_vision_one.network_activity.destination.ip | Destination IP address. | ip |
+| trend_micro_vision_one.network_activity.destination.port | Destination port of private application server. | long |
+| trend_micro_vision_one.network_activity.detection.type | Scan type. | long |
+| trend_micro_vision_one.network_activity.device.guid | GUID of the agent which reported this detection. | keyword |
+| trend_micro_vision_one.network_activity.duration | Scan complete time, in milliseconds. | long |
+| trend_micro_vision_one.network_activity.endpoint.guid | GUID of the agent which reported the detection. | keyword |
+| trend_micro_vision_one.network_activity.endpoint.host_name | Endpoint hostname. | keyword |
+| trend_micro_vision_one.network_activity.event.name | Event type name. | keyword |
+| trend_micro_vision_one.network_activity.event.sub_name | Event type subname. | keyword |
+| trend_micro_vision_one.network_activity.event.time | Event generation time on the agent side. | date |
+| trend_micro_vision_one.network_activity.file.hash_sha1 | The SHA-1 of the file which violated the policy. | keyword |
+| trend_micro_vision_one.network_activity.file.hash_sha256 | The SHA-256 of the file which violated the policy. | keyword |
+| trend_micro_vision_one.network_activity.file.mime_type | The MIME type/content type of the response body. | keyword |
+| trend_micro_vision_one.network_activity.file.name | File name of the file which violated the policy. | keyword |
+| trend_micro_vision_one.network_activity.file.size | Size of the file which violated the policy. | long |
+| trend_micro_vision_one.network_activity.file.type | File type of the file which violated the policy. | keyword |
+| trend_micro_vision_one.network_activity.malware.name | Name of the malware detected. | keyword |
+| trend_micro_vision_one.network_activity.object.id | UUID of private access application. | keyword |
+| trend_micro_vision_one.network_activity.os.name | Endpoint device operating system. | keyword |
+| trend_micro_vision_one.network_activity.pname | Internal product ID (Deprecated use productCode). | keyword |
+| trend_micro_vision_one.network_activity.policy.uuid | UUID of the triggered Private Access or Risk Control rule. | keyword |
+| trend_micro_vision_one.network_activity.profile | Name of the Threat Protection template or Data Loss Prevention profile triggered. | keyword |
+| trend_micro_vision_one.network_activity.pver | Product version. | keyword |
+| trend_micro_vision_one.network_activity.request.base | Domain of the requested URL. | keyword |
+| trend_micro_vision_one.network_activity.request.method | HTTP/HTTPS request method. | keyword |
+| trend_micro_vision_one.network_activity.request.mime_type | Requested content type. | keyword |
+| trend_micro_vision_one.network_activity.request.url | The requested destination URL the user is accessing. | keyword |
+| trend_micro_vision_one.network_activity.rt | Report received time. | long |
+| trend_micro_vision_one.network_activity.rule.name | Name of the rule that triggered the event. | keyword |
+| trend_micro_vision_one.network_activity.rule.type | Type of rule which triggered. | keyword |
+| trend_micro_vision_one.network_activity.rule.uuid | UUID of the triggered rule. | keyword |
+| trend_micro_vision_one.network_activity.score | Web Reputation Services URL rating. | long |
+| trend_micro_vision_one.network_activity.sender | Roaming users or gateway where the web traffic passed. | keyword |
+| trend_micro_vision_one.network_activity.server.protocol | HTTP protocol version of destination server. | keyword |
+| trend_micro_vision_one.network_activity.server.tls | Server TLS/SSL version. | keyword |
+| trend_micro_vision_one.network_activity.source.ip | Source IP address that is connecting to the Internet Access gateway. | ip |
+| trend_micro_vision_one.network_activity.source.port | Source virtual port assigned to endpoint Secure Access Module. | long |
+| trend_micro_vision_one.network_activity.start | Secure Access Module session start time. | long |
+| trend_micro_vision_one.network_activity.tenant.guid | Tenant GUID of the Internet Access Gateway. | keyword |
+| trend_micro_vision_one.network_activity.user.department | User department. | keyword |
+| trend_micro_vision_one.network_activity.user.domain | Domain of the username. | keyword |
+| trend_micro_vision_one.network_activity.user.id | User name or IP address. | keyword |
+| trend_micro_vision_one.network_activity.user.principal_name | User principal name used to log on to Trend Micro Web Security admin portal. | keyword |
+| trend_micro_vision_one.network_activity.user_agent | Name of the web browser app user connects from. | keyword |
 
 
 ### telemetry

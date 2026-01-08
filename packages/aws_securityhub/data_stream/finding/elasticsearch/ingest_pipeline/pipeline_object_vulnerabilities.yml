@@ -1,0 +1,498 @@
+---
+description: Pipeline for processing Vulnerability object.
+# Vulnerability object docs: https://schema.ocsf.io/1.5.0/objects/vulnerability
+processors:
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.advisory.created_time_dt
+          tag: date_vulnerabilities_advisory_created_time_dt
+          target_field: _ingest._value.advisory.created_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.advisory.created_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.advisory.created_time
+          tag: date_vulnerabilities_advisory_created_time
+          target_field: _ingest._value.advisory.created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.advisory.created_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        convert:
+          field: _ingest._value.advisory.install_state_id
+          tag: convert_vulnerabilities_advisory_install_state_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        convert:
+          field: _ingest._value.advisory.is_superseded
+          tag: convert_vulnerabilities_advisory_is_superseded_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.advisory.is_superseded
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.advisory.modified_time_dt
+          tag: date_vulnerabilities_advisory_modified_time_dt
+          target_field: _ingest._value.advisory.modified_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.advisory.modified_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.advisory.modified_time
+          tag: date_vulnerabilities_advisory_modified_time
+          target_field: _ingest._value.advisory.modified_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.advisory.modified_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        convert:
+          field: _ingest._value.advisory.size
+          tag: convert_vulnerabilities_advisory_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.advisory.size
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.affected_code
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.end_column
+              tag: convert_vulnerabilities_affected_code_end_column_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.end_column
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.affected_code
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.end_line
+              tag: convert_vulnerabilities_affected_code_end_line_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.end_line
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.affected_code
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.start_column
+              tag: convert_vulnerabilities_affected_code_start_column_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.start_column
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.affected_code
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.start_line
+              tag: convert_vulnerabilities_affected_code_start_line_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.start_line
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.affected_packages
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.epoch
+              tag: convert_vulnerabilities_affected_packages_epoch_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.epoch
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.affected_packages
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.type_id
+              tag: convert_vulnerabilities_affected_packages_type_id_to_string
+              type: string
+              ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.cve.created_time_dt
+          tag: date_vulnerabilities_cve_created_time_dt
+          target_field: _ingest._value.cve.created_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.created_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.cve.created_time
+          tag: date_vulnerabilities_cve_created_time
+          target_field: _ingest._value.cve.created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.created_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.cve.cvss
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.base_score
+              tag: convert_vulnerabilities_cve_cvss_base_score_to_float
+              type: float
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.base_score
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.cve.cvss
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.overall_score
+              tag: convert_vulnerabilities_cve_cvss_overall_score_to_float
+              type: float
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.overall_score
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.cve.epss.created_time_dt
+          tag: date_vulnerabilities_cve_epss_created_time_dt
+          target_field: _ingest._value.cve.epss.created_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.epss.created_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.cve.epss.created_time
+          tag: date_vulnerabilities_cve_epss_created_time
+          target_field: _ingest._value.cve.epss.created_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.epss.created_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cve.epss.percentile
+          tag: convert_vulnerabilities_cve_epss_percentile_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.epss.percentile
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.cve.modified_time_dt
+          tag: date_vulnerabilities_cve_modified_time_dt
+          target_field: _ingest._value.cve.modified_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.modified_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.cve.modified_time
+          tag: date_vulnerabilities_cve_modified_time
+          target_field: _ingest._value.cve.modified_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.cve.modified_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.exploit_last_seen_time_dt
+          tag: date_vulnerabilities_exploit_last_seen_time_dt
+          target_field: _ingest._value.exploit_last_seen_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.exploit_last_seen_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.exploit_last_seen_time
+          tag: date_vulnerabilities_exploit_last_seen_time
+          target_field: _ingest._value.exploit_last_seen_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.exploit_last_seen_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.first_seen_time_dt
+          tag: date_vulnerabilities_first_seen_time_dt
+          target_field: _ingest._value.first_seen_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.first_seen_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.first_seen_time
+          tag: date_vulnerabilities_first_seen_time
+          target_field: _ingest._value.first_seen_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.first_seen_time
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        convert:
+          field: _ingest._value.fix_coverage_id
+          tag: convert_vulnerabilities_fix_coverage_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_exploit_available
+          tag: convert_vulnerabilities_is_exploit_available_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_exploit_available
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_fix_available
+          tag: convert_vulnerabilities_is_fix_available_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_fix_available
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_seen_time_dt
+          tag: date_vulnerabilities_last_seen_time_dt
+          target_field: _ingest._value.last_seen_time_dt
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+          on_failure:
+            - remove:
+                field: _ingest._value.last_seen_time_dt
+                ignore_missing: true
+  - foreach:
+      field: aws_securityhub.finding.vulnerabilities
+      if: ctx.aws_securityhub?.finding?.vulnerabilities instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_seen_time
+          tag: date_vulnerabilities_last_seen_time
+          target_field: _ingest._value.last_seen_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.last_seen_time
+                ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
