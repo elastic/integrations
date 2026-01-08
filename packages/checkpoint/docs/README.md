@@ -540,12 +540,14 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.rule_action | Action of the matched rule in the access policy. | keyword |
 | checkpoint.rulebase_id | Layer number. | integer |
 | checkpoint.scan_direction | Scan direction. | keyword |
+| checkpoint.scan_ended | Scan end time. | keyword |
 | checkpoint.scan_hosts_day | Number of unique hosts during the last day. | integer |
 | checkpoint.scan_hosts_hour | Number of unique hosts during the last hour. | integer |
 | checkpoint.scan_hosts_week | Number of unique hosts during the last week. | integer |
 | checkpoint.scan_id | Sequential number of scan. | keyword |
 | checkpoint.scan_mail | Number of emails that were scanned by "AB malicious activity" engine. | integer |
 | checkpoint.scan_results | "Infected"/description of a failure. | keyword |
+| checkpoint.scan_started | Scan start time. | keyword |
 | checkpoint.scheme | Describes the scheme used for the log. | keyword |
 | checkpoint.scope | IP related to the attack. | keyword |
 | checkpoint.script_value_for_one_time_scripts |  | keyword |
