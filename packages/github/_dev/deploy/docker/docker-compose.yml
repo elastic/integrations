@@ -35,17 +35,15 @@ services:
       az storage container create --name test-container && 
       az storage blob upload --container-name test-container --file /sample_logs/cloud-storage-data.log --name cloud-storage-data.log"
 
-  gcs-mock-service:
-    image: golang:1.24.7-alpine
-    working_dir: /app
-    volumes:
-      - ./gcs-mock-service:/app
-      - ./files/manifest.yml:/files/manifest.yml:ro
-      - ./sample_logs/:/data:ro
+  gcs-mock:
+    image: shourieg/gcs-mock-service:latest
     ports:
       - "4443/tcp"
+    volumes:
+      - ./files/manifest.yml:/app/manifest.yml
+      - ./files/testbucket:/app/testbucket
     healthcheck:
       test: "wget --no-verbose --tries=1 --spider http://localhost:4443/health || exit 1"
       interval: 10s
       timeout: 5s
-    command: go run main.go -manifest /files/manifest.yml
+    command: ["./gcs-mock-service", "--manifest", "/app/manifest.yml"]
