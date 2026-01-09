@@ -26,9 +26,9 @@ The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to easily
 
 - `vulnerability` dataset: It retrieves all the vulnerabilities in your environment, providing information such as severity, status, confidence levels, remediation guidance, and affected hosts, as detected by the CrowdStrike Falcon platform, via the Falcon Spotlight Vulnerability API - `/spotlight/combined/vulnerabilities/v1`.
 
-3. **Falcon Data Replicator**: This Collect events in near real time from your endpoints and cloud workloads, identities and data. CrowdStrike Falcon Data Replicator (FDR) enables you with actionable insights to improve SOC performance. FDR contains near real-time data collected by the Falcon platform's single, lightweight agent. It includes the following datasets for receiving logs:
+3. **Falcon Data Replicator**: This collects events from your endpoints, cloud workloads, identities, and data. CrowdStrike Falcon Data Replicator (FDR) enables you with actionable insights to improve SOC performance. FDR contains data collected by the Falcon platform's single, lightweight agent. It includes the following datasets for receiving logs:
 
-- `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR).
+- `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR). In addition to the existing log types, the integration supports parsing of Cloud Security Posture Management (CSPM). CSPM contains Indicators of Misconfiguration (IOM) and Indicators of Attack (IOA) events.
 
 4. **CrowdStrike Event Stream**: This streams security logs from CrowdStrike Event Stream, including authentication activity, cloud security posture management (CSPM), firewall logs, user activity, and XDR data. It captures real-time security events like user logins, cloud environment changes, network traffic, and advanced threat detections. The streaming integration provides continuous monitoring and analysis for proactive threat detection. It enhances visibility into user behavior, network security, and overall system health. This setup enables faster response capabilities to emerging security incidents. It includes the following datasets for receiving logs:
 
@@ -1455,6 +1455,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.AllowlistingFilterId |  | keyword |
 | crowdstrike.AnodeIndicators |  | nested |
+| crowdstrike.AntiTamperStateFlag |  | keyword |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ApplicationName |  | match_only_text |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
@@ -1463,6 +1464,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AsepIndex |  | keyword |
 | crowdstrike.AsepValueType |  | keyword |
 | crowdstrike.AsepWrittenCount |  | long |
+| crowdstrike.AssemblyFlags |  | keyword |
+| crowdstrike.AssemblyId |  | keyword |
+| crowdstrike.AssemblyName |  | keyword |
 | crowdstrike.AssociatedFile |  | keyword |
 | crowdstrike.Attacks.Tactic |  | keyword |
 | crowdstrike.Attacks.Technique |  | keyword |
@@ -1475,6 +1479,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AuthenticodeHashData |  | keyword |
 | crowdstrike.AuthenticodeHashDataSHA256 |  | keyword |
 | crowdstrike.BaseReachableTime |  | keyword |
+| crowdstrike.BatchDataNumber |  | keyword |
+| crowdstrike.BatchDataTotal |  | keyword |
+| crowdstrike.BatchTimestamp |  | date |
 | crowdstrike.BinaryExecutableWrittenCount |  | long |
 | crowdstrike.BiosChanged |  | match_only_text |
 | crowdstrike.BiosManufacturer |  | keyword |
@@ -1506,6 +1513,15 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.BoundedCount |  | long |
 | crowdstrike.BoundingLimitCount |  | long |
 | crowdstrike.BoundingLimitDuration |  | keyword |
+| crowdstrike.BrowserExtensionId |  | keyword |
+| crowdstrike.BrowserExtensionInstallMethod |  | keyword |
+| crowdstrike.BrowserExtensionStatusEnabled |  | keyword |
+| crowdstrike.BrowserFileHash |  | keyword |
+| crowdstrike.BrowserFilePath |  | keyword |
+| crowdstrike.BrowserName |  | keyword |
+| crowdstrike.BrowserProfileId |  | keyword |
+| crowdstrike.BrowserProfileName |  | keyword |
+| crowdstrike.BrowserVersion |  | keyword |
 | crowdstrike.BundleID |  | keyword |
 | crowdstrike.CLICreationCount |  | long |
 | crowdstrike.CNAMERecords |  | keyword |
@@ -1526,6 +1542,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ChassisType |  | keyword |
 | crowdstrike.ClientComputerName |  | keyword |
 | crowdstrike.ClientId |  | match_only_text |
+| crowdstrike.ClientProcessStartKey |  | keyword |
 | crowdstrike.CommandCount |  | match_only_text |
 | crowdstrike.CommandCountMax |  | match_only_text |
 | crowdstrike.CommandHistory |  | keyword |
@@ -1557,6 +1574,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ContextBaseFileName |  | keyword |
 | crowdstrike.ContextImageFileName |  | keyword |
 | crowdstrike.ContextProcessId |  | keyword |
+| crowdstrike.ContextProcessTagsAsString |  | keyword |
 | crowdstrike.ContextTimeStamp | System local time of event creation. | date |
 | crowdstrike.CpuClockSpeed |  | keyword |
 | crowdstrike.CpuFeaturesMask |  | keyword |
@@ -1596,6 +1614,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.DnsResponseType |  | keyword |
 | crowdstrike.DocumentFileWrittenCount |  | long |
 | crowdstrike.DomainSid |  | keyword |
+| crowdstrike.DotnetModuleFlags |  | keyword |
+| crowdstrike.DotnetModuleId |  | keyword |
 | crowdstrike.DownloadPath |  | keyword |
 | crowdstrike.DownloadPort |  | long |
 | crowdstrike.DownloadServer |  | keyword |
@@ -1626,7 +1646,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.EnvironmentVariablesString |  | match_only_text |
 | crowdstrike.ErrorCode |  | keyword |
 | crowdstrike.ErrorStatus |  | keyword |
+| crowdstrike.EtwProviderType |  | keyword |
 | crowdstrike.EtwRawProcessId |  | long |
+| crowdstrike.EtwRawRpcClientProcessId |  | keyword |
 | crowdstrike.EtwRawThreadId |  | long |
 | crowdstrike.EventCorrelationId |  | keyword |
 | crowdstrike.EventOrigin |  | integer |
@@ -1712,9 +1734,11 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.GrandparentCommandLine.text | Multi-field of `crowdstrike.GrandparentCommandLine`. | match_only_text |
 | crowdstrike.GrandparentImageFileName |  | keyword |
 | crowdstrike.GrandparentImageFilePath |  | keyword |
+| crowdstrike.GrandparentProcessId |  | keyword |
 | crowdstrike.GroupRid |  | keyword |
 | crowdstrike.HandleCreateAuthenticationId |  | keyword |
 | crowdstrike.HandleCreated |  | keyword |
+| crowdstrike.HandleOperationType |  | keyword |
 | crowdstrike.HashAlgorithm |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
@@ -1732,6 +1756,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.IcmpCode |  | keyword |
 | crowdstrike.IcmpType |  | keyword |
 | crowdstrike.IfType |  | keyword |
+| crowdstrike.ImageBaseName |  | keyword |
 | crowdstrike.ImageCheckSum |  | keyword |
 | crowdstrike.ImageEntryPoint |  | keyword |
 | crowdstrike.ImageFileName |  | keyword |
@@ -1773,6 +1798,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.IpEntryFlags |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
 | crowdstrike.IsClipboard |  | boolean |
+| crowdstrike.IsHosted |  | keyword |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsProcessInitializing |  | keyword |
@@ -1843,9 +1869,11 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.MoboProductName |  | keyword |
 | crowdstrike.ModelPrediction |  | keyword |
 | crowdstrike.ModuleCharacteristics |  | keyword |
+| crowdstrike.ModuleILPath |  | keyword |
 | crowdstrike.ModuleLoadCount |  | long |
 | crowdstrike.ModuleLoadTelemetryClassification |  | keyword |
 | crowdstrike.ModuleSize |  | keyword |
+| crowdstrike.MountedVolumeAction |  | keyword |
 | crowdstrike.NDRoot |  | keyword |
 | crowdstrike.NegateInterface |  | keyword |
 | crowdstrike.NegateLocalAddress |  | keyword |
@@ -1939,6 +1967,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ParentCommandLine.text | Multi-field of `crowdstrike.ParentCommandLine`. | match_only_text |
 | crowdstrike.ParentImageFileName |  | keyword |
 | crowdstrike.ParentImageFilePath |  | keyword |
+| crowdstrike.ParentProcessPatternIdList |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PathMtuDiscoveryTimeout |  | keyword |
 | crowdstrike.PatternDispositionDescription |  | keyword |
@@ -2028,6 +2057,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RFMState |  | keyword |
 | crowdstrike.RGID |  | keyword |
 | crowdstrike.RPath |  | match_only_text |
+| crowdstrike.RTRState |  | keyword |
 | crowdstrike.RUID |  | keyword |
 | crowdstrike.RawThreadId |  | keyword |
 | crowdstrike.ReachableTime |  | keyword |
@@ -2061,6 +2091,10 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RemovableDiskFileWrittenCount |  | long |
 | crowdstrike.RequestType |  | keyword |
 | crowdstrike.ResendToCloud |  | keyword |
+| crowdstrike.ResourceAttributes |  | flattened |
+| crowdstrike.ResourceCreateTime |  | date |
+| crowdstrike.ResourceId |  | keyword |
+| crowdstrike.ResourceIdType |  | keyword |
 | crowdstrike.RespondingDnsServer |  | keyword |
 | crowdstrike.ResponseAction |  | keyword |
 | crowdstrike.RetransmitTime |  | keyword |
@@ -2098,6 +2132,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
 | crowdstrike.ServiceAccessPropertiesEtw |  | match_only_text |
+| crowdstrike.ServiceCurrentState |  | keyword |
 | crowdstrike.ServiceDelayedAutoStart |  | match_only_text |
 | crowdstrike.ServiceDependOnService |  | match_only_text |
 | crowdstrike.ServiceDescription |  | keyword |
@@ -2115,6 +2150,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.SetThreadContextCount |  | long |
 | crowdstrike.Severity |  | integer |
 | crowdstrike.SeverityName |  | keyword |
+| crowdstrike.ShannonEntropy |  | keyword |
 | crowdstrike.ShareAccess |  | keyword |
 | crowdstrike.ShareName |  | keyword |
 | crowdstrike.ShareSecurity |  | keyword |
@@ -2184,10 +2220,14 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.SystemTableIndex |  | long |
 | crowdstrike.Tactic |  | keyword |
 | crowdstrike.Tags |  | keyword |
+| crowdstrike.TargetAuthenticationId |  | keyword |
 | crowdstrike.TargetCommandLineParameters |  | keyword |
 | crowdstrike.TargetDomainControllerObjectGuid |  | keyword |
 | crowdstrike.TargetDomainControllerObjectSid |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
+| crowdstrike.TargetIntegrityLevel |  | keyword |
+| crowdstrike.TargetProcessCommandLine |  | keyword |
+| crowdstrike.TargetProcessImageFileName |  | keyword |
 | crowdstrike.TargetSHA256HashData |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
 | crowdstrike.TargetThreadModule |  | keyword |
@@ -2213,6 +2253,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.UninstallPendingUpdateIds |  | match_only_text |
 | crowdstrike.UnixMode |  | keyword |
 | crowdstrike.UnsignedModuleLoadCount |  | long |
+| crowdstrike.UpdateFlag |  | keyword |
 | crowdstrike.UploadId |  | keyword |
 | crowdstrike.User |  | keyword |
 | crowdstrike.UserDepartment |  | keyword |
@@ -2293,25 +2334,74 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.aid |  | keyword |
 | crowdstrike.aipCount |  | integer |
 | crowdstrike.assessments |  | flattened |
+| crowdstrike.attack_types |  | keyword |
+| crowdstrike.aws_account_id |  | keyword |
 | crowdstrike.cid |  | keyword |
+| crowdstrike.cis_benchmark_ids |  | keyword |
+| crowdstrike.cisa_benchmark_ids |  | keyword |
+| crowdstrike.cloud_asset_type |  | long |
+| crowdstrike.cloudplatform |  | keyword |
+| crowdstrike.compliance.benchmarkNames |  | keyword |
+| crowdstrike.compliance.frameworks |  | keyword |
+| crowdstrike.compliance.requirements |  | keyword |
+| crowdstrike.compliance.sections |  | keyword |
+| crowdstrike.compliance.versions |  | keyword |
+| crowdstrike.created |  | date |
+| crowdstrike.crn |  | keyword |
 | crowdstrike.discovererCount |  | integer |
 | crowdstrike.discoverer_aid |  | keyword |
+| crowdstrike.disposition |  | keyword |
 | crowdstrike.eid |  | integer |
+| crowdstrike.event-type |  | keyword |
+| crowdstrike.event_category |  | keyword |
+| crowdstrike.finding |  | keyword |
+| crowdstrike.findings.name |  | keyword |
+| crowdstrike.findings.value |  | keyword |
+| crowdstrike.firstDetected |  | date |
 | crowdstrike.hostname |  | keyword |
 | crowdstrike.id |  | keyword |
 | crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
 | crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
+| crowdstrike.internal_only |  | boolean |
+| crowdstrike.iso_benchmark_ids |  | keyword |
+| crowdstrike.lastDetected |  | date |
+| crowdstrike.legacyPolicyId |  | long |
 | crowdstrike.localipCount |  | integer |
+| crowdstrike.management_event |  | boolean |
 | crowdstrike.monthsincereset |  | keyword |
 | crowdstrike.name |  | keyword |
+| crowdstrike.nist_benchmark_ids |  | keyword |
 | crowdstrike.os_version |  | keyword |
+| crowdstrike.pci_benchmark_ids |  | keyword |
+| crowdstrike.policy_severity |  | long |
 | crowdstrike.product_type_desc |  | keyword |
+| crowdstrike.read_only |  | boolean |
+| crowdstrike.request_id |  | keyword |
+| crowdstrike.request_parameters |  | keyword |
+| crowdstrike.resource.captured |  | date |
+| crowdstrike.resource.legacyResourceId |  | keyword |
+| crowdstrike.resource.legacyResourceTypeId |  | long |
+| crowdstrike.resource.resourceId |  | keyword |
+| crowdstrike.resource.resourceType |  | keyword |
+| crowdstrike.resource_url |  | keyword |
+| crowdstrike.response_elements |  | keyword |
+| crowdstrike.revision |  | long |
 | crowdstrike.scores.modified_time |  | date |
 | crowdstrike.scores.os |  | long |
 | crowdstrike.scores.overall |  | long |
 | crowdstrike.scores.sensor |  | long |
 | crowdstrike.scores.version |  | keyword |
+| crowdstrike.service |  | keyword |
+| crowdstrike.soc2_benchmark_ids |  | keyword |
+| crowdstrike.status |  | keyword |
 | crowdstrike.subnet |  | keyword |
+| crowdstrike.url |  | keyword |
+| crowdstrike.user_identity_access_key_id |  | keyword |
+| crowdstrike.user_identity_account_id |  | keyword |
+| crowdstrike.user_identity_arn |  | keyword |
+| crowdstrike.user_identity_mfa_authenticated |  | boolean |
+| crowdstrike.vertex_id |  | keyword |
+| crowdstrike.vertex_type |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

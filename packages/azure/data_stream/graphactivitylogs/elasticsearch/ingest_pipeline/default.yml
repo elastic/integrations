@@ -18,6 +18,10 @@ processors:
       target_field: azure-eventhub
       ignore_missing: true
       tag: rename-azure
+  - remove:
+      field: routing.category
+      ignore_missing: true
+      description: Remove the routing.category field if it exists.
   - rename:
       field: message
       target_field: event.original
@@ -72,8 +76,17 @@ processors:
       target_field: '@timestamp'
       if: ctx.azure?.graphactivitylogs?.time != null
       tag: date-time
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
       field: azure.graphactivitylogs.time
       ignore_missing: true
@@ -83,8 +96,17 @@ processors:
       target_field: azure.graphactivitylogs.properties.token_issued_at
       if: ctx.azure?.graphactivitylogs?.properties?.token_issued_at != null
       tag: date-token_issued_at
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       on_failure:
         - append:
             field: error.message
@@ -385,8 +407,17 @@ processors:
       target_field: azure.graphactivitylogs.properties.time_generated
       if: ctx.azure?.graphactivitylogs?.properties?.time_generated != null
       tag: date-properties_time_generated
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       on_failure:
         - append:
             field: error.message

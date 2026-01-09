@@ -1,39 +1,50 @@
 # AWS ELB Access Logs OpenTelemetry Assets
 
-The AWS ELB Access Logs OpenTelemetry Assets allow you to collect and monitor ELB access logs. ELB access logs provides a visual representation of ELB traffic and request data, enabling you to monitor performance, security, and troubleshoot issues in real time.
+This package contains Kibana assets for monitoring [AWS ELB load balancers](https://aws.amazon.com/elasticloadbalancing/). We support access logs collected from Application Load Balancers (ALBs), Network Load Balancers (NLBs) and Classic Load Balancers.
 
-The EDOT Cloud Forwarder for AWS enables you to collect **Application Load Balancer (ALB)**, **Network Load Balancer (NLB)** and **Classic Load Balancer** access logs from Amazon S3 and forward them directly into Elastic Observability (serverless).
+## Supported data sources
 
-## What do I need to use this integration?
+### EDOT Cloud Forwarder (ECF) for AWS
 
-You need an Elastic Observability project (**Serverless only**) for storing, analyzing, and visualizing your ELB logs.
+ECF is the simplest way to configure AWS ELB log collection. Refer to the [ECF for AWS documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) for full setup instructions.
 
-From the AWS side, to collect ELB access logs, you need:
+### Standalone OTel Collector
 
-- An S3 bucket for storing the logs
-- A load balancer configured to export access logs to the S3 bucket. Check the [official AWS docs](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html) on how to export access logs
 
-## Compatibility
+Any OTel-supported collection method is supported provided the required extension is included.
 
-The EDOT Cloud Forwarder for AWS supports collecting logs from:
+#### Compatibility
 
-* Application Load Balancers
-* Network Load Balancers
-* Classic Load Balancers
+This package has been tested with OpenTelemetry Collector version `0.138.0`. The OpenTelemetry components used are [awss3receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awss3receiver#aws-s3-receiver), [awslogsencodingextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension#aws-logs-encoding-extension), and [elasticsearchexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter#elasticsearch-exporter).
 
-For the full documentation on how to set up the EDOT Cloud Forwarder, follow this link: [EDOT Cloud Forwarder for AWS](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws).
+#### Sample configuration
 
-## Logs reference
+```yaml
+extensions:
+  awslogs_encoding/elbaccess:
+    format: elbaccess
 
-### AWS ELB access logs
+receivers:
+  awss3:
+    sqs:
+      queue_url: "<sqs-url>"
+      region: "<region>"
+    s3downloader:
+      region: "<region>"
+      s3_bucket: '<bucket_name>'
+      s3_prefix: 'AWSLogs/<account-id>'
+    encodings:
+      - extension: awslogs_encoding/elbaccess
 
-AWS ELB access logs provide detailed information about requests sent to your load balancer, including:
+exporters:
+  elasticsearch/otel:
+    endpoints: https://<host>:<port>
+    api_key: <api_key>
 
-* Client IP address
-* Target IP address
-* Request processing times
-* HTTP method, URL, and protocol
-* Target status code
-* Bytes received/sent
-
-Please refer to [OpenTelemetry AWS Logs encoding extension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension#elb-access-log-fields) for details on log format and fields.
+service:
+  extensions: [awslogs_encoding/elbaccess]
+  pipelines:
+    logs:
+      exporters: [elasticsearch/otel]
+      receivers: [awss3]
+```
