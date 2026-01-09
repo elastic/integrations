@@ -108,7 +108,7 @@ For more information on architectures that can be used for scaling this integrat
 
 These inputs can be used in this integration:
 
-- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
 ### API usage
 

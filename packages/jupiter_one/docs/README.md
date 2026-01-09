@@ -165,7 +165,7 @@ For more information on architectures that can be used for scaling this integrat
 | jupiter_one.asset.properties.device_status |  | keyword |
 | jupiter_one.asset.properties.exception | Indicates if this record has an applied exception. | boolean |
 | jupiter_one.asset.properties.exception_reason | Reason / description of the exception. | keyword |
-| jupiter_one.asset.properties.exploit_status |  | long |
+| jupiter_one.asset.properties.exploit_status |  | integer |
 | jupiter_one.asset.properties.exploitability | The exploitability score/rating. | double |
 | jupiter_one.asset.properties.exprt_rating |  | keyword |
 | jupiter_one.asset.properties.falcon_host_link |  | keyword |
@@ -234,7 +234,7 @@ For more information on architectures that can be used for scaling this integrat
 
 These inputs can be used in this integration:
 
-- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
 ### API usage
 

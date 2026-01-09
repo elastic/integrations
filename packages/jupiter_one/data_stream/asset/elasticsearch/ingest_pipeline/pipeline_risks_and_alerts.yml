@@ -134,7 +134,7 @@ processors:
   - convert:
       tag: convert_jupiter_one_asset_properties_exploit_status_to_long_155fdf22
       field: jupiter_one.asset.properties.exploit_status
-      type: long
+      type: integer
       ignore_missing: true
       on_failure:
         - remove:
@@ -426,6 +426,10 @@ processors:
       field: vulnerability.severity
       copy_from: jupiter_one.asset.properties.severity
       ignore_empty_value: true
+  - lowercase:
+      tag: lowercase_vulnerability_severity_67daca2b
+      field: vulnerability.severity
+      ignore_missing: true
   - set:
       tag: set_threat_indicator_file_name_from_jupiter_one_asset_properties_filename_4b0f2440
       if: ctx.jupiter_one?.asset?.entity?._class?.contains('Finding') == true
