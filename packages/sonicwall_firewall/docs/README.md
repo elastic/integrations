@@ -270,6 +270,7 @@ An example event for `log` looks as following:
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
+| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | sonicwall.firewall.Category | Category of CFS blocked content. | keyword |
 | sonicwall.firewall.af_polid | Displays the Application Filter Policy ID. | keyword |
 | sonicwall.firewall.app | Numeric application ID. | keyword |

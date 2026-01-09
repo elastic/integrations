@@ -1,0 +1,23 @@
+---
+description: Pipeline for the Data Exfiltration Detection Integration transform.
+processors:
+  - script:
+      description: Casts the value of the field `avg_source_bytes` to a long and assigns it to `source.bytes`.
+      lang: painless
+      source: |
+        if (ctx.avg_source_bytes != null) {
+            ctx['source']['bytes'] = (long)(ctx.avg_source_bytes);
+        }
+  - remove:
+      field: avg_source_bytes
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

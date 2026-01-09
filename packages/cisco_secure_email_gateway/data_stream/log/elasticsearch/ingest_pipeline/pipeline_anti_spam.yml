@@ -1,9 +1,11 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - grok:
+      tag: grok_cisco_secure_email_gateway_log_message_2188ef85
       field: cisco_secure_email_gateway.log.message
       patterns:
         - '^case %{GREEDYDATA:cisco_secure_email_gateway.log.object_category} \(%{NUMBER:cisco_secure_email_gateway.log.case_id}\) : case-daemon: all %{DATA:cisco_secure_email_gateway.log.object} killed, %{GREEDYDATA:cisco_secure_email_gateway.log.result}$'
@@ -16,4 +18,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

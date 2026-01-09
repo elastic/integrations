@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies an Identity and Access Management (IAM) custom role creation in Google Cloud Platform (GCP). Custom roles are user-defined, and allow for the bundling of one or more supported permissions to meet specific needs. Custom roles will not be updated automatically and could lead to privilege creep if not carefully scrutinized.",
+        "false_positives": [
+            "Custom role creations may be done by a system or network administrator. Verify whether the user email, resource name, and/or hostname should be making changes in your environment. Role creations by unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-gcp*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GCP IAM Custom Role Creation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GCP IAM Custom Role Creation\n\nGoogle Cloud Platform's IAM custom roles allow users to define specific permissions tailored to their needs, offering flexibility in access management. However, adversaries can exploit this by creating roles with excessive permissions, leading to privilege escalation. The detection rule monitors audit logs for successful custom role creation events, helping identify potential unauthorized access attempts by flagging unusual role configurations.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.action:google.iam.admin.v*.CreateRole to identify the user or service account responsible for creating the custom role.\n- Examine the permissions assigned to the newly created custom role to determine if they are excessive or deviate from standard role configurations.\n- Check the event.outcome:success field to confirm the successful creation of the role and cross-reference with any recent changes in IAM policies or permissions.\n- Investigate the context around the role creation, such as the time of creation and any associated IP addresses or locations, to identify any unusual patterns or anomalies.\n- Assess the necessity and justification for the custom role by consulting with the relevant team or individual who requested its creation, ensuring it aligns with organizational policies and needs.\n\n### False positive analysis\n\n- Routine administrative actions by authorized personnel can trigger alerts. Regularly review and document legitimate role creation activities to establish a baseline of expected behavior.\n- Automated processes or scripts that create roles as part of deployment pipelines may cause false positives. Identify and whitelist these processes to prevent unnecessary alerts.\n- Temporary roles created for short-term projects or testing purposes might be flagged. Implement a naming convention for such roles and exclude them from alerts based on this pattern.\n- Changes in organizational structure or policy updates can lead to legitimate role creations. Ensure that these changes are communicated to the security team to adjust monitoring rules accordingly.\n- Third-party integrations that require custom roles might be misidentified as threats. Maintain an inventory of these integrations and their role requirements to differentiate between legitimate and suspicious activities.\n\n### Response and remediation\n\n- Immediately review the audit logs to confirm the creation of the custom role and identify the user or service account responsible for the action.\n- Revoke the custom role if it is determined to have excessive permissions or if it was created without proper authorization.\n- Conduct a thorough review of the permissions assigned to the custom role to ensure they align with the principle of least privilege.\n- Notify the security team and relevant stakeholders about the unauthorized role creation for further investigation and potential escalation.\n- Implement additional monitoring on the identified user or service account to detect any further suspicious activities.\n- Review and update IAM policies to prevent unauthorized role creation, ensuring that only trusted users have the necessary permissions to create custom roles.\n- Enhance detection capabilities by setting up alerts for any future custom role creation events, especially those with high-risk permissions.",
+        "query": "event.dataset:gcp.audit and event.action:google.iam.admin.v*.CreateRole and event.outcome:success\n",
+        "references": [
+            "https://cloud.google.com/iam/docs/understanding-custom-roles"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "aa8007f0-d1df-49ef-8520-407857594827",
+        "setup": "The GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 107
+    },
+    "id": "aa8007f0-d1df-49ef-8520-407857594827_107",
+    "type": "security-rule"
+}

@@ -17,12 +17,16 @@ request.transforms:
   - set:
       target: header.Authorization
       value: 'Basic [[base64EncodeNoPad "{{account_id}}" ":" "{{api_key}}"]]'
+{{#if severities}}
   - set:
       target: url.params.severity
       value: '[[join "{{severities}}" ","]]'
+{{/if}}
+{{#if types}}
   - set:
       target: url.params.alertType
       value: '[[join "{{types}}" ","]]'
+{{/if}}
   - set:
       target: url.params.isClosed
       value: '{{fetch_closed_alerts}}'

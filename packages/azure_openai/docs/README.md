@@ -164,6 +164,8 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.open_ai.properties.backend_response_body.choices.logprobs | An object containing information about the probability distribution over possible responses. | flattened |
 | azure.open_ai.properties.backend_response_body.choices.message.content | The response text content. | keyword |
 | azure.open_ai.properties.backend_response_body.choices.message.role | The API access role. | keyword |
+| azure.open_ai.properties.backend_response_body.content_filtered_categories.category_name | The categories (self-harm, hate, sexual, violence). | keyword |
+| azure.open_ai.properties.backend_response_body.content_filtered_categories.severity | The severity levels (safe, low, medium, and high). | keyword |
 | azure.open_ai.properties.backend_response_body.created | The timestamp when the request was created. | long |
 | azure.open_ai.properties.backend_response_body.error.code | The error code. | keyword |
 | azure.open_ai.properties.backend_response_body.error.innererror.code | The error code. | keyword |
@@ -181,6 +183,8 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.sexual.severity | The severity levels (safe, low, medium, and high) for sexual category. | keyword |
 | azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.violence.filtered | True if the content filtered based on severity level. | boolean |
 | azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.violence.severity | The severity levels (safe, low, medium, and high) for violence category. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filtered_categories.category_name | The categories (self-harm, hate, sexual, violence). | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filtered_categories.severity | The severity levels (safe, low, medium, and high). | keyword |
 | azure.open_ai.properties.backend_response_body.error.message | The error message. | text |
 | azure.open_ai.properties.backend_response_body.error.param | Parameter passed to the API. | keyword |
 | azure.open_ai.properties.backend_response_body.error.status | The response status code. | long |
@@ -374,4 +378,26 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | dataset.name | Dataset name. | constant_keyword |  |  |
 | dataset.namespace | Dataset namespace. | constant_keyword |  |  |
 | dataset.type | Dataset type. | constant_keyword |  |  |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[Azure OpenAI] Latency high**
+
+
+
+**[Azure OpenAI] Provisioned Utilization above threshold**
+
+
+
+**[Azure OpenAI] Quota Error Rates above threshold**
+
+
 

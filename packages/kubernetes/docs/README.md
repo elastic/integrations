@@ -82,10 +82,12 @@ the masters won't be visible. In these cases it won't be possible to use `schedu
 ### container-logs
 
 The container-logs dataset requires access to the log files in each Kubernetes node where the container logs are stored.
-This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
+This defaults to `/var/log/containers/*${kubernetes.container.id}.log`, which is the active log file. 
+To also ingest rotated log files, refer to the
+full [container logs documentation](https://www.elastic.co/docs/reference/integrations/kubernetes/container-logs#ingesting-rotated-container-logs).
 
 It uses the [Filestream input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html)
-and defines it's ID as: `id: kubernetes-container-logs-${kubernetes.pod.name}-${kubernetes.container.id}`. For every
+and defines it's ID as: `id: kubernetes-container-logs-${kubernetes.pod.name}-${kubernetes.container.id}` by default. For every
 container the Elastic-Agent will generate an instance of the Filestream input harvesting the `paths` defined in the
 configuration. So make sure the paths are unique per container.
 
@@ -114,12 +116,22 @@ By annotating the pod with `elastic.co/preserve_original_event: 'true'`, the int
 
 ### audit-logs
 
-The audit-logs dataset requires access to the log files on each Kubernetes node where the audit logs are stored.
+Audit-logs integration collects and parses Kubernetes audit logs.
+
+Audit logs can be collected from managed Kubernetes services in cloud providers:
+
+- Amazon EKS: Configure the aws-cloudwatch input to collect audit logs from a CloudWatch log group where EKS audit logs are published.
+- Azure AKS: Use the azure-eventhub input to receive audit logs from an Event Hub configured to stream AKS diagnostic logs.
+- Google GKE: Use the gcp-pubsub input to subscribe to a Pub/Sub topic that receives GKE audit logs via Log Router sinks.
+
+To enable these, configure the corresponding input with access credentials and the appropriate log stream or topic.
+
+To collect audit logs from local k8s deployments, it requires access to the log files on each Kubernetes node where the audit logs are stored.
 This defaults to `/var/log/kubernetes/kube-apiserver-audit.log`.
 
 ## Compatibility
 
-The Kubernetes package is tested with Kubernetes [1.29.x - 1.32.x] versions
+The Kubernetes package is tested with Kubernetes [1.29.x - 1.33.x] versions
 
 ## Dashboard
 

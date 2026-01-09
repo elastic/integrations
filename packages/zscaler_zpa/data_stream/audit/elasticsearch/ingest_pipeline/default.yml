@@ -39,30 +39,74 @@ processors:
       field: event.created
       copy_from: '@timestamp'
       ignore_failure: true
-  - append:
-      field: event.category
-      value: iam
   - set:
       field: event.kind
       value: event
   - script:
       if: ctx.json?.AuditOperationType != null && ctx.json.AuditOperationType != ''
       lang: painless
+      params:
+        event_classification:
+          'create':
+            type:
+              - creation
+            category:
+              - iam
+            outcome: success
+          'delete':
+            type:
+              - deletion
+            category:
+              - iam
+            outcome: success
+          'update':
+            type:
+              - change
+            category:
+              - iam
+            outcome: success
+          'sign in':
+            type:
+              - start
+            category:
+              - authentication
+              - session
+            outcome: success
+          'sign in failure':
+            type:
+              - start
+              - error
+            category: failure
+              - session
+            outcome: 
+          'download':
+            type:
+              - info
+              - access
+            outcome: success
+            category:
+              - file
+          'sign out':
+            type:
+              - end
+            category:
+              - session
+            outcome: success
+          'client session revoked':
+            type:
+              - change
+              - deletion
+            category:
+              - iam
+            outcome: success
       source: |
-        def eventType = ctx.json.AuditOperationType?.toLowerCase();
-        ctx.event.type = new ArrayList();
-        Map referenceTable = [
-          'create': ['creation'],
-          'delete': ['deletion'],
-          'update': ['change'],
-          'sign in': ['access', 'allowed'],
-          'sign in failure': ['access', 'error'],
-          'download': ['info'],
-          'sign out': ['access'],
-          'client session revoked': ['end']
-        ];
-
-        ctx.event.type = referenceTable[eventType];
+        def class = params.event_classification[ctx.json.AuditOperationType?.toLowerCase()];
+        if (class == null) {
+          return;
+        }
+        ctx.event.type = class.type;
+        ctx.event.category = class.category;
+        ctx.event.outcome = class.outcome;
   - rename:
       field: json.RequestID
       target_field: event.id
@@ -102,10 +146,27 @@ processors:
       field: json.User
       target_field: user.name
       ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: user.name
+      tag: copy_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
   - append:
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -216,12 +277,25 @@ processors:
           ctx.server = new HashMap();
           ctx.server.address = valuesMap?.domainOrIpAddress;
         }
+  - split:
+      field: client.ip
+      separator: ', *'
+      if: ctx.client?.ip instanceof String && ctx.client.ip.contains(',')
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
-      if: ctx.client?.ip != null
+      if: ctx.client?.ip instanceof String
       allow_duplicates: false
       ignore_failure: true
+  - foreach:
+      field: client.ip
+      if: ctx.client?.ip instanceof List
+      processor:       
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
   - convert:
       field: server.address
       target_field: server.ip

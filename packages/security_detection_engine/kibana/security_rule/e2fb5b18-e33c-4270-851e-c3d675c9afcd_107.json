@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies an Identity and Access Management (IAM) role deletion in Google Cloud Platform (GCP). A role contains a set of permissions that allows you to perform specific actions on Google Cloud resources. An adversary may delete an IAM role to inhibit access to accounts utilized by legitimate users.",
+        "false_positives": [
+            "Role deletions may be done by a system or network administrator. Verify whether the user email, resource name, and/or hostname should be making changes in your environment. Role deletions by unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-gcp*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GCP IAM Role Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GCP IAM Role Deletion\n\nGoogle Cloud Platform's IAM roles define permissions for actions on resources, crucial for managing access. Adversaries might delete roles to disrupt legitimate user access, hindering operations. The detection rule monitors audit logs for successful role deletions, signaling potential unauthorized access removal, thus aiding in identifying and mitigating such security threats.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.action:google.iam.admin.v*.DeleteRole to identify the exact role that was deleted and the associated project or resource.\n- Identify the user or service account responsible for the deletion by examining the actor information in the audit logs.\n- Check the event.timestamp to determine when the role deletion occurred and correlate it with any other suspicious activities around the same time.\n- Investigate the event.outcome:success to confirm that the role deletion was completed successfully and assess the potential impact on access and operations.\n- Analyze the context of the deletion by reviewing recent changes or activities in the project or organization to understand if the deletion was part of a legitimate change or an unauthorized action.\n- Contact the user or team responsible for the project to verify if the role deletion was intentional and authorized, and gather additional context if needed.\n\n### False positive analysis\n\n- Routine administrative actions may trigger alerts when roles are deleted as part of regular maintenance or restructuring. To manage this, create exceptions for known administrative accounts or scheduled maintenance windows.\n- Automated scripts or tools that manage IAM roles might cause false positives if they delete roles as part of their operation. Identify these scripts and exclude their actions from triggering alerts by using specific service accounts or tags.\n- Deletion of temporary or test roles used in development environments can be mistaken for malicious activity. Implement filters to exclude actions within designated development projects or environments.\n- Changes in organizational structure or policy might necessitate role deletions, which could be misinterpreted as threats. Document and communicate these changes to the security team to adjust monitoring rules accordingly.\n- Third-party integrations or services that manage IAM roles could inadvertently cause false positives. Ensure these services are properly documented and their actions are whitelisted if deemed non-threatening.\n\n### Response and remediation\n\n- Immediately revoke any active sessions and credentials associated with the deleted IAM role to prevent unauthorized access.\n- Restore the deleted IAM role from a backup or recreate it with the same permissions to ensure legitimate users regain access.\n- Conduct a thorough review of recent IAM activity logs to identify any unauthorized changes or suspicious activities related to IAM roles.\n- Notify the security team and relevant stakeholders about the incident for awareness and further investigation.\n- Implement additional monitoring on IAM role changes to detect and alert on any future unauthorized deletions promptly.\n- Review and tighten IAM role permissions to ensure the principle of least privilege is enforced, reducing the risk of similar incidents.\n- Consider enabling additional security features such as multi-factor authentication (MFA) for accounts with permissions to modify IAM roles.",
+        "query": "event.dataset:gcp.audit and event.action:google.iam.admin.v*.DeleteRole and event.outcome:success\n",
+        "references": [
+            "https://cloud.google.com/iam/docs/understanding-roles"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e2fb5b18-e33c-4270-851e-c3d675c9afcd",
+        "setup": "The GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 107
+    },
+    "id": "e2fb5b18-e33c-4270-851e-c3d675c9afcd_107",
+    "type": "security-rule"
+}

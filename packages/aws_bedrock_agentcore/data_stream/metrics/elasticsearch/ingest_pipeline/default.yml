@@ -1,0 +1,44 @@
+---
+description: Pipeline for Amazon Bedrock AgentCore metrics
+processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
+  - set:
+      field: cloud.account.name
+      copy_from: cloud.account.id
+      override: false
+      ignore_empty_value: true
+  - rename:   
+      field: aws.bedrock-agentcore
+      target_field: aws.bedrock_agentcore
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Split aws.dimensions.Name into agent_name and endpoint_name
+      if: ctx.aws?.dimensions?.Name != null && ctx.aws.dimensions.Name.contains('::') && ctx.aws?.dimensions?.Operation == 'InvokeAgentRuntime'
+      source: |
+        def parts = ctx.aws.dimensions.Name.splitOnToken('::');
+        if (parts.length == 2) {
+          if (ctx.aws.bedrock_agentcore == null) {
+            ctx.aws.bedrock_agentcore = new HashMap();
+          }
+          ctx.aws.bedrock_agentcore.agent_name = parts[0];
+          ctx.aws.bedrock_agentcore.endpoint_name = parts[1];
+        }
+      on_failure:
+        - append:
+            field: tags
+            value: '_split_dimensions_name_failure'
+            allow_duplicates: false
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - set:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

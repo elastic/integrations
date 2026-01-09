@@ -1,0 +1,27 @@
+---
+description: Benchmark 100000 incident events ingested
+input: httpjson
+vars:
+  login_url: http://svc-m365-defender-incident-http:8082
+  client_id: xxxx
+  client_secret: xxxx
+  tenant_id: tenant_id
+data_stream:
+  name: incident
+  vars:
+    request_url: http://svc-m365-defender-incident-http:8082
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: m365-defender-incident-http
+  generator:
+    total_events: 100000
+    template:
+      path: ./incident-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./incident-benchmark/config.yml
+    fields:
+      path: ./incident-benchmark/fields.yml 

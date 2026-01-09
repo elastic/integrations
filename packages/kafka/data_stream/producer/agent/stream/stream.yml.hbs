@@ -1,0 +1,90 @@
+metricsets: ["jmx"]
+hosts:
+{{#each jolokia_hosts}}
+  - {{this}}
+{{/each}}
+path: {{metrics_path}}
+namespace: "metrics"
+period: {{period}}
+http_method: {{http_method}}
+
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+    - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if ssl.certificate}}
+ssl.certificate: {{ssl.certificate}}
+{{/if}}
+
+{{#if ssl.key}}
+ssl.key: {{ssl.key}}
+{{/if}}
+
+{{#if ssl.key_passphrase}}
+ssl.key_passphrase: {{ssl.key_passphrase}}
+{{/if}}
+
+{{#if ssl.ca_trusted_fingerprint}}
+ssl.ca_trusted_fingerprint: {{ssl.ca_trusted_fingerprint}}
+{{/if}}
+
+username: {{username}}
+password: {{password}}
+
+jmx.mappings:
+- mbean: 'kafka.producer:type=producer-metrics,client-id=*'
+  attributes:
+    - attr: buffer-available-bytes
+      field: available_buffer_bytes
+    - attr: batch-size-avg
+      field: batch_size_avg
+    - attr: batch-size-max
+      field: batch_size_max
+    - attr: record-send-rate
+      field: record_send_rate
+    - attr: record-retry-rate
+      field: record_retry_rate
+    - attr: record-error-rate
+      field: record_error_rate
+    - attr: records-per-request-avg
+      field: records_per_request
+    - attr: record-size-avg
+      field: record_size_avg
+    - attr: record-size-max
+      field: record_size_max
+    - attr: request-rate
+      field: request_rate
+    - attr: response-rate
+      field: response_rate
+    - attr: io-wait-time-ns-avg
+      field: io_wait
+
+- mbean: 'kafka.producer:client-id=*,node-id=*,type=producer-node-metrics'
+  attributes:
+    - attr: outgoing-byte-total
+      field: out.bytes_per_sec
+
+{{#if headers}}
+{{headers}}
+{{/if}}
+
+{{#if connect_timeout}}
+connect_timeout: {{connect_timeout}}
+{{/if}}
+
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

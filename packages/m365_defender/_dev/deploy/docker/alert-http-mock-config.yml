@@ -13,6 +13,33 @@ rules:
             - "application/json"
         body: |-
           {"access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN","token_type": "Bearer","not_before": 1549647431,"expires_in": 3600}
+  # Refresh token to get access token: https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#refresh-the-access-token
+  - path: /tenant_id/oauth2/token
+    methods: [ POST ]
+    query_params:
+      refresh_token: refresh_token_123
+      grant_type: refresh_token
+    request_headers:
+      Authorization:
+        - "Basic dGVzdC1hcHAtaWQ6dGVzdC1zZWNyZXQ="
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN",
+            "token_type": "Bearer",
+            "expires_in": 2,
+            "scope": "https%3A%2F%2Fgraph.microsoft.com%2Fmail.read",
+            "refresh_token": "AwABAAAAvPM1KaPlrEqdFSBzjqfTGAMxZGUTdM0t4B4...",
+            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJhdWQiOiIyZDRkMTFhMi1mODE0LTQ2YTctOD..."
+          }
+          `}}
   - path: /v1.0/security/alerts_v2
     methods: [GET]
     query_params:
@@ -29,6 +56,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
+          {{ minify_json `
           {
             "value": [
               {
@@ -55,7 +83,7 @@ rules:
                 "threatDisplayName": null,
                 "threatFamilyName": null,
                 "mitreTechniques": [
-                    "T1059.001"
+                  "T1059.001"
                 ],
                 "createdDateTime": "2023-10-20T09:53:09.8839373Z",
                 "lastUpdateDateTime": "2023-10-20T09:54:07.5033333Z",
@@ -66,130 +94,44 @@ rules:
                 "additionalData": null,
                 "comments": [],
                 "evidence": [
-                    {
-                        "@odata.type": "#microsoft.graph.security.deviceEvidence",
-                        "createdDateTime": "2023-10-20T09:53:10.1933333Z",
-                        "verdict": "unknown",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [
-                            "PrimaryDevice"
-                        ],
-                        "tags": [],
-                        "firstSeenDateTime": "2023-10-20T09:50:17.7383987Z",
-                        "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
-                        "azureAdDeviceId": "f18bd540-d5e4-46e0-8ddd-3d03a59e4e14",
-                        "deviceDnsName": "clw555test",
-                        "osPlatform": "Windows11",
-                        "osBuild": 22621,
-                        "version": "22H2",
-                        "healthStatus": "inactive",
-                        "riskScore": "high",
-                        "rbacGroupId": 0,
-                        "rbacGroupName": null,
-                        "onboardingStatus": "onboarded",
-                        "defenderAvStatus": "notSupported",
-                        "ipInterfaces": [
-                            "192.168.5.65",
-                            "fe80::cfe4:80b:615c:38fb",
-                            "127.0.0.1",
-                            "::1"
-                        ],
-                        "vmMetadata": null,
-                        "loggedOnUsers": [
-                            {
-                                "accountName": "CDPUserIS-38411",
-                                "domainName": "AzureAD"
-                            }
-                        ]
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.userEvidence",
-                        "createdDateTime": "2023-10-20T09:53:10.1933333Z",
-                        "verdict": "unknown",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "userAccount": {
-                            "accountName": "CDPUserIS-38411",
-                            "domainName": "AzureAD",
-                            "userSid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759",
-                            "azureAdUserId": null,
-                            "userPrincipalName": null,
-                            "displayName": null
-                        }
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.urlEvidence",
-                        "createdDateTime": "2023-10-20T09:53:10.1933333Z",
-                        "verdict": "suspicious",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "url": "http://127.0.0.1/1.exe"
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.ipEvidence",
-                        "createdDateTime": "2023-10-20T09:53:10.1933333Z",
-                        "verdict": "suspicious",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "ipAddress": "127.0.0.1",
-                        "countryLetterCode": null
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.processEvidence",
-                        "createdDateTime": "2023-10-20T09:53:10.1933333Z",
-                        "verdict": "unknown",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "processId": 8224,
-                        "parentProcessId": 5772,
-                        "processCommandLine": "powershell.exe  -NoExit -ExecutionPolicy Bypass -WindowStyle Hidden $ErrorActionPreference= 'silentlycontinue';(New-Object System.Net.WebClient).DownloadFile('http://127.0.0.1/1.exe', 'C:\\\\test-WDATP-test\\\\invoice.exe');Start-Process 'C:\\\\test-WDATP-test\\\\invoice.exe'",
-                        "processCreationDateTime": "2023-10-20T09:51:39.4997961Z",
-                        "parentProcessCreationDateTime": "2023-10-20T09:51:19.5064237Z",
-                        "detectionStatus": "detected",
-                        "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
-                        "imageFile": {
-                            "sha1": "a72c41316307889e43fe8605a0dca4a72e72a011",
-                            "sha256": "d783ba6567faf10fdff2d0ea3864f6756862d6c733c7f4467283da81aedc3a80",
-                            "fileName": "powershell.exe",
-                            "filePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0",
-                            "fileSize": 491520,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "parentProcessImageFile": {
-                            "sha1": null,
-                            "sha256": null,
-                            "fileName": "cmd.exe",
-                            "filePath": "C:\\Windows\\System32",
-                            "fileSize": 323584,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "userAccount": {
-                            "accountName": "CDPUserIS-38411",
-                            "domainName": "AzureAD",
-                            "userSid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759",
-                            "azureAdUserId": null,
-                            "userPrincipalName": null,
-                            "displayName": null
-                        }
-                    }
+                  {
+                    "@odata.type": "#microsoft.graph.security.deviceEvidence",
+                    "createdDateTime": "2023-10-20T09:53:10.1933333Z",
+                    "verdict": "unknown",
+                    "remediationStatus": "none",
+                    "remediationStatusDetails": null,
+                    "roles": [],
+                    "detailedRoles": [
+                      "PrimaryDevice"
+                    ],
+                    "tags": [],
+                    "firstSeenDateTime": "2023-10-20T09:50:17.7383987Z",
+                    "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
+                    "azureAdDeviceId": "f18bd540-d5e4-46e0-8ddd-3d03a59e4e14",
+                    "deviceDnsName": "clw555test",
+                    "osPlatform": "Windows11",
+                    "osBuild": 22621,
+                    "version": "22H2",
+                    "healthStatus": "inactive",
+                    "riskScore": "high",
+                    "rbacGroupId": 0,
+                    "rbacGroupName": null,
+                    "onboardingStatus": "onboarded",
+                    "defenderAvStatus": "notSupported",
+                    "ipInterfaces": [
+                      "192.168.5.65",
+                      "fe80::cfe4:80b:615c:38fb",
+                      "127.0.0.1",
+                      "::1"
+                    ],
+                    "vmMetadata": null,
+                    "loggedOnUsers": [
+                      {
+                        "accountName": "CDPUserIS-38411",
+                        "domainName": "AzureAD"
+                      }
+                    ]
+                  }
                 ]
               },
               {
@@ -216,7 +158,7 @@ rules:
                 "threatDisplayName": null,
                 "threatFamilyName": null,
                 "mitreTechniques": [
-                    "T1059.001"
+                  "T1059.001"
                 ],
                 "createdDateTime": "2023-10-20T09:54:06.750499Z",
                 "lastUpdateDateTime": "2023-10-20T09:54:10.4666667Z",
@@ -227,151 +169,29 @@ rules:
                 "additionalData": null,
                 "comments": [],
                 "evidence": [
-                    {
-                        "@odata.type": "#microsoft.graph.security.deviceEvidence",
-                        "createdDateTime": "2023-10-20T09:54:06.84Z",
-                        "verdict": "unknown",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [
-                            "PrimaryDevice"
-                        ],
-                        "tags": [],
-                        "firstSeenDateTime": "2023-10-20T09:50:17.7383987Z",
-                        "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
-                        "azureAdDeviceId": "f18bd540-d5e4-46e0-8ddd-3d03a59e4e14",
-                        "deviceDnsName": "clw555test",
-                        "osPlatform": "Windows11",
-                        "osBuild": 22621,
-                        "version": "22H2",
-                        "healthStatus": "inactive",
-                        "riskScore": "high",
-                        "rbacGroupId": 0,
-                        "rbacGroupName": null,
-                        "onboardingStatus": "onboarded",
-                        "defenderAvStatus": "notSupported",
-                        "ipInterfaces": [
-                            "192.168.5.65",
-                            "fe80::cfe4:80b:615c:38fb",
-                            "127.0.0.1",
-                            "::1"
-                        ],
-                        "vmMetadata": null,
-                        "loggedOnUsers": []
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.userEvidence",
-                        "createdDateTime": "2023-10-20T09:54:06.84Z",
-                        "verdict": "unknown",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "userAccount": {
-                            "accountName": "CDPUserIS-38411",
-                            "domainName": "AzureAD",
-                            "userSid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759",
-                            "azureAdUserId": "588d7c15-8565-448e-bc2d-57f2b7c4c58a",
-                            "userPrincipalName": "cdp.38411@crestdatasys.com",
-                            "displayName": null
-                        }
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.processEvidence",
-                        "createdDateTime": "2023-10-20T09:54:06.84Z",
-                        "verdict": "unknown",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "processId": 5772,
-                        "parentProcessId": 7408,
-                        "processCommandLine": "\"cmd.exe\" ",
-                        "processCreationDateTime": "2023-10-20T09:51:19.5064237Z",
-                        "parentProcessCreationDateTime": "2023-10-20T09:34:32.0067951Z",
-                        "detectionStatus": "detected",
-                        "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
-                        "imageFile": {
-                            "sha1": "13e9bb7e85ff9b08c26a440412e5cd5d296c4d35",
-                            "sha256": "423e0e810a69aaceba0e5670e58aff898cf0ebffab99ccb46ebb3464c3d2facb",
-                            "fileName": "cmd.exe",
-                            "filePath": "C:\\Windows\\System32",
-                            "fileSize": 323584,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "parentProcessImageFile": {
-                            "sha1": null,
-                            "sha256": null,
-                            "fileName": "explorer.exe",
-                            "filePath": "C:\\Windows",
-                            "fileSize": 5261576,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "userAccount": {
-                            "accountName": "CDPUserIS-38411",
-                            "domainName": "AzureAD",
-                            "userSid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759",
-                            "azureAdUserId": "588d7c15-8565-448e-bc2d-57f2b7c4c58a",
-                            "userPrincipalName": "cdp.38411@crestdatasys.com",
-                            "displayName": null
-                        }
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.processEvidence",
-                        "createdDateTime": "2023-10-20T09:54:06.84Z",
-                        "verdict": "unknown",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "processId": 8224,
-                        "parentProcessId": 5772,
-                        "processCommandLine": "powershell.exe  -NoExit -ExecutionPolicy Bypass -WindowStyle Hidden $ErrorActionPreference= 'silentlycontinue';(New-Object System.Net.WebClient).DownloadFile('http://127.0.0.1/1.exe', 'C:\\\\test-WDATP-test\\\\invoice.exe');Start-Process 'C:\\\\test-WDATP-test\\\\invoice.exe'",
-                        "processCreationDateTime": "2023-10-20T09:51:39.4997961Z",
-                        "parentProcessCreationDateTime": "2023-10-20T09:51:19.5064237Z",
-                        "detectionStatus": "detected",
-                        "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
-                        "imageFile": {
-                            "sha1": "a72c41316307889e43fe8605a0dca4a72e72a011",
-                            "sha256": "d783ba6567faf10fdff2d0ea3864f6756862d6c733c7f4467283da81aedc3a80",
-                            "fileName": "powershell.exe",
-                            "filePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0",
-                            "fileSize": 491520,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "parentProcessImageFile": {
-                            "sha1": null,
-                            "sha256": null,
-                            "fileName": "cmd.exe",
-                            "filePath": "C:\\Windows\\System32",
-                            "fileSize": 323584,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "userAccount": {
-                            "accountName": "CDPUserIS-38411",
-                            "domainName": "AzureAD",
-                            "userSid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759",
-                            "azureAdUserId": "588d7c15-8565-448e-bc2d-57f2b7c4c58a",
-                            "userPrincipalName": "cdp.38411@crestdatasys.com",
-                            "displayName": null
-                        }
+                  {
+                    "@odata.type": "#microsoft.graph.security.userEvidence",
+                    "createdDateTime": "2023-10-20T09:54:06.84Z",
+                    "verdict": "unknown",
+                    "remediationStatus": "none",
+                    "remediationStatusDetails": null,
+                    "roles": [],
+                    "detailedRoles": [],
+                    "tags": [],
+                    "userAccount": {
+                      "accountName": "CDPUserIS-38411",
+                      "domainName": "AzureAD",
+                      "userSid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759",
+                      "azureAdUserId": "588d7c15-8565-448e-bc2d-57f2b7c4c58a",
+                      "userPrincipalName": "cdp.38411@crestdatasys.com",
+                      "displayName": null
                     }
+                  }
                 ]
               }
             ]
           }
+          `}}
   - path: /v1.0/security/alerts_v2
     methods: [GET]
     query_params:
@@ -388,6 +208,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
+          {{ minify_json `
           {
             "value": [
               {
@@ -414,8 +235,8 @@ rules:
                 "threatDisplayName": null,
                 "threatFamilyName": null,
                 "mitreTechniques": [
-                    "T1057",
-                    "T1059.001"
+                  "T1057",
+                  "T1059.001"
                 ],
                 "createdDateTime": "2023-10-20T09:54:10.8560905Z",
                 "lastUpdateDateTime": "2023-10-20T09:54:11.4966667Z",
@@ -426,148 +247,133 @@ rules:
                 "additionalData": null,
                 "comments": [],
                 "evidence": [
-                    {
-                        "@odata.type": "#microsoft.graph.security.deviceEvidence",
-                        "createdDateTime": "2023-10-20T09:54:10.8833333Z",
-                        "verdict": "unknown",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [
-                            "PrimaryDevice"
-                        ],
-                        "tags": [],
-                        "firstSeenDateTime": "2023-10-20T09:50:17.7383987Z",
-                        "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
-                        "azureAdDeviceId": "f18bd540-d5e4-46e0-8ddd-3d03a59e4e14",
-                        "deviceDnsName": "clw555test",
-                        "osPlatform": "Windows11",
-                        "osBuild": 22621,
-                        "version": "22H2",
-                        "healthStatus": "inactive",
-                        "riskScore": "high",
-                        "rbacGroupId": 0,
-                        "rbacGroupName": null,
-                        "onboardingStatus": "onboarded",
-                        "defenderAvStatus": "notSupported",
-                        "ipInterfaces": [],
-                        "vmMetadata": null,
-                        "loggedOnUsers": [
-                            {
-                                "accountName": "CDPUserIS-38411",
-                                "domainName": "AzureAD"
-                            }
-                        ]
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.userEvidence",
-                        "createdDateTime": "2023-10-20T09:54:10.8833333Z",
-                        "verdict": "unknown",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "userAccount": {
-                            "accountName": "CDPUserIS-38411",
-                            "domainName": "AzureAD",
-                            "userSid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759",
-                            "azureAdUserId": "588d7c15-8565-448e-bc2d-57f2b7c4c58a",
-                            "userPrincipalName": "cdp.38411@crestdatasys.com",
-                            "displayName": null
-                        }
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.processEvidence",
-                        "createdDateTime": "2023-10-20T09:54:10.8833333Z",
-                        "verdict": "suspicious",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "processId": 5772,
-                        "parentProcessId": 7408,
-                        "processCommandLine": "\"cmd.exe\" ",
-                        "processCreationDateTime": "2023-10-20T09:51:19.5064237Z",
-                        "parentProcessCreationDateTime": "2023-10-20T09:34:32.0067951Z",
-                        "detectionStatus": "detected",
-                        "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
-                        "imageFile": {
-                            "sha1": "13e9bb7e85ff9b08c26a440412e5cd5d296c4d35",
-                            "sha256": "423e0e810a69aaceba0e5670e58aff898cf0ebffab99ccb46ebb3464c3d2facb",
-                            "fileName": "cmd.exe",
-                            "filePath": "C:\\Windows\\System32",
-                            "fileSize": 323584,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "parentProcessImageFile": {
-                            "sha1": null,
-                            "sha256": null,
-                            "fileName": "explorer.exe",
-                            "filePath": "C:\\Windows",
-                            "fileSize": 5261576,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "userAccount": {
-                            "accountName": "CDPUserIS-38411",
-                            "domainName": "AzureAD",
-                            "userSid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759",
-                            "azureAdUserId": "588d7c15-8565-448e-bc2d-57f2b7c4c58a",
-                            "userPrincipalName": "cdp.38411@crestdatasys.com",
-                            "displayName": null
-                        }
-                    },
-                    {
-                        "@odata.type": "#microsoft.graph.security.processEvidence",
-                        "createdDateTime": "2023-10-20T09:54:10.8833333Z",
-                        "verdict": "suspicious",
-                        "remediationStatus": "none",
-                        "remediationStatusDetails": null,
-                        "roles": [],
-                        "detailedRoles": [],
-                        "tags": [],
-                        "processId": 8224,
-                        "parentProcessId": 5772,
-                        "processCommandLine": "powershell.exe  -NoExit -ExecutionPolicy Bypass -WindowStyle Hidden $ErrorActionPreference= 'silentlycontinue';(New-Object System.Net.WebClient).DownloadFile('http://127.0.0.1/1.exe', 'C:\\\\test-WDATP-test\\\\invoice.exe');Start-Process 'C:\\\\test-WDATP-test\\\\invoice.exe'",
-                        "processCreationDateTime": "2023-10-20T09:51:39.4997961Z",
-                        "parentProcessCreationDateTime": "2023-10-20T09:51:19.5064237Z",
-                        "detectionStatus": "detected",
-                        "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
-                        "imageFile": {
-                            "sha1": "a72c41316307889e43fe8605a0dca4a72e72a011",
-                            "sha256": "d783ba6567faf10fdff2d0ea3864f6756862d6c733c7f4467283da81aedc3a80",
-                            "fileName": "powershell.exe",
-                            "filePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0",
-                            "fileSize": 491520,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "parentProcessImageFile": {
-                            "sha1": null,
-                            "sha256": null,
-                            "fileName": "cmd.exe",
-                            "filePath": "C:\\Windows\\System32",
-                            "fileSize": 323584,
-                            "filePublisher": "Microsoft Corporation",
-                            "signer": null,
-                            "issuer": null
-                        },
-                        "userAccount": {
-                            "accountName": "CDPUserIS-38411",
-                            "domainName": "AzureAD",
-                            "userSid": "S-1-12-1-1485667349-1150190949-4065799612-2328216759",
-                            "azureAdUserId": "588d7c15-8565-448e-bc2d-57f2b7c4c58a",
-                            "userPrincipalName": "cdp.38411@crestdatasys.com",
-                            "displayName": null
-                        }
-                    }
+                  {
+                    "@odata.type": "#microsoft.graph.security.deviceEvidence",
+                    "createdDateTime": "2023-10-20T09:54:10.8833333Z",
+                    "verdict": "unknown",
+                    "remediationStatus": "none",
+                    "remediationStatusDetails": null,
+                    "roles": [],
+                    "detailedRoles": [
+                      "PrimaryDevice"
+                    ],
+                    "tags": [],
+                    "firstSeenDateTime": "2023-10-20T09:50:17.7383987Z",
+                    "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
+                    "azureAdDeviceId": "f18bd540-d5e4-46e0-8ddd-3d03a59e4e14",
+                    "deviceDnsName": "clw555test",
+                    "osPlatform": "Windows11",
+                    "osBuild": 22621,
+                    "version": "22H2",
+                    "healthStatus": "inactive",
+                    "riskScore": "high",
+                    "rbacGroupId": 0,
+                    "rbacGroupName": null,
+                    "onboardingStatus": "onboarded",
+                    "defenderAvStatus": "notSupported",
+                    "ipInterfaces": [],
+                    "vmMetadata": null,
+                    "loggedOnUsers": [
+                      {
+                        "accountName": "CDPUserIS-38411",
+                        "domainName": "AzureAD"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "dab4728eea-b128-44e3-ac16-a21f73b5436b_10",
+                "providerAlertId": "b4728eea-b128-44e3-ac16-a21f73b5436b_1",
+                "incidentId": "23",
+                "status": "new",
+                "severity": "high",
+                "classification": null,
+                "determination": null,
+                "serviceSource": "microsoftDefenderForCloud",
+                "detectionSource": "microsoftDefenderForCloud",
+                "productName": "Microsoft Defender for Endpoint",
+                "detectorId": "9bfe28a9-21eb-4f8a-b51e-38ebd3650c88",
+                "tenantId": "3adb963c-8e61-48e8-a06d-6dbb0dacea39",
+                "title": "Suspicious Process Discovery",
+                "description": "A known tool or technique was used to gather information on this device. Attackers might be trying to gather information about the target device or network for later attacks.",
+                "recommendedActions": "A. Validate the alert.\n1. Review the alert and inspect the tool that was used to gather information. Inspect the account that was used to launch the tool.\n2. Check the device timeline for other suspicious activities.\n3. Locate unfamiliar processes in the process tree. Check files for prevalence, their locations, and digital signatures.\n4. Submit relevant files for deep analysis and review file behaviors.\n5. Identify unusual system activity with system owners.\n\nB. Scope the incident. Find related devices in the incident graph. \n\nC.  Contain and mitigate the breach. Stop suspicious scripts or processes, isolate affected devices, decommission compromised accounts or reset passwords, block IP addresses and URLs, and install security updates.\n\nD. Contact your incident response team or contact Microsoft support for investigation and remediation services.",
+                "category": "Discovery",
+                "assignedTo": null,
+                "alertWebUrl": "https://security.microsoft.com/alerts/dab4728eea-b128-44e3-ac16-a21f73b5436b_1?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39",
+                "incidentWebUrl": "https://security.microsoft.com/incidents/23?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39",
+                "actorDisplayName": null,
+                "threatDisplayName": null,
+                "threatFamilyName": null,
+                "mitreTechniques": [
+                  "T1057",
+                  "T1059.001"
+                ],
+                "createdDateTime": "2023-10-20T09:54:10.8560905Z",
+                "lastUpdateDateTime": "2023-10-20T09:54:11.4966667Z",
+                "resolvedDateTime": null,
+                "firstActivityDateTime": "2023-10-20T09:51:39.5154802Z",
+                "lastActivityDateTime": "2023-10-20T09:51:41.6475257Z",
+                "alertPolicyId": null,
+                "additionalData": null,
+                "comments": [],
+                "evidence": [
+                  {
+                    "@odata.type": "#microsoft.graph.security.deviceEvidence",
+                    "createdDateTime": "2023-10-20T09:54:10.8833333Z",
+                    "verdict": "unknown",
+                    "remediationStatus": "none",
+                    "remediationStatusDetails": null,
+                    "roles": [],
+                    "detailedRoles": [
+                      "PrimaryDevice"
+                    ],
+                    "tags": [],
+                    "firstSeenDateTime": "2023-10-20T09:50:17.7383987Z",
+                    "mdeDeviceId": "505d70d89cfa3428f7aac7d2eb3a64c60fd3d843",
+                    "azureAdDeviceId": "f18bd540-d5e4-46e0-8ddd-3d03a59e4e14",
+                    "deviceDnsName": "clw555test",
+                    "osPlatform": "Windows11",
+                    "osBuild": 22621,
+                    "version": "22H2",
+                    "healthStatus": "inactive",
+                    "riskScore": "high",
+                    "rbacGroupId": 0,
+                    "rbacGroupName": null,
+                    "onboardingStatus": "onboarded",
+                    "defenderAvStatus": "notSupported",
+                    "ipInterfaces": [],
+                    "vmMetadata": null,
+                    "loggedOnUsers": [
+                      {
+                        "accountName": "CDPUserIS-38411",
+                        "domainName": "AzureAD"
+                      }
+                    ]
+                  }
                 ]
               }
             ]
           }
+          `}}
+  - path: /v1.0/security/alerts_v2
+    methods: [GET]
+    query_params:
+      $skip: 4
+      $top: 2
+    request_headers:
+      Authorization:
+        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
+      Prefer:
+        - "include-unknown-enum-members"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "value": []
+          }
+          `}}

@@ -242,6 +242,28 @@ processors:
       field: mimecast.newDomain
       target_field: source.domain
       ignore_missing: true
+  - convert:
+      field: mimecast.taggedExternal
+      tag: convert_tagged_external_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: mimecast.taggedExternal
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: mimecast.taggedMalicious
+      tag: convert_tagged_malicious_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: mimecast.taggedMalicious
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   ### SIEM TTP Url Logs
   - rename:

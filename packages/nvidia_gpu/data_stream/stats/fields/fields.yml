@@ -3,14 +3,267 @@
   type: group
   description: >
     Fields related to NVIDIA GPUs.
-
   fields:
-    - name: decoder.utilization
-      type: float
+    - name: labels
+      type: group
+      fields:
+        - name: driver_version
+          type: keyword
+          description: > 
+            Nvidia GPU Driver version 
+        - name: hostname
+          type: keyword
+          description: > 
+            Nvidia GPU hostname
+        - name: device
+          type: keyword
+          description: > 
+            Nvidia GPU device name
+        - name: gpu
+          type: keyword
+          description: > 
+            Nvidia GPU
+        - name: job
+          type: keyword
+          description: > 
+            Nvidia GPU job
+        - name: model_name
+          type: keyword
+          description: > 
+            Nvidia GPU model name
+        - name: pci_bus_id
+          type: keyword
+          description: > 
+            Nvidia GPU pci bus id
+        - name: err_code
+          type: keyword
+          description: > 
+            Nvidia GPU error code
+          dimension: true     
+        - name: err_msg
+          type: keyword
+          description: > 
+            Nvidia GPU error message
+        - name: uuid
+          type: keyword
+          description: |
+            Nvidia GPU UUID
+          dimension: true   
+    - name: clock
+      type: group
+      fields:
+        - name: streaming_multiprocessor_frequency
+          type: float
+          metric_type: gauge
+          description: > 
+            SM clock frequency (in MHz).
+        - name: mem_frequency
+          type: float
+          metric_type: gauge
+          description: > 
+            Memory clock frequency (in MHz).
+    - name: temperature
+      type: group
+      fields:
+        - name: memory
+          type: float
+          metric_type: gauge
+          description: > 
+            Memory temperature (in C).
+        - name: gpu
+          type: float
+          metric_type: gauge
+          description: > 
+            GPU temperature (in C).
+    - name: power
+      type: group
+      fields:
+        - name: usage
+          type: float
+          metric_type: gauge
+          description: > 
+            Current power usage of the GPU in Watts.
+        - name: energy_consumption_total
+          type: long
+          metric_type: counter
+          description: > 
+            Total energy consumption since boot (in mJ).
+    - name: pcie
+      type: group
+      fields:
+        - name: tx_bytes
+          type: long
+          metric_type: counter
+          description: > 
+            Total number of bytes transmitted through PCIe TX via NVML.
+          unit: byte  
+        - name: rx_bytes
+          type: long
+          metric_type: counter
+          description: > 
+            Total number of bytes received through PCIe RX via NVML.
+          unit: byte
+        - name: replay
+          type: long
+          metric_type: counter
+          description: > 
+            Replay counter for the PCIe connection.
+    - name: utilization
+      type: group
+      fields:
+        - name: gpu.pct
+          type: float
+          metric_type: gauge
+          description: > 
+           GPU utilization (in %).
+          unit: percent
+        - name: memory_copy.pct
+          type: float
+          metric_type: gauge
+          description: > 
+            Memory utilization (in %).
+          unit: percent  
+        - name: encoder.pct
+          type: float
+          metric_type: gauge
+          description: > 
+           Encoder utilization (in %).
+          unit: percent 
+        - name: decoder.pct
+          type: float
+          metric_type: gauge
+          description: > 
+           Decoder utilization (in %).
+          unit: percent 
+    - name: error
+      type: group
+      fields:
+        - name: xid
+          type: float
+          metric_type: gauge
+          description: >
+            The eXerience ID of the error being reported by the GPU.
+    - name: memory
+      type: group
+      fields:
+        - name: framebuffer
+          type: group
+          fields:
+            - name: free_size
+              type: float
+              metric_type: gauge
+              description: >
+                Free size of the framebuffer (in MiB).
+            - name: used_size
+              type: float
+              metric_type: gauge
+              description: >
+                Used size of the framebuffer (in MiB).
+    - name: ecc
+      type: group
+      description: >
+        Fields related to errors metrics.
+      fields:
+        - name: double_bit_persistent.count
+          type: long
+          metric_type: counter
+          description: >
+            Double-bit persistent errors count for GPU memory.
+        - name: double_bit_volatile.count
+          type: long
+          metric_type: counter
+          description: >
+            Double-bit volatile errors count for GPU memory.
+        - name: single_bit_persistent.count
+          type: long
+          metric_type: counter
+          description: >
+            Single-bit persistent errors count for GPU memory.
+        - name: single_bit_volatile.count
+          type: long
+          metric_type: counter
+          description: >
+            Single-bit volatile errors count for GPU memory. 
+    - name: retired
+      type: group
+      description: >
+        Fields related to Retired pages.
+      fields:
+        - name: single_bit_errors.count
+          type: long
+          metric_type: counter
+          description: >
+            Total number of retired pages due to single-bit errors.  
+        - name: double_bit_errors.count
+          type: long
+          metric_type: counter
+          description: >
+            Total number of retired pages due to double-bit errors. 
+        - name: pending.count
+          type: long
+          metric_type: counter
+          description: >
+            Total number of pages pending retirement.        
+    - name: nvlink
+      type: group
+      description: >
+        Fields related to nvlink.
+      fields:
+        - name: flowcontrol_crc_errors.count
+          type: long
+          metric_type: counter
+          description: >
+            Total number of NVLink flow-control CRC errors.
+        - name: data_crc_errors.count
+          type: long
+          metric_type: counter
+          description: >
+            Total number of NVLink data CRC errors. 
+        - name: replay_errors.count
+          type: long
+          metric_type: counter
+          description: >
+            Total number of NVLink retries.
+        - name: recovery_errors.count
+          type: long
+          metric_type: counter
+          description: >
+            Total number of NVLink recovery errors.
+        - name: bandwidth_total
+          type: long
+          metric_type: counter
+          description: >
+            Total number of NVLink bandwidth counters for all lanes.
+        - name: bandwidth_l0_total
+          type: long
+          metric_type: counter
+          description: >
+            The number of bytes of active NVLink rx or tx data including both header and payload.
+    - name: license_vgpu_status
+      type: long
       metric_type: gauge
       description: >
-        Utilization of the decoder engine in the GPU.
-
+        vGPU License status.
+    - name: remapped
+      type: group
+      description: >
+        Fields related to Remapped rows.
+      fields:
+        - name: uncorrectable_remapped_rows.count
+          type: long
+          metric_type: counter
+          description: >
+            Number of remapped rows for uncorrectable errors
+        - name: correctable_remapped_rows.count
+          type: long
+          metric_type: counter
+          description: >
+            Number of remapped rows for correctable errors
+        - name: failed_remapped_rows.count
+          type: long
+          metric_type: gauge
+          description: >
+            Whether remapping of rows has failed
     - name: device
       type: group
       fields:
@@ -18,287 +271,122 @@
           type: keyword
           description: >
             Brand of the GPU device.
-
-        - name: id
+        - name: serial_number
           type: keyword
           description: >
-            ID of the GPU device.
-
-          dimension: true
-        - name: info_rom.oem_version
+            Device Serial Number
+        - name: ecc_info_rom_version
           type: keyword
           description: >
-            OEM version of the info ROM.
-
-        - name: info_rom.version
+            ECC inforom version
+        - name: power_info_rom_version
           type: keyword
           description: >
-            Version of the info ROM.
-
-        - name: model
+            Power management object inforom version
+        - name: vbios_version
           type: keyword
           description: >
-            Model of the GPU device.
-
-        - name: name
-          type: keyword
-          description: >
-            Name of the GPU device.
-
-        - name: uuid
-          type: keyword
-          description: >
-            UUID of the GPU device.
-
-          dimension: true
-        - name: vbios.version
-          type: keyword
-          description: >
-            Version of the vbios.
-
-    - name: driver
-      type: group
-      fields:
-        - name: nvml_version
-          type: keyword
-          description: >
-            NVML version of the driver.
-
-        - name: version
-          type: keyword
-          description: >
-            Version of the driver.
-
-    - name: encoder.utilization
-      type: float
-      description: >
-        Utilization of the encoder engine in the GPU.
-
-    - name: energy.total
-      type: long
-      metric_type: counter
-      description: >
-        Total energy consumption of the GPU since boot in Joules.
-
-    - name: error
-      type: group
-      fields:
-        - name: code
-          type: keyword
-          description: >
-            Specific Error code for the XID error on the GPU.
-
-        - name: message
-          type: keyword
-          description: >
-            Specific Error message for the XID error on the.
-
-        - name: xid
-          type: keyword
-          description: >
-            The eXerience ID of the error being reported by the GPU.
-
-    - name: framebuffer
-      type: group
-      fields:
-        - name: size.free
-          type: long
-          metric_type: gauge
-          description: >
-            Free size of the framebuffer.
-
-        - name: size.used
-          type: long
-          metric_type: gauge
-          description: >
-            Used size of the framebuffer.
-
-    - name: license.vgpu
-      type: keyword
-      description: >
-        License status related to vGPU.
-
-    - name: memory
-      type: group
-      fields:
-        - name: size
-          type: long
-          metric_type: gauge
-          description: >
-            Size of the GPU memory in MB.
-
-        - name: used
-          type: long
-          metric_type: gauge
-          description: >
-            Used size of the GPU memory in MB.
-
-        - name: copy_utilization
-          type: float
-          metric_type: gauge
-          description: >
-            Utilization of the GPU memory copy engine.
-
-        - name: errors
-          type: group
-          description: >
-            Fields related to errors metrics.
-
-          fields:
-            - name: double_bit_persistent
-              type: long
-              metric_type: gauge
-              description: >
-                Double-bit persistent errors count for GPU memory.
-
-            - name: double_bit_volatile
-              type: long
-              metric_type: gauge
-              description: >
-                Double-bit volatile errors count for GPU memory.
-
-            - name: single_bit_persistent
-              type: long
-              metric_type: gauge
-              description: >
-                Single-bit persistent errors count for GPU memory.
-
-            - name: single_bit_volatile
-              type: long
-              metric_type: gauge
-              description: >
-                Single-bit volatile errors count for GPU memory.
-
-        - name: frequency
-          type: float
-          metric_type: gauge
-          description: >
-            Clock frequency of the GPU memory.
-
-        - name: temperature
-          type: float
-          metric_type: gauge
-          description: >
-            Temperature of the GPU memory.
-
-    - name: nvlink.bandwidth.total
-      type: long
-      metric_type: gauge
-      description: >
-        Total bandwidth of NVLink.
-
-    - name: pci.bus.id
-      type: keyword
-      description: >
-        Bus ID of the PCI device.
-
-    - name: pcie.replay
-      type: long
-      metric_type: gauge
-      description: >
-        Replay counter for the PCIe connection.
-
-    - name: power.usage
-      type: float
-      metric_type: gauge
-      description: >
-        Current power usage of the GPU in Watts.
-
-    - name: streaming_multiprocessor.frequency
-      type: float
-      metric_type: gauge
-      description: >
-        Frequency of the streaming multiprocessor.
-
-    - name: temperature
-      metric_type: gauge
-      type: float
-      description: >
-        Temperature of the GPU.
-
+             VBIOS version of the device    
     - name: throttling
       type: group
       fields:
-        - name: board_limit
-          type: float
-          metric_type: gauge
+        - name: board_limit.us
+          type: long
+          metric_type: counter
           description: >
             Number of microseconds throttled due to Board limit.
-
-        - name: low_utilization
-          type: float
-          metric_type: gauge
+        - name: low_utilization.us
+          type: long
+          metric_type: counter
           description: >
             Number of microseconds throttled due to low utilization.
-
-        - name: power
-          type: float
-          metric_type: gauge
+        - name: power.us
+          type: long
+          metric_type: counter
           description: >
             Number of microseconds throttled due to power.
-
-        - name: reliability
-          type: float
-          metric_type: gauge
+        - name: reliability.us
+          type: long
+          metric_type: counter
           description: >
             Number of microseconds throttled due to reliability.
-
-        - name: sync_boost
-          type: float
-          metric_type: gauge
+        - name: sync_boost.us
+          type: long
+          metric_type: counter
           description: >
             Number of microseconds throttled due to Sync Boost.
-
-        - name: thermal
-          type: float
-          metric_type: gauge
+        - name: thermal.us
+          type: long
+          metric_type: counter
           description: >
             Number of microseconds throttled due to thermals.
-
-    - name: utilization
-      type: float
-      metric_type: gauge
-      description: >
-        Overall utilization of the GPU.
-
-- name: prometheus
-  type: group
-  description: >
-    Fields related to Prometheus metadata.
-
-  fields:
-    - name: up
+    - name: dcp
       type: group
+      description: >
+        Fields related to NVIDIA GPUs.
+      fields:
+        - name: graphics_engine
+          type: group
+          fields:
+            - name: active
+              type: float
+              metric_type: gauge
+              description: >
+                Ratio of time the graphics engine is active.
+        - name: sm
+          type: group
+          fields:
+            - name: active
+              type: float
+              metric_type: gauge
+              description: >
+                The ratio of cycles an SM has at least one warp assigned.
+            - name: occupancy
+              type: float
+              metric_type: gauge
+              description: >
+                The ratio of number of warps resident on an SM.
+        - name: tensor_pipe
+          type: group
+          fields:
+            - name: active
+              type: float
+              metric_type: gauge
+              description: >
+                Ratio of cycles the tensor (HMMA) pipe is active.
+        - name: dram
+          type: group
+          fields:
+            - name: active
+              type: float
+              metric_type: gauge
+              description: >
+                Ratio of cycles the device memory interface is active sending or receiving data.
+        - name: fp64_pipe
+          type: group
+          fields:
+            - name: active
+              type: float
+              metric_type: gauge
+              description: >
+                Ratio of cycles the fp64 pipes that are active.
+        - name: fp32_pipe
+          type: group
+          fields:
+            - name: active
+              type: float
+              metric_type: gauge
+              description: >
+                Ratio of cycles the fp32 pipes that are active.
+        - name: fp16_pipe
+          type: group
+          fields:
+            - name: active
+              type: float
+              metric_type: gauge
+              description: >
+                Ratio of cycles the fp16 pipes that are active.
+    - name: up
+      type: keyword
       description: >
         Fields related to Prometheus `up` data.
-
-      fields:
-        - name: value
-          type: keyword
-          description: >
-            Whether prometheus reports the targeted instance as up or down.
-
-    - name: node
-      type: group
-      description: >
-        Fields related to Prometheus node metadata.
-
-      fields:
-        - name: hostname
-          type: keyword
-          description: >
-            Hostname of the Prometheus node.
-
-          dimension: true
-        - name: job
-          type: keyword
-          description: >
-            Job of the Prometheus node.
-
-          dimension: true
-        - name: id
-          type: integer
-          description: >
-            ID of the Prometheus node.
-
-          dimension: true

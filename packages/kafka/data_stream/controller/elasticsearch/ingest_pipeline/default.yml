@@ -1,0 +1,87 @@
+---
+description: Pipeline for processing Kafka controller metrics
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: jolokia.metrics
+      target_field: kafka.controller
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: service.type
+      value: kafka
+
+  # Cast epoch value to long before conversion
+  - script:
+      if: ctx.kafka?.controller?.kafka_controller?.last_applied_record_timestamp_epoch != null
+      lang: painless
+      source: >
+        ctx.kafka.controller.kafka_controller.last_applied_record_timestamp_epoch =
+          (long)(ctx.kafka.controller.kafka_controller.last_applied_record_timestamp_epoch);
+
+  # Convert epoch timestamp to ISO8601
+  - date:
+      if: ctx.kafka?.controller?.kafka_controller?.last_applied_record_timestamp_epoch != null
+      field: kafka.controller.kafka_controller.last_applied_record_timestamp_epoch
+      target_field: kafka.controller.kafka_controller.last_applied_record_timestamp
+      formats: ["UNIX_MS"]
+
+  # Add metric fingerprint list
+  - script:
+      lang: painless
+      source: |
+        def queue = new ArrayList();
+        def fingerprint = new ArrayList();
+
+        if (ctx.containsKey('kafka') && ctx.kafka.containsKey('controller')) {
+            queue.add(['p': 'kafka.controller', 'v': ctx.kafka.controller]);
+
+            while (!queue.isEmpty()) {
+                def item = queue.remove(0);
+                def path = item.p;
+                def val = item.v;
+
+                if (val instanceof Map) {
+                    for (entry in val.entrySet()) {
+                        def key = entry.getKey();
+                        def child = entry.getValue();
+                        def childPath = path + '.' + key;
+                        queue.add(['p': childPath, 'v': child]);
+                    }
+                } else {
+                    fingerprint.add(path);
+                }
+            }
+
+            ctx.kafka_controller_metric_fingerprint = fingerprint;
+        }
+
+  - fingerprint:
+      fields: [kafka_controller_metric_fingerprint]
+      target_field: kafka.controller.metric_fingerprint
+      ignore_failure: true
+
+  # Cleanup
+  - remove:
+      field: kafka.controller.kafka_controller.last_applied_record_timestamp_epoch
+      ignore_missing: true
+  
+  - remove:
+      field: kafka_controller_metric_fingerprint
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}} failed with message '{{{ _ingest.on_failure_message }}}'

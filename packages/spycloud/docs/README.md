@@ -22,42 +22,23 @@ The SpyCloud integration collects three types of logs: Breach Catalog, Breach Re
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
 
-### To collect logs through REST API, follow the below steps:
+### Collect logs through REST API
 
-- Considering you already have a SpyCloud account, log in to your SpyCloud instance to obtain your API key. Navigate to **Main > API**, where you will find your API key under the **Keys > API Key** section.
-- To obtain the Base URL, navigate to **Main > API** and click on the **View Docs** link, your URL can be located within the **API Reference** section.
+1. Considering you already have a SpyCloud account, log in to your SpyCloud instance to obtain your API key. Navigate to **Main > API**, where you will find your API key under the **Keys > API Key** section.
+2. To obtain the Base URL, navigate to **Main > API** and click on the **View Docs** link, your URL can be located within the **API Reference** section.
 
 **NOTE**: Your system's IP should be allowlisted by the SpyCloud team to be able to access the APIs and get the data.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `SpyCloud Enterprise Protection`.
-3. Select the "SpyCloud Enterprise Protection" integration from the search results.
-4. Select "Add SpyCloud Enterprise Protection Integration" to add the integration.
-5. While adding the integration, if you want to collect Breach Catalog logs via REST API, please enter the following details:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **SpyCloud Enterprise Protection**.
+3. Select the **SpyCloud Enterprise Protection** integration and add it.
+4. While adding the integration, if you want to collect Breach Catalog logs via REST API, please enter the following details:
    - URL
    - API Key
    - Interval
@@ -74,6 +55,7 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
    - API Key
    - Initial Interval
    - Interval
+5. Save the integration.
 
 **NOTE**: By default, the URL is set to "https://api.spycloud.io/enterprise-v2".
 
@@ -91,31 +73,32 @@ An example event for `breach_catalog` looks as following:
 {
     "@timestamp": "2022-11-24T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "d6e9d6f0-0baa-44b6-b60b-e4b811e50811",
-        "id": "763d7558-f93b-440a-94ee-509804901acf",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "0403e165-1f02-477a-a1a0-4637c5da67c3",
+        "id": "334de088-8d65-4f7c-8e0c-565c26074152",
+        "name": "elastic-agent-50574",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "spycloud.breach_catalog",
-        "namespace": "63685",
+        "namespace": "40951",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "763d7558-f93b-440a-94ee-509804901acf",
+        "id": "334de088-8d65-4f7c-8e0c-565c26074152",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "spycloud.breach_catalog",
         "id": "39997",
-        "ingested": "2024-08-16T06:23:24Z",
+        "ingested": "2025-07-08T13:16:27Z",
         "kind": "asset",
+        "module": "spycloud",
         "original": "{\"acquisition_date\":\"2022-10-14T00:00:00Z\",\"assets\":{\"address_2\":363,\"age\":817,\"city\":1859,\"country\":177225,\"country_code\":177225,\"dob\":198,\"email\":177219,\"first_name\":177114,\"full_name\":177030,\"gender\":119505,\"industry\":162612,\"job_title\":160712,\"last_name\":177099,\"middle_name\":17749,\"phone\":511,\"postal_code\":1971,\"social_facebook\":51841,\"social_twitter\":57193},\"confidence\":3,\"description\":\"This source has been marked as sensitive due to one of the following reasons: Revealing the source may compromise an on-going investigation. The affected site is of a controversial nature but does not validate email addresses and could therefore be used to tarnish an employee's reputation.\",\"id\":39997,\"num_records\":177225,\"spycloud_publish_date\":\"2022-11-24T00:00:00Z\",\"title\":\"Sensitive Source\",\"type\":\"PRIVATE\",\"uuid\":\"9f5bf34b-092e-46f4-b87f-02c91b0adb3a\"}"
     },
     "input": {
@@ -439,15 +422,15 @@ An example event for `breach_record` looks as following:
 {
     "@timestamp": "2023-11-29T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "ce02cb91-e24e-45fa-8591-70b683f1b86b",
-        "id": "763d7558-f93b-440a-94ee-509804901acf",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "2d863019-2dd6-4b95-8837-81d3a35697df",
+        "id": "fc110aa7-1b8b-4c18-9bd3-5cb3993cff5e",
+        "name": "elastic-agent-54619",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "spycloud.breach_record",
-        "namespace": "33260",
+        "namespace": "26946",
         "type": "logs"
     },
     "destination": {
@@ -458,16 +441,17 @@ An example event for `breach_record` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "763d7558-f93b-440a-94ee-509804901acf",
+        "id": "fc110aa7-1b8b-4c18-9bd3-5cb3993cff5e",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "spycloud.breach_record",
         "id": "3350f1da-fa39-4415-b2cc-02057e2fbe99",
-        "ingested": "2024-08-16T06:24:19Z",
+        "ingested": "2025-07-08T13:17:16Z",
         "kind": "alert",
+        "module": "spycloud",
         "original": "{\"account_image_url\":\"https://www.chess.com/bundles/web/images/noavatar_l.84a92436.gif\",\"account_login_time\":\"2018-06-29T23:51:46Z\",\"account_modification_time\":\"2018-06-29T23:51:10Z\",\"account_signup_time\":\"2016-07-29T18:47:11Z\",\"av_softwares\":[\"McAfee\",\"Windows Defender\"],\"cc_bin\":\"489486\",\"cc_expiration\":\"06/2025\",\"cc_last_four\":\"1237\",\"cc_number\":\"3fdd0ce028ffaa147afdb6461f6ce95f8c07f484\",\"company_name\":\"ABC Corporation\",\"country\":\"United States\",\"country_code\":\"US\",\"display_resolution\":\"1920x1080\",\"document_id\":\"3350f1da-fa39-4415-b2cc-02057e2fbe99\",\"domain\":\"example1.com\",\"email\":\"john.doe@example.com\",\"email_domain\":\"example.com\",\"email_username\":\"john.doe\",\"first_name\":\"John\",\"full_name\":\"John Doe\",\"homepage\":\"https://www.chess.com/member/sarahjoh\",\"industry\":\"Technology\",\"infected_machine_id\":\"ABC123\",\"infected_path\":\"/documents/confidential\",\"infected_time\":\"2023-01-15T12:30:45Z\",\"ip_addresses\":[\"89.160.20.128\",\"89.160.20.112\"],\"job_title\":\"Software Engineer\",\"keyboard_languages\":[\"English\",\"Spanish\"],\"last_name\":\"Doe\",\"log_id\":\"76afa48107ec32f51a2aba4a314357c1e69d2267f1b04bf1afc948d0f77b1658\",\"password\":\"P@ssw0rd123\",\"password_plaintext\":\"******\",\"password_type\":\"alphanumeric\",\"record_addition_date\":\"2023-12-06T00:00:00Z\",\"record_cracked_date\":\"2023-11-29T00:00:00Z\",\"record_modification_date\":\"2023-11-29T00:00:00Z\",\"salt\":\"fbbdhd\",\"severity\":3,\"sighting\":17,\"social_linkedin\":[\"ildar-bazanov-961b14160\"],\"source_id\":50436,\"spycloud_publish_date\":\"2023-01-20T08:00:00Z\",\"target_domain\":\"example.com\",\"target_subdomain\":\"login.example.com\",\"target_url\":\"https://example.com/login\",\"user_browser\":\"Chrome\",\"user_hostname\":\"workstation-1\",\"user_os\":\"Windows 10\",\"user_sys_domain\":\"8ad8.default\",\"user_sys_registered_owner\":\"John Milk\",\"username\":\"john_doe\"}",
         "severity": 3
     },
@@ -575,9 +559,7 @@ An example event for `breach_record` looks as following:
             "salt": "fbbdhd",
             "severity": 3,
             "sighting": 17,
-            "social_linkedin": [
-                "ildar-bazanov-961b14160"
-            ],
+            "social_linkedin": "ildar-bazanov-961b14160",
             "source_id": "50436",
             "spycloud_publish_date": "2023-01-20T08:00:00.000Z",
             "target": {
@@ -697,15 +679,15 @@ An example event for `compass` looks as following:
 {
     "@timestamp": "2022-11-17T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "7f89a7df-dbc1-419e-8862-9c4bce1e20ca",
-        "id": "763d7558-f93b-440a-94ee-509804901acf",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "8a7a03d4-5bd9-4f84-ba63-906be4583ef6",
+        "id": "da38d79a-b6af-4c02-b873-82189b28c102",
+        "name": "elastic-agent-63286",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "spycloud.compass",
-        "namespace": "63821",
+        "namespace": "93195",
         "type": "logs"
     },
     "destination": {
@@ -716,16 +698,17 @@ An example event for `compass` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "763d7558-f93b-440a-94ee-509804901acf",
+        "id": "da38d79a-b6af-4c02-b873-82189b28c102",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "spycloud.compass",
         "id": "3807a672-e5c4-4a58-8ade-93a690136c24",
-        "ingested": "2024-08-16T06:25:25Z",
+        "ingested": "2025-07-08T13:18:07Z",
         "kind": "event",
+        "module": "spycloud",
         "original": "{\"av_softwares\":[\"Windows Defender\"],\"country\":\"PHILIPPINES\",\"country_code\":\"PH\",\"document_id\":\"3807a672-e5c4-4a58-8ade-93a690136c24\",\"domain\":\"gmail.com\",\"email\":\"wer****************r@gmail.com\",\"email_domain\":\"gmail.com\",\"email_username\":\"wer****************r\",\"infected_machine_id\":\"76c9a60b-1d06-4bc1-8e08-4f07f82c0bdd\",\"infected_path\":\"C:\\\\Windows\\\\Microsoft.NET\\\\Framework\\\\v4.0.30319\\\\AppLaunch.exe\",\"infected_time\":\"2022-08-11T18:02:31Z\",\"ip_addresses\":[\"110.18.12.120\"],\"keyboard_languages\":\"english (united states)\",\"log_id\":\"fc201cf30d2727c57f07f05f3ab6ee43c7260609d973d508f818c1abcc4fcb39\",\"password\":\"********\",\"password_plaintext\":\"********\",\"password_type\":\"plaintext\",\"severity\":25,\"source_id\":40351,\"spycloud_publish_date\":\"2022-11-17T00:00:00Z\",\"target_domain\":\"sparefactor.com\",\"target_subdomain\":\"application.sparefactor.com\",\"target_url\":\"application.sparefactor.com\",\"user_browser\":\"Google Chrome [Default]\",\"user_hostname\":\"LAPTOP-4G2P1N13\",\"user_os\":\"Windows 10 Home Single Language [x64]\",\"user_sys_registered_owner\":\"NewAdmin\"}",
         "severity": 25
     },
@@ -762,9 +745,7 @@ An example event for `compass` looks as following:
     },
     "spycloud": {
         "compass": {
-            "av_softwares": [
-                "Windows Defender"
-            ],
+            "av_softwares": "Windows Defender",
             "country": {
                 "code": "PH",
                 "name": "PHILIPPINES"
@@ -781,9 +762,7 @@ An example event for `compass` looks as following:
                 "path": "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\AppLaunch.exe",
                 "time": "2022-08-11T18:02:31.000Z"
             },
-            "ip_addresses": [
-                "110.18.12.120"
-            ],
+            "ip_addresses": "110.18.12.120",
             "keyboard_languages": "english (united states)",
             "log_id": "fc201cf30d2727c57f07f05f3ab6ee43c7260609d973d508f818c1abcc4fcb39",
             "password": {
@@ -817,7 +796,6 @@ An example event for `compass` looks as following:
         "spycloud-compass"
     ],
     "url": {
-        "extension": "com",
         "original": "application.sparefactor.com",
         "path": "application.sparefactor.com"
     },

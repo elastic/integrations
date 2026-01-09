@@ -1,30 +1,37 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_action_4e8eaf93
       field: event.action
       value: [system-stats]
   - append:
+      tag: append_event_type_8b66b73a
       field: event.type
       value: [info]
   - grok:
+      tag: grok_message_7466a657
       field: message
       if: ctx.cisco_ise?.log?.segment?.number == 0
       patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
+      tag: grok_message_c232cfac
       field: message
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
+      tag: grok_cisco_ise_log_log_details_raw_cc6b4e5d
       field: cisco_ise.log.log_details_raw
       if: ctx.cisco_ise?.log?.message?.code == "70001"
       patterns:
         - "^ConfigVersionId=%{INT:cisco_ise.log.log_details.ConfigVersionId}, SysStatsAcsProcessHealth= %{GREEDYDATA:_tmp.SysStatsAcsProcessHealth}"
   - kv:
+      tag: kv__tmp_SysStatsAcsProcessHealth_to_cisco_ise_log_log_details_SysStatsAcsProcessHealth_d623f1b0
       if: ctx.cisco_ise?.log?.message?.code == "70001"
       field: _tmp.SysStatsAcsProcessHealth
       target_field: cisco_ise.log.log_details.SysStatsAcsProcessHealth
@@ -32,6 +39,7 @@ processors:
       value_split: =
       ignore_failure: true
   - kv:
+      tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_c331124e
       if: ctx.cisco_ise?.log?.message?.code != "70001"
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
@@ -39,6 +47,7 @@ processors:
       value_split: =
       ignore_failure: true
   - kv:
+      tag: kv_cisco_ise_log_log_details_OperationCounters_to__tmp_5f844101
       field: cisco_ise.log.log_details.OperationCounters
       target_field: _tmp
       field_split: ', '
@@ -47,9 +56,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a11aa240
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - kv:
+      tag: kv__tmp_Counter_to_cisco_ise_log_log_details_Counters_09a758f5
       if: ctx.cisco_ise?.log?.message?.code == "70011"
       field: _tmp.Counter
       target_field: cisco_ise.log.log_details.Counters
@@ -58,13 +69,16 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5cecea6c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_OperationCounters_35e786b9
       field: cisco_ise.log.log_details.OperationCounters
       if: ctx.cisco_ise?.log?.log_details?.Counters != null
       ignore_missing: true
   - date:
+      tag: date__tmp_timestamp_9ef85c6a
       field: _tmp.timestamp
       formats:
         - yyyy-MM-dd HH:mm:ss.SSS
@@ -72,12 +86,15 @@ processors:
         - MMM [ ]d HH:mm:ss[.SSSSSS][.SSS]
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_1d810625
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_7efc4dc7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date__tmp_timestamp_1d2a12b9
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
       formats:
@@ -87,189 +104,234 @@ processors:
       timezone: '{{{event.timezone}}}'
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_26d11908
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_0a8243aa
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_event_category_722275b8
       field: event.category
       value: host
       if: ctx.cisco_ise?.log?.message?.code != null && ['70000','70011'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
+      tag: append_event_category_fad855d1
       field: event.category
       value: process
       if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '70001'
       ignore_failure: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_ActiveSessionCount_to_cisco_ise_log_active_session_count_14b15f84
       field: cisco_ise.log.log_details.ActiveSessionCount
       target_field: cisco_ise.log.active_session.count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0988f23f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_ActiveSessionCount_e196f0f9
       field: cisco_ise.log.log_details.ActiveSessionCount
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_AverageRadiusRequestLatency_to_cisco_ise_log_average_radius_request_latency_1bb1d9e3
       field: cisco_ise.log.log_details.AverageRadiusRequestLatency
       target_field: cisco_ise.log.average.radius.request.latency
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3d77dd7a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_AverageRadiusRequestLatency_58b64dbc
       field: cisco_ise.log.log_details.AverageRadiusRequestLatency
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_AverageTacacsRequestLatency_to_cisco_ise_log_average_tacacs_request_latency_0ce56aa1
       field: cisco_ise.log.log_details.AverageTacacsRequestLatency
       target_field: cisco_ise.log.average.tacacs.request.latency
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e70a7518
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_AverageTacacsRequestLatency_b7df694d
       field: cisco_ise.log.log_details.AverageTacacsRequestLatency
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_Counters_to_cisco_ise_log_operation_counters_counters_d4c9a50f
       field: cisco_ise.log.log_details.Counters
       target_field: cisco_ise.log.operation_counters.counters
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_DeltaRadiusRequestCount_to_cisco_ise_log_delta_radius_request_count_bb7c1a15
       field: cisco_ise.log.log_details.DeltaRadiusRequestCount
       target_field: cisco_ise.log.delta.radius.request.count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5c5dea34
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_DeltaRadiusRequestCount_15414b70
       field: cisco_ise.log.log_details.DeltaRadiusRequestCount
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_DeltaTacacsRequestCount_to_cisco_ise_log_delta_tacacs_request_count_04b9aa0f
       field: cisco_ise.log.log_details.DeltaTacacsRequestCount
       target_field: cisco_ise.log.delta.tacacs.request.count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_abe87e36
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_DeltaTacacsRequestCount_2f4fae49
       field: cisco_ise.log.log_details.DeltaTacacsRequestCount
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_OperationCounters_to_cisco_ise_log_operation_counters_original_f2ef99a2
       field: cisco_ise.log.log_details.OperationCounters
       target_field: cisco_ise.log.operation_counters.original
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_SysStatsAcsProcessHealth_to_cisco_ise_log_sysstats_acs_process_health_855cfe64
       field: cisco_ise.log.log_details.SysStatsAcsProcessHealth
       target_field: cisco_ise.log.sysstats.acs.process.health
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_SysStatsCpuCount_to_cisco_ise_log_sysstats_cpu_count_a7bb6737
       field: cisco_ise.log.log_details.SysStatsCpuCount
       target_field: cisco_ise.log.sysstats.cpu.count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_576f98c4
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_SysStatsCpuCount_5202ba79
       field: cisco_ise.log.log_details.SysStatsCpuCount
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_SysStatsProcessMemoryMB_to_cisco_ise_log_sysstats_process_memory_mb_1d1675d5
       field: cisco_ise.log.log_details.SysStatsProcessMemoryMB
       target_field: cisco_ise.log.sysstats.process_memory_mb
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d3938d18
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_SysStatsProcessMemoryMB_a5b9843f
       field: cisco_ise.log.log_details.SysStatsProcessMemoryMB
       ignore_missing: true
   - gsub:
+      tag: gsub_cisco_ise_log_log_details_SysStatsUtilizationCpu_e029484c
       field: cisco_ise.log.log_details.SysStatsUtilizationCpu
       pattern: '%'
       replacement: ''
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_SysStatsUtilizationCpu_to_cisco_ise_log_sysstats_utilization_cpu_35d3d694
       field: cisco_ise.log.log_details.SysStatsUtilizationCpu
       target_field: cisco_ise.log.sysstats.utilization.cpu
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_50428693
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_SysStatsUtilizationCpu_d369ebac
       field: cisco_ise.log.log_details.SysStatsUtilizationCpu
       ignore_missing: true
   - gsub:
+      tag: gsub_cisco_ise_log_log_details_SysStatsUtilizationDiskIO_8fc15933
       field: cisco_ise.log.log_details.SysStatsUtilizationDiskIO
       pattern: '%'
       replacement: ''
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_SysStatsUtilizationDiskIO_to_cisco_ise_log_sysstats_utilization_disk_io_e002d68e
       field: cisco_ise.log.log_details.SysStatsUtilizationDiskIO
       target_field: cisco_ise.log.sysstats.utilization.disk.io
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8404f3ef
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_SysStatsUtilizationDiskIO_8d685627
       field: cisco_ise.log.log_details.SysStatsUtilizationDiskIO
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_SysStatsUtilizationDiskSpace_to_cisco_ise_log_sysstats_utilization_disk_space_f0ed84de
       field: cisco_ise.log.log_details.SysStatsUtilizationDiskSpace
       target_field: cisco_ise.log.sysstats.utilization.disk.space
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_SysStatsUtilizationLoadAvg_to_cisco_ise_log_sysstats_utilization_load_avg_37bc713f
       field: cisco_ise.log.log_details.SysStatsUtilizationLoadAvg
       target_field: cisco_ise.log.sysstats.utilization.load_avg
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b82df8de
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_SysStatsUtilizationLoadAvg_af7fec1e
       field: cisco_ise.log.log_details.SysStatsUtilizationLoadAvg
       ignore_missing: true
   - gsub:
+      tag: gsub_cisco_ise_log_log_details_SysStatsUtilizationMemory_3a5eea75
       field: cisco_ise.log.log_details.SysStatsUtilizationMemory
       pattern: '%'
       replacement: ''
       ignore_missing: true
   - convert:
+      tag: convert_cisco_ise_log_log_details_SysStatsUtilizationMemory_to_cisco_ise_log_sysstats_utilization_memory_16d9bb52
       field: cisco_ise.log.log_details.SysStatsUtilizationMemory
       target_field: cisco_ise.log.sysstats.utilization.memory
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_988887e5
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_cisco_ise_log_log_details_SysStatsUtilizationMemory_1cd9d639
       field: cisco_ise.log.log_details.SysStatsUtilizationMemory
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_SysStatsUtilizationNetwork_to_cisco_ise_log_sysstats_utilization_network_1eddf96c
       field: cisco_ise.log.log_details.SysStatsUtilizationNetwork
       target_field: cisco_ise.log.sysstats.utilization.network
       ignore_failure: true
@@ -280,4 +342,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

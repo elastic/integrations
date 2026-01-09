@@ -1,0 +1,55 @@
+type: logs
+title: Google Cloud Platform (GCP) VertexAI Prompt Response Logs
+streams:
+  - input: gcp/metrics
+    vars:
+      - name: period
+        type: text
+        title: Period
+        description: Reporting period for Vertex AI metrics
+        default: 300s
+        required: false
+        show_user: false
+      - name: table_id
+        type: text
+        title: Table ID
+        description: Full table identifier in the format 'project_id.dataset_id.table_name'
+        multi: false
+        required: true
+        show_user: true
+      - name: time_lookback_hours
+        type: integer
+        title: Time Lookback Hours
+        description: Number of hours to look back for initial data collection (default 1 hour)
+        multi: false
+        required: false
+        show_user: true
+        default: 1
+      - name: exclude_labels
+        type: bool
+        title: Exclude Labels
+        description: Flag that defines if labels are excluded on the metric
+        multi: false
+        required: false
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - gcp-vertexai-prompt-response-logs
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+
+    title: Google Cloud Platform (GCP) Vertex AI prompt response logs
+    description: Collect Google Cloud Platform (GCP) Vertex AI prompt response logs

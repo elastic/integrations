@@ -33,6 +33,9 @@ streams:
           The dataset to collect from the API. Selecting all or devices requires that the devices
           API has been activated in Okta. Rate limit information for the user and devices endpoints
           is available [here](https://developer.okta.com/docs/reference/rl-global-mgmt/).
+          The user data set will be enriched with the users' group memberships via the API's /api/v1/users
+          endpoints, contributing to rate limit budget cost. One request will be made for each user to
+          obtain this enrichment data.
         options:
           - value: all
             text: all
@@ -41,6 +44,18 @@ streams:
           - value: devices
             text: devices
         default: users
+      - name: enrich_user_roles
+        type: bool
+        title: Enrich User Roles
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: >-
+          Enrich user entities with their Okta role data. This allows monitoring of privileged
+          users' actions. Enabling this setting increases the number of requests to the
+          /api/v1/users endpoint, with one request per user, which counts toward your Okta rate
+          limits.
       - name: sync_interval
         type: text
         title: Sync Interval
@@ -119,6 +134,7 @@ streams:
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
+        default: false
         multi: false
         required: false
         show_user: false

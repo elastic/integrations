@@ -20,42 +20,25 @@ This integration collects the following logs:
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### To collect data from the CyberArk EPM API:
+### Collect data from the CyberArk EPM API
 
-- Navigate to **Administration > Account Management** and create a user. While creating the user, check the **Allow to manage Sets** option and provide **ViewOnlySetAdmin** for all the required sets.
-- Log in with the newly created user and navigate to **Administration > Account Configuration**. Update the **Timeout for inactive session** parameter, which is a prerequisite for creating an integration in Elastic.
-    - **Note**: It is recommended to set a high value for the **Timeout for inactive session** parameter to minimize multiple authentication calls.
+1. Navigate to **Administration > Account Management** and create a user. While creating the user, check the **Allow to manage Sets** option and provide **ViewOnlySetAdmin** for all the required sets.
+2. Log in with the newly created user and navigate to **Administration > Account Configuration**. 
+3. Update the **Timeout for inactive session** parameter, which is a prerequisite for creating an integration in Elastic.
 
-### Enabling the integration in Elastic:
+NOTE: Set a high value for the **Timeout for inactive session** parameter to minimize multiple authentication calls.
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `CyberArk EPM`.
-3. Select the "CyberArk EPM" integration from the search results.
-4. Select "Add CyberArk EPM" to add the integration.
-5. Add all the required integration configuration parameters, including the URL, Username, Password, API Version, Session Timeout, Interval, and Initial Interval, to enable data collection.
-6. Select "Save and continue" to save the integration.
+### Enable the integration in Elastic
+
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **CyberArk EPM**.
+3. Select the **CyberArk EPM** integration and add it.
+4. Add all the required integration configuration parameters, including the URL, Username, Password, API Version, Session Timeout, Interval, and Initial Interval, to enable data collection.
+5. Save the integration.
 
 **Note**:
   - The default URL is `https://login.epm.cyberark.com`, but this may vary depending on your region. Please refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region.
@@ -939,11 +922,11 @@ An example event for `admin_audit` looks as following:
 {
     "@timestamp": "2024-11-25T05:37:28.373Z",
     "agent": {
-        "ephemeral_id": "31a04b1e-c4a5-4d72-9a1d-1c5aea2eaa42",
-        "id": "a15af379-3ffb-49ce-b759-f12c44c6a9e0",
-        "name": "elastic-agent-82404",
+        "ephemeral_id": "1948d980-9bbf-4bc6-b1fe-333a4b03ce3d",
+        "id": "1002d46a-e45c-4ff8-8460-b561d81b207e",
+        "name": "elastic-agent-83261",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.18.1"
     },
     "cyberark_epm": {
         "admin_audit": {
@@ -961,16 +944,16 @@ An example event for `admin_audit` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.admin_audit",
-        "namespace": "66939",
+        "namespace": "54477",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a15af379-3ffb-49ce-b759-f12c44c6a9e0",
+        "id": "1002d46a-e45c-4ff8-8460-b561d81b207e",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -978,7 +961,7 @@ An example event for `admin_audit` looks as following:
             "iam"
         ],
         "dataset": "cyberark_epm.admin_audit",
-        "ingested": "2025-01-06T05:24:02Z",
+        "ingested": "2025-06-03T11:24:52Z",
         "kind": "event",
         "original": "{\"Administrator\":\"bob@example.com\",\"Description\":\"Enter Set Elastic/test\",\"EventTime\":\"2024-11-25T05:37:28.373Z\",\"Feature\":\"Sets\",\"InternalSessionId\":876,\"LoggedAt\":\"2024-11-25T05:25:13.167Z\",\"LoggedFrom\":\"175.16.199.1\",\"PermissionDescription\":\"None\",\"Role\":\"SetAdmin\",\"SetName\":\"Elastic/test\"}",
         "type": [
@@ -998,6 +981,7 @@ An example event for `admin_audit` looks as following:
             "175.16.199.1"
         ],
         "user": [
+            "bob",
             "bob@example.com"
         ]
     },
@@ -1023,8 +1007,9 @@ An example event for `admin_audit` looks as following:
         "cyberark_epm-admin_audit"
     ],
     "user": {
+        "domain": "example.com",
         "email": "bob@example.com",
-        "name": "bob@example.com",
+        "name": "bob",
         "roles": [
             "SetAdmin"
         ]

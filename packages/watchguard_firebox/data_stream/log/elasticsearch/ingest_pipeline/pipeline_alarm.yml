@@ -82,8 +82,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_watchguard_firebox_log_current_connection_2649fa10
             field: watchguard_firebox.log.current_connection
         - append:
+            tag: append_error_message_e81abeee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -94,8 +96,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_watchguard_firebox_log_limit_839e53b5
             field: watchguard_firebox.log.limit
         - append:
+            tag: append_error_message_ff17b824
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -107,8 +111,10 @@ processors:
       if: ctx.watchguard_firebox?.log?.source_ip != ''
       on_failure:
         - remove:
+            tag: remove_watchguard_firebox_log_source_ip_370728c9
             field: watchguard_firebox.log.source_ip
         - append:
+            tag: append_error_message_16b096e2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -119,8 +125,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_watchguard_firebox_log_packets_count_e0db6e9e
             field: watchguard_firebox.log.packets_count
         - append:
+            tag: append_error_message_fe0e7cf3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -132,8 +140,10 @@ processors:
       if: ctx.watchguard_firebox?.log?.destination_ip != ''
       on_failure:
         - remove:
+            tag: remove_watchguard_firebox_log_destination_ip_feafb71d
             field: watchguard_firebox.log.destination_ip
         - append:
+            tag: append_error_message_09c68349
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -144,8 +154,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_watchguard_firebox_log_source_port_ec827b49
             field: watchguard_firebox.log.source_port
         - append:
+            tag: append_error_message_5fa3c2ac
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -156,8 +168,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_watchguard_firebox_log_destination_port_4b15ad84
             field: watchguard_firebox.log.destination_port
         - append:
+            tag: append_error_message_288a44be
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -168,8 +182,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_watchguard_firebox_log_current_session_87d38cdc
             field: watchguard_firebox.log.current_session
         - append:
+            tag: append_error_message_1b1ca630
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -180,8 +196,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_watchguard_firebox_log_port_c033485b
             field: watchguard_firebox.log.port
         - append:
+            tag: append_error_message_a4d483ee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -248,7 +266,15 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

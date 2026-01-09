@@ -1,0 +1,259 @@
+---
+description: Pipeline for processing detected IOC events from the user's environment.
+processors:
+  - script:
+      lang: painless
+      if: ctx.threat?.enrichments != null;
+      description: Store the first 'matched' and 'indicator' object from the alert, as it comes from GreyNoise API.
+      source: >
+        for (def obj : ctx.threat.enrichments) {
+          if (obj.containsKey('matched') && obj.containsKey('indicator')) {
+            ctx.temp_fields = obj;
+            break;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Retain event.dataset and event.module from the matched source index in temp_fields,
+# as they originate from the source event's module and dataset in the alert
+# and are essential for navigating to the corresponding document.
+  - rename:
+      field: event.dataset
+      tag : keep_event_dataset_from_alert
+      target_field: temp_fields.dataset
+      ignore_missing: true
+  - rename:
+      field: event.module
+      tag : keep_event_module_from_alert
+      target_field: temp_fields.module
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: remove_unwanted_fields
+      source: |-
+        // Define the list of fields to retain
+        def fieldsToKeep = ["@timestamp"];
+
+        // Get a copy of the current document keys
+        def keys = new ArrayList(ctx.keySet());
+
+        // Iterate over the keys
+        for (def key : keys) {
+          // Keep if the key is in fieldsToKeep, starts with "temp_fields" or starts with "_"
+          if (!fieldsToKeep.contains(key) && !key.startsWith("temp_fields") && !key.startsWith("_")) {
+            ctx.remove(key);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Define hardcoded values required for processing.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: GreyNoise
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Threat Intelligence
+  - set:
+      field: data_stream.dataset
+      tag: set_data_stream_dataset
+      value: ti_greynoise.enriched_ioc
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: ti_greynoise.enriched_ioc
+# Extract relevant fields from temp_fields and map them to threat.indicator.
+  - rename:
+      field: temp_fields.indicator
+      tag : rename_temp_fields_to_indicator
+      target_field: greynoise.ip
+      ignore_missing: true
+  - set:
+      field: threat.indicator.ip
+      tag: set_indicator_ip
+      copy_from: greynoise.ip.indicator.ip
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name
+      copy_from: threat.indicator.ip
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.url.full
+      tag: set_threat_indicator_url_full
+      copy_from: greynoise.ip.business_service_intelligence.reference
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.as.organization.name
+      tag: set_threat_indicator_as_organization_name_from_ip_internet_scanner_intelligence_metadata_organization
+      copy_from: greynoise.ip.internet_scanner_intelligence.metadata.organization
+      ignore_empty_value: true
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_ip_internet_scanner_intelligence_actor
+      copy_from: greynoise.ip.internet_scanner_intelligence.actor
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.geo.region_name
+      tag: set_threat_indicator_geo_region_name_from_ip_internet_scanner_intelligence_metadata_region
+      copy_from: greynoise.ip.internet_scanner_intelligence.metadata.region
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.geo.city_name
+      tag: set_threat_indicator_geo_city_name_from_ip_internet_scanner_intelligence_metadata_source_city
+      copy_from: greynoise.ip.internet_scanner_intelligence.metadata.source_city
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.geo.country_name
+      tag: set_threat_indicator_geo_country_name_from_ip_internet_scanner_intelligence_metadata_source_country
+      copy_from: greynoise.ip.internet_scanner_intelligence.metadata.source_country
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.geo.country_iso_code
+      tag: set_threat_indicator_geo_country_iso_code_from_ip_internet_scanner_intelligence_metadata_source_country_code
+      copy_from: greynoise.ip.internet_scanner_intelligence.metadata.source_country_code
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.reference
+      tag: set_threat_indicator_reference_from_ip_internet_scanner_intelligence_ip
+      value: 'https://www.greynoise.io/ip/{{{threat.indicator.ip}}}'
+      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.ip != ''
+  - set:
+      field: threat.indicator.provider
+      tag: set_threat_indicator_provider
+      value: GreyNoise
+  - set:
+      field: threat.indicator.description
+      tag: set_threat_indicator_description
+      value: '{{{threat.indicator.ip}}} IP has been observed mass scanning the internet by GreyNoise with a classification of {{{greynoise.ip.internet_scanner_intelligence.classification}}}'
+      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.ip != '' && ctx.greynoise?.ip?.internet_scanner_intelligence?.classification != null && ctx.greynoise?.ip?.internet_scanner_intelligence?.classification != ''
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type
+      value: ipv4-addr
+  - set:
+      field: threat.feed.description
+      tag: set_threat_feed_description
+      value: 'Threat feed from the GreyNoise cybersecurity platform'
+  - set:
+      field: threat.feed.name
+      tag: set_threat_feed_name
+      value: 'GreyNoise IP'
+  - set:
+      field: threat.feed.reference
+      tag: set_threat_feed_provider
+      value: 'https://docs.greynoise.io/docs/using-greynoise-as-an-indicator-feed'
+  - append:
+      field: related.ip
+      tag: append_threat_indicator_ip_into_related_ip
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.ip != ''
+  - rename:
+      field: temp_fields.matched.atomic
+      tag : rename_temp_fields_to_matched_value
+      target_field: threat.indicator.matched.value
+      ignore_missing: true
+  - rename:
+      field: temp_fields.matched.field
+      tag : rename_temp_fields_to_matched_field
+      target_field: threat.indicator.matched.field
+      ignore_missing: true
+  - rename:
+      field: temp_fields.dataset
+      tag : rename_temp_fields_to_matched_field
+      target_field: threat.indicator.matched.dataset
+      ignore_missing: true
+  - rename:
+      field: temp_fields.module
+      tag : rename_temp_fields_to_matched_field
+      target_field: threat.indicator.matched.module
+      ignore_missing: true
+  - gsub:
+      field: greynoise.ip.internet_scanner_intelligence.metadata.asn
+      target_field: threat.indicator.as.number
+      pattern: 'AS'
+      replacement: ''
+      ignore_missing: true
+  - convert:
+      field: threat.indicator.as.number
+      tag: convert_internet_scanner_intelligence_metadata_mobile_to_boolean
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: greynoise.ip.internet_scanner_intelligence.tag.names
+      if: ctx.greynoise?.ip?.internet_scanner_intelligence?.tag?.names instanceof List
+      processor:
+        append:
+          field: tags
+          tag: append_tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+# Create ECS-compliant mappings for threat.indicator fields.
+  - append:
+      field: related.ip
+      tag: append_ip_into_related_ip
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.ip != null
+  - set:
+      field: event.created
+      tag: set_greynoise_enriched_ioc_event_created
+      copy_from: threat.indicator.created
+      ignore_empty_value: true
+  - set:
+      field: event.ingested
+      tag: set_event_ingested_as_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - remove:
+      field: temp_fields
+      tag: remove_temp_fields
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

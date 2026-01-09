@@ -26,7 +26,9 @@ resource.url: {{api_host}}
 state:
   user_key: {{user_key}}
   initial_interval: {{initial_interval}}
+  lag_time: {{lag_time}}
   batch_size: {{batch_size}}
+  application_name_for_url: {{application_name_for_url}}
 redact:
   fields: ~
 program: |
@@ -35,13 +37,15 @@ program: |
       state
     :
       state.with({
-        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
-        "end_time": now.format(time_layout.RFC3339),
+        "start_time": state.?cursor.last_timestamp.orValue(
+          (now - duration(state.initial_interval) - duration(state.lag_time)).format(time_layout.RFC3339)
+        ),
+        "end_time": (now - duration(state.lag_time)).format(time_layout.RFC3339),
       })
   ).as(state, state.with(
     request(
       "GET",
-      state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/data_studio?"+ {
+      state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/" + state.application_name_for_url + "?"+ {
         "maxResults": [string(state.batch_size)],
         "endTime": [state.end_time],
         "startTime": [state.start_time],
@@ -82,7 +86,7 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": "GET "+state.url.trim_right("/")+"/admin/reports/v1/activity/users/"+state.user_key+"/applications/data_studio:"+(
+            "message": "GET "+state.url.trim_right("/")+"/admin/reports/v1/activity/users/"+state.user_key+"/applications/" + state.application_name_for_url + ":"+(
               size(resp.Body) != 0 ?
                 string(resp.Body)
               :

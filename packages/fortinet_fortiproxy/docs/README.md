@@ -546,6 +546,7 @@ An example event for `log` looks as following:
 | fortinet.proxy.locport | Local Port | long |
 | fortinet.proxy.log | Log Name for Log Rotation | keyword |
 | fortinet.proxy.login | SSH login Name | keyword |
+| fortinet.proxy.logver | Log version | long |
 | fortinet.proxy.lowcount | Security Rating result failed count for low severity | long |
 | fortinet.proxy.mac | MAC Address | keyword |
 | fortinet.proxy.masterdstmac | Destination master MAC address | keyword |

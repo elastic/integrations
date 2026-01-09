@@ -1510,6 +1510,7 @@ The `log` dataset collects netflow logs.
 | netflow.tcp_control_bits |  | integer |
 | netflow.tcp_destination_port |  | integer |
 | netflow.tcp_fin_total_count |  | long |
+| netflow.tcp_flags | This field is formed from the values of tcp_control_bits, converted to their names, and combined into one string array. | keyword |
 | netflow.tcp_header_length |  | short |
 | netflow.tcp_options |  | long |
 | netflow.tcp_psh_total_count |  | long |

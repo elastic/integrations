@@ -1645,3 +1645,37 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb.status.write_backs_queued | True when there are operations from a mongos instance queued for retrying. | boolean |  |
 | service.address | Address of the machine where the service is running. | keyword |  |
 
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[MongoDB] WiredTiger cache pressure**
+
+
+
+**[MongoDB Availability] High connection usage**
+
+
+
+**[MongoDB] Oplog headroom critically low**
+
+
+
+**[MongoDB] Replica member down**
+
+
+
+**[MongoDB] High replication lag**
+
+
+
+**[MongoDB] Unhealthy replica members**
+
+
+

@@ -301,26 +301,27 @@ processors:
       target_field: m365_defender.event.severity
       tag: lowercase_json_properties_Severity
       ignore_missing: true
-  - set:
-      field: event.severity
-      value: 1
-      tag: set_event_severity_info
-      if: ctx.m365_defender?.event?.severity == 'informational'
-  - set:
-      field: event.severity
-      value: 2
-      tag: set_event_severity_low
-      if: ctx.m365_defender?.event?.severity == 'low'
-  - set:
-      field: event.severity
-      value: 3
-      tag: set_event_severity_medium
-      if: ctx.m365_defender?.event?.severity == 'medium'
-  - set:
-      field: event.severity
-      value: 4
-      tag: set_event_severity_high
-      if: ctx.m365_defender?.event?.severity == 'high'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.m365_defender?.event?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.m365_defender.event.severity;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Host mapping
   - set:

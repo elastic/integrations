@@ -1,0 +1,150 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "building_block_type": "default",
+        "description": "Identifies when a single AWS resource is making `DescribeInstances` API calls in more than 10 regions within a 30-second window. This could indicate a potential threat actor attempting to discover the AWS infrastructure across multiple regions using compromised credentials or a compromised instance. Adversaries may use this information to identify potential targets for further exploitation or to gain a better understanding of the target's infrastructure.",
+        "false_positives": [
+            "Legitimate use of the `DescribeInstances` API call by an AWS resource that requires information about instances in multiple regions.",
+            "Scheduled tasks or scripts that require information about instances in multiple regions."
+        ],
+        "from": "now-6m",
+        "investigation_fields": {
+            "field_names": [
+                "Esql.cloud_region_count_distinct",
+                "Esql.event_count",
+                "Esql.event_timestamp_values",
+                "aws.cloudtrail.user_identity.arn",
+                "Esql.aws_cloudtrail_user_identity_type_values",
+                "Esql.aws_cloudtrail_user_identity_access_key_id_values",
+                "Esql.source_ip_values",
+                "Esql.user_agent_original_values",
+                "Esql.source_as_organization_name_values",
+                "Esql.cloud_account_id_values",
+                "Esql.cloud_region_values",
+                "Esql.data_stream_namespace_values"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS EC2 Multi-Region DescribeInstances API Calls",
+        "note": "## Triage and analysis\n\n### Investigating AWS EC2 Multi-Region DescribeInstances API Calls\n\nThis rule flags when the `DescribeInstances` API is executed across multiple AWS regions within a short timeframe. While benign in some cases (e.g., asset inventory, legitimate multi-region management), this pattern can indicate a reconnaissance phase in which an adversary enumerates EC2 instances in all regions to identify potential targets across the environment.\n\nBecause the signal can generate significant noise in dynamic or large AWS environments, this rule should be treated as a Building Block Rule (BBR), not a stand-alone alert requiring immediate incident response. Instead, it is best used for hunting, enrichment, correlation, and escalation when combined with other signals.\n\n### How to use this rule (hunting & correlation guide)\n\nThis rule is most effective when paired with other detection rules or data sources. Use it to answer questions such as:\n\n- Did a newly created or unknown principal call `DescribeInstances` across many regions? Pair this with a new terms or first-time principal rule (e.g., `GetCallerIdentity`, `AssumeRole`, or `aws.cloudtrail.user_identity.session_context.session_issuer.arn`).  \n- Was the same principal also observed making other discovery or enumeration calls (e.g., `DescribeSnapshots`, `DescribeVolumes`, `DescribeImages`, `DescribeSecurityGroups`) in a short timeframe?  \n- Did the multi-region calls precede or coincide with higher-risk actions such as:  \n  - Snapshot creation or shared snapshot modifications (`CreateSnapshot`, `ModifySnapshotAttribute`)  \n  - AMI export/copy operations (`ExportImage`, `CopyImage`)  \n  - Access key creation, role assumption, or IAM permission changes  \n  - Unexpected S3 bucket or data transfer activity (e.g., large data egress, new S3 bucket writes)  \n- Did the activity span regions normally unused or outside the organization's typical operational footprint?\n\n#### Possible investigation steps:\n\n- **Review the principal and session trace**:  \n  - Identify `aws.cloudtrail.user_identity.arn`, `aws.cloudtrail.user_identity.access_key_id`, and determine whether the principal is known, recently onboarded, or unusual (e.g., a service role used in rare cases).  \n  - Examine `user_agent.original` and `source.ip` for anomalies (e.g., new CLI/SDK versions, IAM roles from unexpected hosts, geolocation outside expected range).\n\n- **Evaluate region distribution and timing**:  \n  - Inspect the regions contacted by `DescribeInstances` within the alert window. Are some regions rarely used in your org?  \n  - Look at the timeline: did the calls occur in rapid succession or spread out? A burst suggests automated reconnaissance rather than manual usage.\n\n- **Correlate with other detection signals & data access patterns**:  \n  - Query for other CloudTrail events by the same principal in the \u00b130 minutes window: enumeration APIs (`Describe*`), snapshot/AMI events, `CopySnapshot`, `ExportImage`, `StartInstances`, etc.  \n  - Cross-validate with SIEM or data egress logs: did large volumes of data leave the environment after the enumeration?  \n  - Review IAM activity for privilege elevation, new access keys, or role chaining that could support the enumeration action.\n\n- **Assess intent and operational context**:  \n  - Determine whether the enumeration aligns with known asset-inventory or management tasks (Recurring scans, DevOps automation, IT health checks).  \n  - If this principal is known for asset management, verify the timing, region list, and audit logs for existing tickets/change-records.  \n  - If the activity is unexpected, low legitimacy, or tied to other suspicious events, escalate.\n\n### False positive analysis:\n\nBecause many organizations have legitimate multi-region cloud operations, this rule may generate false positives. Common benign scenarios include:\n\n- DevOps or cloud-ops automation that inventories EC2 instances across all regions (for cost, compliance, or multi-region deployment verification).  \n- Large-scale migrations or disaster-recovery tests that touch many regions in a short time.  \n- Security or audit team enumeration of the environment (e.g., internal red-team, internal asset scanning).  \n- Cross-account management tools in AWS Organizations that routinely query multiple regions.\n\nTo manage these, consider:  \n- Whitelisting known automation roles/principals (with caution).  \n- Tagging and excluding known \u201cinventory scan\u201d sessions (based on user agent, IP range, timing).  \n- Using this rule only as a correlation trigger and not as a direct alert.\n\n### Response and escalation:\n\nBecause this rule is a BBR, its detection alone does not usually warrant full incident response. Instead:\n\n- **Document the finding** in your hunt log, noting principal, regions, timestamp, and correlation flags (other events).  \n- If correlation reveals additional suspicious activity (e.g., snapshot share, data export, IAM privilege change) escalate to full incident response.  \n- If the enumeration is determined benign (e.g., approved internal scan), add context (ticket number, owner, justification) and suppress/annotate this principal in future hunts for a defined interval.  \n- Update your detection playbooks to reflect this rule\u2019s role as a recon-indicator, and train analysts to use it as a pivot point.\n\n### Additional information\n\nFor further information on AWS `DescribeInstances` permissions and best practices, refer to the [AWS DescribeInstances API documentation](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html).\n",
+        "query": "from logs-aws.cloudtrail-* metadata _id, _version, _index\n\n// filter for DescribeInstances API calls\n| where event.dataset == \"aws.cloudtrail\"\n  and event.provider == \"ec2.amazonaws.com\"\n  and event.action == \"DescribeInstances\"\n\n// truncate the timestamp to a 30-second window\n| eval Esql.time_window_date_trunc = date_trunc(30 seconds, @timestamp)\n\n// keep only the relevant raw fields\n| keep \n    Esql.time_window_date_trunc, \n    aws.cloudtrail.user_identity.arn, \n    cloud.region, \n    cloud.account.id,\n    aws.cloudtrail.user_identity.access_key_id,\n    aws.cloudtrail.user_identity.type,\n    user_agent.original,\n    source.as.organization.name,\n    source.ip,\n    @timestamp,\n    data_stream.namespace    \n\n// count the number of unique regions and total API calls within the 30-second window\n| stats\n    Esql.cloud_region_count_distinct = count_distinct(cloud.region),\n    Esql.event_count = count(*),\n    Esql.event_timestamp_values = VALUES(@timestamp),\n    Esql.aws_cloudtrail_user_identity_type_values = VALUES(aws.cloudtrail.user_identity.type),\n    Esql.aws_cloudtrail_user_identity_access_key_id_values = VALUES(aws.cloudtrail.user_identity.access_key_id),\n    Esql.source_ip_values = VALUES(source.ip),\n    Esql.user_agent_original_values = VALUES(user_agent.original),\n    Esql.source_as_organization_name_values = VALUES(source.as.organization.name),\n    Esql.cloud_account_id_values = VALUES(cloud.account.id),\n    Esql.cloud_region_values = VALUES(cloud.region),\n    Esql.data_stream_namespace_values = VALUES(data_stream.namespace)\n  by Esql.time_window_date_trunc, aws.cloudtrail.user_identity.arn\n\n// filter for resources making DescribeInstances API calls in more than 10 regions within the 30-second window\n| where Esql.cloud_region_count_distinct >= 10 and Esql.event_count >= 10\n",
+        "references": [
+            "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws",
+                "version": "^4.0.0"
+            },
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.aws_cloudtrail_user_identity_access_key_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.aws_cloudtrail_user_identity_type_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.cloud_account_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.cloud_region_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.cloud_region_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.data_stream_namespace_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_timestamp_values",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_as_organization_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.time_window_date_trunc",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_original_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.arn",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "393ef120-63d1-11ef-8e38-f661ea17fbce",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: AWS EC2",
+            "Resources: Investigation Guide",
+            "Rule Type: BBR",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1580",
+                        "name": "Cloud Infrastructure Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1580/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 7
+    },
+    "id": "393ef120-63d1-11ef-8e38-f661ea17fbce_7",
+    "type": "security-rule"
+}

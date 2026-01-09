@@ -24,36 +24,18 @@ Starting from Qualys VMDR integration version 6.0, the `Asset Host Detection` da
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Agentless Enabled Integration
+### Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Installing and managing an Elastic Agent:
+### Agent-based installation
 
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ### Permissions
 
-#### Asset Host Detection
+#### Asset host detection
 
 | Role                    | Permission                                     |
 |-------------------------|------------------------------------------------|
@@ -62,11 +44,11 @@ There are some minimum requirements for running Elastic Agent and for more infor
 | _Scanners_              | VM scanned hosts in user’s account             |
 | _Readers_               | VM scanned hosts in user’s account             |
 
-#### Knowledge Base
+#### Knowledge base
 
 _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download vulnerability data from the KnowledgeBase.
 
-#### User Activity Log
+#### User activity log
 
 | Role                    | Permission                                     |
 |-------------------------|------------------------------------------------|
@@ -77,18 +59,17 @@ _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download v
 
 ## Setup
 
-### To collect data through REST API, follow the below steps:
+### Collect data through REST API
 
-- Considering you already have a Qualys user account, to identify your Qualys platform and get the API URL, refer this [link](https://www.qualys.com/platform-identification/).
-- Alternative way to get the API URL is to log in to your Qualys account and go to Help > About. You’ll find your URL under Security Operations Center (SOC).
+Assuming that you already have a Qualys user account, to identify your Qualys platform and get the API URL, check the [Qualys documentation](https://www.qualys.com/platform-identification/).
+Alternatively, to get the API URL log in to your Qualys account and go to **Help** > **About**. You’ll find your URL under **Security Operations Center (SOC)**.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Qualys VMDR
-3. Click on the "Qualys VMDR" integration from the search results.
-4. Click on the Add Qualys VMDR Integration button to add the integration.
-5. While adding the integration, if you want to collect Asset Host Detection data via REST API, then you have to put the following details:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Qualys VMDR**.
+3. Select the **Qualys VMDR** integration and add it.
+4. While adding the integration, if you want to collect Asset Host Detection data via REST API, then you have to put the following details:
    - username
    - password
    - url
@@ -110,12 +91,13 @@ _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download v
    - url
    - initial interval
    - interval
+5. Save the integration.
 
-**NOTE**: By default, the input parameter is set to "action=list".
+**NOTE**: By default, the input parameter is set to `action=list`.
 
 ## Data reference
 
-### Asset Host Detection
+### Asset host detection
 
 This is the `Asset Host Detection` dataset.
 
@@ -125,13 +107,13 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-04T13:41:14.474Z",
+    "@timestamp": "2025-12-30T06:25:12.497Z",
     "agent": {
-        "ephemeral_id": "fdc43b03-8e0f-41f9-a377-5d8820668401",
-        "id": "ddaa4708-4109-4d2b-bbca-dc3fa4b8bfb5",
-        "name": "elastic-agent-15814",
+        "ephemeral_id": "83655e80-2729-4332-8ace-457dd3a0bcef",
+        "id": "12042b44-811d-4c3e-b827-11cfb8074c86",
+        "name": "elastic-agent-48916",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "cloud": {
         "instance": {
@@ -140,27 +122,27 @@ An example event for `asset_host_detection` looks as following:
     },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
-        "namespace": "49337",
+        "namespace": "83470",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ddaa4708-4109-4d2b-bbca-dc3fa4b8bfb5",
+        "id": "12042b44-811d-4c3e-b827-11cfb8074c86",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "host"
+            "vulnerability"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
         "id": "11111111",
-        "ingested": "2025-02-04T13:41:17Z",
+        "ingested": "2025-12-30T06:25:15Z",
         "kind": "alert",
-        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package\\tInstalled Version\\tRequired Version\\nlinux-cloud-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\\nlinux-aws-headers-4.4.0\\t1074_4.15.0-1126.135\\t1092\\nlinux-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-cloud-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"11111111\"},\"DNS\":\"adfssrvr.adfs.local\",\"DNS_DATA\":{\"DOMAIN\":\"adfs.local\",\"FQDN\":\"adfssrvr.adfs.local\",\"HOSTNAME\":\"adfssrvr\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"KNOWLEDGE_BASE\":{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"None\",\"VENDOR\":\"multi-vendor\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VULN_TYPE\":\"Vulnerability\"},\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"ADFSSRVR\",\"OS\":\"Windows 2016/2019/10\",\"TRACKING_METHOD\":\"IP\"}",
+        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"CVE\":\"CVE-2023-48161,CVE-2024-21208,CVE-2024-21210,CVE-2024-21217,CVE-2024-21235\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"LATEST_VULNERABILITY_DETECTION_SOURCE\":\"Cloud Agent\",\"MITRE_TACTIC_ID\":\"TA0008, TA0004\",\"MITRE_TACTIC_NAME\":\"lateral-movement, privilege-escalation\",\"MITRE_TECHNIQUE_ID\":\"T1210, T1068\",\"MITRE_TECHNIQUE_NAME\":\"Exploitation of Remote Services, Exploitation for Privilege Escalation\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package\\tInstalled Version\\tRequired Version\\nlinux-cloud-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\\nlinux-aws-headers-4.4.0\\t1074_4.15.0-1126.135\\t1092\\nlinux-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-cloud-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TRURISK_ELIMINATION_STATUS\":\"FIXED\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"11111111\",\"VULNERABILITY_DETECTION_SOURCES\":\"Cloud Agent,Internal Scanner\"},\"DNS\":\"adfssrvr.adfs.local\",\"DNS_DATA\":{\"DOMAIN\":\"adfs.local\",\"FQDN\":\"adfssrvr.adfs.local\",\"HOSTNAME\":\"adfssrvr\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"KNOWLEDGE_BASE\":{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"CVSS\":{\"BASE\":{\"#text\":\"7.7\",\"source\":\"service\"},\"TEMPORAL\":\"4.0\",\"VECTOR_STRING\":\"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\"},\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"None\",\"VENDOR\":\"multi-vendor\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VULN_TYPE\":\"Vulnerability\"},\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"ADFSSRVR\",\"OS\":\"Windows 2016/2019/10\",\"TRACKING_METHOD\":\"IP\",\"interval_id\":\"47a80f3f-ccfb-45ac-b90e-c0a618bb5bb8\",\"interval_start\":\"2025-12-30T06:25:12.491602751Z\"}",
         "type": [
             "info"
         ]
@@ -217,6 +199,8 @@ An example event for `asset_host_detection` looks as following:
                 "hostname": "adfssrvr"
             },
             "id": "1",
+            "interval_id": "47a80f3f-ccfb-45ac-b90e-c0a618bb5bb8",
+            "interval_start": "2025-12-30T06:25:12.491Z",
             "ip": "10.50.2.111",
             "knowledge_base": {
                 "category": "CGI",
@@ -227,6 +211,14 @@ An example event for `asset_host_detection` looks as following:
                     "CVE-2022-31629",
                     "CVE-2022-31628"
                 ],
+                "cvss": {
+                    "base_obj": {
+                        "#text": "7.7",
+                        "source": "service"
+                    },
+                    "temporal": "4.0",
+                    "vector_string": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H"
+                },
                 "diagnosis": {
                     "value": "This QID reports the absence of the following"
                 },
@@ -266,32 +258,43 @@ An example event for `asset_host_detection` looks as following:
             "last_vm_scanned_duration": 1113,
             "netbios": "ADFSSRVR",
             "os": "Windows 2016/2019/10",
-            "package_nested": {
-                "fixed_version": [
-                    "1092",
-                    "1092",
-                    "1092",
-                    "1092",
-                    "1092"
-                ],
-                "name": [
-                    "linux-cloud-tools-4.4.0",
-                    "linux-aws-tools-4.4.0",
-                    "linux-aws-headers-4.4.0",
-                    "linux-tools-4.4.0",
-                    "linux-aws-cloud-tools-4.4.0"
-                ],
-                "version": [
-                    "1074-aws_4.4.0-1074.84",
-                    "1074_4.4.0-1074.84",
-                    "1074_4.15.0-1126.135",
-                    "1074-aws_4.4.0-1074.84",
-                    "1074_4.4.0-1074.84"
-                ]
-            },
+            "package_nested": [
+                {
+                    "fixed_version": "1092",
+                    "name": "linux-cloud-tools-4.4.0",
+                    "version": "1074-aws_4.4.0-1074.84"
+                },
+                {
+                    "fixed_version": "1092",
+                    "name": "linux-aws-tools-4.4.0",
+                    "version": "1074_4.4.0-1074.84"
+                },
+                {
+                    "fixed_version": "1092",
+                    "name": "linux-aws-headers-4.4.0",
+                    "version": "1074_4.15.0-1126.135"
+                },
+                {
+                    "fixed_version": "1092",
+                    "name": "linux-tools-4.4.0",
+                    "version": "1074-aws_4.4.0-1074.84"
+                },
+                {
+                    "fixed_version": "1092",
+                    "name": "linux-aws-cloud-tools-4.4.0",
+                    "version": "1074_4.4.0-1074.84"
+                }
+            ],
             "tracking_method": "IP",
             "vulnerability": {
                 "affect_running_kernel": "0",
+                "cve": [
+                    "CVE-2023-48161",
+                    "CVE-2024-21208",
+                    "CVE-2024-21210",
+                    "CVE-2024-21217",
+                    "CVE-2024-21235"
+                ],
                 "first_found_datetime": "2021-02-05T04:50:45.000Z",
                 "is_disabled": false,
                 "is_ignored": false,
@@ -300,6 +303,23 @@ An example event for `asset_host_detection` looks as following:
                 "last_processed_datetime": "2024-03-08T20:15:41.000Z",
                 "last_test_datetime": "2024-03-08T20:15:41.000Z",
                 "last_update_datetime": "2024-03-08T20:15:41.000Z",
+                "latest_vulnerability_detection_source": "Cloud Agent",
+                "mitre_tactic_id": [
+                    "TA0008",
+                    "TA0004"
+                ],
+                "mitre_tactic_name": [
+                    "lateral-movement",
+                    "privilege-escalation"
+                ],
+                "mitre_technique_id": [
+                    "T1210",
+                    "T1068"
+                ],
+                "mitre_technique_name": [
+                    "Exploitation of Remote Services",
+                    "Exploitation for Privilege Escalation"
+                ],
                 "qds": {
                     "score": 35,
                     "severity": "LOW"
@@ -328,8 +348,13 @@ An example event for `asset_host_detection` looks as following:
                 "ssl": "0",
                 "status": "Active",
                 "times_found": 5393,
+                "trurisk_elimination_status": "FIXED",
                 "type": "Confirmed",
-                "unique_vuln_id": "11111111"
+                "unique_vuln_id": "11111111",
+                "vulnerability_detection_sources": [
+                    "Cloud Agent",
+                    "Internal Scanner"
+                ]
             }
         }
     },
@@ -397,9 +422,10 @@ An example event for `asset_host_detection` looks as following:
             "vendor": "Qualys"
         },
         "score": {
-            "base": 7.7
+            "base": 7.7,
+            "version": "3.1"
         },
-        "severity": "high",
+        "severity": "High",
         "title": "HTTP Security Header Not Detected"
     }
 }
@@ -432,6 +458,8 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.dns_data.hostname |  | keyword |
 | qualys_vmdr.asset_host_detection.ec2_instance_id |  | keyword |
 | qualys_vmdr.asset_host_detection.id |  | keyword |
+| qualys_vmdr.asset_host_detection.interval_id | The universally unique identifier (UUID) values will change with each interval of ingestion. | keyword |
+| qualys_vmdr.asset_host_detection.interval_start | The start time of the interval of ingestion. | date |
 | qualys_vmdr.asset_host_detection.ip |  | ip |
 | qualys_vmdr.asset_host_detection.ipv6 |  | ip |
 | qualys_vmdr.asset_host_detection.knowledge_base.automatic_pci_fail |  | keyword |
@@ -522,6 +550,12 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.last_vm_auth_scanned_duration |  | long |
 | qualys_vmdr.asset_host_detection.last_vm_scanned_date |  | date |
 | qualys_vmdr.asset_host_detection.last_vm_scanned_duration |  | long |
+| qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.last.error.date |  | date |
+| qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.last.error.value |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.last.status |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.last.success_date |  | date |
+| qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.name |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.alicloud.attribute.value |  | keyword |
 | qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.error.date |  | date |
 | qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.error.value |  | keyword |
 | qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.status |  | keyword |
@@ -558,6 +592,7 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.affect_running_kernel |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.affect_running_service |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.asset_cve |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.cve |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.first_found_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.first_reopened_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.fqdn |  | keyword |
@@ -570,6 +605,11 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.last_reopened_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.last_test_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.last_update_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.latest_vulnerability_detection_source |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.mitre_tactic_id |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.mitre_tactic_name |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.mitre_technique_id |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.mitre_technique_name |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.port |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.protocol |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.qds.score |  | integer |
@@ -584,8 +624,10 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.status |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.times_found |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.times_reopened |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.trurisk_elimination_status |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.type |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.vulnerability_detection_sources |  | keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
 | vulnerability.package.fixed_version |  | keyword |
@@ -595,7 +637,7 @@ An example event for `asset_host_detection` looks as following:
 | vulnerability.title |  | keyword |
 
 
-### Knowledge Base
+### Knowledge base
 
 This is the `Knowledge Base` dataset.
 
@@ -607,24 +649,24 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "4e6d92f6-8a28-471c-a03f-8c2685171b7b",
-        "id": "dc86e78e-6670-441f-acdd-99309474050f",
-        "name": "elastic-agent-65730",
+        "ephemeral_id": "98b85997-99e2-41ee-bb02-6532fae2b357",
+        "id": "706ea693-7cbe-44f8-902f-ee169e228005",
+        "name": "elastic-agent-80703",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.knowledge_base",
-        "namespace": "47901",
+        "namespace": "60071",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dc86e78e-6670-441f-acdd-99309474050f",
+        "id": "706ea693-7cbe-44f8-902f-ee169e228005",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -632,10 +674,10 @@ An example event for `knowledge_base` looks as following:
             "vulnerability"
         ],
         "dataset": "qualys_vmdr.knowledge_base",
-        "id": "11830",
-        "ingested": "2024-09-25T21:49:31Z",
+        "id": "2",
+        "ingested": "2025-12-29T10:51:56Z",
         "kind": "alert",
-        "original": "{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"11830\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"\",\"VENDOR\":\"\"}]},\"SOLUTION\":\"\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"\",\"VULN_TYPE\":\"Vulnerability\"}",
+        "original": "{\"BUGTRAQ_LIST\":{\"BUGTRAQ\":[{\"ID\":\"9821\",\"URL\":\"https://url.com/bid/9821\"}]},\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"2\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"fusion\",\"VENDOR\":\"vmware\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"#text\":\"No_Patch\",\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VENDOR_REFERENCE_LIST\":{\"VENDOR_REFERENCE\":[{\"ID\":\"VMSA-2024-0010\",\"URL\":\"https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24280\"}]},\"VULN_TYPE\":\"Vulnerability\"}",
         "type": [
             "info"
         ]
@@ -645,11 +687,23 @@ An example event for `knowledge_base` looks as following:
     },
     "qualys_vmdr": {
         "knowledge_base": {
+            "bugtraq_list": [
+                {
+                    "id": "9821",
+                    "url": "https://url.com/bid/9821"
+                }
+            ],
             "category": "CGI",
+            "consequence": {
+                "value": "Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks."
+            },
             "cve_list": [
                 "CVE-2022-31629",
                 "CVE-2022-31628"
             ],
+            "diagnosis": {
+                "value": "This QID reports the absence of the following"
+            },
             "discovery": {
                 "remote": 1
             },
@@ -659,15 +713,32 @@ An example event for `knowledge_base` looks as following:
             "patchable": false,
             "pci_flag": true,
             "published_datetime": "2017-06-05T21:34:49.000Z",
-            "qid": "11830",
+            "qid": "2",
             "severity_level": "2",
+            "software_list": [
+                {
+                    "product": "fusion",
+                    "vendor": "vmware"
+                }
+            ],
+            "solution": {
+                "value": "<B>Note:</B> To better debug the results of this QID"
+            },
             "threat_intelligence": {
                 "intel": [
                     {
-                        "id": "8"
+                        "id": "8",
+                        "text": "No_Patch"
                     }
                 ]
             },
+            "title": "HTTP Security Header Not Detected",
+            "vendor_reference_list": [
+                {
+                    "id": "VMSA-2024-0010",
+                    "url": "https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24280"
+                }
+            ],
             "vuln_type": "Vulnerability"
         }
     },
@@ -786,7 +857,7 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.vuln_type |  | keyword |
 
 
-### User Activity
+### User activity
 
 This is the `User Activity` dataset. It connects to an [API](
 https://docs.qualys.com/en/vm/api/users/index.htm#t=activity%2Fexport_activity.htm)

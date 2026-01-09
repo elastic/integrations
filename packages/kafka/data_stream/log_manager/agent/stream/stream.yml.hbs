@@ -1,0 +1,121 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{metrics_path}}
+namespace: metrics
+period: {{period}}
+http_method: {{http_method}}
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+{{#if ssl.certificate}}
+ssl.certificate: {{ssl.certificate}}
+{{/if}}
+{{#if ssl.key}}
+ssl.key: {{ssl.key}}
+{{/if}}
+{{#if ssl.key_passphrase}}
+ssl.key_passphrase: {{ssl.key_passphrase}}
+{{/if}}
+{{#if ssl.ca_trusted_fingerprint}}
+ssl.ca_trusted_fingerprint: {{ssl.ca_trusted_fingerprint}}
+{{/if}}
+username: {{username}}
+password: {{password}}
+jmx.mappings: 
+  - mbean: 'kafka.log:name=cleaner-recopy-percent,type=LogCleaner'
+    attributes:
+      - attr: Value
+        field: cleaner.recopy_percent
+  
+  - mbean: 'kafka.log:name=DeadThreadCount,type=LogCleaner'
+    attributes:
+      - attr: Value
+        field: cleaner.dead_thread_count
+  
+  - mbean: 'kafka.log:name=max-buffer-utilization-percent,type=LogCleaner'
+    attributes:
+      - attr: Value
+        field: cleaner.max_buffer_utilization_percent
+  
+  - mbean: 'kafka.log:name=max-clean-time-secs,type=LogCleaner'
+    attributes:
+      - attr: Value
+        field: cleaner.max_clean_time_secs
+  
+  - mbean: 'kafka.log:name=max-compaction-delay-secs,type=LogCleaner'
+    attributes:
+      - attr: Value
+        field: cleaner.max_compaction_delay_secs
+  
+  - mbean: 'kafka.log:name=max-dirty-percent,type=LogCleanerManager'
+    attributes:
+      - attr: Value
+        field: cleaner_manager.max_dirty_percent
+  
+  - mbean: 'kafka.log:name=time-since-last-run-ms,type=LogCleanerManager'
+    attributes:
+      - attr: Value
+        field: cleaner_manager.time_since_last_run_ms
+  
+  - mbean: 'kafka.log:logDirectory=*,name=uncleanable-bytes,type=LogCleanerManager'
+    attributes:
+      - attr: Value
+        field: cleaner_manager.uncleanable_bytes.value
+  
+  - mbean: 'kafka.log:logDirectory=*,name=uncleanable-partitions-count,type=LogCleanerManager'
+    attributes:
+      - attr: Value
+        field: cleaner_manager.uncleanable_partitions_count.value
+  
+  - mbean: 'kafka.log:name=LogFlushRateAndTimeMs,type=LogFlushStats'
+    attributes:
+      - attr: Count
+        field: flush_stats.rate_and_time_ms.count
+      - attr: OneMinuteRate
+        field: flush_stats.rate_and_time_ms.one_minute_rate
+      - attr: FiveMinuteRate
+        field: flush_stats.rate_and_time_ms.five_minute_rate
+      - attr: FifteenMinuteRate
+        field: flush_stats.rate_and_time_ms.fifteen_minute_rate
+      - attr: MeanRate
+        field: flush_stats.rate_and_time_ms.mean_rate
+      - attr: Mean
+        field: flush_stats.rate_and_time_ms.mean
+      - attr: Min
+        field: flush_stats.rate_and_time_ms.min
+      - attr: Max
+        field: flush_stats.rate_and_time_ms.max
+  
+  - mbean: 'kafka.log:logDirectory=*,name=LogDirectoryOffline,type=LogManager'
+    attributes:
+      - attr: Value
+        field: directory_offline_count.value
+  
+  - mbean: 'kafka.log:name=OfflineLogDirectoryCount,type=LogManager'
+    attributes:
+      - attr: Value
+        field: offline_directory_count
+
+{{#if headers}}
+{{headers}}
+{{/if}}
+{{#if connect_timeout}}
+connect_timeout: {{connect_timeout}}
+{{/if}}
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

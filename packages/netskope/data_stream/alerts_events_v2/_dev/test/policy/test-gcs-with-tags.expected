@@ -1,0 +1,45 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: netskope
+      name: test-gcs-with-tags-netskope
+      streams:
+        - bucket_timeout: 120s
+          buckets:
+            - name: siem_gcs_bucket_1
+            - name: siem_gcs_bucket_2
+          data_stream:
+            dataset: netskope.alerts_events_v2
+          decoding.codec.csv:
+            comma: ' '
+            enabled: true
+          max_workers: 3
+          poll: true
+          poll_interval: 15s
+          project_id: my-project-id
+          publisher_pipeline.disable_host: true
+          tags:
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+            - custom_tag_1
+            - custom_tag_2
+      type: gcs
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

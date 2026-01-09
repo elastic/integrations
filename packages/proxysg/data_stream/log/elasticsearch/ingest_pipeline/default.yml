@@ -2,12 +2,15 @@
 description: Pipeline for processing onprem ProxySG logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_observer_vendor_3a32ffc7
       field: observer.vendor
       value: Broadcom
   - set:
+      tag: set_observer_product_a11dfe03
       field: observer.product
       value: ProxySG
   - drop:
@@ -50,6 +53,7 @@ processors:
       if: ctx._temp_?.date != null && ctx._temp_?.time != null
 
   - remove:
+      tag: remove__temp__8c7cbd54
       field: "_temp_"
       ignore_failure: true
 
@@ -105,58 +109,72 @@ processors:
 
   # ECS mappings
   - set:
+      tag: set_client_ip_2339ed7a
       field: client.ip
       copy_from: proxysg.client.ip
       ignore_failure: true
   - set:
+      tag: set_client_address_add34219
       field: client.address
       copy_from: client.ip
       ignore_failure: true
   - set:
+      tag: set_server_ip_88ef57f2
       field: server.ip
       copy_from: proxysg.server.ip
       ignore_failure: true
   - set:
+      tag: set_server_address_61dc7df1
       field: server.address
       copy_from: server.ip
       ignore_failure: true
   - set:
+      tag: set_url_scheme_246e4dcb
       field: url.scheme
       copy_from: proxysg.client_to_server.uri_scheme
       ignore_failure: true
   - set:
+      tag: set_url_port_a7dc2d6b
       field: url.port
       copy_from: proxysg.client_to_server.uri_port
       ignore_failure: true
   - set:
+      tag: set_url_path_b46e5283
       field: url.path
       copy_from: proxysg.client_to_server.uri_path
       ignore_failure: true
   - set:
+      tag: set_url_query_95d8ed0f
       field: url.query
       copy_from: proxysg.client_to_server.uri_query
       ignore_failure: true
   - set:
+      tag: set_client_user_name_db83140a
       field: client.user.name
       copy_from: proxysg.client_to_server.username
       ignore_failure: true
   - set:
+      tag: set_http_request_referrer_96eba2be
       field: http.request.referrer
       copy_from: proxysg.client_to_server.referer
       ignore_failure: true
   - set:
+      tag: set_user_agent_original_178279dc
       field: user_agent.original
       copy_from: proxysg.client_to_server.user_agent
       ignore_failure: true
   - set:
+      tag: set_http_request_method_d5f7f658
       field: http.request.method
       copy_from: proxysg.client_to_server.method
       ignore_failure: true
   - set:
+      tag: set_url_domain_dc1fdce0
       field: url.domain
       copy_from: proxysg.client_to_server.host
       ignore_failure: true
   - script:
+      tag: script_eac0c719
       lang: painless
       if: 'ctx.proxysg.time_taken != null'
       # proxysg.time_taken is ms, event.duration is ns
@@ -165,19 +183,23 @@ processors:
 
   # Enrichment
   - registered_domain:
+      tag: registered_domain_url_domain_to_url_ca99c8cd
       field: url.domain
       target_field: url
       ignore_missing: true
   - user_agent:
+      tag: user_agent_user_agent_original_b5325863
       field: user_agent.original
       ignore_missing: true
 
   # Geo-location
   - geoip:
+      tag: geoip_server_ip_to_server_geo_b48037fe
       field: server.ip
       target_field: server.geo
       if: ctx.server?.geo == null && ctx.server?.ip != null
   - geoip:
+      tag: geoip_server_ip_to_server_as_ed2798db
       database_file: GeoLite2-ASN.mmdb
       field: server.ip
       target_field: server.as
@@ -186,18 +208,22 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_server_as_asn_to_server_as_number_f46ba339
       field: server.as.asn
       target_field: server.as.number
       ignore_missing: true
   - rename:
+      tag: rename_server_as_organization_name_to_server_as_organization_name_a7e512d7
       field: server.as.organization_name
       target_field: server.as.organization.name
       ignore_missing: true
   - geoip:
+      tag: geoip_client_ip_to_client_geo_0c48320e
       field: client.ip
       target_field: client.geo
       if: ctx.client?.geo == null && ctx.client?.ip != null
   - geoip:
+      tag: geoip_client_ip_to_client_as_f17fb2b3
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
       target_field: client.as
@@ -206,55 +232,75 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_client_as_asn_to_client_as_number_a6e30d01
       field: client.as.asn
       target_field: client.as.number
       ignore_missing: true
   - rename:
+      tag: rename_client_as_organization_name_to_client_as_organization_name_817a526f
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
 
   # Add related fields
   - append:
+      tag: append_related_ip_0e5b7d1b
       field: related.ip
       value: "{{{server.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_cb745daf
       field: related.ip
       value: "{{{client.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_eb7f4518
       field: related.ip
       value: "{{{proxysg.server.supplier_ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_de520f14
       field: related.ip
       value: "{{{remote.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_8443ea84
       field: related.hosts
       value: "{{{url.domain}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_69c2f49e
       field: related.user
       value: "{{{client.user.name}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
   - append:
       field: error.message
-      value: |-
-          Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline
-          "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
   - remove:
       field: "_temp_"
       ignore_failure: true
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

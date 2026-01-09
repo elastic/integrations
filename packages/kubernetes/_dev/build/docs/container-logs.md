@@ -5,8 +5,39 @@ container-logs integration collects and parses logs of Kubernetes containers.
 It requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
-By default only {{ url "filebeat-input-filestream-parsers" "container parser" }} is enabled. Additional log parsers can be added as an advanced options configuration.
+By default, only {{ url "filebeat-input-filestream-parsers" "container parser" }} is enabled. Additional log parsers can be added as an advanced options configuration.
 
+## Ingesting Rotated Container Logs
+
+> 9.3.0 and later: GA, 9.2.0: Beta
+
+The integration can monitor and ingest rotated Kubernetes container logs, including 
+on-the-fly decompression of GZIP archives. To enable this:
+
+### 9.3 and later
+
+- change the `ID` to `kubernetes-container-logs-${kubernetes.pod.uid}-${kubernetes.container.name}`
+- add `compression: auto` under `Advanced options > Custom configurations`. Refer to
+  {{ url "filebeat-input-filestream" "filestream documentation on reading GZIP files" }} for details.
+- set the path to `/var/log/pods/${kubernetes.namespace}_${kubernetes.pod.name}_${kubernetes.pod.uid}/${kubernetes.container.name}/*.log*`. Refer to the official
+  [Kubernetes documentation on log rotation](https://kubernetes.io/docs/concepts/cluster-administration/logging/#log-rotation) for details on the log rotation mechanism and file naming convention.
+
+### 9.2.x
+
+- change the `ID` to `kubernetes-container-logs-${kubernetes.pod.uid}-${kubernetes.container.name}`
+- add `gzip_experimental: true` under `Advanced options > Custom configurations`. Refer to
+  {{ url "filebeat-input-filestream" "filestream documentation on reading GZIP files" }} for details.
+- set the path to `/var/log/pods/${kubernetes.namespace}_${kubernetes.pod.name}_${kubernetes.pod.uid}/${kubernetes.container.name}/*.log*`. Refer to the official
+  [Kubernetes documentation on log rotation](https://kubernetes.io/docs/concepts/cluster-administration/logging/#log-rotation) for details on the log rotation mechanism and file naming convention.
+
+::::{important}
+Data Duplication: When you change the path on an existing integration,
+the Elastic Agent reads all existing files in the new directory from the beginning.
+This action causes a one-time re-ingestion of the log files.
+
+After the initial scan, the Elastic Agent tracks files normally and will only
+ingest new log data.
+::::
 
 ## Rerouting and preserve original event based on pod annotations
 

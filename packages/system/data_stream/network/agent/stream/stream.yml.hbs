@@ -1,5 +1,11 @@
 metricsets: ["network"]
 period: {{period}}
+{{! Populate both 'interfaces' and 'network.interfaces'. Beats currently exposes 'interfaces' as a top-level field instead of nesting it under 'network', so duplicating it keeps existing Beats behavior working. Once Beats aligns on the nested field, we can drop the legacy top-level field. }}
+interfaces:
+{{#each network.interfaces}}
+- {{this}}
+{{/each}}
+{{! 'network.interfaces' is currently being populated for future use or compatibility, but may not be actively used by Beats yet. }}
 network.interfaces:
 {{#each network.interfaces}}
 - {{this}}

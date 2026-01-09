@@ -1,27 +1,33 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - grok:
+      tag: grok_message_996a6ea5
       field: message
       patterns:
         - '%{TIMEONLYSTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:_tmp.timezone} %{DATA:event.sequence:long} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},'
       pattern_definitions:
-        TIMEONLYSTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[ ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?' 
+        TIMEONLYSTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[ ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
   - trim:
+      tag: trim_cisco_ise_log_log_details_raw_692efbe3
       field: cisco_ise.log.log_details_raw
       ignore_failure: true
   - grok:
+      tag: grok_cisco_ise_log_message_description_859375fa
       field: cisco_ise.log.message.description
       if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
       patterns:
         - "^%{DATA:event.action}:"
       ignore_failure: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - gsub:
+      tag: gsub_cisco_ise_log_log_details_raw_a9150fd7
       field: cisco_ise.log.log_details_raw
       pattern: \\,
       replacement: ''
@@ -40,6 +46,7 @@ processors:
         }
         ctx.cisco_ise.log["log_details"] = m;
   - date:
+      tag: date__tmp_timestamp_9ef85c6a
       field: _tmp.timestamp
       formats:
         - yyyy-MM-dd HH:mm:ss.SSS
@@ -47,12 +54,15 @@ processors:
         - MMM [ ]d HH:mm:ss[.SSSSSS][.SSS]
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_1d810625
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_7efc4dc7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date__tmp_timestamp_1d2a12b9
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
       formats:
@@ -62,9 +72,11 @@ processors:
       timezone: '{{{event.timezone}}}'
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_26d11908
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_0a8243aa
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 on_failure:
@@ -73,4 +85,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

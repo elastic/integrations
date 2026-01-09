@@ -594,11 +594,25 @@ processors:
       target_field: event.id
       ignore_missing: true
 # User details: set rather than rename is used in these to avoid breaking change.
+  - set:
+      field: user.full_name
+      copy_from: box.created_by.name
+      ignore_empty_value: true
+      if: ctx.user?.full_name == null && ctx.box?.created_by?.type == 'user'
+  - set:
+      field: user.email
+      copy_from: box.created_by.login
+      ignore_empty_value: true
+      if: ctx.user?.email == null && ctx.box?.created_by?.login != null
   - split:
       field: box.created_by.login
       target_field: _tmp.created_login
       separator: '@'
       if: ctx.box?.created_by?.login instanceof String && ctx.box.created_by.login.length() > 2
+  - set:
+      field: user.name
+      copy_from: _tmp.created_login.0
+      if: ctx._tmp?.created_login instanceof List && ctx._tmp.created_login.length == 2
   - set:
       field: user.domain
       copy_from: _tmp.created_login.1
@@ -610,25 +624,34 @@ processors:
       if: ctx.user?.id == null && ctx.box?.created_by?.type == 'user'
   - append:
       field: related.user
-      value: '{{{user.id}}}'
-      if: ctx.user?.id != null && ctx.user.id != ''
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null && ctx.user.email != ''
       allow_duplicates: false
-  - set:
-      field: user.name
-      copy_from: box.created_by.name
-      ignore_empty_value: true
-      if: ctx.user?.name == null && ctx.box?.created_by?.type == 'user'
   - append:
       field: related.user
-      value: '{{{user.name}}}'
-      if: ctx.user?.name != null && ctx.user.name != ''
+      value: '{{{user.full_name}}}'
+      if: ctx.user?.full_name != null && ctx.user.full_name != ''
       allow_duplicates: false
 # Collaboration events.
+  - set:
+      field: user.target.full_name
+      copy_from: box.accessible_by.name
+      ignore_empty_value: true
+      if: ctx.user?.target?.full_name == null && ctx.box?.accessible_by?.name != null
+  - set:
+      field: user.target.email
+      copy_from: box.accessible_by.login
+      ignore_empty_value: true
+      if: ctx.user?.target?.email == null && ctx.box?.accessible_by?.login != null
   - split:
       field: box.accessible_by.login
       target_field: _tmp.accessible_login
       separator: '@'
       if: ctx.box?.accessible_by?.login instanceof String && ctx.box.accessible_by.login.length() > 2
+  - set:
+      field: user.target.name
+      copy_from: _tmp.accessible_login.0
+      if: ctx._tmp?.accessible_login instanceof List && ctx._tmp.accessible_login.length == 2
   - set:
       field: user.target.domain
       copy_from: _tmp.accessible_login.1
@@ -640,18 +663,13 @@ processors:
       if: ctx.user?.target?.id == null && ctx.box?.accessible_by?.type == 'user'
   - append:
       field: related.user
-      value: '{{{user.target.id}}}'
-      if: ctx.user?.target?.id != null && ctx.user.target.id != ''
+      value: '{{{user.target.email}}}'
+      if: ctx.user?.target?.email != null && ctx.user.target.email != ''
       allow_duplicates: false
-  - rename:
-      field: box.accessible_by.name
-      target_field: user.target.name
-      ignore_missing: true
-      if: ctx.user?.target?.name == null
   - append:
       field: related.user
-      value: '{{{user.target.name}}}'
-      if: ctx.user?.target?.name != null && ctx.user.target.name != ''
+      value: '{{{user.target.full_name}}}'
+      if: ctx.user?.target?.full_name != null && ctx.user.target.full_name != ''
       allow_duplicates: false
   - rename:
       field: box.source.folder_id
@@ -799,15 +817,6 @@ processors:
           if (ctx.related.ip == null) {
             ctx.related.ip = new ArrayList();
           }
-          if (ctx.related.description == null) {
-            ctx.related.description = new ArrayList();
-          }
-          if (ctx.related.location == null) {
-            ctx.related.location = new ArrayList();
-          }
-          if (ctx.related.indicator_type == null) {
-            ctx.related.indicator_type = new ArrayList();
-          }
         }
 #
   - script:
@@ -847,9 +856,6 @@ processors:
               indicator.indicator.put("type","user-account");    
               ctx.threat.enrichments.add(indicator);
               ctx.related.ip.add(geo.ip);
-              ctx.related.location.add(geo.location);
-              ctx.related.description.add(indicator.indicator.description);
-              ctx.related.indicator_type.add(indicator.indicator.type);
             }
           }
         }
@@ -893,9 +899,6 @@ processors:
           }  
           ctx.threat.enrichments.add(indicator);
           ctx.related.ip.add(geo.ip);
-          ctx.related.location.add(geo.location);
-          ctx.related.description.add(indicator.indicator.description);
-          ctx.related.indicator_type.add(indicator.indicator.type);
         }
   - script:
       description: Unpack Anomalous Download properties
@@ -926,8 +929,6 @@ processors:
             indicator.indicator.type = "file";
             ctx.threat.enrichments.add(indicator);
             ctx.related.ip.add(ip.ip);
-            ctx.related.description.add(indicator.indicator.description);
-            ctx.related.indicator_type.add(indicator.indicator.type);
           }
         }
   - script:
@@ -961,10 +962,8 @@ processors:
           ctx.threat.indicator.last_seen = ctx.box.additional_details.shield_alert.malware_info.last_seen;
           ctx.threat.indicator.reference = ctx.box.additional_details.shield_alert.malware_info.detail_link;
           ctx.related.ip.add(ctx.threat.indicator.ip);
-          ctx.related.description.add(ctx.threat.indicator.description);
         }
         ctx.threat.indicator.type = "software";
-        ctx.related.indicator_type.add(ctx.threat.indicator.type);
   - date:
       field: threat.indicator.first_seen
       tag: date_threat_indicator_first_seen
@@ -1052,24 +1051,9 @@ processors:
             .collect(Collectors.toList());
         }
         if (ctx.related != null) {
-          if (ctx.related.description != null) {
-            ctx.related.description = ctx.related.description.stream()
-              .distinct()
-              .collect(Collectors.toList());
-          }
-          if (ctx.related.indicator_type != null) {
-            ctx.related.indicator_type = ctx.related.indicator_type.stream()
-              .distinct()
-              .collect(Collectors.toList());
-          }
           if (ctx.related.ip != null) {
             ctx.related.ip = ctx.related.ip.stream()
               .filter(Objects::nonNull)
-              .distinct()
-              .collect(Collectors.toList());
-          }
-          if (ctx.related.location != null) {
-            ctx.related.location = ctx.related.location.stream()
               .distinct()
               .collect(Collectors.toList());
           }
@@ -1226,42 +1210,6 @@ processors:
       field: threat.indicator.ip
       target_field: threat.indicator.geo
       ignore_missing: true
-  - script:
-      description: Initialize related.geo prior to geoip
-      lang: painless
-      source: |
-        if (ctx.related?.ip != null) {
-          ctx.related.geo = new ArrayList();
-          for (ip in ctx.related.ip) {
-            Map geo = new HashMap();
-            geo.put("ip",ip);
-            ctx.related.geo.add(geo);
-          }
-        }
-  - foreach:
-      field: related.geo
-      ignore_missing: true
-      processor:
-        geoip:
-          field: "_ingest._value.ip"
-          target_field: "_ingest._value.location"
-          ignore_missing: true
-  - script:
-      description: Collate derived locations to related.location
-      lang: painless
-      source: |
-        if (ctx.related?.geo != null) {
-          ctx.related.location = new ArrayList();
-          for (geo in ctx.related.geo) {
-            if (geo.location != null) {
-              ctx.related.location.add(geo.location.location);
-            }
-          }
-        }
-  - remove:
-      field: "related.geo"   
-      ignore_failure: true
-      ignore_missing: true      
 # AS look-ups on enrichments within Array
   - foreach:
       field: threat.enrichments

@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the execution of TruffleHog, a tool used to search for high-entropy strings and secrets in code repositories, which may indicate an attempt to access credentials. This tool was abused by the Shai-Hulud worm to search for credentials in code repositories.",
+        "false_positives": [
+            "Trufflehog is a legitimate open-source tool used by security professionals and developers to search for sensitive information, such as passwords, API keys, and other secrets, within code repositories. It is commonly employed during security assessments and code reviews to identify potential vulnerabilities."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Credential Access via TruffleHog Execution",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Credential Access via TruffleHog Execution\n\nThis rule flags TruffleHog executed to scan the local filesystem with verified JSON results, a direct path to harvesting secrets from source code, configs, and build artifacts. Attackers gain shell access on a developer workstation or CI runner, clone or point to internal repositories, run 'trufflehog --results=verified --json filesystem .' to enumerate valid tokens, and then pivot using the recovered keys to pull private code or authenticate to cloud and CI/CD systems.\n\n### Possible investigation steps\n\n- Review binary path, code signature/hash, parent process chain, initiating user, and host role (developer workstation vs CI runner) to quickly decide if the execution matches an approved secret-scanning job or an ad\u2011hoc run.\n- Determine the working directory and target path used by the scan to identify which repositories or configuration directories were inspected and whether sensitive files (e.g., .env, deployment keys, build secrets) were in scope.\n- Pivot to same-session activity to spot credential use or exfiltration by correlating subsequent outbound connections to git remotes or cloud/CI APIs and launches of developer CLIs like git, gh, aws, az, gcloud, docker, kubectl, or vault.\n- Look for output artifacts and exfil channels by checking for creation or deletion of JSON reports or archives, clipboard access, or piping of results to curl/wget/netcat and whether those artifacts were emailed or uploaded externally.\n- Cross-check VCS and CI/CD audit logs for this identity and host for unusual pushes, pipeline changes, or new tokens issued shortly after the scan, which may indicate worm-like propagation or credential abuse.\n\n### False positive analysis\n\n- An approved secret-scanning task by a developer or security engineer runs trufflehog with --results=verified --json filesystem to audit local code and configuration, producing benign activity on a development host.\n- An internal automation or scheduled job invokes trufflehog to baseline filesystem secrets for compliance or hygiene checks, leading to expected process-start logs without credential abuse.\n\n### Response and remediation\n\n- Immediately isolate the host or CI runner, terminate the trufflehog process and its parent shell/script, and block egress to git remotes and cloud APIs from that asset.\n- Collect the verified findings from trufflehog output (stdout or JSON file), revoke and rotate any listed secrets (GitHub personal access tokens, AWS access keys, Azure service principal credentials, CI job tokens), and clear credential caches on the host.\n- Remove unauthorized trufflehog binaries/packages, helper scripts, and scheduled tasks; delete report files and scanned working directories (local repo clones, .env/config folders), and purge shell history containing exfil commands like curl/wget/netcat.\n- Restore the workstation or runner from a known-good image if tampering is suspected, re-enroll endpoint protection, reissue required developer or CI credentials with least privilege, and validate normal pulls to internal git and cloud services.\n- Escalate to full incident response if trufflehog ran under a service account, on a build server/CI runner, or if any discovered secret was used to authenticate to external git remotes (e.g., github.com), cloud APIs, or private registries in the same session.\n- Harden by blocking unapproved trufflehog execution via application control, moving approved secret scanning to a locked-down pipeline, enforcing short-lived PATs and key rotation, enabling egress filtering from developer hosts/runners, and deploying fleet-wide detections for \"trufflehog --results=verified --json filesystem\".\n",
+        "query": "process where event.type == \"start\" and process.name : (\"trufflehog.exe\", \"trufflehog\") and\nprocess.args == \"--results=verified\" and process.args == \"--json\" and process.args == \"filesystem\"\n",
+        "references": [
+            "https://www.elastic.co/blog/shai-hulud-worm-npm-supply-chain-compromise"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "47595dea-452b-4d37-b82d-6dd691325139",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "47595dea-452b-4d37-b82d-6dd691325139_1",
+    "type": "security-rule"
+}

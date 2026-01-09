@@ -1,0 +1,64 @@
+type: logs
+title: WithSecure Elements Incidents (BCDs)
+streams:
+  - input: cel
+    title: WithSecure Elements Incidents
+    description: Collects Broad Context Detections (BCDs) from WithSecure Elements API
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Collection Interval
+        description: How often to collect data (e.g., 5m, 1h)
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of incidents to retrieve per API request. Min 1, Max 50 (API limit).
+        multi: false
+        required: true
+        show_user: false
+        default: 50
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: Enables HTTP request/response tracing for debugging. Creates trace files in logs/cel/ directory.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve withsecure.incident fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

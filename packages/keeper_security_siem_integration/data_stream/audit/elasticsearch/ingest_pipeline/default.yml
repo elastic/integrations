@@ -1,0 +1,141 @@
+---
+# data_stream/audit/elasticsearch/ingest_pipeline/default.yml (FIXED)
+description: "Agentless pipeline for processing Keeper Security audit events"
+processors:
+  # Set ECS version
+  - set:
+      field: ecs.version
+      value: "8.17.0"
+
+  # Set basic event fields
+  - set:
+      field: event.kind
+      value: event
+
+  - set:
+      field: event.category
+      value: ["authentication", "web"]
+  - set:
+      field: event.type
+      value: ["access", "info"]
+
+  # Handle timestamp conversion - support multiple formats
+  - date:
+      field: timestamp
+      target_field: '@timestamp'
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSXX"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+        - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ssX"
+        - "yyyy-MM-dd'T'HH:mm:ssXX"
+        - "yyyy-MM-dd'T'HH:mm:ssXXX"
+      if: ctx.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse timestamp: {{{timestamp}}}"
+ 
+  - set:
+      field: user.name
+      copy_from: username
+      ignore_empty_value: true
+      description: "Set user name from username"
+
+  - set:
+      field: user.email  
+      copy_from: username
+      if: ctx.username != null && ctx.username.contains("@")
+      description: "If username looks like email, set user.email"
+
+  - set:
+      field: source.ip
+      copy_from: remote_address
+      ignore_empty_value: true
+      description: "Set source IP from remote_address"
+
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      on_failure:
+        - append:
+            field: error.message
+            value: "GeoIP lookup failed for source.ip={{{source.ip}}}"
+      description: "GeoIP enrichment -> ECS source.geo.*"
+
+  - set:
+      field: event.action
+      copy_from: audit_event
+      ignore_empty_value: true
+      description: "Set event action from audit_event"
+
+  - convert:
+      field: enterprise_id
+      type: string
+      target_field: organization.id
+      ignore_missing: true
+      ignore_failure: true
+      description: "Convert enterprise_id to organization fields"
+  
+  - set:
+      field: user_agent.original
+      value: "Keeper/{{{client_version}}}"
+      ignore_empty_value: true
+      description: "Set user agent from client_version"
+
+      
+  # Build related fields for correlation
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+
+  # Set event outcome based on category or audit_event
+  - set:
+      field: event.outcome
+      value: "success"
+      if: ctx.category != null && !ctx.category.contains("fail")
+  
+  - set:
+      field: event.outcome
+      value: "failure"
+      if: ctx.category != null && ctx.category.contains("fail")
+
+  - remove:
+      field: timestamp
+      ignore_missing: true
+      description: "Clean up - remove original timestamp to avoid confusion"
+
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

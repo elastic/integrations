@@ -1,0 +1,28 @@
+{
+  "id": "mysql-slow-queries",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MySQL Performance] Slow Query Latency High",
+    "tags": ["MySQL Performance"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the replication lag exceeds the recommended threshold value of 10 seconds within the look back time window. The alerting rule is grouped by host name and channel name. You can adjust the threshold value by modifying the secondsbehind value in the WHERE clause, which is specified in seconds.\nFROM metrics-mysql.replica_status-default\n| WHERE mysql.replica_status.seconds_behind_source IS NOT NULL\n| STATS secondsbehind=max(mysql.replica_status.seconds_behind_source) by host.name, mysql.replica_status.channel.name\n| WHERE secondsbehind > 10"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

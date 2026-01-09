@@ -5,38 +5,47 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - set:
+    tag: set_event_action_1bb29990
     field: event.action
     value: "{{{sophos.xg.log_subtype}}}"
     ignore_empty_value: true
 - set:
+    tag: set_event_outcome_1abe2ae5
     field: event.outcome
     value: success
     ignore_empty_value: true
 - set:
+    tag: set_event_kind_23ecd1e1
     field: event.kind
     value: alert
     if: '["13001", "13002", "13004", "13005", "13006", "13009", "13012", "13014", "14001", "14002", "15001", "15002"].contains(ctx.event?.code)'
 - append:
+    tag: append_event_category_70da92c5
     field: event.category
     value: malware
     if: '["13001", "13002", "13004", "13005", "13006", "13009", "13014", "14001", "14002", "15001", "15002"].contains(ctx.event?.code)'
 - append:
+    tag: append_event_category_c687ba22
     field: event.category
     value: intrusion_detection
     if: "ctx.event?.code == '13012'"
 - append:
+    tag: append_event_category_7afdca3c
     field: event.category
     value: network
 - append:
+    tag: append_event_type_fbb0b513
     field: event.type
     value:
      - allowed
      - connection
     if: '["13003", "13007", "13008", "13010", "13013", "14003", "15003", "18035"].contains(ctx.event?.code)'
 - append:
+    tag: append_event_type_8062f8c6
     field: event.type
     value:
       - info
@@ -48,11 +57,13 @@ processors:
 ## ECS Destination Mapping
 ####################################
 - rename:
+    tag: rename_sophos_xg_dst_ip_to_destination_ip_17b8be30
     field: sophos.xg.dst_ip
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_ip != null"
 - convert:
+    tag: convert_sophos_xg_dst_port_to_destination_port_cea07508
     field: sophos.xg.dst_port
     target_field: destination.port
     type: long
@@ -64,10 +75,12 @@ processors:
 ## ECS Source Mapping
 ###############################
 - rename:
+    tag: rename_sophos_xg_src_ip_to_source_ip_3b2e0aa1
     field: sophos.xg.src_ip
     target_field: source.ip
     ignore_missing: true
 - convert:
+    tag: convert_sophos_xg_src_port_to_source_port_c97a8dfb
     field: sophos.xg.src_port
     target_field: source.port
     type: long
@@ -75,6 +88,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_port != null"
 - rename:
+     tag: rename_sophos_xg_src_domainname_to_source_domain_0625141c
      field: sophos.xg.src_domainname
      target_field: source.domain
      ignore_missing: true
@@ -83,26 +97,32 @@ processors:
 ## ECS Email Mapping ##
 #######################
 - rename:
+      tag: rename_sophos_xg_from_email_address_to_source_user_email_97624a63
       field: sophos.xg.from_email_address
       target_field: source.user.email
       ignore_missing: true
 - rename:
+      tag: rename_sophos_xg_to_email_address_to_destination_user_email_62e2176b
       field: sophos.xg.to_email_address
       target_field: destination.user.email
       ignore_missing: true
 - append:
+    tag: append_email_from_address_620b8c30
     field: email.from.address
     value: "{{{source.user.email}}}"
     if: "ctx?.source?.user?.email != null"
 - append:
+    tag: append_email_to_address_65b7cb39
     field: email.to.address
     value: "{{{destination.user.email}}}"
     if: "ctx?.destination?.user?.email != null"
 - set:
+    tag: set_email_subject_15d4cf78
     field: email.subject
     copy_from: sophos.xg.email_subject
     if: "ctx?.sophos.xg?.email_subject != null"
 - set:
+    tag: set_email_subject_2f9d7e59
     field: email.subject
     copy_from: sophos.xg.subject
     if: "ctx?.sophos.xg?.subject != null && ctx.email?.subject == null"
@@ -111,10 +131,12 @@ processors:
 ## ECS Network Mapping
 ######################
 - rename:
+    tag: rename_sophos_xg_protocol_to_network_transport_9c443cec
     field: sophos.xg.protocol
     target_field: network.transport
     ignore_missing: true
 - lowercase:
+    tag: lowercase_sophos_xg_log_component_to_network_protocol_7530f65c
     field: sophos.xg.log_component
     target_field: network.protocol
     ignore_missing: true
@@ -123,6 +145,7 @@ processors:
 ## Cleanup ##
 #############
 - remove:
+    tag: remove_2e5bd66a
     field:
     - sophos.xg.dst_port
     - sophos.xg.src_port
@@ -135,4 +158,12 @@ on_failure:
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

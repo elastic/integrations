@@ -21,7 +21,7 @@ processors:
       patterns:
       - (%{NGINX_HOST} )?"?(?:%{NGINX_ADDRESS_LIST:nginx.access.remote_ip_list}|%{NOTSPACE:source.address})
         - (-|%{DATA:user.name}) \[%{HTTPDATE:nginx.access.time}\] "%{DATA:nginx.access.info}"
-        %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.bytes:long}
+        %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.bytes:long}(?:\s%{NUMBER:nginx.access.response_time})?
         "(-|%{DATA:http.request.referrer})" "(-|%{DATA:user_agent.original})"
       pattern_definitions:
         NGINX_HOST: (?:%{IP:destination.ip}|%{NGINX_NOTSEPARATOR:destination.domain})(:%{NUMBER:destination.port})?
@@ -189,6 +189,17 @@ processors:
       field: related.user
       value: "{{user.name}}"
       if: "ctx?.user?.name != null"
+  - convert:
+      field: nginx.access.response_time
+      tag: convert_response_time_to_double
+      type: double
+      ignore_missing: true
+  - script: 
+      lang: painless
+      description: This script multiplies the second value of response_time * 1000 to convert to milliseconds.
+      source: |
+        ctx.nginx.access.response_time = (long) (ctx.nginx.access.response_time * 1000)
+      if: ctx.nginx?.access?.response_time != null
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
@@ -213,11 +224,6 @@ processors:
           }
         }
         handleMap(ctx);
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
       field: error.message

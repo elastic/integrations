@@ -5,29 +5,35 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
+    tag: set_event_kind_39295792
     field: event.kind
     value: alert
 - set:
+    tag: set_event_action_3c69f2d9
     field: event.action
     value: "{{{sophos.xg.log_subtype}}}"
     if: "ctx.sophos?.xg?.log_subtype != null"
 - set:
+    tag: set_event_outcome_a78e5234
     field: event.outcome
     value: success
     if: "ctx.sophos?.xg?.log_subtype != null"
 - append:
+    tag: append_event_category_0ae8b119
     field: event.category
     value:
       - intrusion_detection
       - network
     if: '["18009", "18010"].contains(ctx.event?.code)'
 - append:
+    tag: append_event_type_37adafbb
     field: event.type
     value:
       - denied
       - connection
     if: '["18009", "18010"].contains(ctx.event?.code)'
 - rename:
+    tag: rename_sophos_xg_eventid_to_event_id_07d305d8
     field: sophos.xg.eventid
     target_field: event.id
     ignore_missing: true
@@ -37,11 +43,13 @@ processors:
 ## ECS Server/Destination Mapping ##
 ####################################
 - rename:
+    tag: rename_sophos_xg_destinationip_to_destination_ip_80312f04
     field: sophos.xg.destinationip
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.destinationip != null"
 - convert:
+    tag: convert_sophos_xg_dst_port_to_destination_port_cea07508
     field: sophos.xg.dst_port
     target_field: destination.port
     type: long
@@ -53,16 +61,19 @@ processors:
 ## ECS Client/Source Mapping ##
 ###############################
 - rename:
+    tag: rename_sophos_xg_sourceip_to_source_ip_1c907c33
     field: sophos.xg.sourceip
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.sourceip != null"
 - rename:
+    tag: rename_sophos_xg_src_ip_to_source_ip_db814f5f
     field: sophos.xg.src_ip
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_ip != null"
 - convert:
+    tag: convert_sophos_xg_src_port_to_source_port_c97a8dfb
     field: sophos.xg.src_port
     target_field: source.port
     type: long
@@ -70,6 +81,7 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_port != null"
 - rename:
+    tag: rename_sophos_xg_user_name_to_source_user_name_5861b9ed
     field: sophos.xg.user_name
     target_field: source.user.name
     ignore_missing: true
@@ -78,15 +90,18 @@ processors:
 ## ECS URL Mapping ##
 #####################
 - rename:
+     tag: rename_sophos_xg_url_to_url_original_ca813017
      field: sophos.xg.url
      target_field: url.original
      ignore_missing: true
      if: "ctx.sophos?.xg?.url != null"
 - uri_parts:
+    tag: uri_parts_url_original_to_url_cabb1026
     if: ctx.url?.original != null && ctx.url.original.contains("://")
     field: url.original
     target_field: url
 - set:
+    tag: set_url_full_26ab774e
     if: ctx.url?.original != null && ctx.url.original.contains("://")
     field: url.full
     copy_from: url.original
@@ -96,6 +111,7 @@ processors:
 ## ECS Network Mapping
 ######################
 - rename:
+    tag: rename_sophos_xg_protocol_to_network_transport_9c443cec
     field: sophos.xg.protocol
     target_field: network.transport
     ignore_missing: true
@@ -104,12 +120,15 @@ processors:
 ## Cleanup ##
 #############
 - lowercase:
+      tag: lowercase_event_action_0a05ce67
       field: event.action
       ignore_failure: true
 - lowercase:
+      tag: lowercase_event_info_8cdf34c5
       field: event.info
       ignore_failure: true
 - remove:
+    tag: remove_86c09de9
     field:
     - sophos.xg.dst_port
     - sophos.xg.src_port
@@ -120,4 +139,12 @@ on_failure:
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

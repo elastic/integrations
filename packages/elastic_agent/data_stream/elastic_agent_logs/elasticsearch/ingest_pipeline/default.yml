@@ -1,0 +1,26 @@
+---
+description: Pipeline for Elastic Agent logs.
+processors:
+  - dot_expander:
+      if: ctx['log.level'] != null
+      field: 'log.level'
+  - grok:
+      description: Parse the log level from Elastic Defend service installation log messages.
+      if: ctx.context == "command output" && ctx['log.logger'] instanceof String && ctx['log.logger'].startsWith('component.runtime.endpoint-')
+      tag: grok_parse_endpoint_log_level
+      field: message
+      patterns:
+        - '^%{TIMESTAMP_ISO8601}: %{LOGLEVEL:log.level}: '
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

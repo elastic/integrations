@@ -3,6 +3,7 @@ description: Pipeline for PanOS User ID Logs.
 # API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/user-id-log-fields
 processors:
   - csv:
+      tag: csv_message_b6b283e5
       field: message
       target_fields:
         - panw.panos.virtual_sys
@@ -33,57 +34,67 @@ processors:
         - panw.panos.tag.name
         - _temp_.high_res_timestamp
 
-# Set event.category.
+  # Set event.category.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_292aced3
       field: event.category
       value:
         - network
         - iam
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
+      tag: set_destination_port_f95b8fc9
       field: destination.port
       copy_from: panw.panos.destination.port
       ignore_failure: true
   - set:
+      tag: set_event_code_00870669
       field: event.code
       copy_from: panw.panos.event.id
       ignore_failure: true
   - set:
+      tag: set_observer_hostname_5bc96c94
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
   - set:
+      tag: set_source_ip_c1b0f423
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
   - set:
+      tag: set_source_port_ed14489b
       field: source.port
       copy_from: panw.panos.source.port
       ignore_failure: true
   - set:
+      tag: set_source_user_name_69d42ba9
       field: source.user.name
       copy_from: panw.panos.user_by_source
       ignore_failure: true
 
   - date:
+      tag: date_panw_panos_factorcompletiontime_to_panw_panos_factorcompletiontime_527c776e
       if: ctx.panw?.panos?.factorcompletiontime != null && ctx.event?.timezone == null
       field: panw.panos.factorcompletiontime
       target_field: panw.panos.factorcompletiontime
       formats:
         - 'yyyy/MM/dd HH:mm:ss'
-      on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
+      on_failure: [{'append': {tag: append_error_message_4bb5db59, 'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
   - date:
+      tag: date_panw_panos_factorcompletiontime_to_panw_panos_factorcompletiontime_02fdb26c
       if: ctx.panw?.panos?.factorcompletiontime != null && ctx.event?.timezone != null
       field: panw.panos.factorcompletiontime
       target_field: panw.panos.factorcompletiontime
       formats:
         - 'yyyy/MM/dd HH:mm:ss'
       timezone: '{{{ event.timezone }}}'
-      on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
+      on_failure: [{'append': {tag: append_error_message_108af1c3, 'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
 
 on_failure:
   - set:
@@ -92,7 +103,11 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in User ID pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{ _ingest.on_failure_message }}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

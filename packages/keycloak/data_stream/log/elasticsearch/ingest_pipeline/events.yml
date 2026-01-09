@@ -13,6 +13,18 @@ processors:
     field: json.type
     target_field: keycloak.login.type
     ignore_missing: true
+- set:
+    field: event.outcome
+    value: success
+    if: ctx.keycloak?.login?.type != null && ctx.keycloak.login.type.equalsIgnoreCase('login')
+- set:
+    field: event.outcome
+    value: failure
+    if: ctx.keycloak?.login?.type != null && ctx.keycloak.login.type.equalsIgnoreCase('login_error')
+- set:
+    field: event.outcome
+    value: unknown
+    if: ctx.event?.outcome == null
 - rename:
     field: json.operationType
     target_field: keycloak.admin.operation
@@ -126,6 +138,21 @@ processors:
     field: json.authSessionTabId
     target_field: keycloak.login.auth_session_tab_id
     ignore_missing: true
+- rename:
+    field: json.impersonator_realm
+    target_field: keycloak.impersonator_realm
+    ignore_missing: true
+    if: ctx.json?.impersonator_realm != "null"
+- rename:
+    field: json.impersonator
+    target_field: keycloak.impersonator
+    ignore_missing: true
+    if: ctx.json?.impersonator != "null"
+- rename:
+    field: json.sessionId
+    target_field: keycloak.session.id
+    ignore_missing: true
+    if: ctx.json?.sessionId != "null"
 - grok:
     field: keycloak.admin.resource.path
     patterns: 

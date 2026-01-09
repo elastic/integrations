@@ -2,15 +2,15 @@ title: BeyondInsight and Password Safe Managed Accounts Events
 type: logs
 streams:
   - input: cel
-    title: BeyondInsight and Password Safe Managed Accounts Events
-    description: Request settings for BeyondInsight and Password Safe managed accounts.
+    title: Password Safe Managed Accounts
+    description: Managed account info with security policies and permissions.
     enabled: true
     template_path: cel.yml.hbs
     vars:
       - name: interval
         type: text
         title: Interval
-        description: Data for all managed accounts will be refetched at this interval.
+        description: Data for all managed accounts will be refetched at this interval. The supported time units are "h", "m", "s".
         show_user: false
         required: true
         default: "4h"
@@ -26,7 +26,7 @@ streams:
         title: Tags
         multi: true
         show_user: false
-        description: Tags to be applied to the events, such as 'forwarded', 'BeyondInsight signin_attempts'.
+        description: Tags to be applied to the events.
         default:
           - forwarded
           - beyondinsight_password_safe.managedaccount
@@ -45,3 +45,12 @@ streams:
         multi: false
         required: false
         show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.

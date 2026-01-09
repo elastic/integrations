@@ -1,0 +1,28 @@
+---
+description: Benchmark 100000 alert events ingested
+input: httpjson
+vars:
+  login_url: http://svc-m365-defender-alert-http:8082
+  client_id: xxxx
+  client_secret: xxxx
+  tenant_id: tenant_id
+data_stream:
+  name: alert
+  vars:
+    request_url: http://svc-m365-defender-alert-http:8082
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+    include_unknown_enum_members: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: m365-defender-alert-http
+  generator:
+    total_events: 100000
+    template:
+      path: ./alert-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./alert-benchmark/config.yml
+    fields:
+      path: ./alert-benchmark/fields.yml 

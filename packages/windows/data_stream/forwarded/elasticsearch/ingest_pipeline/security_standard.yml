@@ -3931,7 +3931,12 @@ processors:
         ctx.winlog?.event_data?.OldTargetUserName != null &&
         ctx.winlog.event_data.OldTargetUserName != "-"
 
-
+  - gsub:
+      description: Normalize separators in the SidList value.
+      field: winlog.event_data.SidList
+      pattern: '\s+'
+      replacement: ' '
+      ignore_missing: true
   - script:
       lang: painless
       ignore_failure: false
@@ -4260,7 +4265,8 @@ processors:
 
         void splitSidList(def sids, def params, def ctx) {
           ArrayList al = new ArrayList();
-          def sidList = sids.splitOnToken(" ");
+          def sidsArray = sids.splitOnToken(" ");
+          ArrayList sidList = new ArrayList(Arrays.asList(sidsArray));
           ctx.winlog.event_data.put("SidList", sidList);
           for (def i = 0; i < sidList.length; i++ ) {
             al.add(translateSID(sidList[i].replace("%", "").replace("{", "").replace("}", "").replace(" ",""), params));

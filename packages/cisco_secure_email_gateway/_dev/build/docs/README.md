@@ -146,7 +146,7 @@ SourceIP:1.128.3.4 Destination:/login Username:admin Privilege:admin session:5GP
 
 PERIODIC REPORTS: No root directory for Periodic Reports Archive. Probably, running first time...
 
-Could not fetch current Virus Threat Level: OS error opening URL 'http://example.com/xxxxx/xxxxx.txt'
+Could not fetch current Virus Threat Level: OS error opening URL '<EXAMPLE_URL>/xxxxx/xxxxx.txt'
 
 SSL error with client 1.128.3.4:000 - (336151574, 'error:14094416:SSL routines:ssl3_read_bytes:sslv3 alert certificate unknown')
 

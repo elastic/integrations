@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the execution of unusual commands via a descendant process of exim4. Attackers may use descendant processes of exim4 to evade detection and establish persistence or execute post-exploitation commands on a target system.",
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Unusual Exim4 Child Process",
+        "new_terms_fields": [
+            "process.executable"
+        ],
+        "query": "host.os.type:linux and event.type:start and event.action:exec and process.parent.name:exim4 and\nnot process.name:(\n  exim4 or start-stop-daemon or run-parts or systemctl or update-exim4.conf or install or plymouth or\n  readlink or grep or stat or cmake or gcc or cppcheck or sort or sshd\n)\n",
+        "references": [
+            "https://www.qualys.com/2021/05/04/21nails/21nails.txt",
+            "https://blog.qualys.com/vulnerabilities-threat-research/2021/05/04/21nails-multiple-vulnerabilities-in-exim-mail-server"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "6eb862bb-013d-4d4f-a14b-341433ca1a1f",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1037",
+                        "name": "Boot or Logon Initialization Scripts",
+                        "reference": "https://attack.mitre.org/techniques/T1037/"
+                    },
+                    {
+                        "id": "T1554",
+                        "name": "Compromise Host Software Binary",
+                        "reference": "https://attack.mitre.org/techniques/T1554/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "6eb862bb-013d-4d4f-a14b-341433ca1a1f_1",
+    "type": "security-rule"
+}

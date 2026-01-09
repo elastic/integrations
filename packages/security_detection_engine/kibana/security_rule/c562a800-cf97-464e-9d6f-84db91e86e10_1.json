@@ -1,0 +1,73 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule correlates any Elastic Defend alert with an email security related alert by target user name. This may indicate the successful execution of a phishing attack.",
+        "from": "now-1h",
+        "interval": "45m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Elastic Defend and Email Alerts Correlation",
+        "note": "## Triage and analysis\n### Investigating Elastic Defend and Email Alerts Correlation\n\nThis rule correlates any Elastic Defend alert with an email security related alert by target user name.\n\n### Possible investigation steps\n- Review the alert details to identify the specific host and users involved.\n- Investigate the individual alerts for the target user name and see if they are related.\n- Review all emails received from Esql.source_user_name and if there are other impacted users.\n- Correlate the alert data with other logs and telemetry from the host, such as process creation, network connections, and file modifications, to gather additional context.\n- Assess the impact and scope of the potential compromise by determining if other hosts or systems have similar alerts or related activity.\n\n### False positive analysis\n- Legitimate email marked as suspicious.\n- Legitimate file or behavior marked as suspicious by Elastic Defend.\n- Unrelated alerts where the target user name is too generic.\n\n### Response and remediation\n- Isolate the affected host from the network immediately to prevent further lateral movement by the adversary.\n- Conduct a thorough forensic analysis of the host.\n- Remove any identified malicious software or unauthorized access tools from the host, ensuring all persistence mechanisms are eradicated.\n- Restore the host from a known good backup if necessary, ensuring that the backup is free from compromise.\n- Monitor the host and network for any signs of re-infection or further suspicious activity, using enhanced logging and alerting based on the identified attack patterns.\n- Escalate the incident to the appropriate internal or external cybersecurity teams for further investigation and potential legal action if the attack is part of a larger campaign.",
+        "query": "from logs-* metadata _id\n// Email or Elastic Defend alerts where user name is populated\n| where\n  (event.category == \"email\" and event.kind == \"alert\" and destination.user.name is not null) or\n  (event.module == \"endpoint\" and event.dataset == \"endpoint.alerts\" and user.name is not null)\n\n// extract target user name from email and endpoint alerts\n| eval email_alert_target_user_name = CASE(event.category == \"email\", destination.user.name, null),\n       elastic_defend_alert_user_name = CASE(event.module == \"endpoint\" and event.dataset == \"endpoint.alerts\", user.name, null)\n| eval Esql.target_user_name = COALESCE(email_alert_target_user_name, elastic_defend_alert_user_name)\n| where Esql.target_user_name is not null\n\n// group by Esql.target_user_name\n| stats Esql.alerts_count = COUNT(*),\n        Esql.event_module_distinct_count = COUNT_DISTINCT(event.module),\n        Esql.event_module_values = VALUES(event.module),\n        Esql.message_values = VALUES(message),\n        Esql.event_action_values = VALUES(event.action),\n        Esql.process_executable_values = VALUES(process.executable),\n        Esql.host_id_values = VALUES(host.id),\n        Esql.source_user_name = VALUES(source.user.name),\n        Esql.rule_name_values = VALUES(rule.name)\n        by Esql.target_user_name\n// alert when same user is observed in an endpoint and email alert\n| where Esql.event_module_distinct_count >= 2\n| keep Esql.alerts_count, Esql.event_module_values, Esql.host_id_values, Esql.source_user_name, Esql.target_user_name, Esql.message_values, Esql.rule_name_values, Esql.event_action_values\n",
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.alerts_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_action_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_module_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.message_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.rule_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_user_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.target_user_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c562a800-cf97-464e-9d6f-84db91e86e10",
+        "severity": "high",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Domain: Email",
+            "Domain: Endpoint"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c562a800-cf97-464e-9d6f-84db91e86e10_1",
+    "type": "security-rule"
+}

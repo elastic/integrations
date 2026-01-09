@@ -1,0 +1,27 @@
+service: varonis-udp-invalid-cef
+service_notify_signal: SIGHUP
+input: udp
+data_stream:
+  vars:
+    udp_host: 0.0.0.0
+    udp_port: 9032
+    preserve_original_event: true
+    tags:
+      - forwarded
+    preprocessors: |
+      - script:
+          lang: javascript
+          description: Escape backslash characters.
+          source: >
+            function process(event) {
+              var m = event.Get("message");
+              event.Put("message", m.replace(/\\/g, "\\\\"));
+              return event;
+            }
+            function test() {
+              if ("\\".replace(/\\/g, "\\\\") !== "\\\\") {
+                throw "expected replace \\ to \\\\ failed";
+              }
+            }
+assert:
+  - hit_count: 2

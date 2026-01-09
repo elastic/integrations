@@ -1,0 +1,27 @@
+service: varonis-tcp-invalid-cef
+service_notify_signal: SIGHUP
+input: tcp
+data_stream:
+  vars:
+    tcp_host: 0.0.0.0
+    tcp_port: 9033
+    preserve_original_event: true
+    tags:
+      - forwarded
+    preprocessors: |
+      - script:
+          lang: javascript
+          description: Escape backslash characters.
+          source: >
+            function process(event) {
+              var m = event.Get("message");
+              event.Put("message", m.replace(/\\/g, "\\\\"));
+              return event;
+            }
+            function test() {
+              if ("\\".replace(/\\/g, "\\\\") !== "\\\\") {
+                throw "expected replace \\ to \\\\ failed";
+              }
+            }
+assert:
+  - hit_count: 2

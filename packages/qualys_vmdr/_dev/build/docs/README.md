@@ -24,36 +24,18 @@ Starting from Qualys VMDR integration version 6.0, the `Asset Host Detection` da
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Agentless Enabled Integration
+### Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Installing and managing an Elastic Agent:
+### Agent-based installation
 
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ### Permissions
 
-#### Asset Host Detection
+#### Asset host detection
 
 | Role                    | Permission                                     |
 |-------------------------|------------------------------------------------|
@@ -62,11 +44,11 @@ There are some minimum requirements for running Elastic Agent and for more infor
 | _Scanners_              | VM scanned hosts in user’s account             |
 | _Readers_               | VM scanned hosts in user’s account             |
 
-#### Knowledge Base
+#### Knowledge base
 
 _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download vulnerability data from the KnowledgeBase.
 
-#### User Activity Log
+#### User activity log
 
 | Role                    | Permission                                     |
 |-------------------------|------------------------------------------------|
@@ -77,18 +59,17 @@ _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download v
 
 ## Setup
 
-### To collect data through REST API, follow the below steps:
+### Collect data through REST API
 
-- Considering you already have a Qualys user account, to identify your Qualys platform and get the API URL, refer this [link](https://www.qualys.com/platform-identification/).
-- Alternative way to get the API URL is to log in to your Qualys account and go to Help > About. You’ll find your URL under Security Operations Center (SOC).
+Assuming that you already have a Qualys user account, to identify your Qualys platform and get the API URL, check the [Qualys documentation](https://www.qualys.com/platform-identification/).
+Alternatively, to get the API URL log in to your Qualys account and go to **Help** > **About**. You’ll find your URL under **Security Operations Center (SOC)**.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Qualys VMDR
-3. Click on the "Qualys VMDR" integration from the search results.
-4. Click on the Add Qualys VMDR Integration button to add the integration.
-5. While adding the integration, if you want to collect Asset Host Detection data via REST API, then you have to put the following details:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Qualys VMDR**.
+3. Select the **Qualys VMDR** integration and add it.
+4. While adding the integration, if you want to collect Asset Host Detection data via REST API, then you have to put the following details:
    - username
    - password
    - url
@@ -110,12 +91,13 @@ _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download v
    - url
    - initial interval
    - interval
+5. Save the integration.
 
-**NOTE**: By default, the input parameter is set to "action=list".
+**NOTE**: By default, the input parameter is set to `action=list`.
 
 ## Data reference
 
-### Asset Host Detection
+### Asset host detection
 
 This is the `Asset Host Detection` dataset.
 
@@ -125,7 +107,7 @@ This is the `Asset Host Detection` dataset.
 
 {{fields "asset_host_detection"}}
 
-### Knowledge Base
+### Knowledge base
 
 This is the `Knowledge Base` dataset.
 
@@ -135,7 +117,7 @@ This is the `Knowledge Base` dataset.
 
 {{fields "knowledge_base"}}
 
-### User Activity
+### User activity
 
 This is the `User Activity` dataset. It connects to an [API](
 https://docs.qualys.com/en/vm/api/users/index.htm#t=activity%2Fexport_activity.htm)

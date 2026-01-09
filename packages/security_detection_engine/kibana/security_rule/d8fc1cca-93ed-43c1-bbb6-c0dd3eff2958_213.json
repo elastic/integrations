@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Detects the deactivation of a Multi-Factor Authentication (MFA) device in AWS Identity and Access Management (IAM). MFA provides critical protection against unauthorized access by requiring a second factor for authentication. Adversaries or compromised administrators may deactivate MFA devices to weaken account protections, disable strong authentication, or prepare for privilege escalation or persistence. This rule monitors successful DeactivateMFADevice API calls, which represent the point at which MFA protection is actually removed.",
+        "false_positives": [
+            "MFA device deactivation may occur legitimately during device rotation, user offboarding, or troubleshooting. For example, AWS requires deactivation of an existing MFA device before adding a replacement. These actions are often performed by administrators following approved change-control processes. To reduce false positives, validate whether the deactivation aligns with a documented workflow, known device replacement, or expected maintenance window. If performed outside of expected operational hours, by an unexpected user, or from an unfamiliar source IP, this event should be investigated for potential credential compromise or unauthorized tampering."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS IAM Deactivation of MFA Device",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and validated for accuracy and relevance. Always\n> tailor the steps to your organization's environment and operational context.\n\n### Investigating AWS IAM Deactivation of MFA Device\n\nThis rule detects successful deactivation of a Virtual MFA device in AWS IAM. \nDeactivation removes MFA enforcement from an IAM user, significantly lowering account resilience against credential theft or unauthorized access. \nSince MFA devices must be deactivated before deletion, this represents the earliest and most critical opportunity to detect potential account compromise or persistence activity.\n\nFor more information about using MFA in AWS, access the [official documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html).\n\n#### Possible investigation steps\n\n- **Identify the actor and context**\n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id` to determine who initiated the deactivation.\n  - Check whether the actor typically manages MFA or has the IAM permissions to perform such actions.\n  - Review `user_agent.original` to confirm if the operation was performed via the AWS Console, CLI, or SDK.\n\n- **Review the source and location**\n  - Investigate `source.ip` and `source.geo` fields for unusual origins or unrecognized locations.\n  - Determine if this request originated from known automation infrastructure, internal IP ranges, or a personal endpoint.\n\n- **Correlate with other related activity**\n  - Look for preceding API calls such as `ListMFADevices`, `GetSessionToken`, or `ListUsers`, which may indicate reconnaissance or IAM enumeration.\n  - Search for subsequent `DeleteVirtualMFADevice` calls to confirm whether the deactivated device was later deleted \u2014 a common follow-up action.\n  - Check for any privilege changes, credential creations (`CreateAccessKey`, `AttachUserPolicy`), or unexpected login attempts following the deactivation.\n\n- **Validate authorization**\n  - Confirm with IAM or security administrators whether the action was part of an authorized device rotation or remediation.\n  - If not documented or approved, escalate as a potential credential compromise or persistence attempt.\n\n### False positive analysis\n\n- **Legitimate device rotation**\n  - When replacing an MFA device, AWS requires deactivation of the existing device before the new one can be enabled.\n- **Administrative maintenance**\n  - IAM administrators or automation pipelines may deactivate MFA as part of account management or recovery workflows.\n\n### Response and remediation\n\n- **Containment**\n  - Re-enable MFA for the affected IAM user (`EnableMFADevice`) or temporarily disable their login access until legitimacy is confirmed.\n  - Revoke temporary credentials or tokens associated with the actor to prevent further misuse.\n\n- **Investigation and scoping**\n  - Review CloudTrail history for additional IAM configuration changes or access key creation events tied to the same principal.\n  - Determine whether sensitive resources were accessed after MFA removal.\n  - Identify whether multiple users had MFA devices deactivated in a short timeframe \u2014 an indicator of broader compromise.\n\n- **Recovery and hardening**\n  - Require MFA for all privileged IAM users and enforce it using service control policies (SCPs).\n  - Enable GuardDuty or Security Hub findings for IAM anomaly detection related to account takeover or configuration changes.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **[DeactivateMFADevice API Reference](https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeactivateMFADevice.html)**  \n- **[Managing MFA Devices in IAM](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html)** \n",
+        "query": "event.dataset: aws.cloudtrail \n    and event.provider: iam.amazonaws.com \n    and event.action: DeactivateMFADevice \n    and event.outcome: success\n",
+        "references": [
+            "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/iam/deactivate-mfa-device.html",
+            "https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeactivateMFADevice.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d8fc1cca-93ed-43c1-bbb6-c0dd3eff2958",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS CloudTrail",
+            "Data Source: AWS IAM",
+            "Resources: Investigation Guide",
+            "Tactic: Impact",
+            "Tactic: Persistence"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/",
+                        "subtechnique": [
+                            {
+                                "id": "T1556.006",
+                                "name": "Multi-Factor Authentication",
+                                "reference": "https://attack.mitre.org/techniques/T1556/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 213
+    },
+    "id": "d8fc1cca-93ed-43c1-bbb6-c0dd3eff2958_213",
+    "type": "security-rule"
+}

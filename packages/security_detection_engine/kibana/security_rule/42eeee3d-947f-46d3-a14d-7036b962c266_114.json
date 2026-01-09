@@ -1,0 +1,124 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies process creation with alternate credentials. Adversaries may create a new process with a different token to escalate privileges and bypass access controls.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Process Creation via Secondary Logon",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Process Creation via Secondary Logon\n\nThe Secondary Logon service in Windows allows users to run processes with different credentials, facilitating legitimate administrative tasks. However, adversaries can exploit this to escalate privileges by creating processes with alternate tokens, bypassing access controls. The detection rule identifies such abuse by monitoring successful logins via the Secondary Logon service and subsequent process creation, linking them through unique logon identifiers.\n\n### Possible investigation steps\n\n- Review the event logs for the specific TargetLogonId to identify the user account associated with the process creation and verify if the account is authorized to use alternate credentials.\n- Examine the source IP address \"::1\" to confirm if the process creation originated from the local machine, which might indicate a local privilege escalation attempt.\n- Investigate the process name \"svchost.exe\" to determine if it is being used legitimately or if it has been exploited for malicious purposes, such as running unauthorized services.\n- Check the sequence of events within the 1-minute maxspan to identify any unusual or suspicious activities that occurred immediately before or after the process creation.\n- Correlate the detected activity with other security alerts or logs to identify any patterns or additional indicators of compromise that might suggest a broader attack campaign.\n\n### False positive analysis\n\n- Legitimate administrative tasks using the Secondary Logon service can trigger alerts. To manage this, identify and whitelist specific administrative accounts or tasks that frequently use this service for legitimate purposes.\n- Scheduled tasks or automated scripts that use alternate credentials for routine operations may cause false positives. Review and exclude these tasks by creating exceptions for known scripts or scheduled jobs.\n- Internal IT support activities often involve using alternate credentials for troubleshooting or maintenance. Document and exclude these activities by maintaining a list of support personnel and their typical actions.\n- Software updates or installations that require elevated privileges might be flagged. Monitor and exclude these processes by identifying and documenting the update mechanisms used within the organization.\n- Development or testing environments where alternate credentials are used for testing purposes can generate alerts. Exclude these environments by setting up specific rules that recognize and ignore these non-production activities.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Terminate any suspicious processes identified as being created via the Secondary Logon service, especially those linked to the unique logon identifiers from the alert.\n- Review and revoke any alternate credentials or tokens used in the suspicious process creation to prevent further misuse.\n- Conduct a thorough examination of the affected system for additional signs of compromise, such as unauthorized user accounts or changes to system configurations.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine the full scope of the breach.\n- Implement stricter access controls and monitoring on the Secondary Logon service to detect and prevent similar privilege escalation attempts in the future.\n- Update and reinforce endpoint detection and response (EDR) solutions to enhance monitoring of process creation events and logon activities, ensuring they are aligned with the latest threat intelligence.",
+        "query": "sequence by winlog.computer_name with maxspan=1m\n\n[authentication where event.action:\"logged-in\" and\n event.outcome == \"success\" and user.id : (\"S-1-5-21-*\", \"S-1-12-1-*\") and\n\n /* seclogon service */\n process.name == \"svchost.exe\" and\n winlog.event_data.LogonProcessName : \"seclogo*\" and source.ip == \"::1\" ] by winlog.event_data.TargetLogonId\n\n[process where event.type == \"start\"] by winlog.event_data.TargetLogonId\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1134/002/"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.computer_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.LogonProcessName",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TargetLogonId",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "42eeee3d-947f-46d3-a14d-7036b962c266",
+        "setup": "## Setup\n\nAudit events 4624 and 4688 are needed to trigger this rule.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1134",
+                        "name": "Access Token Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1134/",
+                        "subtechnique": [
+                            {
+                                "id": "T1134.002",
+                                "name": "Create Process with Token",
+                                "reference": "https://attack.mitre.org/techniques/T1134/002/"
+                            },
+                            {
+                                "id": "T1134.003",
+                                "name": "Make and Impersonate Token",
+                                "reference": "https://attack.mitre.org/techniques/T1134/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 114
+    },
+    "id": "42eeee3d-947f-46d3-a14d-7036b962c266_114",
+    "type": "security-rule"
+}

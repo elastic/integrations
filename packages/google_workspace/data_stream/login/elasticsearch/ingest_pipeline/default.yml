@@ -1,6 +1,17 @@
 ---
 description: Pipeline for parsing google_workspace logs
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.16.0'
@@ -17,6 +28,10 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.events == null
+      description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
+      tag: drop_empty_events
   - set:
       field: event.kind
       value: event
@@ -82,6 +97,11 @@ processors:
       target_field: organization.id
       type: string
       ignore_missing: true
+      tag: convert_customer_id_to_string
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.actor.callerType
       target_field: google_workspace.actor.type
@@ -199,6 +219,27 @@ processors:
             ctx.google_workspace.login[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["boolValue"];
           }    
         }
+  - rename:
+      field: json.networkInfo.ipAsn
+      target_field: google_workspace.login.network_info.ip_asn
+      ignore_missing: true
+  - rename:
+      field: json.networkInfo.regionCode
+      target_field: google_workspace.login.network_info.region_code
+      ignore_missing: true
+  - rename:
+      field: json.networkInfo.subdivisionCode
+      target_field: google_workspace.login.network_info.subdivision_code
+      ignore_missing: true
+  - rename:
+      field: json.resourceIds
+      target_field: google_workspace.login.resource_ids
+      ignore_missing: true
+  - convert:
+      field: google_workspace.login.timestamp
+      target_field: google_workspace.login.timestamp
+      type: long
+      ignore_missing: true
   - script:
       lang: painless
       if: ctx?.google_workspace?.login?.timestamp != null

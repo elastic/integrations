@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies rapid secret retrieval activity from AWS Secrets Manager using the GetSecretValue or BatchGetSecretValue API actions. Adversaries who compromise an IAM user, instance role, or temporary credentials may attempt to enumerate or exfiltrate secrets in bulk to escalate privileges, move laterally, or gain persistence. This rule detects 20 or more unique secret retrievals by the same user identity within a short time window, which may indicate credential compromise or automated secret harvesting.",
+        "false_positives": [
+            "Verify whether the user identity, user agent, and/or hostname should be using GetSecretValue or BatchGetSecretValue APIs for the specified SecretId. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Secrets Manager Rapid Secrets Retrieval",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. \n> While every effort has been made to ensure its quality, validate and adapt it for your operational needs.\n\n### Investigating AWS Secrets Manager Rapid Secrets Retrieval\n\nAWS Secrets Manager stores sensitive credentials such as database passwords, API keys, OAuth tokens, and service \nconfiguration values. In credential compromise scenarios, attackers frequently attempt to retrieve as many secrets as \npossible in a short timeframe to escalate privileges or move laterally across the environment.\n\nThis threshold rule triggers when a single user identity successfully retrieves 20 or more unique secrets using \n`GetSecretValue` or `BatchGetSecretValue` within a short timespan. Retrieval of many different secrets in rapid succession is highly unusual and strongly associated with reconnaissance, secret harvesting, or compromised automation.\n\nNote: `BatchGetSecretValue` API calls the `GetSecretValue` API for each secret value; this alert only captures the `GetSecretValue` calls rather than the `BatchGetSecretValue` call itself.\n\n#### Possible investigation steps\n\n- **Identify the user or role**\n  - Review `aws.cloudtrail.user_identity.arn`, `user.name`, and `aws.cloudtrail.user_identity.type`.\n  - Determine whether the identity normally accesses Secrets Manager or is tied to a known automation workload.\n\n- **Analyze the set of secrets retrieved**\n  - Expand the alert in Timeline and review `aws.cloudtrail.request_parameters` for all `SecretId` values in the grouped threshold event.\n  - Identify whether the accessed secrets include:\n    - Privileged database credentials  \n    - IAM user or service account credentials  \n    - Production application secrets  \n    - Rarely accessed or high-sensitivity secrets  \n\n- **Assess the runtime context**\n  - Investigate `source.ip`, `source.geo.location`, and `user_agent.original`.\n  - Validate whether the calls originated from known internal automation (e.g., ECS task, Lambda runtime, EC2 instance profile) \n    or from an unexpected IP or user agent.\n\n- **Correlate with other activity from the same identity**\n  - Look for related reconnaissance or credential-access events:\n    - `ListSecrets`, `DescribeSecret`\n    - IAM enumeration (`ListUsers`, `GetCallerIdentity`)\n    - Role-chaining or unusual `AssumeRole` flows  \n  - Check for subsequent use of exposed credentials (RDS login attempts, API activity, abnormal resource access).\n\n- **Determine whether unusual automation or deployment activity is occurring**\n  - Confirm with application owners whether a new deployment, config reload, or migration might explain the multi-secret access.\n\n### False positive analysis\n\n- Legitimate application initialization or rollouts may retrieve many secrets once on startup.\n- CI/CD pipelines or configuration management tools may enumerate secrets as part of environment bootstrapping.\n\nTo reduce noise, consider exceptions based on:\n- Known service roles  \n- Expected source IP ranges  \n- Specific application identities tied to secret orchestration  \n\n### Response and remediation\n\n- **Containment**\n  - Immediately revoke or disable the IAM user, role session, or instance profile if compromise is suspected.\n  - Quarantine EC2/ECS/Lambda resources originating suspicious calls.\n\n- **Investigation**\n  - Identify all secrets accessed in the grouped alert and determine where those credentials are used.\n  - Review CloudTrail for any suspicious follow-on activity using the retrieved secrets.\n  - Assess whether additional identities or workloads show similar enumeration behavior.\n\n- **Recovery and hardening**\n  - Rotate all accessed secrets and update dependent systems.\n  - Rotate IAM access keys or temporary credentials for the impacted identity.\n  - Restrict permissions to Secrets Manager following least privilege.\n  - Review automation and application behavior to ensure secrets are accessed only when required.\n",
+        "query": "event.dataset: \"aws.cloudtrail\" \n    and event.provider: \"secretsmanager.amazonaws.com\" \n    and event.action: \"GetSecretValue\" \n    and event.outcome: \"success\" \n    and not (\n        user_agent.name: (\"Chrome\" or \"Firefox\" or \"Safari\" or \"Edge\" or \"Brave\" or \"Opera\") \n        or source.address: (\"kafka.amazonaws.com\" or \"apidestinations.events.amazonaws.com\")\n    )\n",
+        "references": [
+            "https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html",
+            "https://detectioninthe.cloud/ttps/credential_access/access_secret_in_secrets_manager/",
+            "https://cloud.hacktricks.xyz/pentesting-cloud/aws-security/aws-services/aws-secrets-manager-enum"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.address",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "185c782e-f86a-11ee-9d9f-f661ea17fbce",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Secrets Manager",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/",
+                        "subtechnique": [
+                            {
+                                "id": "T1555.006",
+                                "name": "Cloud Secrets Management Stores",
+                                "reference": "https://attack.mitre.org/techniques/T1555/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "cardinality": [
+                {
+                    "field": "aws.cloudtrail.request_parameters",
+                    "value": 20
+                }
+            ],
+            "field": [
+                "user.id"
+            ],
+            "value": 1
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 6
+    },
+    "id": "185c782e-f86a-11ee-9d9f-f661ea17fbce_6",
+    "type": "security-rule"
+}

@@ -5,7 +5,7 @@ processors:
       field: cloud.provider
       value: azure
   - grok:
-      field: azure.resource_id
+      field: azure.resource.id
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/namespaces/%{NAMESPACE:azure.resource.namespace}/authorizationRules/%{RULE:azure.resource.authorization_rule}
       pattern_definitions:
@@ -16,7 +16,7 @@ processors:
         RULE: .+
       ignore_failure: true
   - grok:
-      field: azure.resource_id
+      field: azure.resource.id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
       - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
@@ -27,7 +27,7 @@ processors:
         NAME: ((?!AUTHORIZATIONRULES).)*$
       ignore_failure: true
   - grok:
-      field: azure.resource_id
+      field: azure.resource.id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
@@ -38,7 +38,7 @@ processors:
         NAME: .+
       ignore_failure: true
   - grok:
-      field: azure.resource_id
+      field: azure.resource.id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
       - (?i)/providers/%{PROVIDER:azure.resource.provider}
@@ -46,7 +46,7 @@ processors:
         PROVIDER: .+
       ignore_failure: true
   - grok:
-      field: azure.resource_id
+      field: azure.resource.id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}/providers/%{PROVIDERNAME:azure.resource.provider}
@@ -55,7 +55,7 @@ processors:
         PROVIDERNAME: ([A-Za-z])\w+.([A-Za-z])\w+\/([A-Za-z][^\/])\w+
       ignore_failure: true
   - grok:
-      field: azure.resource_id
+      field: azure.resource.id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}
@@ -64,7 +64,7 @@ processors:
         GROUPID: .+
       ignore_failure: true
   - grok:
-      field: azure.resource_id
+      field: azure.resource.id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}

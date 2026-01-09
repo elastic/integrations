@@ -3,6 +3,7 @@ description: Pipeline for PanOS Tunnel Inspection Logs.
 # API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/tunnel-inspection-log-fields
 processors:
   - csv:
+      tag: csv_message_b343ac3b
       field: message
       ignore_failure: true
       target_fields:
@@ -83,136 +84,168 @@ processors:
         - panw.panos.application.is_saas
         - panw.panos.application.is_sanctioned
 
-# Set event.category.
+  # Set event.category.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_38e4ac56
       field: event.category
       value:
         - network
 
-# Set event.outcome from panw.panos.action: allowable values:
-#  allow, deny, drop, drop ICMP, reset both, reset client, and reset server
+  # Set event.outcome from panw.panos.action: allowable values:
+  #  allow, deny, drop, drop ICMP, reset both, reset client, and reset server
   - set:
+      tag: set_event_outcome_f88aedaf
       if: ctx.panw?.panos?.action == "allow"
       field: event.outcome
       value: success
   - set:
+      tag: set_event_outcome_bab27a63
       if: ctx.event?.outcome == null || ctx.event.outcome == ""
       field: event.outcome
       value: failure
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
+      tag: set_destination_bytes_61569da9
       field: destination.bytes
       copy_from: panw.panos.bytes_received
       ignore_failure: true
   - set:
+      tag: set_panw_panos_destination_location_b4a8aa0b
       field: panw.panos.destination.location
       copy_from: _temp_.dstloc
       ignore_failure: true
   - set:
+      tag: set_destination_ip_07b53525
       field: destination.ip
       copy_from: panw.panos.destination.ip
       ignore_failure: true
   - set:
+      tag: set_destination_nat_ip_3718bfe7
       field: destination.nat.ip
       copy_from: panw.panos.destination.nat.ip
       ignore_failure: true
   - set:
+      tag: set_destination_nat_port_ed3fbecb
       field: destination.nat.port
       copy_from: panw.panos.destination.nat.port
       ignore_failure: true
   - set:
+      tag: set_destination_packets_c89f4e4d
       field: destination.packets
       copy_from: panw.panos.packets_received
       ignore_failure: true
   - set:
+      tag: set_destination_port_f95b8fc9
       field: destination.port
       copy_from: panw.panos.destination.port
       ignore_failure: true
   - set:
+      tag: set_event_duration_417f5ac1
       field: event.duration
       copy_from: panw.panos.elapsed_time
       ignore_failure: true
   - set:
+      tag: set_event_start_d60e9301
       field: event.start
       copy_from: panw.panos.start_time
       ignore_failure: true
   - set:
+      tag: set_network_application_5ae7266b
       field: network.application
       copy_from: panw.panos.network.application
       ignore_failure: true
   - set:
+      tag: set_network_bytes_678b8807
       field: network.bytes
       copy_from: panw.panos.network.bytes
       ignore_failure: true
   - set:
+      tag: set_network_packets_774bb447
       field: network.packets
       copy_from: panw.panos.network.packets
       ignore_failure: true
   - set:
+      tag: set_network_transport_860fbbd0
       field: network.transport
       copy_from: panw.panos.protocol
       ignore_failure: true
   - set:
+      tag: set_log_level_ed3c9f74
       field: log.level
       copy_from: panw.panos.severity
       ignore_failure: true
   - set:
+      tag: set_observer_egress_interface_name_a7cd428a
       field: observer.egress.interface.name
       copy_from: panw.panos.outbound_interface
       ignore_failure: true
   - set:
+      tag: set_observer_egress_zone_1c62484c
       field: observer.egress.zone
       copy_from: panw.panos.destination.zone
       ignore_failure: true
   - set:
+      tag: set_observer_hostname_5bc96c94
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
   - set:
+      tag: set_observer_ingress_interface_name_0cf960b9
       field: observer.ingress.interface.name
       copy_from: panw.panos.inbound_interface
       ignore_failure: true
   - set:
+      tag: set_observer_ingress_zone_99ce4399
       field: observer.ingress.zone
       copy_from: panw.panos.source.zone
       ignore_failure: true
   - set:
+      tag: set_rule_name_e606f7b2
       field: rule.name
       copy_from: panw.panos.tunnel_inspection_rule
       ignore_failure: true
   - set:
+      tag: set_rule_uuid_5478ecb2
       field: rule.uuid
       copy_from: panw.panos.rule_uuid
       ignore_failure: true
   - set:
+      tag: set_source_bytes_548acced
       field: source.bytes
       copy_from: panw.panos.bytes_sent
       ignore_failure: true
   - set:
+      tag: set_panw_panos_source_location_3344cd6f
       field: panw.panos.source.location
       copy_from: _temp_.srcloc
       ignore_failure: true
   - set:
+      tag: set_source_ip_c1b0f423
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
   - set:
+      tag: set_source_nat_ip_c6ea5d2f
       field: source.nat.ip
       copy_from: panw.panos.source.nat.ip
       ignore_failure: true
   - set:
+      tag: set_source_port_ed14489b
       field: source.port
       copy_from: panw.panos.source.port
       ignore_failure: true
   - set:
+      tag: set_source_nat_port_dcfd151f
       field: source.nat.port
       copy_from: panw.panos.source.nat.port
       ignore_failure: true
   - set:
+      tag: set_source_packets_b4b8d869
       field: source.packets
       copy_from: panw.panos.packets_sent
       ignore_failure: true
@@ -224,7 +257,11 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in Tunnel Inspection pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

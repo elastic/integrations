@@ -17,18 +17,25 @@ processors:
       field: event.type
       value: end
       tag: append_end_type
-  - rename:
+  - grok:
       field: crowdstrike.event.UserName
-      target_field: user.name
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+        - '%{GREEDYDATA:user.name}'
       ignore_missing: true
-      tag: rename_user_name
+      ignore_failure: true
+  - set:
+      field: user.email
+      copy_from: crowdstrike.event.UserName
+      tag: copy_user_email
+      if: ctx.crowdstrike?.event?.UserName != null && ctx.crowdstrike.event.UserName.indexOf("@") > 0
   - date:
       field: crowdstrike.event.EndTimestamp
       target_field: event.end
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_end_timestamp
+      tag: date_end_timestamp_ms
       if: 'ctx.crowdstrike?.event?.EndTimestamp != null && String.valueOf(ctx.crowdstrike.event.EndTimestamp).length() >= 12'
   - date:
       field: crowdstrike.event.EndTimestamp

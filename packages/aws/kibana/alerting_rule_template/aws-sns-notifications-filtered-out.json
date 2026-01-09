@@ -1,0 +1,28 @@
+{
+  "id": "aws-sns-notifications-filtered-out",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[AWS SNS] Notifications Filtered Out High",
+    "tags": ["AWS SNS"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the notificationsfilteredout exceeds the recommended threshold value {0} within the look back time window.\n// The alert is grouped by cloud account id, cloud region and topic name.\n// You can adjust the threshold value by modifying the notificationsfilteredout in the WHERE clause.\nFROM metrics-aws.sns-default\n| STATS notificationsfilteredout=avg(aws.sns.NumberOfNotificationsFilteredOut-InvalidAttributes.sum) by cloud.account.id, cloud.region, aws.dimensions.TopicName\n| WHERE notificationsfilteredout > 0"
+      },
+      "groupBy": "row",
+      "timeField": "event.ingested"
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

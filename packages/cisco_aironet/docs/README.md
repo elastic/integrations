@@ -101,6 +101,7 @@ An example event for `log` looks as following:
 | cisco.wps.channel | Cisco WPS channel | short |
 | cisco.wps.hits | Cisco WPS hits | short |
 | cisco.wps.preced | Cisco WPS precedence | short |
+| cisco.wps.radio | The radio interface number within a slot | short |
 | cisco.wps.slot | Cisco WPS slot | short |
 | cisco.wps.track | Cisco WPS track | keyword |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |

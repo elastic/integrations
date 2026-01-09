@@ -1,0 +1,216 @@
+---
+description: Pipeline for Swimlane API Logs
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - set:
+      field: event.original
+      copy_from: message
+  - json:
+      field: message
+      target_field: json
+      ignore_failure: true
+  - drop:
+      if: ctx.json == null || !(ctx.json instanceof Map)
+  - remove:
+      field: 
+        - message
+        - input
+        - stream
+        - log
+      ignore_missing: true
+  - rename:
+      field: json
+      target_field: swimlane.audit_log
+      ignore_missing: true
+  - drop:
+      if: ctx.swimlane?.audit_log?.LogType != 'Audit'
+  - drop:
+      if: ctx.swimlane?.audit_log?.Description instanceof String && ctx.swimlane.audit_log.Description.toLowerCase().contains('read')
+  - json:
+      field: swimlane.audit_log.NewValue
+      if: ctx.swimlane.audit_log.NewValue != null
+      ignore_failure: true
+  - rename:
+      field: swimlane.audit_log.User
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: swimlane.audit_log.AccountId
+      target_field: cloud.origin.account.id
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.TenantId
+      target_field: cloud.origin.project.id
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.LogLevel
+      target_field: log.level
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.Message
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.Path
+      target_field: url.path
+      ignore_missing: true
+  - grok:
+      field: swimlane.audit_log.SourceIp
+      patterns:
+        - '::ffff:%{IPV4:source.ip}'
+        - '%{IPV4:source.ip}'
+        - '%{IPV6:source.ip}' 
+      ignore_failure: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.Tenant
+      target_field: cloud.origin.tenant.id
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.LogCategory
+      target_field: log.category
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.LogFeatureCategory
+      target_field: log.feature_category
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.LogSource
+      target_field: log.source.type
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.LogType
+      target_field: log.type
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.Description
+      target_field: message
+      ignore_missing: true
+  - set:
+      field: message
+      value: '{{{message}}}: {{{swimlane.audit_log.NewValue.Name}}} with Id: {{{swimlane.audit_log.NewValue.Id}}}'
+      if: ctx.message != null && ctx.message != '' && ctx.swimlane?.audit_log?.NewValue?.Name != null && ctx.swimlane.audit_log.NewValue.Id != null
+  - rename:
+      field: swimlane.audit_log.UserId
+      target_field: user.id
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: Add ECS categorization
+      params:
+        Create:
+          type:
+            - creation
+        Read:
+          type:
+            - access
+        Update:
+          type:
+            - change
+        Delete:
+          type:
+            - deletion
+        Login:
+          type:
+            - start
+        Logout:
+          type:
+            - end   
+      source: >-
+        ctx.event.kind = 'event';
+        ctx.event.type = ['info'];
+        if (ctx.swimlane?.audit_log?.ActionType == null) {
+            return;
+        }
+        if (params.get(ctx.swimlane?.audit_log?.ActionType) == null) {
+            return;
+        }
+        def hm = new HashMap(params.get(ctx.swimlane?.audit_log?.ActionType));
+        hm.forEach((k, v) -> ctx.event[k] = v);
+  - rename:
+      field: swimlane.audit_log.Category
+      target_field: log.category
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.Endpoint
+      target_field: url.path
+      ignore_missing: true
+  - drop:
+      description: Drop events related to the hubs/record endpoint
+      if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().contains('hubs/record')
+  - drop:
+      description: Drop events related to any record updates
+      if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().endsWith('/values')
+  - rename:
+      field: swimlane.audit_log.EventOutcome
+      target_field: event.outcome
+      ignore_missing: true
+  - lowercase:
+      field: event.outcome
+      ignore_missing: true
+  - set:
+      field: user.roles
+      value: ['administrator']
+      if: ctx.swimlane?.audit_log?.isAdmin == 'True'
+  - rename:
+      field: swimlane.audit_log.AuthenticationType
+      target_field: user.authentication.type
+      ignore_missing: true
+  - lowercase:
+      field: user.authentication.type
+      ignore_missing: true
+  - user_agent:
+      field: swimlane.audit_log.UserAgent
+      ignore_missing: true
+  - date:
+      field: swimlane.audit_log.EventTime
+      target_field: '@timestamp'
+      formats: 
+        - ISO8601
+  - remove:
+      field: swimlane
+      ignore_missing: false
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

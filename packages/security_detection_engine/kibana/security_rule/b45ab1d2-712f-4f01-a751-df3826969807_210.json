@@ -1,0 +1,130 @@
+{
+    "attributes": {
+        "author": [
+            "Austin Songer",
+            "Elastic"
+        ],
+        "building_block_type": "default",
+        "description": "Identifies the use of GetSessionToken API calls by IAM users or Root Account. While this is a common and legitimate operation used to obtain temporary credentials, it also provides adversaries with a method to generate short-lived tokens for stealthy activity. Attackers who compromise IAM user access keys may call GetSessionToken to create temporary credentials, which they can then use to move laterally, escalate privileges, or persist after key rotation. This rule is intended as a BBR to establish patterns of typical STS usage and support correlation with higher-fidelity detections.",
+        "false_positives": [
+            "GetSessionToken is widely used by legitimate automation, CLI users, and administrative scripts to acquire temporary credentials. Frequent, authorized usage is expected in most environments, especially where IAM users authenticate with MFA or use short-lived tokens. Review IAM and CI/CD users, SDKs, and service accounts that regularly perform this action and document them in an allowlist. Suppress or tune accordingly to reduce noise."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS STS GetSessionToken Usage",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS STS GetSessionToken Usage\n\nAWS Security Token Service (STS) provides temporary credentials for AWS resources, crucial for managing access without long-term credentials. Adversaries may exploit `GetSessionToken` to create temporary credentials, enabling lateral movement and privilege escalation. The detection rule identifies successful `GetSessionToken` requests, flagging potential misuse for further investigation.\n\n#### Possible investigation steps\n- **Establish normal baseline behavior**\n  - Use this rule\u2019s data to determine which IAM users or automation scripts routinely perform `GetSessionToken`.\n  - Monitor frequency, regions, and user agents (CLI, SDK, console) for each identity over time.\n\n- **Identify anomalies**\n  - Look for first-time or rare `GetSessionToken` usage by an IAM user.\n  - Detect tokens issued without MFA when MFA is normally required.\n  - Identify new or unexpected source IPs, geographies, or user agents (e.g., API calls from unfamiliar networks).\n  - Check for multiple temporary tokens minted in rapid succession by the same user or access key.\n\n- **Correlate with downstream activity**\n  - Search for immediate follow-on events within 15 minutes of token creation:\n    - `AssumeRole` into higher-privileged roles or cross-account roles.\n    - Privileged API calls (e.g., `iam:*`, `s3:PutBucketPolicy`, `ec2:CreateSnapshot`).\n    - New region access, resource enumeration, or credential operations (`GetCallerIdentity`, `ListUsers`, etc.).\n  - Use this correlation to elevate contextual `GetSessionToken` behavior into actionable detections.\n\n### Usage Notes\n- This rule\u2019s telemetry can support hunting queries such as:\n  - `GetSessionToken` without `TokenCode` (no MFA)\n  - New IP + `GetSessionToken` + `AssumeRole`\n  - Rapid token issuance followed by API activity from a new ASN\n\nUse these patterns in combination with related BBRs or detection rules for `AssumeRole` abuse, cross-account access,\nor credential pivoting for more reliable threat detection.\n",
+        "query": "event.dataset: aws.cloudtrail \n  and event.provider: sts.amazonaws.com \n  and event.action: GetSessionToken \n  and event.outcome: success\n",
+        "references": [
+            "https://docs.aws.amazon.com/STS/latest/APIReference/API_GetSessionToken.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "b45ab1d2-712f-4f01-a751-df3826969807",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS STS",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Privilege Escalation",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide",
+            "Rule Type: BBR"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.001",
+                                "name": "Application Access Token",
+                                "reference": "https://attack.mitre.org/techniques/T1550/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 210
+    },
+    "id": "b45ab1d2-712f-4f01-a751-df3826969807_210",
+    "type": "security-rule"
+}

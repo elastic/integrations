@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects updates to an existing CloudTrail trail via UpdateTrail API which may reduce visibility, change destinations, or weaken integrity (e.g., removing global events, moving the S3 destination, or disabling validation). Adversaries can modify trails to evade detection while maintaining a semblance of logging. Validate any configuration change against approved baselines.",
+        "false_positives": [
+            "Trail updates may be made by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Trail updates from unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS CloudTrail Log Updated",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS CloudTrail Log Updated\n\nAWS CloudTrail is a service that enables governance, compliance, and operational and risk auditing of your AWS account. It logs API calls and related events, providing visibility into user activity. Trail modifications can be used by attackers to redirect logs to non-approved buckets, drop regions, or disable valuable selectors. This rule identifies a modification on CloudTrail settings using the `UpdateTrail` API. \n\n#### Possible investigation steps\n- **Actor and context**\n  - Check `aws.cloudtrail.user_identity.arn`, `user_agent.original`, `source.ip`; verify approved change.\n- **Assess the modification**\n  - In `aws.cloudtrail.request_parameters`, note changes to:\n    - `S3BucketName`, `CloudWatchLogsLogGroupArn`, `KmsKeyId`\n    - `IsMultiRegionTrail`, `IncludeGlobalServiceEvents`\n    - Event or insight selectors (management vs data events)\n- **Correlate**\n  - Look for preceding `StopLogging` or following `DeleteTrail`.\n  - Review concurrent IAM policy edits or role changes by the same actor.\n\n### False positive analysis\n- **Planned changes**: Baseline drift during region onboarding or encryption rotation.\n- **Automation**: IaC pipelines updating trails as templates evolve.\n\n### Response and remediation\n- **If unauthorized**\n  - Revert to baseline; validate destination ownership and KMS policy.\n  - Investigate time ranges where visibility may have been reduced.\n- **Hardening**\n  - Constrain `cloudtrail:UpdateTrail`, require approvals, and monitor with AWS Config rules.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "event.dataset: \"aws.cloudtrail\" \n    and event.provider: \"cloudtrail.amazonaws.com\" \n    and event.action: \"UpdateTrail\" \n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_UpdateTrail.html",
+            "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudtrail/update-trail.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "3e002465-876f-4f04-b016-84ef48ce7e5d",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Cloudtrail",
+            "Use Case: Log Auditing",
+            "Resources: Investigation Guide",
+            "Tactic: Impact"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1565",
+                        "name": "Data Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1565/",
+                        "subtechnique": [
+                            {
+                                "id": "T1565.001",
+                                "name": "Stored Data Manipulation",
+                                "reference": "https://attack.mitre.org/techniques/T1565/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1530",
+                        "name": "Data from Cloud Storage",
+                        "reference": "https://attack.mitre.org/techniques/T1530/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 212
+    },
+    "id": "3e002465-876f-4f04-b016-84ef48ce7e5d_212",
+    "type": "security-rule"
+}

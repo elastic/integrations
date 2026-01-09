@@ -1,0 +1,95 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when external access is enabled in Microsoft Teams. External access lets Teams and Skype for Business users communicate with other users that are outside their organization. An adversary may enable external access or add an allowed domain to exfiltrate data or maintain persistence in an environment.",
+        "false_positives": [
+            "Teams external access may be enabled by a system or network administrator. Verify that the configuration change was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "from": "now-30m",
+        "index": [
+            "filebeat-*",
+            "logs-o365*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Microsoft 365 Teams External Access Enabled",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Microsoft 365 Teams External Access Enabled\n\nMicrosoft Teams' external access feature allows users to communicate with individuals outside their organization, facilitating collaboration. However, adversaries can exploit this by enabling external access or adding trusted domains to exfiltrate data or maintain persistence. The detection rule monitors audit logs for changes in federation settings, specifically when external access is successfully enabled, indicating potential misuse.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.action \"Set-CsTenantFederationConfiguration\" to identify when and by whom the external access was enabled.\n- Examine the o365.audit.Parameters.AllowFederatedUsers field to confirm that it is set to True, indicating that external access was indeed enabled.\n- Investigate the user account associated with the event to determine if the action was authorized and if the account has a history of suspicious activity.\n- Check the event.provider field to see if the change was made through SkypeForBusiness or MicrosoftTeams, which may provide additional context on the method used.\n- Assess the event.outcome field to ensure the action was successful and not a failed attempt, which could indicate a potential security threat.\n- Look into any recent changes in the list of allowed domains to identify if any unauthorized or suspicious domains have been added.\n\n### False positive analysis\n\n- Routine administrative changes to federation settings can trigger alerts. Regularly review and document these changes to differentiate between legitimate and suspicious activities.\n- Organizations with frequent collaboration with external partners may see increased alerts. Consider creating exceptions for known trusted domains to reduce noise.\n- Scheduled updates or policy changes by IT teams might enable external access temporarily. Coordinate with IT to log these activities and exclude them from triggering alerts.\n- Automated scripts or tools used for configuration management can inadvertently enable external access. Ensure these tools are properly documented and monitored to prevent false positives.\n- Changes made during mergers or acquisitions can appear suspicious. Maintain a record of such events and adjust monitoring rules accordingly to account for expected changes.\n\n### Response and remediation\n\n- Immediately disable external access in Microsoft Teams to prevent further unauthorized communication with external domains.\n- Review and remove any unauthorized or suspicious domains added to the allowed list in the Teams federation settings.\n- Conduct a thorough audit of recent changes in the Teams configuration to identify any other unauthorized modifications or suspicious activities.\n- Reset credentials and enforce multi-factor authentication for accounts involved in the configuration change to prevent further unauthorized access.\n- Notify the security team and relevant stakeholders about the incident for awareness and further investigation.\n- Escalate the incident to the incident response team if there is evidence of data exfiltration or if the scope of the breach is unclear.\n- Implement enhanced monitoring and alerting for changes in Teams federation settings to detect similar threats in the future.",
+        "query": "event.dataset:o365.audit and event.provider:(SkypeForBusiness or MicrosoftTeams) and\nevent.category:web and event.action:\"Set-CsTenantFederationConfiguration\" and\no365.audit.Parameters.AllowFederatedUsers:True and event.outcome:success\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/microsoftteams/manage-external-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^2.11.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Parameters.AllowFederatedUsers",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "27f7c15a-91f8-4c3d-8b9e-1f99cc030a51",
+        "setup": "The Office 365 Logs Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Microsoft 365",
+            "Use Case: Configuration Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 209
+    },
+    "id": "27f7c15a-91f8-4c3d-8b9e-1f99cc030a51_209",
+    "type": "security-rule"
+}

@@ -1,0 +1,48 @@
+---
+description: Pipeline for AWS Lambda logs.
+processors:
+    - rename:
+        field: message
+        target_field: event.original
+        if: 'ctx.event?.original == null'
+        description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+    - remove:
+        field: message
+        ignore_missing: true
+        if: ctx.event?.original != null
+        description: 'The `message` field is no longer required if the document has an `event.original` field.'
+    - set:
+        field: ecs.version
+        value: 8.11.0
+    - set:
+        field: cloud.service.name
+        value: aws_lambda
+    - set:
+        field: cloud.provider
+        value: aws
+    - grok:
+        field: event.original
+        patterns:
+        - '^%{CHAR:first_char}'
+        pattern_definitions:
+            CHAR: .
+    - pipeline:
+        if: ctx.first_char != '{'
+        name: '{{ IngestPipeline "aws-lambda-plaintext" }}'
+    - pipeline:
+        if: ctx.first_char == '{'
+        name: '{{ IngestPipeline "aws-lambda-json" }}'
+    - remove:
+        field: first_char
+        ignore_missing: true
+        description: 'Removes the `first_char` field used to determine the log format.'
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

@@ -7,6 +7,171 @@ processors:
   - set:
       field: ecs.version
       value: 8.11.0
+  - set:
+      field: event.dataset
+      value: aws.apigateway_metrics
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/ApiGateway"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.dynamodb
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/DynamoDB"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.ebs
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/EBS"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.ec2_metrics
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/EC2"
+  - set:
+      field: event.dataset
+      value: aws.ecs_metrics
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/ECS"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.elb_metrics
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/ELB"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.emr_metrics
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/ElasticMapReduce"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.firewall_metrics
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/NetworkFirewall"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.kafka_metrics
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/Kafka"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.kinesis
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/Kinesis"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.lambda
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/Lambda"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.natgateway
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/NATGateway"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.rds
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/RDS"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.s3_storage_lens
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/S3/Storage-Lens"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.sns
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/SNS"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.sqs
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/SQS"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.transitgateway
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/TransitGateway"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.usage
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/Usage"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.vpn
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/VPN"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.s3_daily_storage
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/S3" && (ctx.aws?.s3?.metrics?.BucketSizeBytes != null || ctx.aws?.s3?.metrics?.NumberOfObjects != null)
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws.s3_request
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/S3" && ctx.aws?.s3?.metrics?.BucketSizeBytes == null && ctx.aws?.s3?.metrics?.NumberOfObjects == null
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws_bedrock.runtime
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/Bedrock"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws_bedrock.guardrails
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/Bedrock/Guardrails"
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws_mq.activemq_metrics
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/AmazonMQ" && (
+        ctx.aws?.amazonmq?.metrics?.AmqpMaximumConnections != null ||
+        ctx.aws?.amazonmq?.metrics?.MqttMaximumConnections != null ||
+        ctx.aws?.amazonmq?.metrics?.OpenwireMaximumConnections != null ||
+        ctx.aws?.amazonmq?.metrics?.StompMaximumConnections != null ||
+        ctx.aws?.amazonmq?.metrics?.WsMaximumConnections != null ||
+        ctx.aws?.amazonmq?.metrics?.CurrentConnectionsCount != null ||
+        ctx.aws?.amazonmq?.metrics?.EstablishedConnectionsCount != null ||
+        ctx.aws?.amazonmq?.metrics?.InactiveDurableTopicSubscribersCount != null ||
+        ctx.aws?.amazonmq?.metrics?.JournalFilesForFastRecovery != null ||
+        ctx.aws?.amazonmq?.metrics?.JournalFilesForFullRecovery != null ||
+        ctx.aws?.amazonmq?.metrics?.NetworkConnectorConnectionCount != null ||
+        ctx.aws?.amazonmq?.metrics?.NetworkIn != null ||
+        ctx.aws?.amazonmq?.metrics?.NetworkOut != null ||
+        ctx.aws?.amazonmq?.metrics?.OpenTransactionCount != null ||
+        ctx.aws?.amazonmq?.metrics?.TotalConsumerCount != null ||
+        ctx.aws?.amazonmq?.metrics?.TotalMessageCount != null ||
+        ctx.aws?.amazonmq?.metrics?.TotalProducerCount != null ||
+        ctx.aws?.amazonmq?.metrics?.VolumeReadOps != null ||
+        ctx.aws?.amazonmq?.metrics?.VolumeWriteOps != null ||
+        ctx.aws?.amazonmq?.metrics?.ReceiveCount != null ||
+        ctx.aws?.amazonmq?.metrics?.ProducerCount != null ||
+        ctx.aws?.amazonmq?.metrics?.QueueSize != null ||
+        ctx.aws?.amazonmq?.metrics?.TotalEnqueueCount != null ||
+        ctx.aws?.amazonmq?.metrics?.TotalDequeueCount != null)
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: aws_mq.rabbitmq_metrics
+      if: ctx.aws?.cloudwatch?.namespace == "AWS/AmazonMQ" && (
+        ctx.aws?.amazonmq?.metrics?.ExchangeCount != null ||
+        ctx.aws?.amazonmq?.metrics?.QueueCount != null ||
+        ctx.aws?.amazonmq?.metrics?.ConnectionCount != null ||
+        ctx.aws?.amazonmq?.metrics?.ChannelCount != null ||
+        ctx.aws?.amazonmq?.metrics?.MessageCount != null ||
+        ctx.aws?.amazonmq?.metrics?.MessageReadyCount != null ||
+        ctx.aws?.amazonmq?.metrics?.MessageUnacknowledgedCount != null ||
+        ctx.aws?.amazonmq?.metrics?.PublishRate != null ||
+        ctx.aws?.amazonmq?.metrics?.ConfirmRate != null ||
+        ctx.aws?.amazonmq?.metrics?.AckRate != null ||
+        ctx.aws?.amazonmq?.metrics?.SystemCpuUtilization != null ||
+        ctx.aws?.amazonmq?.metrics?.RabbitMQMemLimit != null ||
+        ctx.aws?.amazonmq?.metrics?.RabbitMQMemUsed != null ||
+        ctx.aws?.amazonmq?.metrics?.RabbitMQDiskFreeLimit != null ||
+        ctx.aws?.amazonmq?.metrics?.RabbitMQFdUsed != null ||
+        ctx.aws?.amazonmq?.metrics?.RabbitMQIOReadAverageTime != null ||
+        ctx.aws?.amazonmq?.metrics?.RabbitMQIOWriteAverageTime != null)
+      ignore_failure: true
   - script:
       lang: painless
       description: This script adds all metric names from 'aws.*.metrics.*.*' into aws.metrics_names field.

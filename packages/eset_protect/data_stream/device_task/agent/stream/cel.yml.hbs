@@ -21,6 +21,9 @@ auth.oauth2:
   user: {{escape_string username}}
   password: {{escape_string password}}
   token_url: https://{{region}}.business-account.iam.eset.systems/oauth/token
+  endpoint_params:
+    grant_type:
+      - password
 state:
   page_size: {{batch_size}}
   want_more: false
@@ -31,7 +34,7 @@ program: |
   (
     request(
       "GET",
-      state.url + "/v1/device_tasks?" + {
+      state.url.trim_right("/") + "/v1/device_tasks?" + {
         "page_size": [string(state.page_size)],
         "page_token": [state.page_token]
       }.format_query()
@@ -49,7 +52,7 @@ program: |
     )).do_request().as(resp, (
       resp.StatusCode == 200
       ?
-        bytes(resp.Body).decode_json().as(body, {
+        resp.Body.decode_json().as(body, {
           "events": (
             has(body.tasks) && body.tasks != null
             ?
@@ -67,18 +70,38 @@ program: |
               ""
           ),
           "want_more": has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != "",
-          "page_size": state.page_size
+          "page_size": state.page_size,
+          "cursor": {}
         })
       :
-        {
-          "events": resp.StatusCode == 202 ? [{"message":"retry"}] : [],
-          "page_size": state.page_size,
-          "page_token": resp.StatusCode == 202 ? state.page_token : "",
-          "want_more": resp.StatusCode == 202 ? true : false,
-          "cursor": {
-            "response_id": resp.StatusCode == 202 ? resp.Header["Response-Id"][0] : null
-          }
-        }
+        (
+          resp.StatusCode == 202 ?
+            state.with({
+              "events": [{"message":"retry"}],
+              "want_more": true,
+              "cursor": {
+                "response_id": resp.Header["Response-Id"][0]
+              }
+            })
+          :
+            state.with({
+              "events": [{
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/v1/device_tasks :" + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              }],
+              "page_token": "",
+              "want_more": false,
+              "cursor": {}
+            })
+        )
     ))
   )
 tags:
@@ -94,7 +117,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event:
+    when:
+      equals:
+        message: retry
+{{#if processors}}
 {{processors}}
 {{/if}}

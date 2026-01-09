@@ -1,0 +1,123 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects potential exploitation of CVE-2025-48384 via Git. This vulnerability allows attackers to execute arbitrary code by leveraging Git's recursive clone feature to fetch and execute malicious scripts from a remote repository.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-crowdstrike.fdr*",
+            "logs-auditd_manager.auditd-*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Git CVE-2025-48384 Exploitation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Git CVE-2025-48384 Exploitation\n\nThis rule flags a Git recursive clone from an HTTP(S) remote followed moments later by a shell spawned by Git\u2014clear evidence of CVE-2025-48384 abuse enabling arbitrary code execution on Linux or macOS. An attacker ships a repository whose submodules or hooks pull and run a bash script during --recursive clone, causing Git to invoke a shell and execute their payload on a developer endpoint.\n\n### Possible investigation steps\n\n- Extract the remote URL and parameters from the git invocation and review .gitmodules to enumerate submodules, then assess the domain/account reputation and recent commits for signs of a malicious repo or takeover.\n- Inspect the cloned repository for hook execution vectors by reviewing .git/hooks and any core.hooksPath overrides for newly created or modified executables (post-checkout/post-merge/post-update), noting contents and timestamps.\n- Analyze the spawned shell\u2019s lineage, command line, working directory, and any script or binary launched to identify the payload, compute hashes, and correlate with concurrent outbound connections or file writes.\n- Pivot on the repo URL, hooks filenames, and payload hash across hosts to identify other impacted endpoints, and verify whether this activity aligns with expected developer workflows or CI jobs to rule out benign use.\n- Examine the endpoint for follow-on changes suggesting execution or persistence (new cron/LaunchAgents entries, modified shell profiles, new SSH keys or credentials files, unusual PATH or gitconfig changes), and collect artifacts for forensic review.\n\n### False positive analysis\n\n- Legitimate organization-wide or user-level Git hooks installed via core.hooksPath or templates run a post-checkout bootstrap shell script after a recursive HTTP or HTTPS clone, causing git to spawn a shell as a child process.\n- During a recursive HTTP or HTTPS clone, Git invokes a credential or askpass helper implemented as a shell script for authentication, resulting in a benign sh/bash child of the git process.\n\n### Response and remediation\n\n- Immediately isolate any host where git clone --recursive from an HTTP(S) URL spawned a shell, terminate the git process tree (bash/sh and curl/wget/python children) launched from the cloned path, and block the repository domain on your proxy and Git hosting.\n- Quarantine the cloned directory and its .git folder, preserve .gitmodules, .git/hooks, and any core.hooksPath target for forensics, then remove executable hooks (post-checkout/post-merge/post-update) and delete the repository and downloaded payload scripts.\n- Rotate credentials available to the user (replace ~/.ssh keys and clear ~/.git-credentials/osxkeychain/libsecret), and eradicate persistence by removing new cron entries, LaunchAgents/LaunchDaemons, modified shell profiles (~/.bashrc, ~/.zshrc), and unexpected PATH or gitconfig changes.\n- Scope and recover by hunting for the same remote URL, hook names, and payload hashes across endpoints and CI runners, reimaging or restoring clean baselines before returning systems to service.\n- Escalate to incident command if multiple hosts show a git->shell chain from the same repository, if the payload invoked sudo or wrote to /etc/cron* or /Library/LaunchDaemons, or if outbound transfers occur to the repo\u2019s domain or newly contacted IPs.\n- Upgrade Git to a patched release for CVE-2025-48384, enforce core.hooksPath to a read-only allowlisted directory, disable recursive submodule cloning by default (submodule.recurse=false), restrict protocols (protocol.file.allow=never; allow only https/ssh), and block clones from untrusted domains in developer and CI environments.\n",
+        "query": "sequence by host.id with maxspan=1m\n  [process where host.os.type in (\"linux\", \"macos\") and event.type == \"start\" and event.action in (\"exec\", \"executed\", \"process_started\", \"start\", \"ProcessRollup2\") and\n   process.name == \"git\" and process.args == \"clone\" and process.args == \"--recursive\" and process.args like~ \"http*\"] by process.entity_id\n  [process where host.os.type in (\"linux\", \"macos\") and event.type == \"start\" and event.action in (\"exec\", \"executed\", \"process_started\", \"start\", \"ProcessRollup2\") and\n   process.name in (\n    \"dash\", \"sh\", \"static-sh\", \"bash\", \"bash-static\", \"zsh\", \"ash\", \"csh\", \"ksh\", \"tcsh\", \"busybox\", \"fish\", \"ksh93\", \"rksh\",\n    \"rksh93\", \"lksh\", \"mksh\", \"mksh-static\", \"csharp\", \"posh\", \"rc\", \"sash\", \"yash\", \"zsh5\", \"zsh5-static\"\n   )] by process.parent.entity_id\n",
+        "references": [
+            "https://www.kucoin.com/zh-hant/blog/en-breaking-lazarus-group-apt38-targets-crypto-sector-with-sophisticated-phishing-campaign",
+            "https://securitylabs.datadoghq.com/articles/git-arbitrary-file-write/",
+            "https://github.com/acheong08/CVE-2025-48384"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "640f0535-f784-4010-b999-39db99d2daeb",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Data Source: Auditd Manager",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1203",
+                        "name": "Exploitation for Client Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1203/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "640f0535-f784-4010-b999-39db99d2daeb_1",
+    "type": "security-rule"
+}

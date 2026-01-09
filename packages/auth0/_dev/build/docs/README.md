@@ -17,22 +17,24 @@ The package collects log events either sent via log stream webhooks, or by API r
 
 The agent running this integration must be able to accept requests from the Internet in order for Auth0 to be able connect. Auth0 requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
 
-For more information, see Auth0's webpage on [integration to Elastic Security](https://marketplace.auth0.com/integrations/elastic-security).
+This integration method is also documented on the Auth0 webpage for the [Elastic Security integration](https://marketplace.auth0.com/integrations/elastic-security).
 
 ### Configure the Auth0 integration
 
 1. Click on **Collect Auth0 log streams events via Webhooks** to enable it.
-2. Enter values for "Listen Address", "Listen Port" and "Webhook path" to form the endpoint URL. Make note of the **Endpoint URL** `https://{AGENT_ADDRESS}:8383/auth0/logs`.
-3. Enter value for "Secret value". This must match the "Authorization Token" value entered when configuring the "Custom Webhook" from Auth0 cloud.
-4. Enter values for "TLS". Auth0 requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
+2. Enter values for **Listen Address**, **Listen Port** and **Webhook Path**.
+3. Enter value for **Authorization Token**. This must match the value entered when configuring the "Custom Webhook" in Auth0 cloud.
+4. In the "Advanced options" section, enter settings for **SSL Configuration**. Auth0 requires that webhook requests use HTTPS. So you must either configure the integration with a valid TLS certificate here, or use a separarately configured reverse proxy in front of the agent.
+
+Using the external address of the agent to which the integration is added, and the configured "Listen Port" and "Webhook Path", make a note of the full endpoint URL. It will have the form `https://{AGENT_ADDRESS}:{LISTEN_PORT}{WEBHOOK_PATH}` (for example, `https://agent01.external.example.com:8383/auth0/logs`).
 
 ### Creating the stream in Auth0
 
 1. From the Auth0 management console, navigate to **Logs > Streams** and click **+ Create Stream**.
 2. Choose **Custom Webhook**.
 3. Name the new **Event Stream** appropriately (e.g. Elastic) and click **Create**.
-4. In **Payload URL**, paste the **Endpoint URL** collected during Step 1 of **Configure the Auth0 integration** section.
-5. In **Authorization Token**, paste the **Authorization Token**. This must match the value entered in Step 2 of **Configure the Auth0 integration** section.
+4. In **Payload URL**, enter the endpoint URL set up in the **Configure the Auth0 integration** section.
+5. In **Authorization Token**, enter the **Authorization Token**. This must match the value entered in Step 3 of the **Configure the Auth0 integration** section.
 6. In **Content Type**, choose  **application/json**.
 7. In **Content Format**, choose **JSON Lines**.
 8. Click **Save**.

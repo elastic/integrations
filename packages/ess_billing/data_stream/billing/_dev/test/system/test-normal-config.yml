@@ -1,0 +1,22 @@
+input: cel
+service: ess_billing
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  organization_id: 1111
+  api_key: xxxx
+data_stream:
+  vars:
+    lookbehind: 2
+    hide_sensitive: false
+    enable_request_tracer: true
+    # Verify this merges with the built-in drop_event processor.
+    processors: |-
+      - add_fields:
+          target: labels
+          fields:
+            test_run_id: "{{Test.RunID}}"
+
+assert:
+  # There are 10 records in the mocked response.
+  # And with lookbehind=2 this means it will execute twice, resulting in 10 * 2 = 20 records.
+  hit_count: 20

@@ -10,41 +10,16 @@ The Gigamon Integration collects logs from AMI.
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
-
-
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ### Setup
 
-## Gigamon setup
-
-To export data to Gigamon Elastic Integration.
+To export data to Gigamon Elastic Integration, follow these steps:
 
 1. From Fabric Manager, Deploy an AMX node with traffic acquisition method as "Customer Orchestrated Source".
-
 2. Create an Monitoring Session with (Rep In ----> AMX ---> Rep Out).
 
-
-
-To add AMX application:
+To add AMX application, follow these steps:
 
 1. Drag and drop Application Metadata Exporter from APPLICATIONS to the graphical workspace. The Application quick view appears.
 2. Enter the Alias for the application. Enter a port number for the Cloud Tool Ingestor Port. Then, click the Add button for Cloud Tool Exports.
@@ -74,7 +49,6 @@ To add AMX application:
 
 		- Enter the **Key**.
 		- Enter the **Value**.
-
 
 4. Click Deploy to deploy the monitoring session. The Select nodes to deploy the Monitoring Session dialog box appears. Select the GigaVUE V Series Node for which you wish to deploy the monitoring session.
 5. After selecting the V Series Node, select the interfaces for the REPs deployed in the monitoring session from the drop-down menu. Then, click Deploy.

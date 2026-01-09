@@ -1,0 +1,120 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the creation of an AWS IAM Roles Anywhere Trust Anchor that uses an external certificate authority (CA) rather than an AWS-managed Certificate Manager Private CA (ACM PCA). While Roles Anywhere enables secure, short-term credential issuance for workloads outside AWS, adversaries can exploit this feature by registering their own external CA as a trusted root. This allows them to generate valid client certificates that persistently authenticate to AWS roles from any location, even after key rotation or credential revocation events. This rule helps detect persistence or unauthorized federation attempts by flagging trust anchors configured with non-AWS CAs.",
+        "event_category_override": "event.type",
+        "false_positives": [
+            "AWS IAM Roles Anywhere Trust Anchors are legitimate profiles that can be created by administrators to allow access from any location. Ensure that the trust anchor is created by a legitimate administrator and that the external certificate authority is authorized."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS IAM Roles Anywhere Trust Anchor Created with External CA",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. \n> While every effort has been made to ensure its quality, validate and adapt it to suit your operational needs.\n\n### Investigating AWS IAM Roles Anywhere Trust Anchor Created with External CA\n\nAWS IAM Roles Anywhere allows workloads outside AWS (such as on-premises servers or CI/CD agents) to assume AWS IAM roles by presenting X.509 certificates. A trust anchor defines which certificate authority (CA) AWS trusts to validate \nthese external identities. Normally, organizations use AWS Certificate Manager Private CA (ACM PCA) to control issuance \nand revocation. \n\nThis detection rule identifies when a trust anchor is created using an **external CA** (`sourceType= \"CERTIFICATE_BUNDLE\" or \"SELF_SIGNED_REPOSITORY\"`) rather than an ACM-managed CA (`sourceType=\"AWS_ACM_PCA\"`). This can indicate an adversary establishing persistent external access, enabling them to authenticate using certificates signed by their own CA.\n\n#### Possible investigation steps\n\n- **Identify the actor**\n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id`.\n  - Determine whether this user or role is normally responsible for IAM configuration or Roles Anywhere setup.\n\n- **Review the trust anchor details**\n  - In `aws.cloudtrail.request_parameters`, confirm the `sourceType` and inspect the certificate chain.\n  - Look for non-AWS issuer names, custom organization fields, or self-signed CA certificates.\n\n- **Assess the scope and risk**\n  - Identify which IAM roles are linked to this trust anchor via `Profile` associations.\n  - Determine whether any of those roles provide privileged or cross-account access.\n  - Check for subsequent API calls like `CreateProfile`, `CreateRole`, or `AssumeRoleWithCertificate` to gauge whether \n    the external CA has been used.\n\n- **Correlate related activity**\n  - Search for preceding reconnaissance or setup activity:\n    - `ListTrustAnchors`, `ListProfiles`, `GetRole`\n    - Attempts to create additional credential paths (`CreateAccessKey`, `CreateOpenIDConnectProvider`)\n  - Investigate other actions by the same user identity, particularly IAM role or trust policy modifications.\n\n- **Validate legitimacy**\n  - Confirm with identity management or security engineering teams whether the external CA is an approved authority.\n  - Review internal PKI or certificate inventories to ensure this CA is registered in the organization\u2019s trust chain.\n\n### False positive analysis\n\n- **Legitimate external CA use**\n  - Some organizations integrate trusted third-party PKI providers (e.g., Venafi, DigiCert, Entrust) for workload identity management. Validate whether the CA is part of your documented PKI ecosystem.\n- **Testing and lab accounts**\n  - Development or testing environments may temporarily use self-signed certificates to validate Roles Anywhere integrations.\n  - Confirm that such activity occurs in isolated accounts and not in production.\n- **Expected administrative setup**\n  - Initial configuration by security engineers or platform teams may trigger this rule. Verify via change tickets or \n    deployment logs before treating as suspicious.\n\n### Response and remediation\n\n- **Containment**\n  - If the CA is unauthorized, immediately delete the trust anchor using \n    `aws rolesanywhere delete-trust-anchor --trust-anchor-id <id>`.\n  - Review for any certificates already used to assume roles and revoke those certificates from the external CA.\n\n- **Investigation**\n  - Identify all IAM Roles Anywhere profiles linked to the trust anchor (`ListProfiles`).\n  - Check CloudTrail for any successful `AssumeRoleWithCertificate` calls associated with the external CA.\n  - Assess whether lateral movement or data exfiltration occurred after the trust anchor creation.\n\n- **Recovery and hardening**\n  - Replace unauthorized CAs with ACM PCA-managed ones.\n  - Restrict `rolesanywhere:CreateTrustAnchor` permissions to security administrators only.\n  - Monitor for new trust anchor creations and external certificate sources via AWS Config rules or Security Hub findings.\n  - Implement GuardDuty or Security Hub integrations to detect anomalous IAM and Roles Anywhere behavior.\n\n### Additional information\n\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "info where event.dataset == \"aws.cloudtrail\"\n  and event.provider == \"rolesanywhere.amazonaws.com\"\n  and event.action == \"CreateTrustAnchor\"\n  and event.outcome == \"success\"\n  and not stringContains(aws.cloudtrail.request_parameters, \"sourceType=AWS_ACM_PCA\")\n",
+        "references": [
+            "https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html",
+            "https://ermetic.com/blog/aws/keep-your-iam-users-close-keep-your-third-parties-even-closer-part-1/",
+            "https://docs.aws.amazon.com/rolesanywhere/latest/APIReference/API_CreateTrustAnchor.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "71de53ea-ff3b-11ee-b572-f661ea17fbce",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS IAM",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.003",
+                                "name": "Additional Cloud Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 6
+    },
+    "id": "71de53ea-ff3b-11ee-b572-f661ea17fbce_6",
+    "type": "security-rule"
+}

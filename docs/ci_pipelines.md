@@ -76,12 +76,12 @@ More details about this CI pipeline:
   In the following table, there are some examples:
     
   | STACK_VERSION env | Kibana Condition Package | Released | Elastic stack run |
-  | :---:    | :---:                | :---: | :---:             |
-  | ""       | `^7.16.0 || ^8.0.0`  | Yes   | `7.16.0`          |
-  | ""       | `^8.12.0`            | Yes   | `8.12.0`          |
-  | ""       | `^8.14.1`            | Yes   | `8.14.1`          |
-  | ""       | `^8.15.0`            | No    | `8.15.0-SNAPSHOT` |
-  | `8.14.0` | `^8.13.0`            | Yes   | `8.14.0`          |
+  | :---:    | :---:                  | :---: | :---:             |
+  | ""       | `^7.16.0 \|\| ^8.0.0`  | Yes   | `7.16.0`          |
+  | ""       | `^8.12.0`              | Yes   | `8.12.0`          |
+  | ""       | `^8.14.1`              | Yes   | `8.14.1`          |
+  | ""       | `^8.15.0`              | No    | `8.15.0-SNAPSHOT` |
+  | `8.14.0` | `^8.13.0`              | Yes   | `8.14.0`          |
 
   If the STACK_VERSION environment variable is defined, just the packages supporting that stack version are tested. For instance:
 

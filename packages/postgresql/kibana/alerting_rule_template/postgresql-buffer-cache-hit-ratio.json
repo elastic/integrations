@@ -1,0 +1,28 @@
+{
+  "id": "postgresql-buffer-cache-hit-ratio",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[PostgreSQL] Buffer Cache Hit Ratio above threshold",
+    "tags": ["PostgreSQL"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert when PostgreSQL buffer cache hit ratio falls below 90% Low cache hit ratio indicates memory pressure or insufficient shared_buffers.\n// The alert is grouped by database name and host name.\n// You can adjust the threshold value by modifying the cache_hit_ratio value in the WHERE clause.\nFROM metrics-postgresql.database-default\n| KEEP postgresql.database.name, postgresql.database.blocks.hit, postgresql.database.blocks.read, @timestamp, host.name\n| WHERE postgresql.database.name IS NOT NULL\n| WHERE postgresql.database.name NOT LIKE \"template*\"\n| STATS blocks_hit_delta = MAX(postgresql.database.blocks.hit) - MIN(postgresql.database.blocks.hit), blocks_read_delta = MAX(postgresql.database.blocks.read) - MIN(postgresql.database.blocks.read), first_ts = MIN(@timestamp), last_ts = MAX(@timestamp) BY postgresql.database.name, host.name\n| EVAL elapsed_sec = TO_DOUBLE(TO_LONG(last_ts) - TO_LONG(first_ts)) / 1000\n| WHERE elapsed_sec >= 60\n| EVAL blocks_hit_delta = CASE(blocks_hit_delta >= 0, blocks_hit_delta, 0)\n| EVAL blocks_read_delta = CASE(blocks_read_delta >= 0, blocks_read_delta, 0)\n| EVAL total_blocks = blocks_hit_delta + blocks_read_delta\n| WHERE total_blocks >= 1000\n| EVAL cache_hit_ratio = CASE(total_blocks > 0,(TO_DOUBLE(blocks_hit_delta) / TO_DOUBLE(total_blocks)) * 100, 100)\n| WHERE cache_hit_ratio < 90\n| EVAL cache_hit_ratio = ROUND(cache_hit_ratio, 2)\n| SORT cache_hit_ratio ASC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 3
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

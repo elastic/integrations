@@ -1,0 +1,52 @@
+connectors:
+    forward: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    transform/componentid-0:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "filelog_otel.filelogreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    filelog/componentid-0:
+        include:
+            - /var/logs/myapp/*.log
+        include_file_name: true
+        include_file_path: false
+        poll_interval: 200ms
+        start_at: end
+secret_references: []
+service:
+    pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        logs/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - transform/componentid-0
+            receivers:
+                - filelog/componentid-0

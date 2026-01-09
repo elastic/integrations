@@ -1,0 +1,45 @@
+type: flow
+{{#if timeout}}
+timeout: '{{timeout}}'
+{{/if}}
+{{#if period}}
+period: '{{period}}'
+{{/if}}
+fields_under_root: true
+fields:
+  _conf:
+    geoip_enrich: {{geoip_enrich}}
+    map_to_ecs: {{map_to_ecs}}
+    endace_url: {{ endace_url }}
+    endace_datasources: {{ endace_datasources }}
+    endace_tools: {{ endace_tools }}
+    endace_view_window: {{ endace_view_window }}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+processors:
+{{#contains "forwarded" tags}}
+- add_observer_metadata: ~
+{{else}}
+- add_host_metadata: ~
+{{/contains}}
+{{processors}}
+{{#if monitor_processes}}
+procs:
+  enabled: true
+{{/if}}
+{{#if interface}}
+interface:
+{{#if (contains ".pcap" interface)}}
+  file: {{interface}}
+{{else}}
+  device: {{interface}}
+{{/if}}
+{{/if}}
+{{#if never_install}}
+npcap:
+  never_install: true
+{{/if}}

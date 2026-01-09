@@ -5,18 +5,22 @@ processors:
   ## Admin Login Events ##
   ########################
   - rename:
+      tag: rename_arista_reason_to_event_reason_07f5af7a
       field: arista.reason
       target_field: event.reason
       ignore_missing: true
   - rename:
+      tag: rename_arista_login_to_user_name_3b52aae3
       field: arista.login
       target_field: user.name
       ignore_missing: true
   - rename:
+      tag: rename_arista_clientAddress_to_source_ip_1f127b6f
       field: arista.clientAddress
       target_field: source.ip
       ignore_missing: true
   - script:
+      tag: script_cef61fad
       lang: painless
       params:
         "false":
@@ -53,11 +57,11 @@ processors:
         ctx.event.type = params.get((ctx.arista.succeeded).toString()).get('type').clone();
         ctx.event.provider = params.get((ctx.arista.succeeded).toString()).get('provider');
         ctx.arista.remove('succeeded');
-  
   ##############
   ## Clean Up ##
   ##############
   - remove:
+      tag: remove_0dd05595
       description: Remove Arista fields that are not necessary after parsing to ECS
       field:
         - arista.local
@@ -68,4 +72,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

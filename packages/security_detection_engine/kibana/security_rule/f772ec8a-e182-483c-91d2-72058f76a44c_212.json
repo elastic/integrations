@@ -1,0 +1,126 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the deletion of one or more Amazon CloudWatch alarms using the \"DeleteAlarms\" API. CloudWatch alarms are critical for monitoring metrics and triggering alerts when thresholds are exceeded. An adversary may delete alarms to impair visibility, silence alerts, and evade detection following malicious activity. This behavior may occur during post-exploitation or cleanup phases to remove traces of compromise or disable automated responses.",
+        "false_positives": [
+            "CloudWatch alarm deletions can occur legitimately during scheduled maintenance, infrastructure redeployments, or automation workflows that clean up temporary monitoring configurations. Verify that the user identity, role, and IP address are expected for the environment. If deletions are performed by CI/CD pipelines or authorized administrators during controlled operations, consider adding exceptions based on specific IAM roles, automation accounts, or IP address ranges."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS CloudWatch Alarm Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. \n> While every effort has been made to ensure its quality, validate and adapt it to your operational context.\n\n### Investigating AWS CloudWatch Alarm Deletion\n\nAmazon CloudWatch is a monitoring and observability service that collects monitoring and operational data in the form of logs, metrics, and events for resources and applications. This data can be used to detect anomalous behavior in your environments, set alarms, visualize logs and metrics side by side, take automated actions, troubleshoot issues, and discover insights to keep your applications running smoothly.\n\nAmazon CloudWatch Alarms monitor key metrics and trigger automated alerts or remediation workflows. Deleting these alarms disables monitoring of associated metrics and can delay detection of performance degradation or security incidents. Attackers may delete alarms to evade detection, suppress alerts, or disable security automation that responds to anomalies or policy violations.\n\nThis rule detects successful calls to the `DeleteAlarms` API via CloudTrail. These events should be rare and always associated with a valid change-control request or automation pipeline.\n\n#### Possible investigation steps\n\n- **Identify the actor**\n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id` to determine who initiated the deletion.\n  - Check whether this actor typically performs CloudWatch management or automation tasks.\n\n- **Review request details**\n  - Inspect `aws.cloudtrail.request_parameters` or `target.entity.id` for the specific alarm names deleted. \n  - Determine whether the alarms were security-related (e.g., CloudTrail log delivery, GuardDuty finding rate, or IAM API monitoring alarms).\n  - Cross-reference deleted alarms with your organization's list of critical monitoring configurations.\n\n- **Analyze source and context**\n  - Review `source.ip` and `user_agent.original` for anomalies such as external IPs, unusual user agents, or custom SDKs.\n  - Determine whether the activity occurred during a known maintenance window or from a trusted automation host.\n  - Examine `cloud.region` to identify whether alarms were deleted from unexpected regions.\n\n- **Correlate with surrounding events**\n  - Review CloudTrail events for related activity around the same time, such as:\n    - `PutMetricAlarm`, `DisableAlarmActions`, or `DeleteLogGroup`\n    - Changes to CloudTrail, Config, or GuardDuty configurations\n    - IAM policy or permission modifications that could facilitate evasion\n  - Identify whether the same actor has previously modified logging or monitoring infrastructure.\n\n- **Assess impact and scope**\n  - Determine which systems or detection workflows relied on the deleted alarms.\n  - Review whether the deletion affected automated responses, notifications, or third-party integrations (e.g., SNS, Lambda, or PagerDuty).\n\n### False positive analysis\n\n- **Legitimate automation or redeployment**\n  - Infrastructure as Code (IaC) frameworks such as Terraform or CloudFormation may delete and recreate alarms during updates.\n  - Validate automation account roles and ensure alarm deletions are immediately followed by re-creation actions.\n- **Operational maintenance**\n  - Scheduled monitoring cleanup, regional deactivation, or test environment resets can trigger legitimate deletions. \n  - Verify timing and user identity against approved change management records.\n- **Organizational migrations**\n  - Security operations or DevOps teams may consolidate alarms during account merges or refactors. \n  - Confirm intent with relevant teams and exclude authorized administrative accounts as necessary.\n\n### Response and remediation\n\n- **Containment**\n  - If the deletion was unauthorized, recreate the deleted alarms immediately using IaC templates or CloudFormation backups.\n  - Re-enable any dependent automation or alerts that rely on those alarms.\n  - Temporarily restrict CloudWatch modification privileges to designated IAM roles.\n\n- **Investigation**\n  - Review related CloudTrail logs for preceding IAM changes, STS activity, or anomalous role assumptions that might indicate compromised credentials.\n  - Investigate whether any alerts were suppressed or delayed prior to the deletion.\n\n- **Recovery and hardening**\n  - Implement AWS Config rules to continuously monitor alarm existence and alert on `DeleteAlarms` API calls.\n  - Restrict permissions to `cloudwatch:DeleteAlarms` and enforce MFA for users performing monitoring configuration changes.\n  - Maintain IaC definitions for all critical alarms to support rapid restoration.\n  - Audit IAM roles and automation accounts that manage CloudWatch configurations to ensure least privilege.\n  - Integrate alarm configuration checks into your CI/CD validation workflows.\n\n### Additional information\n\n- **[AWS Config Rule \u2013 cloudwatch-alarm-action-check](https://docs.aws.amazon.com/config/latest/developerguide/cloudwatch-alarm-action-check.html)**\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "event.dataset: \"aws.cloudtrail\" \n  and event.provider: \"monitoring.amazonaws.com\" \n  and event.action: \"DeleteAlarms\"\n  and event.outcome: \"success\"\n  and source.ip: *\n  and not user_agent.original : \"AWS Internal\"\n",
+        "references": [
+            "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudwatch/delete-alarms.html",
+            "https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_DeleteAlarms.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f772ec8a-e182-483c-91d2-72058f76a44c",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Amazon CloudWatch",
+            "Resources: Investigation Guide",
+            "Tactic: Defense Evasion"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            },
+                            {
+                                "id": "T1562.006",
+                                "name": "Indicator Blocking",
+                                "reference": "https://attack.mitre.org/techniques/T1562/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 212
+    },
+    "id": "f772ec8a-e182-483c-91d2-72058f76a44c_212",
+    "type": "security-rule"
+}

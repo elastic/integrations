@@ -1,8 +1,10 @@
-input: httpjson
+input: cel
 service: akamai-siem-emulator
 vars: ~
 data_stream:
   vars:
+    # initial_interval should get automatically capped to 12h by the agent logic.
+    initial_interval: 24h
     preserve_original_event: true
     api_host: "http://akamai-siem-emulator:9903"
     client_token: ct-f625f0b8-9c8f-44ce-8250-eaf17bc93051
@@ -10,7 +12,9 @@ data_stream:
     access_token: at-6b8c7217-8748-490d-b0f5-bfeb72b2e7cd
     config_ids: 123456
     event_limit: 20
+    # The akamai-siem emulator does not limit the number of events or pages returned, so we set a large number of max_executions.
+    max_executions: 50000
     enable_request_tracer: true
 assert:
-  # 24 hours at 5 minutes between events.
-  hit_count: 288 #  = 24 * 60/5
+  # 12 hours at 5 minutes between events.
+  hit_count: 144 #  = 12 * 60/5

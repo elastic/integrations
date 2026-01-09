@@ -3,6 +3,7 @@ description: Pipeline for PanOS Audit Logs.
 # API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/audit-log-fields
 processors:
   - csv:
+      tag: csv_message_4cf41818
       field: message
       ignore_failure: true
       target_fields:
@@ -12,23 +13,28 @@ processors:
         - panw.panos.cmd
         - event.outcome
   - uppercase:
+      tag: uppercase_panw_panos_type_ec638369
       field: panw.panos.type
       ignore_missing: true
-# Set event.kind & event.category field.
+  # Set event.kind & event.category field.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_c8ab9fa2
       field: event.category
       value:
         - configuration
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
+      tag: set_observer_hostname_5bc96c94
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
   - set:
+      tag: set_source_ip_c1b0f423
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
@@ -40,7 +46,11 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in Audit pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

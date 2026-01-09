@@ -42,26 +42,26 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-05T14:49:59.197Z",
+    "@timestamp": "2025-07-08T11:04:54.375Z",
     "agent": {
-        "ephemeral_id": "76bea870-a841-4313-939f-8ac1e976e0f9",
-        "id": "7acf9ae7-fa00-4807-86c6-5ddf0681ffbb",
-        "name": "elastic-agent-50065",
+        "ephemeral_id": "3e6f5925-a6e0-4f02-9f23-4d7dda2c5063",
+        "id": "f1f7bf4a-7a17-46e2-9ee4-b93dd07a64de",
+        "name": "elastic-agent-64607",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "first_epss.vulnerability",
-        "namespace": "53064",
+        "namespace": "63395",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7acf9ae7-fa00-4807-86c6-5ddf0681ffbb",
+        "id": "f1f7bf4a-7a17-46e2-9ee4-b93dd07a64de",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -69,53 +69,49 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "first_epss.vulnerability",
-        "ingested": "2024-09-05T14:50:00Z",
+        "ingested": "2025-07-08T11:04:54Z",
         "kind": "enrichment",
+        "module": "first_epss",
         "type": [
             "info"
         ]
     },
     "first_epss": {
         "vulnerability": {
-            "cve": "CVE-2024-8418",
-            "date": "2024-09-05T00:00:00.000Z",
-            "epss": 0.00045,
-            "percentile": 0.16342
+            "cve": "CVE-2025-7145",
+            "date": "2025-07-07T00:00:00.000Z",
+            "epss": 0.0027,
+            "percentile": 0.50191
         }
     },
     "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "elastic-agent-50065",
-        "id": "1e6dd5e4f8a3409dbea97e40111e935a",
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-64607",
         "ip": [
-            "172.24.0.2",
-            "172.23.0.4"
+            "192.168.249.2",
+            "192.168.253.6"
         ],
         "mac": [
-            "02-42-AC-17-00-04",
-            "02-42-AC-18-00-02"
+            "02-42-C0-A8-F9-02",
+            "02-42-C0-A8-FD-06"
         ],
-        "name": "elastic-agent-50065",
+        "name": "elastic-agent-64607",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "6.10.4-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "input": {
         "type": "cel"
     },
-    "tags": [
-        "preserve_original_event"
-    ],
     "vulnerability": {
-        "id": "CVE-2024-8418",
-        "reference": "https://api.first.org/data/v1/epss?pretty=true&cve=CVE-2024-8418"
+        "id": "CVE-2025-7145",
+        "reference": "https://api.first.org/data/v1/epss?pretty=true&cve=CVE-2025-7145"
     }
 }
 ```

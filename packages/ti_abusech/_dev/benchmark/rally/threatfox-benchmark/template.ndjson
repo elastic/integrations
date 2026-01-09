@@ -1,0 +1,58 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $expireDur := generate "expire_dur" }}
+{{- $hostname := generate "host.name" }}
+{{- $agentId := generate "agent.id" }}
+{{- $id := generate "id" }}
+{{- $threatType := generate "threat_type" }}
+{{- $threatTypeDesc := generate "threat_type_desc" }}
+{{- $iocType := generate "ioc.type" }}
+{{- $iocTypeDesc := generate "ioc.type_desc" }}
+{{- $iocIp := generate "ioc.ip" }}
+{{- $iocIpPort := generate "ioc.ip_port" }}
+{{- $iocUrl := generate "ioc.urlpathnum" }}
+{{- $iocDomain := generate "ioc.domain" }}
+{{- $iocFile := sha256sum (generate "ioc.file") }}
+{{- $malware := generate "malware" }}
+{{- $malwarePrintable := (camelcase (print (randAlpha 8))) }}
+{{- $confidenceLevel := generate "confidence_level" }}
+{{- $duration_start := generate "duration_start" }}
+{{- $firstSeen := ($timestamp | date_modify (print $duration_start)).Format "2006-01-02 15:04:05" }}
+{{- $duration_end := generate "duration_end" }}
+{{- $lastSeen := ($timestamp | date_modify (print $duration_end)).Format "2006-01-02 15:04:05" }}
+{{- $reporter := generate "reporter" }}
+{{- $reference := generate "reference" }}
+{
+  "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+  "_conf": {
+    "ioc_expiration_duration": "{{ $expireDur }}d"
+  },
+  "agent": {
+    "id": "{{$agentId}}",
+    "name": "{{$hostname}}",
+    "type": "filebeat",
+    "version": "8.18.0",
+    "ephemeral_id": "{{$agentId}}"
+  },
+  "data_stream": {
+    "namespace": "ep",
+    "type": "logs",
+    "dataset": "ti_abusech.threatfox"
+  },
+  "elastic_agent": {
+    "id": "60a22c30-4c80-4e95-b5b1-87ff540d8afd",
+    "snapshot": false,
+    "version": "8.18.0"
+  },
+  "message": "{\"id\":\"{{ $id }}\",{{ if eq $iocType "ip:port" }}\"ioc\":\"{{ printf "%s:%d" $iocIp $iocIpPort }}\",{{ else if eq $iocType "url" }}\"ioc\":\"https://{{ $iocIp }}/articles/{{ $iocUrl }}/text.php\",{{ else if eq $iocType "domain" }}\"ioc\":\"{{ $iocDomain }}.example.org\",{{ else if or (eq $iocType "md5_hash") (eq $iocType "sha1_hash") (eq $iocType "sha256_hash") }}\"ioc\":\"{{ $iocFile }}\",{{ end }}\"threat_type\":\"{{ $threatType }}\",\"threat_type_desc\":\"{{ $threatTypeDesc }}\",\"ioc_type\":\"{{ $iocType }}\",\"ioc_type_desc\":\"{{ $iocTypeDesc }}\",\"malware\":\"{{ $malware }}\",\"malware_printable\":\"{{ $malwarePrintable }} {{ $malwarePrintable }}\",\"malware_alias\":\"{{ $malwarePrintable }} {{ $malwarePrintable }},{{ upper $malwarePrintable }},{{ lower $malwarePrintable }}\",\"malware_malpedia\":\"https://malpedia.caad.fkie.fraunhofer.de/details/{{ $malware }}\",\"confidence_level\":{{ $confidenceLevel }},\"first_seen\":\"{{ $firstSeen }}\",\"last_seen\":\"{{ $lastSeen }}\",\"reference\":\"https://intelinsights.substack.com/p/{{ $reference }}\",\"reporter\":\"{{ $reporter }}\",\"tags\":[\"{{ $malwarePrintable }}\",\"{{ $reporter }}\",\"{{ $malware }}\"]}",
+  "event": {
+    "dataset": "ti_abusech.threatfox"
+  },
+  "input": {
+    "type": "cel"
+  },
+  "tags": [
+    "preserve_original_event",
+    "forwarded",
+    "abusech-threatfox"
+  ]
+}

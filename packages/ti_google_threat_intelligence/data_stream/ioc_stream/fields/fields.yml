@@ -1,0 +1,1141 @@
+- name: gti
+  type: group
+  fields:
+    - name: ioc_stream
+      type: group
+      fields:
+        - name: attributes
+          type: group
+          fields:
+            - name: as_owner
+              type: keyword
+              description: The name of the Autonomous System (AS) owner that controls the IP address associated with the analyzed entity.
+            - name: asn
+              type: long
+              description: The Autonomous System Number (ASN) associated with the IP address.
+            - name: assessment
+              type: group
+              fields:
+                - name: contributing_factors
+                  type: group
+                  fields:
+                    - name: gavs_detections
+                      type: long
+                      description: Indicates detections from the Global Anti-Virus System (GAVS).
+                    - name: malicious_sandbox_verdict
+                      type: boolean
+                      description: This field represents a malicious verdict assigned by sandbox analysis as part of GTI (Global Threat Intelligence) assessment in VirusTotal.
+                    - name: mandiant_analyst_malicious
+                      type: boolean
+                      description: Reflects assessments from Mandiant analysts deeming the artifact as malicious.
+                    - name: mandiant_analyst_observed_recent
+                      type: boolean
+                      description: Indicates recent observations by Mandiant analysts, suggesting current relevance or activity of the artifact.
+                    - name: mandiant_association_actor
+                      type: keyword
+                      description: Denotes associations made by Mandiant linking the artifact to specific threat actors.
+                    - name: mandiant_association_report
+                      type: keyword
+                      description: References reports from Mandiant associating the artifact with particular threat actors or campaigns.
+                    - name: mandiant_confidence_score
+                      type: long
+                      description: Provides a confidence score from Mandiant regarding the artifact's assessment.
+                    - name: normalised_categories
+                      type: keyword
+                      description: Lists normalized threat categories applicable to the artifact.
+                    - name: pervasive_indicator
+                      type: boolean
+                      description: Indicates whether the file, URL, or domain has been observed widely distributed or frequently encountered across multiple threat intelligence sources.
+                    - name: safebrowsing_verdict
+                      type: keyword
+                      description: Represents the Google Safe Browsing verdict for the domain or URL.
+                - name: description
+                  type: keyword
+                  description: Offers a textual description of the artifact's assessment, summarizing its characteristics, behavior, or threat level.
+                - name: severity
+                  type: keyword
+                  description: Indicates the severity level assigned to the artifact.
+                - name: threat_score
+                  type: long
+                  description: Provides a numerical threat score, quantifying the risk associated with the artifact based on various factors and analyses.
+                - name: verdict
+                  type: keyword
+                  description: Presents the final verdict on the artifact's status.
+            - name: authentihash
+              type: keyword
+              description: A cryptographic hash of the file's Authenticode signature.
+            - name: autostart_locations
+              type: group
+              fields:
+                - name: entry
+                  type: keyword
+                  description: Specifies the particular autostart entry associated with the file, indicating how the file is configured to execute automatically upon system startup.
+                - name: location
+                  type: keyword
+                  description: Denotes the specific system location or registry path where the autostart entry is configured.
+            - name: available_tools
+              type: keyword
+              description: Lists tools or utilities available for further analysis or interaction with the file.
+            - name: vendor_categories
+              type: group
+              fields:
+                - name: bitdefender
+                  type: keyword
+                  description: Categorization of the entity as determined by BitDefender, a cybersecurity vendor.
+                - name: sophos
+                  type: keyword
+                  description: Classification by Sophos, a cybersecurity vendor providing endpoint protection and threat intelligence.
+                - name: webroot
+                  type: keyword
+                  description: Verdict assigned by Webroot, a cybersecurity firm specializing in cloud-based threat intelligence.
+            - name: continent
+              type: keyword
+              description: The continent where the IP address or domain is geographically located.
+            - name: country
+              type: keyword
+              description: The country where the IP address or domain is registered or hosted.
+            - name: creation_date
+              type: date
+              description: The timestamp indicating when the artifact was originally created.
+            - name: crowdsourced_ai_results
+              type: group
+              fields:
+                - name: analysis
+                  type: keyword
+                  description: Contains the outcome of AI-driven analyses performed by the community.
+                - name: category
+                  type: keyword
+                  description: Classifies the file based on the AI analysis.
+                - name: id
+                  type: keyword
+                  description: A unique identifier for the specific AI analysis result.
+                - name: source
+                  type: keyword
+                  description: Identifies the origin or contributor of the AI analysis.
+            - name: crowdsourced_ids_results
+              type: group
+              fields:
+                - name: alert_context
+                  type: group
+                  fields:
+                    - name: dest_ip
+                      type: ip
+                      description: The destination IP address contacted by the file, which triggered ids alerts by its activity.
+                    - name: dest_port
+                      type: long
+                      description: The destination port number used in the connection.
+                    - name: hostname
+                      type: keyword
+                      description: The hostname associated with the network activity.
+                    - name: ja3
+                      type: keyword
+                      description: Represents the JA3 TLS fingerprint hash.
+                    - name: src_ip
+                      type: ip
+                      description: The source IP address from which the connection originated.
+                    - name: src_port
+                      type: long
+                      description: The source port number used in the connection.
+                    - name: url
+                      type: keyword
+                      description: The protocol used for the network communication.
+                - name: alert_severity
+                  type: keyword
+                  description: Indicates the severity level of the IDS alerts.
+                - name: rule_category
+                  type: keyword
+                  description: Categorizes the type of rule that was triggered by the IDS alerts.
+                - name: rule_id
+                  type: keyword
+                  description: A unique identifier for the IDS rule that was matched.
+                - name: rule_msg
+                  type: keyword
+                  description: A message or description associated with the triggered rule.
+                - name: rule_raw
+                  type: keyword
+                  description: Specifies the origin or source of the IDS rule.
+                - name: rule_references
+                  type: keyword
+                  description: An array of URLs or identifiers that offer additional information about the IDS rule that was triggered. .
+                - name: rule_source
+                  type: keyword
+                  description: ' Indicates the origin or provider of the Intrusion Detection System (IDS) rule that was triggered.'
+                - name: rule_url
+                  type: keyword
+                  description: Provides a direct link to an external source containing additional details about the specific Intrusion Detection System (IDS) rule that was triggered.
+            - name: crowdsourced_ids_stats
+              type: group
+              fields:
+                - name: high
+                  type: long
+                  description: Number of IDS alerts categorized as high severity.
+                - name: info
+                  type: long
+                  description: Number of IDS alerts categorized as informational.
+                - name: low
+                  type: long
+                  description: Number of IDS alerts categorized as low severity.
+                - name: medium
+                  type: long
+                  description: Number of IDS alerts categorized as medium severity.
+            - name: crowdsourced_yara_results
+              type: group
+              fields:
+                - name: author
+                  type: keyword
+                  description: The name or identifier of the author who wrote the YARA rule that matched the file.
+                - name: description
+                  type: keyword
+                  description: A brief explanation of what the YARA rule detects.
+                - name: match_date
+                  type: date
+                  description: The timestamp indicating when the YARA rule matched the file.
+                - name: match_in_subfile
+                  type: boolean
+                  description: Indicates whether a YARA rule match was found inside a subfile of the scanned object.
+                - name: rule_name
+                  type: keyword
+                  description: The specific name of the YARA rule that was triggered by the file.
+                - name: ruleset_id
+                  type: keyword
+                  description: A unique identifier for the ruleset to which the matched YARA rule belongs.
+                - name: ruleset_name
+                  type: keyword
+                  description: The name of the YARA ruleset that contains the matched rule.
+                - name: ruleset_version
+                  type: keyword
+                  description: The versionof the YARA ruleset that contains the matched rule.
+                - name: source
+                  type: keyword
+                  description: The origin of the YARA rule, indicating who contributed the rule.
+            - name: detectiteasy
+              type: group
+              fields:
+                - name: filetype
+                  type: keyword
+                  description: Indicates the primary file type as determined by Detect It Easy.
+                - name: values
+                  type: group
+                  fields:
+                    - name: info
+                      type: keyword
+                      description: Provides additional details or comments about the detected attribute.
+                    - name: name
+                      type: keyword
+                      description: Specifies the name of the detected attribute, such as the packer, compiler, or protector used.
+                    - name: type
+                      type: keyword
+                      description: Categorizes the nature of the detected attribute, indicating whether it's a 'Compiler', 'Packer', 'Protector', or another classification.
+                    - name: version
+                      type: keyword
+                      description: Denotes the version number of the detected attribute.
+            - name: downloadable
+              type: boolean
+              description: This boolean attribute indicates whether the file is available for download from VirusTotal.
+            - name: exiftool
+              type: group
+              fields:
+                - name: character_set
+                  type: keyword
+                  description: This field specifies the character encoding used in the file's metadata.
+                - name: code_size
+                  type: long
+                  description: Represents the size of the code section within the executable file.
+                - name: company_name
+                  type: keyword
+                  description: Denotes the name of the company or entity that developed or owns the software, as specified in the file's metadata.
+                - name: entry_point
+                  type: keyword
+                  description: Indicates the memory address where the execution of the program begins.
+                - name: file
+                  type: group
+                  fields:
+                    - name: description
+                      type: keyword
+                      description: This field provides a brief description of the file's purpose or functionality.
+                    - name: flags_mask
+                      type: keyword
+                      description: Represents a set of binary flags indicating specific attributes or behaviors of the file.
+                    - name: os
+                      type: keyword
+                      description: Specifies the operating system for which the file was designed.
+                    - name: subtype
+                      type: keyword
+                      description: Provides additional granularity about the file's type.
+                    - name: type
+                      type: keyword
+                      description: Identifies the general category of the file..
+                    - name: type_extension
+                      type: keyword
+                      description: Indicates the standard file extension associated with the file type.
+                    - name: version
+                      type: keyword
+                      description: Denotes the version of the file as specified in its metadata.
+                    - name: version_number
+                      type: keyword
+                      description: Represents the numerical value of the file's version.
+                - name: image
+                  type: group
+                  fields:
+                    - name: file_characteristics
+                      type: keyword
+                      description: Indicates specific attributes or features of the image file.
+                    - name: version
+                      type: keyword
+                      description: Specifies the version of the image file format or the software used to create or modify the image.
+                - name: initialized_data_size
+                  type: long
+                  description: Represents the size of the initialized data section within an executable file, typically measured in bytes.
+                - name: internal_name
+                  type: keyword
+                  description: Denotes the internal name of the file, as specified in its metadata.
+                - name: language_code
+                  type: keyword
+                  description: Indicates the language code associated with the file.
+                - name: legal_copyright
+                  type: keyword
+                  description: Provides the legal copyright information for the file.
+                - name: line_count
+                  type: long
+                  description: Specifies the number of lines in a text file, providing insight into the file's length and structure.
+                - name: linker_version
+                  type: keyword
+                  description: Denotes the version of the linker used to create the executable file.
+                - name: machine_type
+                  type: keyword
+                  description: Indicates the type of machine or architecture for which the file is intended.
+                - name: mime
+                  type: group
+                  fields:
+                    - name: encoding
+                      type: keyword
+                      description: Specifies the character encoding used in the file.
+                    - name: type
+                      type: keyword
+                      description: Identifies the file's media type.
+                - name: newlines
+                  type: keyword
+                  description: Indicates the type of newline characters used in a text file.
+                - name: object_file_type
+                  type: keyword
+                  description: Indicates the type of object file.
+                - name: original_file_name
+                  type: keyword
+                  description: Specifies the original name of the file as defined in its metadata.
+                - name: os_version
+                  type: keyword
+                  description: Denotes the version of the operating system for which the file was designed.
+                - name: pe_type
+                  type: keyword
+                  description: Identifies the type of Portable Executable (PE) file.
+                - name: product
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Provides the name of the product with which the file is associated.
+                    - name: version
+                      type: keyword
+                      description: Indicates the version of the product with which the file is associated.
+                    - name: version_number
+                      type: keyword
+                      description: Represents the numerical version of the product, often in a 'major.minor.build.revision' format.
+                - name: subsystem
+                  type: keyword
+                  description: Specifies the subsystem required to execute the file, indicating the environment in which the executable expects to run.
+                - name: subsystem_version
+                  type: keyword
+                  description: Denotes the version of the subsystem that is required to execute the file.
+                - name: timestamp
+                  type: date
+                  description: Records the date and time when the file was created or last modified.
+                - name: uninitialized_data_size
+                  type: long
+                  description: Indicates the size of the uninitialized data section within the executable file.
+                - name: word_count
+                  type: long
+                  description: Indicates the total number of words in the file.
+            - name: failure
+              type: long
+              description: Count of antivirus engines that encountered a failure when analyzing the file.
+            - name: favicon
+              type: group
+              fields:
+                - name: dhash
+                  type: keyword
+                  description: A perceptual hash (dhash) of the favicon image.
+                - name: raw_md5
+                  type: keyword
+                  description: An MD5 hash of the raw favicon artifact .
+            - name: filecondis
+              type: group
+              fields:
+                - name: dhash
+                  type: keyword
+                  description: Represents a perceptual hash (dHash) of the file.
+                - name: raw_md5
+                  type: keyword
+                  description: Provides the raw MD5 hash of the file.
+            - name: first_seen_itw_date
+              type: date
+              description: Denotes the date when the artifact was first observed in real-world environments.
+            - name: first_submission_date
+              type: date
+              description: Specifies the date when the artifact  was first submitted to VirusTotal for analysis.
+            - name: has_content
+              type: boolean
+              description: The attributes.has_content field indicates whether the entity (file, URL, domain, or IP) has retrievable content in VirusTotal.
+            - name: jarm
+              type: keyword
+              description: jarm is a fingerprint that uniquely identifies a TLS/SSL server based on how it responds to different encrypted handshake probes.
+            - name: last_analysis_date
+              type: date
+              description: Specifies the date when the artifact was last analyzed by VirusTotal.
+            - name: last_analysis_stats
+              type: group
+              fields:
+                - name: confirmed_timeout
+                  type: long
+                  description: 'Number of antivirus engines that confirmed a timeout during analysis.'
+                - name: harmless
+                  type: long
+                  description: Number of engines that determined the artifact to be harmless.
+                - name: malicious
+                  type: long
+                  description: Count of engines that flagged the artifact as malicious.
+                - name: suspicious
+                  type: long
+                  description: Number of engines that deemed the artifact suspicious.
+                - name: timeout
+                  type: long
+                  description: Count of engines that reached a timeout during analysis.
+                - name: undetected
+                  type: long
+                  description: Count of engines that did not detect any issues with the artifact.
+            - name: last_dns_records
+              type: group
+              fields:
+                - name: expire
+                  type: long
+                  description: last_dns_records array, the expire field specifies the duration (in seconds) that a secondary DNS server will cache the zone data before it must refresh it from the primary DNS server.
+                - name: minimum
+                  type: long
+                  description: This field represents the minimum TTL (Time-To-Live) value specified in the domain's DNS SOA (Start of Authority) record.
+                - name: priority
+                  type: long
+                  description: This field specifies the priority of the DNS record, primarily applicable to MX (Mail Exchange) records.
+                - name: refresh
+                  type: long
+                  description: This field indicates the interval (in seconds) that secondary DNS servers should wait before querying the primary DNS server to check for updates to the zone artifact.
+                - name: retry
+                  type: long
+                  description: This field specifies the interval (in seconds) that secondary DNS servers should wait before retrying to contact the primary DNS server after a failed attempt to refresh the zone artifact.
+                - name: rname
+                  type: keyword
+                  description: This field represents the "Responsible Name" (RNAME) in the SOA (Start of Authority) record.
+                - name: serial
+                  type: long
+                  description: This field holds the "Serial Number" from the domain's SOA record.
+                - name: ttl
+                  type: long
+                  description: Time-To-Live (TTL) value, specifying how long the DNS record should be cached by DNS resolvers before requesting an update.
+                - name: type
+                  type: keyword
+                  description: This field indicates the type of DNS record.
+                - name: value
+                  type: keyword
+                  description: The actual value associated with the DNS record. .
+            - name: last_dns_records_date
+              type: date
+              description: This field represents the timestamp when VirusTotal last retrieved the DNS records for the domain.
+            - name: last_final_url
+              type: keyword
+              description: The final URL after all redirections when the URL was last analyzed by VirusTotal.
+            - name: last_http_response_code
+              type: long
+              description: The last HTTP response status code received when the URL was scanned by VirusTotal.
+            - name: last_http_response_content_length
+              type: long
+              description: The size (in bytes) of the content returned in the last HTTP response when the URL was analyzed.
+            - name: last_http_response_content_sha256
+              type: keyword
+              description: The SHA-256 hash of the content retrieved from the URL during its last scan.
+            - name: last_https_certificate
+              type: group
+              fields:
+                - name: cert_signature
+                  type: group
+                  fields:
+                    - name: signature
+                      type: keyword
+                      description: The actual digital signature of the certificate, represented as a hexadecimal string.
+                    - name: signature_algorithm
+                      type: keyword
+                      description: The algorithm used to create the certificate's digital signature, such as "sha256RSA".
+                - name: issuer
+                  type: group
+                  fields:
+                    - name: c
+                      type: keyword
+                      description: The country code (C) of the entity that issued the certificate.
+                    - name: cn
+                      type: keyword
+                      description: The Common Name (CN) of the certificate's issuer, typically the name of the Certificate Authority.
+                    - name: l
+                      type: keyword
+                      description: The locality (L) or city of the certificate's issuer.
+                    - name: o
+                      type: keyword
+                      description: The Organization (O) name of the certificate's issuer.
+                    - name: ou
+                      type: keyword
+                      description: The Organizational Unit (OU) within the issuing organization.
+                    - name: st
+                      type: keyword
+                      description: The state or province (ST) where the certificate's issuer is located.
+                - name: public_key
+                  type: group
+                  fields:
+                    - name: algorithm
+                      type: keyword
+                      description: The algorithm used for the public key in the certificate, such as "RSA", "DSA", or "EC".
+                    - name: ec
+                      type: group
+                      fields:
+                        - name: oid
+                          type: keyword
+                          description: For Elliptic Curve (EC) public keys, this field specifies the object identifier (OID) of the elliptic curve used.
+                        - name: pub
+                          type: keyword
+                          description: The public key for an Elliptic Curve (EC) certificate.
+                    - name: rsa
+                      type: group
+                      fields:
+                        - name: exponent
+                          type: keyword
+                          description: The exponent value of the RSA public key, typically 65537 (0x10001 in hexadecimal).
+                        - name: key_size
+                          type: long
+                          description: The size of the RSA public key in bits, commonly 2048 or 4096.
+                        - name: modulus
+                          type: keyword
+                          description: The modulus (n) of the RSA public key, a large integer used in the encryption process.
+                - name: serial_number
+                  type: keyword
+                  description: The unique identifier assigned to the certificate by the Certificate Authority (CA).
+                - name: signature_algorithm
+                  type: keyword
+                  description: The cryptographic algorithm used to sign the certificate, such as sha256RSA.
+                - name: size
+                  type: long
+                  description: The size of the HTTPS certificate in bytes.
+                - name: subject
+                  type: group
+                  fields:
+                    - name: cn
+                      type: keyword
+                      description: The Common Name (CN) of the certificate subject, which usually represents the domain name the certificate is issued for.
+                - name: tags
+                  type: keyword
+                  description: A list of descriptive tags associated with the certificate, such as self-signed, wildcard, or Let's Encrypt.
+                - name: thumbprint
+                  type: keyword
+                  description: The SHA-1 fingerprint (hash) of the certificate, used for quick identification.
+                - name: thumbprint_sha256
+                  type: keyword
+                  description: The SHA-256 fingerprint (hash) of the certificate, offering a more secure alternative to SHA-1.
+                - name: validity
+                  type: group
+                  fields:
+                    - name: not_after
+                      type: date
+                      description: The expiration date of the certificate.
+                    - name: not_before
+                      type: date
+                      description: The issue date of the certificate.
+                - name: version
+                  type: keyword
+                  description: The X.509 version of the certificate (commonly 3 for modern certificates).
+            - name: last_https_certificate_date
+              type: date
+              description: The timestamp indicating when VirusTotal last retrieved the HTTPS certificate for the domain.
+            - name: last_modification_date
+              type: date
+              description: The date when the artifact was last modified, represented as a Unix epoch timestamp.
+            - name: last_seen_itw_date
+              type: date
+              description: The most recent date the artifact was observed "in the wild," indicating its latest detection in real-world environments.
+            - name: last_submission_date
+              type: date
+              description: The date when the artifact was last submitted to VirusTotal for analysis.
+            - name: last_update_date
+              type: date
+              description: The timestamp of the last update for the given entity in VirusTotal’s dataset.
+            - name: magic
+              type: keyword
+              description: A textual description of the file's format, derived from its magic number.
+            - name: magika
+              type: keyword
+              description: Additional metadata about the file's format or structure, complementing the magic field.
+            - name: main_icon
+              type: group
+              fields:
+                - name: dhash
+                  type: keyword
+                  description: A perceptual hash of the file's main icon, used to identify visually similar icons.
+                - name: raw_md5
+                  type: keyword
+                  description: The MD5 hash of the file's main icon, serving as a unique identifier for the icon's content.
+            - name: mandiant_ic_score
+              type: long
+              description: A score assigned by Mandiant, reflecting the artifact's threat level based on their intelligence.
+            - name: md5
+              type: keyword
+              description: The MD5 hash of the file, providing a unique identifier based on its content.
+            - name: meaningful_name
+              type: keyword
+              description: A human-readable name for the file, often derived from its metadata or content.
+            - name: names
+              type: keyword
+              description: An array of names associated with the file, including aliases or detected names during analysis.
+            - name: network
+              type: keyword
+              description: The network block (CIDR range) to which the analyzed IP address belongs.
+            - name: outgoing_links
+              type: keyword
+              description: A list of URLs that were found as outgoing links from the analyzed page.
+            - name: pe_info
+              type: group
+              fields:
+                - name: compiler_product_versions
+                  type: keyword
+                  description: An array detailing the versions of compiler products used to build the file.
+                - name: debug
+                  type: group
+                  fields:
+                    - name: codeview
+                      type: group
+                      fields:
+                        - name: age
+                          type: long
+                          description: Represents the revision number of the debug information.
+                        - name: guid
+                          type: keyword
+                          description: A unique identifier that corresponds to the PDB (Program Database) file used during compilation.
+                        - name: name
+                          type: keyword
+                          description: The Program Database (PDB) file name.
+                        - name: signature
+                          type: keyword
+                          description: A unique identifier or hash used for verifying the debug information.
+                    - name: offset
+                      type: long
+                      description: The location of the debug information within the file.
+                    - name: reserved10
+                      type: group
+                      fields:
+                        - name: value
+                          type: keyword
+                          description: A reserved field in the debug structure that Represents a numerical placeholder value, often set to 0 or another integer.
+                    - name: size
+                      type: long
+                      description: The size of the debug information chunk.
+                    - name: timestamp
+                      type: keyword
+                      description: The date and time when the debug data was created.
+                    - name: type
+                      type: long
+                      description: An integer representing the format of the debugging information.
+                    - name: type_str
+                      type: keyword
+                      description: A human-readable string describing the debug type, corresponding to the type field.
+                - name: entry_point
+                  type: long
+                  description: The address of the executable's entry point, indicating where execution begins when the PE is loaded into memory.
+                - name: exports
+                  type: keyword
+                  description: A list of function names that the PE file exports, typically found in DLLs to provide functions for other modules.
+                - name: imphash
+                  type: keyword
+                  description: A hash value calculated based on the imported functions and libraries, used to identify similarities between different PE files.
+                - name: import_list
+                  type: group
+                  fields:
+                    - name: imported_functions
+                      type: keyword
+                      description: A list of function names imported from the specified library.
+                    - name: library_name
+                      type: keyword
+                      description: The name of the DLL from which functions are imported.
+                - name: machine_type
+                  type: long
+                  description: An integer specifying the platform for which the executable is intended, such as IMAGE_FILE_MACHINE_I386 for Intel 386 or later processors.
+                - name: resource_details
+                  type: group
+                  fields:
+                    - name: chi2
+                      type: double
+                      description: The chi-squared test value of the resource content, used to detect anomalies or non-standard data.
+                    - name: entropy
+                      type: double
+                      description: The entropy value of the resource content, indicating the randomness or complexity of the data.
+                    - name: filetype
+                      type: keyword
+                      description: The identified file format of the resource, if recognizable.
+                    - name: lang
+                      type: keyword
+                      description: The language of the resource, specified as a string.
+                    - name: sha256
+                      type: keyword
+                      description: The SHA-256 hash of the resource's content, serving as a unique identifier for the specific resource data.
+                    - name: type
+                      type: keyword
+                      description: An integer indicating the type of the resource, corresponding to predefined resource types in the Windows API.
+                - name: resource_types
+                  type: group
+                  fields:
+                    - name: rt_group_icon
+                      type: long
+                      description: The count of 'group icon' resources in the PE file.
+                    - name: rt_icon
+                      type: long
+                      description: The count of 'icon' resources in the PE file.
+                    - name: rt_manifest
+                      type: long
+                      description: The count of 'manifest' resources in the PE file.
+                    - name: rt_version
+                      type: long
+                      description: The count of 'version' resources in the PE file.
+                - name: rich_pe_header_hash
+                  type: keyword
+                  description: A hash value calculated from the 'Rich' header of the PE file.
+                - name: sections
+                  type: group
+                  fields:
+                    - name: chi2
+                      type: double
+                      description: The chi-squared test value of the section's content, used to detect anomalies or non-standard data distributions.
+                    - name: entropy
+                      type: double
+                      description: The entropy value of the section's content, indicating the randomness or complexity of the data.
+                    - name: flags
+                      type: keyword
+                      description: Characteristics of the section, represented as a bitmask.
+                    - name: md5
+                      type: keyword
+                      description: The MD5 hash of the section's content, serving as a unique identifier for the specific data within the section.
+                    - name: name
+                      type: keyword
+                      description: The name of the section, typically limited to 8 characters. .
+                    - name: raw_size
+                      type: long
+                      description: The size of the section as it appears in the PE file on disk.
+                    - name: virtual_address
+                      type: long
+                      description: The address of the first byte of the section relative to the image base when the PE file is loaded into memory.
+                    - name: virtual_size
+                      type: long
+                      description: The total size of the section when loaded into memory.
+                - name: timestamp
+                  type: date
+                  description: This represents the compilation timestamp of the Portable Executable (PE) file.
+            - name: popular_threat_classification
+              type: group
+              fields:
+                - name: popular_threat_category
+                  type: group
+                  fields:
+                    - name: count
+                      type: long
+                      description: The number of times a specific threat category has been assigned to the file by various security vendors.
+                    - name: value
+                      type: keyword
+                      description: The name of the threat category assigned to the file.
+                - name: popular_threat_name
+                  type: group
+                  fields:
+                    - name: count
+                      type: long
+                      description: The number of times a specific threat name has been assigned to the file by various security vendors.
+                    - name: value
+                      type: keyword
+                      description: The specific threat name assigned to the file.
+                - name: suggested_threat_label
+                  type: keyword
+                  description: A recommended label for the threat based on the most commonly assigned categories and names.
+            - name: redirection_chain
+              type: keyword
+              description: A list of URLs involved in redirections leading to the final destination.
+            - name: regional_internet_registry
+              type: keyword
+              description: The name of the Regional Internet Registry (RIR) that assigned the IP address.
+            - name: registrar
+              type: keyword
+              description: The name of the domain registrar responsible for managing the domain's registration.
+            - name: reputation
+              type: long
+              description: A numerical score representing the artifact's reputation based on VirusTotal's internal scoring system.
+            - name: severity_data
+              type: group
+              fields:
+                - name: num_gav_detections
+                  type: long
+                  description: The number of Google antivirus detections, if available.
+            - name: sha1
+              type: keyword
+              description: The SHA-1 hash of the file, serving as a unique identifier for the file's content.
+            - name: sha256
+              type: keyword
+              description: The SHA-256 hash of the file, serving as a unique identifier for the file's content.
+            - name: sigma_analysis_results
+              type: group
+              fields:
+                - name: match_context
+                  type: group
+                  fields:
+                    - name: signature
+                      type: keyword
+                      description: |-
+                        Contains the name of the digital certificate used to sign the file or process.
+                    - name: command_line
+                      type: keyword
+                      description: Captures command-line arguments from a detected process execution.
+                    - name: company
+                      type: keyword
+                      description: Contains the official company name that signed or developed the file, based on metadata.
+                    - name: creation_time
+                      type: date
+                      description: Represents the creation timestamp of the matched entity.
+                    - name: current_directory
+                      type: keyword
+                      description: Shows the working directory from which the detected file or process was executed.
+                    - name: description
+                      type: keyword
+                      description: Describes why the Sigma rule was triggered.
+                    - name: destination_hostname
+                      type: keyword
+                      description: The hostname of the destination system involved in the event.
+                    - name: destination_ip
+                      type: ip
+                      description: The IP address of the destination system involved in the event.
+                    - name: destination_is_ipv6
+                      type: boolean
+                      description: A booleanean value indicating whether the destination IP address is an IPv6 address.
+                    - name: destination_port
+                      type: long
+                      description: The network port number on the destination system involved in the event.
+                    - name: destination_port_name
+                      type: keyword
+                      description: The name associated with the destination port number, typically representing the service running on that port.
+                    - name: details
+                      type: keyword
+                      description: This field typically contains additional information or context about the event that matched the Sigma rule.
+                    - name: event_id
+                      type: long
+                      description: This field represents the unique identifier for the event within the logging system.
+                    - name: event_type
+                      type: keyword
+                      description: This field indicates the type or category of the event.
+                    - name: file_version
+                      type: keyword
+                      description: Displays the version number of the file, extracted from its metadata.
+                    - name: hashes
+                      type: keyword
+                      description: Contains various cryptographic hashes of the detected file, such as MD5, SHA-1, and SHA-256.
+                    - name: image
+                      type: keyword
+                      description: This field typically contains the file path of the executable or script that was involved in the event.
+                    - name: image_loaded
+                      type: keyword
+                      description: Refers to a DLL or executable file that was loaded into memory during process execution.
+                    - name: initiated
+                      type: boolean
+                      description: This field indicates the timestamp or status of when the event was initiated.
+                    - name: integrity_level
+                      type: keyword
+                      description: Describes the security level assigned to the detected process by Windows.
+                    - name: logon_guid
+                      type: keyword
+                      description: A globally unique identifier (GUID) assigned to a specific user logon session in Windows.
+                    - name: original_file_name
+                      type: keyword
+                      description: Represents the original name of the file as specified in its metadata.
+                    - name: param1
+                      type: keyword
+                      description: Represents an extracted parameter from the event logs, process execution, or command-line arguments that triggered the Sigma rule.
+                    - name: parent_image
+                      type: keyword
+                      description: The full path of the parent process that created or executed the detected process.
+                    - name: parent_command_line
+                      type: keyword
+                      description: Captures the command line arguments of the parent process that executed the detected file.
+                    - name: parent_process_guid
+                      type: keyword
+                      description: A globally unique identifier (GUID) assigned to the parent process of the detected activity.
+                    - name: process_guid
+                      type: keyword
+                      description: This field represents the globally unique identifier (GUID) assigned to the process involved in the event.
+                    - name: process_id
+                      type: long
+                      description: This field represents the unique identifier assigned by the operating system to the process involved in the event. .
+                    - name: product
+                      type: keyword
+                      description: Identifies the software product that the detected file belongs to, as extracted from its metadata.
+                    - name: protocol
+                      type: keyword
+                      description: This field indicates the network protocol used in the event, such as TCP, UDP, or ICMP.
+                    - name: query_name
+                      type: keyword
+                      description: ' Represents the type or name of the query executed as part of a suspicious detection.'
+                    - name: query_results
+                      type: keyword
+                      description: Represents the output or result data from an executed query.
+                    - name: query_status
+                      type: keyword
+                      description: Represents the status or result of a query performed as part of Sigma rule detection.
+                    - name: rule_name
+                      type: keyword
+                      description: This field contains the name of the Sigma rule that matched the event.
+                    - name: signature_status
+                      type: keyword
+                      description: Indicates whether a file or process has a valid digital signature.
+                    - name: signed
+                      type: boolean
+                      description: ' Indicates whether the file or process is digitally signed.'
+                    - name: source_hostname
+                      type: keyword
+                      description: This field specifies the hostname of the source system involved in the event.
+                    - name: source_ip
+                      type: ip
+                      description: This field specifies the IP address of the source system involved in the event.
+                    - name: source_is_ipv6
+                      type: boolean
+                      description: This field is a boolean value indicating whether the source IP address is an IPv6 address.
+                    - name: source_port
+                      type: long
+                      description: This field indicates the network port number on the source system involved in the event.
+                    - name: source_port_name
+                      type: keyword
+                      description: This field provides the name associated with the source port number, typically representing the service running on that port .
+                    - name: target_file_name
+                      type: keyword
+                      description: Represents the filename or full file path that triggered the Sigma rule match.
+                    - name: target_object
+                      type: keyword
+                      description: This field specifies the object targeted in the event, such as a file path, registry key, or other system resource.
+                    - name: terminal_session_id
+                      type: long
+                      description: Indicates the session number assigned to the process by the Windows Terminal Services.
+                    - name: user
+                      type: keyword
+                      description: This field identifies the user account associated with the event.
+                    - name: utc_time
+                      type: date
+                      description: This field records the date and time when the event occurred in Coordinated Universal Time.
+                - name: rule_author
+                  type: keyword
+                  description: This field specifies the author of the Sigma rule, including their name and, optionally, contact information such as a Twitter handle or email address.
+                - name: rule_description
+                  type: keyword
+                  description: This field provides a brief explanation of what the rule is detecting, offering insight into its purpose and the conditions under which it will trigger.
+                - name: rule_id
+                  type: keyword
+                  description: This field contains a unique identifier for the Sigma rule, typically a randomly generated UUID (version 4), ensuring global uniqueness across all Sigma rules.
+                - name: rule_level
+                  type: keyword
+                  description: This field indicates the severity level of the rule, which can be "low," "medium," "high," or "critical," reflecting the potential impact of the detected activity.
+                - name: rule_source
+                  type: keyword
+                  description: This field specifies the origin or source of the rule, such as the ruleset or repository from which the rule was obtained.
+                - name: rule_title
+                  type: keyword
+                  description: This field provides a concise title summarizing the rule's purpose, offering a quick reference to what the rule is designed to detect.
+            - name: sigma_analysis_stats
+              type: group
+              fields:
+                - name: critical
+                  type: long
+                  description: Indicates the number of Sigma rules with a "critical" severity level that matched the file's behavior or logs.
+                - name: high
+                  type: long
+                  description: Indicates the number of Sigma rules with a "high" severity level that matched the file's behavior or logs.
+                - name: low
+                  type: long
+                  description: Indicates the number of Sigma rules with a "low" severity level that matched the file's behavior or logs.
+                - name: medium
+                  type: long
+                  description: Indicates the number of Sigma rules with a "medium" severity level that matched the file's behavior or logs.
+            - name: signature_info
+              type: group
+              fields:
+                - name: copyright
+                  type: keyword
+                  description: Contains the copyright notice associated with the file.
+                - name: description
+                  type: keyword
+                  description: Provides a brief description of the file's purpose or functionality.
+                - name: product
+                  type: keyword
+                  description: Denotes the name of the product with which the file is associated.
+            - name: size
+              type: long
+              description: Specifies the size of the file in bytes.
+            - name: ssdeep
+              type: keyword
+              description: Contains the SSDEEP hash of the file, which is a context-triggered piecewise hash used to identify similar files.
+            - name: tags
+              type: keyword
+              description: List of representative attributes or labels associated with the artifact, providing quick insights into its characteristics or behaviors.
+            - name: threat_severity
+              type: group
+              fields:
+                - name: last_analysis_date
+                  type: date
+                  description: The timestamp indicating when the threat severity was last assessed.
+                - name: level_description
+                  type: keyword
+                  description: Description summarizing the factors contributing to the assigned threat severity level.
+                - name: threat_severity_data
+                  type: group
+                  fields:
+                    - name: belongs_to_bad_collection
+                      type: boolean
+                      description: Boolean indicating if the artifact is part of a known malicious collection.
+                    - name: belongs_to_threat_actor
+                      type: boolean
+                      description: Boolean indicating if the artifact is associated with a known threat actor.
+                    - name: domain_rank
+                      type: long
+                      description: The ranking of the domain based on its global popularity and usage, which can be used as a trust indicator.
+                    - name: has_bad_communicating_files_high
+                      type: boolean
+                      description: Boolean flag indicating whether the domain or IP has been observed communicating with artifact that have a high confidence of being malicious.
+                    - name: has_bad_communicating_files_medium
+                      type: boolean
+                      description: Boolean flag indicating whether the domain or IP has been observed communicating with artifact that have a medium confidence of being malicious.
+                - name: threat_severity_level
+                  type: keyword
+                  description: The assigned threat severity level.
+                - name: version
+                  type: keyword
+                  description: The version number of the threat severity assessment model used.
+            - name: threat_severity_data
+              type: group
+              fields:
+                - name: has_references
+                  type: boolean
+                  description: Boolean indicating if there are external references or reports related to the file.
+                - name: has_vulnerabilities
+                  type: boolean
+                  description: Boolean indicating if the file is associated with known vulnerabilities (CVEs).
+                - name: num_av_detections
+                  type: long
+                  description: The number of antivirus engines that detected the file as malicious during analysis.
+                - name: num_detections
+                  type: long
+                  description: The number of detections associated with the domain/IP, representing how many security vendors flagged it as malicious.
+            - name: times_submitted
+              type: long
+              description: The number of times the artifact has been submitted to VirusTotal for analysis.
+            - name: title
+              type: keyword
+              description: The title of the analyzed entity (typically applicable to URLs and web pages).
+            - name: tld
+              type: keyword
+              description: The top-level domain (TLD) of the analyzed domain or URL.
+            - name: tlsh
+              type: keyword
+              description: The TLSH (Trend Micro Locality Sensitive Hash) of the file, used to identify similar files based on content.
+            - name: total_votes
+              type: group
+              fields:
+                - name: harmless
+                  type: long
+                  description: The number of votes from the community indicating the artifact is harmless.
+                - name: malicious
+                  type: long
+                  description: The number of votes from the community indicating the artifact is malicious.
+            - name: trid
+              type: group
+              fields:
+                - name: file_type
+                  type: keyword
+                  description: Specifies the file type identified by the TRiD tool, which uses a database of definitions to determine the file's type based on its binary signatures.
+                - name: probability
+                  type: double
+                  description: Indicates the confidence level (as a percentage) that the identified file type is correct.
+            - name: type_description
+              type: keyword
+              description: Provides a human-readable description of the file's type, offering a general understanding of its format or purpose.
+            - name: type_extension
+              type: keyword
+              description: Specifies the standard file extension associated with the file, indicating its expected format or usage.
+            - name: type_tags
+              type: keyword
+              description: A list of broader tags related to the specific file type, providing additional context about its characteristics or associated platforms.
+            - name: type_unsupported
+              type: long
+              description: Number of engines that do not support the file type.
+            - name: unique_sources
+              type: long
+              description: Indicates the number of distinct sources that have submitted the file to VirusTotal.
+            - name: url
+              type: keyword
+              description: The full URL of the analyzed entity.
+            - name: whois_date
+              type: date
+              description: The timestamp of the last WHOIS record update for the domain.
+        - name: context_attributes
+          type: group
+          fields:
+            - name: hunting_info
+              type: group
+              fields:
+                - name: rule_name
+                  type: keyword
+                  description: Matched rule name.
+                - name: rule_tags
+                  type: keyword
+                  description: Matched rule tags.
+                - name: snippet
+                  type: keyword
+                  description: Additional context about surrounding bytes in the match.
+                - name: source_country
+                  type: keyword
+                  description: Country where the matched file was uploaded from.
+                - name: source_key
+                  type: keyword
+                  description: Unique identifier for the source in ciphered form.
+            - name: notification_date
+              type: date
+              description: Timestamp (UTC) when the notification was generated.
+            - name: notification_id
+              type: long
+              description: Unique identifier for the notification.
+            - name: origin
+              type: keyword
+              description: Specifies the origin of the notification, such as "hunting" for Livehunt or Retrohunt matches.
+            - name: sources
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Identifier of the source object that triggered the notification.
+                - name: label
+                  type: keyword
+                  description: Label describing the source (if available).
+                - name: type
+                  type: keyword
+                  description: Type of the source object, e.g., "hunting_ruleset" or "collection".
+            - name: tags
+              type: keyword
+              description: List of notification's tags.
+        - name: id
+          type: keyword
+          description: A unique identifier assigned to the specific object in the stream.         
+        - name: type
+          type: keyword
+          description: Specifies the type of the object being reported in the stream.
+        - name: vhash
+          type: keyword
+          description: Represents the VirusTotal hash, a hash-based signature uniquely identifying files with similar or identical content.

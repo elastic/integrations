@@ -14,7 +14,7 @@ expensive in terms of performance and costs and should be preferably used only
 when no SQS notification can be attached to the S3 buckets. This input 
 integration also supports S3 notification from SNS to SQS.
 
-You can enable SQS notification method by setting `queue_url` configuration value.
+You can enable SQS notification method by setting `queue_url` and `number_of_workers` configuration values.
 You can enable S3 bucket list polling method by setting `bucket_arn`, `access_point_arn`
 or `non_aws_bucket_name` configuration values and `number_of_workers` value.
 

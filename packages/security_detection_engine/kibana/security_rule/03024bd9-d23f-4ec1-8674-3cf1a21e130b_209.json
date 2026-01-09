@@ -1,0 +1,90 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a safe attachment rule is disabled in Microsoft 365. Safe attachment rules can extend malware protections to include routing all messages and attachments without a known malware signature to a special hypervisor environment. An adversary or insider threat may disable a safe attachment rule to exfiltrate data or evade defenses.",
+        "false_positives": [
+            "A safe attachment rule may be disabled by a system or network administrator. Verify that the configuration change was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "from": "now-30m",
+        "index": [
+            "filebeat-*",
+            "logs-o365*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Microsoft 365 Exchange Safe Attachment Rule Disabled",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Microsoft 365 Exchange Safe Attachment Rule Disabled\n\nMicrosoft 365's Safe Attachment feature enhances security by analyzing email attachments in a secure environment to detect unknown malware. Disabling this rule can expose organizations to threats by allowing potentially harmful attachments to bypass scrutiny. Adversaries may exploit this to exfiltrate data or avoid detection. The detection rule monitors audit logs for successful attempts to disable this feature, signaling potential defense evasion activities.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.action \"Disable-SafeAttachmentRule\" to identify the user or account responsible for the action.\n- Check the event.outcome field to confirm the success of the rule being disabled and gather additional context from related logs around the same timestamp.\n- Investigate the event.provider \"Exchange\" to determine if there are any other recent suspicious activities or changes made by the same user or account.\n- Assess the event.category \"web\" to understand if there were any web-based interactions or anomalies that coincide with the disabling of the safe attachment rule.\n- Evaluate the risk score and severity to prioritize the investigation and determine if immediate action is required to mitigate potential threats.\n- Cross-reference the identified user or account with known insider threat indicators or previous security incidents to assess the likelihood of malicious intent.\n\n### False positive analysis\n\n- Routine administrative changes can trigger alerts when IT staff disable Safe Attachment rules for legitimate reasons, such as testing or maintenance. To manage this, create exceptions for known administrative accounts or scheduled maintenance windows.\n- Automated scripts or third-party tools used for email management might disable Safe Attachment rules as part of their operations. Identify these tools and exclude their actions from triggering alerts by whitelisting their associated accounts or IP addresses.\n- Changes in organizational policy or security configurations might necessitate temporary disabling of Safe Attachment rules. Document these policy changes and adjust the monitoring rules to account for these temporary exceptions.\n- Training or onboarding sessions for new IT staff might involve disabling Safe Attachment rules as part of learning exercises. Ensure these activities are logged and excluded from alerts by setting up temporary exceptions for training periods.\n\n### Response and remediation\n\n- Immediately re-enable the Safe Attachment Rule in Microsoft 365 to restore the security posture and prevent further exposure to potentially harmful attachments.\n- Conduct a thorough review of recent email logs and quarantine any suspicious attachments that were delivered during the period the rule was disabled.\n- Isolate any systems or accounts that interacted with suspicious attachments to prevent potential malware spread or data exfiltration.\n- Escalate the incident to the security operations team for further investigation and to determine if there was any unauthorized access or data compromise.\n- Implement additional monitoring on the affected accounts and systems to detect any signs of ongoing or further malicious activity.\n- Review and update access controls and permissions to ensure that only authorized personnel can modify security rules and configurations.\n- Conduct a post-incident analysis to identify the root cause and implement measures to prevent similar incidents, such as enhancing alerting mechanisms for critical security rule changes.",
+        "query": "event.dataset:o365.audit and event.provider:Exchange and event.category:web and event.action:\"Disable-SafeAttachmentRule\" and event.outcome:success\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/powershell/module/exchange/disable-safeattachmentrule?view=exchange-ps"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^2.11.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "03024bd9-d23f-4ec1-8674-3cf1a21e130b",
+        "setup": "The Office 365 Logs Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Microsoft 365",
+            "Use Case: Configuration Audit",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 209
+    },
+    "id": "03024bd9-d23f-4ec1-8674-3cf1a21e130b_209",
+    "type": "security-rule"
+}

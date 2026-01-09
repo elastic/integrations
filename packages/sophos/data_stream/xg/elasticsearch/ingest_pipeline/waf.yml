@@ -5,43 +5,52 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - set:
+    tag: set_event_action_9ba1c8da
     field: event.action
     value: allowed
     if: 'ctx.sophos?.xg?.reason == "-"'
 - set:
+    tag: set_event_action_6c9dce7f
     field: event.action
     value: denied
     if: 'ctx.sophos?.xg?.reason != "-"'
 - set:
+    tag: set_event_outcome_d96be4c5
     field: event.outcome
     value: success
     if: "ctx.sophos?.xg?.reason != null"
 - set:
+    tag: set_event_kind_c0ea7e9c
     field: event.kind
     value: alert
     if: 'ctx.sophos?.xg?.reason != "-"'
 - append:
+    tag: append_event_category_cb449525
     field: event.category
     value:
       - malware
       - network
     if: 'ctx.sophos?.xg?.reason == "Antivirus"'
 - append:
+    tag: append_event_category_b252f9da
     field: event.category
     value:
       - intrusion_detection
       - network
     if: "ctx.sophos?.xg?.reason != 'Antivirus' && ctx.sophos?.xg?.reason != '-'"
 - append:
+    tag: append_event_type_f61f4694
     field: event.type
     value:
       - allowed
       - connection
     if: 'ctx.sophos?.xg?.reason == "-"'
 - append:
+    tag: append_event_type_ae7825af
     field: event.type
     value:
       - denied
@@ -49,13 +58,16 @@ processors:
     if: 'ctx.sophos?.xg?.reason != "-"'
 
 - convert:
+    tag: convert_sophos_xg_responsetime_04a3f9c7
     field: sophos.xg.responsetime
     type: long
     ignore_missing: true
     on_failure:
       - remove:
+          tag: remove_sophos_xg_responsetime_e69ef376
           field: sophos.xg.responsetime
 - script:
+    tag: script_3c0f4596
     description: Convert microseconds to nanoseconds.
     lang: painless
     source: |
@@ -67,11 +79,13 @@ processors:
 ## ECS Server/Destination Mapping ##
 ####################################
 - rename:
+    tag: rename_sophos_xg_localip_to_destination_ip_329a9e82
     field: sophos.xg.localip
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.localip != null"
 - convert:
+    tag: convert_sophos_xg_bytessent_to_destination_bytes_b42190aa
     field: sophos.xg.bytessent
     target_field: destination.bytes
     type: long
@@ -83,11 +97,13 @@ processors:
 ## ECS Client/Source Mapping ##
 ###############################
 - rename:
+    tag: rename_sophos_xg_sourceip_to_source_ip_1c907c33
     field: sophos.xg.sourceip
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.sourceip != null"
 - convert:
+    tag: convert_sophos_xg_bytesrcv_to_source_bytes_105f829b
     field: sophos.xg.bytesrcv
     target_field: source.bytes
     type: long
@@ -95,11 +111,13 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.bytesrcv != null"
 - rename:
+    tag: rename_sophos_xg_user_name_to_source_user_name_98774918
     field: sophos.xg.user_name
     target_field: source.user.name
     ignore_missing: true
     if: "ctx.sophos?.xg?.user_name != null"
 - rename:
+    tag: rename_sophos_xg_user_gp_to_source_user_group_name_277fc915
     field: sophos.xg.user_gp
     target_field: source.user.group.name
     ignore_missing: true
@@ -109,11 +127,13 @@ processors:
 ## ECS URL Mapping ##
 #####################
 - rename:
+    tag: rename_sophos_xg_url_to_url_full_fb2d2139
     field: sophos.xg.url
     target_field: url.full
     ignore_missing: true
     if: "ctx.sophos?.xg?.url != null"
 - rename:
+    tag: rename_sophos_xg_domain_to_url_domain_ec5bf32e
     field: sophos.xg.domain
     target_field: url.domain
     ignore_missing: true
@@ -123,11 +143,13 @@ processors:
 ## ECS User Agent Mapping ##
 ############################
 - rename:
+    tag: rename_sophos_xg_referer_to_http_request_referrer_fccfe827
     field: sophos.xg.referer
     target_field: http.request.referrer
     ignore_missing: true
     if: "ctx.sophos?.xg?.referer != null"
 - convert:
+    tag: convert_sophos_xg_httpstatus_to_destination_bytes_8a6aa372
     field: sophos.xg.httpstatus
     target_field: destination.bytes
     type: long
@@ -135,16 +157,19 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.httpstatus != null"
 - rename:
+    tag: rename_sophos_xg_method_to_http_request_method_b8ea95f5
     field: sophos.xg.method
     target_field: http.request.method
     ignore_missing: true
     if: "ctx.sophos?.xg?.method != null"
 - rename:
+    tag: rename_sophos_xg_ws_protocol_to_http_version_48f710f3
     field: sophos.xg.ws_protocol
     target_field: http.version
     ignore_missing: true
     if: "ctx.sophos?.xg?.ws_protocol != null"
 - rename:
+    tag: rename_sophos_xg_useragent_to_user_agent_original_0685d0cf
     field: sophos.xg.useragent
     target_field: user_agent.original
     ignore_missing: true
@@ -154,14 +179,17 @@ processors:
 ## Cleanup ##
 #############
 - rename:
+    tag: rename_sophos_xg_SQLi_to_sophos_xg_sqli_1761f318
     field: sophos.xg.SQLi
     target_field: sophos.xg.sqli
     ignore_missing: true
 - rename:
+    tag: rename_sophos_xg_XSS_to_sophos_xg_xss_3bbc0a84
     field: sophos.xg.XSS
     target_field: sophos.xg.xss
     ignore_missing: true
 - remove:
+    tag: remove_fd1836ad
     field:
      - sophos.xg.bytesrcv
      - sophos.xg.bytessent
@@ -174,4 +202,12 @@ on_failure:
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

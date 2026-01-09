@@ -5,46 +5,32 @@ to receive logs sent by NSS log server on respective TCP ports, and Sandbox Repo
 
 The log message is expected to be in JSON format. The data is mapped to ECS fields where applicable and the remaining fields are written under `zscaler_zia.<data-stream-name>.*`.
 
-## Requirements
-
-### Agentless Enabled Integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Agent-Based Installation
-#### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+## Compatibility
 
 This module has been tested against the **Zscaler Internet Access version 6.1** and API version **v1**.
 
+## Requirements
 
-## To collect data from Zscaler ZIA Sandbox Report API, follow the below steps:
+### Agentless-enabled integration
 
-1. Go to the Zscaler ZIA Portal and Login by entering an email address and password.
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+
+## Collect data from Zscaler ZIA Sandbox Report API
+
+1. Go to the Zscaler ZIA Portal and login by entering your email address and password.
 2. Configure OAuth 2.0 for [Okta](https://help.zscaler.com/zia/oauth-2.0-configuration-guide-okta) or [Microsoft Entra ID](https://help.zscaler.com/zia/oauth-2.0-configuration-guide-microsoft-entra-id) for generating OAuth2.0 Credentials.
 3. Add [OAuth2.0 Authorization Server](https://help.zscaler.com/zia/managing-oauth-2.0-authorization-servers). 
 
-## Steps for setting up NSS Feeds
+## Set up NSS Feeds
 
 1. Enable the integration with the TCP input.
-2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) and [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscaler NSS Server and NSS Feeds follow the following steps.
+2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. Check the [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) and [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds) documentation. Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscaler NSS Server and NSS Feeds follow the following steps.
     - In the ZIA Admin Portal, add an NSS Server.
         - Log in to the ZIA Admin Portal using your admin account. If you're unable to log in, [contact Support](https://www.zscaler.com/company/contact).
         - Add an NSS server. Refer to Adding NSS Servers to set up an [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) for Web and/or Firewall.
@@ -66,7 +52,7 @@ This module has been tested against the **Zscaler Internet Access version 6.1** 
             - **Feed Output Type**: Select Custom in Feed output type and paste the appropriate response format in Feed output format as follows:
             ![NSS Feeds setup image](../img/nss_feeds.png?raw=true)
 
-## Steps for setting up Cloud NSS Feeds
+## Set up Cloud NSS Feeds
 
 1. Enable the integration with the HTTP Endpoint input.
 2. Configure the Zscaler Cloud NSS Feeds to send logs to the Elastic Agent that is running this integration. Provide API URL to send logs to the Elastic Agent. To configure Zscaler Cloud NSS Feeds follow the following steps.
@@ -90,12 +76,9 @@ This module has been tested against the **Zscaler Internet Access version 6.1** 
           ![Cloud NSS Feeds setup image](../img/cloud_nss_feeds.png?raw=true)
 3. Repeat step 2 for each log type.
 
-**Please make sure to use the given response formats for NSS and Cloud NSS Feeds.**
+**Note**: Make sure to use the latest version of given response formats for NSS and Cloud NSS Feeds.
 
-Note: Please make sure to use latest version of given response formats.
-
-
-## Documentation and configuration
+## Configuration
 
 ### Alerts
 
@@ -121,12 +104,12 @@ See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/adding-cloud-ns
 
 Zscaler Audit Log response format (v1):
 ```
-\{"sourcetype":"zscalernss-audit","event":\{"time":"%s{time}","recordid":"%d{recordid}","action":"%s{action}","category":"%s{category}","subcategory":"%s{subcategory}","resource":"%s{resource}","interface":"%s{interface}","adminid":"%s{adminid}","clientip":"%s{clientip}","result":"%s{result}","errorcode":"%s{errorcode}","auditlogtype":"%s{auditlogtype}","preaction":%s{preaction},"postaction":%s{postaction}\}\}
+\{"version":"v1","sourcetype":"zscalernss-audit","event":\{"time":"%s{time}","recordid":"%d{recordid}","action":"%s{action}","category":"%s{category}","subcategory":"%s{subcategory}","resource":"%s{resource}","interface":"%s{interface}","adminid":"%s{adminid}","clientip":"%s{clientip}","result":"%s{result}","errorcode":"%s{errorcode}","auditlogtype":"%s{auditlogtype}","preaction":%s{preaction},"postaction":%s{postaction}\}\}
 ```
 
 Sample Response:
 ```json
-{"sourcetype":"zscalernss-audit","event":{"time":"Mon Oct 16 22:55:48 2023","recordid":"1234","action":"Activate","category":"DATA_LOSS_PREVENTION_RESOURCE","subcategory":"DLP_DICTIONARY","resource":"SSL Rule Name","interface":"API","adminid":"example@zscaler.com","clientip":"89.160.20.112","result":"SUCCESS","errorcode":"AUTHENTICATION_FAILED","auditlogtype":"ZIA Portal Audit Log","timezone":"UTC","preaction":{},"postaction":{}}}
+{"version":"v1","sourcetype":"zscalernss-audit","event":{"time":"Mon Oct 16 22:55:48 2023","recordid":"1234","action":"Activate","category":"DATA_LOSS_PREVENTION_RESOURCE","subcategory":"DLP_DICTIONARY","resource":"SSL Rule Name","interface":"API","adminid":"example@zscaler.com","clientip":"89.160.20.112","result":"SUCCESS","errorcode":"AUTHENTICATION_FAILED","auditlogtype":"ZIA Portal Audit Log","timezone":"UTC","preaction":{},"postaction":{}}}
 ```
 
 ### DNS Log
@@ -136,14 +119,14 @@ Sample Response:
 
 See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-dns-logs)
 
-Zscaler DNS Log response format (v2):
+Zscaler DNS Log response format (v3):
 ```
-\{"sourcetype":"zscalernss-dns","event":\{"user":"%s{elogin}","department":"%s{edepartment}","location":"%s{elocation}","clt_sip":"%s{cip}","cloudname":"%s{cloudname}","company":"%s{company}","datacenter":"%s{datacenter}","datacentercity":"%s{datacentercity}","datacentercountry":"%s{datacentercountry}","day_of_month":"%02d{dd}","dept":"%s{dept}","deviceappversion":"%s{deviceappversion}","devicehostname":"%s{devicehostname}","devicemodel":"%s{devicemodel}","devicename":"%s{devicename}","deviceostype":"%s{deviceostype}","deviceosversion":"%s{deviceosversion}","deviceowner":"%s{deviceowner}","devicetype":"%s{devicetype}","dnsapp":"%s{dnsapp}","dnsappcat":"%s{dnsappcat}","dns_gateway_status":"%s{dnsgw_flags}","dns_gateway_rule":"%s{dnsgw_slot}","dns_gateway_server_protocol":"%s{dnsgw_srv_proto}","category":"%s{domcat}","durationms":"%d{durationms}","ecs_prefix":"%s{ecs_prefix}","ecs_slot":"%s{ecs_slot}","epochtime":"%d{epochtime}","error":"%s{error}","hour":"%02d{hh}","http_code":"%s{http_code}","istcp":"%d{istcp}","loc":"%s{location}","login":"%s{login}","minutes":"%02d{mm}","month":"%s{mon}","month_of_year":"%02d{mth}","odevicehostname":"%s{odevicehostname}","odevicename":"%s{odevicename}","odeviceowner":"%s{odeviceowner}","odomcat":"%s{odomcat}","protocol":"%s{protocol}","recordid":"%d{recordid}","dns_req":"%s{req}","reqaction":"%s{reqaction}","reqrulelabel":"%s{reqrulelabel}","dns_reqtype":"%s{reqtype}","dns_resp":"%s{res}","resaction":"%s{resaction}","respipcategory":"%s{respipcat}","resrulelabel":"%s{resrulelabel}","restype":"%s{restype}","srv_dip":"%s{sip}","srv_dport":"%d{sport}","second":"%02d{ss}","datetime":"%s{time}","tz":"%s{tz}","year":"%04d{yyyy}"\}\}
+\{"version":"v3","sourcetype":"zscalernss-dns","event":\{"user":"%s{elogin}","department":"%s{edepartment}","location":"%s{elocation}","clt_sip":"%s{cip}","cloudname":"%s{cloudname}","company":"%s{company}","datacenter":"%s{datacenter}","datacentercity":"%s{datacentercity}","datacentercountry":"%s{datacentercountry}","day_of_month":"%02d{dd}","dept":"%s{dept}","deviceappversion":"%s{deviceappversion}","devicehostname":"%s{devicehostname}","devicemodel":"%s{devicemodel}","devicename":"%s{devicename}","deviceostype":"%s{deviceostype}","deviceosversion":"%s{deviceosversion}","deviceowner":"%s{deviceowner}","devicetype":"%s{devicetype}","dnsapp":"%s{dnsapp}","dnsappcat":"%s{dnsappcat}","dns_gateway_status":"%s{dnsgw_flags}","dns_gateway_rule":"%s{dnsgw_slot}","dns_gateway_server_protocol":"%s{dnsgw_srv_proto}","category":"%s{domcat}","durationms":"%d{durationms}","ecs_prefix":"%s{ecs_prefix}","ecs_slot":"%s{ecs_slot}","ednsreq":"%s{ednsreq}","epochtime":"%d{epochtime}","error":"%s{error}","hour":"%02d{hh}","http_code":"%s{http_code}","istcp":"%d{istcp}","loc":"%s{location}","login":"%s{login}","minutes":"%02d{mm}","month":"%s{mon}","month_of_year":"%02d{mth}","odevicehostname":"%s{odevicehostname}","odevicename":"%s{odevicename}","odeviceowner":"%s{odeviceowner}","odomcat":"%s{odomcat}","protocol":"%s{protocol}","recordid":"%d{recordid}","dns_req":"%s{req}","reqaction":"%s{reqaction}","reqrulelabel":"%s{reqrulelabel}","dns_reqtype":"%s{reqtype}","dns_resp":"%s{res}","resaction":"%s{resaction}","respipcategory":"%s{respipcat}","resrulelabel":"%s{resrulelabel}","restype":"%s{restype}","srv_dip":"%s{sip}","srv_dport":"%d{sport}","second":"%02d{ss}","datetime":"%s{time}","tz":"%s{tz}","year":"%04d{yyyy}"\}\}
 ```
 
 Sample Response:
 ```json
-{"sourcetype":"zscalernss-dns","event":{"cloudname":"zscaler.net","datetime":"Mon Oct 16 22:55:48 2023","devicemodel":"VMware7,1","restype":"IPv4","dns_req":"mail.safemarch.com","dns_reqtype":"A record","error":"EMPTY_RESP","durationms":"1000","recordid":"45648954","tz":"GMT","devicename":"admin","devicehostname":"THINKPADSMITH","deviceostype":"Windows OS","deviceosversion":"Microsoft Windows 10 Enterprise;64 bit","devicetype":"Zscaler Client Connector","http_code":"100","dnsapp":"Google DNS","dns_gateway_server_protocol":"TCP","protocol":"TCP","company":"Zscaler","reqrulelabel":"RULE_1","resrulelabel":"RULE_RES","clt_sip":"81.2.69.192","srv_dip":"175.16.199.0","srv_dport":"1025","user":"jdoe1@safemarch.com","datacentercity":"Sa","datacentercountry":"US","datacenter":"CA Client Node DC","day":"Mon","day_of_month":"16","department":"EDept","dept":"Sales","deviceappversion":"4.3.0.18","deviceowner":"jsmith","dnsappcat":"Network Service","dns_gateway_rule":"DNS GATEWAY Rule 1","dns_gateway_status":"PRIMARY_SERVER_RESPONSE_PASS","category":"Professional Services","ecs_prefix":"192.168.0.0","ecs_slot":"ECS Slot #17","eedone":"Yes","epochtime":"1578128400","hour":"22","istcp":"1","loc":"Headquarters","location":"ELocation","login":"jdoe@safemarch.com","minutes":"55","month":"Oct","month_of_year":"10","oclientsourceip":"9960223283","odevicename":"2175092224","odeviceowner":"10831489","odomcat":"4951704103","odevicehostname":"2168890624","reqaction":"REQ_ALLOW","dns_resp":"www.example.com","respipcategory":"Adult Themes","resaction":"RES_Action","respipcat":"Adult Themes","second":"48","year":"2023"}}
+{"version":"v3","sourcetype":"zscalernss-dns","event":{"cloudname":"zscaler.net","datetime":"Mon Oct 16 22:55:48 2023","devicemodel":"VMware7,1","restype":"IPv4","dns_req":"mail.safemarch.com","dns_reqtype":"A record","error":"EMPTY_RESP","durationms":"1000","recordid":"45648954","tz":"GMT","devicename":"admin","devicehostname":"THINKPADSMITH","deviceostype":"Windows OS","deviceosversion":"Microsoft Windows 10 Enterprise;64 bit","devicetype":"Zscaler Client Connector","http_code":"100","dnsapp":"Google DNS","dns_gateway_server_protocol":"TCP","protocol":"TCP","company":"Zscaler","reqrulelabel":"RULE_1","resrulelabel":"RULE_RES","clt_sip":"81.2.69.192","srv_dip":"175.16.199.0","srv_dport":"1025","user":"jdoe1@safemarch.com","datacentercity":"Sa","datacentercountry":"US","datacenter":"CA Client Node DC","day":"Mon","day_of_month":"16","department":"EDept","dept":"Sales","deviceappversion":"4.3.0.18","deviceowner":"jsmith","dnsappcat":"Network Service","dns_gateway_rule":"DNS GATEWAY Rule 1","dns_gateway_status":"PRIMARY_SERVER_RESPONSE_PASS","category":"Professional Services","ecs_prefix":"192.168.0.0","ecs_slot":"ECS Slot #17","ednsreq":"ABC123","eedone":"Yes","epochtime":"1578128400","hour":"22","istcp":"1","loc":"Headquarters","location":"ELocation","login":"jdoe@safemarch.com","minutes":"55","month":"Oct","month_of_year":"10","oclientsourceip":"9960223283","odevicename":"2175092224","odeviceowner":"10831489","odomcat":"4951704103","odevicehostname":"2168890624","reqaction":"REQ_ALLOW","dns_resp":"www.example.com","respipcategory":"Adult Themes","resaction":"RES_Action","respipcat":"Adult Themes","second":"48","year":"2023"}}
 ```
 
 ### Endpoint DLP Log
@@ -155,12 +138,12 @@ See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output
 
 Zscaler Endpoint DLP Log response format (v1):
 ```
-\{"sourcetype":"zscalernss-edlp","event":\{"actiontaken":"%s{actiontaken}","activitytype":"%s{activitytype}","additionalinfo":"%s{addinfo}","channel":"%s{channel}","confirmaction":"%s{confirmaction}","confirmjustification":"%s{confirmjust}","datacenter":"%s{datacenter}","datacentercity":"%s{datacentercity}","datacentercountry":"%s{datacentercountry}","day":"%s{day}","dd":"%02d{dd}","department":"%s{department}","deviceappversion":"%s{deviceappversion}","devicehostname":"%s{devicehostname}","devicemodel":"%s{devicemodel}","devicename":"%s{devicename}","deviceostype":"%s{deviceostype}","deviceosversion":"%s{deviceosversion}","deviceowner":"%s{deviceowner}","deviceplatform":"%s{deviceplatform}","devicetype":"%s{devicetype}","dlpdictcount":"%s{dlpcounts}","dlpdictnames":"%s{dlpdictnames}","dlpenginenames":"%s{dlpengnames}","dlpidentifier":"%llu{dlpidentifier}","dsttype":"%s{dsttype}","eventtime":"%s{eventtime}","expectedaction":"%s{expectedaction}","filedoctype":"%s{filedoctype}","filedstpath":"%s{filedstpath}","filemd5":"%s{filemd5}","filesha":"%s{filesha}","filesrcpath":"%s{filesrcpath}","filetypecategory":"%s{filetypecategory}","filetypename":"%s{filetypename}","hh":"%02d{hh}","itemdstname":"%s{itemdstname}","itemname":"%s{itemname}","itemsrcname":"%s{itemsrcname}","itemtype":"%s{itemtype}","logtype":"%s{logtype}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","numdlpdictids":"%u{numdlpdictids}","numdlpengineids":"%u{numdlpengids}","odepartment":"%s{odepartment}","odevicehostname":"%s{odevicehostname}","odevicename":"%s{odevicename}","odeviceowner":"%s{odeviceowner}","odlpdictnames":"%s{odlpdictnames}","odlpenginenames":"%s{odlpengnames}","ofiledstpath":"%s{ofiledstpath}","ofilesrcpath":"%s{ofilesrcpath}","oitemdstname":"%s{oitemdstname}","oitemname":"%s{oitemname}","oitemsrcname":"%s{oitemsrcname}","ootherrulelabels":"%s{ootherrulelabels}","otherrulelabels":"%s{otherrulelabels}","orulename":"%s{otriggeredrulelabel}","ouser":"%s{ouser}","recordid":"%llu{recordid}","feedtime":"%s{rtime}","scannedbytes":"%llu{scanned_bytes}","scantime":"%llu{scantime}","severity":"%s{severity}","srctype":"%s{srctype}","ss":"%02d{ss}","datetime":"%s{time}","rulename":"%s{triggeredrulelabel}","timezone":"%s{tz}","user":"%s{user}","yyyy":"%04d{yyyy}","zdpmode":"%s{zdpmode}"\}\}
+\{"version":"v1","sourcetype":"zscalernss-edlp","event":\{"actiontaken":"%s{actiontaken}","activitytype":"%s{activitytype}","additionalinfo":"%s{addinfo}","channel":"%s{channel}","confirmaction":"%s{confirmaction}","confirmjustification":"%s{confirmjust}","datacenter":"%s{datacenter}","datacentercity":"%s{datacentercity}","datacentercountry":"%s{datacentercountry}","day":"%s{day}","dd":"%02d{dd}","department":"%s{department}","deviceappversion":"%s{deviceappversion}","devicehostname":"%s{devicehostname}","devicemodel":"%s{devicemodel}","devicename":"%s{devicename}","deviceostype":"%s{deviceostype}","deviceosversion":"%s{deviceosversion}","deviceowner":"%s{deviceowner}","deviceplatform":"%s{deviceplatform}","devicetype":"%s{devicetype}","dlpdictcount":"%s{dlpcounts}","dlpdictnames":"%s{dlpdictnames}","dlpenginenames":"%s{dlpengnames}","dlpidentifier":"%llu{dlpidentifier}","dsttype":"%s{dsttype}","eventtime":"%s{eventtime}","expectedaction":"%s{expectedaction}","filedoctype":"%s{filedoctype}","filedstpath":"%s{filedstpath}","filemd5":"%s{filemd5}","filesha":"%s{filesha}","filesrcpath":"%s{filesrcpath}","filetypecategory":"%s{filetypecategory}","filetypename":"%s{filetypename}","hh":"%02d{hh}","itemdstname":"%s{itemdstname}","itemname":"%s{itemname}","itemsrcname":"%s{itemsrcname}","itemtype":"%s{itemtype}","logtype":"%s{logtype}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","numdlpdictids":"%u{numdlpdictids}","numdlpengineids":"%u{numdlpengids}","odepartment":"%s{odepartment}","odevicehostname":"%s{odevicehostname}","odevicename":"%s{odevicename}","odeviceowner":"%s{odeviceowner}","odlpdictnames":"%s{odlpdictnames}","odlpenginenames":"%s{odlpengnames}","ofiledstpath":"%s{ofiledstpath}","ofilesrcpath":"%s{ofilesrcpath}","oitemdstname":"%s{oitemdstname}","oitemname":"%s{oitemname}","oitemsrcname":"%s{oitemsrcname}","ootherrulelabels":"%s{ootherrulelabels}","otherrulelabels":"%s{otherrulelabels}","orulename":"%s{otriggeredrulelabel}","ouser":"%s{ouser}","recordid":"%llu{recordid}","feedtime":"%s{rtime}","scannedbytes":"%llu{scanned_bytes}","scantime":"%llu{scantime}","severity":"%s{severity}","srctype":"%s{srctype}","ss":"%02d{ss}","datetime":"%s{time}","rulename":"%s{triggeredrulelabel}","timezone":"%s{tz}","user":"%s{user}","yyyy":"%04d{yyyy}","zdpmode":"%s{zdpmode}"\}\}
 ```
 
 Sample Response:
 ```json
-{ "sourcetype": "zscalernss-edlp", "event": { "actiontaken": "allow", "activitytype": "email_sent", "additionalinfo": "File already open by another application", "channel": "Network Drive Transfer", "confirmaction": "confirm", "confirmjustification": "My manager approved it", "datacenter": "Georgia", "datacentercity": "Atlanta", "datacentercountry": "US", "day": "Mon", "dd": "16", "department": "TempDept", "deviceappversion": "Ver-2199", "devicehostname": "Host", "devicemodel": "Model-2022", "devicename": "Dev 1", "deviceostype": "Windows", "deviceosversion": "Win-11", "deviceowner": "Administrator", "deviceplatform": "Windows", "devicetype": "WinUser", "dlpdictcount": "12|13", "dlpdictnames": "dlp: dlp discription|dlp1: dlp discription1|dlp2: dlp discription2", "dlpenginenames": "dlpengine", "dlpidentifier": "12", "dsttype": "personal_cloud_storage", "eventtime": "Mon Oct 16 22:55:48 2023", "expectedaction": "block", "filedoctype": "Medical", "filedstpath": "dest_path", "filemd5": "938c2cc0dcc05f2b68c4287040cfcf71", "filesha": "076085239f3a10b8f387c4e5d4261abf8d109aa641be35a8d4ed2d775eb09612", "filesrcpath": "source_path", "filetypecategory": "PLS File (pls)", "filetypename": "exe64", "hh": "22", "itemdstname": "nanolog", "itemname": "endpoint_dlp", "itemsrcname": "endpoint", "itemtype": "email_attachment", "logtype": "dlp_incident", "mm": "55", "mon": "Oct", "mth": "10", "numdlpdictids": "8", "numdlpengineids": "12", "recordid": "2", "feedtime": "Mon Oct 16 22:55:48 2023", "scannedbytes": "290812", "scantime": "1210", "severity": "High Severity", "srctype": "network_share", "ss": "48", "datetime": "Mon Oct 16 22:55:48 2023", "rulename": "configured_rule", "timezone": "GMT", "user": "TempUser", "yyyy": "2023", "zdpmode": "block mode", "odepartment": "4094304256", "odevicehostname": "4094304255", "odevicename": "4094304251", "odeviceowner": "4094304226", "odlpdictnames": "4094304456", "odlpenginenames": "4094364256", "ofiledstpath": "4094304296", "ofilesrcpath": "4094304206", "oitemdstname": "409430476", "oitemname": "40943042567", "oitemsrcname": "4094305256", "ootherrulelabels": "4036304256", "orulename": "40943049956", "ouser": "40943042569", "otherrulelabels": "9094304256" } }
+{"version":"v1","sourcetype":"zscalernss-edlp","event":{"actiontaken":"allow","activitytype":"email_sent","additionalinfo":"File already open by another application","channel":"Network Drive Transfer","confirmaction":"confirm","confirmjustification":"My manager approved it","datacenter":"Georgia","datacentercity":"Atlanta","datacentercountry":"US","day":"Mon","dd":"16","department":"TempDept","deviceappversion":"Ver-2199","devicehostname":"Host","devicemodel":"Model-2022","devicename":"Dev 1","deviceostype":"Windows","deviceosversion":"Win-11","deviceowner":"Administrator","deviceplatform":"Windows","devicetype":"WinUser","dlpdictcount":"12|13","dlpdictnames":"dlp: dlp discription|dlp1: dlp discription1|dlp2: dlp discription2","dlpenginenames":"dlpengine","dlpidentifier":"12","dsttype":"personal_cloud_storage","eventtime":"Mon Oct 16 22:55:48 2023","expectedaction":"block","filedoctype":"Medical","filedstpath":"dest_path","filemd5":"938c2cc0dcc05f2b68c4287040cfcf71","filesha":"076085239f3a10b8f387c4e5d4261abf8d109aa641be35a8d4ed2d775eb09612","filesrcpath":"source_path","filetypecategory":"PLS File (pls)","filetypename":"exe64","hh":"22","itemdstname":"nanolog","itemname":"endpoint_dlp","itemsrcname":"endpoint","itemtype":"email_attachment","logtype":"dlp_incident","mm":"55","mon":"Oct","mth":"10","numdlpdictids":"8","numdlpengineids":"12","recordid":"2","feedtime":"Mon Oct 16 22:55:48 2023","scannedbytes":"290812","scantime":"1210","severity":"High Severity","srctype":"network_share","ss":"48","datetime":"Mon Oct 16 22:55:48 2023","rulename":"configured_rule","timezone":"GMT","user":"TempUser","yyyy":"2023","zdpmode":"block mode","odepartment":"4094304256","odevicehostname":"4094304255","odevicename":"4094304251","odeviceowner":"4094304226","odlpdictnames":"4094304456","odlpenginenames":"4094364256","ofiledstpath":"4094304296","ofilesrcpath":"4094304206","oitemdstname":"409430476","oitemname":"40943042567","oitemsrcname":"4094305256","ootherrulelabels":"4036304256","orulename":"40943049956","ouser":"40943042569","otherrulelabels":"9094304256" } }
 ```
 
 ### Firewall Log
@@ -172,12 +155,12 @@ See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output
 
 Zscaler Firewall Log response format (v2):
 ```
-\{"sourcetype":"zscalernss-fw","event":\{"datetime":"%s{time}","outbytes":"%ld{outbytes}","cltdomain":"%s{cdfqdn}","destcountry":"%s{destcountry}","cdip":"%s{cdip}","sdip":"%s{sdip}","cdport":"%d{cdport}","sdport":"%d{sdport}","devicemodel":"%s{devicemodel}","action":"%s{action}","duration":"%d{duration}","recordid":"%d{recordid}","tz":"%s{tz}","devicename":"%s{devicename}","devicehostname":"%s{devicehostname}","deviceostype":"%s{deviceostype}","deviceosversion":"%s{deviceosversion}","nwapp":"%s{nwapp}","nwsvc":"%s{nwsvc}","proto":"%s{ipproto}","ipsrulelabel":"%s{ipsrulelabel}","dnatrulelabel":"%s{dnatrulelabel}","rdr_rulename":"%s{rdr_rulename}","rule":"%s{rulelabel}","rulelabel":"%s{erulelabel}","inbytes":"%ld{inbytes}","srcipcountry":"%s{srcip_country}","csip":"%s{csip}","ssip":"%s{ssip}","csport":"%d{csport}","ssport":"%d{ssport}","user":"%s{elogin}","aggregate":"%s{aggregate}","bypassed_session":"%d{bypassed_session}","bypass_time":"%s{bypass_etime}","datacentercity":"%s{datacentercity}","datacentercountry":"%s{datacentercountry}","datacenter":"%s{datacenter}","day_of_month":"%02d{dd}","department":"%s{edepartment}","dept":"%s{dept}","deviceappversion":"%s{deviceappversion}","deviceowner":"%s{deviceowner}","avgduration":"%d{avgduration}","durationms":"%d{durationms}","epochtime":"%d{epochtime}","external_deviceid":"%s{external_deviceid}","flow_type":"%s{flow_type}","forward_gateway_name":"%s{fwd_gw_name}","hour":"%02d{hh}","ipcat":"%s{ipcat}","ips_custom_signature":"%d{ips_custom_signature}","location":"%s{location}","locationname":"%s{elocation}","login":"%s{login}","minute":"%02d{mm}","month":"%s{mon}","month_of_year":"%02d{mth}","dnat":"%s{dnat}","odevicename":"%s{odevicename}","odeviceowner":"%s{odeviceowner}","ofwd_gw_name":"%s{ofwd_gw_name}","odevicehostname":"%s{odevicehostname}","oipcat":"%s{oipcat}","oipsrulelabel":"%s{oipsrulelabel}","ordr_rulename":"%s{ordr_rulename}","orulelabel":"%s{orulelabel}","ozpa_app_seg_name":"%s{ozpa_app_seg_name}","second":"%02d{ss}","numsessions":"%d{numsessions}","stateful":"%s{stateful}","threat_name":"%s{threatname}","threatcat":"%s{threatcat}","threatname":"%s{ethreatname}","tsip":"%s{tsip}","tuntype":"%s{ttype}","year":"%04d{yyyy}","ztunnelversion":"%s{ztunnelversion}","zpa_app_seg_name":"%s{zpa_app_seg_name}"\}\}
+\{"version":"v2","sourcetype":"zscalernss-fw","event":\{"datetime":"%s{time}","outbytes":"%ld{outbytes}","cltdomain":"%s{cdfqdn}","destcountry":"%s{destcountry}","cdip":"%s{cdip}","sdip":"%s{sdip}","cdport":"%d{cdport}","sdport":"%d{sdport}","devicemodel":"%s{devicemodel}","action":"%s{action}","duration":"%d{duration}","recordid":"%d{recordid}","tz":"%s{tz}","devicename":"%s{devicename}","devicehostname":"%s{devicehostname}","deviceostype":"%s{deviceostype}","deviceosversion":"%s{deviceosversion}","nwapp":"%s{nwapp}","nwsvc":"%s{nwsvc}","proto":"%s{ipproto}","ipsrulelabel":"%s{ipsrulelabel}","dnatrulelabel":"%s{dnatrulelabel}","rdr_rulename":"%s{rdr_rulename}","rule":"%s{rulelabel}","rulelabel":"%s{erulelabel}","inbytes":"%ld{inbytes}","srcipcountry":"%s{srcip_country}","csip":"%s{csip}","ssip":"%s{ssip}","csport":"%d{csport}","ssport":"%d{ssport}","user":"%s{elogin}","aggregate":"%s{aggregate}","bypassed_session":"%d{bypassed_session}","bypass_time":"%s{bypass_etime}","datacentercity":"%s{datacentercity}","datacentercountry":"%s{datacentercountry}","datacenter":"%s{datacenter}","day_of_month":"%02d{dd}","department":"%s{edepartment}","dept":"%s{dept}","deviceappversion":"%s{deviceappversion}","deviceowner":"%s{deviceowner}","avgduration":"%d{avgduration}","durationms":"%d{durationms}","epochtime":"%d{epochtime}","external_deviceid":"%s{external_deviceid}","flow_type":"%s{flow_type}","forward_gateway_name":"%s{fwd_gw_name}","hour":"%02d{hh}","ipcat":"%s{ipcat}","ips_custom_signature":"%d{ips_custom_signature}","location":"%s{location}","locationname":"%s{elocation}","login":"%s{login}","minute":"%02d{mm}","month":"%s{mon}","month_of_year":"%02d{mth}","dnat":"%s{dnat}","odevicename":"%s{odevicename}","odeviceowner":"%s{odeviceowner}","ofwd_gw_name":"%s{ofwd_gw_name}","odevicehostname":"%s{odevicehostname}","oipcat":"%s{oipcat}","oipsrulelabel":"%s{oipsrulelabel}","ordr_rulename":"%s{ordr_rulename}","orulelabel":"%s{orulelabel}","ozpa_app_seg_name":"%s{ozpa_app_seg_name}","second":"%02d{ss}","numsessions":"%d{numsessions}","stateful":"%s{stateful}","threat_name":"%s{threatname}","threatcat":"%s{threatcat}","threatname":"%s{ethreatname}","tsip":"%s{tsip}","tuntype":"%s{ttype}","year":"%04d{yyyy}","ztunnelversion":"%s{ztunnelversion}","zpa_app_seg_name":"%s{zpa_app_seg_name}"\}\}
 ```
 
 Sample Response:
 ```json
-{"sourcetype":"zscalernss-fw","event":{"datetime":"Mon Oct 16 22:55:48 2023","cltdomain":"www.example.com","cdip":"2a02:cf40::","outbytes":"10000","cdport":"22","destcountry":"USA","devicemodel":"20L8S7WC08","sdip":"67.43.156.0","duration":"600","sdport":"443","tz":"GMT","action":"Blocked","devicehostname":"THINKPADSMITH","recordid":"123456","deviceosversion":"Version 10.14.2 (Build 18C54)","devicename":"admin","nwsvc":"HTTP","deviceostype":"iOS","ipsrulelabel":"Default IPS Rule","nwapp":"Skype","rdr_rulename":"FWD_Rule_1","proto":"TCP","rulelabel":"rule1","dnatrulelabel":"DNAT_Rule_1","srcipcountry":"United States","rule":"Default_Firewall_Filtering_Rule","ssip":"1.128.0.0","inbytes":"10000","ssport":"22","csip":"0.0.0.0","aggregate":"Yes","csport":"25","bypass_time":"Mon Oct 16 22:55:48 2023","user":"jdoe%40safemarch.com","datacentercountry":"US","bypassed_session":"1","day":"Mon","datacentercity":"Sa","department":"sales","datacenter":"CA Client Node DC","deviceappversion":"2.0.0.120","day_of_month":"16","avgduration":"600","dept":"Sales","eedone":"Yes","deviceowner":"jsmith","external_deviceid":"1234","durationms":"600","forward_gateway_name":"FWD_1","epochtime":"1578128400","ipcat":"Finance","flow_type":"Direct","location":"Headquarters","hour":"22","login":"jdo%40safemarch.com","ips_custom_signature":"0","month":"Oct","locationname":"Headquarters","dnat":"Yes","minute":"55","odevicename":"2175092224","month_of_year":"10","ofwd_gw_name":"8794487099","ocsip":"9960223283","oipcat":"5300295980","odeviceowner":"10831489","odnatlabel":"7956407282","odevicehostname":"2168890624","orulelabel":"624054738","oipsrulelabel":"6200694987","second":"48","ordr_rulename":"3399565100","stateful":"Yes","ozpa_app_seg_name":"7648246731","threatcat":"Botnet Callback","numsessions":"5","tsip":"89.160.20.128","threat_name":"Linux.Backdoor.Tsunami","year":"2023","threatname":"Linux.Backdoor","zpa_app_seg_name":"ZPA_test_app_segment","tuntype":"L2 tunnel","ztunnelversion":"ZTUNNEL_1_0"}}
+{"version":"v2","sourcetype":"zscalernss-fw","event":{"datetime":"Mon Oct 16 22:55:48 2023","cltdomain":"www.example.com","cdip":"2a02:cf40::","outbytes":"10000","cdport":"22","destcountry":"USA","devicemodel":"20L8S7WC08","sdip":"67.43.156.0","duration":"600","sdport":"443","tz":"GMT","action":"Blocked","devicehostname":"THINKPADSMITH","recordid":"123456","deviceosversion":"Version 10.14.2 (Build 18C54)","devicename":"admin","nwsvc":"HTTP","deviceostype":"iOS","ipsrulelabel":"Default IPS Rule","nwapp":"Skype","rdr_rulename":"FWD_Rule_1","proto":"TCP","rulelabel":"rule1","dnatrulelabel":"DNAT_Rule_1","srcipcountry":"United States","rule":"Default_Firewall_Filtering_Rule","ssip":"1.128.0.0","inbytes":"10000","ssport":"22","csip":"0.0.0.0","aggregate":"Yes","csport":"25","bypass_time":"Mon Oct 16 22:55:48 2023","user":"jdoe%40safemarch.com","datacentercountry":"US","bypassed_session":"1","day":"Mon","datacentercity":"Sa","department":"sales","datacenter":"CA Client Node DC","deviceappversion":"2.0.0.120","day_of_month":"16","avgduration":"600","dept":"Sales","eedone":"Yes","deviceowner":"jsmith","external_deviceid":"1234","durationms":"600","forward_gateway_name":"FWD_1","epochtime":"1578128400","ipcat":"Finance","flow_type":"Direct","location":"Headquarters","hour":"22","login":"jdo%40safemarch.com","ips_custom_signature":"0","month":"Oct","locationname":"Headquarters","dnat":"Yes","minute":"55","odevicename":"2175092224","month_of_year":"10","ofwd_gw_name":"8794487099","ocsip":"9960223283","oipcat":"5300295980","odeviceowner":"10831489","odnatlabel":"7956407282","odevicehostname":"2168890624","orulelabel":"624054738","oipsrulelabel":"6200694987","second":"48","ordr_rulename":"3399565100","stateful":"Yes","ozpa_app_seg_name":"7648246731","threatcat":"Botnet Callback","numsessions":"5","tsip":"89.160.20.128","threat_name":"Linux.Backdoor.Tsunami","year":"2023","threatname":"Linux.Backdoor","zpa_app_seg_name":"ZPA_test_app_segment","tuntype":"L2 tunnel","ztunnelversion":"ZTUNNEL_1_0"}}
 ```
 
 ### Tunnel Log
@@ -190,24 +173,24 @@ See: [Zscaler Vendor documentation]( https://help.zscaler.com/zia/nss-feed-outpu
 Zscaler Tunnel Log response formats (v2):
 - Tunnel Event:
     ```
-    \{"sourcetype":"zscalernss-tunnel","event":\{"datetime":"%s{datetime}","day":"%s{day}","dd":"%02d{dd}","destinationip":"%s{destvip}","event":"%s{event}","eventreason":"%s{eventreason}","hh":"%02d{hh}","locationname":"%s{locationname}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","olocationname":"%s{olocationname}","ovpncredentialname":"%s{ovpncredentialname}","recordid":"%d{recordid}","sourceip":"%s{sourceip}","sourceport":"%d{srcport}","ss":"%02d{ss}","Recordtype":"%s{tunnelactionname}","tunneltype":"%s{tunneltype}","timezone":"%s{tz}","user":"%s{vpncredentialname}","yyyy":"%04d{yyyy}"\}\}
+    \{"version":"v2","sourcetype":"zscalernss-tunnel","event":\{"datetime":"%s{datetime}","day":"%s{day}","dd":"%02d{dd}","destinationip":"%s{destvip}","event":"%s{event}","eventreason":"%s{eventreason}","hh":"%02d{hh}","locationname":"%s{locationname}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","olocationname":"%s{olocationname}","ovpncredentialname":"%s{ovpncredentialname}","recordid":"%d{recordid}","sourceip":"%s{sourceip}","sourceport":"%d{srcport}","ss":"%02d{ss}","Recordtype":"%s{tunnelactionname}","tunneltype":"%s{tunneltype}","timezone":"%s{tz}","user":"%s{vpncredentialname}","yyyy":"%04d{yyyy}"\}\}
     ```
 - Sample Event:
     ```
-    \{"sourcetype":"zscalernss-tunnel","event":\{"datetime":"%s{datetime}","day":"%s{day}","dd":"%02d{dd}","destinationip":"%s{destvip}","dpdrec":"%d{dpdrec}","hh":"%02d{hh}","locationname":"%s{locationname}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","olocationname":"%s{olocationname}","ovpncredentialname":"%s{ovpncredentialname}","recordid":"%d{recordid}","rxbytes":"%lu{rxbytes}","rxpackets":"%d{rxpackets}","sourceip":"%s{sourceip}","sourceport":"%d{srcport}","ss":"%02d{ss}","Recordtype":"%s{tunnelactionname}","tunneltype":"%s{tunneltype}","txbytes":"%lu{txbytes}","txpackets":"%d{txpackets}","timezone":"%s{tz}","user":"%s{vpncredentialname}","yyyy":"%04d{yyyy}"\}\}
+    \{"version":"v2","sourcetype":"zscalernss-tunnel","event":\{"datetime":"%s{datetime}","day":"%s{day}","dd":"%02d{dd}","destinationip":"%s{destvip}","dpdrec":"%d{dpdrec}","hh":"%02d{hh}","locationname":"%s{locationname}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","olocationname":"%s{olocationname}","ovpncredentialname":"%s{ovpncredentialname}","recordid":"%d{recordid}","rxbytes":"%lu{rxbytes}","rxpackets":"%d{rxpackets}","sourceip":"%s{sourceip}","sourceport":"%d{srcport}","ss":"%02d{ss}","Recordtype":"%s{tunnelactionname}","tunneltype":"%s{tunneltype}","txbytes":"%lu{txbytes}","txpackets":"%d{txpackets}","timezone":"%s{tz}","user":"%s{vpncredentialname}","yyyy":"%04d{yyyy}"\}\}
     ```
 - IKE Phase 1
     ```
-    \{"sourcetype":"zscalernss-tunnel","event":\{"algo":"%s{algo}","authentication":"%s{authentication}","authtype":"%s{authtype}","datetime":"%s{datetime}","day":"%s{day}","dd":"%02d{dd}","destinationip":"%s{destvip}","destinationport":"%d{dstport}","hh":"%02d{hh}","ikeversion":"%d{ikeversion}","lifetime":"%d{lifetime}","locationname":"%s{locationname}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","olocationname":"%s{olocationname}","ovpncredentialname":"%s{ovpncredentialname}","recordid":"%d{recordid}","sourceip":"%s{sourceip}","spi_in":"%lu{spi_in}","spi_out":"%lu{spi_out}","sourceport":"%d{srcport}","ss":"%02d{ss}","Recordtype":"%s{tunnelactionname}","tunneltype":"IPSEC IKEV %d{ikeversion}","timezone":"%s{tz}","vendorname":"%s{vendorname}","user":"%s{vpncredentialname}","yyyy":"%04d{yyyy}"\}\}
+    \{"version":"v2","sourcetype":"zscalernss-tunnel","event":\{"algo":"%s{algo}","authentication":"%s{authentication}","authtype":"%s{authtype}","datetime":"%s{datetime}","day":"%s{day}","dd":"%02d{dd}","destinationip":"%s{destvip}","destinationport":"%d{dstport}","hh":"%02d{hh}","ikeversion":"%d{ikeversion}","lifetime":"%d{lifetime}","locationname":"%s{locationname}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","olocationname":"%s{olocationname}","ovpncredentialname":"%s{ovpncredentialname}","recordid":"%d{recordid}","sourceip":"%s{sourceip}","spi_in":"%lu{spi_in}","spi_out":"%lu{spi_out}","sourceport":"%d{srcport}","ss":"%02d{ss}","Recordtype":"%s{tunnelactionname}","tunneltype":"IPSEC IKEV %d{ikeversion}","timezone":"%s{tz}","vendorname":"%s{vendorname}","user":"%s{vpncredentialname}","yyyy":"%04d{yyyy}"\}\}
     ```
 - IKE Phase 2
     ```
-    \{"sourcetype":"zscalernss-tunnel","event":\{"algo":"%s{algo}","authentication":"%s{authentication}","authtype":"%s{authtype}","datetime":"%s{datetime}","day":"%s{day}","dd":"%02d{dd}","destinationipend":"%s{destipend}","destinationipstart":"%s{destipstart}","destinationportstart":"%d{destportstart}","destinationip":"%s{destvip}","hh":"%02d{hh}","ikeversion":"%d{ikeversion}","lifebytes":"%d{lifebytes}","lifetime":"%d{lifetime}","locationname":"%s{locationname}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","olocationname":"%s{olocationname}","ovpncredentialname":"%s{ovpncredentialname}","protocol":"%s{protocol}","recordid":"%d{recordid}","sourceip":"%s{sourceip}","spi":"%d{spi}","srcipend":"%s{srcipend}","srcipstart":"%s{srcipstart}","sourceportstart":"%d{srcportstart}","ss":"%02d{ss}","Recordtype":"%s{tunnelactionname}","tunnelprotocol":"%s{tunnelprotocol}","tunneltype":"IPSEC IKEV %d{ikeversion}","timezone":"%s{tz}","user":"%s{vpncredentialname}","yyyy":"%04d{yyyy}"\}\}
+    \{"version":"v2","sourcetype":"zscalernss-tunnel","event":\{"algo":"%s{algo}","authentication":"%s{authentication}","authtype":"%s{authtype}","datetime":"%s{datetime}","day":"%s{day}","dd":"%02d{dd}","destinationipend":"%s{destipend}","destinationipstart":"%s{destipstart}","destinationportstart":"%d{destportstart}","destinationip":"%s{destvip}","hh":"%02d{hh}","ikeversion":"%d{ikeversion}","lifebytes":"%d{lifebytes}","lifetime":"%d{lifetime}","locationname":"%s{locationname}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","olocationname":"%s{olocationname}","ovpncredentialname":"%s{ovpncredentialname}","protocol":"%s{protocol}","recordid":"%d{recordid}","sourceip":"%s{sourceip}","spi":"%d{spi}","srcipend":"%s{srcipend}","srcipstart":"%s{srcipstart}","sourceportstart":"%d{srcportstart}","ss":"%02d{ss}","Recordtype":"%s{tunnelactionname}","tunnelprotocol":"%s{tunnelprotocol}","tunneltype":"IPSEC IKEV %d{ikeversion}","timezone":"%s{tz}","user":"%s{vpncredentialname}","yyyy":"%04d{yyyy}"\}\}
     ```
 
 Sample Response:
 ```json
-{"sourcetype":"zscalernss-tunnel","event":{"datetime":"Mon Oct 16 22:55:48 2023","destinationip":"67.43.156.1","destinationport":"500","recordid":"111234","timezone":"GMT","sourceip":"67.43.156.0","sourceport":"500","user":"jdoe@safemarch.com","authentication":"HMAC_MD5","authtype":"PSKEY","day":"Mon","dd":"16","algo":"DES_CBC","hh":"22","ikeversion":"IKE_VERSION_2","lifetime":"86400","locationname":"Headquarters","mm":"55","mon":"Oct","mth":"10","olocationname":"2168890624","ovpncredentialname":"4094304256","ss":"48","spi_in":"None","spi_out":"None","Recordtype":"None","vendorname":"CISCO","yyyy":"2023"}}
+{"version":"v2","sourcetype":"zscalernss-tunnel","event":{"datetime":"Mon Oct 16 22:55:48 2023","destinationip":"67.43.156.1","destinationport":"500","recordid":"111234","timezone":"GMT","sourceip":"67.43.156.0","sourceport":"500","user":"jdoe@safemarch.com","authentication":"HMAC_MD5","authtype":"PSKEY","day":"Mon","dd":"16","algo":"DES_CBC","hh":"22","ikeversion":"IKE_VERSION_2","lifetime":"86400","locationname":"Headquarters","mm":"55","mon":"Oct","mth":"10","olocationname":"2168890624","ovpncredentialname":"4094304256","ss":"48","spi_in":"None","spi_out":"None","Recordtype":"None","vendorname":"CISCO","yyyy":"2023"}}
 ```
 
 ### Web Log
@@ -219,14 +202,14 @@ Sample Response:
 ![Escape feed setup image](../img/escape_feed.png?raw=true)
 See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-web-logs)
 
-Zscaler Web Log response format (v9):
+Zscaler Web Log response format (v11):
 ```
-\{"version":"v9","sourcetype":"zscalernss-web","event":\{"time":"%s{time}","cloudname":"%s{cloudname}","host":"%s{ehost}","serverip":"%s{sip}","external_devid":"%s{external_devid}","devicemodel":"%s{devicemodel}","action":"%s{action}","recordid":"%d{recordid}","reason":"%s{reason}","threatseverity":"%s{threatseverity}","tz":"%s{tz}","filesubtype":"%s{filesubtype}","upload_filesubtype":"%s{upload_filesubtype}","sha256":"%s{sha256}","bamd5":"%s{bamd5}","filename":"%s{efilename}","upload_filename":"%s{eupload_filename}","filetype":"%s{filetype}","devicename":"%s{edevicename}","devicehostname":"%s{devicehostname}","deviceostype":"%s{deviceostype}","deviceosversion":"%s{deviceosversion}","devicetype":"%s{devicetype}","reqsize":"%d{reqsize}","reqmethod":"%s{reqmethod}","b64referer":"%s{b64referer}","respsize":"%d{respsize}","respcode":"%s{respcode}","reqversion":"%s{reqversion}","respversion":"%s{respversion}","proto":"%s{proto}","company":"%s{company}","dlpmd5":"%s{dlpmd5}","apprulelabel":"%s{eapprulelabel}","dlprulename":"%s{dlprulename}","rulelabel":"%s{erulelabel}","urlfilterrulelabel":"%s{eurlfilterrulelabel}","cltip":"%s{cip}","cltintip":"%s{cintip}","cltsourceport":"%d{clt_sport}","threatname":"%s{threatname}","cltsslcipher":"%s{clientsslcipher}","clttlsversion":"%s{clienttlsversion}","b64url":"%s{b64url}","useragent":"%s{eua}","login":"%s{elogin}","applayerprotocol":"%s{alpnprotocol}","appclass":"%s{appclass}","appname":"%s{appname}","appriskscore":"%s{app_risk_score}","bandwidthclassname":"%s{bwclassname}","bandwidthrulename":"%s{bwrulename}","bwthrottle":"%s{bwthrottle}","bypassedtime":"%s{bypassed_etime}","bypassedtraffic":"%d{bypassed_traffic}","cltsslsessreuse":"%s{clientsslsessreuse}","cltpubip":"%s{cpubip}","cltsslfailcount":"%d{cltsslfailcount}","cltsslfailreason":"%s{cltsslfailreason}","contenttype":"%s{contenttype}","datacentercity":"%s{datacentercity}","datacentercountry":"%s{datacentercountry}","datacenter":"%s{datacenter}","day":"%s{day}","day_of_month":"%02d{dd}","dept":"%s{dept}","deviceappversion":"%s{deviceappversion}","deviceowner":"%s{deviceowner}","df_hosthead":"%s{df_hosthead}","df_hostname":"%s{df_hostname}","dlpdicthitcount":"%s{dlpdicthitcount}","dlpdict":"%s{dlpdict}","dlpeng":"%s{dlpeng}","dlpidentifier":"%d{dlpidentifier}","eedone":"%s{eedone}","epochtime":"%d{epochtime}","fileclass":"%s{fileclass}","flow_type":"%s{flow_type}","forward_gateway_ip":"%s{fwd_gw_ip}","forward_gateway_name":"%s{fwd_gw_name}","forward_type":"%s{fwd_type}","hour":"%02d{hh}","is_sslexpiredca":"%s{is_sslexpiredca}","is_sslselfsigned":"%s{is_sslselfsigned}","is_ssluntrustedca":"%s{is_ssluntrustedca}","keyprotectiontype":"%s{keyprotectiontype}","location":"%s{elocation}","malwarecategory":"%s{malwarecat}","malwareclass":"%s{malwareclass}","minute":"%02d{mm}","mobappcategory":"%s{mobappcat}","mobappname":"%s{emobappname}","mobdevtype":"%s{mobdevtype}","module":"%s{module}","month":"%s{mon}","month_of_year":"%02d{mth}","nssserviceip":"%s{nsssvcip}","oapprulelabel":"%s{oapprulelabel}","obwclassname":"%s{obwclassname}","ocip":"%d{ocip}","ocpubip":"%d{ocpubip}","odevicehostname":"%s{odevicehostname}","odevicename":"%s{odevicename}","odeviceowner":"%s{odeviceowner}","odlpdict":"%s{odlpdict}","odlpeng":"%s{odlpeng}","odlprulename":"%s{odlprulename}","ofwd_gw_name":"%s{ofwd_gw_name}","ologin":"%s{ologin}","ordr_rulename":"%s{ordr_rulename}","ourlcat":"%s{ourlcat}","ourlfilterrulelabel":"%s{ourlfilterrulelabel}","ozpa_app_seg_name":"%s{ozpa_app_seg_name}","externalsslpolicyreason":"%s{externalspr}","productversion":"%s{productversion}","rdr_rulename":"%s{rdr_rulename}","refererhost":"%s{erefererhost}","reqheadersize":"%d{reqhdrsize}","reqdatasize":"%d{reqdatasize}","respheadersize":"%d{resphdrsize}","respdatasize":"%d{respdatasize}","riskscore":"%d{riskscore}","ruletype":"%s{ruletype}","second":"%02d{ss}","srvcertchainvalpass":"%s{srvcertchainvalpass}","srvcertvalidationtype":"%s{srvcertvalidationtype}","srvcertvalidityperiod":"%s{srvcertvalidityperiod}","srvsslcipher":"%s{srvsslcipher}","serversslsessreuse":"%s{serversslsessreuse}","srvocspresult":"%s{srvocspresult}","srvtlsversion":"%s{srvtlsversion}","srvwildcardcert":"%s{srvwildcardcert}","ssldecrypted":"%s{ssldecrypted}","throttlereqsize":"%d{throttlereqsize}","throttlerespsize":"%d{throttlerespsize}","totalsize":"%d{totalsize}","trafficredirectmethod":"%s{trafficredirectmethod}","unscannabletype":"%s{unscannabletype}","upload_doctypename":"%s{upload_doctypename}","upload_fileclass":"%s{upload_fileclass}","upload_filetype":"%s{upload_filetype}","urlcatmethod":"%s{urlcatmethod}","urlsubcat":"%s{urlcat}","urlsupercat":"%s{urlsupercat}","urlclass":"%s{urlclass}","useragentclass":"%s{uaclass}","useragenttoken":"%s{ua_token}","userlocationname":"%s{euserlocationname}","year":"%04d{yyyy}","ztunnelversion":"%s{ztunnelversion}","zpa_app_seg_name":"%s{zpa_app_seg_name}"\}\}
+\{"version":"v11","sourcetype":"zscalernss-web","event":\{"time":"%s{time}","cloudname":"%s{cloudname}","host":"%s{ehost}","serverip":"%s{sip}","external_devid":"%s{external_devid}","devicemodel":"%s{devicemodel}","action":"%s{action}","recordid":"%d{recordid}","reason":"%s{reason}","threatseverity":"%s{threatseverity}","tz":"%s{tz}","filesubtype":"%s{filesubtype}","upload_filesubtype":"%s{upload_filesubtype}","sha256":"%s{sha256}","bamd5":"%s{bamd5}","filename":"%s{efilename}","upload_filename":"%s{eupload_filename}","filetype":"%s{filetype}","devicename":"%s{edevicename}","devicehostname":"%s{devicehostname}","deviceostype":"%s{deviceostype}","deviceosversion":"%s{deviceosversion}","devicetype":"%s{devicetype}","reqsize":"%d{reqsize}","reqmethod":"%s{reqmethod}","b64referer":"%s{b64referer}","respsize":"%d{respsize}","respcode":"%s{respcode}","reqversion":"%s{reqversion}","respversion":"%s{respversion}","proto":"%s{proto}","company":"%s{company}","dlpmd5":"%s{dlpmd5}","apprulelabel":"%s{eapprulelabel}","dlprulename":"%s{dlprulename}","rulelabel":"%s{erulelabel}","urlfilterrulelabel":"%s{eurlfilterrulelabel}","cltip":"%s{cip}","cltintip":"%s{cintip}","cltsourceport":"%d{clt_sport}","threatname":"%s{threatname}","cltsslcipher":"%s{clientsslcipher}","clttlsversion":"%s{clienttlsversion}","b64url":"%s{b64url}","useragent":"%s{eua}","login":"%s{elogin}","applayerprotocol":"%s{alpnprotocol}","appclass":"%s{appclass}","appname":"%s{appname}","appriskscore":"%s{app_risk_score}","bandwidthclassname":"%s{bwclassname}","bandwidthrulename":"%s{bwrulename}","bwthrottle":"%s{bwthrottle}","bypassedtime":"%s{bypassed_etime}","bypassedtraffic":"%d{bypassed_traffic}","cltsslsessreuse":"%s{clientsslsessreuse}","cltpubip":"%s{cpubip}","cltsslfailcount":"%d{cltsslfailcount}","cltsslfailreason":"%s{cltsslfailreason}","client_tls_keyex_pqc_offers":"%d{client_tls_keyex_pqc_offers}","client_tls_keyex_non_pqc_offers":"%d{client_tls_keyex_non_pqc_offers}","client_tls_keyex_hybrid_offers":"%d{client_tls_keyex_hybrid_offers}","client_tls_keyex_unknown_offers":"%d{client_tls_keyex_unknown_offers}","client_tls_sig_pqc_offers":"%d{client_tls_sig_pqc_offers}","client_tls_sig_non_pqc_offers":"%d{client_tls_sig_non_pqc_offers}","client_tls_sig_hybrid_offers":"%d{client_tls_sig_hybrid_offers}","client_tls_sig_unknown_offers":"%d{client_tls_sig_unknown_offers}","client_tls_keyex_alg":"%s{client_tls_keyex_alg}","client_tls_sig_alg":"%s{client_tls_sig_alg}","contenttype":"%s{contenttype}","datacentercity":"%s{datacentercity}","datacentercountry":"%s{datacentercountry}","datacenter":"%s{datacenter}","day":"%s{day}","day_of_month":"%02d{dd}","dept":"%s{dept}","dstip_country":"%s{dstip_country}","deviceappversion":"%s{deviceappversion}","deviceowner":"%s{deviceowner}","df_hosthead":"%s{df_hosthead}","df_hostname":"%s{df_hostname}","dlpdicthitcount":"%s{dlpdicthitcount}","dlpdict":"%s{dlpdict}","dlpeng":"%s{dlpeng}","dlpidentifier":"%d{dlpidentifier}","eedone":"%s{eedone}","epochtime":"%d{epochtime}","fileclass":"%s{fileclass}","flow_type":"%s{flow_type}","forward_gateway_ip":"%s{fwd_gw_ip}","forward_gateway_name":"%s{fwd_gw_name}","forward_type":"%s{fwd_type}","ft_rulename":"%s{ft_rulename}","hour":"%02d{hh}","is_sslexpiredca":"%s{is_sslexpiredca}","is_sslselfsigned":"%s{is_sslselfsigned}","is_ssluntrustedca":"%s{is_ssluntrustedca}","is_src_cntry_risky":"%s{is_src_cntry_risky}","is_dst_cntry_risky":"%s{is_dst_cntry_risky}","keyprotectiontype":"%s{keyprotectiontype}","location":"%s{elocation}","malwarecategory":"%s{malwarecat}","malwareclass":"%s{malwareclass}","minute":"%02d{mm}","mobappcategory":"%s{mobappcat}","mobappname":"%s{emobappname}","mobdevtype":"%s{mobdevtype}","module":"%s{module}","month":"%s{mon}","month_of_year":"%02d{mth}","nssserviceip":"%s{nsssvcip}","oapprulelabel":"%s{oapprulelabel}","obwclassname":"%s{obwclassname}","ocip":"%d{ocip}","ocpubip":"%d{ocpubip}","odevicehostname":"%s{odevicehostname}","odevicename":"%s{odevicename}","odeviceowner":"%s{odeviceowner}","odlpdict":"%s{odlpdict}","odlpeng":"%s{odlpeng}","odlprulename":"%s{odlprulename}","ofwd_gw_name":"%s{ofwd_gw_name}","ologin":"%s{ologin}","ordr_rulename":"%s{ordr_rulename}","ourlcat":"%s{ourlcat}","ourlfilterrulelabel":"%s{ourlfilterrulelabel}","ozpa_app_seg_name":"%s{ozpa_app_seg_name}","externalsslpolicyreason":"%s{externalspr}","productversion":"%s{productversion}","prompt_req":"%s{prompt_req}","rdr_rulename":"%s{rdr_rulename}","refererhost":"%s{erefererhost}","reqheadersize":"%d{reqhdrsize}","reqdatasize":"%d{reqdatasize}","respheadersize":"%d{resphdrsize}","respdatasize":"%d{respdatasize}","riskscore":"%d{riskscore}","ruletype":"%s{ruletype}","second":"%02d{ss}","srcip_country":"%s{srcip_country}","srvcertchainvalpass":"%s{srvcertchainvalpass}","srvcertvalidationtype":"%s{srvcertvalidationtype}","srvcertvalidityperiod":"%s{srvcertvalidityperiod}","srvsslcipher":"%s{srvsslcipher}","serversslsessreuse":"%s{serversslsessreuse}","server_tls_keyex_alg":"%s{server_tls_keyex_alg}","server_tls_sig_alg":"%s{server_tls_sig_alg}","srvocspresult":"%s{srvocspresult}","srvtlsversion":"%s{srvtlsversion}","srvwildcardcert":"%s{srvwildcardcert}","ssldecrypted":"%s{ssldecrypted}","ssl_rulename":"%s{ssl_rulename}","throttlereqsize":"%d{throttlereqsize}","throttlerespsize":"%d{throttlerespsize}","totalsize":"%d{totalsize}","trafficredirectmethod":"%s{trafficredirectmethod}","unscannabletype":"%s{unscannabletype}","upload_doctypename":"%s{upload_doctypename}","upload_fileclass":"%s{upload_fileclass}","upload_filetype":"%s{upload_filetype}","urlcatmethod":"%s{urlcatmethod}","urlsubcat":"%s{urlcat}","urlsupercat":"%s{urlsupercat}","urlclass":"%s{urlclass}","useragentclass":"%s{uaclass}","useragenttoken":"%s{ua_token}","userlocationname":"%s{euserlocationname}","year":"%04d{yyyy}","ztunnelversion":"%s{ztunnelversion}","zpa_app_seg_name":"%s{zpa_app_seg_name}"\}\}
 ```
 
 Sample Response:
 ```json
-{"version":"v9","sourcetype":"zscalernss-web","event":{"time":"Mon Oct 16 22:55:48 2023","cloudname":"zscaler.net","host":"mail.google.com","serverip":"1.128.0.0","external_devid":"1234","devicemodel":"20L8S7WC08","action":"Allowed","recordid":123456789,"reason":"File Attachment Cautioned","threatseverity":"Critical (90–100)","tz":"GMT","filesubtype":"exe","upload_filesubtype":"rar","sha256":"81ec78bc8298568bb5ea66d3c2972b670d0f7459b6cdbbcaacce90ab417ab15c","bamd5":"196a3d797bfee07fe4596b69f4ce1141","filename":"nssfeed.txt","upload_filename":"nssfeed.exe","filetype":"RAR Files","devicename":"PC11NLPA%3A5F08D97BBF43257A8FB4BBF4061A38AE324EF734","devicehostname":"THINKPADSMITH","deviceostype":"iOS","deviceosversion":"Version 10.14.2 (Build 18C54)","devicetype":"Zscaler Client Connector","reqsize":1300,"reqmethod":"invalid","b64referer":"d3d3LmV4YW1wbGUuY29tL3NlYXJjaD9maWx0ZXJzPWd1aWQ6IjQwLWVuLWRpYSIgbGFuZzoiZW4iJmZvcm09UzAwJnE9aG93IHRvIHVzZSByZW1vdGUgZGVza3RvcCB0byBjb25uZWN0IHRvIGEgd2luZG93cyAxMCBwYw==","respsize":10500,"respcode":"100","reqversion":"1.1","respversion":"1","proto":"HTTP","company":"Zscaler","dlpmd5":"154f149b1443fbfa8c121d13e5c019a1","apprulelabel":"File_Sharing_1","dlprulename":"DLP_Rule_1","rulelabel":"URL_Filtering_1","urlfilterrulelabel":"URL_Filtering_2","cltip":"81.2.69.144","cltintip":"89.160.20.128","cltsourceport":12345,"threatname":"EICAR Test File","cltsslcipher":"SSL3_CK_RSA_NULL_MD5","clttlsversion":"SSL2","b64url":"d3d3LnRyeXRoaXNlbmNvZGV1cmwuY29tL3BhcmFtcz9JZD0xJnRzPTIwMDYtMDEtMDJUMTU6MDQ6MDVaMDc6MDAmdXNlcj02NTc5MiZ2ZXJzaW9uPTEwLjAuMTkwNDEuMTI2Ng==","useragent":"Mozilla/5.0","login":"jdoe@safemarch.com","applayerprotocol":"FTP","appclass":"Administration","appname":"Adobe Connect","appriskscore":"1","bandwidthclassname":"Entertainment","bandwidthrulename":"Office 365","bwthrottle":"Yes","bypassedtime":"Mon Oct 16 22:55:48 2023","bypassedtraffic":"1","cltsslsessreuse":"Unknown","cltpubip":"175.16.199.0","cltsslfailcount":100,"cltsslfailreason":"Bad Record Mac","contenttype":"application/vnd_apple_keynote","datacentercity":"Sa","datacentercountry":"US","datacenter":"CA Client Node DC","day":"Mon","day_of_month":16,"dept":"Sales","deviceappversion":"1.128.0.0","deviceowner":"jsmith","df_hosthead":"df_hosthead","df_hostname":"df_hostname","dlpdicthitcount":"4","dlpdict":"Credit Cards","dlpeng":"HIPAA","dlpidentifier":6646484838839026000,"eedone":"Yes","epochtime":1578128400,"fileclass":"Active Web Contents","flow_type":"Direct","forward_gateway_ip":"10.1.1.1","forward_gateway_name":"FWD_1","forward_type":"Direct","hour":22,"is_sslexpiredca":"Yes","is_sslselfsigned":"Yes","is_ssluntrustedca":"Pass","keyprotectiontype":"HSM Protection","location":"Headquarters","malwarecategory":"Adware","malwareclass":"Sandbox","minute":55,"mobappcategory":"Communication","mobappname":"Amazon","mobdevtype":"Google Android","module":"Administration","month":"Oct","month_of_year":10,"nssserviceip":"192.168.2.200","oapprulelabel":"5300295980","obwclassname":"10831489","ocip":6200694987,"ocpubip":624054738,"odevicehostname":"2168890624","odevicename":"2175092224","odeviceowner":"10831489","odlpdict":"10831489","odlpeng":"4094304256","odlprulename":"6857275752","ofwd_gw_name":"8794487099","ologin":"4094304256","ordr_rulename":"3399565100","ourlcat":"7956407282","ourlfilterrulelabel":"4951704103","ozpa_app_seg_name":"7648246731","externalsslpolicyreason":"Blocked","productversion":"5.0.902.95524_04","rdr_rulename":"FWD_Rule_1","refererhost":"www.example.com for http://www.example.com/index.html","reqheadersize":300,"reqdatasize":1000,"respheadersize":500,"respdatasize":10000,"riskscore":10,"ruletype":"File Type Control","second":48,"srvcertchainvalpass":"Unknown","srvcertvalidationtype":"EV (Extended Validation)","srvcertvalidityperiod":"Short","srvsslcipher":"SSL3_CK_RSA_NULL_MD5","serversslsessreuse":"Unknown","srvocspresult":"Good","srvtlsversion":"SSL2","srvwildcardcert":"Unknown","ssldecrypted":"Yes","throttlereqsize":5,"throttlerespsize":7,"totalsize":11800,"trafficredirectmethod":"DNAT (Destination Translation)","unscannabletype":"Encrypted File","upload_doctypename":"Corporate Finance","upload_fileclass":"upload_fileclass","upload_filetype":"RAR Files","urlcatmethod":"Database A","urlsubcat":"Entertainment","urlsupercat":"Travel","urlclass":"Bandwidth Loss","useragentclass":"Firefox","useragenttoken":"Google Chrome (0.x)","userlocationname":"userlocationname","year":2023,"ztunnelversion":"ZTUNNEL_1_0","zpa_app_seg_name":"ZPA_test_app_segment"}}
+{"version":"v11","sourcetype":"zscalernss-web","event":{"time":"Mon Oct 16 22:55:48 2023","cloudname":"zscaler.net","host":"mail.google.com","serverip":"81.2.69.142","external_devid":"1234","devicemodel":"20L8S7WC08","action":"Allowed","recordid":"123456789","reason":"File Attachment Cautioned","threatseverity":"Critical (90\u2013100)","tz":"GMT","filesubtype":"rar","upload_filesubtype":"rar","sha256":"81ec78bc8298568bb5ea66d3c2972b670d0f7459b6cdbbcaacce90ab417ab15c","bamd5":"196a3d797bfee07fe4596b69f4ce1141","filename":"nssfeed.txt","upload_filename":"nssfeed.exe","filetype":"RAR Files","devicename":"PC11NLPA:5F08D97BBF43257A8FB4BBF4061A38AE324EF734","devicehostname":"THINKPADSMITH","deviceostype":"iOS","deviceosversion":"Version 10.14.2 (Build 18C54)","devicetype":"Zscaler Client Connector","reqsize":"1300","reqmethod":"invalid","b64referer":"d3d3LmV4YW1wbGUuY29t","respsize":"10500","respcode":"100","reqversion":"1.1","respversion":"1","proto":"HTTP","company":"Zscaler","dlpmd5":"154f149b1443fbfa8c121d13e5c019a1","apprulelabel":"File_Sharing_1","dlprulename":"DLP_Rule_1","rulelabel":"URL_Filtering_1","urlfilterrulelabel":"URL_Filtering_1","cltip":"81.2.69.142","cltintip":"81.2.69.142","cltsourceport":"1235","threatname":"EICAR Test File","cltsslcipher":"SSL3_CK_RSA_NULL_MD5","clttlsversion":"SSL2","b64url":"d3d3LnRyeXRoaXNlbmNvZGV1cmwuY29tL2luZGV4","useragent":"Mozilla\/5.0","login":"jdoe@safemarch.com","applayerprotocol":"FTP","appclass":"Administration","appname":"Adobe Connect","appriskscore":"None","bandwidthclassname":"Entertainment","bandwidthrulename":"Office 365","bwthrottle":"Yes","bypassedtime":"Mon Oct 16 22:55:48 2023","bypassedtraffic":"0","cltsslsessreuse":"Unknown","cltpubip":"81.2.69.142","cltsslfailcount":"100","cltsslfailreason":"Bad Record Mac","client_tls_keyex_pqc_offers":0,"client_tls_keyex_non_pqc_offers":0,"client_tls_keyex_hybrid_offers":1,"client_tls_keyex_unknown_offers":1,"client_tls_sig_pqc_offers":1,"client_tls_sig_non_pqc_offers":0,"client_tls_sig_hybrid_offers":1,"client_tls_sig_unknown_offers":0,"client_tls_keyex_alg":"X23319LMKEM788","client_tls_sig_alg":"rsa_pss_rsae_sha256","contenttype":"application\/vnd_apple_keynote","datacentercity":"Sa","datacentercountry":"US","datacenter":"CA Client Node DC","day":"Mon","day_of_month":"16","dept":"Sales","dstip_country":"India","deviceappversion":"81.2.69.142","deviceowner":"jsmith","df_hosthead":"df_hosthead","df_hostname":"df_hostname","dlpdicthitcount":"4","dlpdict":"Credit Cards","dlpeng":"HIPAA","dlpidentifier":"6646484838839026000","eedone":"Yes","epochtime":"1578128400","fileclass":"Active Web Contents","flow_type":"Direct","forward_gateway_ip":"10.1.1.1","forward_gateway_name":"FWD_1","forward_type":"Direct","ft_rulename":"FT Name","hour":"22","is_sslexpiredca":"Yes","is_sslselfsigned":"Yes","is_ssluntrustedca":"Pass","is_src_cntry_risky":"Yes","is_dst_cntry_risky":"No","keyprotectiontype":"HSM Protection","location":"Headquarters","malwarecategory":"Adware","malwareclass":"Sandbox","minute":"55","mobappcategory":"Communication","mobappname":"Amazon","mobdevtype":"Google Android","module":"Administration","month":"Oct","month_of_year":"10","nssserviceip":"192.168.2.200","oapprulelabel":"5300295980","obwclassname":"10831489","ocip":"6200694987","ocpubip":"624054738","odevicehostname":"2168890624","odevicename":"2175092224","odeviceowner":"10831489","odlpdict":"10831489","odlpeng":"4094304256","odlprulename":"6857275752","ofwd_gw_name":"8794487099","ologin":"4094304256","ordr_rulename":"3399565100","ourlcat":"7956407282","ourlfilterrulelabel":"4951704103","ozpa_app_seg_name":"7648246731","externalsslpolicyreason":"Blocked","productversion":"5.0.902.95524_04","prompt_req":"Prompt","rdr_rulename":"FWD_Rule_1","refererhost":"www.example.com for http:\/\/www.example.com\/index.html","reqheadersize":"300","reqdatasize":"1000","respheadersize":"500","respdatasize":"10000","riskscore":"10","ruletype":"File Type Control","second":"48","srcip_country":"India","srvcertchainvalpass":"Unknown","srvcertvalidationtype":"EV (Extended Validation)","srvcertvalidityperiod":"Short","srvsslcipher":"SSL3_CK_RSA_NULL_MD5","serversslsessreuse":"Unknown","server_tls_keyex_alg":"X23319LMKEM788","server_tls_sig_alg":"rsa_pss_rsae_sha256","srvocspresult":"Good","srvtlsversion":"SSL2","srvwildcardcert":"Unknown","ssldecrypted":"Yes","ssl_rulename":"SSL Policy","throttlereqsize":"5","throttlerespsize":"7","totalsize":"11800","trafficredirectmethod":"DNAT (Destination Translation)","unscannabletype":"Encrypted File","upload_doctypename":"Corporate Finance","upload_fileclass":"upload_fileclass","upload_filetype":"RAR Files","urlcatmethod":"Database A","urlsubcat":"Entertainment","urlsupercat":"Travel","urlclass":"Bandwidth Loss","useragentclass":"Firefox","useragenttoken":"Google Chrome (0.x)","userlocationname":"userlocationname","year":"2023","ztunnelversion":"ZTUNNEL_1_0","zpa_app_seg_name":"ZPA_test_app_segment"}}
 ```
 ### Enabling the integration in Elastic:
 
@@ -478,52 +461,62 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-17T07:27:54.000Z",
+    "@timestamp": "2023-10-16T22:55:48.000Z",
     "agent": {
-        "ephemeral_id": "6dac0cbb-768a-4dc4-a476-6bf881ed6755",
-        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "189ba002-e0c4-4952-80d4-a8b37461decf",
+        "id": "b7b8276c-fd97-4c9b-97b8-a4ab6497e132",
+        "name": "elastic-agent-39582",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
+    },
+    "cloud": {
+        "provider": "zscaler.net"
     },
     "data_stream": {
         "dataset": "zscaler_zia.dns",
-        "namespace": "ep",
+        "namespace": "50410",
         "type": "logs"
     },
     "destination": {
         "geo": {
-            "city_name": "Linköping",
-            "continent_name": "Europe",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
             "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
+                "lat": 43.88,
+                "lon": 125.3228
             },
-            "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
         },
-        "ip": "89.160.20.156"
+        "ip": "175.16.199.0"
+    },
+    "device": {
+        "model": {
+            "name": "VMware7,1"
+        }
     },
     "dns": {
         "answers": [
             {
-                "data": "Some response string"
+                "data": "www.example.com",
+                "type": "IPv4"
             }
         ],
         "question": {
-            "name": "example.com",
-            "type": "Some type"
-        }
+            "name": "mail.safemarch.com",
+            "type": "A record"
+        },
+        "response_code": "EMPTY_RESP"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
+        "id": "b7b8276c-fd97-4c9b-97b8-a4ab6497e132",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -531,88 +524,152 @@ An example event for `dns` looks as following:
             "network"
         ],
         "dataset": "zscaler_zia.dns",
-        "duration": 123456000000,
-        "ingested": "2024-07-04T12:03:18Z",
+        "duration": 1000000000,
+        "id": "45648954",
+        "ingested": "2025-12-09T09:11:42Z",
         "kind": "event",
-        "timezone": "UTC",
+        "timezone": "GMT",
         "type": [
             "info"
         ]
     },
     "host": {
-        "name": "machine9000"
+        "hostname": "admin",
+        "name": "thinkpadsmith",
+        "os": {
+            "version": "Microsoft Windows 10 Enterprise;64 bit"
+        },
+        "type": "Zscaler Client Connector"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.243.6:52614"
+            "address": "192.168.246.3:40862"
         }
     },
     "network": {
-        "protocol": "dns"
+        "application": "google dns",
+        "protocol": "dns",
+        "transport": [
+            "tcp"
+        ]
+    },
+    "organization": {
+        "name": "Zscaler"
     },
     "related": {
         "hosts": [
-            "machine9000"
+            "thinkpadsmith",
+            "admin"
         ],
         "ip": [
-            "89.160.20.112",
-            "89.160.20.156"
+            "81.2.69.192",
+            "175.16.199.0"
         ],
         "user": [
-            "Owner77",
-            "some_user",
-            "some_user@example.com"
+            "jsmith",
+            "jdoe1",
+            "jdoe1@safemarch.com"
         ]
     },
     "rule": {
         "name": [
-            "Access Blocked"
+            "RULE_1",
+            "RULE_RES"
         ]
     },
     "source": {
         "geo": {
-            "city_name": "Linköping",
+            "city_name": "London",
             "continent_name": "Europe",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
             "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
+                "lat": 51.5142,
+                "lon": -0.0931
             },
-            "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
         },
-        "ip": "89.160.20.112",
-        "port": 8080
+        "ip": "81.2.69.192",
+        "port": 1025
     },
     "tags": [
         "forwarded",
         "zscaler_zia-dns"
     ],
     "user": {
-        "domain": "example.com",
-        "email": "some_user@example.com",
-        "name": "some_user"
+        "domain": "safemarch.com",
+        "email": "jdoe1@safemarch.com",
+        "name": "jdoe1"
     },
     "zscaler_zia": {
         "dns": {
-            "department": "Unknown",
+            "datacenter": {
+                "city": "Sa",
+                "country": "US",
+                "name": "CA Client Node DC"
+            },
+            "day": "Mon",
+            "day_of_month": 16,
+            "department": "EDept",
+            "dept": "Sales",
             "device": {
-                "owner": "Owner77"
+                "appversion": "4.3.0.18",
+                "os": {
+                    "type": "Windows OS"
+                },
+                "owner": "jsmith"
+            },
+            "dns": {
+                "category": "Network Service",
+                "gateway": {
+                    "rule": "DNS GATEWAY Rule 1",
+                    "status": "PRIMARY_SERVER_RESPONSE_PASS"
+                }
             },
             "dom": {
                 "category": "Professional Services"
             },
-            "location": "TestLoc DB",
+            "ecs": {
+                "prefix": "192.168.0.0",
+                "slot": "ECS Slot #17"
+            },
+            "ednsreq": "XP44535PP",
+            "eedone": "Yes",
+            "epochtime": "2020-01-04T09:00:00.000Z",
+            "hour": 22,
+            "http_code": "100",
+            "istcp": "1",
+            "loc": "Headquarters",
+            "location": "ELocation",
+            "login": "jdoe@safemarch.com",
+            "minutes": 55,
+            "month": "Oct",
+            "month_of_year": 10,
+            "obfuscated": {
+                "client_source_ip": "9960223283",
+                "device": {
+                    "name": "2175092224",
+                    "owner": "10831489"
+                },
+                "dom": {
+                    "category": "4951704103"
+                },
+                "host_name": "2168890624"
+            },
             "request": {
                 "action": "REQ_ALLOW"
             },
             "response": {
-                "action": "Some Response Action"
-            }
+                "action": "RES_Action",
+                "category": "Adult Themes"
+            },
+            "second": 48,
+            "timezone": "GMT",
+            "year": 2023
         }
     }
 }
@@ -658,6 +715,7 @@ An example event for `dns` looks as following:
 | zscaler_zia.dns.duration.milliseconds | The duration of the DNS request in milliseconds. | long |
 | zscaler_zia.dns.ecs.prefix | The EDNS Client Subnet (ECS) prefix used in the DNS request. | keyword |
 | zscaler_zia.dns.ecs.slot | The name of the EDNS Client Subnet (ECS) rule that was applied to the DNS transaction. | keyword |
+| zscaler_zia.dns.ednsreq | This field is the hex-encoded version of DNS request. | keyword |
 | zscaler_zia.dns.eedone | Indicates if the characters specified in the Feed Escape Character field of the NSS configuration page were hex encoded. | keyword |
 | zscaler_zia.dns.epochtime | The epoch time of the transaction. | date |
 | zscaler_zia.dns.error | The DNS error code. | keyword |
@@ -1541,113 +1599,404 @@ An example event for `web` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-31T08:08:08.000Z",
+    "@timestamp": "2023-10-16T22:55:48.000Z",
     "agent": {
-        "ephemeral_id": "afba03f3-0a10-4b56-998d-0fd4aa4e71ea",
-        "id": "6df0d50c-dafe-4616-9ed1-10519bfbda98",
-        "name": "elastic-agent-86843",
+        "ephemeral_id": "d4f0fcd9-3b74-4e1f-83b9-fd0c8d451d61",
+        "id": "6a071209-1c3e-4c0e-8b84-0c1066ac57fe",
+        "name": "elastic-agent-58206",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.18.0"
+    },
+    "cloud": {
+        "provider": "zscaler.net"
     },
     "data_stream": {
         "dataset": "zscaler_zia.web",
-        "namespace": "65605",
+        "namespace": "36135",
         "type": "logs"
+    },
+    "destination": {
+        "domain": "mail.google.com",
+        "ip": "10.0.0.1"
+    },
+    "device": {
+        "id": "1234",
+        "model": {
+            "identifier": "20L8S7WC08"
+        }
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6df0d50c-dafe-4616-9ed1-10519bfbda98",
+        "id": "6a071209-1c3e-4c0e-8b84-0c1066ac57fe",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.18.0"
     },
     "event": {
-        "action": "blocked",
+        "action": "allowed",
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2024-08-22T16:05:37Z",
+        "id": "123456789",
+        "ingested": "2025-12-09T09:09:09Z",
         "kind": "event",
-        "timezone": "UTC",
+        "outcome": "success",
+        "reason": "File Attachment Cautioned",
+        "timezone": "GMT",
         "type": [
-            "info"
+            "access"
         ]
     },
     "file": {
+        "extension": [
+            "rar"
+        ],
+        "hash": {
+            "md5": "196a3d797bfee07fe4596b69f4ce1141",
+            "sha256": "81ec78bc8298568bb5ea66d3c2972b670d0f7459b6cdbbcaacce90ab417ab15c"
+        },
+        "name": [
+            "nssfeed.txt",
+            "nssfeed.exe"
+        ],
         "type": "file"
     },
     "host": {
-        "name": "testmachine35"
+        "hostname": "PC11NLPA:5F08D97BBF43257A8FB4BBF4061A38AE324EF734",
+        "name": "thinkpadsmith",
+        "os": {
+            "type": "ios",
+            "version": "Version 10.14.2 (Build 18C54)"
+        },
+        "type": "Zscaler Client Connector"
     },
     "http": {
         "request": {
-            "bytes": 600,
-            "method": "CONNECT"
+            "bytes": 1300,
+            "method": "invalid",
+            "referrer": "www.example.com"
         },
         "response": {
-            "bytes": 65
-        }
+            "bytes": 10500
+        },
+        "version": [
+            "1.1",
+            "1"
+        ]
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.246.3:42412"
+        }
     },
     "network": {
-        "protocol": "http_proxy"
+        "protocol": "http"
+    },
+    "organization": {
+        "name": "Zscaler"
     },
     "related": {
+        "hash": [
+            "154f149b1443fbfa8c121d13e5c019a1",
+            "196a3d797bfee07fe4596b69f4ce1141",
+            "81ec78bc8298568bb5ea66d3c2972b670d0f7459b6cdbbcaacce90ab417ab15c"
+        ],
         "hosts": [
-            "testmachine35"
+            "thinkpadsmith",
+            "PC11NLPA:5F08D97BBF43257A8FB4BBF4061A38AE324EF734"
+        ],
+        "ip": [
+            "192.168.1.10",
+            "10.0.0.3",
+            "10.1.1.1",
+            "192.168.2.200",
+            "10.0.0.2",
+            "10.0.0.1"
         ],
         "user": [
-            "administrator1",
-            "test",
-            "test@example.com"
+            "jsmith",
+            "jdoe",
+            "jdoe@safemarch.com"
         ]
     },
     "rule": {
         "name": [
-            "Zscaler Proxy Traffic"
+            "File_Sharing_1",
+            "DLP_Rule_1",
+            "URL_Filtering_1"
         ]
+    },
+    "source": {
+        "ip": "10.0.0.2",
+        "nat": {
+            "ip": "192.168.1.10"
+        },
+        "port": 1235
     },
     "tags": [
         "forwarded",
         "zscaler_zia-web"
     ],
+    "threat": {
+        "indicator": {
+            "name": "196a3d797bfee07fe4596b69f4ce1141"
+        }
+    },
+    "tls": {
+        "cipher": "SSL3_CK_RSA_NULL_MD5"
+    },
+    "url": {
+        "domain": "www.trythisencodeurl.com",
+        "full": "http://www.trythisencodeurl.com/index",
+        "original": "http://www.trythisencodeurl.com/index",
+        "path": "/index",
+        "scheme": "http"
+    },
     "user": {
-        "domain": "example.com",
-        "email": "test@example.com",
-        "name": "test"
+        "domain": "safemarch.com",
+        "email": "jdoe@safemarch.com",
+        "name": "jdoe"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "Other",
+        "original": "Mozilla/5.0"
     },
     "zscaler_zia": {
         "web": {
+            "alpn_protocol": "FTP",
             "app": {
-                "class": "General Browsing",
-                "name": "General Browsing"
+                "class": "Administration",
+                "name": "Adobe Connect"
             },
-            "content_type": "Other",
-            "department": "Unknown",
+            "bandwidth_class_name": "Entertainment",
+            "bandwidth_rule_name": "Office 365",
+            "bandwidth_throttle": "Yes",
+            "bypassed": {
+                "time": "2023-10-16T22:55:48.000Z",
+                "traffic": "0"
+            },
+            "client": {
+                "cipher_reuse": "Unknown",
+                "public_ip": "10.0.0.3",
+                "ssl": {
+                    "fail_count": 100,
+                    "fail_reason": "Bad Record Mac"
+                },
+                "tls_keyex_alg": "X23319LMKEM788",
+                "tls_keyex_hybrid_offers": 1,
+                "tls_keyex_non_pqc_offers": 0,
+                "tls_keyex_pqc_offers": 0,
+                "tls_keyex_unknown_offers": 1,
+                "tls_sig_alg": "rsa_pss_rsae_sha256",
+                "tls_sig_hybrid_offers": 1,
+                "tls_sig_non_pqc_offers": 0,
+                "tls_sig_pqc_offers": 1,
+                "tls_sig_unknown_offers": 0,
+                "tls_version": "SSL2"
+            },
+            "content_type": "application/vnd_apple_keynote",
+            "datacenter": {
+                "city": "Sa",
+                "country": "US",
+                "name": "CA Client Node DC"
+            },
+            "day": "Mon",
+            "day_of_month": 16,
+            "department": "Sales",
             "device": {
-                "owner": "administrator1"
+                "appversion": "192.168.1.100",
+                "os": {
+                    "type": "iOS"
+                },
+                "owner": "jsmith"
             },
-            "location": "Test DB",
+            "df": {
+                "host": {
+                    "head": "df_hosthead",
+                    "name": "df_hostname"
+                }
+            },
+            "dlp": {
+                "dictionaries": {
+                    "hit_count": "4",
+                    "name": "Credit Cards"
+                },
+                "engine": "HIPAA",
+                "identifier": "6646484838839026000",
+                "md5": "154f149b1443fbfa8c121d13e5c019a1"
+            },
+            "dstip_country": "India",
+            "eedone": "Yes",
+            "epochtime": "2020-01-04T09:00:00.000Z",
+            "file": {
+                "class": "Active Web Contents",
+                "type": "RAR Files"
+            },
+            "flow_type": "Direct",
+            "forward_gateway": {
+                "ip": "10.1.1.1",
+                "name": "FWD_1"
+            },
+            "forward_type": "Direct",
+            "ft_rulename": "FT Name",
+            "hour": 22,
+            "is_dst_cntry_risky": "No",
+            "is_src_cntry_risky": "Yes",
+            "is_ssl_certificate_expired": "Yes",
+            "is_ssl_certificate_selfsigned": "Yes",
+            "is_ssl_certificate_untrusted": "Pass",
+            "key_protection_type": "HSM Protection",
+            "location": "Headquarters",
+            "malware": {
+                "category": "Adware",
+                "class": "Sandbox"
+            },
+            "minute": 55,
+            "mobile": {
+                "application": {
+                    "category": "Communication",
+                    "name": "Amazon"
+                },
+                "dev": {
+                    "type": "Google Android"
+                }
+            },
+            "module": "Administration",
+            "month": "Oct",
+            "month_of_year": 10,
+            "nss": {
+                "service": {
+                    "ip": "192.168.2.200"
+                }
+            },
+            "obfuscated": {
+                "app_rule_label": "5300295980",
+                "bendwidth": {
+                    "class_name": "10831489"
+                },
+                "client": {
+                    "ip": "6200694987",
+                    "public": {
+                        "ip": "624054738"
+                    }
+                },
+                "device": {
+                    "host_name": "2168890624",
+                    "name": "2175092224",
+                    "owner": "10831489"
+                },
+                "dlp": {
+                    "dictionaries": "10831489",
+                    "engine": "4094304256",
+                    "rule": {
+                        "name": "6857275752"
+                    }
+                },
+                "forward_gateway_name": "8794487099",
+                "login": "4094304256",
+                "rule": {
+                    "name": "3399565100"
+                },
+                "url": {
+                    "category": "7956407282",
+                    "filter_rule_label": "4951704103"
+                },
+                "zpa_app_segment": "7648246731"
+            },
+            "policy": {
+                "reason": "Blocked"
+            },
+            "product_version": "5.0.902.95524_04",
+            "prompt_req": "Prompt",
+            "redirect_policy_name": "FWD_Rule_1",
+            "referer": {
+                "host": "www.example.com for http://www.example.com/index.html"
+            },
+            "request": {
+                "header_size": 300,
+                "payload": 1000
+            },
             "response": {
-                "code": "200"
+                "code": "100",
+                "header_size": 500,
+                "payload": 10000
             },
             "risk": {
-                "score": 0
+                "score": 10
             },
             "rule": {
-                "type": "FwFilter"
+                "type": "File Type Control"
+            },
+            "second": 48,
+            "server": {
+                "certificate": {
+                    "validation": {
+                        "period": "Short"
+                    }
+                },
+                "certificate_validation_chain": "Unknown",
+                "certificate_validation_type": "EV (Extended Validation)",
+                "cipher": "SSL3_CK_RSA_NULL_MD5",
+                "cipher_reuse": "Unknown",
+                "ocsp_result": "Good",
+                "tls_keyex_alg": "X23319LMKEM788",
+                "tls_sig_alg": "rsa_pss_rsae_sha256",
+                "tls_version": "SSL2",
+                "wildcard_certificate": "Unknown"
+            },
+            "srcip_country": "India",
+            "ssl_decrypted": "Yes",
+            "ssl_rulename": "SSL Policy",
+            "threat": {
+                "name": "EICAR Test File",
+                "severity": "Critical (90–100)"
+            },
+            "throttle": {
+                "request_size": 5,
+                "response_size": 7
+            },
+            "timezone": "GMT",
+            "total": {
+                "size": 11800
+            },
+            "traffic_redirect_method": "DNAT (Destination Translation)",
+            "unscannable": {
+                "type": "Encrypted File"
+            },
+            "upload": {
+                "doc": {
+                    "type_name": "Corporate Finance"
+                },
+                "file": {
+                    "class": "upload_fileclass",
+                    "type": "RAR Files"
+                }
             },
             "url": {
                 "category": {
-                    "super": "Information Technology"
+                    "sub": "Entertainment",
+                    "super": "Travel"
                 },
-                "class": "Business Use"
-            }
+                "category_method": "Database A",
+                "class": "Bandwidth Loss"
+            },
+            "user_agent": {
+                "class": "Firefox",
+                "token": "Google Chrome (0.x)"
+            },
+            "user_location_name": "userlocationname",
+            "year": 2023,
+            "z_tunnel_version": "ZTUNNEL_1_0",
+            "zpa_app_segment": "ZPA_test_app_segment"
         }
     }
 }
@@ -1685,6 +2034,16 @@ An example event for `web` looks as following:
 | zscaler_zia.web.client.source_port | The client source port. | long |
 | zscaler_zia.web.client.ssl.fail_count | The number of failed client SSL handshake attempts. | long |
 | zscaler_zia.web.client.ssl.fail_reason | The reason for the client SSL handshake failure. | keyword |
+| zscaler_zia.web.client.tls_keyex_alg | The TLS client key exchange algorithm. | keyword |
+| zscaler_zia.web.client.tls_keyex_hybrid_offers | Indicates if the TLS client offered a hybrid key exchange algorithm. | long |
+| zscaler_zia.web.client.tls_keyex_non_pqc_offers | Indicates if the TLS client offered a non-PQC key exchange algorithm. | long |
+| zscaler_zia.web.client.tls_keyex_pqc_offers | Indicates if the TLS client offered a post-quantum cryptography (PQC) key exchange algorithm. | long |
+| zscaler_zia.web.client.tls_keyex_unknown_offers | Indicates if the TLS client offered an unknown key exchange algorithm. | long |
+| zscaler_zia.web.client.tls_sig_alg | The TLS client digital signature algorithm. | keyword |
+| zscaler_zia.web.client.tls_sig_hybrid_offers | Indicates if the TLS client offered a hybrid digital signature algorithm. | long |
+| zscaler_zia.web.client.tls_sig_non_pqc_offers | Indicates if the TLS client offered a non-PQC digital signature algorithm. | long |
+| zscaler_zia.web.client.tls_sig_pqc_offers | Indicates if the TLS client offered a PQC digital signature algorithm. | long |
+| zscaler_zia.web.client.tls_sig_unknown_offers | Indicates if the TLS client offered an unknown digital signature algorithm. | long |
 | zscaler_zia.web.client.tls_version | The TLS version used for communication between the client and Zscaler. | keyword |
 | zscaler_zia.web.cloud_name | The name of the Zscaler cloud. | keyword |
 | zscaler_zia.web.company | The name of the company. | keyword |
@@ -1711,6 +2070,7 @@ An example event for `web` looks as following:
 | zscaler_zia.web.dlp.identifier | The unique identifier of the DLP incident. | keyword |
 | zscaler_zia.web.dlp.md5 | The MD5 hash of the transaction. | keyword |
 | zscaler_zia.web.dlp.rule.name | The name of the DLP rule applied to the transaction. | keyword |
+| zscaler_zia.web.dstip_country | The country associated with the destination IP address. | keyword |
 | zscaler_zia.web.eedone | Indicates if the characters specified in the Feed Escape Character field of the NSS feed configuration page were hex encoded. | keyword |
 | zscaler_zia.web.epochtime | The epoch time of the transaction. | date |
 | zscaler_zia.web.external.device.id | The external device ID that associates a user’s device with the mobile device management (MDM) solution. | keyword |
@@ -1722,8 +2082,11 @@ An example event for `web` looks as following:
 | zscaler_zia.web.forward_gateway.ip | The IP address of the gateway used. | ip |
 | zscaler_zia.web.forward_gateway.name | The name of the gateway defined in a forwarding rule. | keyword |
 | zscaler_zia.web.forward_type | The type of forwarding method used. | keyword |
+| zscaler_zia.web.ft_rulename | The name of the File Type Control rule applied to the transaction. Applies only to Allow rules, not Block. | keyword |
 | zscaler_zia.web.host | The destination hostname. | keyword |
 | zscaler_zia.web.hour | Hours. | long |
+| zscaler_zia.web.is_dst_cntry_risky | Indicates whether the country associated with the destination IP address is risky or not. | keyword |
+| zscaler_zia.web.is_src_cntry_risky | Indicates whether the country associated with the source IP address is risky or not. | keyword |
 | zscaler_zia.web.is_ssl_certificate_expired | Indicates whether the certificate presented by the server is expired or not. | keyword |
 | zscaler_zia.web.is_ssl_certificate_selfsigned | Indicates whether the certificate presented by the server to the ZIA Public Service Edge was self-signed. | keyword |
 | zscaler_zia.web.is_ssl_certificate_untrusted | Indicates whether the server certificate is signed by a Zscaler-trusted certificate authority or not. | keyword |
@@ -1759,6 +2122,7 @@ An example event for `web` looks as following:
 | zscaler_zia.web.obfuscated.zpa_app_segment | The obfuscated version of the ZPA application segment. | keyword |
 | zscaler_zia.web.policy.reason | The SSL policy reasons. | keyword |
 | zscaler_zia.web.product_version | The current version of the product. | keyword |
+| zscaler_zia.web.prompt_req | The prompt entered by the user in the generative AI application. | keyword |
 | zscaler_zia.web.prototype | The protocol type of the transaction. | keyword |
 | zscaler_zia.web.reason | The action that the service took and the policy that was applied. | keyword |
 | zscaler_zia.web.record.id | The unique record identifier for each log. | keyword |
@@ -1786,10 +2150,14 @@ An example event for `web` looks as following:
 | zscaler_zia.web.server.cipher_reuse | Server cipher reuse information. | keyword |
 | zscaler_zia.web.server.ip | The destination server IP address. | ip |
 | zscaler_zia.web.server.ocsp_result | The OCSP result/certificate revocation result. | keyword |
+| zscaler_zia.web.server.tls_keyex_alg | The TLS server key exchange algorithm. | keyword |
+| zscaler_zia.web.server.tls_sig_alg | The TLS client digital signature algorithm. | keyword |
 | zscaler_zia.web.server.tls_version | The TLS/SSL version used for communication between the ZIA Public Service Edge and the server. | keyword |
 | zscaler_zia.web.server.wildcard_certificate | The server wildcard certificate. | keyword |
 | zscaler_zia.web.sha256 | The hash of identical files. | keyword |
+| zscaler_zia.web.srcip_country | The country associated with the source IP address. | keyword |
 | zscaler_zia.web.ssl_decrypted | Indicates whether the transaction was SSL inspected or not. | keyword |
+| zscaler_zia.web.ssl_rulename | The name of the SSL Inspection policy rule that was applied to the transaction. | keyword |
 | zscaler_zia.web.threat.name | The name of the threat that was detected in the transaction. | keyword |
 | zscaler_zia.web.threat.severity | The severity of the threat that was detected in the transaction. | keyword |
 | zscaler_zia.web.throttle.request_size | The throttled transaction size in the Uplink direction (Upload) in bytes. | long |

@@ -67,9 +67,13 @@ This integration is compatible with the Zoom Platform API as of September 2020.
 | zoom.old_values | Includes the old values when updating a object like user, meeting, account or webinar | flattened |
 | zoom.operator | Username/Email related to the user that triggered the event | keyword |
 | zoom.operator_id | UserID that triggered the event | keyword |
+| zoom.participant.email | The participant's email address. This response only returns if the participant joined the meeting by logging into Zoom. If the participant is \*\*not\*\* part of the host's account, this returns an empty string value, with some exceptions. See [Email address display rules](https://developers.zoom.us/docs/api/rest/using-zoom-apis/#email-address-display-rules) for details. | keyword |
 | zoom.participant.id | Unique ID of the participant related to a meeting | keyword |
 | zoom.participant.join_time | The date and time a participant joined a meeting | date |
 | zoom.participant.leave_time | The date and time a participant left a meeting | date |
+| zoom.participant.participant_user_id | The participant's universally unique ID (UUID) if logged in. Otherwise it is blank. | keyword |
+| zoom.participant.participant_uuid | The participant's UUID for this specific meeting and any breakout rooms created in this meeting. This value is assigned to a participant when they join a meeting, and is only valid for the duration of that meeting. | keyword |
+| zoom.participant.registrant_id | The participant's registrant ID. A host or a user with administrative permissions can require [registration for Zoom meetings](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0065026). | keyword |
 | zoom.participant.sharing_details.content | Type of content that was shared | keyword |
 | zoom.participant.sharing_details.date_time | Timestamp the sharing started | keyword |
 | zoom.participant.sharing_details.file_link | The file link that was shared | keyword |
@@ -150,6 +154,7 @@ This integration is compatible with the Zoom Platform API as of September 2020.
 | zoom.user.id | UserID related to the user event | keyword |
 | zoom.user.language | Language configured for the user | keyword |
 | zoom.user.last_name | User last name related to the user event | keyword |
+| zoom.user.login_type |  | keyword |
 | zoom.user.personal_notes | Personal notes for the User | keyword |
 | zoom.user.phone_country | User country code related to the user event | keyword |
 | zoom.user.phone_number | User phone number related to the user event | keyword |

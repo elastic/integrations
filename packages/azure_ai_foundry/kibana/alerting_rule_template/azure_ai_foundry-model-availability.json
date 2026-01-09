@@ -1,0 +1,28 @@
+{
+  "id": "azure_ai_foundry-model-availability",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Azure AI Foundry] Model Availability above threshold",
+    "tags": ["Azure AI Foundry"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the model availability is less than the recommended threshold value {99%} within the look back time window.\n// The alert is grouped by Model Deployment Name.\n// You can adjust the threshold value by modifying the model_availability in the WHERE clause, which is specified in percent.\nFROM metrics-azure.ai_foundry-default\n| KEEP azure.ai_foundry.model_availability_rate.avg, azure.dimensions.model_deployment_name, @timestamp\n| WHERE azure.dimensions.model_deployment_name IS NOT NULL\n| STATS model_availability = MIN(azure.ai_foundry.model_availability_rate.avg) * 100 BY azure.dimensions.model_deployment_name\n| WHERE model_availability < 99\n| EVAL model_availability = ROUND(model_availability, 2)\n| SORT model_availability ASC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 3
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

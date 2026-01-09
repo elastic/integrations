@@ -1,0 +1,438 @@
+---
+description: Pipeline for processing RPZ response logs.
+processors:
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+  - rename:
+      field: cef.extensions.applicationProtocol
+      tag: rename_cef_extensions_applicationProtocol
+      target_field: infoblox_threat_defense.event.application_protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.application
+      tag: lowercase_network_application
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.deviceAddress
+      tag: convert_cef_extensions_deviceAddress_to_ip
+      target_field: infoblox_threat_defense.event.device.address
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.deviceAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_infoblox_threat_defense_event_device_address_into_related_ip
+      value: '{{{infoblox_threat_defense.event.device.address}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.device?.address != null
+  - append:
+      field: host.ip
+      tag: append_infoblox_threat_defense_event_device_address_into_host_ip
+      value: '{{{infoblox_threat_defense.event.device.address}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.device?.address != null
+  - append:
+      field: related.ip
+      tag: append_event_device_address_into_related_ip
+      value: '{{{infoblox_threat_defense.event.device.address}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.device?.address != null
+  - rename:
+      field: cef.extensions.InfobloxB1ConnectionType
+      tag: rename_cef_extensions_InfobloxB1ConnectionType
+      target_field: infoblox_threat_defense.event.infoblox.b1.connection_type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxB1DHCPFingerprint
+      tag: rename_cef_extensions_InfobloxB1DHCPFingerprint
+      target_field: infoblox_threat_defense.event.infoblox.b1.dhcp_fingerprint
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxB1DNSTags
+      tag: rename_cef_extensions_InfobloxB1DNSTags
+      target_field: infoblox_threat_defense.event.infoblox.b1.dns_tags
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxB1FeedName
+      tag: rename_cef_extensions_InfobloxB1FeedName
+      target_field: infoblox_threat_defense.event.infoblox.b1.feed.name
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxB1FeedType
+      tag: rename_cef_extensions_InfobloxB1FeedType
+      target_field: infoblox_threat_defense.event.infoblox.b1.feed.type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxB1Network
+      tag: rename_cef_extensions_InfobloxB1Network
+      target_field: infoblox_threat_defense.event.infoblox.b1.network
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxB1OPHName
+      tag: rename_cef_extensions_InfobloxB1OPHName
+      target_field: infoblox_threat_defense.event.infoblox.b1.oph.name
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.InfobloxB1OPHIPAddress
+      tag: convert_cef_extensions_InfobloxB1OPHIPAddress_to_ip
+      target_field: infoblox_threat_defense.event.infoblox.b1.oph.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.InfobloxB1OPHIPAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_infoblox_threat_defense_event_infoblox_b1_oph_ip_address_into_related_ip
+      value: '{{{infoblox_threat_defense.event.infoblox.b1.oph.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.infoblox?.b1?.oph?.ip_address != null
+  - rename:
+      field: cef.extensions.InfobloxB1PolicyAction
+      tag: rename_cef_extensions_InfobloxB1PolicyAction
+      target_field: infoblox_threat_defense.event.infoblox.b1.policy.action
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxB1PolicyName
+      tag: rename_cef_extensions_InfobloxB1PolicyName
+      target_field: infoblox_threat_defense.event.infoblox.b1.policy.name
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxB1Region
+      tag: rename_cef_extensions_InfobloxB1Region
+      target_field: infoblox_threat_defense.event.infoblox.b1.region
+      ignore_missing: true
+  - set:
+      field: client.geo.region_name
+      tag: set_client_geo_region_name_from_event_infoblox_b1_region
+      copy_from: infoblox_threat_defense.event.infoblox.b1.region
+      ignore_empty_value: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region_from_event_infoblox_b1_region
+      copy_from: infoblox_threat_defense.event.infoblox.b1.region
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.InfobloxB1SrcOSVersion
+      tag: rename_cef_extensions_InfobloxB1SrcOSVersion
+      target_field: infoblox_threat_defense.event.infoblox.b1.src_os_version
+      ignore_missing: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_from_event_infoblox_b1_src_os_version
+      copy_from: infoblox_threat_defense.event.infoblox.b1.src_os_version
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.InfobloxB1ThreatIndicator
+      tag: rename_cef_extensions_InfobloxB1ThreatIndicator
+      target_field: infoblox_threat_defense.event.infoblox.b1.threat.indicator
+      ignore_missing: true
+  - set:
+      field: threat.indicator.reference
+      tag: set_threat_indicator_reference_from_event_infoblox_b1_threat_indicator
+      copy_from: infoblox_threat_defense.event.infoblox.b1.threat.indicator
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.InfobloxCSiteId
+      tag: rename_cef_extensions_InfobloxCSiteId
+      target_field: infoblox_threat_defense.event.infoblox.c_site_id
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.destinationAddress
+      tag: convert_cef_extensions_destinationAddress_to_ip
+      target_field: infoblox_threat_defense.event.destination.address
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.destinationAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_destination_addresss_into_related_ip
+      value: '{{{infoblox_threat_defense.event.destination.address}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.destination?.address != null
+  - geoip:
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      tag: geoip_destination_as
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      tag: rename_destination_as_asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      tag: rename_destination_as_organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.destinationDnsDomain
+      tag: rename_cef_extensions_destinationDnsDomain
+      target_field: infoblox_threat_defense.event.destination.dns_domain
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceAction
+      tag: rename_cef_extensions_deviceAction
+      target_field: infoblox_threat_defense.event.device.action
+      ignore_missing: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != null && ctx.event.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cef.extensions.deviceAddress
+      tag: convert_cef_extensions_deviceAddress_to_ip
+      target_field: infoblox_threat_defense.event.device.address
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.deviceAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_infoblox_threat_defense_event_device_address_into_host_ip
+      value: '{{{infoblox_threat_defense.event.device.address}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.device?.address != null
+  - rename:
+      field: cef.extensions.InfobloxDNSQType
+      tag: rename_cef_extensions_InfobloxDNSQType
+      target_field: infoblox_threat_defense.event.infoblox.dns_q.type
+      ignore_missing: true
+  - set:
+      field: dns.question.type
+      tag: set_dns_question_type_from_event_infoblox_dns_q_type
+      copy_from: infoblox_threat_defense.event.infoblox.dns_q.type
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.InfobloxDNSView
+      tag: rename_cef_extensions_InfobloxDNSView
+      target_field: infoblox_threat_defense.event.infoblox.dns_view
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxDomainCat
+      tag: rename_cef_extensions_InfobloxDomainCat
+      target_field: infoblox_threat_defense.event.infoblox.domain.cat
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.deviceHostName
+      tag: convert_cef_extensions_deviceHostName_to_ip
+      target_field: infoblox_threat_defense.event.device.host_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.deviceHostName != ''
+      on_failure:
+        - rename:
+            field: cef.extensions.deviceHostName
+            tag: rename_cef_extensions_deviceHostName
+            target_field: infoblox_threat_defense.event.device.host_name
+            ignore_missing: true
+        - set:
+            field: host.hostname
+            tag: set_host_hostname_from_event_device_host_name
+            copy_from: infoblox_threat_defense.event.device.host_name
+            ignore_empty_value: true
+        - append:
+            field: related.hosts
+            tag: append_cef_extensions_deviceHostName_into_related_hosts
+            value: '{{{infoblox_threat_defense.event.device.host_name}}}'
+            allow_duplicates: false
+            if: ctx.infoblox_threat_defense?.event?.device?.host_name != null 
+  - append:
+      field: related.ip
+      tag: append_infoblox_threat_defense_event_host_ip_into_related_ip
+      value: '{{{infoblox_threat_defense.event.device.host_ip}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.device?.host_ip != null      
+  - append:
+      field: host.ip
+      tag: append_infoblox_threat_defense_event_host_ip_into_host_ip
+      value: '{{{infoblox_threat_defense.event.device.host_ip}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.device?.host_ip != null
+  - rename:
+      field: cef.extensions.InfobloxPolicyID
+      tag: rename_cef_extensions_InfobloxPolicyID
+      target_field: infoblox_threat_defense.event.infoblox.policy.id
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxRPZRule
+      tag: rename_cef_extensions_InfobloxRPZRule
+      target_field: infoblox_threat_defense.event.infoblox.rpz.rule
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_event_infoblox_rpz_rule
+      copy_from: infoblox_threat_defense.event.infoblox.rpz.rule
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.InfobloxRPZ
+      tag: rename_cef_extensions_InfobloxRPZ
+      target_field: infoblox_threat_defense.event.infoblox.rpz.value
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.sourceAddress
+      tag: convert_cef_extensions_sourceAddress_to_ip
+      target_field: infoblox_threat_defense.event.source.address
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.sourceAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_infoblox_threat_defense_event_source_address_into_related_ip
+      value: '{{{infoblox_threat_defense.event.source.address}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.source?.address != null
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_as
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.InfobloxThreatConfidence
+      tag: convert_cef_extensions_InfobloxThreatConfidence_to_long
+      target_field: infoblox_threat_defense.event.infoblox.threat.confidence
+      type: long
+      ignore_missing: true
+      if: ctx.cef?.extensions?.InfobloxThreatConfidence != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cef.extensions.InfobloxThreatLevel
+      tag: convert_cef_extensions_InfobloxThreatLevel_to_long
+      target_field: infoblox_threat_defense.event.infoblox.threat.level
+      type: long
+      ignore_missing: true
+      if: ctx.cef?.extensions?.InfobloxThreatLevel != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.InfobloxThreatProperty
+      tag: rename_cef_extensions_InfobloxThreatProperty
+      target_field: infoblox_threat_defense.event.infoblox.threat.property
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.message
+      tag: rename_cef_extensions_message
+      target_field: infoblox_threat_defense.event.message
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.sourceMacAddress
+      tag: rename_cef_extensions_sourceMacAddress
+      target_field: infoblox_threat_defense.event.source.mac_address
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.sourcePort
+      tag: convert_cef_extensions_sourcePort_to_long
+      target_field: infoblox_threat_defense.event.source.port
+      type: long
+      ignore_missing: true
+      if: ctx.cef?.extensions?.sourcePort != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.sourceUserName
+      tag: rename_cef_extensions_sourceUserName
+      target_field: infoblox_threat_defense.event.source.user_name
+      ignore_missing: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_event_source_user
+      copy_from: infoblox_threat_defense.event.source.user_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_sourceusername_into_related_user
+      value: '{{{infoblox_threat_defense.event.source.user_name}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.source?.user_name != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

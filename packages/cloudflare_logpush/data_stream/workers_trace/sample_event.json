@@ -1,25 +1,18 @@
 {
     "@timestamp": "2023-07-20T11:35:46.804Z",
     "agent": {
-        "ephemeral_id": "57c92f82-a8e6-46e2-8c02-7e06ed603cf9",
-        "id": "e6701a33-813b-4e4f-915d-bbd126f89485",
-        "name": "elastic-agent-36364",
+        "ephemeral_id": "7be35875-0716-4185-a715-56f4262e6677",
+        "id": "5de705c9-500f-4f23-b85e-94dfb165569e",
+        "name": "elastic-agent-35180",
         "type": "filebeat",
-        "version": "8.16.5"
+        "version": "8.17.1"
+    },
+    "cloud": {
+        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "workers_trace": {
             "dispatch_namespace": "my-worker-dispatch",
-            "event": {
-                "ray_id": "7e9ae7157ac0c33a",
-                "request": {
-                    "method": "GET",
-                    "url": "http://chat-gpt-little-butterfly-0c3d.example.workers.dev/v2/_catalog"
-                },
-                "response": {
-                    "status": 404
-                }
-            },
             "exceptions": [
                 {
                     "message": "Uncaught TypeError: Cannot read property 'x' of undefined",
@@ -36,30 +29,27 @@
                     "message": "Something went wrong"
                 }
             ],
-            "outcome": "exception",
             "script": {
                 "name": "chat-gpt-little-butterfly-0c3d",
                 "tags": [
                     "api",
                     "chatgpt"
                 ]
-            },
-            "timestamp": "2023-07-20T11:35:46.804Z",
-            "type": "fetch"
+            }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.workers_trace",
-        "namespace": "52981",
+        "namespace": "22099",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e6701a33-813b-4e4f-915d-bbd126f89485",
+        "id": "5de705c9-500f-4f23-b85e-94dfb165569e",
         "snapshot": false,
-        "version": "8.16.5"
+        "version": "8.17.1"
     },
     "event": {
         "action": "fetch",
@@ -69,14 +59,24 @@
         ],
         "dataset": "cloudflare_logpush.workers_trace",
         "id": "7e9ae7157ac0c33a",
-        "ingested": "2025-03-13T21:24:42Z",
+        "ingested": "2025-12-12T10:23:03Z",
         "kind": "event",
-        "original": "{\"DispatchNamespace\":\"my-worker-dispatch\",\"Event\":{\"RayID\":\"7e9ae7157ac0c33a\",\"Request\":{\"Method\":\"GET\",\"URL\":\"http://chat-gpt-little-butterfly-0c3d.example.workers.dev/v2/_catalog\"},\"Response\":{\"Status\":404}},\"EventTimestampMs\":1689852946804,\"EventType\":\"fetch\",\"Exceptions\":[{\"Message\":\"Uncaught TypeError: Cannot read property 'x' of undefined\",\"Stack\":\"TypeError: Cannot read property 'x' of undefined\\n    at fetchHandler (/workers/script.js:12:27)\\n    at handleRequest (/workers/script.js:6:13)\"}],\"Logs\":[{\"level\":\"info\",\"message\":\"Request received for /api/data\"},{\"level\":\"error\",\"message\":\"Something went wrong\"}],\"Outcome\":\"exception\",\"ScriptName\":\"chat-gpt-little-butterfly-0c3d\",\"ScriptTags\":[\"api\",\"chatgpt\"]}",
         "outcome": "failure",
         "type": [
             "info",
             "error"
         ]
+    },
+    "gcs": {
+        "storage": {
+            "bucket": {
+                "name": "testbucket"
+            },
+            "object": {
+                "content_type": "application/json",
+                "name": "workers_trace.log"
+            }
+        }
     },
     "http": {
         "request": {
@@ -87,11 +87,15 @@
         }
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "gcs"
+    },
+    "log": {
+        "file": {
+            "path": "gs://testbucket/workers_trace.log"
+        },
+        "offset": 0
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-workers_trace"
     ],

@@ -217,7 +217,7 @@ processors:
   - script:
       lang: painless
       ignore_failure: false
-      if: ctx.winlog?.task != null
+      if: ctx.winlog?.task_raw == null && ctx.winlog?.task != null
       tag: map_dns_server_task_code
       description: Map numerical Task code to human-readable format
       params:
@@ -307,16 +307,41 @@ processors:
         ctx.microsoft_dnsserver.analytical = renameKeys(ctx.microsoft_dnsserver.analytical, params)
 
 # ECS fields
+  - rename:
+      field: microsoft_dnsserver.analytical.extended_data.SID
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_user_id
+  - remove:
+      field: microsoft_dnsserver.analytical.extended_data
+      ignore_missing: true
+      tag: remove_extended_data
   - set:
       field: dns.id
       copy_from: microsoft_dnsserver.analytical.xid
       ignore_empty_value: true
       tag: set_dns_id
-  - set:
-      field: dns.question.name
-      copy_from: microsoft_dnsserver.analytical.question_name
-      ignore_empty_value: true
-      tag: set_dns_question_name
+  - gsub:
+      field: microsoft_dnsserver.analytical.question_name
+      target_field: _temp.question_name
+      tag: gsub_trim_trailing_dot
+      pattern: \.$
+      replacement: ""
+      ignore_missing: true
+  - registered_domain:
+      field: _temp.question_name
+      tag: registered_domain_question_name
+      target_field: dns.question
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: dns.question.domain
+      tag: rename_dns_question_domain
+      target_field: dns.question.name
+      ignore_missing: true
   - set:
       field: dns.question.type
       copy_from: microsoft_dnsserver.analytical.question_type
@@ -364,6 +389,7 @@ processors:
       tag: append_dns_header_flag_TC
   - remove:
       field:
+        - _temp
         - microsoft_dnsserver.analytical.AA
         - microsoft_dnsserver.analytical.AD
         - microsoft_dnsserver.analytical.RD
@@ -706,6 +732,10 @@ processors:
         - microsoft_dnsserver.analytical.source.ip
         - microsoft_dnsserver.analytical.source.port
         - winlog.task
+        - winlog.task_raw
+        - winlog.level
+        - winlog.level_raw
+        - winlog.provider_message
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_failure: true
       ignore_missing: true

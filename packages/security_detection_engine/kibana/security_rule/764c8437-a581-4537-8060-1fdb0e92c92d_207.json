@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects an attempt to create or modify a pod using the host IPC namespace. This gives access to data used by any pod that also use the hosts IPC namespace. If any process on the host or any processes in a pod uses the hosts inter-process communication mechanisms (shared memory, semaphore arrays, message queues, etc.), an attacker can read/write to those same mechanisms. They may look for files in /dev/shm or use ipcs to check for any IPC facilities being used.",
+        "false_positives": [
+            "An administrator or developer may want to use a pod that runs as root and shares the host's IPC, Network, and PID namespaces for debugging purposes. If something is going wrong in the cluster and there is no easy way to SSH onto the host nodes directly, a privileged pod of this nature can be useful for viewing things like iptable rules and network namespaces from the host's perspective. Add exceptions for trusted container images using the query field \"kubernetes.audit.requestObject.spec.container.image\""
+        ],
+        "index": [
+            "logs-kubernetes.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Pod Created With HostIPC",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Kubernetes Pod Created With HostIPC\n\nKubernetes allows pods to share the host's IPC namespace, enabling inter-process communication. While useful for legitimate applications, adversaries can exploit this to access shared memory and IPC mechanisms, potentially leading to data exposure or privilege escalation. The detection rule identifies suspicious pod creation or modification events that enable host IPC, excluding known benign images, to flag potential security threats.\n\n### Possible investigation steps\n\n- Review the Kubernetes audit logs to identify the specific pod creation or modification event that triggered the alert, focusing on the event.dataset field with the value \"kubernetes.audit_logs\".\n- Examine the kubernetes.audit.annotations.authorization_k8s_io/decision field to confirm that the action was allowed, and verify the identity of the user or service account that initiated the request.\n- Investigate the kubernetes.audit.objectRef.resource field to ensure the resource involved is indeed a pod, and check the kubernetes.audit.verb field to determine if the action was a create, update, or patch operation.\n- Analyze the kubernetes.audit.requestObject.spec.hostIPC field to confirm that host IPC was enabled, and cross-reference with the kubernetes.audit.requestObject.spec.containers.image field to ensure the image is not part of the known benign list.\n- Check for any other pods or processes on the host that might be using the host's IPC namespace, and assess if there is any unauthorized access or data exposure risk.\n- Look for any suspicious activity or anomalies in the /dev/shm directory or use the ipcs command to identify any IPC facilities that might be exploited.\n\n### False positive analysis\n\n- Pods using hostIPC for legitimate inter-process communication may trigger alerts. Review the pod's purpose and verify if hostIPC is necessary for its function.\n- Known benign images, such as monitoring or logging agents, might use hostIPC. Update the exclusion list to include these images if they are verified as non-threatening.\n- Development or testing environments often use hostIPC for debugging purposes. Consider excluding these environments from the rule or creating a separate rule with a higher threshold for alerts.\n- Automated deployment tools might temporarily use hostIPC during setup. Ensure these tools are recognized and excluded if they are part of a controlled and secure process.\n- Regularly review and update the exclusion list to reflect changes in your environment, ensuring that only verified and necessary uses of hostIPC are excluded.\n\n### Response and remediation\n\n- Immediately isolate the affected pod to prevent further access to the host's IPC namespace. This can be done by cordoning the node or deleting the pod if necessary.\n- Review and revoke any unnecessary permissions or roles that allowed the pod to be created or modified with hostIPC enabled. Ensure that only trusted entities have the capability to modify pod specifications.\n- Conduct a thorough audit of other pods and configurations in the cluster to identify any additional instances where hostIPC is enabled without a valid justification.\n- Implement network policies to restrict communication between pods and the host, limiting the potential impact of any unauthorized access to the host's IPC mechanisms.\n- Escalate the incident to the security operations team for further investigation and to determine if any data exposure or privilege escalation occurred.\n- Update security policies and configurations to prevent the use of hostIPC in future pod deployments unless explicitly required and approved.\n- Enhance monitoring and alerting to detect similar attempts in the future, ensuring that any unauthorized use of hostIPC is promptly flagged and addressed.",
+        "query": "event.dataset : \"kubernetes.audit_logs\"\n  and kubernetes.audit.annotations.authorization_k8s_io/decision:\"allow\"\n  and kubernetes.audit.objectRef.resource:\"pods\"\n  and kubernetes.audit.verb:(\"create\" or \"update\" or \"patch\")\n  and kubernetes.audit.requestObject.spec.hostIPC:true\n  and not kubernetes.audit.requestObject.spec.containers.image: (\"docker.elastic.co/beats/elastic-agent:8.4.0\")\n",
+        "references": [
+            "https://research.nccgroup.com/2021/11/10/detection-engineering-for-kubernetes-clusters/#part3-kubernetes-detections",
+            "https://kubernetes.io/docs/concepts/security/pod-security-policy/#host-namespaces",
+            "https://bishopfox.com/blog/kubernetes-pod-privilege-escalation"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.image",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.hostIPC",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "764c8437-a581-4537-8060-1fdb0e92c92d",
+        "setup": "The Kubernetes Fleet integration with Audit Logs enabled or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Tactic: Execution",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1611",
+                        "name": "Escape to Host",
+                        "reference": "https://attack.mitre.org/techniques/T1611/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1610",
+                        "name": "Deploy Container",
+                        "reference": "https://attack.mitre.org/techniques/T1610/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 207
+    },
+    "id": "764c8437-a581-4537-8060-1fdb0e92c92d_207",
+    "type": "security-rule"
+}

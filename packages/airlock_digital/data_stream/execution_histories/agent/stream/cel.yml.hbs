@@ -1,0 +1,99 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  api_key: {{api_key}}
+  type_arr: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+  {{!-- 0 = "Trusted Execution", 1 = "Blocked Execution", 2 = "Untrusted Execution [Audit]", 3 = "Untrusted Execution [OTP]",
+   4 = "Trusted Path Execution", 5 = "Trusted Publisher Execution", 6 = "Blocklist Execution", 7 = "Blocklist Execution [Audit]",
+   8 = "Trusted Process Execution", 9 = "Constrained Execution", 10 = "Trusted Metadata Execution", 11 = "Trusted Browser Execution",
+   12 = "Blocked Browser Execution", 13 = "Untrusted Browser Execution [Audit]", 14 = "Untrusted Browser Execution [OTP]",
+   15 = "Blocklist Browser Execution [Audit]", 16 = "Blocklist Browser Execution", 17 = "Trusted Installer Execution",
+   18 = "Trusted Browser Metadata Execution
+   Reference Link: https://api.airlockdigital.com/#8643f2cc-4930-44d5-a7cb-21395b33ab62 --}}
+  max_batch_size: 10000
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+    post_request(
+      state.url.trim_right("/") + "/v1/logging/exechistories",
+      "application/json",
+      {
+        "type": state.type_arr,
+        ?"checkpoint": state.?cursor.checkpoint,
+      }.encode_json()
+    ).with(
+      {
+        "Header": {
+          "Content-Type": ["application/json"],
+          "X-ApiKey": [state.api_key],
+        },
+      }
+    ).do_request().as(resp, (resp.StatusCode == 200) ?
+      resp.Body.decode_json().as(body,
+        {
+          "events": body.response.exechistories.map(e,
+            {
+              "message": e.encode_json(),
+            }
+          ),
+          "want_more": size(body.response.exechistories) >= state.max_batch_size,
+          "cursor": {
+            ?"checkpoint": has(body.?response.exechistories) && size(body.response.exechistories) > 0 ?
+              body.response.exechistories.last().checkpoint
+            :
+              state.?cursor.checkpoint,
+          },
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + "/v1/logging/exechistories " + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

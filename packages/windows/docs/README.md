@@ -38,17 +38,6 @@ see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elas
 
 Note: Because the Windows integration always applies to the local server, the `hosts` config option is not needed.
 
-### Ingesting Windows Events via Splunk (Deprecated)
-
-This integration allows you to seamlessly ingest data from a Splunk Enterprise instance.
-The integration uses the [`httpjson` input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
-The raw event is then processed via the Elastic Agent.
-You can customize both the Splunk search query and the interval between searches.
-For more information see [Ingest data from Splunk](https://www.elastic.co/guide/en/observability/current/splunk-get-started.html).
-
-Note: This integration requires Windows Events from Splunk to be in XML format.
-To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
-
 ## Notes
 
 ### Windows Event ID clause limit
@@ -435,7 +424,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.level | The level assigned to the event such as Information, Warning, or Critical. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
-| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.pid | The process ID (PID) of the process that generated/logged the event. This is often the event collector process and not necessarily the process that the event is about. | long |
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
@@ -827,7 +816,7 @@ An example event for `applocker_msi_and_script` looks as following:
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.level | The level assigned to the event such as Information, Warning, or Critical. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
-| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.pid | The process ID (PID) of the process that generated/logged the event. This is often the event collector process and not necessarily the process that the event is about. | long |
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
@@ -1214,7 +1203,7 @@ An example event for `applocker_packaged_app_deployment` looks as following:
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.level | The level assigned to the event such as Information, Warning, or Critical. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
-| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.pid | The process ID (PID) of the process that generated/logged the event. This is often the event collector process and not necessarily the process that the event is about. | long |
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
@@ -1602,7 +1591,7 @@ An example event for `applocker_packaged_app_execution` looks as following:
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.level | The level assigned to the event such as Information, Warning, or Critical. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
-| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.pid | The process ID (PID) of the process that generated/logged the event. This is often the event collector process and not necessarily the process that the event is about. | long |
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
@@ -1977,7 +1966,7 @@ An example event for `powershell` looks as following:
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
-| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.pid | The process ID (PID) of the process that generated/logged the event. This is often the event collector process and not necessarily the process that the event is about. | long |
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
@@ -2163,10 +2152,13 @@ An example event for `powershell_operational` looks as following:
 | powershell.engine.new_state | New state of the PowerShell engine. | keyword |
 | powershell.engine.previous_state | Previous state of the PowerShell engine. | keyword |
 | powershell.engine.version | Version of the PowerShell engine version used to execute the command. | keyword |
+| powershell.file.script_block_entropy_bits | Randomness measure of the script using Shannon entropy over Unicode characters (0-20 bits). Entropy values outside the expected range may indicate random or obfuscated code. | float |
 | powershell.file.script_block_hash | A hash of the script to be used in rules. | keyword |
 | powershell.file.script_block_id | Id of the executed script block. | keyword |
-| powershell.file.script_block_signature | If present in the script, the script signature. | keyword |
+| powershell.file.script_block_length | Total number of characters in the script. | long |
+| powershell.file.script_block_surprisal_stdev | Consistency of randomness distribution across the script. Low values indicate uniform randomness. High values indicate mixed patterns with variability. | float |
 | powershell.file.script_block_text | Text of the executed script block. | text |
+| powershell.file.script_block_unique_symbols | Number of distinct characters used in the script. | long |
 | powershell.id | Shell Id. | keyword |
 | powershell.pipeline_id | Pipeline id. | keyword |
 | powershell.process.executable_version | Version of the engine hosting process executable. | keyword |
@@ -2319,7 +2311,7 @@ An example event for `powershell_operational` looks as following:
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
-| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.pid | The process ID (PID) of the process that generated/logged the event. This is often the event collector process and not necessarily the process that the event is about. | long |
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
@@ -2783,7 +2775,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
-| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.pid | The process ID (PID) of the process that generated/logged the event. This is often the event collector process and not necessarily the process that the event is about. | long |
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
@@ -3154,7 +3146,7 @@ An example event for `windows_defender` looks as following:
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.level | The level assigned to the event such as Information, Warning, or Critical. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
-| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.pid | The process ID (PID) of the process that generated/logged the event. This is often the event collector process and not necessarily the process that the event is about. | long |
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |

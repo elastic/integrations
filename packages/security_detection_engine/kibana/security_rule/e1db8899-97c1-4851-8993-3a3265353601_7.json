@@ -1,0 +1,66 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected data exfiltration to a particular geo-location (by region name). Data transfers to geo-locations that are outside the normal traffic patterns of an organization could indicate exfiltration over command and control channels.",
+        "from": "now-6h",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "ded_high_sent_bytes_destination_geo_country_iso_code",
+        "name": "Potential Data Exfiltration Activity to an Unusual ISO Code",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Data Exfiltration Activity to an Unusual ISO Code\n\nMachine learning models analyze network traffic patterns to identify anomalies, such as data transfers to unexpected geo-locations. Adversaries exploit command and control channels to exfiltrate data to these unusual regions. The detection rule leverages ML to flag deviations from normal traffic, indicating potential exfiltration activities, thus aiding in early threat identification.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific unusual ISO code and geo-location involved in the data transfer.\n- Analyze network logs to determine the volume and frequency of data transfers to the identified geo-location, comparing it against baseline traffic patterns.\n- Investigate the source IP addresses and devices involved in the data transfer to assess whether they are legitimate or potentially compromised.\n- Check for any recent changes or anomalies in user behavior or access patterns associated with the source devices or accounts.\n- Correlate the alert with other security events or logs, such as authentication logs or endpoint detection alerts, to identify any related suspicious activities.\n- Consult threat intelligence sources to determine if the unusual geo-location is associated with known malicious activities or threat actors.\n\n### False positive analysis\n\n- Legitimate business operations involving data transfers to new or infrequent geo-locations may trigger false positives. Users should review these activities and whitelist known safe destinations.\n- Regularly scheduled data backups or transfers to international offices or cloud services can be mistaken for exfiltration. Implement exceptions for these routine operations by updating the model's baseline.\n- Temporary projects or collaborations with partners in unusual regions might cause alerts. Document these activities and adjust the detection parameters to accommodate such temporary changes.\n- Changes in business operations, such as expansion into new markets, can alter normal traffic patterns. Update the model to reflect these changes to prevent unnecessary alerts.\n- Use historical data to identify patterns of benign traffic to unusual regions and adjust the model's sensitivity to reduce false positives while maintaining security vigilance.\n\n### Response and remediation\n\n- Immediately isolate the affected systems from the network to prevent further data exfiltration.\n- Conduct a thorough analysis of the network traffic logs to identify the source and destination of the unusual data transfer, focusing on the specific geo-location flagged by the alert.\n- Block the identified IP addresses or domains associated with the unusual ISO code in the organization's firewall and intrusion prevention systems.\n- Review and update access controls and permissions to ensure that only authorized personnel have access to sensitive data, reducing the risk of unauthorized data transfers.\n- Restore any compromised systems from clean backups, ensuring that all security patches and updates are applied before reconnecting to the network.\n- Escalate the incident to the organization's security operations center (SOC) or incident response team for further investigation and to determine if additional systems or data were affected.\n- Implement enhanced monitoring and alerting for similar anomalies in network traffic to improve early detection of potential exfiltration activities in the future.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/ded",
+            "https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "ded",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e1db8899-97c1-4851-8993-3a3265353601",
+        "setup": "## Setup\n\nThe rule requires the Data Exfiltration Detection integration assets to be installed, as well as network and file events collected by integrations such as Elastic Defend and Network Packet Capture (for network events only).\n\n### Data Exfiltration Detection Setup\nThe Data Exfiltration Detection integration detects data exfiltration activity by identifying abnormalities in network and file events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Data Exfiltration Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Network events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) or [Network Packet Capture](https://docs.elastic.co/integrations/network_traffic) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Network Packet Capture integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n\n#### The following steps should be executed to install assets associated with the Data Exfiltration Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Data Exfiltration Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Data Exfiltration Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1041",
+                        "name": "Exfiltration Over C2 Channel",
+                        "reference": "https://attack.mitre.org/techniques/T1041/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 7
+    },
+    "id": "e1db8899-97c1-4851-8993-3a3265353601_7",
+    "type": "security-rule"
+}

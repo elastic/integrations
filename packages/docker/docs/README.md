@@ -7,7 +7,7 @@ The `container_logs` data stream for containers' logs collection is enabled by d
 
 ## Compatibility
 
-The Docker integration is currently tested on Linux and Mac with the community edition engine, versions 1.11 and 17.09.0-ce. It is not tested on Windows, but it should also work there.
+The Docker integration is currently tested on Linux and Mac with the community edition engine, versions 1.11 and 17.09.0-ce.
 
 The Docker integration supports collection of metrics from Podman’s Docker-compatible API by Elastic Agent 8.16.2 or later versions. It has been tested on Linux and Mac with Podman Rest API v2.0.0 and above.
 

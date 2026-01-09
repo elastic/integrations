@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Telnet provides a command line interface for communication with a remote device or server. This rule identifies Telnet network connections to publicly routable IP addresses.",
+        "false_positives": [
+            "Telnet can be used for both benign or malicious purposes. Telnet is included by default in some Linux distributions, so its presence is not inherently suspicious. The use of Telnet to manage devices remotely has declined in recent years in favor of more secure protocols such as SSH. Telnet usage by non-automated tools or frameworks may be suspicious."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Connection to External Network via Telnet",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Connection to External Network via Telnet\n\nTelnet is a protocol offering a command-line interface for remote communication, often used for device management. However, its lack of encryption makes it vulnerable to interception, allowing adversaries to exploit it for unauthorized access or data exfiltration. The detection rule identifies Telnet connections to external IPs, flagging potential lateral movement by excluding known internal and reserved IP ranges.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific process.entity_id and destination IP address involved in the Telnet connection.\n- Verify the legitimacy of the destination IP address by checking if it belongs to a known or trusted external entity, using threat intelligence sources or IP reputation services.\n- Investigate the process details associated with the process.entity_id to determine the user account and command line arguments used during the Telnet session.\n- Check the system logs and user activity on the host to identify any unusual behavior or unauthorized access attempts around the time of the Telnet connection.\n- Assess whether the Telnet connection aligns with expected business operations or if it indicates potential lateral movement or data exfiltration attempts.\n\n### False positive analysis\n\n- Internal device management using Telnet may trigger false positives if the destination IPs are not included in the known internal ranges. Users should verify and update the list of internal IP ranges to include any additional internal networks used for legitimate Telnet connections.\n- Automated scripts or monitoring tools that use Telnet for legitimate purposes can cause false positives. Identify these scripts and consider creating exceptions for their specific IP addresses or process names to prevent unnecessary alerts.\n- Testing environments that simulate external connections for development purposes might be flagged. Ensure that IP addresses used in these environments are documented and excluded from the detection rule to avoid false positives.\n- Legacy systems that rely on Telnet for communication with external partners or services may be mistakenly flagged. Review these systems and, if deemed secure, add their IP addresses to an exception list to reduce false alerts.\n- Misconfigured network devices that inadvertently use Telnet for external communication can trigger alerts. Regularly audit network configurations and update the detection rule to exclude known benign IPs associated with these devices.\n\n### Response and remediation\n\n- Immediately isolate the affected Linux host from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any active Telnet sessions on the affected host to stop ongoing malicious activity.\n- Conduct a thorough review of the affected system's logs and processes to identify any unauthorized changes or additional compromised accounts.\n- Change all passwords associated with the affected system and any other systems that may have been accessed using Telnet.\n- Apply security patches and updates to the affected system to address any vulnerabilities that may have been exploited.\n- Implement network segmentation to limit Telnet access to only necessary internal systems and block Telnet traffic to external networks.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "query": "sequence by process.entity_id\n  [process where host.os.type == \"linux\" and process.name == \"telnet\" and event.type == \"start\"]\n  [network where host.os.type == \"linux\" and process.name == \"telnet\" and not cidrmatch(\n     destination.ip, \"10.0.0.0/8\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.0.0/24\", \"192.0.0.0/29\",\n     \"192.0.0.8/32\", \"192.0.0.9/32\", \"192.0.0.10/32\", \"192.0.0.170/32\", \"192.0.0.171/32\", \"192.0.2.0/24\",\n     \"192.31.196.0/24\", \"192.52.193.0/24\", \"192.168.0.0/16\", \"192.88.99.0/24\", \"224.0.0.0/4\", \"100.64.0.0/10\",\n     \"192.175.48.0/24\", \"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\", \"240.0.0.0/4\", \"::1\", \"FE80::/10\",\n     \"FF00::/8\"\n    )\n  ]\n",
+        "references": [
+            "https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e19e64ee-130e-4c07-961f-8a339f0b8362",
+        "setup": "## Setup\n\nThis rule requires data coming in from one of the following integrations:\n- Elastic Defend\n- Auditbeat\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n### Auditbeat Setup\nAuditbeat is a lightweight shipper that you can install on your servers to audit the activities of users and processes on your systems. For example, you can use Auditbeat to collect and centralize audit events from the Linux Audit Framework. You can also use Auditbeat to detect changes to critical files, like binaries and configuration files, and identify potential security policy violations.\n\n#### The following steps should be executed in order to add the Auditbeat on a Linux System:\n- Elastic provides repositories available for APT and YUM-based distributions. Note that we provide binary packages, but no source packages.\n- To install the APT and YUM repositories follow the setup instructions in this [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setup-repositories.html).\n- To run Auditbeat on Docker follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-docker.html).\n- To run Auditbeat on Kubernetes follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-kubernetes.html).\n- For complete \u201cSetup and Run Auditbeat\u201d information refer to the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setting-up-and-running.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Defend",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 211
+    },
+    "id": "e19e64ee-130e-4c07-961f-8a339f0b8362_211",
+    "type": "security-rule"
+}

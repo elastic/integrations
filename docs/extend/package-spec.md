@@ -31,18 +31,18 @@ In most scenarios, only data stream assets are needed. However, there are except
 
 The following assets are typically found in an Elastic package:
 
-* {es}
+* {{es}}
 
     * Ingest Pipeline
     * Index Template
     * Transform
     * Index template settings
 
-* {kib}
+* {{kib}}
 
     * Dashboards
     * Visualization
-    * {data-sources-cap}
+    * {{data-sources-cap}}
     * {{ml-init}} Modules
     * Map
     * Search

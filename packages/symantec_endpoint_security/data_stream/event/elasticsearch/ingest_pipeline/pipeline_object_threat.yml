@@ -49,6 +49,11 @@ processors:
       value: '{{{ses.threat.provider}}}'
       allow_duplicates: false
       if: ctx.ses?.threat?.provider != null
+  - set:
+      field: risk.calculated_score
+      copy_from: ses.threat.risk_id
+      tag: set_risk_calculated_score
+      if: ctx.ses?.threat?.risk_id instanceof Number
   - convert:
       field: ses.threat.risk_id
       tag: convert_threat_risk_id_to_string
@@ -85,6 +90,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: risk.calculated_level
+      copy_from: ses.threat.risk_value
+      tag: set_risk_calculated_level
+      if: ctx.ses?.threat?.risk_value instanceof String
   - convert:
       field: ses.threat.sub_id
       tag: convert_threat_sub_id_to_string
@@ -271,6 +281,8 @@ processors:
         - ses.threat.cve_uid
         - ses.threat.name
         - ses.threat.provider
+        - ses.threat.risk_id
+        - ses.threat.risk_value
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

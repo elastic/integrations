@@ -2,6 +2,8 @@
 
 The Living off the Land Attack (LotL) Detection package contains a supervised machine learning model, called [ProblemChild and associated assets](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration), which are used to detect living off the land (LotL) activity in your environment. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
+This package support data from Elastic Endpoint via Elastic Defend or winlogbeat on Windows only, although Elastic Defend is reccomended. Prior to using this integration, Elastic Defend should be installed through Elastic Agent (or winlogbeat should be enrolled) and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
+
 For more detailed information refer to the following blogs and webinar:
 - [Detecting Living-off-the-land attacks with new Elastic Integration](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration)
 - [ProblemChild: Detecting living-off-the-land attacks using the Elastic Stack](https://www.elastic.co/blog/problemchild-detecting-living-off-the-land-attacks)
@@ -31,19 +33,15 @@ For more detailed information refer to the following blogs and webinar:
       }
       ```
     - If `logs-endpoint.events.process@custom` already exists, select the three dots next to it and choose **Edit**. Click **Add a processor**. Select **Pipeline** for Processor, enter `<VERSION>-problem_child_ingest_pipeline` for name (replacing `<VERSION>` with the current package version), and check **Ignore missing pipeline** and **Ignore failures for this processor**. Select **Add Processor**.
-    - If using an Elastic Beat such as Winlogbeat, add the ingest pipeline to it by adding a simple configuration [setting](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-beats) to `winlogbeat.yml`.
-1. **Add the required mappings to the component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend process events is `logs-endpoint.events.process@custom`. **Note:** Do not attempt to edit the `@package` template.
-    ![Component Templates](../img/component-templates.png)
+    - If using an Elastic Beat such as Winlogbeat, see the next step on how to add the ingest pipeline as part of the component template
+1. **Add the required mappings to the component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend process events is `logs-endpoint.events.process@custom`. **Note:** Do not attempt to edit the `@package` template if present. ![Component Templates](../img/component-templates.png)
+     
+    #### Elastic Defend
     - If the `@custom` component template does not exist, you can execute the following command in the Dev Console to create it and then continue to the **Rollover** section in these instructions. Be sure to change `<VERSION>` to the current package version.
       ```
       PUT _component_template/{COMPONENT_TEMPLATE_NAME}@custom
       {
         "template": {
-          "settings": {
-            "index": {
-              "default_pipeline": "<VERSION>-problem_child_ingest_pipeline"
-            }
-          },
           "mappings": {
             "properties": {
               "blocklist_label": {
@@ -67,14 +65,6 @@ For more detailed information refer to the following blogs and webinar:
       ```
     - If the `@custom` component template already exists, you will need to edit it to add mappings for data to be properly enriched. Click the three dots next to it and select **Edit**. 
     ![Component Templates](../img/component-templates-edit.png)
-    - On the index settings step, add the following. Be sure to change `<VERSION>` to the current package version.
-      ```
-      {
-        "index": {
-          "default_pipeline": "<VERSION>-problem_child_ingest_pipeline"
-        }
-      }
-      ```
     - Proceed to the mappings step in the UI. Click **Add Field** at the bottom of the page and create a `blocklist_label` field of type `Long`:
     ![Component Templates](../img/field1.png)
     - Then create an `Object` field for `problemchild`. 
@@ -86,12 +76,47 @@ For more detailed information refer to the following blogs and webinar:
     - Your component mappings should look like the following:
     ![Component Templates](../img/fields-complete.png)
     - Click **Review** then **Save Component Template**.
-1. **Rollover** Depending on your environment, you may need to [rollover](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html) in order for these mappings to get picked up. The deault index pattern for Elastic Defend is `logs-endpoint.events.process-default`.
+   
+   #### Winlogbeat
+    - If using an Elastic Beat such as Winlogbeat, create a new component template with a name like `winlogbeat-problemchild-<VERSION>`, replacing `<VERSION>` with the current package version. You can do this by executing the following command in the Dev Tools:
+      ```
+      PUT _component_template/winlogbeat-problemchild-<VERSION>
+      {
+        "template": {
+          "mappings": {
+            "properties": {
+              "blocklist_label": {
+                "type": "long"
+              },
+              "problemchild": {
+                "type": "object",
+                "properties": {
+                  "prediction": {
+                    "type": "long"
+                  },
+                  "prediction_probability": {
+                    "type": "float"
+                  }
+                }
+              }
+            }
+          },
+          "settings": {
+            "index": {
+              "final_pipeline": "<VERSION>-problem_child_ingest_pipeline"
+            }
+          }
+        }
+      }
+      ```
+    - Then, after creating the component template, you will need to add it to the appropriate index template. Navigate to **Stack Management > Data > Index Management > Index Templates**. Find the index template `winlogbeat-{WINLOGBEAT_VERSION}` for the Winlogbeat version that you are using and click **Edit**. Then click on **Component templates**. Add the `winlogbeat-problemchild-<VERSION>` component template that was created in the previous step. Click **Review template** then **Save template**. 
+
+1. **Rollover** Depending on your environment, you may need to [rollover](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html) in order for these mappings to get picked up. The deault index pattern for Elastic Defend is `logs-endpoint.events.process-default` and `winlogbeat-<WINLOGBEAT_VERSION>` for Winlogbeat.
     ```
     POST INDEX_NAME/_rollover
     ```
 1. **(Optional) [Create a data view](https://www.elastic.co/guide/en/kibana/current/data-views.html) specificially for your windows process logs (index pattern or data stream name)**
-1. **Add preconfigured anomaly detection jobs**: In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for `Living off the Land Attack Detection`. When you select the card, you will see several pre-configured anomaly detection jobs that you can enable depending on what makes the most sense for your environment. **Warning**: if the ingest pipeline hasn't run for some reason, such as no eligible data has come in yet, or the required mapping has not been added, _you won't be able to see this card yet_. If that is the case, try troubleshooting the ingest pipeline, and if any predictions have been populated yet.
+1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see `Living off the Land Attack Detection`. When you select the card, you will see several pre-configured anomaly detection jobs that you can create depending on what makes the most sense for your environment. **Warning**: if the ingest pipeline hasn't run for some reason, such as no eligible data has come in yet, or the required mapping has not been added, _you won't be able to see this card yet_. If that is the case, try troubleshooting the ingest pipeline, and if any predictions have been populated yet.
 1. **Enable detection rules**: You can also enable detection rules to alert on LotL activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Living off the Land Attack Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
 ![Domain Generation Detection Detection Rules](../img/lotlrules.png)

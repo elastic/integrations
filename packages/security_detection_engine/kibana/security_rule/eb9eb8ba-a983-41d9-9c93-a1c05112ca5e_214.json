@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies potential attempts to disable Security-Enhanced Linux (SELinux), which is a Linux kernel security feature to support access control policies. Adversaries may disable security tools to avoid possible detection of their tools and activities.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "endgame-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Disabling of SELinux",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Disabling of SELinux\n\nSELinux is a critical security feature in Linux environments, enforcing access control policies to protect against unauthorized access. Adversaries may attempt to disable SELinux to evade detection and carry out malicious activities undetected. The detection rule identifies such attempts by monitoring for the execution of the 'setenforce 0' command, which switches SELinux to permissive mode, effectively disabling its enforcement capabilities. This rule leverages process monitoring to alert security teams of potential defense evasion tactics.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the presence of the 'setenforce 0' command, ensuring that the process name is 'setenforce' and the argument is '0'.\n- Check the user account associated with the process execution to determine if it is a legitimate administrative user or a potential compromised account.\n- Investigate the timeline of events leading up to and following the execution of the 'setenforce 0' command to identify any related suspicious activities or processes.\n- Examine system logs and audit logs for any other unusual or unauthorized changes to SELinux settings or other security configurations.\n- Assess the system for any signs of compromise or malicious activity, such as unexpected network connections, file modifications, or the presence of known malware indicators.\n- Verify the current SELinux status and configuration to ensure it has been restored to enforcing mode if it was indeed set to permissive mode.\n\n### False positive analysis\n\n- System administrators may execute the 'setenforce 0' command during routine maintenance or troubleshooting, leading to false positives. To manage this, create exceptions for known maintenance windows or specific administrator accounts.\n- Some automated scripts or configuration management tools might temporarily set SELinux to permissive mode for deployment purposes. Identify these scripts and exclude their execution context from triggering alerts.\n- Development environments might require SELinux to be set to permissive mode for testing purposes. Consider excluding specific development hosts or environments from the rule to prevent unnecessary alerts.\n- In certain cases, SELinux might be disabled as part of a controlled security audit or penetration test. Coordinate with security teams to whitelist these activities during the audit period.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Verify the current SELinux status on the affected system using the command `sestatus` to confirm if it has been switched to permissive mode.\n- If SELinux is in permissive mode, re-enable it by executing `setenforce 1` and ensure that the SELinux policy is correctly enforced.\n- Conduct a thorough review of system logs and process execution history to identify any unauthorized changes or suspicious activities that occurred while SELinux was disabled.\n- Scan the affected system for malware or unauthorized software installations using a trusted antivirus or endpoint detection and response (EDR) tool.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are compromised.\n- Implement additional monitoring and alerting for similar SELinux-related events to enhance detection capabilities and prevent recurrence.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\n event.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\", \"executed\", \"process_started\") and\n process.name == \"setenforce\" and process.args == \"0\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "eb9eb8ba-a983-41d9-9c93-a1c05112ca5e",
+        "setup": "## Setup\n\nThis rule requires data coming in from one of the following integrations:\n- Elastic Defend\n- Auditbeat\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n### Auditbeat Setup\nAuditbeat is a lightweight shipper that you can install on your servers to audit the activities of users and processes on your systems. For example, you can use Auditbeat to collect and centralize audit events from the Linux Audit Framework. You can also use Auditbeat to detect changes to critical files, like binaries and configuration files, and identify potential security policy violations.\n\n#### The following steps should be executed in order to add the Auditbeat on a Linux System:\n- Elastic provides repositories available for APT and YUM-based distributions. Note that we provide binary packages, but no source packages.\n- To install the APT and YUM repositories follow the setup instructions in this [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setup-repositories.html).\n- To run Auditbeat on Docker follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-docker.html).\n- To run Auditbeat on Kubernetes follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-kubernetes.html).\n- For complete \u201cSetup and Run Auditbeat\u201d information refer to the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setting-up-and-running.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Auditd Manager",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 214
+    },
+    "id": "eb9eb8ba-a983-41d9-9c93-a1c05112ca5e_214",
+    "type": "security-rule"
+}

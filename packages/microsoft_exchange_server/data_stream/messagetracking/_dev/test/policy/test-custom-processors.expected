@@ -1,0 +1,42 @@
+inputs:
+  - data_stream:
+      namespace: ep
+    meta:
+      package:
+        name: microsoft_exchange_server
+    name: test-custom-processors-microsoft_exchange_server
+    streams:
+      - data_stream:
+          dataset: microsoft_exchange_server.messagetracking
+        exclude_files:
+          - .gz$
+        paths:
+          - C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking\*.LOG
+        processors:
+          - add_locale: null
+          - add_fields:
+              target: test
+              fields:
+                source: messagetracking_test
+          - drop_fields:
+              fields:
+                - agent.ephemeral_id
+        prospector.scanner: null
+        tags: null
+    type: filestream
+    use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-microsoft_exchange_server.messagetracking-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

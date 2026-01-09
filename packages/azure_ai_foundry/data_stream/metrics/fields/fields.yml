@@ -1,0 +1,49 @@
+- name: azure.ai_foundry
+  type: group
+  fields:
+    - name: model_requests.total
+      type: long
+      metric_type: gauge
+      description: Number of calls made to the model API over a period of time. Applies to PTU, PTU-Managed and Pay-as-you-go deployments.
+    - name: model_availability_rate.avg
+      type: float
+      metric_type: gauge
+      unit: percent
+      description: Availability percentage with the following calculation - (Total Calls - Server Errors)/Total Calls. Server Errors include any HTTP responses >=500.
+    - name: input_tokens.total
+      type: long
+      metric_type: gauge
+      description: Number of prompt tokens processed (input) on a model. Applies to PTU, PTU-Managed and Pay-as-you-go deployments.
+    - name: output_tokens.total
+      type: long
+      metric_type: gauge
+      description: Number of tokens generated (output) from an OpenAI and Non-OpenAI models. Applies to PTU, PTU-Managed and Pay-as-you-go deployments.
+    - name: total_tokens.total
+      type: long
+      metric_type: gauge
+      description: Number of inference tokens processed on a model. Calculated as prompt tokens (input) plus generated tokens (output). Applies to PTU, PTU-Managed and Pay-as-you-go deployments.
+    - name: provisioned_utilization.avg
+      type: float
+      metric_type: gauge
+      unit: percent
+      description: Utilization % for a provisoned-managed deployment, calculated as (PTUs consumed / PTUs deployed) x 100. When utilization is greater than or equal to 100%, calls are throttled and error code 429 returned.
+    - name: tokens_per_second.avg
+      type: float
+      metric_type: gauge
+      description: Enumerates the generation speed for a given model response. The total tokens generated is divided by the time to generate the tokens, in seconds. Applies to PTU and PTU-managed deployments.
+    - name: time_to_response.avg
+      type: float
+      metric_type: gauge
+      description: Recommended latency (responsiveness) measure for streaming requests. Applies to PTU and PTU-managed deployments. Calculated as time taken for the first response to appear after a user sends a prompt, as measured by the API gateway. This number increases as the prompt size increases and/or cache hit size reduces.
+    - name: normalized_time_between_tokens.avg
+      type: float
+      metric_type: gauge
+      description: For streaming requests; Model token generation rate, measured in milliseconds. Applies to PTU and PTU-managed deployments.
+    - name: normalized_time_to_first_token.avg
+      type: float
+      metric_type: gauge
+      description: For streaming and non-streaming requests; time it takes for first byte of response data to be received after request is made by model, normalized by token. Applies to PTU, PTU-managed, and Pay-as-you-go deployments.
+    - name: time_to_last_byte.avg
+      type: float
+      metric_type: gauge
+      description: For streaming and non-streaming requests; time it takes for last byte of response data to be received after request is made by model. Applies to PTU, PTU-managed, and Pay-as-you-go deployments.

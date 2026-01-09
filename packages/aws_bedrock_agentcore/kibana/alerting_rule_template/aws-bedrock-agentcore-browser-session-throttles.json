@@ -1,0 +1,34 @@
+{
+    "id": "aws-bedrock-agentcore-browser-session-throttles",
+    "type": "alerting_rule_template",
+    "attributes": {
+      "name": "[AWS Bedrock AgentCore] Browser session throttles",
+      "tags": ["AWS", "Amazon Bedrock AgentCore"],
+      "ruleTypeId": ".es-query",
+      "schedule": {
+        "interval": "5m"
+      },
+      "params": {
+        "searchType": "esqlQuery",
+        "timeWindowSize": 5,
+        "timeWindowUnit": "m",
+        "esqlQuery": {
+          "esql": "// Alert triggers when throttling occurs during AWS Bedrock AgentCore Browser operations.\n//\n// Browser session throttling indicates that requests are being rate-limited,\n// which can impact agent ability to perform web automation tasks.\n//\n// Common causes of browser throttling:\n// - High volume of browser session requests\n// - Concurrent session limits exceeded\n// - Resource quota constraints\n//\n// The alert is grouped by cloud account, region, and resource to identify\n// which browser resources are being throttled.\n//\n// To reduce alert noise, increase the threshold (e.g., `total_throttles > 10`).\n// For more details, see: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-metrics.html\n\nFROM metrics-aws_bedrock_agentcore.metrics-*\n| WHERE aws.dimensions.Operation IN (\"StartBrowserSession\", \"StopBrowserSession\", \"ConnectBrowserAutomationStream\", \"ConnectBrowserLiveViewStream\")\n| STATS total_throttles = sum(aws.bedrock_agentcore.metrics.Throttles.sum) BY cloud.account.id, cloud.region, aws.dimensions.Resource\n| WHERE total_throttles > 0"
+        },
+        "groupBy": "row",
+        "timeField": "event.ingested"
+      },
+      "alertDelay": {
+        "active": 1
+      }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+  }
+
+
+
+
+
+

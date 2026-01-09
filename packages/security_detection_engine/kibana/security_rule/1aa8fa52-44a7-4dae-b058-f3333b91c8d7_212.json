@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Cloudtrail logging suspension via StopLogging API. Stopping CloudTrail eliminates forward audit visibility and is a classic defense evasion step before sensitive changes or data theft. Investigate immediately and determine what occurred during the logging gap.",
+        "false_positives": [
+            "Suspending the recording of a trail may be done by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Trail suspensions from unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS CloudTrail Log Suspended",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS CloudTrail Log Suspended\n\nAWS CloudTrail is a service that enables governance, compliance, and operational and risk auditing of your AWS account. It logs API calls and related events, providing visibility into user activity. This rule identifies the suspension of an AWS log trail using the `StopLogging` API. Attackers can do this to cover their tracks and impact security monitoring that relies on this source.\n\n#### Possible investigation steps\n- **Actor & scope**\n  - Identify `aws.cloudtrail.user_identity.arn`, `user_agent.original`, `source.ip`.\n  - Determine which trail stopped (`target.entity.id`) and whether it\u2019s multi-region or organization-wide.\n- **Timing and impact**\n  - When did logging stop and resume (if at all)? Are there overlapping detections indicating activity during the gap?\n- **Correlate activity**\n  - Search for sensitive API activity around the stop event (IAM changes, S3 policy changes, EC2 exports, KMS changes).\n  - Check for preceding `UpdateTrail` (e.g., destination change) and subsequent `DeleteTrail`.\n\n### False positive analysis\n- **Planned suspensions**: Rare; verify maintenance tickets and ensure post-change validation.\n\n### Response and remediation\n- Restart logging (`StartLogging`) immediately.\n- Investigate actor\u2019s recent activity; rotate credentials if suspicious.\n- Validate trail configuration, destination bucket/CMK, and event selectors.\n- Hardening: Limit `cloudtrail:StopLogging` to break-glass roles; alert on any future stops; enforce via AWS Config/SCPs.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "event.dataset: \"aws.cloudtrail\" \n    and event.provider: \"cloudtrail.amazonaws.com\" \n    and event.action: \"StopLogging\" \n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_StopLogging.html",
+            "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudtrail/stop-logging.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1aa8fa52-44a7-4dae-b058-f3333b91c8d7",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Cloudtrail",
+            "Use Case: Log Auditing",
+            "Resources: Investigation Guide",
+            "Tactic: Defense Evasion"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 212
+    },
+    "id": "1aa8fa52-44a7-4dae-b058-f3333b91c8d7_212",
+    "type": "security-rule"
+}

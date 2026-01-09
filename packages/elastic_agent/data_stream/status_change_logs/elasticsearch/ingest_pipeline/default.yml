@@ -1,0 +1,23 @@
+---
+description: Pipeline for Elastic Agent status change logs.
+processors:
+  - script:
+      description: Derive health_status from status field
+      if: ctx.status != null
+      lang: painless
+      source: |
+        String status = ctx.status;
+        String healthStatus;
+
+        if (status == 'online') {
+          healthStatus = 'healthy';
+        } else if (status == 'error' || status == 'degraded') {
+          healthStatus = 'unhealthy';
+        } else if (status == 'updating' || status == 'enrolling' || status == 'unenrolling') {
+          healthStatus = 'updating';
+        } else {
+          healthStatus = status;
+        }
+
+        ctx.health_status = healthStatus;
+      ignore_failure: true

@@ -164,22 +164,46 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-11-19T22:34:40.000Z",
     "agent": {
-        "ephemeral_id": "5783a7ca-031c-49a4-a74c-6bf741bd44a7",
-        "id": "7036eed3-e508-4a47-99a4-b144655eb291",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "3099a106-bbe7-493d-8276-649af083fc0a",
+        "id": "3693530a-b7dc-4d5b-859d-50eaf05e6612",
+        "name": "elastic-agent-53456",
         "type": "filebeat",
-        "version": "8.14.0"
+        "version": "8.16.5"
     },
     "client": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "ip": "81.2.69.142",
         "port": 49804
     },
     "data_stream": {
         "dataset": "f5_bigip.log",
-        "namespace": "45148",
+        "namespace": "62205",
         "type": "logs"
     },
     "destination": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "ip": "81.2.69.142",
         "port": 80
     },
@@ -187,9 +211,9 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7036eed3-e508-4a47-99a4-b144655eb291",
+        "id": "3693530a-b7dc-4d5b-859d-50eaf05e6612",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.16.5"
     },
     "event": {
         "agent_id_status": "verified",
@@ -197,7 +221,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "f5_bigip.log",
-        "ingested": "2024-08-06T23:25:39Z",
+        "ingested": "2025-10-28T12:38:26Z",
         "kind": "alert",
         "original": "{\"application\":\"app.app\",\"attack_type\":\"Detection Evasion\",\"blocking_exception_reason\":\"test\",\"captcha_result\":\"not_received\",\"date_time\":\"2018-11-19 22:34:40\",\"dest_ip\":\"81.2.69.142\",\"dest_port\":\"80\",\"device_id\":\"12bdca32\",\"fragment\":\"test_Fragment\",\"geo_location\":\"US\",\"hostname\":\"hostname\",\"http_class_name\":\"/Common/abc/test\",\"ip_address_intelligence\":\"host1\",\"ip_client\":\"81.2.69.142\",\"management_ip_address\":\"81.2.69.142\",\"management_ip_address_2\":\"81.2.69.144\",\"method\":\"GET\",\"policy_apply_date\":\"2018-11-19 22:17:57\",\"policy_name\":\"/Common/abc\",\"protocol\":\"HTTP\",\"query_string\":\"name=abc\",\"request\":\"GET /admin/.\",\"request_status\":\"blocked\",\"response_code\":\"0\",\"route_domain\":\"example.com\",\"session_id\":\"abc123abcd\",\"severity\":\"Critical\",\"sig_ids\":\"abc12bcd\",\"sig_names\":\"Sig_Name\",\"src_port\":\"49804\",\"staged_sig_ids\":\"abc23121bc\",\"staged_sig_names\":\"test_name\",\"staged_threat_campaign_names\":\"test\",\"sub_violations\":\"Evasion technique detected:Directory traversals\",\"support_id\":\"123456789\",\"telemetryEventCategory\":\"ASM\",\"tenant\":\"Common\",\"threat_campaign_names\":\"threat\",\"uri\":\"/directory/file\",\"username\":\"test User\",\"violation_rating\":\"3\",\"violations\":\"Evasion technique detected\",\"virus_name\":\"test Virus\",\"web_application_name\":\"/Common/abc\",\"websocket_direction\":\"test\",\"websocket_message_type\":\"test\",\"x_forwarded_for_header_value\":\"81.2.69.144\"}",
         "type": [
@@ -343,10 +367,34 @@ An example event for `log` looks as following:
         ]
     },
     "server": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "ip": "81.2.69.142",
         "port": 80
     },
     "source": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "ip": "81.2.69.142",
         "port": 49804
     },
@@ -367,6 +415,9 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

@@ -5,33 +5,41 @@ processors:
   ## Intrusion Prevention Events ##
   #################################
   - rename:
+      tag: rename_arista_msg_to_rule_name_0fbf74de
       field: arista.msg
       target_field: rule.name
       ignore_missing: true
   - rename:
+      tag: rename_arista_ipDestination_to_destination_ip_e4c6e226
       field: arista.ipDestination
       target_field: destination.ip
       ignore_missing: true
   - rename:
+      tag: rename_arista_ipSource_to_source_ip_d50f6c9c
       field: arista.ipSource
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_arista_classtype_to_rule_ruleset_f35733f8
       field: arista.classtype
       target_field: rule.ruleset
       ignore_missing: true
   - rename:
+      tag: rename_arista_category_to_rule_category_13be3a14
       field: arista.category
       target_field: rule.category
       ignore_missing: true
   - remove:
+      tag: remove_rule_id_12b67e3b
       field: rule.id
       ignore_missing: true
   - rename:
+      tag: rename_arista_signatureId_to_rule_id_d801d8ba
       field: arista.signatureId
       target_field: rule.id
       ignore_missing: true
   - convert:
+      tag: convert_rule_id_652b2ac1
       field: rule.id
       type: string
       ignore_missing: true
@@ -40,6 +48,7 @@ processors:
   ## Clean Up ##
   ##############
   - remove:
+      tag: remove_1c213dec
       description: Remove Arista fields that are not necessary after parsing to ECS
       field:
         - arista.dportIcode
@@ -55,4 +64,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

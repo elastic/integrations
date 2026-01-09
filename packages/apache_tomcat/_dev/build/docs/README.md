@@ -36,7 +36,7 @@ Note:
 
 This integration has been tested against Apache Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.20.0`.
 
-## Prerequisites
+## What do I need to use this integration?
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
 
@@ -89,14 +89,14 @@ Here are the steps to configure Log format in Apache Tomcat instance:
 ```
 <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
        prefix="localhost_access_log" suffix=".txt"
-       pattern='%h %l %u %t "%r" %s %b %A %X %T "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"' />
+       pattern='%h %l %u %t "%r" %s %b %A %X %F "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"' />
 ```
 
 3. The supported log formats are:
 ```
-Common Log Format :- '%h %l %u %t "%r" %s %b'
-Combined Log Format :- '%h %l %u %t "%r" %s %b "%{Referrer}i" "%{User-Agent}i"'
-Combined Log Format + X-Forwarded-For header :- '%h %l %u %t "%r" %s %b %A %X %T "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"'
+Common Log Format :- '%h %l %u %t "%r" %s %b ms:%D'
+Combined Log Format :- '%h %l %u %t "%r" %s %b ms:%D "%{Referrer}i" "%{User-Agent}i"'
+Combined Log Format + X-Forwarded-For header :- '%h %l %u %t "%r" %s %b ms:%D %A %X %F "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"'
 ```
 
 4. Run the following commands to restart Apache Tomcat instance: -
@@ -129,7 +129,7 @@ You need the following information from your `Apache Tomcat instance` to configu
 
 Host Configuration Format: `http[s]://<hostname>:<port>/<metrics_path>`
 
-Example Host Configuration: `http://localhost:9090/metrics`
+Example Host Configuration: `http://example.com:9090/metrics`
 
 ## Validation
 

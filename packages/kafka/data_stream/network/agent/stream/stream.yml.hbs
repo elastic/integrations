@@ -1,0 +1,217 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{metrics_path}}
+namespace: metrics
+period: {{period}}
+http_method: {{http_method}}
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+{{#if ssl.certificate}}
+ssl.certificate: {{ssl.certificate}}
+{{/if}}
+{{#if ssl.key}}
+ssl.key: {{ssl.key}}
+{{/if}}
+{{#if ssl.key_passphrase}}
+ssl.key_passphrase: {{ssl.key_passphrase}}
+{{/if}}
+{{#if ssl.ca_trusted_fingerprint}}
+ssl.ca_trusted_fingerprint: {{ssl.ca_trusted_fingerprint}}
+{{/if}}
+username: {{username}}
+password: {{password}}
+jmx.mappings:
+# Acceptor blocked percent - using wildcard for listeners
+- mbean: 'kafka.network:listener=*,name=AcceptorBlockedPercent,type=Acceptor'
+  attributes:
+    - attr: Count
+      field: acceptor_blocked.count
+    - attr: OneMinuteRate
+      field: acceptor_blocked.one_minute_rate
+    - attr: FiveMinuteRate
+      field: acceptor_blocked.five_minute_rate
+    - attr: FifteenMinuteRate
+      field: acceptor_blocked.fifteen_minute_rate
+    - attr: MeanRate
+      field: acceptor_blocked.mean_rate
+      
+# Network processor idle percent
+- mbean: 'kafka.network:name=IdlePercent,networkProcessor=*,type=Processor'
+  attributes:
+    - attr: Value
+      field: processor_idle_percent.value
+      
+      
+# Request and Response Queue Sizes
+- mbean: 'kafka.network:name=RequestQueueSize,type=RequestChannel'
+  attributes:
+    - attr: Value
+      field: request_channel.request_queue_size
+         
+
+- mbean: 'kafka.network:name=ResponseQueueSize,processor=*,type=RequestChannel'
+  attributes:
+    - attr: Value
+      field: request_channel.response_queue_size.value
+
+# Socket Server metrics
+- mbean: 'kafka.network:name=ExpiredConnectionsKilledCount,type=SocketServer'
+  attributes:
+    - attr: Value
+      field: socket_server.expired_connections_killed_count
+
+- mbean: 'kafka.network:name=MemoryPoolAvailable,type=SocketServer'
+  attributes:
+    - attr: Value
+      field: socket_server.memory_pool_available
+
+- mbean: 'kafka.network:name=MemoryPoolUsed,type=SocketServer'
+  attributes:
+    - attr: Value
+      field: socket_server.memory_pool_used
+
+- mbean: 'kafka.network:name=NetworkProcessorAvgIdlePercent,type=SocketServer'
+  attributes:
+    - attr: Value
+      field: socket_server.processor_idle_percent
+      
+# Request metrics - collecting errors for all request types and error types
+- mbean: 'kafka.network:type=RequestMetrics,name=ErrorsPerSec,request=*,error=*'
+  attributes:
+    - attr: OneMinuteRate
+      field: request_metrics.errors_per_min.one_min_rate
+
+- mbean: 'kafka.network:name=LocalTimeMs,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.local_time_ms.min
+    - attr: Max
+      field: request_metrics.local_time_ms.max
+    - attr: 95thPercentile
+      field: request_metrics.local_time_ms.p95
+    - attr: 99thPercentile
+      field: request_metrics.local_time_ms.p99
+      
+- mbean: 'kafka.network:name=MessageConversionsTimeMs,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.message_conversions_time_ms.min
+    - attr: Max
+      field: request_metrics.message_conversions_time_ms.max
+    - attr: 95thPercentile
+      field: request_metrics.message_conversions_time_ms.p95
+    - attr: 99thPercentile
+      field: request_metrics.message_conversions_time_ms.p99
+
+- mbean: 'kafka.network:name=RemoteTimeMs,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.remote_time_ms.min
+    - attr: Max
+      field: request_metrics.remote_time_ms.max
+    - attr: 95thPercentile
+      field: request_metrics.remote_time_ms.p95
+    - attr: 99thPercentile
+      field: request_metrics.remote_time_ms.p99
+      
+- mbean: 'kafka.network:name=RequestBytes,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.request_bytes.min
+    - attr: Max
+      field: request_metrics.request_bytes.max
+    - attr: 95thPercentile
+      field: request_metrics.request_bytes.p95
+    - attr: 99thPercentile
+      field: request_metrics.request_bytes.p99
+
+- mbean: 'kafka.network:name=RequestQueueTimeMs,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.request_queue_time_ms.min
+    - attr: Max
+      field: request_metrics.request_queue_time_ms.max
+    - attr: 95thPercentile
+      field: request_metrics.request_queue_time_ms.p95
+    - attr: 99thPercentile
+      field: request_metrics.request_queue_time_ms.p99
+
+- mbean: 'kafka.network:name=ResponseQueueTimeMs,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.response_queue_time_ms.min
+    - attr: Max
+      field: request_metrics.response_queue_time_ms.max
+    - attr: 95thPercentile
+      field: request_metrics.response_queue_time_ms.p95
+    - attr: 99thPercentile
+      field: request_metrics.response_queue_time_ms.p99
+
+- mbean: 'kafka.network:name=ResponseSendTimeMs,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.response_send_time_ms.min
+    - attr: Max
+      field: request_metrics.response_send_time_ms.max
+    - attr: 95thPercentile
+      field: request_metrics.response_send_time_ms.p95
+    - attr: 99thPercentile
+      field: request_metrics.response_send_time_ms.p99
+
+- mbean: 'kafka.network:name=TemporaryMemoryBytes,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.temporary_memory_bytes.min
+    - attr: Max
+      field: request_metrics.temporary_memory_bytes.max
+    - attr: 95thPercentile
+      field: request_metrics.temporary_memory_bytes.p95
+    - attr: 99thPercentile
+      field: request_metrics.temporary_memory_bytes.p99
+
+- mbean: 'kafka.network:name=ThrottleTimeMs,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.throttle_time_ms.min
+    - attr: Max
+      field: request_metrics.throttle_time_ms.max
+    - attr: 95thPercentile
+      field: request_metrics.throttle_time_ms.p95
+    - attr: 99thPercentile
+      field: request_metrics.throttle_time_ms.p99
+
+- mbean: 'kafka.network:name=TotalTimeMs,request=*,type=RequestMetrics'
+  attributes:
+    - attr: Min
+      field: request_metrics.total_time_ms.min
+    - attr: Max
+      field: request_metrics.total_time_ms.max
+    - attr: 95thPercentile
+      field: request_metrics.total_time_ms.p95
+    - attr: 99thPercentile
+      field: request_metrics.total_time_ms.p99
+
+{{#if headers}}
+{{headers}}
+{{/if}}
+{{#if connect_timeout}}
+connect_timeout: {{connect_timeout}}
+{{/if}}
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

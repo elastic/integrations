@@ -1,0 +1,180 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+  event_list:
+    - domain_abuse
+    - cyber_vulnerability
+    - identity_novel_exposures
+redact:
+  fields:
+    - api_key
+program: |
+  (
+    has(state.?worklist.data) && size(state.worklist.data) > 0 ?
+      state
+    :
+      (
+        state.?want_more.orValue(false) ?
+          state
+        :
+          state.with(
+            {
+              "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+              "end_time": now.format(time_layout.RFC3339),
+              "offset": state.?offset.orValue(0),
+            }
+          )
+      ).as(state,
+        state.with(
+          post_request(
+            state.url.trim_right("/") + "/playbook-alert/search",
+            "application/json",
+            {
+              "from": int(state.offset),
+              "limit": int(state.batch_size),
+              "category": state.event_list,
+              "updated_range": {
+                "from": string(state.start_time),
+                "until": string(state.end_time),
+              }
+            }.encode_json()
+          ).with({
+            "Header":{
+              "Content-Type": ["application/json"],
+              "X-RFToken": [state.api_key],
+            },
+          }).do_request().as(resp, resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body,
+              {
+                "worklist": body,
+                "next": 0,
+                "offset": size(body.data) > 0 ? (int(state.offset) + size(body.data)) : 0,
+                "want_more": size(body.data) > 0,
+                "cursor": {
+                  ?"last_timestamp": has(body.data) && body.data.size() > 0 ?
+                    (
+                      has(state.?cursor.last_timestamp) && body.data.map(e, e.updated).max() < state.cursor.last_timestamp ?
+                        optional.of(state.cursor.last_timestamp)
+                      :
+                        optional.of(body.data.map(e, timestamp(e.updated)).max() + duration("1s"))
+                    )
+                  :
+                    state.?cursor.last_timestamp
+                },
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST " + state.url.trim_right("/") + "/playbook-alert/search: " +
+                  (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "offset": 0,
+            }
+          )
+        )
+      )
+  ).as(state,
+    state.with(
+      !has(state.worklist) ? // Exit early due to POST failure.
+        state
+      : (has(state.worklist.data) && size(state.worklist.data) > 0) ?
+          post_request(
+            state.url.trim_right("/") + "/playbook-alert/" +
+            (string(state.worklist.data[state.next].category) == "cyber_vulnerability" ?
+              "vulnerability"
+            :
+              string(state.worklist.data[state.next].category))
+            + "/" + string(state.worklist.data[state.next].playbook_alert_id),
+            "application/json",
+            {
+              "panels": [
+                "status",
+                "action",
+                "summary",
+                "dns",
+                "whois",
+                "log"
+              ]
+            }.encode_json()
+          ).with({
+            "Header":{
+              "Content-Type": ["application/json"],
+              "X-RFToken": [state.api_key],
+            }
+          }).do_request().as(resp, resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body, {
+              "events": [{
+                "message": body.data.encode_json(),
+              }],
+              "next": (int(state.next) + 1 < size(state.worklist.data)) ? (int(state.next) + 1) : 0,
+              "worklist": (int(state.next) + 1 < size(state.worklist.data)) ? state.worklist : {},
+            })
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST " + state.url.trim_right("/") + "/playbook-alert/: " + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+          )
+        :
+          {
+            "events": [],
+            "want_more": false,
+          }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

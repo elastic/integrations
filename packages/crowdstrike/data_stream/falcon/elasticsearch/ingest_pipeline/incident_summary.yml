@@ -15,18 +15,25 @@ processors:
       field: event.action
       value: incident
       tag: append_incident_action
-  - rename:
+  - grok:
       field: crowdstrike.event.UserId
-      target_field: user.name
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+        - '%{GREEDYDATA:user.name}'
       ignore_missing: true
-      tag: rename_user_id
+      ignore_failure: true
+  - set:
+      field: user.email
+      copy_from: crowdstrike.event.UserId
+      tag: copy_user_email
+      if: ctx.crowdstrike?.event?.UserId != null && ctx.crowdstrike.event.UserId.indexOf("@") > 0
   - date:
       field: crowdstrike.event.IncidentStartTime
       target_field: event.start
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_incident_start_time
+      tag: date_incident_start_time_ms
       if: 'ctx.crowdstrike?.event?.IncidentStartTime != null && String.valueOf(ctx.crowdstrike.event.IncidentStartTime).length() >= 12'
   - date:
       field: crowdstrike.event.IncidentStartTime
@@ -42,7 +49,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_incident_end_time
+      tag: date_incident_end_time_ms
       if: 'ctx.crowdstrike?.event?.IncidentEndTime != null && String.valueOf(ctx.crowdstrike.event.IncidentEndTime).length() >= 12'
   - date:
       field: crowdstrike.event.IncidentEndTime

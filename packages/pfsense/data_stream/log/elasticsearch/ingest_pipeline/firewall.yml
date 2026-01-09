@@ -2,6 +2,7 @@
 description: Pipeline for PFsense Firewall logs
 processors:
     - grok:
+        tag: grok_message_518a3bd8
         field: message
         patterns:
         - "%{PF_LOG_ENTRY}%{GREEDYDATA}"
@@ -32,50 +33,61 @@ processors:
             PF_SPEC: "[+]"
             PF_TRANSPORT: "[0-9a-zA-Z-]+"
     - set:
+        tag: set_event_kind_de80643c
         field: event.kind
         value: event
     - append:
+        tag: append_event_type_6c6f283d
         field: event.type
         value: connection
         allow_duplicates: false
         if: ctx.source?.address != null && ctx.destination?.address != null
     - append:
+        tag: append_event_type_fcaacaaf
         field: event.type
         value: denied
         allow_duplicates: false
         if: ctx.event.action == 'block'
     - append:
+        tag: append_event_type_77f1e2f8
         field: event.type
         value: allowed
         allow_duplicates: false
         if: ctx.event.action == 'pass'
     - lowercase:
+        tag: lowercase_network_transport_bc8c1c12
         field: network.transport
         ignore_missing: true
     - remove:
+        tag: remove_ack_number_9a55d0f3
         field: ack_number
         ignore_missing: true
         if: ctx.ack_number == null || ctx.ack_number == ''
     - network_direction:
+        tag: network_direction_6d15af04
         internal_networks_field: _tmp.internal_networks
     - split:
+        tag: split_pfsense_tcp_options_a6459ab2
         field: pfsense.tcp.options
         separator: ';'
         ignore_missing: true
         ignore_failure: true
     - date:
+        tag: date_pfsense_icmp_otime_a8122a08
         field: pfsense.icmp.otime
         ignore_failure: true
         formats:
             - UNIX
             - UNIX_MS
     - date:
+        tag: date_pfsense_icmp_rtime_6f2f5bb7
         field: pfsense.icmp.rtime
         ignore_failure: true
         formats:
             - UNIX
             - UNIX_MS
     - date:
+        tag: date_pfsense_icmp_ttime_c5011051
         field: pfsense.icmp.ttime
         ignore_failure: true
         formats:
@@ -87,4 +99,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -2,30 +2,36 @@
 description: Pipeline for processing Fortinet Fortiproxy logs.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_original_b9758751
       field: event.original
       copy_from: message
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
-      value: [ network ]
+      value: [network]
   - set:
+      tag: set_observer_vendor_7e57c221
       field: observer.vendor
       value: Fortinet
   - set:
+      tag: set_observer_product_2ad4a04f
       field: observer.product
       value: FortiProxy
   - set:
+      tag: set_observer_type_5da7be42
       field: observer.type
       value: proxy
 
-# ------------------------------------------------------------------------------
-# Message processing
-
+  # ------------------------------------------------------------------------------
+  # Message processing
   - grok:
       tag: grok_syslog_priority
       field: message
@@ -49,7 +55,7 @@ processors:
   - gsub:
       tag: gsub_sanitize_message
       field: message
-      pattern: "[\u0000-\u001F\u007F]"
+      pattern: "[\x00-\x1f\x7f]"
       replacement: ""
   - script:
       tag: script_kv_parse
@@ -68,6 +74,9 @@ processors:
         for (int i = 0, n = ctx["message"].length(); i < n; ++i) {
           char c = ctx["message"].charAt(i);
           if (c == (char)'"') {
+            if (inQuote && i < n - 1 && ctx["message"].charAt(i + 1) != (char)' ') {
+              continue;
+            }
             inQuote = !inQuote;
           }
           if (inQuote) {
@@ -91,10 +100,8 @@ processors:
             kvSplit = i + 1;
           }
         }
-
-# ------------------------------------------------------------------------------
-# Date and Time.
-
+  # ------------------------------------------------------------------------------
+  # Date and Time.
   - set:
       tag: set_timezone
       field: event.timezone
@@ -117,14 +124,15 @@ processors:
         - yyyy-MM-dd HH:mm:ss Z
         - yyyy-MM-dd HH:mm:ss
   - remove:
+      tag: remove_8c6d6590
       field:
         - _fields_.date
         - _fields_.time
         - _fields_.tz
         - message
 
-# ------------------------------------------------------------------------------
-# Convert fields.
+  # ------------------------------------------------------------------------------
+  # Convert fields.
   - convert:
       tag: convert_count
       field: _fields_.count
@@ -210,10 +218,14 @@ processors:
       field: _fields_.wanout
       type: long
       ignore_missing: true
+  - convert:
+      tag: convert_logver
+      field: _fields_.logver
+      type: long
+      ignore_missing: true
 
-# ------------------------------------------------------------------------------
-# Enrich fields.
-
+  # ------------------------------------------------------------------------------
+  # Enrich fields.
   - gsub:
       tag: gsub_eventtime_truncate_ns
       field: _fields_.eventtime
@@ -260,8 +272,8 @@ processors:
           return;
         }        
         ctx._fields_.duration = ctx._fields_.duration * 1000000000
-
   - lowercase:
+      tag: lowercase__fields__service_e7f53819
       field: _fields_.service
       ignore_missing: true
   - script:
@@ -332,8 +344,8 @@ processors:
       replacement: "-"
       ignore_missing: true
 
-# ------------------------------------------------------------------------------
-# Move fields to ECS.
+  # ------------------------------------------------------------------------------
+  # Move fields to ECS.
   - rename:
       tag: rename_action
       field: _fields_.action
@@ -490,22 +502,23 @@ processors:
       target_field: source.port
       ignore_missing: true
 
-# ------------------------------------------------------------------------------
-# Dispatch to sub-pipelines.
-
+  # ------------------------------------------------------------------------------
+  # Dispatch to sub-pipelines.
   - pipeline:
+      tag: pipeline_0aaa991e
       name: '{{ IngestPipeline "event" }}'
       if: ctx._fields_?.type == 'event'
   - pipeline:
+      tag: pipeline_2c865ea2
       name: '{{ IngestPipeline "traffic" }}'
       if: ctx._fields_?.type == 'traffic'
   - pipeline:
+      tag: pipeline_aa5d421e
       name: '{{ IngestPipeline "utm" }}'
       if: ctx._fields_?.type == 'utm'
 
-# ------------------------------------------------------------------------------
-# Enrich remaining fields.
-
+  # ------------------------------------------------------------------------------
+  # Enrich remaining fields.
   - script:
       tag: script_network_compute_stats
       lang: painless
@@ -526,7 +539,6 @@ processors:
         if (ctx.destination?.packets instanceof Number && ctx.source?.packets instanceof Number) {
           ctx.network.packets = ctx.destination.packets + ctx.source.packets;
         }
-
   - geoip:
       tag: geoio_source
       field: source.ip
@@ -570,27 +582,44 @@ processors:
       keep_original: true
       ignore_missing: true
 
-# ------------------------------------------------------------------------------
-# Cleanup.
-
+  # ------------------------------------------------------------------------------
+  # Cleanup.
   - remove:
+      tag: remove_f546465e
       field:
         - _fields_.agent
         - _fields_.clientip
         - _fields_.duration
+        - _fields_.timestamp
       ignore_missing: true
   - rename:
+      tag: rename__fields__to_fortinet_proxy_e471e0a7
       field: _fields_
       target_field: fortinet.proxy
   - remove:
+      tag: remove_4c2e6762
       field:
         - _temp_
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -34,66 +34,46 @@ The Trellix EDR Cloud integration collects logs for the following seventeen even
 | User            |
 | WMI             |
 
-
 **NOTE**: The Trellix EDR Cloud integration collects logs for the above mentioned events, but we have combined all of those in one data stream named `event`.
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the S3 bucket and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 The minimum **kibana.version** required is **8.9.0**.
 
 ## Setup
 
-### To collect data from an AWS S3 bucket, follow the below steps:
+### Collect data from an AWS S3 bucket
 
-1. Considering you already have an AWS S3 bucket setup, to configure it with Trellix EDR Cloud, follow the steps mentioned below:
-   - Login to your Trellix Admin Account, select Trellix ePO.
-   - Go to Policy Catalog -> Trellix EDR.
-   - Create a new policy by filling the required details and  click OK.
-   - After creating a policy, click on edit for the policy you  want to edit.
-   - Go to the Trace, fill in the details of the trace scanner and AWS S3 settings, and click on save.
-   - Now go to the system tree and click on the system to which you want to assign the policy.
-   - Go to Actions -> Agent -> Set Policy and Inheritance
-   - Select the product under policy as MVISION EDR, and select the policy that you want to assign to this system, and click  save.
-   - Policy is assigned to the system, and the system trace  logs will be sent to the AWS S3 bucket.
-2. The default value of the field `Bucket List Prefix` is event/.
+If you already have an AWS S3 bucket setup, configure it with Trellix EDR Cloud by following these steps:
 
-### To collect data from AWS SQS, follow the below steps:
+1. Login to your Trellix Admin Account, select Trellix ePO.
+2. Go to Policy Catalog -> Trellix EDR.
+3. Create a new policy by filling the required details and  click OK.
+4. After creating a policy, click on edit for the policy you  want to edit.
+5. Go to the Trace, fill in the details of the trace scanner and AWS S3 settings, and click on save.
+6. Now go to the system tree and click on the system to which you want to assign the policy.
+7. Go to Actions -> Agent -> Set Policy and Inheritance
+8. Select the product under policy as MVISION EDR, and select the policy that you want to assign to this system, and click  save.
+9. Policy is assigned to the system, and the system trace  logs will be sent to the AWS S3 bucket.
+
+The default value of the field `Bucket List Prefix` is event/.
+
+### Collect data from AWS SQS
 
 1. Assuming you've already set up a connection to push data into the AWS bucket; if not, see the section above.
-2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" as described in the [AWS documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
    - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in Trellix EDR Cloud.
-3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
-   - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
+3. To configure event notifications for an S3 bucket refer to the [AWS documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+   - While creating `event notification` select the event type as `s3:ObjectCreated:*`, destination type SQS Queue, and select the queue name created in Step 2.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Trellix EDR Cloud
-3. Click on the "Trellix EDR Cloud" integration from the search results.
-4. Click on the Add Trellix EDR Cloud Integration button to add the integration.
-5. While adding the integration, if you want to collect logs via AWS S3, then you have to put the following details:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Trellix EDR Cloud**.
+3. Select the **Trellix EDR Cloud** integration and add it.
+4. While adding the integration, if you want to collect logs via AWS S3, enter the following details:
    - access key id
    - secret access key
    - bucket arn or access point arn
@@ -105,8 +85,9 @@ The minimum **kibana.version** required is **8.9.0**.
    - queue url
    - region
    - collect logs via S3 Bucket toggled off
+5. Save the integration. 
 
-**NOTE**: There are other input combination options available, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
+**NOTE**: For more input combination options, check the [AWS documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
 
 ## Logs reference
 

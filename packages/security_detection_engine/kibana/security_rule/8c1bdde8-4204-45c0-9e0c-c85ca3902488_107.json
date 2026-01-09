@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects network events that may indicate the use of RDP traffic from the Internet. RDP is commonly used by system administrators to remotely control a system for maintenance or to use shared resources. It should almost never be directly exposed to the Internet, as it is frequently targeted and exploited by threat actors as an initial access or backdoor vector.",
+        "false_positives": [
+            "Some network security policies allow RDP directly from the Internet but usage that is unfamiliar to server or network owners can be unexpected and suspicious. RDP services may be exposed directly to the Internet in some networks such as cloud environments. In such cases, only RDP gateways, bastions or jump servers may be expected expose RDP directly to the Internet and can be exempted from this rule. RDP may be required by some work-flows such as remote access and support for specialized software products and servers. Such work-flows are usually known and not unexpected."
+        ],
+        "from": "now-9m",
+        "index": [
+            "packetbeat-*",
+            "auditbeat-*",
+            "filebeat-*",
+            "logs-network_traffic.*",
+            "logs-panw.panos*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "RDP (Remote Desktop Protocol) from the Internet",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating RDP (Remote Desktop Protocol) from the Internet\n\nRDP allows administrators to remotely manage systems, but exposing it to the internet poses security risks. Adversaries exploit RDP for unauthorized access, often using it as an entry point for attacks. The detection rule identifies suspicious RDP traffic by monitoring TCP connections on port 3389 from external IPs, flagging potential threats for further investigation.\n\n### Possible investigation steps\n\n- Review the source IP address flagged in the alert to determine if it is known or associated with any previous malicious activity. Check threat intelligence sources for any reported malicious behavior.\n- Analyze the destination IP address to confirm it belongs to your internal network (10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16) and identify the specific system targeted by the RDP connection.\n- Examine network logs for any unusual or unexpected RDP traffic patterns from the source IP, such as repeated connection attempts or connections at odd hours, which may indicate brute force attempts or unauthorized access.\n- Check for any recent changes or updates to firewall rules or security policies that might have inadvertently exposed RDP to the internet.\n- Investigate the user accounts involved in the RDP session to ensure they are legitimate and have not been compromised. Look for any signs of unauthorized access or privilege escalation.\n- Correlate the RDP traffic with other security events or alerts to identify any potential lateral movement or further malicious activity within the network.\n\n### False positive analysis\n\n- Internal testing or maintenance activities may trigger the rule if RDP is temporarily exposed to the internet. To manage this, create exceptions for known internal IP addresses or scheduled maintenance windows.\n- Legitimate third-party vendors or partners accessing systems via RDP for support purposes can be mistaken for threats. Establish a list of trusted external IP addresses and exclude them from the rule.\n- Misconfigured network devices or security tools might inadvertently expose RDP to the internet, leading to false positives. Regularly audit network configurations and update the rule to exclude known benign sources.\n- Cloud-based services or remote work solutions that use RDP over the internet can be flagged. Identify and whitelist these services' IP ranges to prevent unnecessary alerts.\n\n### Response and remediation\n\n- Immediately block the external IP address identified in the alert from accessing the network to prevent further unauthorized RDP connections.\n- Isolate the affected system from the network to contain any potential compromise and prevent lateral movement by the threat actor.\n- Conduct a thorough review of the affected system for signs of compromise, such as unauthorized user accounts, changes in system configurations, or the presence of malware.\n- Reset credentials for any accounts that were accessed or potentially compromised during the incident to prevent unauthorized access.\n- Apply security patches and updates to the affected system and any other systems with RDP enabled to mitigate known vulnerabilities.\n- Implement network segmentation to restrict RDP access to only trusted internal IP addresses and consider using a VPN for secure remote access.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems are affected.",
+        "query": "(event.dataset: network_traffic.flow or (event.category: (network or network_traffic))) and\n  network.transport:tcp and (destination.port:3389 or event.dataset:zeek.rdp) and\n  not source.ip:(\n    10.0.0.0/8 or\n    127.0.0.0/8 or\n    169.254.0.0/16 or\n    172.16.0.0/12 or\n    192.0.0.0/24 or\n    192.0.0.0/29 or\n    192.0.0.8/32 or\n    192.0.0.9/32 or\n    192.0.0.10/32 or\n    192.0.0.170/32 or\n    192.0.0.171/32 or\n    192.0.2.0/24 or\n    192.31.196.0/24 or\n    192.52.193.0/24 or\n    192.168.0.0/16 or\n    192.88.99.0/24 or\n    224.0.0.0/4 or\n    100.64.0.0/10 or\n    192.175.48.0/24 or\n    198.18.0.0/15 or\n    198.51.100.0/24 or\n    203.0.113.0/24 or\n    240.0.0.0/4 or\n    \"::1\" or\n    \"FE80::/10\" or\n    \"FF00::/8\"\n  ) and\n  destination.ip:(\n    10.0.0.0/8 or\n    172.16.0.0/12 or\n    192.168.0.0/16\n  )\n",
+        "references": [
+            "https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            },
+            {
+                "package": "panw",
+                "version": "^5.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8c1bdde8-4204-45c0-9e0c-c85ca3902488",
+        "severity": "medium",
+        "tags": [
+            "Tactic: Command and Control",
+            "Domain: Endpoint",
+            "Use Case: Threat Detection",
+            "Data Source: PAN-OS",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": []
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timeline_id": "300afc76-072d-4261-864d-4149714bf3f1",
+        "timeline_title": "Comprehensive Network Timeline",
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 107
+    },
+    "id": "8c1bdde8-4204-45c0-9e0c-c85ca3902488_107",
+    "type": "security-rule"
+}

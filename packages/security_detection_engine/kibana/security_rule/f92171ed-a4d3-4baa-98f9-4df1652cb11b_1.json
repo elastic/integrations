@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the execution of Gitleaks, a tool used to search for high-entropy strings and secrets in code repositories, which may indicate an attempt to access credentials.",
+        "false_positives": [
+            "Gitleaks is a legitimate open-source tool used by security professionals and developers to search for sensitive information, such as passwords, API keys, and other secrets, within code repositories. It is commonly employed during security assessments and code reviews to identify potential vulnerabilities."
+        ],
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Secret Scanning via Gitleaks",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Secret Scanning via Gitleaks\n\nThis alert fires when a host launches Gitleaks, a secret-scanning utility that hunts high-entropy strings and credentials in source code and repositories, signaling potential credential harvesting. An attacker may clone internal repos or traverse local workspace directories, drop a portable gitleaks binary in /tmp or %TEMP%, run recursive scans with wide rule sets and JSON output, then archive the results to exfiltrate tokens, API keys, and passwords for lateral movement and service impersonation.\n\n### Possible investigation steps\n\n- Review the full command line to identify --path/--repo/--report/--format flags, which reveal scope and whether results are being written for exfiltration.\n- Examine parent and ancestry plus user session to determine if it was launched by CI/dev tooling versus an interactive shell, and note execution from temp or unusual directories suggesting a dropped portable binary.\n- Locate and inspect newly created artifacts (gitleaks.json, .sarif, .csv, zip archives) near the event time, confirm the presence of secrets, and map their sensitivity to affected systems.\n- Correlate with network and data movement around the event for clones to internal repos and outbound transfers to cloud storage, paste sites, or email, and capture repository URLs or destinations if present.\n- Trace how the binary arrived by checking recent downloads and file writes (curl/wget, package managers, GitHub releases), verify the binary\u2019s hash and signer, and compare against known-good sources.\n\n### False positive analysis\n\n- A developer or security team member intentionally runs gitleaks to audit internal code for secrets during routine hygiene, producing local report artifacts and showing normal parent processes without exfiltration behavior.\n- A user invokes gitleaks with --version or --help to validate installation or review usage, which generates a process start event but performs no scanning or credential access.\n\n### Response and remediation\n\n- If the run was unauthorized or executed from /tmp, %TEMP%, or a user profile, terminate gitleaks.exe/gitleaks, isolate the host from the network, and capture the binary path and hash for forensics.\n- Quarantine report artifacts produced by the run (gitleaks.json, .sarif, .csv, and any zip archives) by securing copies for evidence, removing world-readable permissions, and deleting residual copies from the working directory, Downloads, repo folders, and CI workspaces after collection.\n- Eradicate tooling by removing the dropped gitleaks binary and any wrapper scripts or CI job steps that invoke it, and enforce execution blocking for gitleaks in user-writable paths via application control or EDR policy.\n- Immediately revoke and rotate any secrets confirmed in the reports or repository (cloud API keys, service tokens, SSH keys, credentials), purge them from repo history (git filter-repo/BFG) if present, redeploy updated secrets from the vault, and force password resets for affected accounts.\n- Review git activity and data movement around the event for repo clones and exports, and inspect outbound transfers of report files to cloud storage, paste sites, or email; escalate to Incident Response and Legal if any report left the device or if production/customer credentials are exposed.\n- Harden going forward by enabling approved server-side and CI secret scanning, enforcing pre-commit hooks, prohibiting PATs with broad scopes, restricting egress to paste/file-sharing sites, and blocking execution of portable binaries from temp and user-writable locations.",
+        "query": "process where event.type == \"start\" and event.action like (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\", \"executed\", \"process_started\", \"Process Create*\") and\nprocess.name : (\"gitleaks.exe\", \"gitleaks\")\n",
+        "references": [
+            "https://www.elastic.co/blog/shai-hulud-worm-npm-supply-chain-compromise",
+            "https://socket.dev/blog/shai-hulud-strikes-again-v2"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f92171ed-a4d3-4baa-98f9-4df1652cb11b",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Data Source: Auditd Manager",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "f92171ed-a4d3-4baa-98f9-4df1652cb11b_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,114 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule identifies successful logins by system users that are uncommon to authenticate. These users have `nologin` set by default, and must be modified to allow SSH access. Adversaries may backdoor these users to gain unauthorized access to the system.",
+        "from": "now-9m",
+        "index": [
+            "filebeat-*",
+            "logs-system.auth-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Login via Unusual System User",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Login via Unusual System User\n\nIn Linux environments, system users typically have restricted login capabilities to prevent unauthorized access. These accounts, often set with `nologin`, are not meant for interactive sessions. Adversaries may exploit these accounts by altering their configurations to enable SSH access, thus bypassing standard security measures. The detection rule identifies successful logins by these uncommon system users, flagging potential unauthorized access attempts for further investigation.\n\n### Possible investigation steps\n\n- Review the login event details to identify the specific system user account involved in the successful login, focusing on the user.name field.\n- Check the system logs for any recent changes to the user account's configuration, particularly modifications that might have enabled SSH access for accounts typically set with nologin.\n- Investigate the source IP address associated with the login event to determine if it is known or suspicious, and assess whether it aligns with expected access patterns.\n- Examine the timeline of events leading up to and following the login to identify any unusual activities or patterns that could indicate malicious behavior.\n- Verify if there are any other successful login attempts from the same source IP or involving other system user accounts, which could suggest a broader compromise.\n- Consult with system administrators to confirm whether any legitimate changes were made to the system user account's login capabilities and document any authorized modifications.\n\n### False positive analysis\n\n- System maintenance tasks may require temporary login access for system users. Verify if the login corresponds with scheduled maintenance and consider excluding these events during known maintenance windows.\n- Automated scripts or services might use system accounts for legitimate purposes. Identify these scripts and whitelist their associated activities to prevent false alerts.\n- Some system users might be configured for specific applications that require login capabilities. Review application requirements and exclude these users if their access is deemed necessary and secure.\n- In environments with custom configurations, certain system users might be intentionally modified for operational needs. Document these changes and adjust the detection rule to exclude these known modifications.\n- Regularly review and update the list of system users in the detection rule to ensure it reflects the current environment and operational requirements, minimizing unnecessary alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Terminate any active sessions associated with the unusual system user accounts identified in the alert to disrupt ongoing unauthorized access.\n- Review and revert any unauthorized changes to the system user accounts, such as modifications to the shell configuration that enabled login capabilities.\n- Conduct a thorough audit of the system for any additional unauthorized changes or backdoors, focusing on SSH configurations and user account settings.\n- Reset passwords and update authentication mechanisms for all system user accounts to prevent further exploitation.\n- Implement additional monitoring and alerting for any future login attempts by system users, ensuring rapid detection and response to similar threats.\n- Escalate the incident to the security operations team for further investigation and to assess the potential impact on other systems within the network.",
+        "query": "authentication where host.os.type == \"linux\" and event.action in (\"ssh_login\", \"user_login\") and\nuser.name in (\n  \"deamon\", \"bin\", \"sys\", \"games\", \"man\", \"lp\", \"mail\", \"news\", \"uucp\", \"proxy\", \"www-data\", \"backup\",\n  \"list\", \"irc\", \"gnats\", \"nobody\", \"systemd-timesync\", \"systemd-network\", \"systemd-resolve\", \"messagebus\",\n  \"avahi\", \"sshd\", \"dnsmasq\"\n) and event.outcome == \"success\"\n",
+        "references": [
+            "https://blog.exatrack.com/Perfctl-using-portainer-and-new-persistences/",
+            "https://x.com/RFGroenewoud/status/1875112050218922010"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "428e9109-dc13-4ae9-84cb-100464d4c6fa",
+        "setup": "## Setup\n\nThis rule requires data coming in from Filebeat.\n\n### Filebeat Setup\nFilebeat is a lightweight shipper for forwarding and centralizing log data. Installed as an agent on your servers, Filebeat monitors the log files or locations that you specify, collects log events, and forwards them either to Elasticsearch or Logstash for indexing.\n\n#### The following steps should be executed in order to add the Filebeat on a Linux System:\n- Elastic provides repositories available for APT and YUM-based distributions. Note that we provide binary packages, but no source packages.\n- To install the APT and YUM repositories follow the setup instructions in this [helper guide](https://www.elastic.co/guide/en/beats/filebeat/current/setup-repositories.html).\n- To run Filebeat on Docker follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/filebeat/current/running-on-docker.html).\n- To run Filebeat on Kubernetes follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/filebeat/current/running-on-kubernetes.html).\n- For quick start information for Filebeat refer to the [helper guide](https://www.elastic.co/guide/en/beats/filebeat/8.11/filebeat-installation-configuration.html).\n- For complete \u201cSetup and Run Filebeat\u201d information refer to the [helper guide](https://www.elastic.co/guide/en/beats/filebeat/current/setting-up-and-running.html).\n\n#### Rule Specific Setup Note\n- This rule requires the \u201cFilebeat System Module\u201d to be enabled.\n- The system module collects and parses logs created by the system logging service of common Unix/Linux based distributions.\n- To run the system module of Filebeat on Linux follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-system.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Defense Evasion",
+            "Data Source: System",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.004",
+                                "name": "SSH Authorized Keys",
+                                "reference": "https://attack.mitre.org/techniques/T1098/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/",
+                        "subtechnique": [
+                            {
+                                "id": "T1564.002",
+                                "name": "Hidden Users",
+                                "reference": "https://attack.mitre.org/techniques/T1564/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 4
+    },
+    "id": "428e9109-dc13-4ae9-84cb-100464d4c6fa_4",
+    "type": "security-rule"
+}

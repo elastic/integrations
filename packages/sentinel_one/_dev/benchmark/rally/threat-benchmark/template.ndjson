@@ -1,0 +1,335 @@
+{{- $timestamp := generate "timestamp" }}
+{{- /* agent data */ -}}
+{{- $accountId := generate "agentInfo.accountId" }}
+{{- $accountName := generate "agentInfo.accountName" }}
+{{- $agentDetectionState := generate "agentInfo.detectionState" }}
+{{- $agentDomain := generate "agentInfo.domain" }}
+{{- $agentIpV4 := generate "agentInfo.ipV4" }}
+{{- $agentIpV6 := generate "agentInfo.ipV6" }}
+{{- $agentLastLoggedInUpn := generate "agentInfo.lastLoggedInUpn" }}
+{{- $agentLastLoggedInUserName := generate "agentInfo.lastLoggedInUserName" }}
+{{- $agentMitigationMode := generate "agentInfo.mitigationMode" }}
+{{- $agentOsName := generate "agentInfo.osName" }}
+{{- $agentOsRevision := generate "agentInfo.osRevision" }}
+{{- $agentOsType := generate "agentInfo.osType" }}
+{{- $externalIp := generate "agentInfo.externalIp" }}
+{{- $groupId := generate "agentInfo.groupId" }}
+{{- $groupName := generate "agentInfo.groupName" }}
+{{- $siteId := generate "agentInfo.siteId" }}
+{{- $siteName := generate "agentInfo.siteName" }}
+{{- $activeThreats := generate "agentInfo.activeThreats" }}
+{{- $agentComputerName := generate "agentInfo.computerName" }}
+{{- $agentDecommissionedAt := generate "agentInfo.decommissionedAt"}}
+{{- $agentId := generate "agentInfo.id" }}
+{{- $agentInfected := generate "agentInfo.infected" }}
+{{- $agentIsActive := generate "agentInfo.isActive" }}
+{{- $agentIsDecommissioned := generate "agentInfo.isDecommissioned" }}
+{{- $agentMachineType := generate "agentInfo.machineType" }}
+{{- $agentNetworkStatus := generate "agentInfo.networkStatus" }}
+{{- $agentRegisteredAt := generate "agentInfo.registeredAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $agentUuid := generate "agentInfo.uuid" }}
+{{- $agentVersion := generate "agentInfo.version" }}
+{{- $networkInterfaceId := generate "agentInfo.networkInterfaces.id" }}
+{{- $inet := generate "agentInfo.networkInterfaces.inet" }}
+{{- $inet6 := generate "agentInfo.networkInterfaces.inet6" }}
+{{- $networkInterfaceName := generate "agentInfo.networkInterfaces.name" }}
+{{- $networkInterfacePhysical := generate "agentInfo.networkInterfaces.physical" }}
+{{- $operationalState := generate "agentInfo.operationalState" }}
+{{- $rebootRequired := generate "agentInfo.rebootRequired" }}
+{{- $scanAbortedAt := generate "agentInfo.scanAbortedAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $scanFinishedAt := generate "agentInfo.scanFinishedAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $scanStartedAt := generate "agentInfo.scanStartedAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $scanStatus := generate "agentInfo.scanStatus" }}
+{{- $id := generate "id" }}
+{{- /* indicators data */ -}}
+{{- $indicatorsCategory := generate "indicators.category"}}
+{{- $indicatorsCategoryId := generate "indicators.categoryId"}}
+{{- $indicatorsDescription := generate "indicators.description"}}
+{{- $indicatorsIds := generate "indicators.ids"}}
+{{- $tacticsName := generate "indicators.tactics.name"}}
+{{- $tacticsSource := generate "indicators.tactics.source"}}
+{{- $techniquesLink := generate "indicators.tactics.techniques.link"}}
+{{- $techniquesName := generate "indicators.tactics.techniques.name"}}
+{{- /* mitigationStatus data */ -}}
+{{- $mitigationStatusAction := generate "mitigationStatus.action" }}
+{{- $actionCountersFailed := generate "mitigationStatus.actionsCounters.failed" }}
+{{- $actionCountersNotFound := generate "mitigationStatus.actionsCounters.notFound" }}
+{{- $actionCountersPendingReboot := generate "mitigationStatus.actionsCounters.pendingReboot" }}
+{{- $actionCountersSuccess := generate "mitigationStatus.actionsCounters.success" }}
+{{- $actionCountersTotal := generate "mitigationStatus.actionsCounters.total" }}
+{{- $agentSupportsReport := generate "mitigationStatus.agentSupportsReport" }}
+{{- $groupNotFound := generate "mitigationStatus.groupNotFound" }}
+{{- $lastUpdate := generate "mitigationStatus.lastUpdate" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $latestReport := generate "mitigationStatus.latestReport" }}
+{{- $mitigationEndedAt := generate "mitigationStatus.mitigationEndedAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $mitigationStartedAt := generate "mitigationStatus.mitigationStartedAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $reportId := generate "mitigationStatus.reportId" }}
+{{- $status := generate "mitigationStatus.status" }}
+{{- /* threat data */ -}}
+{{- $analystVerdict := generate "threatInfo.analystVerdict" }}
+{{- $analystVerdictDescription := generate "threatInfo.analystVerdictDescription" }}
+{{- $automaticallyResolved := generate "threatInfo.automaticallyResolved" }}
+{{- $browserType := generate "threatInfo.browserType" }}
+{{- $certificateId := generate "threatInfo.certificateId" }}
+{{- $classification := generate "threatInfo.classification" }}
+{{- $classificationSource := generate "threatInfo.classificationSource" }}
+{{- $cloudFilesHashVerdict := generate "threatInfo.cloudFilesHashVerdict" }}
+{{- $collectionId := generate "threatInfo.collectionId" }}
+{{- $confidenceLevel := generate "threatInfo.confidenceLevel" }}
+{{- $createdAt := generate "threatInfo.createdAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $detectionEnginesKey := generate "threatInfo.detectionEngines.key" }}
+{{- $detectionEnginesTitle := generate "threatInfo.detectionEngines.title" }}
+{{- $detectionType := generate "threatInfo.detectionType" }}
+{{- $externalTicketExists := generate "threatInfo.externalTicketExists" }}
+{{- $externalTicketId := generate "threatInfo.externalTicketId" }}
+{{- $failedActions := generate "threatInfo.failedActions" }}
+{{- $fileExtension := generate "threatInfo.fileExtension" }}
+{{- $fileExtensionType := generate "threatInfo.fileExtensionType" }}
+{{- $filePath := generate "threatInfo.filePath" }}
+{{- $fileSize := generate "threatInfo.fileSize" }}
+{{- $fileVerificationType := generate "threatInfo.fileVerificationType" }}
+{{- $identifiedAt := generate "threatInfo.identifiedAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $incidentStatus := generate "threatInfo.incidentStatus" }}
+{{- $incidentStatusDescription := generate "threatInfo.incidentStatusDescription" }}
+{{- $initiatedBy := generate "threatInfo.initiatedBy" }}
+{{- $initiatedByDescription := generate "threatInfo.initiatedByDescription" }}
+{{- $initiatingUserId := generate "threatInfo.initiatingUserId" }}
+{{- $initiatingUsername := generate "threatInfo.initiatingUsername" }}
+{{- $isFileless := generate "threatInfo.isFileless" }}
+{{- $isValidCertificate := generate "threatInfo.isValidCertificate" }}
+{{- $maliciousProcessArguments := generate "threatInfo.maliciousProcessArguments" }}
+{{- $md5 := generate "threatInfo.md5" }}
+{{- $mitigatedPreemptively := generate "threatInfo.mitigatedPreemptively" }}
+{{- $mitigationStatus := generate "threatInfo.mitigationStatus" }}
+{{- $mitigationStatusDescription := generate "threatInfo.mitigationStatusDescription" }}
+{{- $originatorProcess := generate "threatInfo.originatorProcess" }}
+{{- $pendingActions := generate "threatInfo.pendingActions" }}
+{{- $processUser := generate "threatInfo.processUser" }}
+{{- $publisherName := generate "threatInfo.publisherName" }}
+{{- $reachedEventsLimit := generate "threatInfo.reachedEventsLimit" }}
+{{- $sha1 := generate "threatInfo.sha1" }}
+{{- $sha256 := generate "threatInfo.sha256" }}
+{{- $storyline := generate "threatInfo.storyline" }}
+{{- $threatId := generate "threatInfo.threatId" }}
+{{- $threatName := generate "threatInfo.threatName" }}
+{{- $updatedAt := generate "threatInfo.updatedAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- /*
+{
+    "agentDetectionInfo": {
+        "accountId": "{{ $accountId }}",
+        "accountName": "{{ $accountName }}",
+        "agentDetectionState": "{{ $agentDetectionState }}",
+        "agentDomain": "{{ $agentDomain }}",
+        "agentIpV4": "{{ $agentIpV4 }}",
+        "agentIpV6": "{{ $agentIpV6 }}",
+        "agentLastLoggedInUpn": "{{ $agentLastLoggedInUpn }}",
+        "agentLastLoggedInUserMail": "{{ $agentLastLoggedInUserName }}@mail.com",
+        "agentLastLoggedInUserName": "{{ $agentLastLoggedInUserName }}",
+        "agentMitigationMode": "{{ $agentMitigationMode }}",
+        "agentOsName": "{{ $agentOsName }}",
+        "agentOsRevision": "{{ $agentOsRevision }}",
+        "agentRegisteredAt": "{{ $agentRegisteredAt }}",
+        "agentUuid": "{{ $agentUuid }}",
+        "agentVersion": "{{ $agentVersion }}",
+        "cloudProviders": {},
+        "externalIp": "{{ $externalIp }}",
+        "groupId": "{{ $groupId }}",
+        "groupName": "{{ $groupName }}",
+        "siteId": "{{ $siteId }}",
+        "siteName": "{{ $siteName }}"
+    },
+    "agentRealtimeInfo": {
+        "accountId": "{{ $accountId }}",
+        "accountName": "{{ $accountName }}",
+        "activeThreats": {{ $activeThreats }},
+        "agentComputerName": "{{ $agentComputerName }}",
+        "agentDecommissionedAt": "{{ $agentDecommissionedAt }}",
+        "agentDomain": "{{ $agentDomain }}",
+        "agentId": "{{ $agentId }}",
+        "agentInfected": {{ $agentInfected }},
+        "agentIsActive": {{ $agentIsActive }},
+        "agentIsDecommissioned": {{ $agentIsDecommissioned }},
+        "agentMachineType": "{{ $agentMachineType }}",
+        "agentMitigationMode": "{{ $agentMitigationMode }}",
+        "agentNetworkStatus": "{{ $agentNetworkStatus }}",
+        "agentOsName": "{{ $agentOsName }}",
+        "agentOsRevision": "{{ $agentOsRevision }}",
+        "agentOsType": "{{ $agentOsType }}",
+        "agentUuid": "{{ $agentUuid }}",
+        "agentVersion": "{{ $agentVersion }}",
+        "groupId": "{{ $groupId }}",
+        "groupName": "{{ $groupName }}",
+        "networkInterfaces": [
+            {
+                "id": "{{ $networkInterfaceId }}",
+                "inet": [
+                    "{{ $inet }}"
+                ],
+                "inet6": [
+                    "{{ $inet6 }}"
+                ],
+                "name": "{{ $networkInterfaceName }}",
+                "physical": "{{ $networkInterfacePhysical }}"
+            }
+        ],
+        "operationalState": "{{ $operationalState }}",
+        "rebootRequired": {{ $rebootRequired }},
+        "scanAbortedAt": "{{ $scanAbortedAt }}",
+        "scanFinishedAt": "{{ $scanFinishedAt }}",
+        "scanStartedAt": "{{ $scanStartedAt }}",
+        "scanStatus": "{{ $scanStatus }}",
+        "siteId": "{{ $siteId }}",
+        "siteName": "{{ $siteName }}",
+        "userActionsNeeded": []
+    },
+    "containerInfo": {
+        "id": null,
+        "image": null,
+        "labels": null,
+        "name": null
+    },
+    "id": "{{ $id }}",
+    "indicators": [
+        {
+            "category": "{{ $indicatorsCategory }}",
+            "categoryId": "{{ $indicatorsCategoryId }}",
+            "description": "{{ $indicatorsDescription }}",
+            "ids": [{{ $indicatorsIds }}],
+            "tactics": [
+                {
+                    "name": "{{ $tacticsName }}",
+                    "source": "{{ $tacticsSource }}",
+                    "techniques": [
+                        {
+                            "link": "https://{{ $techniquesLink }}.com/",
+                            "name": "{{ $techniquesName }}"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "kubernetesInfo": {
+        "cluster": null,
+        "controllerKind": null,
+        "controllerLabels": null,
+        "controllerName": null,
+        "namespace": null,
+        "namespaceLabels": null,
+        "node": null,
+        "pod": null,
+        "podLabels": null
+    },
+    "mitigationStatus": [
+        {
+            "action": "{{ $mitigationStatusAction }}",
+            "actionCounters": [
+                {
+                    "failed": {{ $actionCountersFailed }},
+                    "notFound": {{ $actionCountersNotFound }},
+                    "pendingReboot": {{ $actionCountersPendingReboot }},
+                    "success": {{ $actionCountersSuccess }},
+                    "total": {{ $actionCountersTotal }}
+                }
+            ],
+            "agentSupportsReport": {{ $agentSupportsReport }},
+            "groupNotFound": {{ $groupNotFound }},
+            "lastUpdate": "{{ $lastUpdate }}",
+            "latestReport": "{{ $latestReport }}",
+            "mitigationEndedAt": "{{ $mitigationEndedAt }}",
+            "mitigationStartedAt": "{{ $mitigationStartedAt }}",
+            "reportId": "{{ $reportId }}",
+            "status": "{{ $status }}"
+        }
+    ],
+    "threatInfo": {
+        "analystVerdict": "{{ $analystVerdict }}",
+        "analystVerdictDescription": "{{ $analystVerdictDescription }}",
+        "automaticallyResolved": {{ $automaticallyResolved }},
+        "browserType": "{{ $browserType }}",
+        "certificateId": "{{ $certificateId }}",
+        "classification": "{{ $classification }}",
+        "classificationSource": "{{ $classificationSource }}",
+        "cloudFilesHashVerdict": "{{ $cloudFilesHashVerdict }}",
+        "collectionId": "{{ $collectionId }}",
+        "confidenceLevel": "{{ $confidenceLevel }}",
+        "createdAt": "{{ $createdAt }}",
+        "detectionEngines": [
+            {
+                "key": "{{ $detectionEnginesKey }}",
+                "title": "{{ $detectionEnginesTitle }}"
+            }
+        ],
+        "detectionType": "{{ $detectionType }}",
+        "engines": [
+            "{{ $detectionEnginesTitle }}"
+        ],
+        "externalTicketExists": {{ $externalTicketExists }},
+        "externalTicketId": "{{ $externalTicketId }}",
+        "failedActions": {{ $failedActions }},
+        "fileExtension": "{{ $fileExtension }}",
+        "fileExtensionType": "{{ $fileExtensionType }}",
+        "filePath": "/{{ $filePath }}",
+        "fileSize": {{ $fileSize }},
+        "fileVerificationType": "{{ $fileVerificationType }}",
+        "identifiedAt": "{{ $identifiedAt }}",
+        "incidentStatus": "{{ $incidentStatus }}",
+        "incidentStatusDescription": "{{ $incidentStatusDescription }}",
+        "initiatedBy": "{{ $initiatedBy }}",
+        "initiatedByDescription": "{{ $initiatedByDescription }}",
+        "initiatingUserId": "{{ $initiatingUserId }}",
+        "initiatingUsername": "{{ $initiatingUsername }}",
+        "isFileless": {{ $isFileless }},
+        "isValidCertificate": {{ $isValidCertificate }},
+        "maliciousProcessArguments": "{{ $maliciousProcessArguments }}",
+        "md5": "{{ $md5 }}",
+        "mitigatedPreemptively": "{{ $mitigatedPreemptively }}",
+        "mitigationStatus": "{{ $mitigationStatus }}",
+        "mitigationStatusDescription": "{{ $mitigationStatusDescription }}",
+        "originatorProcess": "{{ $originatorProcess }}",
+        "pendingActions": "{{ $pendingActions }}",
+        "processUser": "{{ $processUser }}",
+        "publisherName": "{{ $publisherName }}",
+        "reachedEventsLimit": "{{ $reachedEventsLimit }}",
+        "rebootRequired": {{ $rebootRequired }},
+        "sha1": "{{ $sha1 }}",
+        "sha256": "{{ $sha256 }}",
+        "storyline": "{{ $storyline }}",
+        "threatId": "{{ $threatId }}",
+        "threatName": "{{ $threatName }}",
+        "updatedAt": "{{ $updatedAt }}"
+    }
+}
+*/ -}}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "sentinel_one.threat",
+        "namespace": "93724",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "message": "{\"agentDetectionInfo\":{\"accountId\":\"{{ $accountId }}\",\"accountName\":\"{{ $accountName }}\",\"agentDetectionState\":\"{{ $agentDetectionState }}\",\"agentDomain\":\"{{ $agentDomain }}\",\"agentIpV4\":\"{{ $agentIpV4 }}\",\"agentIpV6\":\"{{ $agentIpV6 }}\",\"agentLastLoggedInUpn\":\"{{ $agentLastLoggedInUpn }}\",\"agentLastLoggedInUserMail\":\"{{ $agentLastLoggedInUserName }}@mail.com\",\"agentLastLoggedInUserName\":\"{{ $agentLastLoggedInUserName }}\",\"agentMitigationMode\":\"{{ $agentMitigationMode }}\",\"agentOsName\":\"{{ $agentOsName }}\",\"agentOsRevision\":\"{{ $agentOsRevision }}\",\"agentRegisteredAt\":\"{{ $agentRegisteredAt }}\",\"agentUuid\":\"{{ $agentUuid }}\",\"agentVersion\":\"{{ $agentVersion }}\",\"cloudProviders\":{},\"externalIp\":\"{{ $externalIp }}\",\"groupId\":\"{{ $groupId }}\",\"groupName\":\"{{ $groupName }}\",\"siteId\":\"{{ $siteId }}\",\"siteName\":\"{{ $siteName }}\"},\"agentRealtimeInfo\":{\"accountId\":\"{{ $accountId }}\",\"accountName\":\"{{ $accountName }}\",\"activeThreats\":{{ $activeThreats }},\"agentComputerName\":\"{{ $agentComputerName }}\",\"agentDecommissionedAt\":\"{{ $agentDecommissionedAt }}\",\"agentDomain\":\"{{ $agentDomain }}\",\"agentId\":\"{{ $agentId }}\",\"agentInfected\":{{ $agentInfected }},\"agentIsActive\":{{ $agentIsActive }},\"agentIsDecommissioned\":{{ $agentIsDecommissioned }},\"agentMachineType\":\"{{ $agentMachineType }}\",\"agentMitigationMode\":\"{{ $agentMitigationMode }}\",\"agentNetworkStatus\":\"{{ $agentNetworkStatus }}\",\"agentOsName\":\"{{ $agentOsName }}\",\"agentOsRevision\":\"{{ $agentOsRevision }}\",\"agentOsType\":\"{{ $agentOsType }}\",\"agentUuid\":\"{{ $agentUuid }}\",\"agentVersion\":\"{{ $agentVersion }}\",\"groupId\":\"{{ $groupId }}\",\"groupName\":\"{{ $groupName }}\",\"networkInterfaces\":[{\"id\":\"{{ $networkInterfaceId }}\",\"inet\":[\"{{ $inet }}\"],\"inet6\":[\"{{ $inet6 }}\"],\"name\":\"{{ $networkInterfaceName }}\",\"physical\":\"{{ $networkInterfacePhysical }}\"}],\"operationalState\":\"{{ $operationalState }}\",\"rebootRequired\":{{ $rebootRequired }},\"scanAbortedAt\":\"{{ $scanAbortedAt }}\",\"scanFinishedAt\":\"{{ $scanFinishedAt }}\",\"scanStartedAt\":\"{{ $scanStartedAt }}\",\"scanStatus\":\"{{ $scanStatus }}\",\"siteId\":\"{{ $siteId }}\",\"siteName\":\"{{ $siteName }}\",\"userActionsNeeded\":[]},\"containerInfo\":{\"id\":null,\"image\":null,\"labels\":null,\"name\":null},\"id\":\"{{ $id }}\",\"indicators\":[{\"category\":\"{{ $indicatorsCategory }}\",\"categoryId\":\"{{ $indicatorsCategoryId }}\",\"description\":\"{{ $indicatorsDescription }}\",\"ids\":[{{ $indicatorsIds }}],\"tactics\":[{\"name\":\"{{ $tacticsName }}\",\"source\":\"{{ $tacticsSource }}\",\"techniques\":[{\"link\":\"https://{{ $techniquesLink }}.com/\",\"name\":\"{{ $techniquesName }}\"}]}]}],\"kubernetesInfo\":{\"cluster\":null,\"controllerKind\":null,\"controllerLabels\":null,\"controllerName\":null,\"namespace\":null,\"namespaceLabels\":null,\"node\":null,\"pod\":null,\"podLabels\":null},\"mitigationStatus\":[{\"action\":\"{{ $mitigationStatusAction }}\",\"actionCounters\":[{\"failed\":{{ $actionCountersFailed }},\"notFound\":{{ $actionCountersNotFound }},\"pendingReboot\":{{ $actionCountersPendingReboot }},\"success\":{{ $actionCountersSuccess }},\"total\":{{ $actionCountersTotal }}}],\"agentSupportsReport\":{{ $agentSupportsReport }},\"groupNotFound\":{{ $groupNotFound }},\"lastUpdate\":\"{{ $lastUpdate }}\",\"latestReport\":\"{{ $latestReport }}\",\"mitigationEndedAt\":\"{{ $mitigationEndedAt }}\",\"mitigationStartedAt\":\"{{ $mitigationStartedAt }}\",\"reportId\":\"{{ $reportId }}\",\"status\":\"{{ $status }}\"}],\"threatInfo\":{\"analystVerdict\":\"{{ $analystVerdict }}\",\"analystVerdictDescription\":\"{{ $analystVerdictDescription }}\",\"automaticallyResolved\":{{ $automaticallyResolved }},\"browserType\":\"{{ $browserType }}\",\"certificateId\":\"{{ $certificateId }}\",\"classification\":\"{{ $classification }}\",\"classificationSource\":\"{{ $classificationSource }}\",\"cloudFilesHashVerdict\":\"{{ $cloudFilesHashVerdict }}\",\"collectionId\":\"{{ $collectionId }}\",\"confidenceLevel\":\"{{ $confidenceLevel }}\",\"createdAt\":\"{{ $createdAt }}\",\"detectionEngines\":[{\"key\":\"{{ $detectionEnginesKey }}\",\"title\":\"{{ $detectionEnginesTitle }}\"}],\"detectionType\":\"{{ $detectionType }}\",\"engines\":[\"{{ $detectionEnginesTitle }}\"],\"externalTicketExists\":{{ $externalTicketExists }},\"externalTicketId\":\"{{ $externalTicketId }}\",\"failedActions\":{{ $failedActions }},\"fileExtension\":\"{{ $fileExtension }}\",\"fileExtensionType\":\"{{ $fileExtensionType }}\",\"filePath\":\"/{{ $filePath }}\",\"fileSize\":{{ $fileSize }},\"fileVerificationType\":\"{{ $fileVerificationType }}\",\"identifiedAt\":\"{{ $identifiedAt }}\",\"incidentStatus\":\"{{ $incidentStatus }}\",\"incidentStatusDescription\":\"{{ $incidentStatusDescription }}\",\"initiatedBy\":\"{{ $initiatedBy }}\",\"initiatedByDescription\":\"{{ $initiatedByDescription }}\",\"initiatingUserId\":\"{{ $initiatingUserId }}\",\"initiatingUsername\":\"{{ $initiatingUsername }}\",\"isFileless\":{{ $isFileless }},\"isValidCertificate\":{{ $isValidCertificate }},\"maliciousProcessArguments\":\"{{ $maliciousProcessArguments }}\",\"md5\":\"{{ $md5 }}\",\"mitigatedPreemptively\":\"{{ $mitigatedPreemptively }}\",\"mitigationStatus\":\"{{ $mitigationStatus }}\",\"mitigationStatusDescription\":\"{{ $mitigationStatusDescription }}\",\"originatorProcess\":\"{{ $originatorProcess }}\",\"pendingActions\":\"{{ $pendingActions }}\",\"processUser\":\"{{ $processUser }}\",\"publisherName\":\"{{ $publisherName }}\",\"reachedEventsLimit\":\"{{ $reachedEventsLimit }}\",\"rebootRequired\":{{ $rebootRequired }},\"sha1\":\"{{ $sha1 }}\",\"sha256\":\"{{ $sha256 }}\",\"storyline\":\"{{ $storyline }}\",\"threatId\":\"{{ $threatId }}\",\"threatName\":\"{{ $threatName }}\",\"updatedAt\":\"{{ $updatedAt }}\"}}",
+    "event": {
+        "dataset": "sentinel_one.threat"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "sentinel_one-threat"
+    ]
+}

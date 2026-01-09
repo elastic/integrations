@@ -6,9 +6,9 @@ Tenant administrators can configure the collection and storage destinations of M
 
 ## Requirements and Setup
 
-### Prerequisites
+### What do I need to use this integration?
 
-Following privileges are required to collect Microsoft Graph Activity Logs:
+The following privileges are required to collect Microsoft Graph Activity Logs:
 - A Microsoft Entra ID P1 or P2 tenant license in your tenant.
 - A `Security Administrator` or `Global Administrator` Microsoft Entra ID role to configure the diagnostic settings.
 Refer to [Microsoft Graph Prerequisites](https://learn.microsoft.com/en-us/graph/microsoft-graph-activity-logs-overview#prerequisites) for more information on required privileges.
@@ -232,6 +232,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.graphactivitylogs.properties.app_id | The identifier for the application. | keyword |
 | azure.graphactivitylogs.properties.at_content | Reserved for future use. | keyword |
 | azure.graphactivitylogs.properties.billed_size | The record size in bytes. | double |
+| azure.graphactivitylogs.properties.c_device_id | The identifier of the device from which the authentication request originated. | keyword |
+| azure.graphactivitylogs.properties.c_sid | The unique identifier for the authentication session. | keyword |
 | azure.graphactivitylogs.properties.client_auth_method | Indicates how the client was authenticated. For a public client, the value is 0. If client ID and client secret are used, the value is 1. If a client certificate was used for authentication, the value is 2. | integer |
 | azure.graphactivitylogs.properties.client_request_id | The client request identifier when sent. If no client request identifier is sent, the value will be equal to the operation identifier. | keyword |
 | azure.graphactivitylogs.properties.identity_provider | The identity provider that authenticated the subject of the token. | keyword |
@@ -268,5 +270,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| session.id | The unique identifier for the authentication session. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
+| token.id | The unique token identifier of the API call. | keyword |
 

@@ -50,7 +50,7 @@ processors:
       field: _tmp.dissectgrok
       tag: 'grok_parse_log_dissectgrok'
       patterns:
-        - '^%{NUMBER:http.response.status_code} (-|%{POSINT:destination.bytes})( %{GREEDYDATA:_tmp.grok})?$'
+        - '^%{NUMBER:http.response.status_code} (-|%{POSINT:destination.bytes})(?: ms:%{NUMBER:apache_tomcat.access.request_process_time})?(?: %{GREEDYDATA:_tmp.grok})?$'
       on_failure:
         - append:
             field: error.message
@@ -97,6 +97,15 @@ processors:
       field: http.response.status_code
       tag: 'convert_status_code_to_long'
       type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: apache_tomcat.access.request_process_time
+      tag: 'convert_request.process_time_to_double'
+      type: double
       ignore_missing: true
       on_failure:
         - append:
@@ -154,7 +163,7 @@ processors:
       if: ctx._tmp?.header_forwarder != null && ctx._tmp.header_forwarder != '' && ctx._tmp.header_forwarder != '-'
       tag: 'split_x_forwarded_for'
       target_field: client.ip
-      separator: ', '
+      separator: ',\s?'
   - foreach:
       field: client.ip
       if: ctx.client?.ip instanceof List

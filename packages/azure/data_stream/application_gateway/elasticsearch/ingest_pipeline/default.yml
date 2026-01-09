@@ -13,6 +13,10 @@ processors:
   - set:
       field: event.type
       value: [connection]
+  - remove:
+      field: routing.category
+      ignore_missing: true
+      description: Remove the routing.category field if it exists.
   - rename:
       field: message
       target_field: event.original
@@ -33,8 +37,17 @@ processors:
       field: json.time
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       if: ctx.json?.time != null
   - rename:
       field: json.timeStamp
@@ -46,8 +59,17 @@ processors:
       field: json.timestamp
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       if: ctx.json?.timestamp != null
   - rename:
       field: json.resourceId

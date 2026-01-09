@@ -11,6 +11,13 @@ update_interval: {{update_interval}}
 okta_domain: {{okta_domain}}
 okta_token: {{okta_token}}
 dataset: {{dataset}}
+{{#if enrich_user_roles}}
+{{! We include groups in the list when enriching roles, since the default input is to enrich with groups. }}
+{{! There is currently no way to disable groups enrichment, so we respect that behaviour. }}
+enrich_with:
+  - groups
+  - roles
+{{/if}}
 {{#if proxy_url}}
 request.proxy_url: {{proxy_url}}
 {{/if}}
@@ -33,7 +40,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+{{#if processors}}
 {{processors}}
 {{/if}}
+- add_fields:
+    target: ''
+    fields:
+      okta_domain: {{okta_domain}}

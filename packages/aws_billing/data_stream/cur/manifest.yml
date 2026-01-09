@@ -1,0 +1,156 @@
+title: AWS Cost and Usage Metrics
+dataset: aws_billing.cur
+type: metrics
+streams:
+  - input: aws-s3
+    enabled: true
+    template_path: aws-s3.yml.hbs
+    title: Collect AWS Cost and Usage Reports from S3
+    description: Collect AWS Cost and Usage Report (CUR 2.0) files with Elastic Agent.
+    vars:
+      - name: api_timeout
+        type: text
+        title: API Timeout
+        multi: false
+        required: false
+        show_user: false
+        description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value.
+      - name: bucket_arn
+        type: text
+        title: Bucket ARN
+        multi: false
+        required: false
+        show_user: true
+        description: ARN of the AWS S3 bucket that will be polled for list operation. (Required when `queue_url`, `access_point_arn` and `non_aws_bucket_name` are not set).
+      - name: access_point_arn
+        type: text
+        title: Access Point ARN
+        multi: false
+        required: false
+        show_user: true
+        description: ARN of the AWS S3 Access Point that will be polled for list operation. (This is an alternative to the Bucket ARN, and required when `queue_url`, `bucket_arn` or `non_aws_bucket_name` are not set).
+      - name: number_of_workers
+        type: integer
+        title: "[S3/SQS] Number of Workers"
+        multi: false
+        required: false
+        show_user: true
+        default: 1
+        description: Number of workers that will process the S3 objects listed.
+      - name: start_timestamp
+        type: text
+        title: "Start Timestamp"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, only read S3 objects with last modified timestamp newer than the given timestamp. Accepts a timestamp in `YYYY-MM-DDTHH:MM:SSZ` format. For example, "2020-10-10T10:30:00Z" (UTC) or "2020-10-10T10:30:00Z+02:30" (with zone offset).
+      - name: ignore_older
+        type: text
+        title: "Ignore Older Timespan"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, ignore S3 objects whose Last-Modified time is before the ignore older timespan. Timespan is checked from the current time to S3 object's Last-Modified time. Accepts a duration like `48h`, `2h30m`.
+      - name: bucket_list_interval
+        type: text
+        title: Bucket List Interval
+        multi: false
+        required: false
+        show_user: false
+        default: 24h
+        description: >
+          Set to 24h or more to match the report's daily update cycle and avoid re-ingesting data. AWS CUR reports are cumulative and are updated multiple times per day. Setting a short interval (e.g., 1h) will cause the same report to be ingested repeatedly, leading to significant data duplication. A 24-hour or longer interval is recommended to capture the final daily report.
+
+      - name: bucket_list_prefix
+        type: text
+        title: Bucket List Prefix
+        multi: false
+        required: false
+        show_user: false
+        description: Prefix to apply for the list request to the S3 bucket.
+      - name: buffer_size
+        type: text
+        title: Buffer Size
+        multi: false
+        required: false
+        show_user: false
+        description: The size in bytes of the buffer that each harvester uses when fetching a file. This only applies to non-JSON logs.
+      - name: encoding
+        type: text
+        title: Encoding
+        multi: false
+        required: false
+        show_user: false
+        description: The file encoding to use for reading data that contains international characters. This only applies to non-JSON logs.
+      - name: fips_enabled
+        type: bool
+        title: Enable S3 FIPS
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+      - name: max_bytes
+        type: text
+        title: Max Bytes
+        default: 10MiB
+        multi: false
+        required: false
+        show_user: false
+        description: The maximum number of bytes that a single log message can have. All bytes after max_bytes are discarded and not sent. This setting is especially useful for multiline log messages, which can get large. This only applies to non-JSON logs.
+      - name: non_aws_bucket_name
+        type: text
+        title: Non AWS Bucket Name
+        multi: false
+        required: false
+        show_user: false
+        description: Name of the S3 bucket that will be polled for list operation. Required for 3rd party S3 compatible services. (Required when `queue_url`, `bucket_arn` or `access_point_arn` are not set).
+      - name: path_style
+        type: text
+        title: Path Style
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Enabling this option sets the bucket name as a path in the API call instead of a subdomain. When enabled https://<bucket-name>.s3.<region>.<provider>.com becomes https://s3.<region>.<provider>.com/<bucket-name>. This is only supported with 3rd party S3 providers.  AWS does not support path style.
+
+      - name: provider
+        type: text
+        title: Provider Name
+        multi: false
+        required: false
+        show_user: false
+        description: Name of the 3rd party S3 bucket provider like backblaze or GCP.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve Bedrock fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false

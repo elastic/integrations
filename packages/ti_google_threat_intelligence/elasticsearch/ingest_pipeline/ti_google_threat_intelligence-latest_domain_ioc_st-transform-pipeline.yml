@@ -1,0 +1,37 @@
+---
+description: Pipeline for processing Domain IOC Stream events from Google Threat Intelligence Threat Feed events.
+processors:
+  - rename:
+      field: gti.ioc_stream
+      tag: rename_gti_ioc_stream_to_gti_threat_indicator
+      target_field: gti.threat.indicator
+      ignore_missing: true
+  - set:
+      field: gti.threat.indicator.feed.name
+      tag: set_threat_indicator_type_from_threat_indicator_feed_name
+      copy_from: threat.feed.name
+      ignore_empty_value: true
+  - set:
+      field: gti.threat.indicator.feed.dashboard_id
+      tag: set_threat_indicator_dashboard_id_from_threat_indicator_dashboard_id
+      copy_from: threat.feed.dashboard_id
+      ignore_empty_value: true
+  - set:
+      field: data_stream.dataset
+      tag: set_data_stream_dataset
+      value: ti_google_threat_intelligence.domain_ioc_stream
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: ti_google_threat_intelligence.domain_ioc_stream
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

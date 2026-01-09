@@ -2,7 +2,7 @@
 
 This integration is used to collect metrics from [containerd runtime](https://containerd.io/).
 
-It collects cpu, memory and blkio statistics about running containers controlled by containerd.
+It collects CPU, memory and blkio statistics about running containers controlled by containerd.
 
 The current datasets are: `cpu`, `blkio` and `memory` and are enabled by default.
 
@@ -10,12 +10,11 @@ The current datasets are: `cpu`, `blkio` and `memory` and are enabled by default
 
 The Containerd integration is currently tested with Containerd version v1.5.2.
 
-## Prerequisites
+## What do I need to use this integration?
 
 `Containerd` daemon has to be configured to provide metrics before enabling containerd integration.
 
-In the configuration file located in `/etc/containerd/config.toml` metrics endpoint needs to
-be set and containerd daemon needs to be restarted.
+In the configuration file located in `/etc/containerd/config.toml`, the metrics endpoint needs to be set and containerd daemon needs to be restarted.
 
 ```
 [metrics]

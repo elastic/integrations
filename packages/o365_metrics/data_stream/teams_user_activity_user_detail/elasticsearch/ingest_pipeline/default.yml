@@ -137,12 +137,18 @@ processors:
       copy_from: o365.metrics.teams.user.activity.user.detail.user_principal_name
       if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.user_principal_name != null
       ignore_empty_value: true
-  - set:
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
       field: user.email
-      tag: set_user_email
-      copy_from: user.name
-      if: ctx.user?.name != null && ctx.user.name.contains('@')
-      ignore_empty_value: true
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
   - append:
       field: related.user
       tag: append_related_user_user_id

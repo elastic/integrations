@@ -1,0 +1,112 @@
+rules:
+  - path: /v1/scan/auditLogs
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "xxxx"
+    query_params:
+      from: "{from:.+}"
+      to: "{to:.+}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            [
+              {
+                "results": {
+                  "request_id": "dc7b0d91-ad2e-4783-b7bf-a760445a01c6",
+                  "secrets": []
+                },
+                "date": "2025-05-27T23:15:28.000Z"
+              },
+              {
+                "results": {
+                  "request_id": "105d6a3d-6468-4fcc-994e-f525011c53cf",
+                  "secrets": [
+                    {
+                      "secret_type": "GENERIC_CREDS_WINDOWS_PASSWORD",
+                      "exposed_value": "asd123123",
+                      "line_number": 878
+                    }
+                  ]
+                },
+                "date": "2025-05-27T20:12:44.000Z"
+              },
+              {
+                "results": {
+                  "request_id": "122d6a3d-6468-4fdd-994e-f5250dasdacf",
+                  "secrets": [
+                    {
+                      "secret_type": "GENERIC_CREDS_WINDOWS_PASSWORD",
+                      "exposed_value": "tasd121113",
+                      "line_number": 878
+                    },
+                    {
+                      "secret_type": "AWS_ACCESS_KEY_ID",
+                      "exposed_value": "ABCDEF12345789",
+                      "line_number": 878
+                    }
+                  ]
+                },
+                "date": "2025-05-27T20:12:44.000Z"
+              }
+            ]
+          `}}
+  - path: /v1/scan/auditLogs
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "xxxx"
+    query_params:
+      from: "{from:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            [
+              {
+                "results": {
+                  "request_id": "ac7b0d91-ad2e-4783-b7bf-a760445a01c6",
+                  "secrets": []
+                },
+                "date": "2025-06-27T23:15:28.000Z"
+              },
+              {
+                "results": {
+                  "request_id": "a05d6a3d-6468-4fcc-994e-f525011c53cf",
+                  "secrets": [
+                    {
+                      "secret_type": "GENERIC_CREDS_WINDOWS_PASSWORD",
+                      "exposed_value": "asdfasdf",
+                      "line_number": 100
+                    }
+                  ]
+                },
+                "date": "2025-06-27T20:12:44.000Z"
+              },
+              {
+                "results": {
+                  "request_id": "a22d6a3d-6468-4fdd-994e-f5250dasdacf",
+                  "secrets": [
+                    {
+                      "secret_type": "GENERIC_CREDS_WINDOWS_PASSWORD",
+                      "exposed_value": "asdfasdfasdf",
+                      "line_number": 100
+                    },
+                    {
+                      "secret_type": "AWS_ACCESS_KEY_ID",
+                      "exposed_value": "asdfasdf",
+                      "line_number": 100
+                    }
+                  ]
+                },
+                "date": "2025-06-27T20:12:44.000Z"
+              }
+            ]
+          `}}

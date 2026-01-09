@@ -1,6 +1,30 @@
 - name: gcp.audit
   type: group
   fields:
+    - name: access
+      type: group
+      fields:
+        - name: caller_ip_geo
+          type: group
+          fields:
+            - name: region_code
+              type: keyword
+        - name: method_name
+          type: keyword
+        - name: principal_email
+          type: keyword
+        - name: principal_subject
+          type: keyword
+        - name: service_name
+          type: keyword
+        - name: user_agent
+          type: keyword
+    - name: action_time
+      type: date
+    - name: action_type
+      type: keyword 
+    - name: affected_resources
+      type: keyword
     - name: type
       type: keyword
       description: |
@@ -57,6 +81,8 @@
     - name: labels
       type: flattened
       description: "A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined."
+    - name: learn_more_uri
+      type: keyword
     - name: logentry_operation
       type: group
       fields:
@@ -113,6 +139,18 @@
             - name: policyType
               type: keyword
               description: "Indicates the type of the policy."
+    - name: receive_timestamp
+      type: date
+    - name: resource
+      type: group
+      fields:
+        - name: labels
+          type: group
+          fields:
+            - name: resource_container
+              type: keyword
+        - name: type
+          type: keyword
     - name: request
       type: flattened
     - name: request_metadata
@@ -145,6 +183,17 @@
       type: keyword
       description: |
         The name of the API service performing the operation.  For example, datastore.googleapis.com.
+    - name: source_log_ids
+      type: group
+      fields:
+        - name: insert_id
+          type: keyword
+        - name: log_time
+          type: date
+        - name: query_uri
+          type: keyword
+        - name: resource_container
+          type: keyword
     - name: status
       type: group
       fields:

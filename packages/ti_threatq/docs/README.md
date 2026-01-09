@@ -1,6 +1,18 @@
-# ThreatQuotient Integration
+# ThreatQuotient
 
 The ThreatQuotient integration uses the available [ThreatQuotient](https://www.threatq.com/integrations/) REST API to retrieve indicators and Threat Intelligence.
+
+## Requirements
+
+### Agentless-enabled integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Logs
 
@@ -11,6 +23,7 @@ indicators from.
 By default the indicators will be collected every 1 minute, and deduplication is handled by the API itself. This datastream supports expiration of indicators of compromise (IOC).
 
 ### Expiration of Indicators of Compromise (IOCs)
+
 The ThreatQ's `Threat` datastream supports IOC expiration. The ingested IOCs expire after certain duration. In ThreatQ feed, this can happen in 3 ways: 
 - When the value of `threatq.status` is `Expired`.
 - When either of the fields `threatq.expires_at` or `threatq.expired_at` reaches current `now()` timestamp.
@@ -20,40 +33,13 @@ The field `threatq.ioc_expiration_reason` indicates which among the 3 methods st
 
 An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_threatq_latest.dest_threat-*` which only contains active and unexpired IOCs. The latest destination index also has an alias named `logs-ti_threatq_latest.threat`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. Dashboards for the `Threat` datastream are also pointing to the latest destination indices containing active IoCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source datastream `.ds-logs-ti_threatq.threat-*` indices.
 
-#### Handling Orphaned IOCs
+#### Handling orphaned IOCs
+
 Some IOCs may never expire and will continue to stay in the latest destination indices `logs-ti_threatq_latest.dest_threat-*`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes any indicator ingested into destination indices `logs-ti_threatq_latest.dest_threat-*` after this specified duration is reached, defaults to `90d` from source's `@timestamp` field. Note that `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case IOCs never expire.
 
-#### ILM Policy
+#### ILM policy
+
 To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_threatq.threat-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
-
-## Requirements
-
-### Agentless Enabled Integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
-
-### Agent Based Installation
-
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-#### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
 **Exported fields**
 
@@ -167,33 +153,33 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2019-11-15T00:00:02.000Z",
     "agent": {
-        "ephemeral_id": "39fde9a0-f31a-4aec-9ed5-0602336e804e",
-        "id": "daf58da9-096e-49f2-b17f-12aeb5058940",
-        "name": "elastic-agent-86862",
+        "ephemeral_id": "26ecf3eb-1377-4f0f-9a26-e0fc1e26c696",
+        "id": "6682ec55-39d7-4257-9b70-7746f52d4c96",
+        "name": "elastic-agent-84748",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_threatq.threat",
-        "namespace": "35607",
+        "namespace": "34591",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "daf58da9-096e-49f2-b17f-12aeb5058940",
+        "id": "6682ec55-39d7-4257-9b70-7746f52d4c96",
         "snapshot": false,
-        "version": "8.17.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2025-03-13T05:33:16.287Z",
+        "created": "2025-12-24T06:20:58.427Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2025-03-13T05:33:17Z",
+        "ingested": "2025-12-24T06:20:59Z",
         "kind": "enrichment",
         "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":3,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1877,\"indicator_id\":336,\"name\":\"Description\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"Malicious Host\"},{\"attribute_id\":4,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1878,\"indicator_id\":336,\"name\":\"Country\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"MP\"}],\"class\":\"network\",\"created_at\":\"2020-09-11 14:35:51\",\"expires_calculated_at\":\"2020-10-15 14:40:03\",\"hash\":\"1ece659dcec98b1e1141160b55655c96\",\"id\":336,\"published_at\":\"2020-09-11 14:35:51\",\"score\":4,\"sources\":[{\"created_at\":\"2020-09-11 14:35:53\",\"creator_source_id\":12,\"id\":336,\"indicator_id\":336,\"indicator_status_id\":2,\"indicator_type_id\":15,\"name\":\"AlienVault OTX\",\"published_at\":\"2020-09-11 14:35:53\",\"reference_id\":1,\"source_expire_days\":\"30\",\"source_id\":12,\"source_score\":1,\"source_type\":\"connectors\",\"updated_at\":\"2020-10-15 14:36:00\"}],\"status\":{\"description\":\"Poses a threat\",\"id\":2,\"name\":\"Active\"},\"status_id\":2,\"touched_at\":\"2021-06-07 19:47:27\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2019-11-15 00:00:02\",\"value\":\"89.160.20.156\"}",
         "type": [

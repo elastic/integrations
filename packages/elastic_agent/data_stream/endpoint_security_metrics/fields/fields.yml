@@ -37,11 +37,12 @@
           metric_type: counter
           description: |
             The value of CPU usage since starting the process.
-        - name: system.ticks
-          type: long
-          metric_type: counter
+        - name: total.pct
+          type: scaled_float
+          unit: percent
+          metric_type: gauge
           description: |
-            The amount of CPU time the process spent in kernel space.
+            The percentage of CPU time spent in states other than Idle and IOWait.
         - name: total.ticks
           type: long
           metric_type: counter
@@ -57,6 +58,11 @@
           metric_type: counter
           description: |
             The amount of CPU time the process spent in user space.
+        - name: system.ticks
+          type: long
+          metric_type: counter
+          description: |
+            The amount of CPU time the process spent in kernel space.
         - name: system.time.ms
           type: long
           metric_type: counter
@@ -72,6 +78,12 @@
           metric_type: gauge
           description: |
             The total virtual memory the process has. On Windows this represents the Commit Charge (the total amount of memory that the memory manager has committed for a running process) value in bytes for this process.
+        - name: rss.bytes
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: |
+            The Resident Set Size. The amount of memory the process occupied in main memory (RAM). On Windows this represents the current working set size, in bytes.
     - name: fd
       type: group
       fields:

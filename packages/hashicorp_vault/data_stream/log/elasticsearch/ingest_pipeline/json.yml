@@ -2,6 +2,7 @@
 description: Pipeline for processing Hashicorp Vault operational logs in JSON format.
 processors:
   - json:
+      tag: json_event_original_to_hashicorp_vault_log_5f9af198
       field: event.original
       target_field: hashicorp_vault.log
 
@@ -9,10 +10,12 @@ processors:
   # @timestamp
   #
   - date:
+      tag: date_hashicorp_vault_log_timestamp_23c74f3b
       field: hashicorp_vault.log.@timestamp
       formats:
         - ISO8601
   - remove:
+      tag: remove_77ba3bd8
       field:
         - hashicorp_vault.log.@timestamp
       ignore_missing: true
@@ -21,14 +24,17 @@ processors:
   # Rename standard fields to ECS.
   #
   - rename:
+      tag: rename_hashicorp_vault_log_level_to_log_level_db9c59ae
       field: hashicorp_vault.log.@level
       target_field: log.level
       ignore_missing: true
   - rename:
+      tag: rename_hashicorp_vault_log_message_to_message_15c25a34
       field: hashicorp_vault.log.@message
       target_field: message
       ignore_missing: true
   - rename:
+      tag: rename_hashicorp_vault_log_module_to_log_logger_2657cf6c
       field: hashicorp_vault.log.@module
       target_field: log.logger
       ignore_missing: true
@@ -47,6 +53,7 @@ processors:
   # Copy structured fields to ECS fields. Retain the originals for easy reference.
   #
   - set:
+      tag: set_file_path_e43bb141
       field: file.path
       copy_from: hashicorp_vault.log.file_path
       ignore_failure: true
@@ -56,4 +63,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

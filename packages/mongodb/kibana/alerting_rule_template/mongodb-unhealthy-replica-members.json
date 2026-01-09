@@ -1,0 +1,31 @@
+{
+    "id": "mongodb-unhealthy-replica-members",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[MongoDB] Unhealthy replica members",
+        "tags": [
+            "MongoDB"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when replica sets report unhealthy members during the window.\n// Groups by replica set name for clarity.\nFROM metrics-mongodb.replstatus-*\n| STATS unhealthy_members=MAX(mongodb.replstatus.members.unhealthy.count) BY mongodb.replstatus.set_name\n| WHERE unhealthy_members > 0"
+            },
+            "groupBy": "row",
+            "termSize": 5,
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

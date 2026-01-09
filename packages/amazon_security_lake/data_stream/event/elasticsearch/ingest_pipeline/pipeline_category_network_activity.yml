@@ -137,6 +137,8 @@ processors:
       target_field: ocsf.query_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.query_time_dt != null && ctx.ocsf.query_time_dt != ''
       on_failure:
         - remove:
@@ -175,6 +177,8 @@ processors:
       target_field: ocsf.response_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.response_time_dt != null && ctx.ocsf.response_time_dt != ''
       on_failure:
         - remove:
@@ -315,12 +319,15 @@ processors:
       value: '{{{ocsf.relay.hostname}}}'
       allow_duplicates: false
       if: ctx.ocsf?.relay?.hostname != null
+  - remove:
+      field: ocsf.relay.ip
+      tag: remove_empty_relay_ip
+      if: ctx.ocsf?.relay?.ip == '' || ctx.ocsf?.relay?.ip == '-'
   - convert:
       field: ocsf.relay.ip
       tag: convert_relay_ip_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.ocsf?.relay?.ip != '' || ctx.ocsf.relay.ip != '-'
       on_failure:
         - remove:
             field: ocsf.relay.ip
@@ -707,6 +714,11 @@ processors:
           value: '{{{_ingest._value}}}'
           tag: append_email_to_into_related_user
           allow_duplicates: false
+  - script:
+      tag: drop_empty_x_originating_ip
+      if: ctx.ocsf?.email?.x_originating_ip instanceof List
+      source: |-
+        ctx.ocsf.email.x_originating_ip.removeIf(v -> v == '-');
   - foreach:
       field: ocsf.email.x_originating_ip
       if: ctx.ocsf?.email?.x_originating_ip instanceof List
@@ -740,6 +752,8 @@ processors:
       target_field: ocsf.expiration_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.expiration_time_dt != null && ctx.ocsf.expiration_time_dt != ''
       on_failure:
         - remove:

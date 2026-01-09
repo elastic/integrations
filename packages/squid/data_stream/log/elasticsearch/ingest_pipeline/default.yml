@@ -2,29 +2,38 @@
 description: Pipeline for processing Squid logs.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_original_b9758751
       field: event.original
       copy_from: message
   - remove:
+      tag: remove_message_7144efd2
       field: message
   - set:
+      tag: set_observer_vendor_0d41b84a
       field: observer.vendor
       value: Squid
   - set:
+      tag: set_observer_product_47036ff7
       field: observer.product
       value: Squid
   - set:
+      tag: set_observer_type_5da7be42
       field: observer.type
       value: proxy
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_5c638872
       field: event.category
       value: [web]
   - set:
+      tag: set_event_type_24c7243c
       field: event.type
       value: [access]
 
@@ -239,6 +248,12 @@ processors:
       field:
         - _tmp
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
   - remove:
@@ -248,7 +263,15 @@ on_failure:
       ignore_missing: true
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

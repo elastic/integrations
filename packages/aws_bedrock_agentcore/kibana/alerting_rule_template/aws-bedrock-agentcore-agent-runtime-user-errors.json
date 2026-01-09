@@ -1,0 +1,28 @@
+{
+    "id": "aws-bedrock-agentcore-agent-runtime-user-errors",
+    "type": "alerting_rule_template",
+    "attributes": {
+      "name": "[AWS Bedrock AgentCore] Agent runtime user errors",
+      "tags": ["AWS", "Amazon Bedrock AgentCore"],
+      "ruleTypeId": ".es-query",
+      "schedule": {
+        "interval": "5m"
+      },
+      "params": {
+        "searchType": "esqlQuery",
+        "timeWindowSize": 5,
+        "timeWindowUnit": "m",
+        "esqlQuery": {
+          "esql": "// Alert triggers when user errors occur during AWS Bedrock AgentCore runtime invocations.\n//\n// User errors correspond to client-side errors (4xx) including:\n// - InvocationError.Validation - Client provided invalid input (400)\n// - InvocationError.ResourceNotFound - Requested resource doesn't exist (404)\n// - InvocationError.AccessDenied - Client lacks permissions (403)\n// - InvocationError.Conflict - Resource conflict (409)\n//\n// The alert is grouped by cloud account, region, and agent endpoint name (aws.dimensions.Name)\n// to pinpoint the specific agent endpoint experiencing issues.\n//\n// To reduce alert noise, increase the threshold (e.g., `total_user_errors > 10`) to only\n// alert on sustained error patterns rather than isolated incidents.\n\nFROM metrics-aws_bedrock_agentcore.metrics-*\n| WHERE aws.dimensions.Operation == \"InvokeAgentRuntime\"\n| STATS total_user_errors = sum(aws.bedrock_agentcore.metrics.UserErrors.sum) BY cloud.account.id, cloud.region, aws.dimensions.Name\n| WHERE total_user_errors > 0"
+        },
+        "groupBy": "row",
+        "timeField": "event.ingested"
+      },
+      "alertDelay": {
+        "active": 1
+      }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+  }  

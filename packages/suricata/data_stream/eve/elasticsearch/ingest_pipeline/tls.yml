@@ -3,12 +3,14 @@ description: Pipeline for Suricata TLS Events
 
 processors:
   - grok:
+      tag: grok_suricata_eve_tls_version_9ce9196b
       field: suricata.eve.tls.version
       patterns:
         - "%{DATA:tls.version_protocol} %{GREEDYDATA:tls.version}"
         - "%{DATA:tls.version_protocol}v%{GREEDYDATA:tls.version}"
       if: ctx?.suricata?.eve?.tls?.version != 'UNDETERMINED'
   - lowercase:
+      tag: lowercase_tls_version_protocol_b840a1f9
       field: tls.version_protocol
       ignore_missing: true
   - script:
@@ -23,211 +25,260 @@ processors:
         ctx.suricata.eve.tls.sni = sni.substring(0, sni.length() - 1);
   # Subject
   - set:
+      tag: set_tls_server_subject_87b7254b
       field: tls.server.subject
       value: '{{{suricata.eve.tls.subject}}}'
       ignore_empty_value: true
   - kv:
+      tag: kv_suricata_eve_tls_subject_to_suricata_eve_tls_kv_subject_3e6841d6
       field: suricata.eve.tls.subject
       field_split: ', (?=[a-zA-Z]+=)'
       value_split: '='
       target_field: suricata.eve.tls.kv_subject
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_tls_kv_subject_C_to_tls_server_x509_subject_country_8662e6fc
       field: suricata.eve.tls.kv_subject.C
       target_field: tls.server.x509.subject.country
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_subject_country_24bed60d
       field: tls.server.x509.subject.country
       value: ['{{{tls.server.x509.subject.country}}}']
       if: ctx.tls?.server?.x509?.subject?.country instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_subject_CN_to_tls_server_x509_subject_common_name_5d088945
       field: suricata.eve.tls.kv_subject.CN
       target_field: tls.server.x509.subject.common_name
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_subject_common_name_f606deee
       field: tls.server.x509.subject.common_name
       value: ['{{{tls.server.x509.subject.common_name}}}']
       if: ctx.tls?.server?.x509?.subject?.common_name instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_subject_L_to_tls_server_x509_subject_locality_6672f05e
       field: suricata.eve.tls.kv_subject.L
       target_field: tls.server.x509.subject.locality
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_subject_locality_21bec806
       field: tls.server.x509.subject.locality
       value: ['{{{tls.server.x509.subject.locality}}}']
       if: ctx.tls?.server?.x509?.subject?.locality instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_subject_O_to_tls_server_x509_subject_organization_f1ac6a8b
       field: suricata.eve.tls.kv_subject.O
       target_field: tls.server.x509.subject.organization
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_subject_organization_d6707cc0
       field: tls.server.x509.subject.organization
       value: ['{{{tls.server.x509.subject.organization}}}']
       if: ctx.tls?.server?.x509?.subject?.organization instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_subject_OU_to_tls_server_x509_subject_organizational_unit_92ad683c
       field: suricata.eve.tls.kv_subject.OU
       target_field: tls.server.x509.subject.organizational_unit
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_subject_organizational_unit_544f8b16
       field: tls.server.x509.subject.organizational_unit
       value: ['{{{tls.server.x509.subject.organizational_unit}}}']
       if: ctx.tls?.server?.x509?.subject?.organizational_unit instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_subject_ST_to_tls_server_x509_subject_state_or_province_df60e890
       field: suricata.eve.tls.kv_subject.ST
       target_field: tls.server.x509.subject.state_or_province
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_subject_state_or_province_c60a6113
       field: tls.server.x509.subject.state_or_province
       value: ['{{{tls.server.x509.subject.state_or_province}}}']
       if: ctx.tls?.server?.x509?.subject?.state_or_province instanceof String
   # Issuer
   - set:
+      tag: set_tls_server_issuer_ce43e849
       field: tls.server.issuer
       value: '{{{suricata.eve.tls.issuerdn}}}'
       ignore_empty_value: true
   - gsub:
+      tag: gsub_suricata_eve_tls_issuerdn_c8ab30cd
       field: suricata.eve.tls.issuerdn
       pattern: \\,
       replacement: ""
       ignore_missing: true
   - kv:
+      tag: kv_suricata_eve_tls_issuerdn_to_suricata_eve_tls_kv_issuerdn_8943f328
       field: suricata.eve.tls.issuerdn
       field_split: ', (?=[a-zA-Z]+=)'
       value_split: '='
       target_field: suricata.eve.tls.kv_issuerdn
       ignore_missing: true
   - rename:
+      tag: rename_suricata_eve_tls_kv_issuerdn_C_to_tls_server_x509_issuer_country_f02ab9de
       field: suricata.eve.tls.kv_issuerdn.C
       target_field: tls.server.x509.issuer.country
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_issuer_country_673166fe
       field: tls.server.x509.issuer.country
       value: ['{{{tls.server.x509.issuer.country}}}']
       if: ctx.tls?.server?.x509?.issuer?.country instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_issuerdn_CN_to_tls_server_x509_issuer_common_name_6c73a7bd
       field: suricata.eve.tls.kv_issuerdn.CN
       target_field: tls.server.x509.issuer.common_name
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_issuer_common_name_3372f307
       field: tls.server.x509.issuer.common_name
       value: ['{{{tls.server.x509.issuer.common_name}}}']
       if: ctx.tls?.server?.x509?.issuer?.common_name instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_issuerdn_L_to_tls_server_x509_issuer_locality_8d33e512
       field: suricata.eve.tls.kv_issuerdn.L
       target_field: tls.server.x509.issuer.locality
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_issuer_locality_b753ed4f
       field: tls.server.x509.issuer.locality
       value: ['{{{tls.server.x509.issuer.locality}}}']
       if: ctx.tls?.server?.x509?.issuer?.locality instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_issuerdn_O_to_tls_server_x509_issuer_organization_8b522a55
       field: suricata.eve.tls.kv_issuerdn.O
       target_field: tls.server.x509.issuer.organization
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_issuer_organization_8b718809
       field: tls.server.x509.issuer.organization
       value: ['{{{tls.server.x509.issuer.organization}}}']
       if: ctx.tls?.server?.x509?.issuer?.organization instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_issuerdn_OU_to_tls_server_x509_issuer_organizational_unit_e42bfc2e
       field: suricata.eve.tls.kv_issuerdn.OU
       target_field: tls.server.x509.issuer.organizational_unit
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_issuer_organizational_unit_889a664f
       field: tls.server.x509.issuer.organizational_unit
       value: ['{{{tls.server.x509.issuer.organizational_unit}}}']
       if: ctx.tls?.server?.x509?.issuer?.organizational_unit instanceof String
   - rename:
+      tag: rename_suricata_eve_tls_kv_issuerdn_ST_to_tls_server_x509_issuer_state_or_province_573b0e60
       field: suricata.eve.tls.kv_issuerdn.ST
       target_field: tls.server.x509.issuer.state_or_province
       ignore_missing: true
   - set:
+      tag: set_tls_server_x509_issuer_state_or_province_46654d04
       field: tls.server.x509.issuer.state_or_province
       value: ['{{{tls.server.x509.issuer.state_or_province}}}']
       if: ctx.tls?.server?.x509?.issuer?.state_or_province instanceof String
 
   - convert:
+      tag: convert_suricata_eve_tls_session_resumed_to_tls_resumed_e646b3ec
       field: suricata.eve.tls.session_resumed
       target_field: tls.resumed
       type: boolean
       ignore_missing: true
   - set:
+      tag: set_tls_server_hash_sha1_8a96f788
       field: tls.server.hash.sha1
       value: '{{{suricata.eve.tls.fingerprint}}}'
       ignore_empty_value: true
   - uppercase:
+      tag: uppercase_tls_server_hash_sha1_b04b0ad7
       field: tls.server.hash.sha1
       ignore_missing: true
   - split:
+      tag: split_tls_server_hash_sha1_d1c57ffa
       field: tls.server.hash.sha1
       separator: ":"
       ignore_missing: true
   - join:
+      tag: join_tls_server_hash_sha1_304ba29a
       field: tls.server.hash.sha1
       separator: ""
       ignore_failure: true
   - append:
+      tag: append_related_hash_4e04185e
       field: related.hash
       value: "{{{tls.server.hash.sha1}}}"
       if: "ctx?.tls?.server?.hash?.sha1 != null"
   - set:
+      tag: set_tls_client_server_name_f4969460
       field: tls.client.server_name
       value: '{{{suricata.eve.tls.sni}}}'
       ignore_empty_value: true
   - set:
+      tag: set_destination_domain_d38cdce1
       field: destination.domain
       value: '{{{suricata.eve.tls.sni}}}'
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_43ddc075
       field: related.hosts
       value: '{{{suricata.eve.tls.sni}}}'
       if: ctx.suricata?.eve?.tls?.sni != null && ctx.suricata.eve.tls.sni != ""
       allow_duplicates: false
   - set:
+      tag: set_tls_server_ja3s_ba81be39
       field: tls.server.ja3s
       value: '{{{suricata.eve.tls.ja3s.hash}}}'
       ignore_empty_value: true
   - set:
+      tag: set_tls_client_ja3_52c85c09
       field: tls.client.ja3
       value: '{{{suricata.eve.tls.ja3.hash}}}'
       ignore_empty_value: true
   - set:
+      tag: set_tls_server_certificate_113e7ceb
       field: tls.server.certificate
       value: '{{{suricata.eve.tls.certificate}}}'
       ignore_empty_value: true
   - set:
+      tag: set_tls_server_certificate_chain_8c7ab4ff
       field: tls.server.certificate_chain
       value: '{{{suricata.eve.tls.chain}}}'
       ignore_empty_value: true
   - set:
+      tag: set_tls_server_x509_serial_number_58669ec7
       field: tls.server.x509.serial_number
       value: '{{{suricata.eve.tls.serial}}}'
       ignore_empty_value: true
   - gsub:
+      tag: gsub_tls_server_x509_serial_number_a894c049
       field: tls.server.x509.serial_number
       pattern: ':'
       replacement: ''
       ignore_missing: true
   - date:
+      tag: date_suricata_eve_tls_notafter_to_tls_server_not_after_6551b679
       field: suricata.eve.tls.notafter
       target_field: tls.server.not_after
       formats:
         - ISO8601
       if: ctx.suricata?.eve?.tls?.notafter != null
   - date:
+      tag: date_suricata_eve_tls_notbefore_to_tls_server_not_before_326f3b70
       field: suricata.eve.tls.notbefore
       target_field: tls.server.not_before
       formats:
         - ISO8601
       if: ctx.suricata?.eve?.tls?.notbefore != null
   - set:
+      tag: set_tls_server_x509_not_after_307349f8
       field: tls.server.x509.not_after
       value: '{{{tls.server.not_after}}}'
       ignore_empty_value: true
   - set:
+      tag: set_tls_server_x509_not_before_34bd63ba
       field: tls.server.x509.not_before
       value: '{{{tls.server.not_before}}}'
       ignore_empty_value: true
   - remove:
+      tag: remove_48c34a19
       field:
         - suricata.eve.tls.kv_issuerdn
         - suricata.eve.tls.kv_subject
@@ -238,4 +289,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -87,9 +87,12 @@ processors:
       ignore_failure: true
   - convert:
       field: forgerock.response.elapsedTime
-      target_field: event.duration
       type: long
       ignore_failure: true
+  - set:
+      field: event.duration
+      copy_from: forgerock.response.elapsedTime
+      ignore_empty_value: true
   - script:
       lang: painless
       if: ctx.event?.duration != null && ctx.forgerock?.response?.elapsedTimeUnits == 'MILLISECONDS'

@@ -2,6 +2,7 @@
 description: Pipeline for parsing Zeek logs from third party api
 processors:
   - fingerprint:
+      tag: fingerprint_8e6b679f
       fields:
         - _temp_.result._cd
         - _temp_.result._indextime
@@ -12,21 +13,26 @@ processors:
       target_field: '_id'
       ignore_missing: true
   - set:
+      tag: set_event_original_5bbfe67e
       field: event.original
       copy_from: _temp_.result._raw
       ignore_empty_value: true
   - set:
+      tag: set_host_name_d99bf8df
       field: host.name
       copy_from: _temp_.result.host
       ignore_empty_value: true
   - set:
+      tag: set_log_file_path_76cd6132
       copy_from: _temp_.result.source
       field: log.file.path
       ignore_empty_value: true
   - remove:
+      tag: remove__temp__fc21405e
       field: _temp_
       ignore_missing: true
   - json:
+      tag: json_event_original_to__temp__7408cf8c
       field: event.original
       target_field: _temp_
 on_failure:
@@ -36,7 +42,11 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in third party api pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{ _ingest.on_failure_message }}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

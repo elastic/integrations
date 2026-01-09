@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a password recovery request for the AWS account root user. In AWS, the PasswordRecoveryRequested event from signin.amazonaws.com applies to the root user\u2019s \u201cForgot your password?\u201d flow. Other identity types, like IAM and federated users, do not generate this event. This alert indicates that someone initiated the root password reset workflow for this account. Verify whether this was an expected action and review identity provider notifications/email to confirm legitimacy.",
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Sign-In Root Password Recovery Requested",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS Sign-In Root Password Recovery Requested\n\nIn AWS, a `PasswordRecoveryRequested` event from `signin.amazonaws.com` is only generated for the root user during the \u201cForgot your password?\u201d workflow. Other identity types (IAM or federated users) do not trigger this event. A root password recovery request is a critical identity security event that could indicate a legitimate recovery by the account owner or a malicious attempt to gain full administrative access.\n\n### Possible investigation steps\n\n- **Verify the event details.**  \n  Review the alert fields (`source.ip`, `user_agent.original`, `cloud.region`, and `@timestamp`) to confirm when and from where the request originated.\n- **Confirm legitimacy.**  \n  Contact the account owner or credential custodian to verify whether they initiated the password recovery.  \n  AWS will also send an email notification to the root account email address, check whether the owner received and acknowledged this.\n- **Check CloudTrail for related events.**  \n  Search for any subsequent `ConsoleLogin` events for the root user, or IAM changes (for example, `CreateAccessKey`, `CreateUser`, or `AttachUserPolicy`) shortly after the recovery request.\n- **Assess IP reputation and location.**  \n  Validate whether the `source.ip` aligns with known admin networks or expected geographies.  \n  Suspicious indicators include foreign IPs, anonymization services, or unfamiliar user agents.\n- **Correlate with other alerts.**  \n  Review other AWS security detections (for example, root logins, MFA disablement, or IAM policy changes) around the same timeframe.\n\n### False positive analysis\n\n- **Expected maintenance activity.**  \n  If the root account owner confirms that the password reset was intentional (for example, for account recovery or planned credential rotation), the alert may be safely dismissed.  \n- **Testing or account verification.**  \n  Security or compliance teams occasionally test password recovery flows. Confirm via ticketing or planned maintenance documentation.\n\n### Response and remediation\n\n**1. Immediate actions**\n- **If confirmed legitimate:**  \n  - Ensure that MFA is enabled and operational for the root account.  \n  - Encourage rotation of the root password if not recently updated.  \n- **If unconfirmed or suspicious:**  \n  - Immediately reset the root password using the legitimate AWS recovery email link.  \n  - Review the AWS account\u2019s email for password-recovery notifications and secure that inbox (change its password, enable MFA).  \n  - Check for new successful root logins or unexpected IAM changes since the recovery attempt.  \n\n**2. Evidence preservation**\n- Export the `PasswordRecoveryRequested` event from CloudTrail (\u00b130 minutes).  \n- Preserve all `signin.amazonaws.com` and root `ConsoleLogin` events for the next 24 hours.  \n- Store this evidence in a restricted S3 bucket with Object Lock enabled.\n\n**3. Scoping and investigation**\n- Review all root-level activities within the past 24\u201348 hours.  \n  Focus on administrative actions such as `CreateAccessKey`, `UpdateAccountPasswordPolicy`, or `DisableMFA`.  \n- Correlate with GuardDuty findings and AWS Config change history for any unauthorized modifications.\n\n**4. Recovery and hardening**\n- Confirm MFA is enforced on the root account.  \n- Rotate all root credentials and ensure no access keys exist for the root user (root keys should never be active).  \n- Secure the associated email account (password reset notifications are sent there).  \n- Enable Cloudtrail, GuardDuty, Security Hub, and AWS Config across all regions.  \n- Review account recovery procedures to ensure multiple custodians are aware of the legitimate process.\n\n### Additional information\n\n- **AWS Incident Response Playbooks:**    \n  and [`IRP-Credential-Compromise.md`](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/IRP-CredCompromise.md) for procedures related to root account credential recovery and unauthorized access attempts.  \n- **AWS Customer Playbook Framework:**  \n  See [`Compromised_IAM_Credentials.md`](https://github.com/aws-samples/aws-customer-playbook-framework/blob/a8c7b313636b406a375952ac00b2d68e89a991f2/docs/Compromised_IAM_Credentials.md) for guidance on containment, evidence collection, and recovery validation.  \n- **AWS Documentation:** [AWS account root user best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/root-user-best-practices.html).  \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).  \n",
+        "query": "event.dataset:aws.cloudtrail and \nevent.provider:signin.amazonaws.com and \nevent.action:PasswordRecoveryRequested and \nevent.outcome:success\n",
+        "references": [
+            "https://web.archive.org/web/20230930161727/https://www.cadosecurity.com/an-ongoing-aws-phishing-campaign/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "69c420e8-6c9e-4d28-86c0-8a2be2d1e78c",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Sign-In",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 210
+    },
+    "id": "69c420e8-6c9e-4d28-86c0-8a2be2d1e78c_210",
+    "type": "security-rule"
+}
