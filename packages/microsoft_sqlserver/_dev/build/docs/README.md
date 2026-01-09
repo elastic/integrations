@@ -19,6 +19,7 @@ Find more details in [Logs](#logs).
 
 * `performance`: Comprehensive performance counters and objects available on the server.
 * `transaction_log`: Usage statistics and space utilization metrics for transaction logs.
+* `availability_groups`: Health and synchronization metrics for Always On Availability Groups.
 
 Find more details in [Metrics](#metrics).
 
@@ -39,6 +40,9 @@ If you browse Microsoft Developer Network (MSDN) for the following tables, you w
     - [sys.dm_db_log_stats (DB_ID)](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-stats-transact-sql?view=sql-server-ver16) (Available on SQL Server (MSSQL) 2016 (13.x) SP 2 and later)
 2. `performance`:
     - [sys.dm_os_performance_counters](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16)
+3. `availability_groups`:
+    - [sys.availability_groups](https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-availability-groups-transact-sql?view=sql-server-ver16)
+    - [sys.dm_hadr_availability_group_states](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-hadr-availability-group-states-transact-sql)
 
 Please make sure the user has the permissions to system as well as user-defined databases. For the particular user used in the integration, the following requirements are met:
 
@@ -84,8 +88,6 @@ As part of the input configuration, you need to provide the user name, password 
 
 * `host/instance_name`          (e.g. `localhost/namedinstance_01`)
 * `host:named_instance_port`    (e.g. `localhost:60873`)
-
-
 
 ### Configuration
 
@@ -137,6 +139,22 @@ Keep in mind that this feature is disabled by default and needs to be manually e
 
 When the password contains special characters, pass these special characters using URL encoding.
 
+### Availability Groups Metrics
+
+Collects metrics related to Always On Availability Groups, including replica status and synchronization health. This dataset queries the following SQL Server tables:
+
+- `sys.availability_groups`
+- `sys.dm_hadr_availability_group_states`
+
+**Note:** Always On Availability Groups must be enabled on your SQL Server instance for this dataset to collect metrics. This feature is available in SQL Server Enterprise and Standard editions (with limitations in Standard).
+
+**Prerequisites**: To collect Availability Groups metrics, ensure the following:
+
+1. Always On Availability Groups feature is enabled on the SQL Server instance.
+2. The user account configured for the integration has `VIEW SERVER STATE` and `VIEW ANY DEFINITION` permissions. *Additionaly look at secion [Microsoft SQL Server permissions](#microsoft-sql-server-permissions)*.
+
+Read more in [Monitor Availability Groups](https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/monitoring-of-availability-groups-sql-server?view=sql-server-ver16) and [Always On Availability Groups](https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/overview-of-always-on-availability-groups-sql-server?view=sql-server-ver16) overview.
+
 ## Logs
 
 ### audit
@@ -186,6 +204,18 @@ The Microsoft SQL Server `transaction_log` dataset provides metrics from the log
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "transaction_log"}}
+
+### availability_groups
+
+The Microsoft SQL Server `availability_groups` dataset provides metrics from the Always On Availability Groups DMVs (Dynamic Management Views). All availability_groups metrics will be available in the `sqlserver.metrics` field group.
+
+{{event "availability_groups"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "availability_groups"}}
 
 ## Alerting Rule Template
 {{alertRuleTemplates}}
