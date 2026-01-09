@@ -1,0 +1,168 @@
+---
+description: Pipeline for parsing Thor logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 9.2.0
+  - append:
+      field: event.category
+      value: file
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - rename:
+      ignore_missing: true
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+  - remove:
+      ignore_missing: true
+      field: message
+      if: ctx.event?.original != null
+  - json:
+      ignore_failure: true
+      field: event.original
+      target_field: thor
+  - rename:
+      field: thor.file
+      target_field: file.name
+      if: ctx.thor?.file != null && ctx.thor?.file instanceof String
+  - date:
+      formats:
+      - ISO8601
+      field: thor.time
+      target_field: "@timestamp"
+  - remove:
+      ignore_missing: true
+      field: thor.time
+      if: ctx['@timestamp'] != null
+  - rename:
+      ignore_missing: true
+      field: thor.end_time
+      target_field: event.end
+  - rename:
+      ignore_missing: true
+      field: thor.level
+      target_field: log.level
+  - rename:
+      ignore_missing: true
+      field: thor.message
+      target_field: message
+  - rename:
+      ignore_missing: true
+      field: thor.module
+      target_field: event.module
+  - rename:
+      ignore_missing: true
+      field: thor.log_version
+      target_field: event.version
+  - rename:
+      ignore_missing: true
+      field: thor.user
+      target_field: user.name
+  - rename:
+      ignore_missing: true
+      field: thor.userid
+      target_field: user.id
+  - rename:
+      ignore_missing: true
+      field: thor.hostname
+      target_field: host.name
+  - rename:
+      ignore_missing: true
+      field: thor.file.group
+      target_field: file.group
+  - rename:
+      ignore_missing: true
+      field: thor.file.md5
+      target_field: file.hash.md5
+  - rename:
+      ignore_missing: true
+      field: thor.file.owner
+      target_field: file.owner
+  - rename:
+      ignore_missing: true
+      field: thor.file.path
+      target_field: file.path
+  - grok:
+      ignore_missing: true
+      field: file.path
+      pattern_definitions:
+        FILENAME: "[^/]+$"
+      patterns:
+      - ".+/%{FILENAME:file.name}"
+  - rename:
+      ignore_missing: true
+      field: thor.file.sha1
+      target_field: file.hash.sha1
+  - rename:
+      ignore_missing: true
+      field: thor.file.sha256
+      target_field: file.hash.sha256
+  - rename:
+      ignore_missing: true
+      field: thor.file.size
+      target_field: file.size
+  - date:
+      formats:
+      - ISO8601
+      field: thor.file.accessed
+      target_field: file.accessed
+      if: ctx.thor?.file?.accessed != null
+  - remove:
+      ignore_missing: true
+      field: thor.file.accessed
+      if: ctx.file?.accessed != null
+  - date:
+      formats:
+      - ISO8601
+      field: thor.file.changed
+      target_field: file.ctime
+      if: ctx.thor?.file?.changed != null
+  - remove:
+      ignore_missing: true
+      field: thor.file.changed
+      if: ctx.file?.ctime != null
+  - date:
+      formats:
+      - ISO8601
+      field: thor.file.modified
+      target_field: file.mtime
+      if: ctx.thor?.file?.modified != null
+  - remove:
+      field: thor.file.modified
+      if: ctx.file?.mtime != null
+  - append:
+      field: event.category
+      value: malware
+      if: ctx.message == "Malware file found"
+  - fingerprint:
+      ignore_missing: true
+      target_field: _id
+      fields:
+      - thor
+      - message
+      - "@timestamp"
+      - file
+      method: SHA-256
+  - pipeline:
+      name: global@custom
+      ignore_missing_pipeline: true
+      description: "[Fleet] Global pipeline for all data streams"
+  - pipeline:
+      name: logs@custom
+      ignore_missing_pipeline: true
+      description: "[Fleet] Pipeline for all data streams of type `logs`"
+  - pipeline:
+      name: logs-nextron_thor_apt_scanner.integration@custom
+      ignore_missing_pipeline: true
+      description: "[Fleet] Pipeline for all data streams of type `logs` defined by
+        the `nextron_thor_apt_scanner` integration"
+  - pipeline:
+      name: logs-nextron_thor_apt_scanner.thor_forwarding@custom
+      ignore_missing_pipeline: true
+      description: "[Fleet] Pipeline for the `nextron_thor_apt_scanner.thor_forwarding`
+        dataset"

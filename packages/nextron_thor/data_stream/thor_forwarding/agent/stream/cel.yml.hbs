@@ -1,0 +1,115 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+state:
+  initial_interval: {{initial_interval}}
+  want_more: false
+  api_key: {{api_key}}
+  batch_size: {{batch_size}}
+program: |
+   state.with(
+   	{
+   		"Header": {
+   			"Accept": ["application/json"],
+   			"Authorization": [state.?api_key],
+   		},
+   	}.as(auth_header,
+   		state.?cursor.latest_scan_ts.orValue(0).as(latest_scan_ts,
+   			state.?cursor.latest_scan_id.orValue("").as(latest_scan_id,
+   				state.?initial_interval.orValue("").as(initial_interval,
+   					(initial_interval == "") ? 0 : int(now() - duration(initial_interval))
+   				).as(initial_timestamp,
+   					((latest_scan_ts == 0 || latest_scan_ts <= initial_timestamp) ? initial_timestamp : latest_scan_ts).as(timestamp_offset,
+   						state.?batch_size.orValue(10).as(batch_size,
+   							get_request(state.url + "/v1/scan/search?limit=" + string(batch_size) + "&condition=last_launcher_update%20%3E=%20" + string(int(timestamp_offset)) + "%20AND%20(status%20%3D%20%22successful%22%20OR%20status%20%3D%20%22failed%22)&order_dir=ASC&order_field=last_launcher_update").with(auth_header).do_request().as(sr,
+   								sr.Body.decode_json().as(body,
+   									(body.data.size() == 0) ?
+   										{
+   											"events": [],
+   											"cursor": {
+   												"latest_scan_ts": timestamp_offset,
+   												"latest_scan_id": latest_scan_id,
+   											},
+   											"want_more": false,
+   										}
+   									:
+   										body.data.as(page,
+   											page.filter(s, s.logs_encrypted == false && s.available_logs.exists(l, l == "thor.json")).as(new_items,
+   												new_items.map(s,
+   													get_request(state.url + "/v1/scan/log?scan=" + s.id + "&log=thor.json").with(auth_header).do_request().as(lr,
+   														string(lr.Body).split("\n").filter(line, line != "").map(line, {"message": line})
+   													)
+   												).flatten().as(events,
+   													page.filter(s,
+   														(has(s.last_launcher_update) ? int(s.last_launcher_update) : int(s.creation_date)) >= latest_scan_ts &&
+   														s.id != latest_scan_id
+   													).size().as(new_count_all,
+   														(body.total > batch_size).as(more_pages,
+   															(
+   																(events.size() > 0) ?
+   																	(has(page[page.size() - 1].last_launcher_update) ? int(page[page.size() - 1].last_launcher_update) : int(page[page.size() - 1].creation_date))
+   																:
+   																	latest_scan_ts
+   															).as(new_latest_scan_ts,
+   																((events.size() > 0) ? page[page.size() - 1].id : latest_scan_id).as(new_latest_scan_id,
+   																	{
+   																		"events": events,
+   																		"cursor": {
+   																			"latest_scan_ts": new_latest_scan_ts,
+   																			"latest_scan_id": new_latest_scan_id,
+   																		},
+   																		"want_more": more_pages,
+   																		"total_scans": body.total,
+   																	}
+   																)
+   															)
+   														)
+   													)
+   												)
+   											)
+   										)
+   								)
+   							)
+   						)
+   					)
+   				)
+   			)
+   		)
+   	)
+   )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+redact:
+  fields:
+    - api_key
