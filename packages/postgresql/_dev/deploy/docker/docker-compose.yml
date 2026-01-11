@@ -1,10 +1,16 @@
-version: '2.3'
 services:
   postgresql:
-    # Commented out `image:` below until we have a process to refresh the hosted images from
-    # Dockerfiles in this repo. Until then, we build the image locally using `build:` below.
-    # image: docker.elastic.co/integrations-ci/beats-postgresql:${POSTGRESQL_VERSION:-9.5.3}-1
-    build: .
+    build:
+      context: .
+      args:
+        SERVICE_VERSION: ${SERVICE_VERSION}
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      # Enable logging
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+
     ports:
       - 5432
     volumes:

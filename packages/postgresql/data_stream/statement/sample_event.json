@@ -1,55 +1,55 @@
 {
-    "@timestamp": "2024-04-30T09:17:42.181Z",
+    "@timestamp": "2026-01-11T22:58:31.148Z",
     "agent": {
-        "ephemeral_id": "0bad7d4e-66f6-408c-9ae4-f6f4daddb7ab",
-        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "4e8a9c25-d27f-4ea0-b8ff-d41cdc8ce7b3",
+        "id": "6eec958f-78b9-42c6-9182-1edf4decdc22",
+        "name": "elastic-agent-65454",
         "type": "metricbeat",
-        "version": "8.13.0"
+        "version": "9.3.0"
     },
     "data_stream": {
         "dataset": "postgresql.statement",
-        "namespace": "ep",
+        "namespace": "58767",
         "type": "metrics"
     },
     "database": {
-        "oid": 12379
+        "oid": 5
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
-        "snapshot": false,
-        "version": "8.13.0"
+        "id": "6eec958f-78b9-42c6-9182-1edf4decdc22",
+        "snapshot": true,
+        "version": "9.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.statement",
-        "duration": 5544043,
-        "ingested": "2024-04-30T09:17:54Z",
+        "duration": 14132322,
+        "ingested": "2026-01-11T22:58:34Z",
         "module": "postgresql"
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-65454",
         "ip": [
-            "192.168.251.4"
+            "172.18.0.7",
+            "172.19.0.2"
         ],
         "mac": [
-            "02-42-C0-A8-FB-04"
+            "A6-95-9B-F6-14-BC",
+            "BE-7A-8E-98-7F-51"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-65454",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.99.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.8.0-64-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -59,11 +59,11 @@
     "postgresql": {
         "statement": {
             "database": {
-                "oid": 12379
+                "oid": 5
             },
             "query": {
                 "calls": 2,
-                "id": 1691311383,
+                "id": 4825363688236279000,
                 "memory": {
                     "local": {
                         "dirtied": 0,
@@ -73,7 +73,7 @@
                     },
                     "shared": {
                         "dirtied": 0,
-                        "hit": 12,
+                        "hit": 14,
                         "read": 0,
                         "written": 0
                     },
@@ -83,22 +83,22 @@
                     }
                 },
                 "rows": 6,
-                "text": "SELECT d.datname as \"Name\",\n       pg_catalog.pg_get_userbyid(d.datdba) as \"Owner\",\n       pg_catalog.pg_encoding_to_char(d.encoding) as \"Encoding\",\n       d.datcollate as \"Collate\",\n       d.datctype as \"Ctype\",\n       pg_catalog.array_to_string(d.datacl, ?) AS \"Access privileges\"\nFROM pg_catalog.pg_database d\nORDER BY 1;",
+                "text": "SELECT\n  d.datname as \"Name\",\n  pg_catalog.pg_get_userbyid(d.datdba) as \"Owner\",\n  pg_catalog.pg_encoding_to_char(d.encoding) as \"Encoding\",\n  CASE d.datlocprovider WHEN $1 THEN $2 WHEN $3 THEN $4 WHEN $5 THEN $6 END AS \"Locale Provider\",\n  d.datcollate as \"Collate\",\n  d.datctype as \"Ctype\",\n  d.datlocale as \"Locale\",\n  d.daticurules as \"ICU Rules\",\n  CASE WHEN pg_catalog.array_length(d.datacl, $7) = $8 THEN $9 ELSE pg_catalog.array_to_string(d.datacl, $10) END AS \"Access privileges\"\nFROM pg_catalog.pg_database d\nORDER BY 1",
                 "time": {
                     "max": {
-                        "ms": 0.107
+                        "ms": 0.051039
                     },
                     "mean": {
                         "ms": 0
                     },
                     "min": {
-                        "ms": 0.096
+                        "ms": 0.033789
                     },
                     "stddev": {
                         "ms": 0
                     },
                     "total": {
-                        "ms": 0.203
+                        "ms": 0.084828
                     }
                 }
             },
@@ -108,7 +108,7 @@
         }
     },
     "service": {
-        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10&sslmode=disable",
+        "address": "postgres://svc-postgresql:5432?connect_timeout=10&sslmode=disable",
         "type": "postgresql"
     }
 }
