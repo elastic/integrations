@@ -17,7 +17,7 @@ processors:
       if: ctx.crowdstrike?.event?.ItemType == null
   - set:
       field: event.action
-      value: "recon-notification-{{{ctx.crowdstrike.event.ItemType}}}"
+      value: "recon-notification-{{{crowdstrike.event.ItemType}}}"
       if: ctx.crowdstrike?.event?.ItemType != null
   - rename:
       field: crowdstrike.event.ItemId
@@ -34,11 +34,11 @@ processors:
       target_field: rule.name
       ignore_missing: true
       tag: rename_rule_name
-  - rename:
-      field: crowdstrike.event.RuleTopic
-      target_field: rule.ruleset
-      ignore_missing: true
-      tag: rename_rule_topic
+  - set:
+      field: rule.ruleset
+      copy_from: crowdstrike.event.RuleTopic
+      ignore_empty_value: true
+      tag: set_rule_ruleset
   - rename:
       field: crowdstrike.event.RuleTopic
       target_field: rule.description
@@ -50,7 +50,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_matched_timestamp
+      tag: date_event_matched_timestamp_ms
       if: "ctx.crowdstrike?.event?.MatchedTimestamp != null && String.valueOf(ctx.crowdstrike.event.MatchedTimestamp).length() >= 12"
   - date:
       field: crowdstrike.event.MatchedTimestamp
@@ -66,7 +66,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_matched_timestamp
+      tag: date_item_posted_timestamp_ms
       if: "ctx.crowdstrike?.event?.ItemPostedTimestamp != null && String.valueOf(ctx.crowdstrike.event.ItemPostedTimestamp).length() >= 12"
   - date:
       field: crowdstrike.event.ItemPostedTimestamp
@@ -74,7 +74,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_event_matched_timestamp
+      tag: date_item_posted_timestamp
       if: 'ctx.crowdstrike?.event?.ItemPostedTimestamp != null && String.valueOf(ctx.crowdstrike.event.ItemPostedTimestamp).length() <= 11'
 
 
