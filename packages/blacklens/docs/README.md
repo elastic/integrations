@@ -56,11 +56,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2024-11-12T09:39:58.489Z",
     "agent": {
-        "ephemeral_id": "33939e93-54ef-4184-b92b-bc8f02e179a6",
-        "id": "f98f4444-6fca-4500-83b6-a8c5e8f32bf1",
-        "name": "elastic-agent-49577",
+        "ephemeral_id": "f38fc291-c74c-4d61-a53f-adf92ddad4a8",
+        "id": "1ff77317-b9fd-4586-9988-0200703917dd",
+        "name": "elastic-agent-61882",
         "type": "filebeat",
-        "version": "8.15.2"
+        "version": "8.19.4"
     },
     "blacklens": {
         "alert": {
@@ -76,26 +76,26 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "blacklens.alerts",
-        "namespace": "41265",
+        "namespace": "95646",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f98f4444-6fca-4500-83b6-a8c5e8f32bf1",
+        "id": "1ff77317-b9fd-4586-9988-0200703917dd",
         "snapshot": false,
-        "version": "8.15.2"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2025-12-09T05:45:05.855Z",
+        "created": "2026-01-12T05:57:57.490Z",
         "dataset": "blacklens.alerts",
         "id": "1001",
-        "ingested": "2025-12-09T05:45:08Z",
+        "ingested": "2026-01-12T05:58:00Z",
         "type": [
             "indicator"
         ]
