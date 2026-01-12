@@ -357,11 +357,11 @@ processors:
       if: ctx.crowdstrike?.ExternalApiType == 'Event_DataProtectionDetectionSummaryEvent'
       name: '{{ IngestPipeline "data_protection_detection_summary" }}'
 
-# File Integrity Monitor Rule Matched events
+  # File Integrity Monitor Rule Matched events
   - pipeline:
-      name: '{{ IngestPipeline "fim_rule_matched" }}'
-      tag: fim_rule_matched
+      tag: pipeline_fim_rule_matched_33f5a923
       if: ctx.crowdstrike?.ExternalApiType == 'Event_FileIntegrityMonitorRuleMatchedEnriched' || ctx.crowdstrike?.event_simpleName == 'FileIntegrityMonitorRuleMatched'
+      name: '{{ IngestPipeline "fim_rule_matched" }}'
 
   # Handle case changes.
   - rename:
@@ -551,11 +551,6 @@ processors:
       field: crowdstrike.aipCount
       type: integer
   - convert:
-      field: crowdstrike.Nonce
-      tag: convert_nonce_to_string
-      type: string
-      ignore_missing: true
-  - convert:
       tag: convert_crowdstrike_discovererCount_to_integer_16ff8e6a
       if: ctx.crowdstrike?.discovererCount != null && ctx.crowdstrike?.discovererCount != ''
       field: crowdstrike.discovererCount
@@ -565,6 +560,11 @@ processors:
       if: ctx.crowdstrike?.localipCount != null && ctx.crowdstrike?.localipCount != ''
       field: crowdstrike.localipCount
       type: integer
+  - convert:
+      tag: convert_crowdstrike_Nonce_to_string_ff12e7cf
+      if: ctx.crowdstrike?.Nonce != null && ctx.crowdstrike?.Nonce != ''
+      field: crowdstrike.Nonce
+      type: string
 
   # AWS S3 input does _id-Based Deduplication and generates "_id" by default.
   # When "Data Deduplication" is not enabled, this field must be removed.
@@ -2186,11 +2186,10 @@ processors:
       target_field: file.device
       ignore_missing: true
   - set:
-      tag: set_file_type_c7c034b0
-      if: ctx.file?.path != null && !ctx.event.action.contains("Directory")
+      tag: set_file_type_210bce6d
+      if: ctx.file?.path != null && !ctx.event.action.contains("Directory") && ctx.file?.type == null
       field: file.type
       value: file
-      if: ctx.file?.path != null && !ctx.event.action.contains("Directory") && ctx.file?.type == null
   - set:
       tag: set_file_type_b27f1482
       if: ctx.file?.path != null && (ctx.event.action.contains("Directory") || ctx.file.path.endsWith("\\") || ctx.file.path.endsWith("/"))

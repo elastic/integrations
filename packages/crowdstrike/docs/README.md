@@ -1802,9 +1802,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.IpEntryFlags |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
 | crowdstrike.IsClipboard |  | boolean |
-| crowdstrike.IsHosted |  | keyword |
 | crowdstrike.IsEBPF |  | keyword |
 | crowdstrike.IsFromDifferentMountNamespace |  | keyword |
+| crowdstrike.IsHosted |  | keyword |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsProcessInitializing |  | keyword |
