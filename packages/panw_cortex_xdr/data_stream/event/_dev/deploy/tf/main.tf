@@ -5,6 +5,12 @@ provider "google" {
     branch       = var.BRANCH
     build        = var.BUILD_ID
     created_date = var.CREATED_DATE
+
+    division     = "engineering"
+    org          = "obs"
+    team         = "ecosystem"
+    project      = "elastic/integrations"
+    ephemeral    = true
   }
 }
 
