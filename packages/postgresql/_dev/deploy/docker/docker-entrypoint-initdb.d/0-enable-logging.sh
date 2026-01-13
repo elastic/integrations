@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-chmod a+wx /var/log/postgresql || true
 
 cat <<-EOF >> $PGDATA/postgresql.conf
 # Enable some log facilities.
