@@ -1,0 +1,107 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when the github-actions[bot] pushes code to a repository where it has not performed this behavior before in a certain time window. This may indicate a supply chain attack where malicious code running in a CI workflow attempts to modify repository contents, such as injecting backdoor workflow files.",
+        "false_positives": [
+            "Legitimate CI/CD automation that commits and pushes changes (e.g., auto-formatting, changelog updates, version bumps, Dependabot auto-merge) will trigger this alert on first use in a repository. Review the repository's workflow configurations to determine if bot pushes are expected."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-github.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GitHub Actions Unusual Bot Push to Repository",
+        "new_terms_fields": [
+            "github.org_id",
+            "github.repo"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating GitHub Actions Unusual Bot Push to Repository\n\nThis rule detects when the GitHub Actions bot pushes to a repository where it hasn't pushed to in a certain time interval. While this can be\nlegitimate automation, it may also indicate a supply chain attack where malicious code executes during CI and attempts\nto modify repository contents.\n\n### Possible investigation steps\n\n- Review the `github.repo` field to identify the affected repository.\n- Check recent workflow runs in the repository to identify which workflow triggered the push.\n- Examine the repository's commit history to see what files were modified by the bot push.\n- Look for newly added or modified files in `.github/workflows/` directory.\n- Review the repository's dependencies for recently added or updated packages with preinstall/postinstall hooks.\n- Check if the repository has legitimate automation that would explain bot pushes (Dependabot, Renovate, release automation).\n- Correlate with `protected_branch.rejected_ref_update` events to see if workflow injection was blocked.\n- Search for other repositories in the organization with similar suspicious activity.\n\n### False positive analysis\n\n- Repositories with auto-commit workflows (formatting, changelog generation, version bumps) will trigger on first run.\n- Dependabot or Renovate auto-merge configurations cause legitimate bot pushes.\n- GitHub Pages deployment workflows may push to gh-pages branches.\n- Release automation that updates version files or generates artifacts.\n\n### Response and remediation\n\n- If the push is unexpected, immediately review the commit contents for malicious files.\n- Check for suspicious workflow files (e.g., `discussion_*.yaml`, `formatter_*.yml`).\n- Audit all dependencies in the affected repository for malicious packages.\n- Rotate any secrets that may have been exposed during the workflow run.\n- Enable branch protection rules to require PR reviews for all changes.\n- Consider restricting GITHUB_TOKEN permissions in workflow files using `permissions:` key.\n",
+        "query": "event.dataset: \"github.audit\" and\n    event.action: \"git.push\" and\n    user.name: \"github-actions[bot]\"\n",
+        "references": [
+            "https://www.wiz.io/blog/shai-hulud-2-0-ongoing-supply-chain-attack",
+            "https://www.elastic.co/blog/shai-hulud-worm-npm-supply-chain-compromise"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "03245b25-3849-4052-ab48-72de65a82c35",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Persistence",
+            "Data Source: Github",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1195",
+                        "name": "Supply Chain Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1195/",
+                        "subtechnique": [
+                            {
+                                "id": "T1195.002",
+                                "name": "Compromise Software Supply Chain",
+                                "reference": "https://attack.mitre.org/techniques/T1195/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "03245b25-3849-4052-ab48-72de65a82c35_1",
+    "type": "security-rule"
+}
