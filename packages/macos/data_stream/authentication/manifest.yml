@@ -16,7 +16,11 @@ streams:
           For detailed information on the use of predicate based filtering,
           please refer to the https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html[Predicate Programming Guide].
         multi: true
-        show_user: true
+        show_user: false
+        default:
+          - 'process contains "sudo" OR composedMessage CONTAINS "sudo" OR process contains "su"'
+          - 'process contains "loginwindow" and composedMessage CONTAINS "sessionDidLogin"'
+          - 'process == "sshd"'
       - name: start
         type: text
         title: Start date
@@ -121,14 +125,6 @@ streams:
         default:
           - forwarded
           - macos-authentication
-      - name: preserve_duplicate_custom_fields
-        required: false
-        title: Preserve duplicate custom fields
-        description: Preserve macos.* fields that were copied to Elastic Common Schema (ECS) fields.
-        type: bool
-        multi: false
-        show_user: false
-        default: false
       - name: processors
         type: yaml
         title: Processors

@@ -16,7 +16,9 @@ streams:
           For detailed information on the use of predicate based filtering,
           please refer to the https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html[Predicate Programming Guide].
         multi: true
-        show_user: true
+        show_user: false
+        default:
+          - 'subsystem == "com.apple.security" OR subsystem == "com.apple.systempolicy" OR subsystem == "com.apple.installer" OR process == "Installer" OR process == "softwareupdated" OR eventMessage CONTAINS[c] "removed package" OR eventMessage CONTAINS[c] "forget package"'
       - name: start
         type: text
         title: Start date
@@ -121,14 +123,6 @@ streams:
         default:
           - forwarded
           - macos-system_change
-      - name: preserve_duplicate_custom_fields
-        required: false
-        title: Preserve duplicate custom fields
-        description: Preserve macos.* fields that were copied to Elastic Common Schema (ECS) fields.
-        type: bool
-        multi: false
-        show_user: false
-        default: false
       - name: processors
         type: yaml
         title: Processors

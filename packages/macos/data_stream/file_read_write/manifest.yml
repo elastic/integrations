@@ -16,7 +16,10 @@ streams:
           For detailed information on the use of predicate based filtering,
           please refer to the https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html[Predicate Programming Guide].
         multi: true
-        show_user: true
+        show_user: false
+        default:
+          - '(eventMessage CONTAINS "open" OR eventMessage CONTAINS "write" OR eventMessage CONTAINS "unlink" OR eventMessage CONTAINS "rename") AND ((processImagePath BEGINSWITH "/System") OR (processImagePath BEGINSWITH "/bin") OR (processImagePath BEGINSWITH "/sbin") OR (processImagePath BEGINSWITH "/usr" AND NOT processImagePath BEGINSWITH "/usr/local") OR (processImagePath BEGINSWITH "/etc"))'
+          - 'subsystem == "com.apple.quarantine" OR eventMessage CONTAINS "com.apple.quarantine"'
       - name: start
         type: text
         title: Start date
@@ -121,14 +124,6 @@ streams:
         default:
           - forwarded
           - macos-file_read_write
-      - name: preserve_duplicate_custom_fields
-        required: false
-        title: Preserve duplicate custom fields
-        description: Preserve macos.* fields that were copied to Elastic Common Schema (ECS) fields.
-        type: bool
-        multi: false
-        show_user: false
-        default: false
       - name: processors
         type: yaml
         title: Processors

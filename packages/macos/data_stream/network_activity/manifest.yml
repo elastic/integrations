@@ -16,7 +16,12 @@ streams:
           For detailed information on the use of predicate based filtering,
           please refer to the https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html[Predicate Programming Guide].
         multi: true
-        show_user: true
+        show_user: false
+        default:
+          - 'composedMessage CONTAINS "connect" AND (composedMessage CONTAINS "TCP" OR composedMessage CONTAINS "UDP")'
+          - 'composedMessage CONTAINS "disconnect" OR composedMessage CONTAINS "closed connection"'
+          - 'subsystem == "com.apple.necp" AND composedMessage CONTAINS "new connection"'
+          - 'eventMessage CONTAINS[c] "listening" AND eventMessage CONTAINS[c] "service"'
       - name: start
         type: text
         title: Start date
@@ -121,14 +126,6 @@ streams:
         default:
           - forwarded
           - macos-network_activity
-      - name: preserve_duplicate_custom_fields
-        required: false
-        title: Preserve duplicate custom fields
-        description: Preserve macos.* fields that were copied to Elastic Common Schema (ECS) fields.
-        type: bool
-        multi: false
-        show_user: false
-        default: false
       - name: processors
         type: yaml
         title: Processors

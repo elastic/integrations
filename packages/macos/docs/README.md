@@ -62,6 +62,8 @@ This integration collects unified log messages from macOS systems using configur
 ### Supported use cases
 The macOS integration in Elastic enables comprehensive monitoring and analysis of system activities, network traffic, and application behavior across macOS devices. It supports use cases such as detecting security incidents, tracking network usage, auditing system events, and analyzing performance trends. By collecting and visualizing unified logs, it helps security and IT teams gain real-time visibility, identify anomalies, ensure compliance, and enhance overall endpoint security within macOS environments.
 
+This integration also provides visibility into third-party enterprise applications that use unified logging as their logging backend, including privilege management tools, MDM agents, security software, and custom macOS applications, enabling centralized monitoring of the entire macOS application ecosystem.
+
 ## What do I need to use this integration?
 
 ### From Elastic

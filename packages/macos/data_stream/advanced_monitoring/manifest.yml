@@ -16,7 +16,11 @@ streams:
           For detailed information on the use of predicate based filtering,
           please refer to the https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html[Predicate Programming Guide].
         multi: true
-        show_user: true
+        show_user: false
+        default:
+          - 'eventMessage CONTAINS[c] "exec" OR eventMessage CONTAINS[c] "fork" OR eventMessage CONTAINS[c] "exited" OR eventMessage CONTAINS[c] "terminated"'
+          - 'subsystem == "com.apple.securityd" AND (composedMessage CONTAINS "code signing" OR composedMessage CONTAINS "not valid")'
+          - 'composedMessage CONTAINS "com.apple.quarantine"'
       - name: start
         type: text
         title: Start date
@@ -121,14 +125,6 @@ streams:
         default:
           - forwarded
           - macos-advanced_monitoring
-      - name: preserve_duplicate_custom_fields
-        required: false
-        title: Preserve duplicate custom fields
-        description: Preserve macos.* fields that were copied to Elastic Common Schema (ECS) fields.
-        type: bool
-        multi: false
-        show_user: false
-        default: false
       - name: processors
         type: yaml
         title: Processors
