@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when an AWS Lambda function policy is updated to allow public invocation. This rule detects use of the AddPermission API where the Principal is set to \"*\", enabling any AWS account to invoke the function. Adversaries may abuse this configuration to establish persistence, create a covert execution path, or operate a function as an unauthenticated backdoor. Public invocation is rarely required outside very specific workloads and should be considered high-risk when performed unexpectedly.",
+        "event_category_override": "event.type",
+        "false_positives": [
+            "Some organizations may legitimately expose Lambda functions for cross-account or anonymous invocation (e.g., custom public APIs, integrations, or legacy architectures). Validate whether the function owner explicitly intended to make the function publicly invokable. Routine CI/CD deployments or IaC templates may also temporarily set permissive policies; confirm this is expected behavior before treating it as suspicious."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS Lambda Function Policy Updated to Allow Public Invocation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. \n> While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS Lambda Function Policy Updated to Allow Public Invocation\n\nAWS Lambda policies control who can invoke a function. When the `Principal` is set to `*`, the function becomes publicly invokable by any AWS account. Adversaries may modify Lambda permissions to create a stealthy execution backdoor or to maintain persistence inside an AWS environment. This activity is uncommon in most production environments and should receive careful scrutiny when detected.\n\n### Possible investigation steps\n\n**Identify the actor**\n- Identify the actor who made the change by reviewing `aws.cloudtrail.user_identity.arn` and access key ID. Determine whether this principal typically administers Lambda functions.\n\n**Review request details**\n- Review request details in `aws.cloudtrail.request_parameters` to understand the exact permission added:\n  - Confirm that the `Principal` is set to `\"*\"`.\n  - Note the `Action` (`lambda:InvokeFunction`) and any `SourceArn` restrictions (sometimes present, often missing in malicious cases).\n\n**Analyze source context**\n- Check the source of the request using `source.ip`, geo information, and user agent. Unexpected networks, automation tools, or CLI usage may indicate credential compromise.\n\n**Correlate timing and related events**\n- Evaluate timing and sequence by correlating `@timestamp` with other events. Look for surrounding actions such as:\n  - Creation or update of Lambda function code.\n  - Publishing new Lambda layers.\n  - Changes to roles attached to the function.\n\n**Assess function sensitivity and impact**\n- Assess the function\u2019s role and data sensitivity. Determine whether public invocation could:\n  - Enable unmonitored code execution,\n  - Trigger access to internal resources via the function\u2019s IAM role,\n  - Be chained with persistence or privilege escalation behavior.\n\n**Validate operational intent**\n- Validate the operational context. Confirm with the function owner whether the permission change was intentional, part of a deployment, or unexpected.\n\n### False positive analysis\n\n- Public invocation may be intentional for certain workloads (e.g., webhook handlers, openly accessible compute functions). Compare the event with documentation, IaC templates, or the deployment pipeline.\n- Some teams may regularly modify permissions during testing or refactoring; check whether this aligns with existing workflows.\n- Evaluate whether the function already had permissive invocation policies and whether the update is part of expected configuration drift.\n\n### Response and remediation\n\n- Remove unauthorized public invocation permissions immediately by reverting the Lambda function policy to the approved baseline.\n- Investigate for follow-on activity: execution of the function, updates to code, modifications to IAM roles, or API calls issued using the function's role.\n- Rotate or disable credentials associated with the identity that issued the `AddPermission` call if compromise is suspected.\n- Enable or refine monitoring for Lambda policy updates, layer additions, and code changes to detect future unauthorized modifications.\n- Conduct a security review of the Lambda function and any downstream resources it can access to ensure no misuse has occurred.\n- Work with the application team to enforce least-privilege invocation policies and deploy guardrails (e.g., SCPs, IAM Conditions, or automated compliance checks) preventing public invocation unless explicitly authorized.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **[AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/)**\n",
+        "query": "info where event.dataset == \"aws.cloudtrail\" \n    and event.provider == \"lambda.amazonaws.com\" \n    and event.outcome == \"success\" \n    and event.action : \"AddPermission*\" \n    and stringContains(aws.cloudtrail.request_parameters, \"lambda:InvokeFunction\") \n    and stringContains(aws.cloudtrail.request_parameters, \"principal=\\\\*\")\n",
+        "references": [
+            "https://cloud.hacktricks.xyz/pentesting-cloud/aws-security/aws-persistence/aws-lambda-persistence",
+            "https://stratus-red-team.cloud/attack-techniques/AWS/aws.persistence.lambda-backdoor-function/",
+            "https://docs.aws.amazon.com/lambda/latest/api/API_AddPermission.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "151d8f72-0747-11ef-a0c2-f661ea17fbcc",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Lambda",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "151d8f72-0747-11ef-a0c2-f661ea17fbcc_5",
+    "type": "security-rule"
+}
