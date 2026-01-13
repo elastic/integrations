@@ -9,7 +9,7 @@ provider "google" {
     division     = "engineering"
     org          = "obs"
     team         = "ecosystem"
-    project      = "elastic/integrations"
+    project      = "integrations-testing"
     ephemeral    = true
   }
 }
