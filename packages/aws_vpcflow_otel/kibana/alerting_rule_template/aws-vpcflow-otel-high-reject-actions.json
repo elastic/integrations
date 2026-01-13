@@ -1,8 +1,8 @@
 {
-    "id": "aws-vpcflow-otel-massive-data-transfer",
+    "id": "aws-vpcflow-otel-high-reject-actions",
     "type": "alerting_rule_template",
     "attributes": {
-        "name": "[AWS VPC OTEL] Excessive data transfer from a single source",
+        "name": "[AWS VPC OTEL] High reject actions",
         "tags": ["AWS VPC Logs OpenTelemetry Assets"],
         "ruleTypeId": ".es-query",
         "schedule": {
@@ -13,7 +13,7 @@
             "timeWindowSize": 10,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert triggers when any source IP address whose bytes exceed a threshold (e.g. > 50GB in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.vpcflow.otel-default | WHERE @timestamp > NOW()- 10m | STATS total_bytes = SUM(aws.vpc.flow.bytes) BY source.address | WHERE total_bytes > 53687091200 | SORT total_bytes DESC"
+                "esql": "// Alert triggers when any source IP address whose reject requests exceed a threshold (e.g. > 1000 in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.vpcflow.otel-default | WHERE @timestamp > NOW()- 10m | STATS reject_count= COUNT(aws.vpc.flow.action == \"REJECT\" OR NULL) BY source.address | WHERE reject_count > 100 | SORT reject_count DESC"
             },
             "groupBy": "row",
             "timeField": "@timestamp"
