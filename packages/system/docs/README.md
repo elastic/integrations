@@ -1927,6 +1927,10 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 The following alert rule templates are available:
 
+**[System] CPU Utilization**
+
+
+
 **[System] Disk I/O Saturation**
 
 
