@@ -1,18 +1,10 @@
 {
     "attributes": {
         "controlGroupInput": {
-            "chainingSystem": "HIERARCHICAL",
-            "controlStyle": "oneLine",
-            "ignoreParentSettingsJSON": {
-                "ignoreFilters": false,
-                "ignoreQuery": false,
-                "ignoreTimerange": false,
-                "ignoreValidations": false
-            },
             "panelsJSON": {
                 "2678bf39-3def-453e-9f30-2904bc88efe9": {
                     "explicitInput": {
-                        "dataViewId": "metrics-*",
+                        "dataViewRefName": "2678bf39-3def-453e-9f30-2904bc88efe9:optionsListDataView",
                         "exclude": false,
                         "existsSelected": false,
                         "fieldName": "agent.name",
@@ -30,13 +22,11 @@
                     "type": "optionsListControl",
                     "width": "medium"
                 }
-            },
-            "showApplySelections": false
+            }
         },
         "description": "Elastic Agent metrics dashboard",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -44,6 +34,7 @@
             }
         },
         "optionsJSON": {
+            "autoApplyFilters": true,
             "hidePanelTitles": false,
             "syncColors": true,
             "syncCursor": true,
@@ -337,6 +328,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
@@ -513,6 +505,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -621,6 +614,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -723,6 +717,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -890,6 +885,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -1057,6 +1053,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -1234,6 +1231,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -1509,6 +1507,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -1770,6 +1769,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -1800,6 +1800,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "99f20cec-1684-4175-b773-02c3638f2a32": {
                                             "columnOrder": [
@@ -1813,7 +1814,8 @@
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X4",
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X5",
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X6",
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X7"
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X7",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X8"
                                             ],
                                             "columns": {
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054": {
@@ -1830,11 +1832,11 @@
                                                                 "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "pick_max(\n  pick_max(\n    differences(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/interval(),\n    0\n  ),\n  pick_max(\n    differences(\n      defaults(max(system.process.cpu.total.pct),0)),\n    0\n  )\n)",
+                                                        "formula": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.pct),0)),\n    0\n  )\n)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X7"
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X8"
                                                     ],
                                                     "scale": "ratio"
                                                 },
@@ -1847,7 +1849,6 @@
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
                                                     "sourceField": "system.process.cpu.total.time.ms"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X1": {
@@ -1863,8 +1864,8 @@
                                                                 0
                                                             ],
                                                             "location": {
-                                                                "max": 101,
-                                                                "min": 45
+                                                                "max": 102,
+                                                                "min": 46
                                                             },
                                                             "name": "defaults",
                                                             "text": "defaults(max(system.process.cpu.total.time.ms),0)\n      ",
@@ -1873,30 +1874,42 @@
                                                     },
                                                     "references": [
                                                         "36f3abb0-7261-43e6-bc2f-7ad492094054X0"
-                                                    ],
-                                                    "scale": "ratio"
+                                                    ]
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X2": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Part of  CPU Usage",
-                                                    "operationType": "differences",
+                                                    "operationType": "counter_rate",
                                                     "references": [
                                                         "36f3abb0-7261-43e6-bc2f-7ad492094054X1"
                                                     ],
-                                                    "scale": "ratio"
+                                                    "timeScale": "s"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  CPU Usage",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X4": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Part of  CPU Usage",
-                                                    "operationType": "interval",
-                                                    "references": [],
-                                                    "scale": "ratio"
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X3"
+                                                    ],
+                                                    "timeScale": "s"
                                                 },
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X4": {
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X5": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -1905,10 +1918,9 @@
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
                                                     "sourceField": "system.process.cpu.total.pct"
                                                 },
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X5": {
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X6": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -1917,12 +1929,12 @@
                                                     "params": {
                                                         "tinymathAst": {
                                                             "args": [
-                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X4",
+                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X5",
                                                                 0
                                                             ],
                                                             "location": {
-                                                                "max": 206,
-                                                                "min": 161
+                                                                "max": 227,
+                                                                "min": 182
                                                             },
                                                             "name": "defaults",
                                                             "text": "defaults(max(system.process.cpu.total.pct),0)",
@@ -1930,22 +1942,21 @@
                                                         }
                                                     },
                                                     "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X4"
-                                                    ],
-                                                    "scale": "ratio"
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X5"
+                                                    ]
                                                 },
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X6": {
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X7": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Part of  CPU Usage",
-                                                    "operationType": "differences",
+                                                    "operationType": "counter_rate",
                                                     "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X5"
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X6"
                                                     ],
-                                                    "scale": "ratio"
+                                                    "timeScale": "s"
                                                 },
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X7": {
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X8": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -1959,55 +1970,54 @@
                                                                         {
                                                                             "args": [
                                                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X2",
-                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X3"
+                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X4"
                                                                             ],
                                                                             "location": {
-                                                                                "max": 113,
+                                                                                "max": 133,
                                                                                 "min": 26
                                                                             },
                                                                             "name": "divide",
-                                                                            "text": "differences(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/interval()",
+                                                                            "text": "counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp))",
                                                                             "type": "function"
                                                                         },
                                                                         0
                                                                     ],
                                                                     "location": {
-                                                                        "max": 124,
+                                                                        "max": 144,
                                                                         "min": 12
                                                                     },
                                                                     "name": "pick_max",
-                                                                    "text": "pick_max(\n    differences(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/interval(),\n    0\n  )",
+                                                                    "text": "pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp)),\n    0\n  )",
                                                                     "type": "function"
                                                                 },
                                                                 {
                                                                     "args": [
-                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X6",
+                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X7",
                                                                         0
                                                                     ],
                                                                     "location": {
-                                                                        "max": 219,
-                                                                        "min": 128
+                                                                        "max": 240,
+                                                                        "min": 148
                                                                     },
                                                                     "name": "pick_max",
-                                                                    "text": "pick_max(\n    differences(\n      defaults(max(system.process.cpu.total.pct),0)),\n    0\n  )\n",
+                                                                    "text": "pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.pct),0)),\n    0\n  )\n",
                                                                     "type": "function"
                                                                 }
                                                             ],
                                                             "location": {
-                                                                "max": 220,
+                                                                "max": 241,
                                                                 "min": 0
                                                             },
                                                             "name": "pick_max",
-                                                            "text": "pick_max(\n  pick_max(\n    differences(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/interval(),\n    0\n  ),\n  pick_max(\n    differences(\n      defaults(max(system.process.cpu.total.pct),0)),\n    0\n  )\n)",
+                                                            "text": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.pct),0)),\n    0\n  )\n)",
                                                             "type": "function"
                                                         }
                                                     },
                                                     "references": [
                                                         "36f3abb0-7261-43e6-bc2f-7ad492094054X2",
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X3",
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X6"
-                                                    ],
-                                                    "scale": "ratio"
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X4",
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X7"
+                                                    ]
                                                 },
                                                 "7bec9e2e-5d9c-4ca9-a665-5017478e1ede": {
                                                     "dataType": "string",
@@ -2056,9 +2066,17 @@
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -2133,9 +2151,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -2164,11 +2184,64 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "description": "",
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "7f71ff88-5a2c-435c-87ab-13edec063180",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": [
+                                    "elastic_agent.elastic_agent",
+                                    "elastic_agent.endpoint_security"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "elastic_agent.elastic_agent",
+                                    "elastic_agent.endpoint_security"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "elastic_agent.elastic_agent"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "elastic_agent.endpoint_security"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
                     "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": true,
+                    "syncCursor": true,
+                    "syncTooltips": false,
                     "title": "[Elastic Agent] CPU Usage"
                 },
                 "gridData": {
@@ -2376,6 +2449,9 @@
                                 "legend": {
                                     "isVisible": false,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": false
@@ -2388,12 +2464,12 @@
                                 },
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yRightTitle": ""
                             }
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -2677,6 +2753,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {
@@ -2868,6 +2945,9 @@
                                     "isInside": false,
                                     "isVisible": false,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": false
@@ -2878,12 +2958,12 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -3231,6 +3311,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "small",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -3241,7 +3324,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -3253,6 +3335,7 @@
                         },
                         "title": "[Elastic Agent] Acknowledged Events /s",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -3603,6 +3686,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "maxLines": 2,
                                     "position": "right",
                                     "showSingleSeries": true
@@ -3614,7 +3700,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -3626,6 +3711,7 @@
                         },
                         "title": "[Elastic Agent] Total events rate /s (copy)",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -4021,9 +4107,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -4048,6 +4136,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "description": "",
@@ -4281,6 +4370,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {
@@ -4422,18 +4512,21 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "area_stacked",
                                 "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -4636,6 +4729,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
@@ -4842,6 +4936,9 @@
                                     "isInside": false,
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": true
@@ -4852,12 +4949,12 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -5029,6 +5126,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -5039,7 +5139,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -5050,6 +5149,7 @@
                         },
                         "title": "[Elastic Agent] Output write errors (copy)",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -5220,6 +5320,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -5230,7 +5333,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -5240,6 +5342,7 @@
                             }
                         },
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -5413,6 +5516,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -5423,7 +5529,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -5433,6 +5538,7 @@
                             }
                         },
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -5604,6 +5710,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -5614,7 +5723,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -5625,6 +5733,7 @@
                         },
                         "title": "[Elastic Agent] Output write errors (copy)",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -5796,6 +5905,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -5806,7 +5918,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -5816,6 +5927,7 @@
                             }
                         },
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -5976,6 +6088,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -5986,7 +6101,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -5997,6 +6111,7 @@
                         },
                         "title": "[Elastic Agent] Output write errors (copy)",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -6175,6 +6290,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -6185,7 +6303,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -6195,6 +6312,7 @@
                             }
                         },
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -6365,6 +6483,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -6375,7 +6496,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -6385,6 +6505,7 @@
                             }
                         },
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -6555,6 +6676,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -6565,7 +6689,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -6575,6 +6698,7 @@
                             }
                         },
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -6745,6 +6869,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -6755,7 +6882,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -6765,6 +6891,7 @@
                             }
                         },
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -6935,6 +7062,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -6945,7 +7075,6 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yLeftExtent": {
                                     "mode": "full"
                                 },
@@ -6955,6 +7084,7 @@
                             }
                         },
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -7160,6 +7290,9 @@
                                     "isInside": false,
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": true
@@ -7170,12 +7303,12 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -7389,6 +7522,7 @@
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -7586,6 +7720,9 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "large",
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "right",
                                     "shouldTruncate": true,
                                     "showSingleSeries": true
@@ -7598,12 +7735,12 @@
                                 },
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yRightTitle": ""
                             }
                         },
                         "title": "",
                         "type": "lens",
+                        "version": 1,
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -7622,11 +7759,10 @@
             }
         ],
         "timeRestore": false,
-        "title": "[Elastic Agent] Agent metrics",
-        "version": 1
+        "title": "[Elastic Agent] Agent metrics"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-09-15T07:52:29.446Z",
+    "created_at": "2026-01-13T16:52:25.242Z",
     "id": "elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395",
     "references": [
         {
@@ -7876,7 +8012,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_2678bf39-3def-453e-9f30-2904bc88efe9:optionsListDataView",
+            "name": "2678bf39-3def-453e-9f30-2904bc88efe9:optionsListDataView",
             "type": "index-pattern"
         }
     ],
