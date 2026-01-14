@@ -535,6 +535,14 @@ will be handled as a histogram, even if it has the suffix `_total` which is a de
 
 The Prometheus integration's `remote_write` dataset provides a `Metrics Count` parameter, which is disabled by default. When enabled, it counts the total number of Prometheus metrics within each Elasticsearch document. This count is stored in a field called `metrics_count` and its value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines.
 
+#### Request Size Limits
+
+To protect against resource exhaustion from malicious or oversized payloads, the remote_write metricset enforces configurable size limits on incoming requests:
+
+- `max_compressed_body_bytes`: Maximum size of the compressed (snappy-encoded) request body in bytes. Requests exceeding this limit are rejected with HTTP 413 before being read into memory. Default: 2 MB (2097152 bytes).
+- `max_decoded_body_bytes`: Maximum size of the decompressed request body in bytes. The server checks the declared decoded size in the snappy header before allocating memory for decompression, preventing decompression bomb attacks. Default: 10 MB (10485760 bytes).
+
+
 ### Prometheus Queries (PromQL)
 
 The Prometheus `query` dataset executes specific Prometheus queries against [Promethes Query API](https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries).
