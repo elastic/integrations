@@ -95,7 +95,8 @@ for package in ${PACKAGE_LIST}; do
             duration: 10800 # seconds
         # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
         # This plugin authenticates to Google Cloud using the OIDC token.
-        - elastic/oblt-google-auth#main:
+        # Test branch: test/restore-credentials-generation
+        - elastic/oblt-google-auth#3edd7ecb81b4e5faa5477842a9fe4e1eecd19005:
             lifetime: 10800 # seconds
             project-id: "elastic-observability-ci"
             project-number: "911195782929"
