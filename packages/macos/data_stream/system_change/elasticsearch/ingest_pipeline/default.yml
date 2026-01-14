@@ -3,11 +3,12 @@ description: Pipeline for processing system change logs.
 processors:
   - append:
       field: event.category
-      tag: set_event_category_configuration
+      tag: set_event_category
       value: configuration
+  - append:
+      field: event.type
+      tag: set_event_type
+      value: info
   - pipeline:
       name: '{{ IngestPipeline "common-pipeline" }}'
       tag: run-common-pipeline
-  - pipeline:
-      name: '{{ IngestPipeline "common-network-pipeline" }}'
-      tag: run-common-network-pipeline
