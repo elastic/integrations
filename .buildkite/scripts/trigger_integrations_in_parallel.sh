@@ -9,6 +9,8 @@ add_bin_path
 with_yq
 with_mage
 
+use_elastic_package
+
 pushd packages > /dev/null
 PACKAGE_LIST=$(list_all_directories)
 popd > /dev/null
