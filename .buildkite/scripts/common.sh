@@ -829,7 +829,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(cloudflare_logpush|elastic_package_registry|netskope)$'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(cloudflare_logpush|elastic_package_registry|netskope|symantec_endpoint_security|aws)$'
 }
 
 check_package() {
