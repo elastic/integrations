@@ -1465,6 +1465,109 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.network.out.packets | The number of packets sent. | long |  | counter |
 
 
+### NTP
+
+The System `ntp` data stream provides Network Time Protocol metrics (offsets) collected from the
+NTP servers. One event is created for NTP server.
+
+#### Supported operating systems
+
+- FreeBSD
+- Linux
+- macOS
+- OpenBSD
+- Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| system.ntp.host | The remote NTP server address. | keyword |  |
+| system.ntp.offset | The estimated offset of the local host's system clock relative to the server's clock (in ns). | long | nanos |
+
+
+An example event for `ntp` looks as following:
+
+```json
+{
+    "@timestamp": "2025-08-21T11:37:00.968Z",
+    "agent": {
+        "ephemeral_id": "821302c1-5eab-4daf-9d96-cd6a592a2899",
+        "id": "60f3e256-2915-4811-8dc2-6fb0e6e604f1",
+        "name": "elastic-agent-91384",
+        "type": "metricbeat",
+        "version": "9.2.0"
+    },
+    "data_stream": {
+        "dataset": "system.ntp",
+        "namespace": "99647",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "60f3e256-2915-4811-8dc2-6fb0e6e604f1",
+        "snapshot": true,
+        "version": "9.2.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "system.ntp",
+        "duration": 56473494,
+        "ingested": "2025-08-21T11:37:03Z",
+        "module": "system"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-91384",
+        "ip": [
+            "172.20.0.4",
+            "172.21.0.2"
+        ],
+        "mac": [
+            "02-42-AC-14-00-04",
+            "02-42-AC-15-00-02"
+        ],
+        "name": "elastic-agent-91384",
+        "os": {
+            "family": "",
+            "kernel": "6.8.0-50-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "metricset": {
+        "name": "ntp",
+        "period": 10000
+    },
+    "service": {
+        "type": "system"
+    },
+    "system": {
+        "ntp": {
+            "host": "pool.ntp.org",
+            "offset": 5858029
+        }
+    }
+}
+```
+
 ### Process
 
 The System `process` data stream provides process statistics. One document is
@@ -1813,4 +1916,30 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | system.uptime.duration.ms | The OS uptime in milliseconds. | long | ms | counter |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[System] Disk I/O Saturation**
+
+
+
+**[System] High Disk I/O Latency**
+
+
+
+**[System] High Network Error Rate**
+
+
+
+**[System] High Packet Drop Rate**
+
+
 
