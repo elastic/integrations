@@ -347,10 +347,22 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - uri_parts:
+  - gsub:
       field: json.ClientRequestURI
+      tag: gsub_client_request_uri
+      target_field: tmp.ClientRequestURI
+      ignore_missing: true
+      pattern: '//'
+      replacement: '/'
+  - uri_parts:
+      field: tmp.ClientRequestURI
+      tag: uri_parts_client_request_uri
       ignore_failure: true
-      if: ctx.json?.ClientRequestURI != null
+      if: ctx.tmp?.ClientRequestURI != null
+  - remove:
+      field: tmp.ClientRequestURI
+      tag: remove_client_request_uri
+      ignore_missing: true
   - rename:
       field: json.ContentScanObjResults
       target_field: cloudflare_logpush.http_request.content_scan.results
