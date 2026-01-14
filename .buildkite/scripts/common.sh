@@ -829,7 +829,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    elastic-package find | sed -e "s#$PWD/##"
+    ${ELASTIC_PACKAGE_BIN} find | sed -e "s#$PWD/##"
 }
 
 check_package() {
