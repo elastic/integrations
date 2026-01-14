@@ -130,7 +130,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_context_timestamp
+      tag: date_context_timestamp_ms
       if: "ctx.crowdstrike?.event?.ContextTimeStamp != null && ctx.crowdstrike.event.ContextTimeStamp.length() >= 12"
   - date:
       field: crowdstrike.event.ContextTimeStamp
@@ -158,7 +158,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_account_creation_timestamp
+      tag: date_account_creation_timestamp_ms
       if: "ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && ctx.crowdstrike.event.AccountCreationTimeStamp.length() >= 12"
   - date:
       field: crowdstrike.event.AccountCreationTimeStamp
@@ -186,7 +186,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_start_time_epoch
+      tag: date_event_start_time_epoch_ms
       if: "ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() >= 12"
   - date:
       field: crowdstrike.event.StartTime
@@ -199,14 +199,14 @@ processors:
   - convert:
       field: crowdstrike.event.EndTime
       type: string
-      tag: convert_start_time_epoch
+      tag: convert_end_time_epoch
       ignore_missing: true
       if: ctx.crowdstrike?.event?.EndTime != null
   - gsub:
       field: crowdstrike.event.EndTime
       pattern: "\\d{6}$"
       replacement: ""
-      tag: gsub_start_time_epoch
+      tag: gsub_end_time_epoch
       if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() > 18"
   - date:
       field: crowdstrike.event.EndTime
@@ -214,7 +214,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_end_time_epoch
+      tag: date_event_end_time_epoch_ms
       if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() >= 12"
   - date:
       field: crowdstrike.event.EndTime
@@ -252,7 +252,7 @@ processors:
       field: related.hosts
       value: "{{{crowdstrike.event.AdditionalAccountName}}}"
       allow_duplicates: false
-      tag: append_additional_account_domain
+      tag: append_additional_account_name
       if: ctx.crowdstrike?.event?.AdditionalAccountName != null
   - append:
       field: related.hosts
@@ -264,7 +264,7 @@ processors:
       field: related.ip
       value: "{{{crowdstrike.event.AdditionalEndpointIpAddress}}}"
       allow_duplicates: false
-      tag: append_additional_endpoint_hostname
+      tag: append_additional_endpoint_ip
       if: ctx.crowdstrike?.event?.AdditionalEndpointIpAddress != null
 
 on_failure:

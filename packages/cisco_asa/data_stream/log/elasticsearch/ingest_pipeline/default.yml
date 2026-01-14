@@ -1019,7 +1019,7 @@ processors:
       field: message
       description: "717022"
       patterns:
-        - 'Certificate was successfully validated. serial number:\s*%{NOTSPACE:_temp_.cisco.serial_number}, subject name:\s*%{NOTSPACE:_temp_.cisco.distinguished_name}\.'
+        - 'Certificate was successfully validated. serial number:%{SPACE}%{DATA:_temp_.cisco.serial_number}, subject name:%{SPACE}%{DATA:_temp_.cisco.distinguished_name}\.'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '721016'"
       tag: parse_721016
@@ -1344,6 +1344,18 @@ processors:
             }
           });
           ctx._temp_.cisco.dn_parts = parts;
+
+  - remove:
+      if: 'ctx._temp_?.cisco?.distinguished_name != null && ctx._temp_.cisco.distinguished_name.isEmpty()'
+      tag: remove_empty_distinguished_name
+      field: _temp_.cisco.distinguished_name
+      ignore_missing: true
+
+  - remove:
+      if: 'ctx._temp_?.cisco?.serial_number != null && ctx._temp_.cisco.serial_number.isEmpty()'
+      tag: remove_empty_serial_number
+      field: _temp_.cisco.serial_number
+      ignore_missing: true
 
   - rename:
       description: Rename found x509 parts into ECS.
@@ -3301,6 +3313,12 @@ processors:
         - _temp_
         - _conf
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
   # Copy any fields under _temp_.cisco to its final destination. Those can help
@@ -3325,3 +3343,7 @@ on_failure:
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

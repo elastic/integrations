@@ -288,6 +288,46 @@ processors:
       field: json.result.description
       target_field: ping_one.audit.result.description
       ignore_missing: true
+  - rename:
+      field: json.internalCorrelation.transactionId
+      tag: rename_internal_correlation_transaction_id
+      target_field: ping_one.audit.internal_correlation.transaction_id
+      ignore_missing: true
+  - convert:
+      field: json.source.ipAddress
+      tag: convert_source_ip_address_to_ip
+      target_field: ping_one.audit.source.ip_address
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_source_ip_address
+      copy_from: ping_one.audit.source.ip_address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_source_ip_address_to_related_ip
+      value: '{{{ping_one.audit.source.ip_address}}}'
+      if: ctx.ping_one?.audit?.source?.ip_address != null
+      allow_duplicates: false
+  - rename:
+      field: json.source.userAgent
+      tag: rename_source_user_agent
+      target_field: ping_one.audit.source.user_agent
+      ignore_missing: true
+  - user_agent:
+      field: ping_one.audit.source.user_agent
+      tag: user_agent_source_user_agent
+      ignore_missing: true
   - remove:
       field:
         - json
@@ -314,33 +354,57 @@ processors:
         - ping_one.audit.actors.user.name
         - ping_one.audit.actors.client.id
         - ping_one.audit.actors.client.name
+        - ping_one.audit.source.ip_address
       ignore_failure: true
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
       lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        dropEmptyFields(ctx);
-on_failure:
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
   - set:
       field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
       field: tags
       value: preserve_original_event
       allow_duplicates: false
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'

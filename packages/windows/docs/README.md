@@ -2152,10 +2152,13 @@ An example event for `powershell_operational` looks as following:
 | powershell.engine.new_state | New state of the PowerShell engine. | keyword |
 | powershell.engine.previous_state | Previous state of the PowerShell engine. | keyword |
 | powershell.engine.version | Version of the PowerShell engine version used to execute the command. | keyword |
+| powershell.file.script_block_entropy_bits | Randomness measure of the script using Shannon entropy over Unicode characters (0-20 bits). Entropy values outside the expected range may indicate random or obfuscated code. | float |
 | powershell.file.script_block_hash | A hash of the script to be used in rules. | keyword |
 | powershell.file.script_block_id | Id of the executed script block. | keyword |
-| powershell.file.script_block_signature | If present in the script, the script signature. | keyword |
+| powershell.file.script_block_length | Total number of characters in the script. | long |
+| powershell.file.script_block_surprisal_stdev | Consistency of randomness distribution across the script. Low values indicate uniform randomness. High values indicate mixed patterns with variability. | float |
 | powershell.file.script_block_text | Text of the executed script block. | text |
+| powershell.file.script_block_unique_symbols | Number of distinct characters used in the script. | long |
 | powershell.id | Shell Id. | keyword |
 | powershell.pipeline_id | Pipeline id. | keyword |
 | powershell.process.executable_version | Version of the engine hosting process executable. | keyword |

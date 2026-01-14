@@ -7,6 +7,7 @@ processors:
   - grok:
       tag: grok_cisco_secure_email_gateway_log_message_4f15232d
       field: cisco_secure_email_gateway.log.message
+      trace_match: true
       patterns:
         - '^File reputation query initiating. %{GREEDYDATA:_tmp.new_message}$'
         - '^Response received for file reputation query from (Cloud|Cache). %{GREEDYDATA:_tmp.new_message}$'
@@ -16,12 +17,22 @@ processors:
         - '^SHA256: %{GREEDYDATA:email.attachments.file.hash.sha256},Timestamp\[%{GREEDYDATA:_tmp.submit.timestamp}\] details\[%{GREEDYDATA:cisco_secure_email_gateway.log.server_error_details}\]$'
         - '^Retrospective verdict received. %{GREEDYDATA:_tmp.new_message}$'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
+  - set:
+        tag: set_grok_match_index
+        field: _tmp.grok_match_index
+        value: '{{{_ingest._grok_match_index}}}'
   - kv:
       tag: kv__tmp_new_message_0bb63133
       field: _tmp.new_message
-      if: ctx._tmp.new_message != null
+      if: ctx._tmp.new_message != null && ctx._tmp.grok_match_index != "1"
       field_split: ",\\s*(?=[^',]*[=:][^',]*)"
       value_split: '\s*=\s*|:\s*'
+  - kv:
+      tag: kv__tmp_new_message_grok_1_0bb63133
+      field: _tmp.new_message
+      if: ctx._tmp.new_message != null && ctx._tmp.grok_match_index == "1"
+      field_split: ",\\s*(?=[^',]*[=][^',]*)"
+      value_split: '\s*=\s*'
   - grok:
       tag: grok__tmp_cisco_secure_email_gateway_log_remaining_details_7273cf72
       field: _tmp.cisco_secure_email_gateway.log.remaining_details
@@ -182,3 +193,7 @@ on_failure:
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

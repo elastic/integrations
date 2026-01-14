@@ -17,10 +17,8 @@ processors:
       field: event.original
       tag: "grok_syslog_line"
       patterns:
-        - '%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP}|-)
-          +(?:%{SYSLOG5424PRINTASCII:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII:syslog5424_app})
-          +(-|%{SYSLOG5424PRINTASCII:syslog5424_proc}) +(?::-|%{SYSLOG5424PRINTASCII:syslog5424_msgid})
-          +\[%{GREEDYDATA:syslog5424_sd}\]'
+        - '%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP}|-) +(?:%{SYSLOG5424PRINTASCII:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII:syslog5424_app}) +(-|%{SYSLOG5424PRINTASCII:syslog5424_proc}) +(?::-|%{SYSLOG5424PRINTASCII:syslog5424_msgid}) +\[%{GREEDYDATA:syslog5424_sd}\]'
+
       pattern_definitions:
         TIMESTAMP: "%{TIMESTAMP_ISO8601:syslog5424_ts}(?:-?%{ISO8601_TIMEZONE:_temp_.tz})?"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?"
@@ -35,7 +33,7 @@ processors:
   - kv:
       tag: "kv_syslog_structured_semicolon_colon"
       field: syslog5424_sd
-      field_split: '(?<="); '
+      field_split: '(?<!\\")(?<="); (?=\w)'
       value_split: '(?i)(?<=[0-9a-z]):{1,2}(?=")'
       trim_key: " "
       trim_value: " "
@@ -1020,6 +1018,39 @@ processors:
                   tag: remove_checkpoint_subs_exp_19a22c63
                   field: checkpoint.subs_exp
                   ignore_missing: true
+  - script:
+      tag: script_parse_checkpoint_packets_dropped
+      description: Parse packets field containing connection tuples into structured packets_dropped array.
+      if: ctx.checkpoint?.packets instanceof String && ctx.checkpoint.packets.trim().startsWith('<')
+      lang: painless
+      source: |
+        String packetsStr = ctx.checkpoint.packets.trim();
+        def parsed = [];
+        String[] entries = packetsStr.splitOnToken('>');
+        for (int i = 0; i < entries.length; i++) {
+          String entry = entries[i].trim();
+          if (entry.length() == 0) continue;
+          if (entry.startsWith('<')) {
+            entry = entry.substring(1);
+          }
+          def packet = new HashMap();
+          String[] parts = entry.splitOnToken(';');
+          String tuple = parts[0];
+          if (parts.length > 1) {
+            packet.put('interface', ['name': parts[1]]);
+          }
+          String[] fields = tuple.splitOnToken(',');
+          if (fields.length >= 5) {
+            packet.put('source', ['ip': fields[0], 'port': Long.parseLong(fields[1])]);
+            packet.put('destination', ['ip': fields[2], 'port': Long.parseLong(fields[3])]);
+            packet.put('network', ['iana_number': fields[4]]);
+            parsed.add(packet);
+          }
+        }
+        if (parsed.size() > 0) {
+          ctx.checkpoint.packets_dropped = parsed;
+          ctx.checkpoint.remove('packets');
+        }
   - convert:
       tag: convert_checkpoint_packets_3af974e8
       field: checkpoint.packets
@@ -1686,6 +1717,12 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
@@ -1697,3 +1734,7 @@ on_failure:
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
