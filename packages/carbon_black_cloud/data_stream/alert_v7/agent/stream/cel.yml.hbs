@@ -21,7 +21,7 @@ state:
     api_key: '{{custom_api_secret_key}}/{{custom_api_id}}'
     want_more: false
     initial_interval: {{initial_interval}}
-    rows_per_page: 100
+    rows_per_page: {{rows_per_page}}
 redact:
     fields:
         - api_key
@@ -47,7 +47,8 @@ program: |-
   					"start": string(range.start < range.end ? range.start : range.end),
   					"end": string(range.end),
   				}),
-          "rows": state.rows_per_page,
+  				// Cap rows_per_page to maximum value of 10000.
+  				"rows": (state.rows_per_page > 10000) ? 10000 : state.rows_per_page,
   				"sort": [{"field": "backend_update_timestamp", "order": "ASC"}],
   			}.encode_json(),
   		}
@@ -73,8 +74,8 @@ program: |-
   						)
   					:
   						state.?cursor.last_backend_update_timestamp,
-  				},
-  				"want_more": body.num_found > state.rows_per_page,
+				},
+				"want_more": body.num_found > ((state.rows_per_page > 10000) ? 10000 : state.rows_per_page),
   			}
   		)
   	:
