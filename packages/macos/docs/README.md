@@ -36,7 +36,6 @@ This integration collects unified log messages from macOS systems using configur
   ```
   - 'eventMessage CONTAINS[c] "exec" OR eventMessage CONTAINS[c] "fork" OR eventMessage CONTAINS[c] "exited" OR eventMessage CONTAINS[c] "terminated"'
   - 'subsystem == "com.apple.securityd" AND (composedMessage CONTAINS "code signing" OR composedMessage CONTAINS "not valid")'
-  - 'composedMessage CONTAINS "com.apple.quarantine"'
   ```
 - **Network activity**: Network connections, DNS queries, and network-related events
   ```
@@ -52,11 +51,13 @@ This integration collects unified log messages from macOS systems using configur
   ```
 - **System changes**: System configuration changes, software installations, and updates
   ```
-  - 'subsystem == "com.apple.security" OR subsystem == "com.apple.systempolicy" OR subsystem == "com.apple.installer" OR process == "Installer" OR process == "softwareupdated" OR eventMessage CONTAINS[c] "removed package" OR eventMessage CONTAINS[c] "forget package"'
+  - 'subsystem == "com.apple.security" OR subsystem == "com.apple.systempolicy" OR subsystem == "com.apple.installer" OR process == "Installer" OR (process == "softwareupdated" AND subsystem != "com.apple.network") OR eventMessage CONTAINS[c] "removed package" OR eventMessage CONTAINS[c] "forget package"'
   ```
 - **Advanced monitoring**: Detailed system and application behavior logs
   ```
-  - '(composedMessage CONTAINS ".plist" AND (composedMessage CONTAINS "write" OR composedMessage CONTAINS "modified")) OR (composedMessage CONTAINS ".ssh" AND (composedMessage CONTAINS "write" OR composedMessage CONTAINS "modified")) OR (process == "kernel" AND composedMessage CONTAINS "boot") OR (process == "launchd" AND (composedMessage CONTAINS "started" OR composedMessage CONTAINS "listening")) OR (process == "loginwindow" AND composedMessage CONTAINS "sessionDidLogin") OR (composedMessage CONTAINS "posix_spawn" OR composedMessage CONTAINS "exec") OR (subsystem == "com.apple.securityd" AND (composedMessage CONTAINS "code signing" OR composedMessage CONTAINS "not valid"))'
+  - 'subsystem == "com.apple.xpc" OR subsystem == "com.apple.launchd"'
+  - 'category == "performance" OR category == "diagnostics"'
+  - 'messageType == 16 OR messageType == 17'
   ```
 
 ### Supported use cases
