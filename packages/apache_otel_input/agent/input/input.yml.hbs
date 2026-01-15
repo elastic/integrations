@@ -1,0 +1,57 @@
+receivers:
+  apache:
+    endpoint: {{endpoint}}
+    collection_interval: {{collection_interval}}
+    initial_delay: {{initial_delay}}
+    timeout: {{timeout}}
+{{#if proxy_url}}
+    proxy_url: {{proxy_url}}
+{{/if}}
+{{#if read_buffer_size}}
+    read_buffer_size: {{read_buffer_size}}
+{{/if}}
+{{#if write_buffer_size}}
+    write_buffer_size: {{write_buffer_size}}
+{{/if}}
+{{#if max_idle_conns}}
+    max_idle_conns: {{max_idle_conns}}
+{{/if}}
+{{#if max_idle_conns_per_host}}
+    max_idle_conns_per_host: {{max_idle_conns_per_host}}
+{{/if}}
+{{#if max_conns_per_host}}
+    max_conns_per_host: {{max_conns_per_host}}
+{{/if}}
+{{#if idle_conn_timeout}}
+    idle_conn_timeout: {{idle_conn_timeout}}
+{{/if}}
+{{#if disable_keep_alives}}
+    disable_keep_alives: {{disable_keep_alives}}
+{{/if}}
+{{#if tls_insecure}}
+    tls:
+      insecure: {{tls_insecure}}
+{{#if tls_insecure_skip_verify}}
+      insecure_skip_verify: {{tls_insecure_skip_verify}}
+{{/if}}
+{{#if tls_ca_file}}
+      ca_file: {{tls_ca_file}}
+{{/if}}
+{{#if tls_cert_file}}
+      cert_file: {{tls_cert_file}}
+{{/if}}
+{{#if tls_key_file}}
+      key_file: {{tls_key_file}}
+{{/if}}
+{{#if tls_server_name_override}}
+      server_name_override: {{tls_server_name_override}}
+{{/if}}
+{{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [apache]
+      processors: [resourcedetection/system]

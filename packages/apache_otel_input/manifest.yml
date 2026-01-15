@@ -1,0 +1,152 @@
+format_version: 3.5.0
+name: apache_otel_input
+title: "Apache HTTP Server OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect Apache HTTP Server status metrics using OpenTelemetry Collector"
+type: input
+categories:
+  - web
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_apache.svg
+    title: Apache logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: apachereceiver
+    type: metrics
+    title: Apache HTTP Server Metrics (OpenTelemetry)
+    description: Collect Apache HTTP Server status metrics using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      # Connection settings
+      - name: endpoint
+        type: text
+        required: true
+        title: Endpoint
+        description: The URL of the Apache server-status endpoint.
+        default: http://localhost:8080/server-status?auto
+        show_user: true
+      - name: proxy_url
+        type: text
+        required: false
+        title: Proxy URL
+        description: Proxy URL to use for HTTP requests.
+        show_user: false
+      # Collection settings
+      - name: collection_interval
+        type: text
+        required: false
+        title: Collection Interval
+        description: Time between each collection (e.g., 10s, 1m).
+        default: 10s
+        show_user: false
+      - name: initial_delay
+        type: text
+        required: false
+        title: Initial Delay
+        description: Defines how long this receiver waits before starting.
+        default: 1s
+        show_user: false
+      # HTTP client settings
+      - name: timeout
+        type: text
+        required: false
+        title: HTTP Timeout
+        description: HTTP request timeout (e.g., 10s, 30s).
+        default: 10s
+        show_user: false
+      - name: read_buffer_size
+        type: integer
+        required: false
+        title: Read Buffer Size
+        description: Read buffer size for HTTP client transport (in bytes).
+        show_user: false
+      - name: write_buffer_size
+        type: integer
+        required: false
+        title: Write Buffer Size
+        description: Write buffer size for HTTP client transport (in bytes).
+        show_user: false
+      - name: max_idle_conns
+        type: integer
+        required: false
+        title: Max Idle Connections
+        description: Maximum number of idle (keep-alive) connections across all hosts.
+        show_user: false
+      - name: max_idle_conns_per_host
+        type: integer
+        required: false
+        title: Max Idle Connections Per Host
+        description: Maximum idle (keep-alive) connections per host.
+        show_user: false
+      - name: max_conns_per_host
+        type: integer
+        required: false
+        title: Max Connections Per Host
+        description: Maximum total connections per host. Zero means no limit.
+        show_user: false
+      - name: idle_conn_timeout
+        type: text
+        required: false
+        title: Idle Connection Timeout
+        description: Maximum time an idle connection will remain idle before closing (e.g., 90s).
+        show_user: false
+      - name: disable_keep_alives
+        type: bool
+        required: false
+        title: Disable Keep-Alives
+        description: Set to true to disable HTTP keep-alives.
+        default: false
+        show_user: false
+      # TLS settings
+      - name: tls_insecure
+        type: bool
+        required: false
+        title: Disable TLS
+        description: Set to true to disable TLS (use HTTP instead of HTTPS).
+        default: false
+        show_user: false
+      - name: tls_insecure_skip_verify
+        type: bool
+        required: false
+        title: Skip TLS Verification
+        description: Set to true to skip TLS certificate verification.
+        default: false
+        show_user: false
+      - name: tls_ca_file
+        type: text
+        required: false
+        title: TLS CA File
+        description: Path to the CA certificate file for TLS verification.
+        show_user: false
+      - name: tls_cert_file
+        type: text
+        required: false
+        title: TLS Certificate File
+        description: Path to the client TLS certificate file.
+        show_user: false
+      - name: tls_key_file
+        type: text
+        required: false
+        title: TLS Key File
+        description: Path to the client TLS key file.
+        show_user: false
+      - name: tls_server_name_override
+        type: text
+        required: false
+        title: TLS Server Name Override
+        description: Override the server name used for TLS verification.
+        show_user: false
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
