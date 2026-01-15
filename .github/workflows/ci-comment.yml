@@ -1,0 +1,56 @@
+name: "ci-comment"
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  triage:
+    permissions:
+      pull-requests: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: elastic/oblt-actions/github/create-token@v1
+      id: fetch-token
+
+    - id: is_elastic_member
+      uses: elastic/oblt-actions/github/is-member-of@v1
+      with:
+        github-org: "elastic"
+        github-user: ${{ github.actor }}
+        github-token: ${{ steps.fetch-token.outputs.token }}
+
+    - id: user_type
+      uses: elastic/oblt-actions/github/user-type@v1
+      with:
+        github-user: ${{ github.actor }}
+        github-token: ${{ steps.fetch-token.outputs.token }}
+
+    - name: debug
+      run: |
+        echo "::notice:: is_elastic_member=${{ steps.is_elastic_member.outputs.result }}"
+        echo "::notice:: user_type=${{ steps.user_type.outputs.result }}"
+        echo "::notice:: github.actor=${{ github.actor }}"
+        echo "::notice:: github.event_name=${{ github.event_name }}"
+
+    - name: Comment (or update)
+      if: steps.is_elastic_member.outputs.result == 'false' && steps.user_type.outputs.result == 'user'
+      uses: edumserrano/find-create-or-update-comment@fb101dd7a690f32dc65d250bf2997d7d5c9544e9
+      with:
+        token: ${{ steps.fetch-token.outputs.token }}
+        issue-number: ${{ github.event.issue.number }}
+        body-includes: "<!-- buildkite-comments -->"
+        comment-author: "elastic-vault-github-plugin-prod[bot]"
+        body: |
+        <!-- buildkite-comments -->
+        ### Reviewers
+
+        Buildkite won't run for external contributors automatically, you need to add a comment
+
+        - \`/test\` : will kick off a build in Buildkite.
+
+        **NOTE**: https://github.com/elastic/integrations/blob/main/.buildkite/pull-requests.json contains all those details.
