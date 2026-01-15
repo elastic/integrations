@@ -1,0 +1,107 @@
+---
+name: Validate Dashboard Compilation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/**/kibana/dashboard/*.yaml'
+      - 'packages/**/kibana/dashboard/*.ndjson'
+      - '.github/workflows/validate-dashboards.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-dashboards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Find and validate YAML dashboards
+        run: |
+          set -e
+          
+          # Find all YAML dashboard files
+          YAML_FILES=$(find packages -type f -path "*/kibana/dashboard/*.yaml" 2>/dev/null || true)
+          
+          if [ -z "$YAML_FILES" ]; then
+            echo "No YAML dashboard files found to validate"
+            exit 0
+          fi
+          
+          echo "Found YAML dashboard files:"
+          echo "$YAML_FILES"
+          echo ""
+          
+          # Track if any validation fails
+          VALIDATION_FAILED=0
+          
+          # Process each YAML file
+          for yaml_file in $YAML_FILES; do
+            echo "=========================================="
+            echo "Validating: $yaml_file"
+            echo "=========================================="
+            
+            # Get the directory and base name
+            dashboard_dir=$(dirname "$yaml_file")
+            base_name=$(basename "$yaml_file" .yaml)
+            ndjson_file="${dashboard_dir}/${base_name}.ndjson"
+            
+            # Check if corresponding ndjson file exists
+            if [ ! -f "$ndjson_file" ]; then
+              echo "❌ ERROR: Missing ndjson file: $ndjson_file"
+              VALIDATION_FAILED=1
+              continue
+            fi
+            
+            echo "Compiling YAML to ndjson..."
+            
+            # Compile the YAML file and save to a temporary file
+            temp_ndjson=$(mktemp)
+            if ! uvx kb-dashboard-compiler "$yaml_file" > "$temp_ndjson" 2>&1; then
+              echo "❌ ERROR: Failed to compile $yaml_file"
+              cat "$temp_ndjson"
+              rm -f "$temp_ndjson"
+              VALIDATION_FAILED=1
+              continue
+            fi
+            
+            # Compare the compiled output with the existing ndjson file
+            if ! diff -u "$ndjson_file" "$temp_ndjson"; then
+              echo ""
+              echo "❌ ERROR: Compiled output does not match $ndjson_file"
+              echo ""
+              echo "The YAML dashboard was modified but the ndjson was not updated."
+              echo "Please run the following command to update the ndjson file:"
+              echo "  uvx kb-dashboard-compiler $yaml_file > $ndjson_file"
+              echo ""
+              VALIDATION_FAILED=1
+            else
+              echo "✅ PASSED: $yaml_file compiles correctly to $ndjson_file"
+            fi
+            
+            # Clean up temporary file
+            rm -f "$temp_ndjson"
+            echo ""
+          done
+          
+          # Exit with error if any validation failed
+          if [ $VALIDATION_FAILED -eq 1 ]; then
+            echo ""
+            echo "=========================================="
+            echo "❌ Dashboard validation FAILED"
+            echo "=========================================="
+            exit 1
+          else
+            echo "=========================================="
+            echo "✅ All dashboard validations PASSED"
+            echo "=========================================="
+          fi
