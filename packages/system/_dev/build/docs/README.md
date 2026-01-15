@@ -484,3 +484,6 @@ This data should be available without elevated permissions.
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "uptime"}}
+
+## Alerting Rule Template
+{{alertRuleTemplates}}

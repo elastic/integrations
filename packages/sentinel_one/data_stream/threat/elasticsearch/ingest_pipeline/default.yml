@@ -184,6 +184,11 @@ processors:
       field: user.name
       copy_from: json.threatInfo.processUser
       ignore_empty_value: true
+  - dissect:
+      field: user.name
+      pattern: '%{user.domain}\%{user.name}'
+      if: ctx.user?.name?.contains('\\') == true
+      description: "Split user and domain"
   - append:
       field: related.user
       value: '{{{user.name}}}'
