@@ -79,7 +79,7 @@ for package in ${PACKAGE_LIST}; do
     packages_to_test=$((packages_to_test+1))
     cat << EOF >> ${PIPELINE_FILE}
     - label: "Check integrations ${package}"
-      key: "test-integrations-${package}"
+      key: "test-integrations-${package/\//-}"
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       timeout_in_minutes: 240
       agents:
