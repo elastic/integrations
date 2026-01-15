@@ -45,12 +45,6 @@ retry() {
   return 0
 }
 
-cleanup() {
-  echo "Deleting temporary files..."
-  rm -rf ${WORKSPACE}/${TMP_FOLDER_TEMPLATE_BASE}.*
-  echo "Done."
-}
-
 unset_secrets () {
   for var in $(printenv | sed 's;=.*;;' | sort); do
     if [[ "$var" == *_SECRET || "$var" == *_TOKEN ]]; then
@@ -125,14 +119,9 @@ with_mage() {
     create_bin_folder
     with_go
 
-    local install_packages=(
-            "github.com/magefile/mage"
-            "github.com/jstemmer/go-junit-report"
-            "gotest.tools/gotestsum"
-    )
-    for pkg in "${install_packages[@]}"; do
-        go install "${pkg}@latest"
-    done
+    # Install version from go.mod"
+    go install "github.com/magefile/mage"
+
     mage --version
 }
 
@@ -266,7 +255,7 @@ check_git_diff() {
 use_elastic_package() {
     echo "--- Installing elastic-package"
     mkdir -p build
-    go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
+    retry 5 go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
 }
 
 elastic_package_verbosity() {
@@ -733,7 +722,7 @@ is_pr_affected() {
             return 1
         fi
         if ! is_supported_capability ; then
-            echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
+            echo "[${package}] PR is not affected: capabilities not matched with the project (${SERVERLESS_PROJECT})"
             return 1
         fi
         if [[ "${package}" == "fleet_server" ]]; then
@@ -768,8 +757,17 @@ is_pr_affected() {
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
     # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml))' > /dev/null; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|CODE_OF_CONDUCT\.md|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml|scripts/packages/.+\.sh))' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
+        return 0
+    fi
+    echoerr "[${package}] git-diff: check custom package checker script file (${commit_merge}..${to})"
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^\.buildkite/scripts/packages/${package}.sh" > /dev/null; then
+        echo "[${package}] PR is affected: found package checker script changes"
         return 0
     fi
     echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
@@ -978,8 +976,8 @@ upload_safe_logs() {
     local source="$2"
     local target="$3"
 
-    if ! ls ${source} 2>&1 > /dev/null ; then
-        echo "upload_safe_logs: artifacts files not found, nothing will be archived"
+    if ! ls ${source} > /dev/null 2>&1; then
+        echo "upload_safe_logs: artifacts files not found at ${source}, nothing will be archived"
         return
     fi
 

@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
 env:
-  SETUP_GVM_VERSION: "v0.5.2"
+  SETUP_GVM_VERSION: "v0.6.0"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
   DOCKER_COMPOSE_VERSION: "v2.24.1"
   DOCKER_VERSION: "false" # not required to set since system tests are not running yet
@@ -95,17 +95,22 @@ steps:
     continue_on_failure: true
 
   - label: ":junit: Junit annotate"
+    agents:
+      # requires at least "bash", "curl" and "git"
+      image: "docker.elastic.co/ci-agent-images/buildkite-junit-annotate:1.0"
     plugins:
-      - junit-annotate#v2.5.0:
+      - junit-annotate#v2.7.0:
           artifacts: "build/test-results/*.xml"
           failed-download-exit-code: 0 # Not fail the build in case there are no XML files
           report-skipped: true
-    agents:
-      provider: "gcp"  # junit plugin requires docker
+          always-annotate: true
+          run-in-docker: false
 
   - label: ":github: Report failed tests"
     key: report-failed-tests
     command: ".buildkite/scripts/report_issues.sh"
+    env:
+      CI_MAX_TESTS_REPORTED: 30
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
