@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'packages/**/_dev/build/kibana/*.yaml'
+      - 'packages/**/_dev/build/kibana/**/*.yaml'
       - 'packages/**/kibana/dashboard/*.json'
       - '.github/workflows/validate-dashboards.yml'
 
@@ -29,8 +29,8 @@ jobs:
         run: |
           set -e
           
-          # Find all YAML dashboard files
-          YAML_FILES=$(find packages -type f -path "*/kibana/dashboard/*.yaml" 2>/dev/null || true)
+          # Find all YAML dashboard files in _dev/build/kibana directories
+          YAML_FILES=$(find packages -type f -path "*/_dev/build/kibana/**/*.yaml" 2>/dev/null || true)
           
           if [ -z "$YAML_FILES" ]; then
             echo "No YAML dashboard files found to validate"
@@ -50,46 +50,42 @@ jobs:
             echo "Validating: $yaml_file"
             echo "=========================================="
             
-            # Get the directory and base name
-            dashboard_dir=$(dirname "$yaml_file")
-            base_name=$(basename "$yaml_file" .yaml)
-            ndjson_file="${dashboard_dir}/${base_name}.ndjson"
+            # Extract package name from path (e.g., packages/aws_vpcflow_otel/_dev/...)
+            package_name=$(echo "$yaml_file" | sed 's|packages/\([^/]*\)/.*|\1|')
+            dashboard_output_dir="packages/${package_name}/kibana/dashboard"
             
-            # Check if corresponding ndjson file exists
-            if [ ! -f "$ndjson_file" ]; then
-              echo "❌ ERROR: Missing ndjson file: $ndjson_file"
+            # Check if dashboard output directory exists
+            if [ ! -d "$dashboard_output_dir" ]; then
+              echo "❌ ERROR: Dashboard output directory does not exist: $dashboard_output_dir"
               VALIDATION_FAILED=1
               continue
             fi
             
-            echo "Compiling YAML to ndjson..."
+            echo "Compiling YAML to JSON format..."
+            echo "Output directory: $dashboard_output_dir"
+            echo ""
             
-            # Compile the YAML file and save to a temporary file
-            temp_ndjson=$(mktemp)
-            if ! uvx kb-dashboard-compiler "$yaml_file" > "$temp_ndjson" 2>&1; then
-              echo "❌ ERROR: Failed to compile $yaml_file"
-              cat "$temp_ndjson"
-              rm -f "$temp_ndjson"
-              VALIDATION_FAILED=1
-              continue
-            fi
-            
-            # Compare the compiled output with the existing ndjson file
-            if ! diff -u "$ndjson_file" "$temp_ndjson"; then
-              echo ""
-              echo "❌ ERROR: Compiled output does not match $ndjson_file"
-              echo ""
-              echo "The YAML dashboard was modified but the ndjson was not updated."
-              echo "Please run the following command to update the ndjson file:"
-              echo "  uvx kb-dashboard-compiler $yaml_file > $ndjson_file"
-              echo ""
-              VALIDATION_FAILED=1
+            # Run kb-dashboard compile with --format json and --exit-non-zero-on-change
+            # The --exit-non-zero-on-change flag will cause the command to exit with non-zero
+            # if there are differences between the compiled output and existing files
+            if uvx --from kb-dashboard-compiler kb-dashboard compile \
+                --input-dir "$(dirname "$yaml_file")" \
+                --output-dir "$dashboard_output_dir" \
+                --format json \
+                --exit-non-zero-on-change; then
+              echo "✅ PASSED: $yaml_file compiles correctly and matches existing JSON files"
             else
-              echo "✅ PASSED: $yaml_file compiles correctly to $ndjson_file"
+              exit_code=$?
+              echo ""
+              echo "❌ ERROR: Compiled output does not match existing JSON files in $dashboard_output_dir"
+              echo ""
+              echo "The YAML dashboard was modified but the JSON was not updated."
+              echo "Please run the following command to update the JSON files:"
+              echo "  cd \$(dirname $yaml_file) && uvx --from kb-dashboard-compiler kb-dashboard compile --input-dir . --output-dir ../../kibana/dashboard --format json"
+              echo ""
+              VALIDATION_FAILED=1
             fi
             
-            # Clean up temporary file
-            rm -f "$temp_ndjson"
             echo ""
           done
           
