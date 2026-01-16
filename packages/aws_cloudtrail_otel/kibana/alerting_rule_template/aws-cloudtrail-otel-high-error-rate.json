@@ -13,7 +13,7 @@
             "timeWindowSize": 10,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert triggers when any source IP address whose error count exceed a threshold (e.g. > 100 in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.cloudtrail.otel-default | WHERE aws.error.code IS NOT NULL | WHERE @timestamp > NOW()- 10m | STATS error_count = COUNT(*) BY source.address | WHERE error_count >= 100 | SORT error_count DESC"
+                "esql": "// Alert triggers when any source IP address whose critical error count exceed a threshold (e.g. > 5 in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.cloudtrail.otel-default| WHERE aws.error.code IN (\"InvalidClientTokenId\",\"SignatureDoesNotMatch\",\"InvalidAccessKeyId\",\"ExpiredToken\",\"InvalidToken\",\"InvalidPassword\",\"Failed authentication\",\"UnrecognizedClientException\",\"AccessDenied\",\"AccessDeniedException\",\"UnauthorizedOperation\")| STATS error_count = COUNT(*) BY source.address| WHERE error_count > 5"
             },
             "groupBy": "row",
             "timeField": "@timestamp"

@@ -13,7 +13,7 @@
             "timeWindowSize": 10,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert triggers when any high risk actions succeded within a given threshold time from a single user or IP\nFROM logs-aws.cloudtrail.otel-default | WHERE @timestamp > NOW()- 10m | WHERE rpc.method IN (\"StopLogging\", \"DeleteTrail\",\"AttachUserPolicy\", \"AttachRolePolicy\",\"CreateAccessKey\", \"CreateUser\",\"AuthorizeSecurityGroupIngress\",\"DisableKey\", \"ScheduleKeyDeletion\")| STATS change_count = COUNT(*),changes = VALUES(rpc.method) BY user.name, source.address WHERE change_count >= 100 | SORT change_count DESC"
+                "esql": "// Alert triggers when any high risk actions succeded within a given threshold time from a single user or IP\nFROM logs-aws.cloudtrail.otel-default | WHERE rpc.method IN (\"StopLogging\", \"DeleteTrail\", \"UpdateTrail\", \"AttachUserPolicy\", \"AttachRolePolicy\", \"PutUserPolicy\", \"PutRolePolicy\", \"CreateAccessKey\", \"CreateUser\", \"CreateLoginProfile\", \"DisableKey\", \"ScheduleKeyDeletion\", \"DeleteBucket\", \"PutBucketPolicy\", \"PutBucketLogging\", \"DeleteDetector\", \"DeleteMembers\", \"DisassociateFromMasterAccount\", \"DeleteFlowLogs\", \"DeleteAlarms\", \"DeleteConfigRule\", \"DeleteEventBusRule\") AND aws.error.code IS NULL | STATS action_count = COUNT(*), actions = VALUES(rpc.method), ips = VALUES(source.address) BY aws.principal.arn, user.name | WHERE action_count>1"
             },
             "groupBy": "row",
             "timeField": "@timestamp"

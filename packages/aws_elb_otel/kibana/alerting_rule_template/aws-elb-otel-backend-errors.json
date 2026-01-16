@@ -13,7 +13,7 @@
             "timeWindowSize": 10,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert triggers when any source IP address whose backend error count exceed a threshold (e.g. > 100 in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.elbaccess.otel-default | WHERE aws.error.code IS NOT NULL | WHERE @timestamp > NOW()- 15m | WHERE aws.elb.backend.status.code != 200| | STATS backend_error_count = COUNT(*), BY cloud.resource_id | WHERE backend_error_count >= 50 | SORT backend_error_count DESC"
+                "esql": "// Alert triggers when any resource.id whose backend service error count exceed a threshold (e.g. > 50 in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.elbaccess.otel-default | WHERE aws.elb.backend.status.code >= 500| STATS backend_error_count = COUNT(*), BY cloud.resource_id | WHERE backend_error_count >= 50"
             },
             "groupBy": "row",
             "timeField": "@timestamp"
