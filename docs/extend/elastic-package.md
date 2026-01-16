@@ -247,25 +247,6 @@ Use this command to add, remove, and manage multiple config profiles.
 Individual user profiles appear in ~/.elastic-package/stack and contain all the config files needed by the "stack" subcommand. Once a new profile is created, it can be specified with the -p flag, or the ELASTIC_PACKAGE_PROFILE environment variable. User profiles are not overwritten on an upgrade of elastic-stack and can be freely modified to allow for different stack configs.
 
 
-### `elastic-package promote` [_elastic_package_promote]
-
-*Context: global*
-
-Use this command to move packages between the {{package-registry}} snapshot, staging, and production stages.
-
-This command is intended primarily for use by administrators.
-
-It allows for selecting packages for promotion and opens new pull requests to review changes. However, please be aware that the tool checks out an in-memory Git repository and switches over branches (snapshot, staging and production), so it may take longer to promote a larger number of packages.
-
-
-### `elastic-package publish` [_elastic_package_publish]
-
-*Context: package*
-
-Use this command to publish a new package revision.
-
-The command checks if the package has already been published (whether it’s present in the snapshot/staging/production branch or open as pull request). If the package revision hasn’t been published, it will open a new pull request.
-
 ### `elastic-package report` [_elastic_package_report]
 
 *Context: package*

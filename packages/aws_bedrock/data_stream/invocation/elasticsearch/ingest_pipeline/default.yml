@@ -225,6 +225,30 @@ processors:
 
         ctx.aws_bedrock = renameKeys(ctx.aws_bedrock, params)
 
+  - script:
+      tag: script_promote_system_to_object
+      if: ctx.aws_bedrock?.invocation?.system instanceof String
+      source: |-
+        Map sys = [:];
+        sys.type = 'text';
+        sys.text = ctx.aws_bedrock.invocation.system;
+        ctx.aws_bedrock.invocation.system = sys;
+  - script:
+      tag: script_promote_messages_content_to_object
+      if: ctx.aws_bedrock?.invocation?.messages?.content instanceof String
+      source: |-
+        Map content = [:];
+        content.type = 'text';
+        content.text = ctx.aws_bedrock.invocation.messages.content;
+        ctx.aws_bedrock.invocation.messages.content = content;
+  - script:
+      tag: script_demote_messages_content_content_to_string
+      if: ctx.aws_bedrock?.invocation?.messages?.content?.content != null && !(ctx.aws_bedrock.invocation.messages.content.content instanceof String)
+      source: |-
+        Map content = [:];
+        content.type = 'text';
+        content.text = Json.dump(ctx.aws_bedrock.invocation.messages.content);
+        ctx.aws_bedrock.invocation.messages.content = content;
   - set:
       if: ctx.aws_bedrock?.invocation?.model_id != null
       field: gen_ai.request.model.id
@@ -313,6 +337,19 @@ processors:
         }
         // convert the Set back to a List
         ctx.aws_bedrock.invocation.input.messages_content_kinds = new ArrayList(content_kinds_set);
+  - script:
+      tag: ensure_output_body_json_object_elements
+      if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
+      lang: painless
+      source: |
+        for (int i = 0; i < ctx.aws_bedrock.invocation.output.output_body_json.length; i++) {
+          def e = ctx.aws_bedrock.invocation.output.output_body_json[i];
+          if (e instanceof Map) {
+            continue;
+          }
+          ctx.aws_bedrock.invocation.output.output_body_json[i] = [:];
+          ctx.aws_bedrock.invocation.output.output_body_json[i].value = e;
+        }
   - script:
       tag: get_response_id_and_role_from_list
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List

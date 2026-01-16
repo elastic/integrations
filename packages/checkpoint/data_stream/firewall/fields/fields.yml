@@ -26,7 +26,7 @@
       description: |
         Source administrator name.
     - name: aggregated_log_count
-      type: integer
+      type: long
       description: |
         Number of logs aggregated in the event.
     - name: alert
@@ -219,7 +219,7 @@
       type: keyword
       description: Connection direction
     - name: connection_count
-      type: integer
+      type: long
       description: Number of connections logged in this event
     - name: connection_uid
       type: keyword
@@ -1187,6 +1187,47 @@
       type: integer
       description: |
         Amount of packets dropped.
+    - name: packets_dropped
+      type: nested
+      description: |
+        Connection tuples for dropped packets containing source/destination IP, port, protocol, and interface.
+      fields:
+        - name: source
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: |
+                Source IP address of the dropped packet.
+            - name: port
+              type: long
+              description: |
+                Source port of the dropped packet.
+        - name: destination
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: |
+                Destination IP address of the dropped packet.
+            - name: port
+              type: long
+              description: |
+                Destination port of the dropped packet.
+        - name: network
+          type: group
+          fields:
+            - name: iana_number
+              type: keyword
+              description: |
+                IANA protocol number of the dropped packet.
+        - name: interface
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: |
+                Interface name where the packet was dropped.
     - name: packet_capture_unique_id
       type: keyword
       description: |
@@ -1365,6 +1406,10 @@
       type: keyword
       description: |
         Scan direction.
+    - name: scan_ended
+      type: keyword
+      description: |
+        Scan end time.
     - name: scan_hosts_day
       type: integer
       description: |
@@ -1389,6 +1434,10 @@
       type: keyword
       description: |
         "Infected"/description of a failure.
+    - name: scan_started
+      type: keyword
+      description: |
+        Scan start time.
     - name: scheme
       type: keyword
       description: |
@@ -1675,7 +1724,7 @@
       description: |
         Detected virus for a specific host during the last week.
     - name: update_count
-      type: integer
+      type: long
       description: Number of times the event has been updated with new occurrences
     - name: update_status
       type: keyword

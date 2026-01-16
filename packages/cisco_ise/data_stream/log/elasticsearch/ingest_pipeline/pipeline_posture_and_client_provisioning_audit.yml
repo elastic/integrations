@@ -1,25 +1,31 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_da00115b
       field: event.category
       value: [malware]
   - append:
+      tag: append_event_type_8b66b73a
       field: event.type
       value: [info]
   - grok:
+      tag: grok_message_7466a657
       field: message
       if: ctx.cisco_ise?.log?.segment?.number == 0
       patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
+      tag: grok_message_c232cfac
       field: message
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
+      tag: date__tmp_timestamp_9ef85c6a
       field: _tmp.timestamp
       formats:
         - yyyy-MM-dd HH:mm:ss.SSS
@@ -27,12 +33,15 @@ processors:
         - MMM [ ]d HH:mm:ss[.SSSSSS][.SSS]
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_1d810625
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_7efc4dc7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date__tmp_timestamp_d0798b77
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
       formats:
@@ -42,38 +51,45 @@ processors:
       timezone: '{{{event.timezone}}}'
       on_failure:
         - remove:
+            tag: remove__tmp_timestamp_2102d302
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_e049536e
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
   - kv:
+      tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_dd59a8ac
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
   - script:
+      tag: script_09cdb1bd
       lang: painless
       if: ctx.cisco_ise?.log?.message?.description != null
-      source:
-        ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+      source: ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
   - rename:
+      tag: rename_cisco_ise_log_log_details_OperationID_to_cisco_ise_log_operation_id_0dedcb56
       field: cisco_ise.log.log_details.OperationID
       target_field: cisco_ise.log.operation.id
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_OperationType_to_cisco_ise_log_operation_type_7d33feee
       field: cisco_ise.log.log_details.OperationType
       target_field: cisco_ise.log.operation.type
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_OperationStatus_to_cisco_ise_log_operation_status_941db12a
       field: cisco_ise.log.log_details.OperationStatus
       target_field: cisco_ise.log.operation.status
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_cisco_ise_log_log_details_AdminName_to_client_user_name_f1f23e48
       field: cisco_ise.log.log_details.AdminName
       target_field: client.user.name
       ignore_failure: true
@@ -84,4 +100,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
