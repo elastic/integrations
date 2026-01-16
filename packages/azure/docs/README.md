@@ -411,7 +411,7 @@ If ports `5671` / `5672` are blocked in your environment, the integration can us
 
 ##### Requirements
 
-- **Elastic Agent version**: 8.17.6+, 8.18.3+, 8.19.0+ (or any 9.x version)
+- **Elastic Agent version**: 8.19.10, 9.1.10, 9.2.4, or later.
 - **Processor version**: You must set the `Processor version` to `v2` in the integration settings
 
 To use AMQP-over-Websockets, set the **Event Hubs transport protocol** setting to "AMQP-over-WebSockets" in the **Advanced options** section of the integration.

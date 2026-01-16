@@ -567,7 +567,7 @@ The integration supports proxying traffic to the Azure services using the `HTTPS
 ##### Requirements
 
 - **Transport protocol**: You need to set the **Event Hubs transport protocol** setting to "AMQP-over-WebSockets" when using a proxy.
-- **Elastic Agent version**: 8.17.6+, 8.18.3+, 8.19.0+ (or any 9.x version)
+- **Elastic Agent version**: 8.19.10, 9.1.10, 9.2.4, or later.
 - **Processor version**: You must set the `Processor version` to `v2` in the integration settings
 
 ## Settings
