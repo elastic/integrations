@@ -1,4 +1,4 @@
-format_version: 3.4.0
+format_version: 3.6.0
 name: aws
 title: AWS
 version: 6.1.0
@@ -38,14 +38,14 @@ vars:
     title: Shared Credential File
     multi: false
     required: false
-    show_user: false
+    show_user: true
     description: Directory of the shared credentials file
   - name: credential_profile_name
     type: text
     title: Credential Profile Name
     multi: false
     required: false
-    show_user: false
+    show_user: true
   - name: access_key_id
     type: password
     title: Access Key ID
@@ -72,13 +72,13 @@ vars:
     title: Role ARN
     multi: false
     required: false
-    show_user: false
+    show_user: true
   - name: external_id
     type: text
     title: External ID
     multi: false
     required: false
-    show_user: false
+    show_user: true
     description: External ID to use when assuming a role in another account, see [the AWS documentation for use of external IDs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
   - name: default_region
     type: text
@@ -95,6 +95,34 @@ vars:
     required: false
     show_user: false
     description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+var_groups:
+  - name: credential_type
+    required: true
+    title: Setup Access
+    selector_title: Preferred method
+    options:
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+      - name: cloud_connectors
+        title: Cloud Connector
+        vars: [role_arn, external_id]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cloud-connectors-ACCOUNT_TYPE-9.2.0.yml&param_ElasticResourceId=RESOURCE_ID
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+      - name: assume_role_external_id
+        title: Assume Role with External ID
+        vars: [role_arn, external_id]
+      - name: shared_credentials
+        title: Shared Credentials
+        vars: [shared_credential_file, credential_profile_name]
+        hide_in_deployment_modes: [agentless]
 policy_templates:
   - name: awshealth
     title: AWS Health
@@ -873,6 +901,8 @@ policy_templates:
       - type: aws-s3
         title: Collect Amazon GuardDuty logs via AWS S3 or SQS
         description: Collecting Amazon GuardDuty logs via AWS S3 or SQS input.
+        hide_in_var_group_options:
+          credential_type: [cloud_connectors]
     screenshots:
       - src: /img/guardduty-findings-overview.png
         title: GuardDuty Findings Overview dashboard screenshot
