@@ -235,20 +235,201 @@ processors:
         ctx.aws_bedrock.invocation.system = sys;
   - script:
       tag: script_promote_messages_content_to_object
-      if: ctx.aws_bedrock?.invocation?.messages?.content instanceof String
+      if: ctx.aws_bedrock?.invocation?.messages != null
+      lang: painless
       source: |-
-        Map content = [:];
-        content.type = 'text';
-        content.text = ctx.aws_bedrock.invocation.messages.content;
-        ctx.aws_bedrock.invocation.messages.content = content;
+        // Handle messages as either an array or single object
+        def messagesList = ctx.aws_bedrock.invocation.messages instanceof List
+          ? ctx.aws_bedrock.invocation.messages
+          : [ctx.aws_bedrock.invocation.messages];
+
+        for (def message : messagesList) {
+          if (!(message instanceof Map)) {
+            continue;
+          }
+
+          // If content is a string, promote it to an object with type and text
+          if (message.content instanceof String) {
+            Map contentObj = [:];
+            contentObj.type = 'text';
+            contentObj.text = message.content;
+            message.content = contentObj;
+          }
+          // If content is already an array, ensure each item has type and text fields
+          else if (message.content instanceof List) {
+            for (def contentItem : message.content) {
+              if (!(contentItem instanceof Map)) {
+                continue;
+              }
+
+              // Ensure type field exists
+              if (!contentItem.containsKey('type')) {
+                contentItem.type = 'text';
+              }
+
+              // Check if this item already has a text field with actual content
+              boolean hasExistingText = contentItem.containsKey('text') &&
+                                       contentItem.text instanceof String &&
+                                       contentItem.text.length() > 0;
+
+              // If no text field exists, we need to create one
+              if (!hasExistingText) {
+                // Handle nested content field (e.g., in tool_result)
+                if (contentItem.containsKey('content') && !(contentItem.content instanceof String)) {
+                  contentItem.text = Json.dump(contentItem.content);
+                } else if (contentItem.containsKey('content') && contentItem.content instanceof String) {
+                  contentItem.text = contentItem.content;
+                } else {
+                  // Serialize all fields except type
+                  Map itemCopy = [:];
+                  for (def entry : contentItem.entrySet()) {
+                    if (entry.getKey() != 'type') {
+                      itemCopy[entry.getKey()] = entry.getValue();
+                    }
+                  }
+                  contentItem.text = Json.dump(itemCopy);
+                }
+
+                // Remove all fields except type and text to avoid duplication
+                def keysToRemove = new ArrayList(contentItem.keySet());
+                for (def key : keysToRemove) {
+                  if (key != 'type' && key != 'text') {
+                    contentItem.remove(key);
+                  }
+                }
+              }
+            }
+          }
+          // If content is an object, ensure it has type and text fields
+          else if (message.content instanceof Map) {
+            if (!message.content.containsKey('type')) {
+              message.content.type = 'text';
+            }
+
+            boolean hasExistingText = message.content.containsKey('text') &&
+                                     message.content.text instanceof String &&
+                                     message.content.text.length() > 0;
+
+            if (!hasExistingText) {
+              if (message.content.containsKey('content')) {
+                if (message.content.content instanceof String) {
+                  message.content.text = message.content.content;
+                } else {
+                  message.content.text = Json.dump(message.content.content);
+                }
+              } else {
+                Map contentCopy = [:];
+                for (def entry : message.content.entrySet()) {
+                  if (entry.getKey() != 'type') {
+                    contentCopy[entry.getKey()] = entry.getValue();
+                  }
+                }
+                message.content.text = Json.dump(contentCopy);
+              }
+
+              def keysToRemove = new ArrayList(message.content.keySet());
+              for (def key : keysToRemove) {
+                if (key != 'type' && key != 'text') {
+                  message.content.remove(key);
+                }
+              }
+            }
+          }
+        }
   - script:
       tag: script_demote_messages_content_content_to_string
-      if: ctx.aws_bedrock?.invocation?.messages?.content?.content != null && !(ctx.aws_bedrock.invocation.messages.content.content instanceof String)
+      if: ctx.aws_bedrock?.invocation?.messages != null
+      lang: painless
       source: |-
-        Map content = [:];
-        content.type = 'text';
-        content.text = Json.dump(ctx.aws_bedrock.invocation.messages.content);
-        ctx.aws_bedrock.invocation.messages.content = content;
+        def messagesList = ctx.aws_bedrock.invocation.messages instanceof List
+          ? ctx.aws_bedrock.invocation.messages
+          : [ctx.aws_bedrock.invocation.messages];
+
+        for (def message : messagesList) {
+          if (!(message instanceof Map) || !message.containsKey('content')) {
+            continue;
+          }
+
+          // Process content if it's an array
+          if (message.content instanceof List) {
+            for (def contentItem : message.content) {
+              if (!(contentItem instanceof Map)) {
+                continue;
+              }
+
+              // Ensure we have a text field - if not, create it from available data
+              boolean needsTextCreation = !contentItem.containsKey('text') ||
+                                         contentItem.text == null ||
+                                         (contentItem.text instanceof String && contentItem.text.length() == 0);
+
+              if (needsTextCreation) {
+                if (contentItem.containsKey('content')) {
+                  if (contentItem.content instanceof String) {
+                    contentItem.text = contentItem.content;
+                  } else {
+                    contentItem.text = Json.dump(contentItem.content);
+                  }
+                } else {
+                  // Create text from all fields except type
+                  Map itemCopy = [:];
+                  for (def entry : contentItem.entrySet()) {
+                    if (entry.getKey() != 'type') {
+                      itemCopy[entry.getKey()] = entry.getValue();
+                    }
+                  }
+                  if (itemCopy.size() > 0) {
+                    contentItem.text = Json.dump(itemCopy);
+                  } else {
+                    contentItem.text = '';
+                  }
+                }
+              }
+
+              // Remove all fields except type and text
+              def keysToRemove = new ArrayList(contentItem.keySet());
+              for (def key : keysToRemove) {
+                if (key != 'type' && key != 'text') {
+                  contentItem.remove(key);
+                }
+              }
+            }
+          }
+          // Process content if it's a single object
+          else if (message.content instanceof Map) {
+            boolean needsTextCreation = !message.content.containsKey('text') ||
+                                       message.content.text == null ||
+                                       (message.content.text instanceof String && message.content.text.length() == 0);
+
+            if (needsTextCreation) {
+              if (message.content.containsKey('content')) {
+                if (message.content.content instanceof String) {
+                  message.content.text = message.content.content;
+                } else {
+                  message.content.text = Json.dump(message.content.content);
+                }
+              } else {
+                Map contentCopy = [:];
+                for (def entry : message.content.entrySet()) {
+                  if (entry.getKey() != 'type') {
+                    contentCopy[entry.getKey()] = entry.getValue();
+                  }
+                }
+                if (contentCopy.size() > 0) {
+                  message.content.text = Json.dump(contentCopy);
+                } else {
+                  message.content.text = '';
+                }
+              }
+            }
+
+            def keysToRemove = new ArrayList(message.content.keySet());
+            for (def key : keysToRemove) {
+              if (key != 'type' && key != 'text') {
+                message.content.remove(key);
+              }
+            }
+          }
+        }
   - set:
       if: ctx.aws_bedrock?.invocation?.model_id != null
       field: gen_ai.request.model.id
