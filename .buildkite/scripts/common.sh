@@ -829,7 +829,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|panw_cortex_xdr)$'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|panw_cortex_xdr|netskope)$'
 }
 
 check_package() {
