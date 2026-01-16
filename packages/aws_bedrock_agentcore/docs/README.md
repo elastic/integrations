@@ -514,6 +514,7 @@ An example event for `memory_application` looks as following:
 | aws.bedrock_agentcore.actor_id | Identifier of the actor performing the operation. | keyword |
 | aws.bedrock_agentcore.conversation_id | Unique identifier for the conversation or session. | keyword |
 | aws.bedrock_agentcore.memory_name | The name of the Bedrock AgentCore memory resource. | keyword |
+| aws.bedrock_agentcore.memory_strategy | Type of memory strategy extracted from memory_strategy_id (e.g., conversation_history). | keyword |
 | aws.bedrock_agentcore.memory_strategy_id | Identifier for the memory strategy being used. | keyword |
 | aws.bedrock_agentcore.namespace | Namespace path for the memory operation. | keyword |
 | aws.bedrock_agentcore.operation_name | Name of the GenAI operation performed. | keyword |

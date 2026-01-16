@@ -92,6 +92,18 @@ processors:
       ignore_failure: true
       ignore_missing: true
 
+  - dissect:
+      tag: extract_memory_strategy
+      field: aws.bedrock_agentcore.memory_strategy_id
+      pattern: "%{aws.bedrock_agentcore.memory_strategy}-%{_temp.strategy_suffix}"
+      ignore_failure: true
+      ignore_missing: true
+
+  - remove:
+      tag: remove_temp_strategy_suffix
+      field: _temp.strategy_suffix
+      ignore_missing: true
+
   - set:
       tag: set_provider
       field: aws.bedrock_agentcore.provider_name
@@ -108,17 +120,17 @@ processors:
       copy_from: aws.bedrock_agentcore.session_id
       ignore_failure: true
 
-  - set:
-      tag: set_event_outcome_success
-      field: event.outcome
-      value: success
-      if: ctx.aws?.bedrock_agentcore?.body?.isError != true && ctx.error?.message == null
-
-  - set:
-      tag: set_event_outcome_failure
-      field: event.outcome
-      value: failure
-      if: ctx.aws?.bedrock_agentcore?.body?.isError == true || ctx.error?.message != null
+  - script:
+      tag: set_event_outcome
+      lang: painless
+      source: |
+        if (ctx.aws?.bedrock_agentcore?.body?.isError == true || ctx.error?.message != null) {
+          ctx.event = ctx.event != null ? ctx.event : new HashMap();
+          ctx.event.outcome = 'failure';
+        } else {
+          ctx.event = ctx.event != null ? ctx.event : new HashMap();
+          ctx.event.outcome = 'success';
+        }
 
   - rename:
       tag: flatten_request_payload
