@@ -15,7 +15,7 @@
             "timeWindowSize": 5,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert when the average CPU usage exceeds a threshold.\n// Groups by host.\n// Adjust utilization threshold in the final WHERE clause as needed.\nFROM metrics-system.cpu-*\n| KEEP host.name, system.cpu.total.norm.pct\n| STATS avg_cpu_util = AVG(system.cpu.total.norm.pct) BY host.name\n| WHERE avg_cpu_util >= 0.85"
+                "esql": "// Alert when the average CPU usage exceeds a threshold.\n// Groups by host.\n// Adjust utilization threshold in the final WHERE clause as needed.\nFROM metrics-system.cpu-*\n| KEEP `host.name`, `system.cpu.total.norm.pct`\n| STATS avg_cpu_util = AVG(`system.cpu.total.norm.pct`), sample_count = COUNT(*) BY `host.name`\n| WHERE sample_count >= 5 AND avg_cpu_util >= 0.85"
             },
             "groupBy": "row",
             "timeField": "@timestamp"

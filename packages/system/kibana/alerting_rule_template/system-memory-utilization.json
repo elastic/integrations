@@ -15,7 +15,7 @@
             "timeWindowSize": 5,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert when the average memory usage exceeds a threshold.\n// Groups by host.\n// Adjust utilization threshold in the final WHERE clause as needed.\nFROM metrics-system.memory-*\n| KEEP host.name, system.memory.actual.used.pct\n| STATS avg_memory_util = AVG(system.memory.actual.used.pct) BY host.name\n| WHERE avg_memory_util >= 0.9"
+                "esql": "// Alert when the average memory usage exceeds a threshold.\n// Groups by host.\n// Adjust utilization threshold in the final WHERE clause as needed.\nFROM metrics-system.memory-*\n| KEEP `host.name`, `system.memory.actual.used.pct`\n| STATS avg_memory_util = AVG(`system.memory.actual.used.pct`), sample_count = COUNT(*) BY `host.name`\n| WHERE sample_count >= 5 AND avg_memory_util >= 0.9"
             },
             "groupBy": "row",
             "timeField": "@timestamp"
