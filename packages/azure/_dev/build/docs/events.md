@@ -538,6 +538,10 @@ For more information, check the following documents:
 
 #### Event Hubs (AMQP-over-Websockets)
 
+This feature requires:
+- Elastic Agent 8.19.10, 9.1.10 or 9.2.4 (or later)
+- Set the `Processor version` to `v2`
+
 If ports 5671/5672 are blocked in your environment, the integration can use AMQP-over-WebSockets instead. This protocol tunnels AMQP over port 443 (HTTPS), which is typically allowed through firewalls.
 
 To use AMQP-over-Websockets, set the **Event Hubs transport protocol** setting to "AMQP-over-WebSockets" in the **Advanced options** section of the integration.
