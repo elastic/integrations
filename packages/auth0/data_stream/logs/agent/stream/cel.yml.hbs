@@ -23,6 +23,7 @@ state:
 redact:
   fields:
     - client_secret
+{{#satisfies _meta.agent.version "^9.3.0"}}
 program: |
   state.with(
     post(state.url.trim_right("/") + "/oauth/token", "application/json", {
@@ -119,6 +120,7 @@ program: |
       )
     )
   )
+{{/satisfies}}  
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
