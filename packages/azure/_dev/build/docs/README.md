@@ -358,11 +358,10 @@ The Agent uses the **integration name** and the **event hub name** to uniquely i
 └─Elastic Agent───────────────────┘      └─Storage Account──────────────────────────┘
 ```
 
+
 ### Running the integration behind a firewall
 
 When the Elastic Agent runs in an environment with network restrictions, you need to check if the required ports are open, depending on the transport protocol used by the integration.
-
-#### Requirements
 
 The Elastic agent requires access to the following Azure services:
 
@@ -399,7 +398,7 @@ The Elastic agent requires access to the following Azure services:
 
 By default, the integration uses AMQP to communicate with the event hub.
 
-AMQP uses port `5671` and `5672` for secure communication with the event hub. These ports are used to receive events. By allowing traffic on these ports, the Elastic Agent can establish a secure connection with the event hub. 
+AMQP uses port `5671` and `5672` for secure communication with the event hub. The Elastic Agent acts as a client and initiates **outbound TCP connections** to these ports on the Azure Event Hubs service. By allowing outgoing traffic to these ports, the Elastic Agent can establish a secure connection with the event hub to receive events. 
 
 For more information, check the following documents:
 
@@ -410,11 +409,16 @@ For more information, check the following documents:
 
 If ports 5671/5672 are blocked in your environment, the integration can use AMQP-over-WebSockets instead. This protocol tunnels AMQP over port 443 (HTTPS), which is typically allowed through firewalls.
 
+##### Requirements
+
+- **Elastic Agent version**: 8.17.6+, 8.18.3+, 8.19.0+ (or any 9.x version)
+- **Processor version**: You must set the `Processor version` to `v2` in the integration settings
+
 To use AMQP-over-Websockets, set the **Event Hubs transport protocol** setting to "AMQP-over-WebSockets" in the **Advanced options** section of the integration.
 
-#### Storage Account (HTTPS)
+#### Storage Account
 
-Port `443` is used for secure communication with the Storage Account service. This port is commonly used for HTTPS traffic. By allowing traffic on port 443, the Elastic Agent can securely access and interact with the Storage Account service, which is essential for storing and retrieving checkpoint data for each event hub partition.
+The Elastic Agent initiates **outbound TCP connections** to port `443` (HTTPS) to communicate with the Azure Storage Account service. By allowing outgoing traffic to port 443, the Elastic Agent can securely access and interact with the Storage Account service, which is essential for storing and retrieving checkpoint data for each event hub partition.
 
 #### DNS
 
@@ -432,7 +436,11 @@ When using AMQP-over-WebSockets, both Event Hubs and Storage Account traffic use
 
 The integration supports proxying traffic to the Azure services using the `HTTPS_PROXY` environment variable.
 
-**IMPORTANT**: You need to set the **Event Hubs transport protocol** setting to "AMQP-over-WebSockets" when using a proxy.
+##### Requirements
+
+- **Transport protocol**: You need to set the **Event Hubs transport protocol** setting to "AMQP-over-WebSockets" when using a proxy.
+- **Elastic Agent version**: 8.17.6+, 8.18.3+, 8.19.0+ (or any 9.x version)
+- **Processor version**: You must set the `Processor version` to `v2` in the integration settings
 
 ## Settings
 
