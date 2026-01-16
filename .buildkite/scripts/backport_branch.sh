@@ -183,6 +183,11 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- ".github/workflows"
     git add .github/workflows
 
+    # Copy tools.go so we have the dev scripts dependencies required
+    echo "Copying tools.go from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "tools.go"
+    git add tools.go
+
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
     go mod tidy
 
