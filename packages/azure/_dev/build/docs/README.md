@@ -407,7 +407,7 @@ For more information, check the following documents:
 
 #### Event Hubs (AMQP-over-Websockets)
 
-If ports 5671/5672 are blocked in your environment, the integration can use AMQP-over-WebSockets instead. This protocol tunnels AMQP over port 443 (HTTPS), which is typically allowed through firewalls.
+If ports `5671` / `5672` are blocked in your environment, the integration can use AMQP-over-WebSockets instead. This protocol tunnels AMQP over port `443` (HTTPS), which is typically allowed through firewalls.
 
 ##### Requirements
 
@@ -418,7 +418,7 @@ To use AMQP-over-Websockets, set the **Event Hubs transport protocol** setting t
 
 #### Storage Account
 
-The Elastic Agent initiates **outbound TCP connections** to port `443` (HTTPS) to communicate with the Azure Storage Account service. By allowing outgoing traffic to port 443, the Elastic Agent can securely access and interact with the Storage Account service, which is essential for storing and retrieving checkpoint data for each event hub partition.
+The Elastic Agent initiates **outbound TCP connections** to port `443` (HTTPS) to communicate with the Azure Storage Account service. By allowing outgoing traffic to port `443`, the Elastic Agent can securely access and interact with the Storage Account service, which is essential for storing and retrieving checkpoint data for each event hub partition.
 
 #### DNS
 
@@ -432,14 +432,14 @@ Optionally, you can restrict the traffic to the following domain names:
 
 #### Proxy Support
 
-When using AMQP-over-WebSockets, both Event Hubs and Storage Account traffic use HTTPS (port 443), which enables proxy support.
+When using AMQP-over-WebSockets, both Event Hubs and Storage Account traffic use HTTPS (port `443`), which enables proxy support.
 
 The integration supports proxying traffic to the Azure services using the `HTTPS_PROXY` environment variable.
 
 ##### Requirements
 
 - **Transport protocol**: You need to set the **Event Hubs transport protocol** setting to "AMQP-over-WebSockets" when using a proxy.
-- **Elastic Agent version**: 8.17.6+, 8.18.3+, 8.19.0+ (or any 9.x version)
+- **Elastic Agent version**: 8.19.10, 9.1.10, 9.2.4, or later.
 - **Processor version**: You must set the `Processor version` to `v2` in the integration settings
 
 ## Settings
