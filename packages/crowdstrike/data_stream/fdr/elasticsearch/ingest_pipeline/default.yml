@@ -1590,6 +1590,14 @@ processors:
       field: crowdstrike.User.ID
       target_field: user.id
       ignore_missing: true
+  - remove:
+      tag: remove_crowdstrike_User_ID_and_Name
+      description: Remove User.ID and User.Name fields if they still exist.
+      if: ctx.crowdstrike?.User instanceof Map
+      field: 
+        - crowdstrike.User.ID
+        - crowdstrike.User.Name
+      ignore_missing: true
   - rename:
       tag: rename_crowdstrike_UserName_to_user_name_5437c07f
       if: ctx.crowdstrike?.UserName != null && ctx.user?.name == null
