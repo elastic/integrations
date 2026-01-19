@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2025-11-07
-**Total Core Artifacts**: 1 available + 39 in progress + 6 not available = 46 total variants
-**Total Queries**: 27 (1 core forensic variant + 26 additional)
-**Completion Rate**: 2.2% (1/46 core artifacts fully supported)
+**Last Updated**: 2026-01-19
+**Total Core Artifacts**: 2 available + 37 in progress + 6 not available = 45 total variants
+**Total Queries**: 29 (2 core forensic queries + 27 additional queries)
+**Completion Rate**: 4.4% (2/45 core artifacts fully supported)
 
 ---
 
@@ -13,20 +13,20 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 1     | 2.2%       |
-| ⚠️ In Progress (Needs Validation) | 39    | 84.8%      |
-| ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
+| ✅ Available (Fully Supported) | 2     | 4.4%       |
+| ⚠️ In Progress (Needs Validation) | 37    | 82.2%      |
+| ❌ Not Available (Requires Extensions) | 6     | 13.3%      |
 
 ---
 
 ## Core Forensic Artifacts Coverage
 
-| # | Artifact | ✓ | OS    | Query | File | Implementation Notes                                                                                                             |
-|---|----------|--|-------|-------|------|----------------------------------------------------------------------------------------------------------------------------------|
-| 1 | AppCompatCache          | ⚠️ | Win   | -     | -    | shimcache table                                                                                                                  |
-| 2 | AmCache                 | ❌ | Win   | -     | -    | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
-| 3 | BITS Jobs Database      | ⚠️ | Win   | -     | -    | Not a native table, but can be queried via windows_eventlog                                                                      |
-| 4 | Browser URL History     | ⚠️ | Win   | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
+| # | Artifact | ✓ | OS | Query | File | Implementation Notes                                                                                                             |
+|---|----------|--|----|-------|------|----------------------------------------------------------------------------------------------------------------------------------|
+| 1 | AppCompatCache          | ✅ | Win | appcompatcache_shimcache_windows_elastic     | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)    | shimcache table with signature-aware filtering (unsigned/untrusted binaries, suspicious paths), hash enrichment, excludes valid Microsoft-signed binaries                                                                                                                  |
+| 2 | AmCache                 | ❌ | Win | -     | -    | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
+| 3 | BITS Jobs Database      | ✅ | Win | bits_monitoring_windows_elastic | [4b2e](kibana/osquery_saved_query/osquery_manager-4b2e8f3a-9d5c-4e2a-b8f1-7c6d3e9a2b1f.json) | Not a native table, but can be queried via windows_eventlog (EventID 59)                                                        |
+| 4 | Browser URL History     | ⚠️ | Win | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
 | 4a | Browser URL History     | ⚠️ | Linux | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
 | 4b | Browser URL History     | ⚠️ | Mac   | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
 | 5 | File Listing            | ⚠️ | Win   | -     | -    | file and hash tables                                                                                                             |
@@ -76,33 +76,33 @@ These queries existed in the original repository and provide additional coverage
 
 | # | Query | ✓ | OS | File | Description |
 |:-:|-------|:-:|:--:|:----:|-------------|
-| 1 | listening_ports | ✅ | All | [0796](kibana/osquery_saved_query/osquery_manager-0796f890-b4a9-11ec-8f39-bf9c07530bbb.json) | Network listening ports enumeration |
-| 2 | processes | ✅ | All | [363d](kibana/osquery_saved_query/osquery_manager-363d6a30-b4a9-11ec-8f39-bf9c07530bbb.json) | General process listing (all processes) |
-| 3 | logged_in_users | ✅ | All | [ccd3](kibana/osquery_saved_query/osquery_manager-ccd3f850-b4a5-11ec-8f39-bf9c07530bbb.json) | Currently logged in users |
-| 4 | users | ✅ | All | [cebd](kibana/osquery_saved_query/osquery_manager-cebd7b00-b4b4-11ec-8f39-bf9c07530bbb.json) | System user accounts enumeration |
-| 5 | file_info | ✅ | All | [128b](kibana/osquery_saved_query/osquery_manager-128b90b0-b4a6-11ec-8f39-bf9c07530bbb.json) | File metadata queries by path |
-| 6 | file_info_by_type | ✅ | All | [fc4e](kibana/osquery_saved_query/osquery_manager-fc4e34b0-b4a5-11ec-8f39-bf9c07530bbb.json) | File information by extension type |
-| 7 | system_os | ✅ | All | [23af](kibana/osquery_saved_query/osquery_manager-23af51c0-d75f-11ec-879b-83915b27217e.json) | Operating system information |
-| 8 | system_info | ✅ | All | [47d9](kibana/osquery_saved_query/osquery_manager-47d96fe0-d75f-11ec-879b-83915b27217e.json) | System hardware information |
-| 9 | system_memory_linux | ✅ |Linux | [315b](kibana/osquery_saved_query/osquery_manager-315bfda0-d75f-11ec-879b-83915b27217e.json) | Memory information (Linux specific) |
-| 10 | applications_mac | ✅ | Mac | [5c14](kibana/osquery_saved_query/osquery_manager-5c144ac0-b4a5-11ec-8f39-bf9c07530bbb.json) | Installed applications enumeration |
-| 10a | applications_windows | ✅ | Win | [a887](kibana/osquery_saved_query/osquery_manager-a8870ff0-b4a5-11ec-8f39-bf9c07530bbb.json) | Installed applications enumeration |
-| 11 | usb_devices_mac_or_linux | ✅ | Mac+Linux | [7ee7](kibana/osquery_saved_query/osquery_manager-7ee71870-b4b4-11ec-8f39-bf9c07530bbb.json) | USB device enumeration (non-Windows) |
-| 12 | registry_windows | ✅ | Win | [6fc0](kibana/osquery_saved_query/osquery_manager-6fc00190-b4b4-11ec-8f39-bf9c07530bbb.json) | General registry queries |
-| 13 | persisted_apps | ✅ | Win | [2de2](kibana/osquery_saved_query/osquery_manager-2de24900-b4a9-11ec-8f39-bf9c07530bbb.json) | Persistence applications (non-executables) |
-| 14 | persisted_apps_executables_windows | ✅ | Win | [239d](kibana/osquery_saved_query/osquery_manager-239dce60-b4a9-11ec-8f39-bf9c07530bbb.json) | Persistence applications (executables) |
-| 15 | posh_logging_windows | ✅ | Win | [5595](kibana/osquery_saved_query/osquery_manager-55955db0-0c07-11ed-a49c-6b13b058b135.json) | PowerShell logging configuration status |
-| 16 | defender_exclusions_windows | ✅ | Win | [157d](kibana/osquery_saved_query/osquery_manager-157d5550-fd27-11ec-8645-83a23bc513b5.json) | Windows Defender exclusion paths |
-| 17 | firewall_rules_windows | ✅ | Win | [e640](kibana/osquery_saved_query/osquery_manager-e640e200-b4a8-11ec-8f39-bf9c07530bbb.json) | Windows Firewall rules enumeration |
-| 18 | loaded_drivers_windows | ✅ | Win | [f864](kibana/osquery_saved_query/osquery_manager-f8649710-b4a8-11ec-8f39-bf9c07530bbb.json) | Loaded kernel drivers |
-| 19 | services_running_on_user_accounts | ✅ | Win | [ee58](kibana/osquery_saved_query/osquery_manager-ee586dc0-1801-11ed-89c6-331eb0db6d01.json) | Services running under user accounts (not SYSTEM) |
-| 20 | wdigest_uselogoncredential | ✅ | Win | [a08d](kibana/osquery_saved_query/osquery_manager-a08d7320-1823-11ed-89c6-331eb0db6d01.json) | WDigest credential caching configuration |
-| 21 | winbaseobj_mutex_search | ✅ | Win | [0f61](kibana/osquery_saved_query/osquery_manager-0f61edf0-17e1-11ed-89c6-331eb0db6d01.json) | Mutex objects for malware IOC detection |
-| 22 | unsigned_processes_vt | ✅ | Win | [3e71](kibana/osquery_saved_query/osquery_manager-3e7155d0-0db5-11ed-a49c-6b13b058b135.json) | Unsigned running processes with VirusTotal integration |
-| 23 | unsigned_services_vt | ✅ | Win | [8386](kibana/osquery_saved_query/osquery_manager-83869f40-0dab-11ed-a49c-6b13b058b135.json) | Unsigned services with VirusTotal integration |
-| 24 | unsigned_startup_items_vt | ✅ | Win | [b068](kibana/osquery_saved_query/osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135.json) | Unsigned startup items with VirusTotal integration |
-| 25 | unsigned_dlls_on_system_folders_vt | ✅ | Win | [63c1](kibana/osquery_saved_query/osquery_manager-63c1fe20-176f-11ed-89c6-331eb0db6d01.json) | Unsigned DLLs in system folders with VirusTotal integration |
-| 26 | executables_in_temp_folder_vt | ✅ | Win | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration |
+| 1 | listening_ports_elastic | ✅ | All | [0796](kibana/osquery_saved_query/osquery_manager-0796f890-b4a9-11ec-8f39-bf9c07530bbb.json) | Network listening ports enumeration |
+| 2 | processes_elastic | ✅ | All | [363d](kibana/osquery_saved_query/osquery_manager-363d6a30-b4a9-11ec-8f39-bf9c07530bbb.json) | General process listing (all processes) |
+| 3 | logged_in_users_elastic | ✅ | All | [ccd3](kibana/osquery_saved_query/osquery_manager-ccd3f850-b4a5-11ec-8f39-bf9c07530bbb.json) | Currently logged in users |
+| 4 | users_elastic | ✅ | All | [cebd](kibana/osquery_saved_query/osquery_manager-cebd7b00-b4b4-11ec-8f39-bf9c07530bbb.json) | System user accounts enumeration |
+| 5 | file_info_elastic | ✅ | All | [128b](kibana/osquery_saved_query/osquery_manager-128b90b0-b4a6-11ec-8f39-bf9c07530bbb.json) | File metadata queries by path |
+| 6 | file_info_by_type_elastic | ✅ | All | [fc4e](kibana/osquery_saved_query/osquery_manager-fc4e34b0-b4a5-11ec-8f39-bf9c07530bbb.json) | File information by extension type |
+| 7 | system_os_elastic | ✅ | All | [23af](kibana/osquery_saved_query/osquery_manager-23af51c0-d75f-11ec-879b-83915b27217e.json) | Operating system information |
+| 8 | system_info_elastic | ✅ | All | [47d9](kibana/osquery_saved_query/osquery_manager-47d96fe0-d75f-11ec-879b-83915b27217e.json) | System hardware information |
+| 9 | system_memory_linux_elastic | ✅ |Linux | [315b](kibana/osquery_saved_query/osquery_manager-315bfda0-d75f-11ec-879b-83915b27217e.json) | Memory information (Linux specific) |
+| 10 | applications_mac_elastic | ✅ | Mac | [5c14](kibana/osquery_saved_query/osquery_manager-5c144ac0-b4a5-11ec-8f39-bf9c07530bbb.json) | Installed applications enumeration |
+| 10a | applications_windows_elastic | ✅ | Win | [a887](kibana/osquery_saved_query/osquery_manager-a8870ff0-b4a5-11ec-8f39-bf9c07530bbb.json) | Installed applications enumeration |
+| 11 | usb_devices_mac_or_linux_elastic | ✅ | Mac+Linux | [7ee7](kibana/osquery_saved_query/osquery_manager-7ee71870-b4b4-11ec-8f39-bf9c07530bbb.json) | USB device enumeration (non-Windows) |
+| 12 | registry_windows_elastic | ✅ | Win | [6fc0](kibana/osquery_saved_query/osquery_manager-6fc00190-b4b4-11ec-8f39-bf9c07530bbb.json) | General registry queries |
+| 13 | persisted_apps_elastic | ✅ | Win | [2de2](kibana/osquery_saved_query/osquery_manager-2de24900-b4a9-11ec-8f39-bf9c07530bbb.json) | Persistence applications (non-executables) |
+| 14 | persisted_apps_executables_windows_elastic | ✅ | Win | [239d](kibana/osquery_saved_query/osquery_manager-239dce60-b4a9-11ec-8f39-bf9c07530bbb.json) | Persistence applications (executables) |
+| 15 | posh_logging_windows_elastic | ✅ | Win | [5595](kibana/osquery_saved_query/osquery_manager-55955db0-0c07-11ed-a49c-6b13b058b135.json) | PowerShell logging configuration status |
+| 16 | defender_exclusions_windows_elastic | ✅ | Win | [157d](kibana/osquery_saved_query/osquery_manager-157d5550-fd27-11ec-8645-83a23bc513b5.json) | Windows Defender exclusion paths |
+| 17 | firewall_rules_windows_elastic | ✅ | Win | [e640](kibana/osquery_saved_query/osquery_manager-e640e200-b4a8-11ec-8f39-bf9c07530bbb.json) | Windows Firewall rules enumeration |
+| 18 | loaded_drivers_windows_elastic | ✅ | Win | [f864](kibana/osquery_saved_query/osquery_manager-f8649710-b4a8-11ec-8f39-bf9c07530bbb.json) | Loaded kernel drivers |
+| 19 | services_running_on_user_accounts_windows_elastic | ✅ | Win | [ee58](kibana/osquery_saved_query/osquery_manager-ee586dc0-1801-11ed-89c6-331eb0db6d01.json) | Services running under user accounts (not SYSTEM) |
+| 20 | wdigest_uselogoncredential_windows_elastic | ✅ | Win | [a08d](kibana/osquery_saved_query/osquery_manager-a08d7320-1823-11ed-89c6-331eb0db6d01.json) | WDigest credential caching configuration |
+| 21 | winbaseobj_mutex_search_windows_elastic | ✅ | Win | [0f61](kibana/osquery_saved_query/osquery_manager-0f61edf0-17e1-11ed-89c6-331eb0db6d01.json) | Mutex objects for malware IOC detection |
+| 22 | unsigned_processes_vt_windows_elastic | ✅ | Win | [3e71](kibana/osquery_saved_query/osquery_manager-3e7155d0-0db5-11ed-a49c-6b13b058b135.json) | Unsigned running processes with VirusTotal integration |
+| 23 | unsigned_services_vt_windows_elastic | ✅ | Win | [8386](kibana/osquery_saved_query/osquery_manager-83869f40-0dab-11ed-a49c-6b13b058b135.json) | Unsigned services with VirusTotal integration |
+| 24 | unsigned_startup_items_vt_windows_elastic | ✅ | Win | [b068](kibana/osquery_saved_query/osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135.json) | Unsigned startup items with VirusTotal integration |
+| 25 | unsigned_dlls_on_system_folders_vt_windows_elastic | ✅ | Win | [63c1](kibana/osquery_saved_query/osquery_manager-63c1fe20-176f-11ed-89c6-331eb0db6d01.json) | Unsigned DLLs in system folders with VirusTotal integration |
+| 26 | executables_or_drivers_in_temp_folder_vt_windows_elastic | ✅ | Win | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration |
 
 **Note**: Queries with VirusTotal integration require the VirusTotal extension configured in osquery.
 
@@ -124,7 +124,6 @@ The following artifacts cannot be queried with standard osquery and require exte
 | # | Artifact | Status | Notes |
 |:-:|----------|:------:|-------|
 | 1 | Browser URL History (All Platforms) | ⚠️ | No native table, databases locked while browser running. Can be supported via ATC custom tables. Alternative: Downloads folder analysis, file system queries for browser cache |
-| 2 | BITS Jobs Database (Windows) | ⚠️ | Not a native table, but can be queried via windows_eventlog table |
 
 ### Alternative Coverage
 
@@ -150,7 +149,7 @@ While some artifacts are not directly available, the existing queries provide st
 ## Artifacts by Category
 
 ### Execution Artifacts
-- ⚠️ AppCompatCache (Windows: shimcache table)
+- ✅ AppCompatCache (Windows: shimcache table) - **Production query with signature-aware filtering**
 - ⚠️ PowerShell History (Windows: powershell_events table)
 - ⚠️ Prefetch Files (Windows: prefetch table)
 - ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
@@ -162,7 +161,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Tasks (All platforms: scheduled_tasks table)
 - ⚠️ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
 - ⚠️ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
-- ⚠️ BITS Jobs Database (Windows: via windows_eventlog)
+- ✅ BITS Jobs Database (Windows: via windows_eventlog)
 
 ### User Activity
 - ⚠️ LNK files (Windows: shortcut_files, file, recent_files tables)
