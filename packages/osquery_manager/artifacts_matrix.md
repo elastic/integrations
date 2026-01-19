@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-19
-**Total Core Artifacts**: 10 available + 28 in progress + 6 not available = 44 total variants
-**Total Queries**: 37
-**Completion Rate**: 22.7% (10/44 core artifacts fully supported)
+**Total Core Artifacts**: 13 available + 25 in progress + 6 not available = 44 total variants
+**Total Queries**: 39
+**Completion Rate**: 29.5% (13/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 10     | 22.7%      |
-| ⚠️ In Progress (Needs Validation) | 28    | 63.6%      |
+| ✅ Available (Fully Supported) | 13     | 29.5%      |
+| ⚠️ In Progress (Needs Validation) | 25    | 56.8%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
@@ -38,9 +38,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 7 | Jumplists               | ❌ | Win   | -     | -    | Not natively supported — PR #7260 closed due to OLE format complexity                                                            |
 | 8 | LNK files               | ✅ | Win   | lnk_forensics_windows_elastic | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json) | file table with native shortcut parsing; can enrich with hash + authenticode; enumerate common locations via users table |
 | 9 | ARP Cache (Enriched)    | ✅ | All   | arp_cache_elastic | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-11ef-89c6-331eb0db6d02.json) | Enriched ARP cache with local interface details (local IP, local MAC). Combines arp_cache with interface_details and interface_addresses tables. Includes ECS mappings for destination.ip/mac, source.ip/mac, interface.name, network.type, and MITRE ATT&CK threat enrichment (T1016, T1018) |
-| 10 | Disks & Volumes         | ⚠️ | Win   | -     | -    | disk_info table                                                                                                                  |
-| 10a | Disks & Volumes         | ⚠️ | Linux | -     | -    | disk_info table                                                                                                                  |
-| 10b | Disks & Volumes         | ⚠️ | Mac   | -     | -    | disk_info table                                                                                                                  |
+| 10 | Disks & Volumes         | ✅ | Win | disk_info_windows_elastic | [d8a1](kibana/osquery_saved_query/osquery_manager-d8a1b2c3-d4e5-11ef-a6b7-12c3d4e5f678.json) | disk_info table                                                                                                                  |
+| 10a | Disks & Volumes         | ✅ | Linux | disk_info_linux_macos_elastic | [e9f2](kibana/osquery_saved_query/osquery_manager-e9f2c3d4-e5f6-11ef-b8c9-23d4e5f6a789.json) | block_devices + mounts tables                                                                                                    |
+| 10b | Disks & Volumes         | ✅ | Mac | disk_info_linux_macos_elastic | [e9f2](kibana/osquery_saved_query/osquery_manager-e9f2c3d4-e5f6-11ef-b8c9-23d4e5f6a789.json) | block_devices + mounts tables                                                                                                    |
 | 11 | Network Interfaces & IP Configuration | ⚠️ | Win   | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
 | 11a | Network Interfaces & IP Configuration | ⚠️ | Linux | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
 | 11b | Network Interfaces & IP Configuration | ⚠️ | Mac   | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
@@ -185,7 +185,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Network Interfaces & IP Configuration (All platforms: interface_details, interface_addresses, interface_ipv6)
 
 ### System Information
-- ⚠️ Disks & Volumes (All platforms: disk_info table)
+- ✅ Disks & Volumes (Windows: disk_info table, Linux/macOS: block_devices + mounts tables)
 - ⚠️ Process Listing (All platforms: processes table)
 - ❌ Open Handles (Not Available - PR #7835 open, EclecticIQ extension available)
 
