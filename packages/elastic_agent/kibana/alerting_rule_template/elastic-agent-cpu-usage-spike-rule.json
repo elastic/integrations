@@ -16,7 +16,7 @@
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-*, *:metrics-*\n| WHERE process.executable RLIKE \".*[Ee]lastic.*[Aa]gent.*\" AND agent.name NOT LIKE \"*agentless*\"\n| STATS cpu_process_pct = MAX(system.process.cpu.total.pct) * 100\n    BY elastic_agent.id, process.name,\n      time_bucket = BUCKET(@timestamp, 1 minute)\n// Count the 1 minute timebuckets that are above 80% by process and agent\n| WHERE cpu_process_pct >= 80\n| STATS count_above_threshold = COUNT(*)\n    BY elastic_agent.id, process.name\n// Alert if there are 5 or more occurences\n| WHERE count_above_threshold >= 5"
+        "esql": "FROM metrics-system*\n| WHERE TO_LOWER(process.executable) LIKE \"*elastic*agent*\" AND agent.name NOT LIKE \"*agentless*\"\n| STATS cpu_process_pct = MAX(system.process.cpu.total.norm.pct) * 100\n    BY elastic_agent.id, process.name,\n      time_bucket = BUCKET(@timestamp, 1 minute)\n// Count the 1 minute timebuckets that are above 80% by process and agent\n| WHERE cpu_process_pct >= 80\n| STATS count_above_threshold = COUNT(*)\n    BY elastic_agent.id, process.name\n// Alert if there are 5 or more occurences\n| WHERE count_above_threshold >= 5"
       },
       "aggType": "count",
       "groupBy": "row",
