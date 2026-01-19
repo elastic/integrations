@@ -20,13 +20,13 @@ processors:
   - json:
       tag: parse_json_event_original
       field: event.original
-      target_field: aws.bedrock_agentcore
+      target_field: aws.bedrock_agentcore.memory
       if: 'ctx.event?.original != null'
       ignore_failure: true
 
   - date:
       tag: convert_event_timestamp
-      field: aws.bedrock_agentcore.event_timestamp
+      field: aws.bedrock_agentcore.memory.event_timestamp
       target_field: "@timestamp"
       formats:
         - UNIX_MS
@@ -34,22 +34,22 @@ processors:
 
   - rename:
       tag: rename_severity_number
-      field: aws.bedrock_agentcore.severityNumber
-      target_field: aws.bedrock_agentcore.severity_number
+      field: aws.bedrock_agentcore.memory.severityNumber
+      target_field: aws.bedrock_agentcore.memory.severity_number
       ignore_missing: true
 
   # Map severity_text to log.level for ECS compatibility
   - set:
       tag: set_log_level
       field: log.level
-      copy_from: aws.bedrock_agentcore.severityText
+      copy_from: aws.bedrock_agentcore.memory.severityText
       ignore_failure: true
 
   # Extract request_id from body if it exists
   - set:
       tag: set_request_id
-      field: aws.bedrock_agentcore.request_id
-      copy_from: aws.bedrock_agentcore.body.requestId
+      field: aws.bedrock_agentcore.memory.request_id
+      copy_from: aws.bedrock_agentcore.memory.body.requestId
       ignore_failure: true
 
   # Set ECS version
@@ -73,9 +73,9 @@ processors:
       tag: extract_resource_attributes
       description: Extract fields from resource.attributes with dotted keys
       lang: painless
-      if: ctx.aws?.bedrock_agentcore?.resource?.attributes != null
+      if: ctx.aws?.bedrock_agentcore?.memory?.resource?.attributes != null
       source: |
-        def attrs = ctx.aws.bedrock_agentcore.resource.attributes;
+        def attrs = ctx.aws.bedrock_agentcore.memory.resource.attributes;
 
         if (attrs.containsKey('service.name')) {
           if (ctx.service == null) ctx.service = new HashMap();
@@ -86,16 +86,16 @@ processors:
   # Extract memory name from resource_arn
   - grok:
       tag: extract_memory_name
-      field: aws.bedrock_agentcore.resource_arn
+      field: aws.bedrock_agentcore.memory.resource_arn
       patterns:
-        - "arn:aws:bedrock-agentcore:%{DATA}:%{DATA}:memory/%{DATA:aws.bedrock_agentcore.memory_name}"
+        - "arn:aws:bedrock-agentcore:%{DATA}:%{DATA}:memory/%{DATA:aws.bedrock_agentcore.memory.memory_name}"
       ignore_failure: true
       ignore_missing: true
 
   - dissect:
       tag: extract_memory_strategy
-      field: aws.bedrock_agentcore.memory_strategy_id
-      pattern: "%{aws.bedrock_agentcore.memory_strategy}-%{_temp.strategy_suffix}"
+      field: aws.bedrock_agentcore.memory.memory_strategy_id
+      pattern: "%{aws.bedrock_agentcore.memory.memory_strategy}-%{_temp.strategy_suffix}"
       ignore_failure: true
       ignore_missing: true
 
@@ -106,25 +106,25 @@ processors:
 
   - set:
       tag: set_provider
-      field: aws.bedrock_agentcore.provider_name
+      field: aws.bedrock_agentcore.memory.provider_name
       value: aws_bedrock_agentcore
 
   - set:
       tag: set_operation
-      field: aws.bedrock_agentcore.operation_name
+      field: aws.bedrock_agentcore.memory.operation_name
       value: invoke_memory
 
   - set:
       tag: set_conversation_id
-      field: aws.bedrock_agentcore.conversation_id
-      copy_from: aws.bedrock_agentcore.session_id
+      field: aws.bedrock_agentcore.memory.conversation_id
+      copy_from: aws.bedrock_agentcore.memory.session_id
       ignore_failure: true
 
   - script:
       tag: set_event_outcome
       lang: painless
       source: |
-        if (ctx.aws?.bedrock_agentcore?.body?.isError == true || ctx.error?.message != null) {
+        if (ctx.aws?.bedrock_agentcore?.memory?.body?.isError == true || ctx.error?.message != null) {
           ctx.event = ctx.event != null ? ctx.event : new HashMap();
           ctx.event.outcome = 'failure';
         } else {
@@ -134,24 +134,24 @@ processors:
 
   - rename:
       tag: flatten_request_payload
-      field: aws.bedrock_agentcore.body
-      target_field: aws.bedrock_agentcore.payload_object
+      field: aws.bedrock_agentcore.memory.body
+      target_field: aws.bedrock_agentcore.memory.payload_object
       ignore_missing: true
 
   - set:
       tag: set_message_from_log
       field: message
-      copy_from: aws.bedrock_agentcore.payload_object.log
+      copy_from: aws.bedrock_agentcore.memory.payload_object.log
       ignore_empty_value: true
 
   - remove:
       tag: remove_unused_fields
       field:
-        - aws.bedrock_agentcore.attributes
-        - aws.bedrock_agentcore.resource
-        - aws.bedrock_agentcore.event_timestamp
-        - aws.bedrock_agentcore.timeUnixNano
-        - aws.bedrock_agentcore.severityText
+        - aws.bedrock_agentcore.memory.attributes
+        - aws.bedrock_agentcore.memory.resource
+        - aws.bedrock_agentcore.memory.event_timestamp
+        - aws.bedrock_agentcore.memory.timeUnixNano
+        - aws.bedrock_agentcore.memory.severityText
       ignore_missing: true
 
   # Remove empty/null values
