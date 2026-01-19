@@ -4,6 +4,31 @@ This integration is for Microsoft Exchange Online Message Trace logs. It include
 
 - `log` dataset: supports Microsoft Exchange Online Message Trace logs.
 
+## Message Trace API Deprecation Notification
+Microsoft has announced the deprecation on March 18th, 2026 of the legacy
+Message Trace API support in the Reporting Webservice, which is used by this
+integration.
+
+However, that legacy API is already unavailable to new Microsoft tenants, and
+the replacement Graph-based Message Trace API is not yet available. It is
+tentatively expected in December 2025.
+
+For the new Message Trace experience, there is an updated PowerShell cmdlet,
+`Get-MessageTraceV2`, in General Availability since June 3rd, 2025.
+
+- If your tenant was created before the API deprecation, you can use the
+  current integration until March 2026.
+
+- If your tenant was created since the API deprecation, you can use a
+  PowerShell script to manully collect data using the new cmdlet, and use this
+  integration to ingest it from a file. For more information, please see the
+  "Logfile collection" section below.
+
+- We're tracking Microsoft's new Graph-based Message Trace API (tentatively
+  expected in December 2025) and plan to update this integration once it's
+  available. Read Microsoft's announcement
+  [here](https://techcommunity.microsoft.com/blog/exchange/announcing-general-availability-ga-of-the-new-message-trace-in-exchange-online/4420243).
+
 ## Basic Auth Deprecation notification
 The basic authentication configuration fields have been removed from this integration as Microsoft has deprecated and disabled basic authentication for Exchange Online. See the [deprecation notification](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-basic-authentication-exchange-online) for details.
 
@@ -62,18 +87,20 @@ available in your organization. They are usually under the sections [Accepted Do
 
 ## Logfile collection 
 
-**Disclaimer:**  With basic authentication support now disabled, the PowerShell script provided below will not work as is. However, you can 
-see the [guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps) on how 
-to connect to PowerShell using different authentication techniques using the EXO V2 and V3 modules. With a combination of the script below
-and the alternate authentication methods mentioned in the guide, you can possibly perform the logfile collection as usual.
-<br>
+**Disclaimer:** You may need to adapt the authentication method of the script
+below to match your environment. For more information about authentication
+methods available in PowerShell, please see the
+[guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps).
+Note that basic authentication (with `-Authentication Basic`) is no longer
+supported.
 
-The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
-consumed by the logfile input:
+The following example PowerShell script can be adapted to fetch the logs and
+write them into a JSON file that the integration can consume (via the logfile
+input).
 
 Prerequisites:
 
-Install the Exchange Online Management module by running the following command: 
+Install the Exchange Online Management module by running the following command:
 
 ````powershell
 Install-Module -Name ExchangeOnlineManagement
@@ -85,10 +112,11 @@ Import the Exchange Online Management module by running the following command:
 Import-Module -Name ExchangeOnlineManagement
 ````
 
-This script would have to be triggered at a certain interval, in accordance with the look-back interval specified.
-In this example script, the look back would be 24 hours, so the interval would need to be daily.
-According to the [Documentation](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetrace?view=exchange-ps),
-it is only possible to get up to 1k pages. If this should be an issue, try reducing the `$looback` or increasing `$pageSize`.
+This script would have to be triggered at a certain interval, in accordance
+with the look-back interval specified.  In this example script, the look back
+is 24 hours, so the interval would need to be daily. For more information about
+the `Get-MessageTraceV2` cmdlet, please refer to its
+[documentation](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetracev2?view=exchange-ps).
 
 ```powershell
 # Username and Password
@@ -96,8 +124,8 @@ $username = "USERNAME@DOMAIN.TLD"
 $password = "PASSWORD"
 # Lookback in Hours
 $lookback = "-24"
-# Page Size, should be no problem with 1k
-$pageSize = "1000"
+# Results per request (maximum 5000)
+$resultSize = "5000"
 # Output of the json file
 # This would then be ingested via the integration
 $output_location = "C:\temp\messageTrace.json"
@@ -108,23 +136,46 @@ $startDate = (Get-Date).AddHours($lookback)
 $endDate = Get-Date
 
 Connect-ExchangeOnline -Credential $Credential
+
 $paginate = 1
-$page = 1
 $output = @()
+
+# Initialize V2-style pagination cursor values
+$startingRecipientAddress = $null
+$currentEndDate = $endDate
+
 while ($paginate -eq 1)
 {
-    $messageTrace = Get-MessageTrace -PageSize $pageSize -StartDate $startDate -EndDate $endDate -Page $page
-    $page
+    if ($startingRecipientAddress) {
+        $messageTrace = Get-MessageTraceV2 -ResultSize $resultSize -StartDate $startDate -EndDate $currentEndDate -StartingRecipientAddress $startingRecipientAddress
+    }
+    else {
+        $messageTrace = Get-MessageTraceV2 -ResultSize $resultSize -StartDate $startDate -EndDate $currentEndDate
+    }
+
     if (!$messageTrace)
     {
         $paginate = 0
     }
     else
     {
-        $page++
         $output = $output + $messageTrace
+
+        # If we got fewer than ResultSize rows, we've reached the end
+        if ($messageTrace.Count -lt [int]$resultSize)
+        {
+            $paginate = 0
+        }
+        else
+        {
+            # Prepare the cursor data for the next query
+            $last = $messageTrace[-1]
+            $startingRecipientAddress = $last.RecipientAddress
+            $currentEndDate = $last.Received
+        }
     }
 }
+
 if (Test-Path $output_location)
 {
     Remove-Item $output_location
@@ -132,8 +183,8 @@ if (Test-Path $output_location)
 foreach ($event in $output)
 {
     $event.StartDate = [Xml.XmlConvert]::ToString(($event.StartDate), [Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.EndDate = [Xml.XmlConvert]::ToString(($event.EndDate), [Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.Received = [Xml.XmlConvert]::ToString(($event.Received), [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.EndDate   = [Xml.XmlConvert]::ToString(($event.EndDate),   [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.Received  = [Xml.XmlConvert]::ToString(($event.Received),  [Xml.XmlDateTimeSerializationMode]::Utc)
     $event = $event | ConvertTo-Json -Compress
     Add-Content $output_location $event -Encoding UTF8
 }
@@ -288,3 +339,4 @@ An example event for `log` looks as following:
 | microsoft.online_message_trace.Status | The status of the message in the Office 365 email system. This corresponds to the Detail field of the last processing step recorded for the message.\</p\>\</td\> | keyword |
 | microsoft.online_message_trace.Subject | The subject line of the message, if one was present for the message.\</p\>\</td\> | keyword |
 | microsoft.online_message_trace.ToIP | The IPv4 or IPv6 address that the Office 365 email system sent the message to.\</p\>\</td\> | keyword |
+
