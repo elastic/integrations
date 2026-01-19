@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-19
-**Total Core Artifacts**: 9 available + 29 in progress + 6 not available = 44 total variants
-**Total Queries**: 36
-**Completion Rate**: 20.5% (9/44 core artifacts fully supported)
+**Total Core Artifacts**: 10 available + 28 in progress + 6 not available = 44 total variants
+**Total Queries**: 37
+**Completion Rate**: 22.7% (10/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 9     | 20.5%      |
-| ⚠️ In Progress (Needs Validation) | 29    | 65.9%      |
+| ✅ Available (Fully Supported) | 10     | 22.7%      |
+| ⚠️ In Progress (Needs Validation) | 28    | 63.6%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
@@ -51,7 +51,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 14 | Startup Items | ✅ | Win | startup_items_windows_elastic | [d4e5](kibana/osquery_saved_query/osquery_manager-d4e5f6a7-b8c9-12de-f345-678901234567.json) | Dual-detection approach: (1) Non-whitelisted binaries, (2) LotL indicators (PowerShell -e, certutil, wscript abuse). Filters known-good tasks while flagging suspicious patterns. MITRE ATT&CK T1547.001, T1059.001, T1105 |
 | 14a | Startup Items | ✅ | Linux | startup_items_linux_elastic | [e5f6](kibana/osquery_saved_query/osquery_manager-e5f6a7b8-c9d0-23ef-4567-890123456789.json) | Dual-detection approach: (1) User-created systemd/cron/XDG autostart, (2) LotL patterns (bash -c, curl pipe bash, base64 -d). Location-based filtering for cross-distro compatibility. MITRE ATT&CK T1543.002, T1053.003, T1547.013, T1059.004, T1105 |
 | 14b | Startup Items | ✅ | Mac | startup_items_darwin_elastic | [f6a7](kibana/osquery_saved_query/osquery_manager-f6a7b8c9-d0e1-34f0-5678-901234567890.json) | Dual-detection approach: (1) Non-Apple signed LaunchAgents/Daemons, (2) LotL patterns (bash -c, curl pipe bash, osascript -e). Signature-based filtering with comprehensive LotL coverage. MITRE ATT&CK T1543.001, T1547.015, T1059.004, T1105 |
-| 15 | PowerShell History      | ⚠️ | Win | -     | -    | powershell_events table                                                                                                          |
+| 15 | PowerShell History      | ✅ | Win | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-e5f6-11ed-8f39-bf9c07530bbb.json) | powershell_events | Comprehensive PowerShell forensic monitoring (Event IDs 4103, 4104, 4688) for fileless malware detection |
 | 16 | Prefetch Files          | ✅ | Win | prefetch_windows_elastic | [c9f4](kibana/osquery_saved_query/osquery_manager-c9f4e1a0-a7e4-11ef-9b3d-94b24cd614c6.json) | Native prefetch table (CORRECTED: parses .pf files to extract executable names, run counts, last run times, and accessed resources - equivalent to VQL Windows.Forensics.Prefetch) |
 | 17 | Process Listing         | ⚠️ | Win | -     | -    | processes table                                                                                                                  |
 | 17a | Process Listing         | ⚠️ | Linux | -     | -    | processes table                                                                                                                  |
@@ -152,7 +152,7 @@ While some artifacts are not directly available, the existing queries provide st
 
 ### Execution Artifacts
 - ✅ AppCompatCache (Windows: shimcache table) - **Production query with signature-aware filtering**
-- ⚠️ PowerShell History (Windows: powershell_events table)
+- ✅ PowerShell History (Windows: powershell_events + windows_eventlog)
 - ✅ Prefetch Files (Windows: native prefetch table - CORRECTED to use proper parsing, not file enumeration)
 - ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
 
