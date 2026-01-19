@@ -1,0 +1,360 @@
+---
+description: Pipeline for processing Data Protection Detection Summary events.
+processors:
+
+  # event categorization fields
+  - set:
+      tag: set_event_kind_to_alert_39295792
+      field: event.kind
+      value: alert
+  - append:
+      tag: append_malware_category_425d1f27
+      field: event.category
+      value: malware
+  - append:
+      tag: append_info_type_8a66ccaa
+      field: event.type
+      value: info
+
+  # converts
+  - convert:
+      tag: convert_crowdstrike_DataVolume_to_long_942b72ee
+      field: crowdstrike.DataVolume
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_e18f0b9e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_ContentPatterns_ConfidenceLevel_to_long_45401f80
+      field: crowdstrike.ContentPatterns.ConfidenceLevel
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_ContentPatterns_ConfidenceLevel_51bb48e5
+            field:
+              - crowdstrike.ContentPatterns.ConfidenceLevel
+        - append:
+            tag: append_error_message_469733f0
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_ContentPatterns_MatchCount_to_long_1860a094
+      field: crowdstrike.ContentPatterns.MatchCount
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_ContentPatterns_MatchCount_e5886467
+            field:
+              - crowdstrike.ContentPatterns.MatchCount
+        - append:
+            tag: append_error_message_c13d0524
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_FilesEgressedCount_to_long_0a2680d8
+      field: crowdstrike.FilesEgressedCount
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_FilesEgressedCount_0df285cb
+            field:
+              - crowdstrike.FilesEgressedCount
+        - append:
+            tag: append_error_message_bc729538
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_UserNotified_to_boolean_fff533bd
+      field: crowdstrike.UserNotified
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_UserNotified_4d8a9089
+            field:
+              - crowdstrike.UserNotified
+        - append:
+            tag: append_error_message_f94b1b53
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_UserMapped_to_boolean_bccf576a
+      field: crowdstrike.UserMapped
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_UserMapped_2143e1d5
+            field:
+              - crowdstrike.UserMapped
+        - append:
+            tag: append_error_message_da37c64a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_IsClipboard_to_boolean_5ba67e86
+      field: crowdstrike.IsClipboard
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_IsClipboard_5d478e5b
+            field:
+              - crowdstrike.IsClipboard
+        - append:
+            tag: append_error_message_0e71edc6
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # timestamps
+  - date:
+      tag: date_crowdstrike_EventTimestamp_into_crowdstrike_EventTimestamp_d5f05563
+      if: ctx.crowdstrike?.EventTimestamp != null
+      field: crowdstrike.EventTimestamp
+      target_field: crowdstrike.EventTimestamp
+      formats:
+        - UNIX
+      timezone: UTC
+      on_failure:
+        - append:
+            tag: append_error_message_9bb40391
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Anomaly-based detections contains SessionStartTimestamp and SessionEndTimestamp fields
+  - date:
+      tag: date_crowdstrike_SessionStartTimestamp_into_event_start_f37db09c
+      if: ctx.crowdstrike?.SessionStartTimestamp != null
+      field: crowdstrike.SessionStartTimestamp
+      target_field: event.start
+      formats:
+        - UNIX
+      timezone: UTC
+      on_failure:
+        - append:
+            tag: append_error_message_dabedfbc
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_crowdstrike_SessionEndTimestamp_into_event_end_98eb023b
+      if: ctx.crowdstrike?.SessionEndTimestamp != null
+      field: crowdstrike.SessionEndTimestamp
+      target_field: event.end
+      formats:
+        - UNIX
+      timezone: UTC
+      on_failure:
+        - append:
+            tag: append_error_message_525bb579
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Determine event.duration from event start and end date.
+      tag: script_to_set_event_duration_90e6c5bc
+      if: ctx.event?.start != null && ctx.event.end != null
+      source: |-
+        Instant event_start = ZonedDateTime.parse(ctx.event.start).toInstant();
+        Instant event_end = ZonedDateTime.parse(ctx.event.end).toInstant();
+        ctx.event['duration'] = ChronoUnit.NANOS.between(event_start, event_end);
+      on_failure:
+        - append:
+            tag: append_error_message_96ed185c
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ECS mappings
+  - set:
+      tag: set_threat_framework_f92aa71d
+      field: threat.framework
+      value: MITRE ATT&CK
+  - set:
+      tag: set_event_outcome_success_99af7416
+      if: ctx.crowdstrike?.ResponseAction == 'allowed'
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_event_outcome_failure_f46199b1
+      if: ctx.crowdstrike?.ResponseAction == 'blocked'
+      field: event.outcome
+      value: failure
+  - set:
+      tag: set_event_outcome_unknown_2820f2e9
+      field: event.outcome
+      value: unknown
+      override: false
+  - set:
+      tag: set_message_from_crowdstrike_Description_705948c3
+      field: message
+      copy_from: crowdstrike.Description
+      ignore_empty_value: true
+  - set:
+      tag: set_event_action_from_crowdstrike_Name_bed0a20b
+      field: event.action
+      copy_from: crowdstrike.Name
+      ignore_empty_value: true
+  - set:
+      tag: set_event_reference_from_crowdstrike_FalconHostLink_6d3f2710
+      field: event.reference
+      copy_from: crowdstrike.FalconHostLink
+      ignore_empty_value: true
+  - set:
+      tag: set_file_hash_sha256_from_crowdstrike_ContentSha_d4ead6d6
+      field: file.hash.sha256
+      copy_from: crowdstrike.ContentSha
+      ignore_empty_value: true
+  - set:
+      tag: set_file_name_from_crowdstrike_Filename_119db8a6
+      field: file.name
+      copy_from: crowdstrike.Filename
+      ignore_empty_value: true
+  - set:
+      tag: set_file_size_from_crowdstrike_DataVolume_0c0ee92d
+      field: file.size
+      copy_from: crowdstrike.DataVolume
+      ignore_empty_value: true
+  - set:
+      tag: set_host_name_from_crowdstrike_Hostname_eae1ab7e
+      field: host.name
+      copy_from: crowdstrike.Hostname
+      ignore_empty_value: true
+  - set:
+      tag: set_rule_id_from_crowdstrike_Policy_ID_e4a06110
+      field: rule.id
+      copy_from: crowdstrike.Policy.ID
+      ignore_empty_value: true
+  - set:
+      tag: set_rule_name_from_crowdstrike_Policy_Name_db8e5eec
+      field: rule.name
+      copy_from: crowdstrike.Policy.Name
+      ignore_empty_value: true
+  - set:
+      tag: set_user_id_from_crowdstrike_UserSid_ff207491
+      field: user.id
+      copy_from: crowdstrike.UserSid
+      ignore_empty_value: true
+  - set:
+      tag: set_user_name_from_crowdstrike_UserName_0d5ff858
+      field: user.name
+      copy_from: crowdstrike.UserName
+      ignore_empty_value: true
+  - append:
+      tag: append_file_hash_sha256_to_related_hash_7574f0ee
+      if: ctx.file?.hash?.sha256 != null
+      field: related.hash
+      value: '{{{file.hash.sha256}}}'
+  - script:
+      tag: extract_file_extension_from_filename_adc57e41
+      if: ctx.crowdstrike?.Filename != null
+      source: |-
+        def idx = ctx.crowdstrike.Filename.lastIndexOf('.');
+        if (idx != -1) {
+          ctx.file = ctx.file ?: [:];
+          ctx.file.extension = ctx.crowdstrike.Filename.substring(idx + 1).toLowerCase();
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_1a00ddc7
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      tag: lowercase_crowdstrike_Platform_into_host_os_platform_0de817b0
+      field: crowdstrike.Platform
+      target_field: host.os.platform
+      ignore_missing: true
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_Tactic_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_crowdstrike_MitreAttack_threat_tactic_name_into_Tactic_b021c3ec
+          field: threat.tactic.name
+          value: '{{{_ingest._value.Tactic}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_TacticID_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_crowdstrike_MitreAttack_threat_tactic_id_into_TacticID_4d499747
+          field: threat.tactic.id
+          value: '{{{_ingest._value.TacticID}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_Technique_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_crowdstrike_MitreAttack_threat_technique_name_into_Technique_af6387ac
+          field: threat.technique.name
+          value: '{{{_ingest._value.Technique}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_TechniqueID_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_crowdstrike_MitreAttack_threat_technique_id_into_TechniqueID_70f7c093
+          field: threat.technique.id
+          value: '{{{_ingest._value.TechniqueID}}}'
+          allow_duplicates: false
+
+  # clean up
+  - remove:
+      tag: remove_custom_duplicate_fields_decaf9d0
+      field:
+        - crowdstrike.ContentSha
+        - crowdstrike.DataVolume
+        - crowdstrike.Description
+        - crowdstrike.EgressEventId
+        - crowdstrike.FalconHostLink
+        - crowdstrike.Filename
+        - crowdstrike.Hostname
+        - crowdstrike.MitreAttack
+        - crowdstrike.Name
+        - crowdstrike.Platform
+        - crowdstrike.Policy
+        - crowdstrike.SessionStartTimestamp
+        - crowdstrike.SessionEndTimestamp
+        - crowdstrike.Tactic
+        - crowdstrike.TacticId
+        - crowdstrike.Technique
+        - crowdstrike.TechniqueId
+        - crowdstrike.UserSid
+        - crowdstrike.UserName
+      ignore_missing: true
+
+  # error handling
+  - set:
+      tag: set_pipeline_error_into_event_kind_92954dfa
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_into_tags_9fe66b2c
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message_d1950926
+      field: error.message
+      value: Processor '{{{ _ingest.on_failure_processor_type }}}' {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}' {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_into_event_kind_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_into_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
