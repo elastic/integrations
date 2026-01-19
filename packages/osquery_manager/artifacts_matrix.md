@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-19
-**Total Core Artifacts**: 3 available + 35 in progress + 6 not available = 44 total variants
+**Total Core Artifacts**: 4 available + 34 in progress + 6 not available = 44 total variants
 **Total Queries**: 30 (3 core forensic queries + 27 additional queries)
-**Completion Rate**: 6.8% (3/44 core artifacts fully supported)
+**Completion Rate**: 9.1% (4/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 3     | 6.8%       |
-| ⚠️ In Progress (Needs Validation) | 35    | 79.5%      |
+| ✅ Available (Fully Supported) | 4     | 9.1%       |
+| ⚠️ In Progress (Needs Validation) | 34    | 77.3%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
@@ -36,7 +36,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 6a | Installed Services      | ⚠️ | Linux | -     | -    | systemd table                                                                                                                    |
 | 6b | Installed Services      | ⚠️ | Mac   | -     | -    | launchd table                                                                                                                    |
 | 7 | Jumplists               | ❌ | Win   | -     | -    | Not natively supported — PR #7260 closed due to OLE format complexity                                                            |
-| 8 | LNK files               | ⚠️ | Win   | -     | -    | shortcut_files table (deprecated), file table and recent_files table is an alternative (osquery upgrade needed for recent files) |
+| 8 | LNK files               | ✅ | Win   | lnk_forensics_windows_elastic | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json) | file table with native shortcut parsing; can enrich with hash + authenticode; enumerate common locations via users table |
 | 9 | ARP Cache (Enriched)    | ✅ | All   | arp_cache_elastic | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-11ef-89c6-331eb0db6d02.json) | Enriched ARP cache with local interface details (local IP, local MAC). Combines arp_cache with interface_details and interface_addresses tables. Includes ECS mappings for destination.ip/mac, source.ip/mac, interface.name, network.type, and MITRE ATT&CK threat enrichment (T1016, T1018) |
 | 10 | Disks & Volumes         | ⚠️ | Win   | -     | -    | disk_info table                                                                                                                  |
 | 10a | Disks & Volumes         | ⚠️ | Linux | -     | -    | disk_info table                                                                                                                  |
@@ -164,7 +164,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ✅ BITS Jobs Database (Windows: via windows_eventlog)
 
 ### User Activity
-- ⚠️ LNK files (Windows: shortcut_files, file, recent_files tables)
+- ✅ LNK files (Windows: file table with native shortcut parsing using path LIKE pattern for full metadata + hash + authenticode enrichment + 8+ locations via users table)
 - ⚠️ Shell History (Linux/Mac: shell_history table)
 - ⚠️ Shellbags (Windows: shellbags table)
 - ⚠️ User Assist (Windows: userassist table)
