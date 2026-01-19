@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-19
-**Total Core Artifacts**: 6 available + 32 in progress + 6 not available = 44 total variants
-**Total Queries**: 33
-**Completion Rate**: 13.6% (6/44 core artifacts fully supported)
+**Total Core Artifacts**: 9 available + 29 in progress + 6 not available = 44 total variants
+**Total Queries**: 36
+**Completion Rate**: 20.5% (9/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 6     | 13.6%      |
-| ⚠️ In Progress (Needs Validation) | 32    | 72.7%      |
+| ✅ Available (Fully Supported) | 9     | 20.5%      |
+| ⚠️ In Progress (Needs Validation) | 29    | 65.9%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
@@ -47,10 +47,10 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 12 | NTFS USN Journal        | ⚠️ | Win   | -     | -    | ntfs_journal_events table                                                                                                        |
 | 13 | Open Handles            | ❌ | Win   | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
 | 13a | Open Handles            | ❌ | Linux | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
-| 13b | Open Handles            | ❌ | Mac   | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
-| 14 | Persistence             | ⚠️ | Win   | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
-| 14a | Persistence             | ⚠️ | Linux | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
-| 14b | Persistence             | ⚠️ | Mac | -     | -    | Supported across multiple tables (services, startup_items, scheduled_tasks)                                                      |
+| 13b | Open Handles            | ❌ | Mac | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
+| 14 | Startup Items | ✅ | Win | startup_items_windows_elastic | [d4e5](kibana/osquery_saved_query/osquery_manager-d4e5f6a7-b8c9-12de-f345-678901234567.json) | Dual-detection approach: (1) Non-whitelisted binaries, (2) LotL indicators (PowerShell -e, certutil, wscript abuse). Filters known-good tasks while flagging suspicious patterns. MITRE ATT&CK T1547.001, T1059.001, T1105 |
+| 14a | Startup Items | ✅ | Linux | startup_items_linux_elastic | [e5f6](kibana/osquery_saved_query/osquery_manager-e5f6a7b8-c9d0-23ef-4567-890123456789.json) | Dual-detection approach: (1) User-created systemd/cron/XDG autostart, (2) LotL patterns (bash -c, curl pipe bash, base64 -d). Location-based filtering for cross-distro compatibility. MITRE ATT&CK T1543.002, T1053.003, T1547.013, T1059.004, T1105 |
+| 14b | Startup Items | ✅ | Mac | startup_items_darwin_elastic | [f6a7](kibana/osquery_saved_query/osquery_manager-f6a7b8c9-d0e1-34f0-5678-901234567890.json) | Dual-detection approach: (1) Non-Apple signed LaunchAgents/Daemons, (2) LotL patterns (bash -c, curl pipe bash, osascript -e). Signature-based filtering with comprehensive LotL coverage. MITRE ATT&CK T1543.001, T1547.015, T1059.004, T1105 |
 | 15 | PowerShell History      | ⚠️ | Win | -     | -    | powershell_events table                                                                                                          |
 | 16 | Prefetch Files          | ✅ | Win | prefetch_windows_elastic | [c9f4](kibana/osquery_saved_query/osquery_manager-c9f4e1a0-a7e4-11ef-9b3d-94b24cd614c6.json) | Native prefetch table (CORRECTED: parses .pf files to extract executable names, run counts, last run times, and accessed resources - equivalent to VQL Windows.Forensics.Prefetch) |
 | 17 | Process Listing         | ⚠️ | Win | -     | -    | processes table                                                                                                                  |
@@ -157,8 +157,10 @@ While some artifacts are not directly available, the existing queries provide st
 - ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
 
 ### Persistence Mechanisms
+- ✅ Startup Items - Windows (Dual-detection: Non-whitelisted binaries + LotL indicators - T1547.001, T1059.001, T1105)
+- ✅ Startup Items - Linux (Dual-detection: User-created systemd/cron/XDG + LotL patterns - T1543.002, T1053.003, T1547.013, T1059.004, T1105)
+- ✅ Startup Items - macOS (Dual-detection: Non-Apple signed LaunchAgents/Daemons + LotL patterns - T1543.001, T1547.015, T1059.004, T1105)
 - ⚠️ Installed Services (All platforms: services table)
-- ⚠️ Persistence (All platforms: multiple tables)
 - ⚠️ Registry (Windows: registry table)
 - ⚠️ Tasks (All platforms: scheduled_tasks table)
 - ⚠️ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
