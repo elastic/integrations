@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2025-11-07
-**Total Core Artifacts**: 2 available + 38 in progress + 6 not available = 46 total variants
-**Total Queries**: 31 (4 core forensic variants + 27 additional)
-**Completion Rate**: 4.3% (2/46 core artifacts fully supported)
+**Total Core Artifacts**: 1 available + 38 in progress + 6 not available = 45 total variants
+**Total Queries**: 31 (1 core forensic variant + 27 additional + 3 original)
+**Completion Rate**: 2.2% (1/45 core artifacts fully supported)
 
 ---
 
@@ -14,8 +14,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | Status | Count | Percentage |
 |--------|-------|------------|
 | ✅ Available (Fully Supported) | 1     | 2.2%       |
-| ⚠️ In Progress (Needs Validation) | 38    | 82.6%      |
-| ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
+| ⚠️ In Progress (Needs Validation) | 38    | 84.4%      |
+| ❌ Not Available (Requires Extensions) | 6     | 13.3%      |
 
 ---
 
@@ -23,7 +23,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | # | Artifact | ✓ | OS | Query | File | Implementation Notes                                                                                                             |
 |---|----------|--|----|-------|------|----------------------------------------------------------------------------------------------------------------------------------|
-| 1 | AppCompatCache          | ⚠️ | Win | -     | -    | shimcache table                                                                                                                  |
+| 1 | AppCompatCache          | ✅ | Win | appcompatcache_shimcache_windows_elastic     | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)    | shimcache table with signature-aware filtering (unsigned/untrusted binaries, suspicious paths), hash enrichment, excludes valid Microsoft-signed binaries                                                                                                                  |
 | 2 | AmCache                 | ❌ | Win | -     | -    | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
 | 3 | BITS Jobs Database      | ✅ | Win | bits_monitoring_windows_elastic | [4b2e](kibana/osquery_saved_query/osquery_manager-4b2e8f3a-9d5c-4e2a-b8f1-7c6d3e9a2b1f.json) | Not a native table, but can be queried via windows_eventlog (EventID 59)                                                        |
 | 4 | Browser URL History     | ⚠️ | Win | -     | -    | No native table. Can be supported via ATC custom tables                                                                          |
@@ -151,7 +151,7 @@ While some artifacts are not directly available, the existing queries provide st
 ## Artifacts by Category
 
 ### Execution Artifacts
-- ⚠️ AppCompatCache (Windows: shimcache table)
+- ✅ AppCompatCache (Windows: shimcache table) - **Production query with signature-aware filtering**
 - ⚠️ PowerShell History (Windows: powershell_events table)
 - ⚠️ Prefetch Files (Windows: prefetch table)
 - ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
