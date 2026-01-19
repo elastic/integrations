@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-19
-**Total Core Artifacts**: 13 available + 25 in progress + 6 not available = 44 total variants
-**Total Queries**: 39
-**Completion Rate**: 29.5% (13/44 core artifacts fully supported)
+**Total Core Artifacts**: 16 available + 22 in progress + 6 not available = 44 total variants
+**Total Queries**: 41
+**Completion Rate**: 36.4% (16/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 13     | 29.5%      |
-| ⚠️ In Progress (Needs Validation) | 25    | 56.8%      |
+| ✅ Available (Fully Supported) | 16     | 36.4%      |
+| ⚠️ In Progress (Needs Validation) | 22    | 50.0%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
@@ -41,9 +41,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 10 | Disks & Volumes         | ✅ | Win | disk_info_windows_elastic | [d8a1](kibana/osquery_saved_query/osquery_manager-d8a1b2c3-d4e5-11ef-a6b7-12c3d4e5f678.json) | disk_info table                                                                                                                  |
 | 10a | Disks & Volumes         | ✅ | Linux | disk_info_linux_macos_elastic | [e9f2](kibana/osquery_saved_query/osquery_manager-e9f2c3d4-e5f6-11ef-b8c9-23d4e5f6a789.json) | block_devices + mounts tables                                                                                                    |
 | 10b | Disks & Volumes         | ✅ | Mac | disk_info_linux_macos_elastic | [e9f2](kibana/osquery_saved_query/osquery_manager-e9f2c3d4-e5f6-11ef-b8c9-23d4e5f6a789.json) | block_devices + mounts tables                                                                                                    |
-| 11 | Network Interfaces & IP Configuration | ⚠️ | Win   | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
-| 11a | Network Interfaces & IP Configuration | ⚠️ | Linux | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
-| 11b | Network Interfaces & IP Configuration | ⚠️ | Mac   | -     | -    | interface_details, interface_addresses, interface_ipv6                                                                           |
+| 11 | Network Interfaces & IP Configuration | ✅ | Win | network_interfaces_windows_elastic | [9307](kibana/osquery_saved_query/osquery_manager-9307c448-d8e2-49a3-aeca-469881183087.json) | interface_details + interface_addresses with DHCP/DNS configuration |
+| 11a | Network Interfaces & IP Configuration | ✅ | Linux | network_interfaces_linux_macos_elastic | [c251](kibana/osquery_saved_query/osquery_manager-c251aeb1-698f-44a4-9526-cdd349b9ccbe.json) | interface_details + interface_addresses + interface_ipv6 (hop_limit, forwarding, redirect_accept) |
+| 11b | Network Interfaces & IP Configuration | ✅ | Mac | network_interfaces_linux_macos_elastic | [c251](kibana/osquery_saved_query/osquery_manager-c251aeb1-698f-44a4-9526-cdd349b9ccbe.json) | interface_details + interface_addresses + interface_ipv6 (hop_limit, forwarding, redirect_accept) |
 | 12 | NTFS USN Journal        | ⚠️ | Win   | -     | -    | ntfs_journal_events table                                                                                                        |
 | 13 | Open Handles            | ❌ | Win   | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
 | 13a | Open Handles            | ❌ | Linux | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
@@ -182,7 +182,7 @@ While some artifacts are not directly available, the existing queries provide st
 
 ### Network/C2 Indicators
 - ✅ ARP Cache (arp_cache + interface_details + interface_addresses tables with joins, includes ECS mappings)
-- ⚠️ Network Interfaces & IP Configuration (All platforms: interface_details, interface_addresses, interface_ipv6)
+- ✅ Network Interfaces & IP Configuration (Windows: DHCP/DNS config; Linux/macOS: IPv6 config with hop_limit, forwarding, redirect_accept)
 
 ### System Information
 - ✅ Disks & Volumes (Windows: disk_info table, Linux/macOS: block_devices + mounts tables)
