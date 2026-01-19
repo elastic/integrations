@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-19
-**Total Core Artifacts**: 4 available + 34 in progress + 6 not available = 44 total variants
-**Total Queries**: 30 (3 core forensic queries + 27 additional queries)
-**Completion Rate**: 9.1% (4/44 core artifacts fully supported)
+**Total Core Artifacts**: 5 available + 33 in progress + 6 not available = 44 total variants
+**Total Queries**: 32 (5 core forensic queries + 27 additional queries)
+**Completion Rate**: 11.4% (5/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 4     | 9.1%       |
-| ⚠️ In Progress (Needs Validation) | 34    | 77.3%      |
+| ✅ Available (Fully Supported) | 5     | 11.4%      |
+| ⚠️ In Progress (Needs Validation) | 33    | 75.0%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
@@ -58,9 +58,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 17b | Process Listing         | ⚠️ | Mac   | -     | -    | processes table                                                                                                                  |
 | 18 | Registry                | ⚠️ | Win   | -     | -    | registry table                                                                                                                   |
 | 19 | Shell History           | ⚠️ | Linux | -     | -    | shell_history table                                                                                                              |
-| 19a | Shell History           | ⚠️ | Mac   | -     | -    | shell_history table                                                                                                              |
-| 20 | Shellbags               | ⚠️ | Win   | -     | -    | shellbags table                                                                                                                  |
-| 21 | Tasks                   | ⚠️ | Win   | -     | -    | scheduled_tasks table                                                                                                            |
+| 19a | Shell History           | ⚠️ | Mac | -     | -    | shell_history table                                                                                                              |
+| 20 | Shellbags               | ✅ | Win | shellbags_windows_elastic | [a4b2](kibana/osquery_saved_query/osquery_manager-a4b2c8d0-8876-11f0-b4d1-4f9e8c3a1b2e.json) | shellbags table - tracks directory access via Windows Explorer |
+| 21 | Tasks                   | ⚠️ | Win | -     | -    | scheduled_tasks table                                                                                                            |
 | 21a | Tasks                   | ⚠️ | Linux | -     | -    | scheduled_tasks table                                                                                                            |
 | 21b | Tasks                   | ⚠️ | Mac   | -     | -    | scheduled_tasks table                                                                                                            |
 | 22 | User Assist             | ⚠️ | Win   | -     | -    | userassist table                                                                                                                 |
@@ -166,7 +166,7 @@ While some artifacts are not directly available, the existing queries provide st
 ### User Activity
 - ✅ LNK files (Windows: file table with native shortcut parsing using path LIKE pattern for full metadata + hash + authenticode enrichment + 8+ locations via users table)
 - ⚠️ Shell History (Linux/Mac: shell_history table)
-- ⚠️ Shellbags (Windows: shellbags table)
+- ✅ Shellbags (Windows: shellbags table)
 - ⚠️ User Assist (Windows: userassist table)
 - ⚠️ Browser URL History (All platforms: via ATC custom tables)
 - ❌ Jumplists (Not Available - Use Shellbags + LNK Files as alternatives)
