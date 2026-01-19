@@ -408,7 +408,6 @@ An example event for `runtime_application` looks as following:
 | log.offset | Log offset | long |
 
 
-
 ### Gateway Application Logs
 
 Amazon Bedrock AgentCore Gateway application logs provide detailed insights into API requests, message routing, and interaction between agents and external systems. These logs help you monitor gateway operations, troubleshoot connectivity issues, and understand the flow of agent communications.
