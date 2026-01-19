@@ -746,3 +746,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | postgresql.statement.user.id | OID of the user logged into the backend that ran the query. | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[PostgreSQL] Buffer Cache Hit Ratio above threshold**
+
+
+
+**[PostgreSQL] Latency high**
+
+
+
