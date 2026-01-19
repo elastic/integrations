@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-19
-**Total Core Artifacts**: 19 available + 19 in progress + 6 not available = 44 total variants
-**Total Queries**: 43
-**Completion Rate**: 43.2% (19/44 core artifacts fully supported)
+**Total Core Artifacts**: 21 available + 17 in progress + 6 not available = 44 total variants
+**Total Queries**: 44
+**Completion Rate**: 47.7% (21/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 19     | 43.2%      |
-| ⚠️ In Progress (Needs Validation) | 19    | 43.2%      |
+| ✅ Available (Fully Supported) | 21     | 47.7%      |
+| ⚠️ In Progress (Needs Validation) | 17    | 38.6%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
@@ -64,8 +64,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 21a | Tasks                   | ⚠️ | Linux | -     | -    | scheduled_tasks table                                                                                                            |
 | 21b | Tasks                   | ⚠️ | Mac   | -     | -    | scheduled_tasks table                                                                                                            |
 | 22 | User Assist             | ✅ | Win | userassist_windows_elastic | [e9e5](kibana/osquery_saved_query/osquery_manager-e9e51a33-b2a2-47b4-a00e-7de8a205d55b.json) | userassist table with user resolution and hash enrichment |
-| 23 | WMI Config & Used Apps  | ⚠️ | Win   | -     | -    | wmi_cli_event_consumers, wmi_script_event_consumers                                                                              |
-| 24 | WMI Providers & Filters | ⚠️ | Win   | -     | -    | wmi_event_filters, wmi_filter_consumer_binding                                                                                   |
+| 23 | WMI Config & Used Apps  | ✅ | Win | wmi_persistence_event_subscriptions | [4003](kibana/osquery_saved_query/osquery_manager-40033716-3580-48fe-a17d-441a838acd8a.json) | wmi_cli_event_consumers, wmi_script_event_consumers - Combined with #24 into single comprehensive query |
+| 24 | WMI Providers & Filters | ✅ | Win | wmi_persistence_event_subscriptions | [4003](kibana/osquery_saved_query/osquery_manager-40033716-3580-48fe-a17d-441a838acd8a.json) | wmi_event_filters, wmi_filter_consumer_binding - Combined with #23 into single comprehensive query |
 | 25 | MFT                     | ❌ | Win   | -     | -    | Not natively supported. Available via Trail of Bits extension                                                                    |
 
 ---
@@ -163,8 +163,8 @@ While some artifacts are not directly available, the existing queries provide st
 - ⚠️ Installed Services (All platforms: services table)
 - ⚠️ Registry (Windows: registry table)
 - ⚠️ Tasks (All platforms: scheduled_tasks table)
-- ⚠️ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
-- ⚠️ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
+- ✅ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
+- ✅ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
 - ✅ BITS Jobs Database (Windows: via windows_eventlog)
 
 ### User Activity
