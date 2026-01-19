@@ -18,7 +18,7 @@ This integration is compatible with Amazon Bedrock AgentCore CloudWatch metrics 
 The Amazon Bedrock AgentCore integration collects runtime metrics and observability data from your intelligent agents.
 
 Data streams:
- - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateways, Memory, and Identity.
+ - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateway, Memory, Identity, Browser Tool and Code Interpreter.
 
 ## What do I need to use this integration?
 
@@ -34,6 +34,17 @@ For more details about these requirements, check the [AWS integration documentat
 * Elastic Agent must be installed. For detailed guidance, follow these [instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 * You can install only one Elastic Agent per host.
 * Elastic Agent is required to collect metrics from CloudWatch and ship the data to Elastic, where the events will then be processed through the integration's ingest pipelines.
+
+### How to find the `log_group_arn` (for log-based datasets)
+
+Some datasets in this integration require the ARN of the CloudWatch log group where your AgentCore logs are stored. You can find it by:
+
+- Opening CloudWatch in the AWS Console
+- Going to Logs > Log groups
+- Selecting the log group used by your AgentCore deployment
+- Copying the Log group ARN shown
+
+You can then use this ARN when configuring any log-based dataset.
 
 ## Setup
 
@@ -173,6 +184,9 @@ An example event for `metrics` looks as following:
 | aws.bedrock_agentcore.metrics.ResourceAccessTokenFetchThrottles.sum | Total number of throttled OAuth2 token fetch operations from credential providers. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.Sessions.sum | Total number of agent sessions initiated. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.SystemErrors.sum | Total number of server-side errors indicating infrastructure or service issues. | long |  | gauge |
+| aws.bedrock_agentcore.metrics.TakeOverCount.sum | Total number of user taking over control. | long |  | gauge |
+| aws.bedrock_agentcore.metrics.TakeOverReleaseCount.sum | Total number of user releasing control. | long |  | gauge |
+| aws.bedrock_agentcore.metrics.TakerOverDuration.avg | Average duration of user takeover control. | double | ms | gauge |
 | aws.bedrock_agentcore.metrics.TargetExecutionTime.avg | Average execution time for each target type. | double | ms | gauge |
 | aws.bedrock_agentcore.metrics.TargetType_LAMBDA.sum | Total number of invocations targeting AWS Lambda. | long |  | gauge |
 | aws.bedrock_agentcore.metrics.TargetType_MCP.sum | Total number of invocations targeting MCP (Model Context Protocol). | long |  | gauge |
@@ -191,3 +205,205 @@ An example event for `metrics` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[AWS Bedrock AgentCore] Agent runtime high latency**
+
+
+
+**[AWS Bedrock AgentCore] Agent runtime system errors**
+
+
+
+**[AWS Bedrock AgentCore] Agent runtime user errors**
+
+
+
+**[AWS Bedrock AgentCore] Browser errors**
+
+
+
+**[AWS Bedrock AgentCore] Browser session throttles**
+
+
+
+**[AWS Bedrock AgentCore] Code interpreter errors**
+
+
+
+**[AWS Bedrock AgentCore] Code interpreter high latency**
+
+
+
+**[AWS Bedrock AgentCore] Code interpreter throttles**
+
+
+
+**[AWS Bedrock AgentCore] Gateway errors**
+
+
+
+**[AWS Bedrock AgentCore] Gateway high latency**
+
+
+
+**[AWS Bedrock AgentCore] Gateway throttles**
+
+
+
+**[AWS Bedrock AgentCore] Identity throttles**
+
+
+
+**[AWS Bedrock AgentCore] Identity token fetch failures**
+
+
+
+**[AWS Bedrock AgentCore] Memory errors**
+
+
+
+**[AWS Bedrock AgentCore] Memory high latency**
+
+
+
+
+
+## Logs
+
+### Runtime Application Logs
+
+Amazon Bedrock AgentCore runtime application logs provide detailed insights into agent execution, decision-making processes, and operational events. The integration collects comprehensive log data from your intelligent agents to help you understand agent behavior and troubleshoot issues.
+
+For more details about enabling logs for AgentCore, check the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+An example event for `runtime_application` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
+        "type": "filebeat",
+        "ephemeral_id": "d5a1fd3e-1411-4730-8b9a-e237d8000186",
+        "version": "8.19.0"
+    },
+    "log": {
+        "file": {
+            "path": "arn:aws:logs:us-east-1:627286350132:log-group:/aws/vendedlogs/bedrock-agentcore/runtime/APPLICATION_LOGS/claudeserver-CdBoW2FLP0/BedrockAgentCoreRuntime_ApplicationLogs"
+        }
+    },
+    "elastic_agent": {
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
+        "version": "8.19.0",
+        "snapshot": false
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "cloud": {
+        "provider": "aws",
+        "service": {
+            "name": "bedrock-agentcore"
+        },
+        "region": "us-east-1",
+        "account": {
+            "id": "627286350134"
+        }
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "trace": {
+        "id": "6909cc3835755ae933e4c5fc38d249a2"
+    },
+    "@timestamp": "2025-11-04T09:49:45.198Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "aws_bedrock_agentcore.runtime_application_logs"
+    },
+    "service": {
+        "name": "customersupport.DEFAULT"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-11-17T12:27:05Z",
+        "id": "39299483435865920498526836744670895669942873429125169152",
+        "dataset": "aws_bedrock_agentcore.runtime_application_logs",
+        "outcome": "success"
+    },
+    "aws": {
+        "bedrock_agentcore": {
+            "conversation_id": "76d5c1a5-df2d-4299-b536-9f0302e344ab",
+            "operation_name": "invoke_agent",
+            "provider_name": "aws_bedrock_agentcore",
+            "agent_name": "customersupport",
+            "endpoint_name": "DEFAULT",
+            "request_payload": {
+                "actor_id": "DEFAULT",
+                "prompt": "Summarize my previous conversation"
+            },
+            "operation": "InvokeAgentRuntime",
+            "request_id": "083603b2-7b75-46ba-bf61-45c562764b68",
+            "resource_arn": "arn:aws:bedrock-agentcore:us-east-1:627286350133:runtime/customersupport-3OutfrDDJ3",
+            "service_name": "AgentCoreCodeRuntime",
+            "session_id": "76d5c1a5-df2d-4299-b536-9f0302e344cb",
+            "severity_number": 9
+        }
+    },
+    "log": {
+        "level": "INFO"
+    },
+    "span": {
+        "id": "015d756c7d9bf372"
+    }
+}
+```
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.bedrock_agentcore.agent_name | The name of the Bedrock agent. | keyword |
+| aws.bedrock_agentcore.conversation_id | Unique identifier for the conversation or session. | keyword |
+| aws.bedrock_agentcore.endpoint_name | The endpoint identifier. | keyword |
+| aws.bedrock_agentcore.operation | Name of the AgentCore operation executed. | keyword |
+| aws.bedrock_agentcore.operation_name | Name of the GenAI operation performed. | keyword |
+| aws.bedrock_agentcore.prompt | User prompt text captured by the event. | text |
+| aws.bedrock_agentcore.prompt_hash | Hash of the user prompt for deduplication and correlation. | keyword |
+| aws.bedrock_agentcore.provider_name | Name of the AI provider or platform. | keyword |
+| aws.bedrock_agentcore.request_id | ID of the processed request. | keyword |
+| aws.bedrock_agentcore.request_payload.actor_id | Actor initiating the request. | keyword |
+| aws.bedrock_agentcore.request_payload.prompt | Prompt extracted from payload when it is a string. | text |
+| aws.bedrock_agentcore.request_payload_object | Request payload when it is an object, array, or map. | flattened |
+| aws.bedrock_agentcore.resource_arn | Amazon Resource Name (ARN) of the AgentCore runtime resource. | keyword |
+| aws.bedrock_agentcore.response_payload_object | Response payload from the agent. | flattened |
+| aws.bedrock_agentcore.service_name | Service handling the operation. | keyword |
+| aws.bedrock_agentcore.session_id | Unique identifier for the AgentCore runtime session. | keyword |
+| aws.bedrock_agentcore.severity_number | Numeric severity level associated with the event. | integer |
+| aws.cloudwatch.message | CloudWatch log message. | text |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset | long |
+

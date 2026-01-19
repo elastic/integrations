@@ -46,7 +46,7 @@ processors:
       field: crowdstrike.event.EndpointName
       target_field: host.hostname
       ignore_missing: true
-      tag: rename_user_name
+      tag: rename_endpoint_name
   - append:
       field: host.ip
       value: '{{{crowdstrike.event.EndpointIp}}}'
@@ -74,7 +74,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_start_time_epoch
+      tag: date_event_start_time_epoch_ms
       if: "ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() >= 12"
   - date:
       field: crowdstrike.event.StartTime
@@ -87,30 +87,30 @@ processors:
   - convert:
       field: crowdstrike.event.EndTime
       type: string
-      tag: convert_start_time_epoch
+      tag: convert_end_time_epoch
       ignore_missing: true
       if: ctx.crowdstrike?.event?.EndTime != null
   - gsub:
       field: crowdstrike.event.EndTime
       pattern: "\\d{6}$"
       replacement: ""
-      tag: gsub_start_time_epoch
+      tag: gsub_end_time_epoch
       if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() > 18"
   - date:
       field: crowdstrike.event.EndTime
-      target_field: event.start
+      target_field: event.end
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_start_time_epoch
+      tag: date_event_end_time_epoch_ms
       if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() >= 12"
   - date:
       field: crowdstrike.event.EndTime
-      target_field: event.start
+      target_field: event.end
       timezone: UTC
       formats:
         - UNIX
-      tag: date_event_start_time_epoch
+      tag: date_event_end_time_epoch
       if: 'ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() <= 11'
   - set:
       field: '@timestamp'
