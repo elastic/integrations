@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-19
-**Total Core Artifacts**: 18 available + 20 in progress + 6 not available = 44 total variants
-**Total Queries**: 42
-**Completion Rate**: 40.9% (18/44 core artifacts fully supported)
+**Total Core Artifacts**: 19 available + 19 in progress + 6 not available = 44 total variants
+**Total Queries**: 43
+**Completion Rate**: 43.2% (19/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 18     | 40.9%      |
-| ⚠️ In Progress (Needs Validation) | 20    | 45.5%      |
+| ✅ Available (Fully Supported) | 19     | 43.2%      |
+| ⚠️ In Progress (Needs Validation) | 19    | 43.2%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
@@ -63,7 +63,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 21 | Tasks                   | ⚠️ | Win | -     | -    | scheduled_tasks table                                                                                                            |
 | 21a | Tasks                   | ⚠️ | Linux | -     | -    | scheduled_tasks table                                                                                                            |
 | 21b | Tasks                   | ⚠️ | Mac   | -     | -    | scheduled_tasks table                                                                                                            |
-| 22 | User Assist             | ⚠️ | Win   | -     | -    | userassist table                                                                                                                 |
+| 22 | User Assist             | ✅ | Win | userassist_windows_elastic | [e9e5](kibana/osquery_saved_query/osquery_manager-e9e51a33-b2a2-47b4-a00e-7de8a205d55b.json) | userassist table with user resolution and hash enrichment |
 | 23 | WMI Config & Used Apps  | ⚠️ | Win   | -     | -    | wmi_cli_event_consumers, wmi_script_event_consumers                                                                              |
 | 24 | WMI Providers & Filters | ⚠️ | Win   | -     | -    | wmi_event_filters, wmi_filter_consumer_binding                                                                                   |
 | 25 | MFT                     | ❌ | Win   | -     | -    | Not natively supported. Available via Trail of Bits extension                                                                    |
@@ -171,7 +171,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ✅ LNK files (Windows: file table with native shortcut parsing using path LIKE pattern for full metadata + hash + authenticode enrichment + 8+ locations via users table)
 - ✅ Shell History (Linux/Mac: shell_history table with anti-forensics detection)
 - ✅ Shellbags (Windows: shellbags table)
-- ⚠️ User Assist (Windows: userassist table)
+- ✅ User Assist (Windows: userassist table with user resolution and hash enrichment)
 - ⚠️ Browser URL History (All platforms: via ATC custom tables)
 - ❌ Jumplists (Not Available - Use Shellbags + LNK Files as alternatives)
 
