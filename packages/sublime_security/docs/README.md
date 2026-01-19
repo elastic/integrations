@@ -85,47 +85,67 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-12T06:04:03.714Z",
+    "@timestamp": "2024-07-30T05:33:47.725Z",
     "agent": {
-        "ephemeral_id": "390c3f2d-c9eb-4229-9992-0f4fc2436f51",
-        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "432eaa29-8cc1-4524-8b66-ac16ba18781b",
+        "id": "6840d1b4-c8b0-4520-a1fc-669e9bfee96d",
+        "name": "elastic-agent-27648",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-sublime-audit-bucket-83544",
+                "name": "elastic-package-sublime-audit-bucket-83544"
+            },
+            "object": {
+                "key": "test-audit.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "sublime_security.audit",
-        "namespace": "99243",
+        "namespace": "58929",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
+        "id": "6840d1b4-c8b0-4520-a1fc-669e9bfee96d",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "action": "search",
         "agent_id_status": "verified",
         "dataset": "sublime_security.audit",
-        "id": "bd49af79-0cfb-4184-bd18-b0401d69ac61",
-        "ingested": "2024-08-28T10:35:52Z",
+        "id": "26704b44-d1b0-4362-8221-579e604f40cb",
+        "ingested": "2025-10-24T12:38:49Z",
         "kind": "event",
-        "original": "{\"created_at\":\"2024-08-12T06:04:03.714126Z\",\"created_by\":{\"active\":true,\"created_at\":\"2024-07-12T05:13:47.879426Z\",\"email_address\":\"demo@example.com\",\"first_name\":\"Demo\",\"google_oauth_user_id\":\"d83rb8et4-refe-fe7t4f8efe\",\"id\":\"6e6eca05-4fea-406b-86d4-b40177e25474\",\"is_enrolled\":true,\"last_name\":\"User\",\"microsoft_oauth_user_id\":\"fhe7t4bgf8-freu-ebfur94ref\",\"phone_number\":null,\"role\":\"admin\",\"updated_at\":\"2024-07-12T05:13:47.879426Z\"},\"data\":{\"request\":{\"api_key_name\":\"demo mode local\",\"authentication_method\":\"api_key\",\"body\":\"\",\"id\":\"6ad202de-0def-423d-a0f2-549402e1a9c9\",\"ip\":\"1.128.0.0\",\"method\":\"GET\",\"path\":\"/v0/message-groups\",\"user_agent\":\"Go-http-client/1.1\"}},\"id\":\"bd49af79-0cfb-4184-bd18-b0401d69ac61\",\"type\":\"message_group.search\"}",
+        "original": "{\"id\":\"26704b44-d1b0-4362-8221-579e604f40cb\",\"type\":\"message_group.search\",\"created_at\":\"2024-07-30T05:33:47.725649Z\",\"data\":{\"request\":{\"id\":\"ca817b01-cfaa-40ea-ab80-30b6a8e6ef08\",\"path\":\"/v1/messages/groups/search\",\"method\":\"GET\",\"query\":{},\"body\":\"\",\"api_key_name\":\"demo mode key\",\"authentication_method\":\"api_key\",\"ip\":\"81.2.69.142\",\"user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36\"}},\"created_by\":{\"id\":\"6e6eca05-4fea-406b-86d4-b40177e25474\",\"active\":true,\"first_name\":\"Bob\",\"last_name\":\"User\",\"email_address\":\"bob@example.com\",\"phone_number\":null,\"created_at\":\"2024-07-12T05:13:47.879426Z\",\"updated_at\":\"2024-07-12T05:13:47.879426Z\",\"role\":\"admin\",\"is_enrolled\":true,\"google_oauth_user_id\":\"\",\"microsoft_oauth_user_id\":\"\"}}",
         "type": [
             "info"
         ]
     },
     "http": {
         "request": {
-            "id": "6ad202de-0def-423d-a0f2-549402e1a9c9",
+            "id": "ca817b01-cfaa-40ea-ab80-30b6a8e6ef08",
             "method": "GET"
         }
     },
     "input": {
-        "type": "cel"
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-sublime-audit-bucket-83544.s3.us-east-1.amazonaws.com/test-audit.log"
+        },
+        "offset": 1
     },
     "observer": {
         "product": "Sublime Security",
@@ -133,65 +153,63 @@ An example event for `audit` looks as following:
     },
     "related": {
         "ip": [
-            "1.128.0.0"
+            "81.2.69.142"
         ],
         "user": [
-            "demo@example.com",
-            "Demo",
-            "d83rb8et4-refe-fe7t4f8efe",
-            "6e6eca05-4fea-406b-86d4-b40177e25474",
-            "fhe7t4bgf8-freu-ebfur94ref"
+            "bob@example.com",
+            "Bob",
+            "6e6eca05-4fea-406b-86d4-b40177e25474"
         ]
     },
     "source": {
-        "ip": "1.128.0.0"
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142"
     },
     "sublime_security": {
         "audit": {
-            "created_at": "2024-08-12T06:04:03.714Z",
             "created_by": {
                 "active": true,
                 "created_at": "2024-07-12T05:13:47.879Z",
-                "email_address": "demo@example.com",
-                "first_name": "Demo",
-                "google_oauth_user_id": "d83rb8et4-refe-fe7t4f8efe",
-                "id": "6e6eca05-4fea-406b-86d4-b40177e25474",
+                "first_name": "Bob",
                 "is_enrolled": true,
                 "last_name": "User",
-                "microsoft_oauth_user_id": "fhe7t4bgf8-freu-ebfur94ref",
-                "role": "admin",
                 "updated_at": "2024-07-12T05:13:47.879Z"
             },
             "data": {
                 "request": {
-                    "api_key_name": "demo mode local",
-                    "authentication_method": "api_key",
-                    "id": "6ad202de-0def-423d-a0f2-549402e1a9c9",
-                    "ip": "1.128.0.0",
-                    "method": "GET",
-                    "path": "/v0/message-groups",
-                    "user_agent": "Go-http-client/1.1"
+                    "api_key_name": "demo mode key",
+                    "authentication_method": "api_key"
                 }
             },
-            "id": "bd49af79-0cfb-4184-bd18-b0401d69ac61",
             "type": "message_group.search"
         }
     },
     "tags": [
+        "collect_sqs_logs",
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "sublime_security-audit"
     ],
     "url": {
-        "path": "/v0/message-groups"
+        "path": "/v1/messages/groups/search"
     },
     "user": {
         "domain": "example.com",
-        "email": "demo@example.com",
-        "full_name": "Demo User",
+        "email": "bob@example.com",
+        "full_name": "Bob User",
         "id": "6e6eca05-4fea-406b-86d4-b40177e25474",
-        "name": "demo",
+        "name": "bob",
         "roles": [
             "admin"
         ]
@@ -200,9 +218,14 @@ An example event for `audit` looks as following:
         "device": {
             "name": "Other"
         },
-        "name": "Go-http-client",
-        "original": "Go-http-client/1.1",
-        "version": "1.1"
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "os": {
+            "full": "Windows 10",
+            "name": "Windows",
+            "version": "10"
+        },
+        "version": "126.0.0.0"
     }
 }
 ```
@@ -212,6 +235,9 @@ An example event for `audit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -1369,42 +1395,40 @@ An example event for `message_event` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-12T05:15:08.221Z",
+    "@timestamp": "2023-05-04T01:06:50.738Z",
     "agent": {
-        "ephemeral_id": "384edc61-b94b-40cf-9cc6-86d5418d35e5",
-        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "2ebcdcee-21e4-4c4a-878d-0fbdb3f18f46",
+        "id": "8930423a-231a-4254-8d2c-7905f049d045",
+        "name": "elastic-agent-41694",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-sublime-message-bucket-24476",
+                "name": "elastic-package-sublime-message-bucket-24476"
+            },
+            "object": {
+                "key": "test-message.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "sublime_security.message_event",
-        "namespace": "17638",
+        "namespace": "39020",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
+        "id": "8930423a-231a-4254-8d2c-7905f049d045",
         "snapshot": false,
-        "version": "8.13.0"
-    },
-    "email": {
-        "from": {
-            "address": [
-                "bob.demo@gmail.com"
-            ]
-        },
-        "subject": "Urgent: Wire transfer",
-        "to": {
-            "address": [
-                "xyz@example.com",
-                "user12@example.com",
-                "user@example.com",
-                "leon12@example.com"
-            ]
-        }
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1412,72 +1436,96 @@ An example event for `message_event` looks as following:
             "email"
         ],
         "dataset": "sublime_security.message_event",
-        "id": "9c426680-5cdf-4283-adbd-d79ba0e52434",
-        "ingested": "2024-08-28T10:36:57Z",
+        "id": "089b2e97-2107-4d1e-83e1-1920314dbb80",
+        "ingested": "2025-10-24T12:34:48Z",
         "kind": "event",
-        "original": "{\"canonical_id\":\"dd97dc82731ff7e82edfccaef59826cccd271bd4423e09d1e150ade83037cb37\",\"created_at\":\"2024-07-12T05:15:08.221838Z\",\"external_id\":\"7a2dfbeb-1310-48fc-9ed9-f480608a0306\",\"forward_recipients\":[],\"forwarded_at\":null,\"id\":\"9c426680-5cdf-4283-adbd-d79ba0e52434\",\"landed_in_spam\":false,\"mailbox\":{\"email\":\"demo@example.com\",\"external_id\":null,\"id\":\"433fe142-e2e5-4372-84ea-480279543a9b\"},\"message_source_id\":\"257982a1-f106-4c68-bc64-ff032914ed5f\",\"read_at\":null,\"recipients\":[{\"email\":\"xyz@example.com\"},{\"email\":\"user12@example.com\"},{\"email\":\"user@example.com\"},{\"email\":\"leon12@example.com\"}],\"replied_at\":null,\"sender\":{\"display_name\":\"Bob Doe\",\"email\":\"bob.demo@gmail.com\"},\"subject\":\"Urgent: Wire transfer\"}",
+        "original": "{\"created_at\":\"2023-05-04T01:06:50.73801Z\",\"data\":{\"flagged_rules\":[{\"id\":\"958ad820-767f-4c83-ac44-94032151574f\",\"name\":\"Test rule1\",\"severity\":\"high\",\"tags\":[\"Testing\"]},{\"id\":\"2483da42-6905-4eca-bc8e-a5475ab906a4\",\"name\":\"Test rule2\",\"severity\":\"high\",\"tags\":[\"Testing\"]},{\"id\":\"9f95f7bb-b1f1-465a-a7a4-23266792c000\",\"name\":\"Test rule3\",\"severity\":\"low\",\"tags\":[\"Testing\"]},{\"id\":\"862b4f5b-c0f7-4e36-89b2-3091f9ac492b\",\"name\":\"Test rule4\",\"severity\":\"medium\",\"tags\":[\"Testing\"]}],\"message\":{\"canonical_id\":\"8fdb3acd8441b18478b7e80927c732f44e9086dcf7cfa6c1186ed21637427ef8\",\"external_id\":\"187e44c2288f2e8d\",\"id\":\"089b2e97-2107-4d1e-83e1-1920314dbb80\",\"mailbox\":{\"external_id\":\"100712120249161713725\",\"id\":\"3142d2f8-ac0d-4e37-bb1f-d5e4ff5f7f96\"},\"message_source_id\":\"d76ce576-4687-4182-b8e3-a220d6878b21\"},\"triggered_actions\":[{\"id\":\"9f95f7bb-b1f1-465a-a7a4-23266792c000\",\"name\":\"test\",\"type\":\"alert\"},{\"id\":\"9f95f7bb-b1f1-465a-a7a4-23266792c001\",\"name\":\"test 1\",\"type\":\"rule\"}]},\"type\":\"message.flagged\"}",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "cel"
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-sublime-message-bucket-24476.s3.us-east-1.amazonaws.com/test-message.log"
+        },
+        "offset": 643
     },
     "observer": {
         "product": "Sublime Security",
         "vendor": "Sublime Security"
     },
-    "related": {
-        "user": [
-            "xyz@example.com",
-            "user12@example.com",
-            "user@example.com",
-            "leon12@example.com",
-            "Bob Doe",
-            "bob.demo@gmail.com"
+    "rule": {
+        "id": [
+            "958ad820-767f-4c83-ac44-94032151574f",
+            "2483da42-6905-4eca-bc8e-a5475ab906a4",
+            "9f95f7bb-b1f1-465a-a7a4-23266792c000",
+            "862b4f5b-c0f7-4e36-89b2-3091f9ac492b"
+        ],
+        "name": [
+            "Test rule1",
+            "Test rule2",
+            "Test rule3",
+            "Test rule4"
         ]
-    },
-    "source": {
-        "user": {
-            "name": "Bob Doe"
-        }
     },
     "sublime_security": {
         "message_event": {
-            "canonical_id": "dd97dc82731ff7e82edfccaef59826cccd271bd4423e09d1e150ade83037cb37",
-            "created_at": "2024-07-12T05:15:08.221Z",
-            "external_id": "7a2dfbeb-1310-48fc-9ed9-f480608a0306",
-            "id": "9c426680-5cdf-4283-adbd-d79ba0e52434",
-            "landed_in_spam": false,
+            "canonical_id": "8fdb3acd8441b18478b7e80927c732f44e9086dcf7cfa6c1186ed21637427ef8",
+            "data": {
+                "flagged_rules": [
+                    {
+                        "severity": "high",
+                        "tags": [
+                            "Testing"
+                        ]
+                    },
+                    {
+                        "severity": "high",
+                        "tags": [
+                            "Testing"
+                        ]
+                    },
+                    {
+                        "severity": "low",
+                        "tags": [
+                            "Testing"
+                        ]
+                    },
+                    {
+                        "severity": "medium",
+                        "tags": [
+                            "Testing"
+                        ]
+                    }
+                ],
+                "triggered_actions": [
+                    {
+                        "id": "9f95f7bb-b1f1-465a-a7a4-23266792c000",
+                        "name": "test",
+                        "type": "alert"
+                    },
+                    {
+                        "id": "9f95f7bb-b1f1-465a-a7a4-23266792c001",
+                        "name": "test 1",
+                        "type": "rule"
+                    }
+                ]
+            },
+            "external_id": "187e44c2288f2e8d",
             "mailbox": {
-                "email": "demo@example.com",
-                "id": "433fe142-e2e5-4372-84ea-480279543a9b"
+                "external_id": "100712120249161713725",
+                "id": "3142d2f8-ac0d-4e37-bb1f-d5e4ff5f7f96"
             },
-            "message_source_id": "257982a1-f106-4c68-bc64-ff032914ed5f",
-            "recipients": [
-                {
-                    "email": "xyz@example.com"
-                },
-                {
-                    "email": "user12@example.com"
-                },
-                {
-                    "email": "user@example.com"
-                },
-                {
-                    "email": "leon12@example.com"
-                }
-            ],
-            "sender": {
-                "display_name": "Bob Doe",
-                "email": "bob.demo@gmail.com"
-            },
-            "subject": "Urgent: Wire transfer"
+            "message_source_id": "d76ce576-4687-4182-b8e3-a220d6878b21",
+            "type": "message.flagged"
         }
     },
     "tags": [
+        "collect_sqs_logs",
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "sublime_security-message_event"
     ]
@@ -1489,6 +1537,9 @@ An example event for `message_event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
