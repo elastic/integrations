@@ -90,3 +90,12 @@ For more details about enabling logs for AgentCore, check the [Amazon Bedrock Ag
 
 {{event "runtime_application_logs"}}
 {{fields "runtime_application_logs"}}
+
+### Code Interpreter Application Logs
+
+Amazon Bedrock AgentCore code interpreter application logs provide detailed insights into code execution operations, file management, and interpreter sessions. The integration collects comprehensive log data from your AgentCore code interpreter to help you understand code execution behavior, monitor file operations, and troubleshoot issues.
+
+For more details about enabling logs for AgentCore, check the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "codeinterpreter_application_logs"}}
+{{fields "codeinterpreter_application_logs"}}
