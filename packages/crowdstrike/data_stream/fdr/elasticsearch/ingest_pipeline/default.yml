@@ -1585,6 +1585,12 @@ processors:
       target_field: user.name
       ignore_missing: true
   - rename:
+      tag: rename_crowdstrike_User_ID_to_user_id
+      if: ctx.crowdstrike?.User instanceof Map && ctx.crowdstrike.User.ID != null && ctx.user?.id == null
+      field: crowdstrike.User.ID
+      target_field: user.id
+      ignore_missing: true
+  - rename:
       tag: rename_crowdstrike_UserName_to_user_name_5437c07f
       if: ctx.crowdstrike?.UserName != null && ctx.user?.name == null
       field: crowdstrike.UserName
