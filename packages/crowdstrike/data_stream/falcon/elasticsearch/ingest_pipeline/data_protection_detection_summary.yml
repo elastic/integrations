@@ -202,7 +202,7 @@ processors:
         def idx = ctx.crowdstrike.event.Filename.lastIndexOf('.');
         if (idx != -1) {
           ctx.file = ctx.file ?: [:];
-          ctx.file.extension = ctx.crowdstrike.event.Filename.substring(idx).toLowerCase();
+          ctx.file.extension = ctx.crowdstrike.event.Filename.substring(idx + 1).toLowerCase();
         }
       on_failure:
         - append:
@@ -235,7 +235,7 @@ processors:
       ignore_empty_value: true
   - foreach:
       field: crowdstrike.event.MitreAttack
-      tag: foreach_event_MitreAttack
+      tag: foreach_event_MitreAttack_tactic_name
       if: ctx.crowdstrike?.event?.MitreAttack instanceof List
       processor:
         append:
@@ -245,7 +245,7 @@ processors:
             allow_duplicates: false
   - foreach:
       field: crowdstrike.event.MitreAttack
-      tag: foreach_event_MitreAttack
+      tag: foreach_event_MitreAttack_tactic_id
       if: ctx.crowdstrike?.event?.MitreAttack instanceof List
       processor:
         append:
@@ -255,7 +255,7 @@ processors:
             allow_duplicates: false
   - foreach:
       field: crowdstrike.event.MitreAttack
-      tag: foreach_event_MitreAttack
+      tag: foreach_event_MitreAttack_technique_name
       if: ctx.crowdstrike?.event?.MitreAttack instanceof List
       processor:
         append:
@@ -265,7 +265,7 @@ processors:
             allow_duplicates: false
   - foreach:
       field: crowdstrike.event.MitreAttack
-      tag: foreach_event_MitreAttack
+      tag: foreach_event_MitreAttack_technique_id
       if: ctx.crowdstrike?.event?.MitreAttack instanceof List
       processor:
         append:

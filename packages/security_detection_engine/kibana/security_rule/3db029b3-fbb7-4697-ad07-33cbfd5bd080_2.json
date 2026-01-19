@@ -1,0 +1,176 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies concurrent Entra ID sign-in events for the same user and session from multiple sources, and where one of the authentication event has some suspicious properties often associated to DeviceCode and OAuth phishing. Adversaries may steal Refresh Tokens (RTs) via phishing to bypass multi-factor authentication (MFA) and gain unauthorized access to Azure resources.",
+        "false_positives": [
+            "Users authenticating from multiple devices and using the deviceCode protocol or the Visual Studio Code client."
+        ],
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Entra ID OAuth Device Code Flow with Concurrent Sign-ins",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID OAuth Device Code Flow with Concurrent Sign-ins\n\n### Possible investigation steps\n\n- Review the sign-in logs to assess the context and reputation of the source.ip address.\n- Investigate the user account associated with the successful sign-in to determine if the activity aligns with expected behavior or if it appears suspicious.\n- Check for any recent changes or anomalies in the user's account settings or permissions that could indicate compromise.\n- Review the history of sign-ins for the user to identify any patterns or unusual access times that could suggest unauthorized access.\n- Assess the device from which the sign-in was attempted to ensure it is a recognized and authorized device for the user.\n\n### Response and remediation\n\n- Immediately revoke the compromised Primary Refresh Tokens (PRTs) to prevent further unauthorized access. This can be done through the Azure portal by navigating to the user's account and invalidating all active sessions.\n- Enforce a password reset for the affected user accounts to ensure that any credentials potentially compromised during the attack are no longer valid.\n- Implement additional Conditional Access policies that require device compliance checks and restrict access to trusted locations or devices only, to mitigate the risk of future PRT abuse.\n- Conduct a thorough review of the affected accounts' recent activity logs to identify any unauthorized actions or data access that may have occurred during the compromise.\n- Escalate the incident to the security operations team for further investigation and to determine if there are any broader implications or additional compromised accounts.\n- Enhance monitoring by configuring alerts for unusual sign-in patterns or device code authentication attempts from unexpected locations or devices, to improve early detection of similar threats.\n- Coordinate with the incident response team to perform a post-incident analysis and update the incident response plan with lessons learned from this event.",
+        "query": "from logs-azure.signinlogs-* metadata _id, _version, _index\n\n| where event.category == \"authentication\" and event.dataset == \"azure.signinlogs\" and\n        azure.signinlogs.properties.original_transfer_method == \"deviceCodeFlow\"\n\n| Eval Esql.interactive_logon = CASE(azure.signinlogs.category == \"SignInLogs\", source.ip, null),\n       Esql.non_interactive_logon = CASE(azure.signinlogs.category ==  \"NonInteractiveUserSignInLogs\", source.ip, null)\n\n| stats Esql.count_logon = count(*),\n        Esql.timestamp_values = values(@timestamp),\n        Esql.source_ip_count_distinct = count_distinct(source.ip),\n        Esql.is_interactive = count(Esql.interactive_logon),\n        Esql.is_non_interactive = count(Esql.non_interactive_logon),\n        Esql.user_agent_count_distinct = COUNT_DISTINCT(user_agent.original),\n        Esql.user_agent_values = VALUES(user_agent.original),\n        Esql.azure_signinlogs_properties_client_app_values = values(azure.signinlogs.properties.app_display_name),\n        Esql.azure_signinlogs_properties_client_app_values = values(azure.signinlogs.properties.app_id),\n        Esql.azure_signinlogs_properties_resource_display_name_values = values(azure.signinlogs.properties.resource_display_name),\n        Esql.azure_signinlogs_properties_auth_requirement_values = values(azure.signinlogs.properties.authentication_requirement),\n        Esql.azure_signinlogs_properties_tenant_id = values(azure.tenant_id),\n        Esql.azure_signinlogs_properties_status_error_code_values = values(azure.signinlogs.properties.status.error_code),\n        Esql.message_values = values(message),\n        Esql.azure_signinlogs_properties_resource_id_values = values(azure.signinlogs.properties.resource_id),\n        Esql.source_ip_values = VALUES(source.ip) by azure.signinlogs.properties.session_id, azure.signinlogs.identity\n\n| where Esql.is_interactive >= 2 and Esql.is_non_interactive >= 1 and (Esql.source_ip_count_distinct >= 2 or Esql.user_agent_count_distinct >= 2)\n| keep\n       Esql.*,\n       azure.signinlogs.properties.session_id,\n       azure.signinlogs.identity\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/entra/identity/",
+            "https://learn.microsoft.com/en-us/entra/identity/monitoring-health/concept-sign-ins",
+            "https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/reference-azure-monitor-sign-ins-log-schema",
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/",
+            "https://www.wiz.io/blog/recent-oauth-attacks-detection-strategies"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.azure_signinlogs_properties_auth_requirement_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.azure_signinlogs_properties_client_app_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.azure_signinlogs_properties_resource_display_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.azure_signinlogs_properties_resource_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.azure_signinlogs_properties_status_error_code_values",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.azure_signinlogs_properties_tenant_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.count_logon",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_interactive",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_non_interactive",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.message_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.timestamp_values",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.identity",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.session_id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "3db029b3-fbb7-4697-ad07-33cbfd5bd080",
+        "setup": "#### Required Azure Entra Sign-In Logs\nThis rule requires the Azure logs integration be enabled and configured to collect all logs, including sign-in logs from Entra. In Entra, sign-in logs must be enabled and streaming to the Event Hub used for the Azure logs integration.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Entra ID",
+            "Data Source: Entra ID Sign-in",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.002",
+                                "name": "Spearphishing Link",
+                                "reference": "https://attack.mitre.org/techniques/T1566/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "3db029b3-fbb7-4697-ad07-33cbfd5bd080_2",
+    "type": "security-rule"
+}
