@@ -56,9 +56,9 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2024-11-12T09:39:58.489Z",
     "agent": {
-        "ephemeral_id": "f38fc291-c74c-4d61-a53f-adf92ddad4a8",
-        "id": "1ff77317-b9fd-4586-9988-0200703917dd",
-        "name": "elastic-agent-61882",
+        "ephemeral_id": "6f67dab1-a41b-450f-a155-a71e23a90def",
+        "id": "078a56bf-68d7-4243-a5de-83dfb7e00e88",
+        "name": "elastic-agent-18047",
         "type": "filebeat",
         "version": "8.19.4"
     },
@@ -76,14 +76,14 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "blacklens.alerts",
-        "namespace": "95646",
+        "namespace": "38546",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1ff77317-b9fd-4586-9988-0200703917dd",
+        "id": "078a56bf-68d7-4243-a5de-83dfb7e00e88",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -92,10 +92,10 @@ An example event for `alerts` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2026-01-12T05:57:57.490Z",
+        "created": "2026-01-19T05:27:59.414Z",
         "dataset": "blacklens.alerts",
         "id": "1001",
-        "ingested": "2026-01-12T05:58:00Z",
+        "ingested": "2026-01-19T05:28:02Z",
         "type": [
             "indicator"
         ]
