@@ -90,3 +90,12 @@ For more details about enabling logs for AgentCore, check the [Amazon Bedrock Ag
 
 {{event "runtime_application_logs"}}
 {{fields "runtime_application_logs"}}
+
+### Browser Usage Logs
+
+Amazon Bedrock AgentCore browser usage logs provide detailed insights into browser tool resource consumption. The integration collects usage data from your AgentCore browser tool to help you monitor resource utilization, track costs, and optimize browser session performance.
+
+For more details about enabling logs for AgentCore, check the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "browser_usage_logs"}}
+{{fields "browser_usage_logs"}}
