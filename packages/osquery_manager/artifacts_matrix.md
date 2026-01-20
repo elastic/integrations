@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-19
-**Total Core Artifacts**: 21 available + 17 in progress + 6 not available = 44 total variants
-**Total Queries**: 44
-**Completion Rate**: 47.7% (21/44 core artifacts fully supported)
+**Last Updated**: 2026-01-20
+**Total Core Artifacts**: 23 available + 17 in progress + 6 not available = 46 total variants
+**Total Queries**: 46
+**Completion Rate**: 50.0% (23/46 core artifacts fully supported)
 
 ---
 
@@ -13,9 +13,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 21     | 47.7%      |
-| ⚠️ In Progress (Needs Validation) | 17    | 38.6%      |
-| ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
+| ✅ Available (Fully Supported) | 23     | 50.0%      |
+| ⚠️ In Progress (Needs Validation) | 17    | 37.0%      |
+| ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
 
@@ -67,6 +67,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 23 | WMI Config & Used Apps  | ✅ | Win | wmi_persistence_event_subscriptions | [4003](kibana/osquery_saved_query/osquery_manager-40033716-3580-48fe-a17d-441a838acd8a.json) | wmi_cli_event_consumers, wmi_script_event_consumers - Combined with #24 into single comprehensive query |
 | 24 | WMI Providers & Filters | ✅ | Win | wmi_persistence_event_subscriptions | [4003](kibana/osquery_saved_query/osquery_manager-40033716-3580-48fe-a17d-441a838acd8a.json) | wmi_event_filters, wmi_filter_consumer_binding - Combined with #23 into single comprehensive query |
 | 25 | MFT                     | ❌ | Win   | -     | -    | Not natively supported. Available via Trail of Bits extension                                                                    |
+| 26 | DNS Cache               | ✅ | Win   | dns_cache_snapshot_windows_elastic | [ae61](kibana/osquery_saved_query/osquery_manager-ae619588-47a8-4ba8-a378-375244fbef23.json) | dns_cache table - enumerates cached DNS queries for threat hunting, C2 detection. Filters reverse lookups and AD noise |
+| 27 | DNS Event Log           | ✅ | Win   | dns_event_log_windows_elastic | [66ee](kibana/osquery_saved_query/osquery_manager-66ee8c5f-7030-4641-a14b-f4a45d1edd6a.json) | windows_eventlog (DNS Client Operational, Event ID 3008) with process context via LEFT JOIN. Requires DNS logging enabled |
 
 ---
 
@@ -182,6 +184,8 @@ While some artifacts are not directly available, the existing queries provide st
 
 ### Network/C2 Indicators
 - ✅ ARP Cache (arp_cache + interface_details + interface_addresses tables with joins, includes ECS mappings)
+- ✅ DNS Cache (Windows: dns_cache table - enumerates cached DNS queries for threat hunting, C2 beacon detection)
+- ✅ DNS Event Log (Windows: windows_eventlog DNS Client Operational with process context - requires DNS logging enabled)
 - ✅ Network Interfaces & IP Configuration (Windows: DHCP/DNS config; Linux/macOS: IPv6 config with hop_limit, forwarding, redirect_accept)
 
 ### System Information
