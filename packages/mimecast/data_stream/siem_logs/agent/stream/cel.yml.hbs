@@ -98,8 +98,8 @@ program: |
                 },
                 "want_more": size(blobs) > 1 || size(work_list) != 0,
               }
-            : (batch.StatusCode == 404) ?
-              // 404 Not Found - skip this blob and continue immediately with remaining blobs
+            : (batch.StatusCode == 404 || batch.StatusCode == 403) ?
+              // 404 Not Found or 403 Forbidden (expired S3 URL) - skip this blob and continue with remaining blobs
               {
                 "events": [{"message": "want_more"}],
                 "cursor": {

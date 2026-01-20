@@ -295,6 +295,45 @@ processors:
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
+  - script:
+      description: Map value to value_object when value is a map.
+      tag: script_indicators_value
+      lang: painless
+      if: ctx.json?.indicators instanceof List
+      source: |
+        for (def indicator : ctx.json.indicators) {
+          if (indicator.value instanceof Map) {
+            indicator.value_object = indicator.value;
+            indicator.remove('value');
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.indicators
+      tag: foreach_indicators_value_object
+      if: ctx.json?.indicators instanceof List
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.value_object.ips
+          tag: foreach_value_object_ips
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value
+              tag: covert_value_object_ips
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
   - foreach:
       field: json.indicators
       processor:

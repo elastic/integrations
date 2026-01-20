@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the deletion of an AWS Web Application Firewall (WAF) Web ACL. Web ACLs are the core enforcement objects in AWS WAF, defining which traffic is inspected, allowed, or blocked for protected applications. Deleting a Web ACL removes all associated rules, protections, and logging configurations. Adversaries who obtain sufficient privileges may delete a Web ACL to disable critical security controls, evade detection, or prepare for downstream attacks such as web-application compromise, data theft, or resource abuse. Because Web ACLs are rarely deleted outside of controlled maintenance or infrastructure updates, unexpected deletions may indicate potential defense evasion.",
+        "false_positives": [
+            "Authorized administrators may delete Web ACLs as part of planned migrations, infrastructure refactoring, or automation-driven redeployments. Ensure the deletion aligns with approved change requests, maintenance windows, or known IaC workflows. Deletions performed by unfamiliar users, unusual identities, or unexpected automation should be investigated."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS WAF Access Control List Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance.\n> While every effort has been made to ensure its quality, validate and adapt it to suit your operational needs.\n\n### Investigating AWS WAF Access Control List Deletion\n\nAWS Web Application Firewall (WAF) protects applications by inspecting HTTP/S traffic and applying rule groups,\nmanaged rule sets, and custom logic to block or allow requests. A Web ACL is the primary enforcement object that binds\nthese protections to CloudFront distributions, Application Load Balancers, API Gateway stages, and AppSync APIs.\n\nDeleting a Web ACL immediately removes all protections and logging associated with that application entry point.\nBecause this action can expose applications to direct exploitation, adversaries may delete Web ACLs to disable\ndefenses, evade detection, or prepare for lateral movement or data exfiltration.\n\nThis rule detects successful `DeleteWebACL` events across WAF Classic, WAF Regional, and WAFv2 APIs.\n\n### Possible investigation steps\n\n- **Identify the actor and access context**\n  - Review `aws.cloudtrail.user_identity.arn` and `access_key_id` for the identity that initiated deletion.\n  - Determine whether this principal normally manages WAF resources.\n  - Check if the call originated via IAM role assumption, federated identity, or long-lived IAM key.\n\n- **Assess the deleted ACL**\n  - Check `aws.cloudtrail.request_parameters` for:\n    - The Web ACL ID (`WebACLId`, `Id`, or ARN).\n    - The scope (REGIONAL vs. CLOUDFRONT).\n    - Associated resource ARNs that were protected.\n  - Determine which applications or APIs depended on this Web ACL.\n  - Evaluate the criticality and sensitivity of any exposed endpoints.\n\n- **Correlate with related security-affecting activity**\n  - Use CloudTrail to pivot on:\n    - The same identity (`user_identity.arn` or access key).\n    - The same application load balancer, CloudFront distribution, or API Gateway stage.\n  - Look for:\n    - Prior rule updates (`UpdateWebACL`, `DeleteRuleGroup`, etc.).\n    - IAM privilege escalation events.\n    - Changes to logging or monitoring (e.g., disabling WAF logging).\n\n- **Investigate request origin and tooling**\n  - Review `source.ip`, ASN, and geo-location for anomalies.\n  - Analyze `user_agent.original` to identify automation, custom scripts, CLI usage, or console access.\n\n- **Evaluate operational context**\n  - Determine whether the deletion aligns with:\n    - Scheduled maintenance.\n    - IaC-driven redeployments (Terraform, CDK, CloudFormation).\n    - Known migrations between WAF Classic and WAFv2.\n  - If deletion occurred outside expected time windows or without a corresponding change ticket, treat it as suspicious.\n\n### False positive analysis\n\n- **Expected infrastructure lifecycle events**\n  - IaC pipelines may destroy and recreate Web ACLs as part of environment rotation or blue/green deployments.\n  - Confirm whether the deleting identity matches known automation roles.\n\n- **Planned refactoring or migrations**\n  - Organizations transitioning to WAFv2 or moving resources across regions may intentionally delete legacy ACLs.\n\n- **Testing and sandbox environments**\n  - Developers may frequently create and remove ACLs during experimentation.\n  - Tune the rule to suppress events from non-production accounts or specific tags.\n\n- **Automated cleanup**\n  - Certain CI/CD processes or teardown scripts remove WAF resources during ephemeral environment shutdowns.\n\nIf any deletion is inconsistent with normal operational patterns or performed by an unexpected principal, treat it as a potential defense-evasion attempt.\n\n### Response and remediation\n\n- **Containment**\n  - Immediately assess exposed applications. If feasible, apply temporary restrictive network controls (e.g., ALB security group tightening or CloudFront WAFv2 fallback rules).\n  - Revoke session tokens or access keys associated with suspicious actors.\n\n- **Restore protections**\n  - Recreate the deleted Web ACL using IaC definitions, backups, or previous configurations.\n  - Validate that logging and monitoring (WAF logs, CloudWatch alarms, SIEM ingestion) are correctly restored.\n\n- **Scope and impact analysis**\n  - Review CloudTrail for follow-on or preceding activity by the same actor:\n    - Rule modifications.\n    - IAM policy changes.\n    - Application configuration updates.\n    - API Gateway or ALB changes.\n  - Review application access logs for unusual requests following ACL removal.\n\n- **Hardening**\n  - Limit IAM permissions for `waf:DeleteWebACL`, `wafv2:DeleteWebACL`, and related actions to a small set of trusted roles.\n  - Enforce MFA for administrative access.\n  - Use AWS Config or Security Hub controls to detect unauthorized modifications to WAF resources.\n\n- **Post-incident improvements**\n  - Update change-management workflows to include required approvals for WAF modifications.\n  - Improve monitoring for other defense-evasion patterns such as disabling GuardDuty, CloudTrail, or logging.\n\n### Additional information\n\n- **DeleteWebACL API (WAF Classic & Regional):**  \n  https://docs.aws.amazon.com/waf/latest/APIReference/API_wafRegional_DeleteWebACL.html  \n- **DeleteWebACL API (WAFv2):**  \n  https://docs.aws.amazon.com/waf/latest/APIReference/API_DeleteWebACL.html  \n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **[AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/)**\n",
+        "query": "event.dataset: aws.cloudtrail \n    and event.provider: (waf.amazonaws.com or waf-regional.amazonaws.com or wafv2.amazonaws.com)\n    and event.action: DeleteWebACL \n    and event.outcome: success\n",
+        "references": [
+            "https://docs.aws.amazon.com/waf/latest/APIReference/API_DeleteWebACL.html",
+            "https://docs.aws.amazon.com/waf/latest/APIReference/API_wafRegional_DeleteWebACL.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "91d04cd4-47a9-4334-ab14-084abe274d49",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS WAF",
+            "Use Case: Network Security Monitoring",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.007",
+                                "name": "Disable or Modify Cloud Firewall",
+                                "reference": "https://attack.mitre.org/techniques/T1562/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 210
+    },
+    "id": "91d04cd4-47a9-4334-ab14-084abe274d49_210",
+    "type": "security-rule"
+}
