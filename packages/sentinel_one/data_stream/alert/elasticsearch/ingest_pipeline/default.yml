@@ -265,6 +265,11 @@ processors:
       field: json.alertInfo.loginsUserName
       target_field: user.name
       ignore_missing: true
+  - dissect:
+      field: user.name
+      pattern: '%{user.domain}\%{user.name}'
+      if: ctx.user?.name?.contains('\\') == true
+      description: "Split user and domain"
   - append:
       field: related.user
       value: '{{{user.name}}}'

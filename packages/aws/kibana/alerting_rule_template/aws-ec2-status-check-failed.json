@@ -1,0 +1,28 @@
+{
+  "id": "aws-ec2-status-check-failed",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[AWS EC2] Status Check Failed",
+    "tags": ["AWS EC2"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the statusfailed exceeds the recommended threshold value {0} within the look back time window.\n// The alert is grouped by cloud account id, cloud region and instance id.\n// You can adjust the threshold value by modifying the statusfailed in the WHERE clause.\nFROM metrics-aws.ec2_metrics-default\n| STATS statusfailed=max(aws.ec2.metrics.StatusCheckFailed.avg) by cloud.account.id, cloud.region, aws.dimensions.InstanceId\n| WHERE statusfailed > 0"
+      },
+      "groupBy": "row",
+      "timeField": "event.ingested"
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
