@@ -14,8 +14,40 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
+
+{{#if client_id}}
+{{#if client_secret}}
+{{#if token_url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+{{#if token_scopes}}
+  scopes:
+{{#each token_scopes as |token_scope|}}
+    - {{token_scope}}
+{{/each}}
+{{/if}}
+{{#if oauth_endpoint_params}}
+  endpoint_params: {{oauth_endpoint_params}}
+{{/if}}
+{{/if}}
+{{/if}}
+{{/if}}
+
+{{#unless client_id}}
+{{#unless client_secret}}
+{{#unless token_url}}
+{{#if username}}
+{{#if password}}
 auth.basic.user: {{username}}
 auth.basic.password: {{password}}
+{{/if}}
+{{/if}}
+{{/unless}}
+{{/unless}}
+{{/unless}}
+
 state:
   table_name: {{table_name}}
   batch_size: {{batch_size}}

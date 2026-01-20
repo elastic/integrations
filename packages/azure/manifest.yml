@@ -1,6 +1,6 @@
 name: azure
 title: Azure Logs
-version: "1.28.7"
+version: "1.35.0"
 description: This Elastic integration collects logs from Azure
 type: integration
 icons:
@@ -17,7 +17,7 @@ categories:
   - security
 conditions:
   kibana:
-    version: "^8.15.1 || ^9.0.0"
+    version: "~8.19.10 || ~9.1.10 || ^9.2.4"
   elastic:
     subscription: basic
 screenshots:
@@ -73,6 +73,21 @@ vars:
     multi: false
     required: false
     show_user: false
+  - name: transport
+    type: select
+    title: Event Hubs transport protocol
+    multi: false
+    required: true
+    show_user: false
+    default: amqp
+    options:
+      - text: AMQP
+        value: amqp
+      - text: AMQP-over-WebSockets
+        value: websocket
+    description: >
+      (Processor v2 only) The transport protocol used to connect to Event Hubs. 
+      Supported values are AMQP and AMQP-over-WebSockets. Defaults to AMQP.
 policy_templates:
   - name: events
     title: Azure Logs (v2 preview)

@@ -26,8 +26,8 @@ streams:
       - name: batch_size
         type: integer
         title: Batch Size
-        description: Batch size for the response of the CrowdStrike API. It must be between 1 - 10000.
-        default: 10000
+        description: Batch size for the response of the CrowdStrike API. For Commercial CIDs, it must be between 1 - 10000. For GovCloud CIDs, it must be between 1 - 5000.
+        default: 5000
         multi: false
         required: true
         show_user: false
@@ -49,9 +49,20 @@ streams:
       - name: select_fields
         type: text
         title: Fields
-        description: The fields to return, comma delimited if specifying more than one field. For example, hostname,device_id would return device records only containing the hostname and device_id.
+        description: >-
+          The fields to return, comma delimited if specifying more than one field.
+          For example, hostname,device_id would return device records only containing the hostname and device_id.
+          This only applies to the combined devices endpoint.
         multi: false
         required: false
+        show_user: false
+      - name: gov_cloud
+        type: bool
+        title: GovCloud
+        description: >-
+          GovCloud CIDs must enable this. When enabled, the integration will use CrowdStrike’s GovCloud-supported devices endpoint (`/devices/entities/devices/v2`) instead of the standard combined endpoint (`/devices/combined/devices/v1`).
+        default: false
+        required: true
         show_user: false
       - name: enable_request_tracer
         type: bool

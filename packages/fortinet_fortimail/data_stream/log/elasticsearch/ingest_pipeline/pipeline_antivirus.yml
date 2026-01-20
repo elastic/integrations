@@ -2,29 +2,35 @@
 description: Pipeline for processing Antivirus logs.
 processors:
   - rename:
+      tag: rename_temp_from_to_fortinet_fortimail_log_from_5b70ec4b
       field: temp.from
       target_field: fortinet_fortimail.log.from
       ignore_missing: true
   - append:
+      tag: append_related_user_d0753b7c
       field: related.user
       value: '{{{fortinet_fortimail.log.from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.from != null
   - append:
+      tag: append_email_from_address_7f1e9688
       field: email.from.address
       value: '{{{fortinet_fortimail.log.from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.from != null
   - rename:
+      tag: rename_temp_to_to_fortinet_fortimail_log_to_45dc2e79
       field: temp.to
       target_field: fortinet_fortimail.log.to
       ignore_missing: true
   - append:
+      tag: append_related_user_b1d2b872
       field: related.user
       value: '{{{fortinet_fortimail.log.to}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.to != null
   - append:
+      tag: append_email_to_address_3c4f03db
       field: email.to.address
       value: '{{{fortinet_fortimail.log.to}}}'
       allow_duplicates: false
@@ -38,22 +44,27 @@ processors:
       if: ctx.temp?.src != ''
       on_failure:
         - append:
+            tag: append_error_message_8dbfd71c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_4c0d9a15
       field: related.ip
       value: '{{{fortinet_fortimail.log.source.ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.source?.ip != null
   - set:
+      tag: set_source_ip_23e0a7ba
       field: source.ip
       copy_from: fortinet_fortimail.log.source.ip
       ignore_empty_value: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_bace2435
       if: ctx.source?.ip != null
       field: source.ip
       target_field: source.geo
   - rename:
+      tag: rename_temp_session_id_to_fortinet_fortimail_log_session_id_c4b20db7
       field: temp.session_id
       target_field: fortinet_fortimail.log.session_id
       ignore_missing: true
@@ -63,4 +74,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

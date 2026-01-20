@@ -8,6 +8,10 @@ processors:
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
+  - remove:
+      field: routing.category
+      ignore_missing: true
+      description: Remove the routing.category field if it exists.
   - script:
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
@@ -37,9 +41,17 @@ processors:
       field: azure.provisioning.time
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
+        - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
         - ISO8601
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
       field: azure.provisioning.time
       ignore_missing: true
