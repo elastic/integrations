@@ -11,7 +11,7 @@ REPLICATION_TO_BUCKET="travel-sample"
 # wait for the couchbase-server starts
 is_couchbase_ready() {
   until curl -s -f http://$ADMIN_USER:$ADMIN_PASSWORD@$CB_HOST:$CB_PORT/pools/default >/dev/null 2>&1; do
-    sleep 5s
+    sleep 2s
   done
 }
 is_couchbase_ready
@@ -34,7 +34,7 @@ add_cb_sample_bucket() {
 
 # Loop until the sample bucket is successfully added
 while ! add_cb_sample_bucket; do
-  sleep 5
+  sleep 2
 done
 
 # using couchbase-cli run xdcr-setup for the cluster
@@ -42,8 +42,8 @@ couchbase-cli xdcr-setup -c $CB_HOST -u $ADMIN_USER -p $ADMIN_PASSWORD --create 
 
 # wait till the "beer-sample" bucket is ready
 until [ "$(curl -s -w '%{http_code}' -o /dev/null "http://$ADMIN_USER:$ADMIN_PASSWORD@$CB_HOST:$CB_PORT/pools/default/buckets/$BUCKET_NAME/stats")" -eq 200 ]; do
-  sleep 5s
+  sleep 2s
 done
 
 # perform replication from "beer-sample" to "travel-sample"
-curl -v -X POST -u $ADMIN_USER:$ADMIN_PASSWORD http://$CB_HOST:$CB_PORT/controller/createReplication -d fromBucket=$BUCKET_NAME -d toCluster=$XDCR_CLUSTER_NAME -d toBucket=$REPLICATION_TO_BUCKET -d replicationType=continuous -d enableCompression=1
+curl -s -X POST -u $ADMIN_USER:$ADMIN_PASSWORD http://$CB_HOST:$CB_PORT/controller/createReplication -d fromBucket=$BUCKET_NAME -d toCluster=$XDCR_CLUSTER_NAME -d toBucket=$REPLICATION_TO_BUCKET -d replicationType=continuous -d enableCompression=1
