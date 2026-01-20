@@ -2,7 +2,7 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-19
+**Last Updated**: 2026-01-20
 **Total Core Artifacts**: 21 available + 17 in progress + 6 not available = 44 total variants
 **Total Queries**: 44
 **Completion Rate**: 47.7% (21/44 core artifacts fully supported)
@@ -78,7 +78,7 @@ These queries existed in the original repository and provide additional coverage
 |:-:|-------|:-:|:--:|:----:|-------------|
 | 1 | listening_ports_elastic | ✅ | All | [0796](kibana/osquery_saved_query/osquery_manager-0796f890-b4a9-11ec-8f39-bf9c07530bbb.json) | Network listening ports enumeration |
 | 2 | processes_elastic | ✅ | All | [363d](kibana/osquery_saved_query/osquery_manager-363d6a30-b4a9-11ec-8f39-bf9c07530bbb.json) | General process listing (all processes) |
-| 3 | logged_in_users_elastic | ✅ | All | [ccd3](kibana/osquery_saved_query/osquery_manager-ccd3f850-b4a5-11ec-8f39-bf9c07530bbb.json) | Currently logged in users |
+| 3 | logged_in_users_elastic | ✅ | All | [ccd3](kibana/osquery_saved_query/osquery_manager-ccd3f850-b4a5-11ec-8f39-bf9c07530bbb.json) | Cross-platform logged-in users enumeration with session details (login time, logon type, TTY, remote host, PID). Windows includes SID and registry hive. Use cases: user activity forensics, lateral movement detection (remote sessions), active session enumeration. |
 | 4 | users_elastic | ✅ | All | [cebd](kibana/osquery_saved_query/osquery_manager-cebd7b00-b4b4-11ec-8f39-bf9c07530bbb.json) | System user accounts enumeration |
 | 5 | file_info_elastic | ✅ | All | [128b](kibana/osquery_saved_query/osquery_manager-128b90b0-b4a6-11ec-8f39-bf9c07530bbb.json) | File metadata queries by path |
 | 6 | file_info_by_type_elastic | ✅ | All | [fc4e](kibana/osquery_saved_query/osquery_manager-fc4e34b0-b4a5-11ec-8f39-bf9c07530bbb.json) | File information by extension type |
