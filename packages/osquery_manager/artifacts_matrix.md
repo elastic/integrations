@@ -2,9 +2,9 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-19
+**Last Updated**: 2026-01-20
 **Total Core Artifacts**: 19 available + 19 in progress + 6 not available = 44 total variants
-**Total Queries**: 43
+**Total Queries**: 44
 **Completion Rate**: 43.2% (19/44 core artifacts fully supported)
 
 ---
@@ -103,6 +103,7 @@ These queries existed in the original repository and provide additional coverage
 | 24 | unsigned_startup_items_vt_windows_elastic | ✅ | Win | [b068](kibana/osquery_saved_query/osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135.json) | Unsigned startup items with VirusTotal integration |
 | 25 | unsigned_dlls_on_system_folders_vt_windows_elastic | ✅ | Win | [63c1](kibana/osquery_saved_query/osquery_manager-63c1fe20-176f-11ed-89c6-331eb0db6d01.json) | Unsigned DLLs in system folders with VirusTotal integration |
 | 26 | executables_or_drivers_in_temp_folder_vt_windows_elastic | ✅ | Win | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration |
+| 27 | rdp_authentication_windows_elastic | ✅ | Win | [d8d7](kibana/osquery_saved_query/osquery_manager-d8d79510-6f58-44e1-b7fc-63a073158096.json) | Comprehensive RDP authentication and session lifecycle events via windows_eventlog (Security + TerminalServices + System channels) |
 
 **Note**: Queries with VirusTotal integration require the VirusTotal extension configured in osquery.
 
