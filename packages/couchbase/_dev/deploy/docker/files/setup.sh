@@ -34,7 +34,7 @@ add_cb_sample_bucket() {
 
 # Loop until the sample bucket is successfully added
 while ! add_cb_sample_bucket; do
-  sleep 2
+  sleep 2s
 done
 
 # using couchbase-cli run xdcr-setup for the cluster
