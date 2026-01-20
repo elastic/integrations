@@ -11,13 +11,17 @@ services:
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/http_request.log
   azure-blob-storage-emulator:
     image: mcr.microsoft.com/azure-storage/azurite
-    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000
+    # Added --skipApiVersionCheck to ignore the 2026-02-06 requirement.
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --skipApiVersionCheck
     ports:
       - "10000/tcp"
   uploader:
     image: mcr.microsoft.com/azure-cli
     depends_on:
       - azure-blob-storage-emulator
+    environment:
+      # Force the CLI to use a version Azurite 3.35.0+ supports natively.
+      - AZURE_STORAGE_API_VERSION=2025-11-05
     volumes:
       - ./sample_logs:/sample_logs
     entrypoint: >
