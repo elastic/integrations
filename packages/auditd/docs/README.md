@@ -84,6 +84,7 @@ An example event for `log` looks as following:
         "auditd-log"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -107,6 +108,7 @@ An example event for `log` looks as following:
 | auditd.log.a2 | The third argument to the system call. | keyword |
 | auditd.log.a3 | The fourth argument to the system call. | keyword |
 | auditd.log.addr |  | ip |
+| auditd.log.apparmor |  | keyword |
 | auditd.log.audit_failure |  | keyword |
 | auditd.log.avc.action |  | keyword |
 | auditd.log.avc.request |  | keyword |
@@ -129,6 +131,7 @@ An example event for `log` looks as following:
 | auditd.log.hostname |  | keyword |
 | auditd.log.id |  | keyword |
 | auditd.log.img-ctx |  | keyword |
+| auditd.log.info |  | keyword |
 | auditd.log.ino |  | keyword |
 | auditd.log.inode |  | keyword |
 | auditd.log.item | The item field indicates which item out of the total number of items. This number is zero-based; a value of 0 means it is the first item. | keyword |
@@ -163,11 +166,13 @@ An example event for `log` looks as following:
 | auditd.log.old_pp |  | keyword |
 | auditd.log.old_ses | For login events this is the old session ID used for the user prior to this login. | keyword |
 | auditd.log.op |  | keyword |
+| auditd.log.operation |  | keyword |
 | auditd.log.original_field | The original field name if the event was parsed from an enriched format auditd log. | keyword |
 | auditd.log.path |  | keyword |
 | auditd.log.permissive |  | keyword |
 | auditd.log.pfs |  | keyword |
 | auditd.log.proctitle |  | keyword |
+| auditd.log.profile |  | keyword |
 | auditd.log.rdev |  | keyword |
 | auditd.log.reason |  | keyword |
 | auditd.log.record_type |  | keyword |
