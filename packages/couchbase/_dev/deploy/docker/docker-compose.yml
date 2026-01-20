@@ -6,11 +6,11 @@ services:
       - ./files/setup.sh:/setup.sh
       - ./files/entrypoint.sh:/entrypoint.sh
     healthcheck:
-      test: ["CMD", "curl", "-s", "-f", "http://Administrator:password@localhost:8091/pools/default/buckets/beer-sample/stats"]
+      test: ["CMD-SHELL", "curl -sf http://Administrator:password@localhost:8091/pools/default/buckets/travel-sample/stats && curl -sf http://Administrator:password@localhost:8091/pools/default/buckets/beer-sample/stats"]
       interval: 3s
-      timeout: 3s
-      retries: 30
-      start_period: 15s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
     ports:
       - 8091
   sgw:
@@ -23,11 +23,11 @@ services:
       - ./files/sync-gateway-config.txt:/etc/sync_gateway/sync_gateway.json
     command: -adminInterface :4985 /etc/sync_gateway/sync_gateway.json
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:4985 || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:4985 || exit 1"]
       interval: 3s
-      timeout: 3s
-      retries: 30
-      start_period: 10s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
     ports:
       - 4985
   exporter:
