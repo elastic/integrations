@@ -119,10 +119,14 @@ with_mage() {
     create_bin_folder
     with_go
 
-    # Install version from go.mod"
-    go install "github.com/magefile/mage"
-
-    mage --version
+    # Check if mage is already installed
+    if command -v mage &> /dev/null; then
+        echo "mage already installed: $(mage --version)"
+    else
+        # Install version from go.mod
+        go install "github.com/magefile/mage"
+        mage --version
+    fi
 }
 
 with_docker() {
@@ -162,6 +166,13 @@ with_docker() {
 
 with_docker_compose_plugin() {
     echo "--- Setting up the Docker compose plugin environment..."
+
+    # Check if docker compose is already available
+    if docker compose version &> /dev/null; then
+        echo "docker compose already installed: $(docker compose version)"
+        return 0
+    fi
+
     if [[ "${DOCKER_COMPOSE_VERSION:-"false"}" == "false" ]]; then
         echo "Skip docker compose installation (plugin)"
         return
@@ -181,20 +192,36 @@ with_kubernetes() {
     create_bin_folder
     check_platform_architecture
 
-    echo "--- Install kind"
-    retry 5 curl -sSLo "${BIN_FOLDER}/kind" "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
-    chmod +x "${BIN_FOLDER}/kind"
-    kind version
+    # Install kind if not available
+    if command -v kind &> /dev/null; then
+        echo "kind already installed: $(kind version)"
+    else
+        echo "--- Install kind"
+        retry 5 curl -sSLo "${BIN_FOLDER}/kind" "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
+        chmod +x "${BIN_FOLDER}/kind"
+        kind version
+    fi
     which kind
 
-    echo "--- Install kubectl"
-    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://dl.k8s.io/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
-    chmod +x "${BIN_FOLDER}/kubectl"
-    kubectl version --client
+    # Install kubectl if not available
+    if command -v kubectl &> /dev/null; then
+        echo "kubectl already installed: $(kubectl version --client 2>/dev/null | head -1)"
+    else
+        echo "--- Install kubectl"
+        retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://dl.k8s.io/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
+        chmod +x "${BIN_FOLDER}/kubectl"
+        kubectl version --client
+    fi
     which kubectl
 }
 
 with_yq() {
+    # Skip installation if already available
+    if command -v yq &> /dev/null; then
+        echo "yq already installed: $(yq --version)"
+        return 0
+    fi
+
     create_bin_folder
     check_platform_architecture
     local binary="yq_${platform_type_lowercase}_${arch_type}"
@@ -211,6 +238,12 @@ with_yq() {
 }
 
 with_jq() {
+    # Skip installation if already available
+    if command -v jq &> /dev/null; then
+        echo "jq already installed: $(jq --version)"
+        return 0
+    fi
+
     create_bin_folder
     check_platform_architecture
     # filename for versions <=1.6 is jq-linux64
@@ -223,6 +256,12 @@ with_jq() {
 }
 
 with_github_cli() {
+    # Skip installation if already available
+    if command -v gh &> /dev/null; then
+        echo "gh already installed: $(gh version | head -1)"
+        return 0
+    fi
+
     create_bin_folder
     check_platform_architecture
 
@@ -255,7 +294,25 @@ check_git_diff() {
 use_elastic_package() {
     echo "--- Installing elastic-package"
     mkdir -p build
+
+    # Try to use pre-built binary first (much faster than building from source)
+    local version="${ELASTIC_PACKAGE_VERSION:-""}"
+    if [[ -n "${version}" ]]; then
+        local url="https://github.com/elastic/elastic-package/releases/download/v${version}/elastic-package_${version}_linux_amd64.tar.gz"
+        echo "Attempting to download pre-built elastic-package v${version}..."
+        if curl -sL --fail "${url}" | tar xz -C build 2>/dev/null; then
+            chmod +x "${ELASTIC_PACKAGE_BIN}"
+            echo "Successfully installed pre-built elastic-package v${version}"
+            ${ELASTIC_PACKAGE_BIN} version
+            return 0
+        fi
+        echo "Failed to download pre-built binary, falling back to source build"
+    fi
+
+    # Fallback: build from source
+    echo "Building elastic-package from source..."
     retry 5 go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
+    ${ELASTIC_PACKAGE_BIN} version
 }
 
 elastic_package_verbosity() {
