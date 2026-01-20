@@ -295,10 +295,13 @@ use_elastic_package() {
     echo "--- Installing elastic-package"
     mkdir -p build
 
-    # Try to use pre-built binary first (much faster than building from source)
-    local version="${ELASTIC_PACKAGE_VERSION:-""}"
+    # Extract version from go.mod for consistent versioning
+    local version
+    version=$(grep 'elastic/elastic-package' go.mod | awk '{print $2}' | sed 's/^v//')
+    
     if [[ -n "${version}" ]]; then
-        local url="https://github.com/elastic/elastic-package/releases/download/v${version}/elastic-package_${version}_linux_amd64.tar.gz"
+        check_platform_architecture
+        local url="https://github.com/elastic/elastic-package/releases/download/v${version}/elastic-package_${version}_${platform_type_lowercase}_${arch_type}.tar.gz"
         echo "Attempting to download pre-built elastic-package v${version}..."
         if curl -sL --fail "${url}" | tar xz -C build 2>/dev/null; then
             chmod +x "${ELASTIC_PACKAGE_BIN}"
