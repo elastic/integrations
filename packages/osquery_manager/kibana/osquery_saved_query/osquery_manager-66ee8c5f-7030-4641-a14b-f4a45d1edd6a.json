@@ -9,8 +9,16 @@
         "value": { "value": ["network"] }
       },
       {
+        "key": "event.type",
+        "value": { "value": ["info"] }
+      },
+      {
         "key": "event.action",
         "value": { "value": "osquery.dns_event_log" }
+      },
+      {
+        "key": "event.code",
+        "value": { "field": "event_code" }
       },
       {
         "key": "dns.question.name",
@@ -56,7 +64,7 @@
     "id": "dns_event_log_windows_elastic",
     "interval": "900",
     "platform": "windows",
-    "query": "-- Windows DNS Client Event Log with Process Context\n-- Queries DNS query completion events from the DNS Client Operational log\n-- Enriches with process path, cmdline, and hashes when process is still running\n-- PREREQUISITE: DNS Client Operational logging must be enabled:\n--   wevtutil sl Microsoft-Windows-DNS-Client/Operational /e:true\n-- Or via Group Policy: Computer Config > Admin Templates > Network > DNS Client > Turn on logging\n-- Event ID 3008 = DNS query completed\nSELECT\n    w.datetime AS event_time,\n    w.eventid,\n    w.pid,\n    JSON_EXTRACT(w.data, '$.EventData.QueryName') AS query_name,\n    JSON_EXTRACT(w.data, '$.EventData.QueryType') AS query_type,\n    JSON_EXTRACT(w.data, '$.EventData.QueryResults') AS answer,\n    p.name AS process_name,\n    p.path AS process_path,\n    p.cmdline AS process_cmdline,\n    h.md5,\n    h.sha256,\n    'https://www.virustotal.com/gui/file/' || h.sha256 AS vt_link\nFROM windows_eventlog w\nLEFT JOIN processes p ON w.pid = p.pid\nLEFT JOIN hash h ON h.path = p.path\nWHERE w.channel = 'Microsoft-Windows-DNS-Client/Operational'\n    AND w.eventid = 3008",
+    "query": "-- Windows DNS Client Event Log with Process Context\n-- Queries DNS query completion events from the DNS Client Operational log\n-- Enriches with process path, cmdline, and hashes when process is still running\n-- PREREQUISITE: DNS Client Operational logging must be enabled:\n--   wevtutil sl Microsoft-Windows-DNS-Client/Operational /e:true\n-- Or via Group Policy: Computer Config > Admin Templates > Network > DNS Client > Turn on logging\n-- Event ID 3008 = DNS query completed\nSELECT\n    w.datetime AS event_time,\n    w.eventid AS event_code,\n    w.pid,\n    JSON_EXTRACT(w.data, '$.EventData.QueryName') AS query_name,\n    JSON_EXTRACT(w.data, '$.EventData.QueryType') AS query_type,\n    JSON_EXTRACT(w.data, '$.EventData.QueryResults') AS answer,\n    p.name AS process_name,\n    p.path AS process_path,\n    p.cmdline AS process_cmdline,\n    h.md5,\n    h.sha256,\n    'https://www.virustotal.com/gui/file/' || h.sha256 AS vt_link\nFROM windows_eventlog w\nLEFT JOIN processes p ON w.pid = p.pid\nLEFT JOIN hash h ON h.path = p.path\nWHERE w.channel = 'Microsoft-Windows-DNS-Client/Operational'\n    AND w.eventid = 3008",
     "updated_at": "2025-01-20T10:00:00.000Z",
     "updated_by": "elastic"
   },
