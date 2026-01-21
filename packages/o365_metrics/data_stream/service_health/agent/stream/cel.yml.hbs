@@ -94,9 +94,24 @@ program: |
       ).do_request().as(resp,
         resp.StatusCode == 200
         ?
-          bytes(resp.Body).decode_json().as(body, {
-              "events": [{"message": body.encode_json()}]                     
-          })
+          bytes(resp.Body).decode_json().as(body,
+        {
+          "events": [
+            {
+              "message": {
+                "services": body.value.map(s,
+                  {
+                    "name": s.service,
+                    "status": s.status,
+                    "id": s.id
+                  }
+                )
+              }.encode_json()
+            }
+          ],
+          "want_more": false
+        }
+      )
         :
           {
             "events": {

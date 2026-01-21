@@ -2459,9 +2459,9 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type. | keyword |
-| o365.metrics.service.health.id | The service id. | keyword |
-| o365.metrics.service.health.service | The service name. | keyword |
-| o365.metrics.service.health.status | The overall service health status (Eg. serviceOperational, serviceDegraded etc.). | keyword |
+| o365.metrics.service.health.services.id | The service id. | keyword |
+| o365.metrics.service.health.services.name | The service name. | keyword |
+| o365.metrics.service.health.services.status | The overall service health status (Eg. serviceOperational, serviceDegraded etc.). | keyword |
 
 
 
