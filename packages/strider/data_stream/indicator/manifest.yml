@@ -1,0 +1,48 @@
+title: "Collect Indicators from Strider Shield"
+type: logs
+ilm_policy: logs-ti_strider.indicator-default_policy
+streams:
+  - input: cel
+    vars:
+      - name: api_url
+        type: text
+        title: Api url
+        multi: false
+        required: true
+        show_user: false
+        default: https://app.striderintel.com/api/shield # https://test.striderintel.com/api/shield?showArchive=true # 
+        description: The url of the shield endpoint.
+      - name: auth_url
+        type: text
+        title: Auth host
+        multi: false
+        required: true
+        show_user: false
+        default: https://auth.striderintel.com
+        description: The host of the oauth2 verifier.
+      - name: strider_id
+        type: text
+        title: Strider Client ID
+        multi: false
+        required: true
+        show_user: true
+        description: Client ID received from your Strider Client Success Manager.
+      - name: strider_secret
+        type: text
+        title: Strider Client Secret
+        secret: true
+        multi: false
+        required: true
+        show_user: true
+        description: Client Secret received from your Strider Client Success Manager.
+      - name: polling_interval
+        type: text
+        title: Polling Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: Interval to poll the API, permitted units are s/m/h. To ensure a sync on the first of a month, set to daily.
+    template_path: cel.yml.hbs
+    title: Fetch Items from API
+    description: Ingests item records from your external API.
