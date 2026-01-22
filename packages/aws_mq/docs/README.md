@@ -147,6 +147,9 @@ An example event for `activemq_general` looks as following:
 | aws.cloudwatch.log_group | AWS CloudWatch Log Group name | keyword |
 | aws.cloudwatch.log_stream | AWS CloudWatch Log Stream name | keyword |
 | aws.cloudwatch.message | CloudWatch log message. | text |
+| awscloudwatch.ingestion_time | AWS CloudWatch ingest time | date |
+| awscloudwatch.log_group | AWS CloudWatch Log Group name | keyword |
+| awscloudwatch.log_stream | AWS CloudWatch Log Stream name | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
