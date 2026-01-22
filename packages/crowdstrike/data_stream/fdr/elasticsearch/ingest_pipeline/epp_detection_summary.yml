@@ -1,0 +1,324 @@
+---
+description: Pipeline for processing Epp Detection Summary events.
+processors:
+
+  # Handle case changes.
+  - rename:
+      tag: rename_crowdstrike_GrandParentCommandLine_to_crowdstrike_GrandparentCommandLine_epp_1958890d
+      field: crowdstrike.GrandParentCommandLine
+      target_field: crowdstrike.GrandparentCommandLine
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_crowdstrike_GrandParentImageFileName_to_crowdstrike_GrandparentImageFileName_epp_51e07871
+      field: crowdstrike.GrandParentImageFileName
+      target_field: crowdstrike.GrandparentImageFileName
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_crowdstrike_GrandParentImageFilePath_to_crowdstrike_GrandparentImageFilePath_epp_7028d291
+      field: crowdstrike.GrandParentImageFilePath
+      target_field: crowdstrike.GrandparentImageFilePath
+      ignore_missing: true
+      ignore_failure: true
+
+  # EppDetectionSummaryEvent renames
+  - rename:
+      tag: rename_crowdstrike_Hostname_to_crowdstrike_ComputerName_epp_91445a54
+      field: crowdstrike.Hostname
+      target_field: crowdstrike.ComputerName
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_crowdstrike_Name_to_crowdstrike_DetectName_epp_6008d35c
+      field: crowdstrike.Name
+      target_field: crowdstrike.DetectName
+      ignore_missing: true
+      ignore_failure: true
+
+  # EppDetectionSummaryEvent converts
+  - convert:
+      tag: convert_crowdstrike_CloudIndicator_to_boolean_epp
+      field: crowdstrike.CloudIndicator
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.CloudIndicator
+        - append:
+            tag: append_error_message_epp_d1950926
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_PatternDispositionValue_to_long_epp
+      field: crowdstrike.PatternDispositionValue
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.PatternDispositionValue
+            ignore_failure: true
+  - convert:
+      tag: convert_crowdstrike_LocalIPv6_to_ip_epp_19315481
+      if: ctx.crowdstrike?.LocalIPv6 != null && ctx.crowdstrike.LocalIPv6 != ''
+      field: crowdstrike.LocalIPv6
+      type: ip
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_LocalIPv6_epp_f0bb947a
+            field:
+              - crowdstrike.LocalIPv6
+        - append:
+            tag: append_error_message_epp_2d13d307
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_crowdstrike_FilesAccessed_epp_7975c0fe
+      if: ctx.crowdstrike?.FilesAccessed instanceof List
+      field: crowdstrike.FilesAccessed
+      processor:
+        date:
+          tag: date__ingest__value_Timestamp_epp_b9dba206
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_Timestamp_epp_1e9e21da
+                field:
+                  - _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                tag: append_error_message_epp_8eaed846
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_of_crowdstrike_FilesWritten_epp_069e87ee
+      if: ctx.crowdstrike?.FilesWritten instanceof List
+      field: crowdstrike.FilesWritten
+      processor:
+        date:
+          tag: date__ingest__value_Timestamp_epp_3d945d16
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_Timestamp_epp_151916ea
+                field:
+                  - _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                tag: append_error_message_epp_cccd8556
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # event categorization fields
+  - set:
+      tag: set_event_kind_to_alert_epp_39295792
+      field: event.kind
+      value: alert
+  - append:
+      tag: append_malware_category_epp_425d1f27
+      field: event.category
+      value: malware
+  - append:
+      tag: append_info_type_epp_8a66ccaa
+      field: event.type
+      value: info
+
+  # ECS field mappings
+  - rename:
+      tag: rename_crowdstrike_UserName_to_user_name_epp_rename_user_name
+      field: crowdstrike.UserName
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_LocalIP_to_source_ip_epp_rename_local_ip
+      field: crowdstrike.LocalIP
+      target_field: source.ip
+      ignore_missing: true
+      if: ctx.crowdstrike?.LocalIP != null && ctx.crowdstrike?.LocalIP != ""
+  - convert:
+      tag: convert_crowdstrike_ProcessId_to_long_epp
+      field: crowdstrike.ProcessId
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.ProcessId
+            ignore_failure: true
+  - rename:
+      tag: rename_crowdstrike_ProcessId_to_process_pid_epp_rename_process_id
+      field: crowdstrike.ProcessId
+      target_field: process.pid
+      ignore_missing: true
+  - split:
+      tag: split_crowdstrike_HostGroups_epp_split_host_groups
+      field: crowdstrike.HostGroups
+      separator: ','
+      ignore_missing: true
+  - convert:
+      tag: convert_crowdstrike_ParentProcessId_to_long_epp
+      field: crowdstrike.ParentProcessId
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.ParentProcessId
+            ignore_failure: true
+  - rename:
+      tag: rename_crowdstrike_ParentProcessId_to_process_parent_pid_epp_rename_parent_process_id
+      field: crowdstrike.ParentProcessId
+      target_field: process.parent.pid
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_ParentImageFileName_to_process_parent_executable_epp_rename_parent_image_file_name
+      field: crowdstrike.ParentImageFileName
+      target_field: process.parent.executable
+      ignore_missing: true
+      if: ctx.process?.parent?.executable == null
+  - rename:
+      tag: rename_crowdstrike_PatternDispositionDescription_to_event_action_epp_rename_pattern_disposition_description
+      field: crowdstrike.PatternDispositionDescription
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_FalconHostLink_to_event_reference_epp_rename_falcon_host_link
+      field: crowdstrike.FalconHostLink
+      target_field: event.reference
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_Description_to_message_epp_rename_detect_description
+      field: crowdstrike.Description
+      target_field: message
+      ignore_missing: true
+  - set:
+      tag: set_rule_description_from_message_epp_set_rule_description
+      field: rule.description
+      copy_from: message
+      if: ctx.message != null
+  - set:
+      tag: set_process_name_from_crowdstrike_FileName_epp
+      field: process.name
+      copy_from: crowdstrike.FileName
+      ignore_empty_value: true
+  - rename:
+      tag: rename_crowdstrike_SHA256String_to_file_hash_sha256_epp_rename_sha256_string
+      field: crowdstrike.SHA256String
+      target_field: file.hash.sha256
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_MD5String_to_file_hash_md5_epp_rename_md5_string
+      field: crowdstrike.MD5String
+      target_field: file.hash.md5
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_SHA1String_to_file_hash_sha1_epp_rename_sha1_string
+      field: crowdstrike.SHA1String
+      target_field: file.hash.sha1
+      ignore_missing: true
+  - append:
+      tag: append_file_hash_sha1_to_related_hash_epp_append_sha1_hash
+      field: related.hash
+      value: "{{{file.hash.sha1}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha1 != null && ctx.file?.hash?.sha1 != ""
+  - append:
+      tag: append_file_hash_sha256_to_related_hash_epp_append_sha256_hash
+      field: related.hash
+      value: "{{{file.hash.sha256}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null && ctx.file?.hash?.sha256 != ""
+  - append:
+      tag: append_file_hash_md5_to_related_hash_epp_append_md5_hash
+      field: related.hash
+      value: "{{{file.hash.md5}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null && ctx.file?.hash?.md5 != ""
+  - rename:
+      tag: rename_crowdstrike_FileName_to_file_name_epp_rename_file_name
+      field: crowdstrike.FileName
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_FilePath_to_file_path_epp_rename_file_path
+      field: crowdstrike.FilePath
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_DetectName_to_rule_name_epp_rename_detect_name
+      field: crowdstrike.DetectName
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_DetectId_to_rule_id_epp_rename_detect_id
+      field: crowdstrike.DetectId
+      target_field: rule.id
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_MacAddress_to_host_mac_epp_rename_mac_address
+      field: crowdstrike.MacAddress
+      target_field: host.mac
+      ignore_missing: true
+      if: ctx.crowdstrike?.MacAddress != null
+  - uppercase:
+      tag: uppercase_host_mac_epp_uppercase_mac_address
+      field: host.mac
+      ignore_missing: true
+      if: ctx.host?.mac != null
+
+  # Threat framework mappings
+  - set:
+      tag: set_threat_framework_crowdstrike_epp_set_threat_framework_cs
+      field: threat.framework
+      value: CrowdStrike Falcon Detections Framework
+      description: For Crowdstrike Falcon Detection tactics and/or that are prefixed with "CS"
+      if: >-
+        (ctx.crowdstrike?.TacticId != null && ctx.crowdstrike.TacticId.startsWith("CS"))
+        || (ctx.crowdstrike?.TechniqueId != null && ctx.crowdstrike.TechniqueId.startsWith("CS"))
+        || (ctx.crowdstrike?.Tactic != null && ['malware','exploit','post-exploit','machine learning','custom intelligence','falcon overwatch','falcon intel','ai powered ioa','insecure security posture'].contains(ctx.crowdstrike.Tactic.toLowerCase()))
+  - set:
+      tag: set_threat_framework_mitre_epp_set_threat_framework
+      field: threat.framework
+      value: MITRE ATT&CK
+      override: false
+      if: ctx.threat?.framework == null && ctx.crowdstrike?.TacticId != null && ctx.crowdstrike.TacticId.startsWith("TA")
+  - append:
+      tag: append_threat_technique_name_epp_append_technique_name
+      field: threat.technique.name
+      value: "{{{crowdstrike.Technique}}}"
+      if: ctx.crowdstrike?.Technique != null
+  - append:
+      tag: append_threat_technique_id_epp_append_technique_id
+      field: threat.technique.id
+      value: "{{{crowdstrike.TechniqueId}}}"
+      if: ctx.crowdstrike?.TechniqueId != null
+  - append:
+      tag: append_threat_tactic_name_epp_append_tactic_name
+      field: threat.tactic.name
+      value: "{{{crowdstrike.Tactic}}}"
+      if: ctx.crowdstrike?.Tactic != null
+  - append:
+      tag: append_threat_tactic_id_epp_append_tactic_id
+      field: threat.tactic.id
+      value: "{{{crowdstrike.TacticId}}}"
+      if: ctx.crowdstrike?.TacticId != null
+
+on_failure:
+  - append:
+      tag: append_error_message_epp_d1950926
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_pipeline_error_into_event_kind_epp_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_into_tags_epp_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
