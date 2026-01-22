@@ -99,3 +99,12 @@ For more details about enabling logs for AgentCore Memory, see the [Amazon Bedro
 
 {{event "memory_application_logs"}}
 {{fields "memory_application_logs"}}
+
+### Gateway Application Logs
+
+Amazon Bedrock AgentCore Gateway application logs provide detailed insights into API requests, message routing, and interaction between agents and external systems. These logs help you monitor gateway operations, troubleshoot connectivity issues, and understand the flow of agent communications.
+
+For more details about enabling logs for the AgentCore Gateway, see the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "gateway_application_logs"}}
+{{fields "gateway_application_logs"}}
