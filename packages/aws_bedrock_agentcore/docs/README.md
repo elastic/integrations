@@ -407,3 +407,162 @@ An example event for `runtime_application` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset | long |
 
+
+### Code Interpreter Application Logs
+
+Amazon Bedrock AgentCore code interpreter application logs provide detailed insights into code execution operations, file management, and interpreter sessions. The integration collects comprehensive log data from your AgentCore code interpreter to help you understand code execution behavior, monitor file operations, and troubleshoot issues.
+
+For more details about enabling logs for AgentCore, check the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+An example event for `codeinterpreter_application` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
+        "type": "filebeat",
+        "ephemeral_id": "d5a1fd3e-1411-4730-8b9a-e237d8000186",
+        "version": "8.19.0"
+    },
+    "log": {
+        "file": {
+            "path": "arn:aws:logs:ap-south-1:627286350134:log-group:/aws/vendedlogs/bedrock-agentcore/code-interpreter/APPLICATION_LOGS/aws.codeinterpreter.v1"
+        },
+        "level": "INFO"
+    },
+    "elastic_agent": {
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
+        "version": "8.19.0",
+        "snapshot": false
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "cloud": {
+        "provider": "aws",
+        "service": {
+            "name": "bedrock-agentcore"
+        },
+        "region": "ap-south-1",
+        "account": {
+            "id": "627286350134"
+        }
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "trace": {
+        "id": "69312fad26702790701031206b31ab8e"
+    },
+    "@timestamp": "2025-12-03T10:52:29.320Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "aws_bedrock_agentcore.codeinterpreter_application_logs"
+    },
+    "service": {
+        "name": "aws.codeinterpreter.v1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-12-03T10:55:00Z",
+        "id": "39299483435865920498526836744670895669942873429125169153",
+        "dataset": "aws_bedrock_agentcore.codeinterpreter_application_logs",
+        "outcome": "success"
+    },
+    "aws": {
+        "bedrock_agentcore": {
+            "codeinterpreter": {
+                "resource_arn": "arn:aws:bedrock-agentcore:ap-south-1:aws:code-interpreter/aws.codeinterpreter.v1",
+                "tool_session_id": "01KBM1FQP1MHGVNMS6G3SN26PD",
+                "service_name": "AgentCoreCodeInterpreter",
+                "operation": "InvokeCodeInterpreter",
+                "operation_name": "InvokeCodeInterpreter",
+                "provider_name": "aws_bedrock_agentcore",
+                "request_id": "941f5755-9934-40e6-9304-ebca40699b2d",
+                "severity_number": 9,
+                "request_payload": {
+                    "name": "listFiles"
+                },
+                "request_payload_object": {
+                    "name": "listFiles",
+                    "arguments": {
+                        "path": ""
+                    }
+                },
+                "response_payload": {
+                    "is_error": false
+                },
+                "response_payload_object": {
+                    "content": [
+                        {
+                            "type": "resource_link",
+                            "uri": "file:///log",
+                            "name": "log",
+                            "description": "Directory"
+                        },
+                        {
+                            "type": "resource_link",
+                            "uri": "file:///run",
+                            "name": "run",
+                            "description": "Directory"
+                        },
+                        {
+                            "type": "resource_link",
+                            "uri": "file:///.ipython",
+                            "name": ".ipython",
+                            "description": "Directory"
+                        },
+                        {
+                            "type": "resource_link",
+                            "mimeType": "text/csv",
+                            "uri": "file:///data.csv",
+                            "name": "data.csv",
+                            "description": "File"
+                        }
+                    ],
+                    "isError": false
+                }
+            }
+        }
+    },
+    "span": {
+        "id": "ecd3ffefc51477bc"
+    }
+}
+```
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.bedrock_agentcore.codeinterpreter.operation | Name of the code interpreter operation executed. | keyword |
+| aws.bedrock_agentcore.codeinterpreter.operation_name | Name of the GenAI operation performed. | keyword |
+| aws.bedrock_agentcore.codeinterpreter.provider_name | Name of the AI provider or platform. | keyword |
+| aws.bedrock_agentcore.codeinterpreter.request_id | ID of the processed request. | keyword |
+| aws.bedrock_agentcore.codeinterpreter.request_payload.name | Name of the code interpreter action being invoked. | keyword |
+| aws.bedrock_agentcore.codeinterpreter.request_payload.truncated_payload | Truncated request payload when the full payload exceeds size limits. | text |
+| aws.bedrock_agentcore.codeinterpreter.request_payload_object | Full request payload when it is an object or map. | flattened |
+| aws.bedrock_agentcore.codeinterpreter.resource_arn | Amazon Resource Name (ARN) of the AgentCore code interpreter resource. | keyword |
+| aws.bedrock_agentcore.codeinterpreter.response_payload.is_error | Indicates whether the response contains an error. | boolean |
+| aws.bedrock_agentcore.codeinterpreter.response_payload_object | Response payload from the code interpreter. | flattened |
+| aws.bedrock_agentcore.codeinterpreter.service_name | Name of the service handling the code interpreter operation. | keyword |
+| aws.bedrock_agentcore.codeinterpreter.severity_number | Numeric severity level associated with the event. | integer |
+| aws.bedrock_agentcore.codeinterpreter.tool_session_id | Unique identifier for the code interpreter tool session. | keyword |
+| aws.cloudwatch.message | CloudWatch log message. | text |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset | long |
+
