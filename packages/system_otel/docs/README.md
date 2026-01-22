@@ -38,7 +38,6 @@ Make sure that your receivers section in the Collector configuration file is as 
         metrics:
           system.memory.utilization:
             enabled: true
-      # process scraper is disabled for now: https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/39423
       #process:
       #  mute_process_exe_error: true
       #  mute_process_io_error: true
@@ -69,7 +68,6 @@ Make sure that your receivers section in the Collector configuration file is as 
         metrics:
           system.memory.utilization:
             enabled: true
-      # process scraper is disabled for now: https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/39423
       #process:
       #  mute_process_exe_error: true
       #  mute_process_io_error: true
