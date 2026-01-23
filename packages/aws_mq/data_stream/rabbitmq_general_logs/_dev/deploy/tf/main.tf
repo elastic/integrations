@@ -5,8 +5,8 @@ variable "TEST_RUN_ID" {
 locals {
   region = "us-east-1"
 
-  activemq_general_log_group  = "/aws/activemq/broker/test-${var.TEST_RUN_ID}/general"
-  activemq_general_log_stream = "general-stream"
+  rabbitmq_general_log_group  = "/aws/rabbitmq/broker/test-${var.TEST_RUN_ID}/general"
+  rabbitmq_general_log_stream = "general-stream"
 }
 
 provider "aws" {
@@ -23,22 +23,22 @@ provider "aws" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "activemq_general" {
-  name = local.activemq_general_log_group
+resource "aws_cloudwatch_log_group" "rabbitmq_general" {
+  name = local.rabbitmq_general_log_group
 }
 
-resource "aws_cloudwatch_log_stream" "activemq_general" {
-  name           = local.activemq_general_log_stream
-  log_group_name = aws_cloudwatch_log_group.activemq_general.name
+resource "aws_cloudwatch_log_stream" "rabbitmq_general" {
+  name           = local.rabbitmq_general_log_stream
+  log_group_name = aws_cloudwatch_log_group.rabbitmq_general.name
 
-  depends_on = [aws_cloudwatch_log_group.activemq_general]
+  depends_on = [aws_cloudwatch_log_group.rabbitmq_general]
 }
 
-resource "null_resource" "push_activemq_general_logs" {
-  depends_on = [aws_cloudwatch_log_stream.activemq_general]
+resource "null_resource" "push_rabbitmq_general_logs" {
+  depends_on = [aws_cloudwatch_log_stream.rabbitmq_general]
 
   triggers = {
-    logs_hash = filemd5("${path.module}/files/activemq_general.log")
+    logs_hash = filemd5("${path.module}/files/rabbitmq_general.log")
   }
 
   provisioner "local-exec" {
@@ -49,7 +49,6 @@ resource "null_resource" "push_activemq_general_logs" {
     unset AWS_PROFILE
 
     if ! command -v aws &> /dev/null; then
-
       apt-get update -qq
       apt-get install -y -qq curl unzip > /dev/null 2>&1
 
@@ -71,7 +70,8 @@ resource "null_resource" "push_activemq_general_logs" {
         # discarded by CloudWatch https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html
       
         CURRENT_TS=$((BASE_TS + COUNTER))
-        FORMATTED_TS=$(date -u -d "@$CURRENT_TS" '+%Y-%m-%d %H:%M:%S,000' 2>/dev/null || date -u -r $CURRENT_TS '+%Y-%m-%d %H:%M:%S,000')
+        BASE_FORMAT=$(date -u -d "@$CURRENT_TS" '+%Y-%m-%d %H:%M:%S.000000' 2>/dev/null || date -u -r $CURRENT_TS '+%Y-%m-%d %H:%M:%S.000000')
+        FORMATTED_TS="$${BASE_FORMAT}Z"
         CLOUD_WATCH_TS=$((CURRENT_TS * 1000))
 
         REPLACED_LINE=$(echo "$line" | sed "s|<TIMESTAMP>|$FORMATTED_TS|")
@@ -85,11 +85,11 @@ resource "null_resource" "push_activemq_general_logs" {
 
         EVENTS="$EVENTS{\"timestamp\":$CLOUD_WATCH_TS,\"message\":\"$ESCAPED\"}"
         COUNTER=$((COUNTER + 1))
-    done < "${path.module}/files/activemq_general.log"
+    done < "${path.module}/files/rabbitmq_general.log"
 
     EVENTS="$EVENTS]"
 
-    /usr/local/bin/aws logs put-log-events \
+    aws logs put-log-events \
         --region "$AWS_REGION" \
         --log-group-name "$LOG_GROUP_NAME" \
         --log-stream-name "$LOG_STREAM_NAME" \
@@ -98,14 +98,14 @@ resource "null_resource" "push_activemq_general_logs" {
     interpreter = ["/bin/sh", "-c"]
 
     environment = {
-      LOG_GROUP_NAME     = aws_cloudwatch_log_group.activemq_general.name
-      LOG_STREAM_NAME    = aws_cloudwatch_log_stream.activemq_general.name
+      LOG_GROUP_NAME     = aws_cloudwatch_log_group.rabbitmq_general.name
+      LOG_STREAM_NAME    = aws_cloudwatch_log_stream.rabbitmq_general.name
       AWS_REGION         = local.region
       AWS_DEFAULT_REGION = local.region
     }
   }
 }
 
-output "activemq_general_log_group_arn" {
-  value = aws_cloudwatch_log_group.activemq_general.arn
+output "rabbitmq_general_log_group_arn" {
+  value = aws_cloudwatch_log_group.rabbitmq_general.arn
 }
