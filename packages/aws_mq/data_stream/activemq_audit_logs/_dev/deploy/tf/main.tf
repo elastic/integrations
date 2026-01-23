@@ -66,7 +66,7 @@ resource "null_resource" "push_activemq_audit_logs" {
     while IFS= read -r line || [ -n "$line" ]; do
         [ -z "$line" ] && continue
 
-        # we have to take current timestamp to generate logs as events with timestamp older than 14 days are 
+        # take current timestamp to generate logs as events with timestamp older than 14 days are 
         # discarded by CloudWatch https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html
       
         CURRENT_TS=$((BASE_TS + COUNTER))
