@@ -2,7 +2,7 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-23
 **Total Core Artifacts**: 4 available + 36 in progress + 6 not available = 46 total variants
 **Total Queries**: 36 (9 core forensic variants + 27 additional)
 **Completion Rate**: 8.7% (4/46 core artifacts fully supported)
@@ -32,9 +32,6 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 5 | File Hash Info          | ✅ | Win | file_hash_info_windows_elastic | [f8e71a30](kibana/osquery_saved_query/osquery_manager-f8e71a30-b621-11ef-9c4a-8b2c7c5a1d3e.json) | Files with hash & authenticode in staging directories (T1036, T1105, T1564.001) |
 | 5a | File Hash Info          | ✅ | Linux | file_hash_info_linux_elastic | [b7d63c50](kibana/osquery_saved_query/osquery_manager-b7d63c50-b623-11ef-9c4a-8b2c7c5a1d40.json) | Files with hash & container/namespace awareness (T1036, T1105, T1565.001) |
 | 5b | File Hash Info          | ✅ | Mac | file_hash_info_darwin_elastic | [a3c52b40](kibana/osquery_saved_query/osquery_manager-a3c52b40-b622-11ef-9c4a-8b2c7c5a1d3f.json) | Files with hash & Gatekeeper signature validation (T1036, T1105, T1564.001) |
-| 5c | File Hash Listing       | ⚠️ | Win | file_hash_listing_windows_elastic | [de99fd6a](kibana/osquery_saved_query/osquery_manager-de99fd6a-3f4f-4645-9466-bd2945124eb2.json) | Unfiltered (ALL files): hash + authenticode + PE metadata; **potentially millions** of rows, consider storage/ingestion impact. Filtered alternative: `file_hash_info_windows_elastic`. |
-| 5d | File Hash Listing       | ⚠️ | Linux | file_hash_listing_linux_elastic | [fbef8579](kibana/osquery_saved_query/osquery_manager-fbef8579-f4a2-4a9a-ac39-432e89c1f57f.json) | Unfiltered (ALL files): hash + container/namespace awareness; **potentially millions** of rows, consider storage/ingestion impact. Filtered alternative: `file_hash_info_linux_elastic`. |
-| 5e | File Hash Listing       | ⚠️ | Mac | file_hash_listing_darwin_elastic | [141bfc5e](kibana/osquery_saved_query/osquery_manager-141bfc5e-f5b6-4168-af69-51660d850713.json) | Unfiltered (ALL files): hash + Gatekeeper signature validation; **potentially millions** of rows, consider storage/ingestion impact. Filtered alternative: `file_hash_info_darwin_elastic`. |
 | 6 | Installed Services      | ⚠️ | Win | -     | -    | services table                                                                                                                   |
 | 6a | Installed Services      | ⚠️ | Linux | -     | -    | systemd table                                                                                                                    |
 | 6b | Installed Services      | ⚠️ | Mac | -     | -    | launchd table                                                                                                                    |
