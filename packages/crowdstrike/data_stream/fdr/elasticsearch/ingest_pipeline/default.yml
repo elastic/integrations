@@ -357,7 +357,7 @@ processors:
       if: ctx.crowdstrike?.ExternalApiType == 'Event_DataProtectionDetectionSummaryEvent'
       name: '{{ IngestPipeline "data_protection_detection_summary" }}'
   - pipeline:
-      tag: pipeline_epp_detection_summary_fdr
+      tag: pipeline_epp_detection_summary_b611643c
       if: ctx.crowdstrike?.ExternalApiType == 'Event_EppDetectionSummaryEvent'
       name: '{{ IngestPipeline "epp_detection_summary" }}'
 
@@ -2133,12 +2133,12 @@ processors:
       target_field: file.device
       ignore_missing: true
   - set:
-      tag: set_file_type_c7c034b0
+      tag: set_file_type_f7adee81
       if: ctx.file?.path != null && ctx.event?.action != null && !ctx.event.action.contains("Directory")
       field: file.type
       value: file
   - set:
-      tag: set_file_type_b27f1482
+      tag: set_file_type_d001ae21
       if: ctx.file?.path != null && ctx.event?.action != null && (ctx.event.action.contains("Directory") || ctx.file.path.endsWith("\\") || ctx.file.path.endsWith("/"))
       field: file.type
       value: dir
@@ -2265,14 +2265,14 @@ processors:
           field: threat.tactic.name
           value: '{{{_ingest._value.Tactic}}}'
           allow_duplicates: false
-  # Handle MitreAttack array if present
+
   - foreach:
       tag: foreach_of_crowdstrike_MitreAttack_for_Tactic_268c02de
       if: ctx.crowdstrike?.MitreAttack instanceof List
       field: crowdstrike.MitreAttack
       processor:
         append:
-          tag: append_crowdstrike_MitreAttack_threat_tactic_name_b021c3ec
+          tag: append_threat_tactic_name_b021c3ec
           field: threat.tactic.name
           value: '{{{_ingest._value.Tactic}}}'
           allow_duplicates: false
@@ -2282,7 +2282,7 @@ processors:
       field: crowdstrike.MitreAttack
       processor:
         append:
-          tag: append_crowdstrike_MitreAttack_threat_tactic_id_4d499747
+          tag: append_threat_tactic_id_4d499747
           field: threat.tactic.id
           value: '{{{_ingest._value.TacticID}}}'
           allow_duplicates: false
@@ -2292,7 +2292,7 @@ processors:
       field: crowdstrike.MitreAttack
       processor:
         append:
-          tag: append_crowdstrike_MitreAttack_threat_technique_name_af6387ac
+          tag: append_threat_technique_name_af6387ac
           field: threat.technique.name
           value: '{{{_ingest._value.Technique}}}'
           allow_duplicates: false
@@ -2302,7 +2302,7 @@ processors:
       field: crowdstrike.MitreAttack
       processor:
         append:
-          tag: append_crowdstrike_MitreAttack_threat_technique_id_70f7c093
+          tag: append_threat_technique_id_70f7c093
           field: threat.technique.id
           value: '{{{_ingest._value.TechniqueID}}}'
           allow_duplicates: false
