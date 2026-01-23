@@ -123,6 +123,7 @@ An example event for `adminconsole` looks as following:
 | ece_adminconsole.log.deployment.name |  | keyword |
 | input.type | Input type | keyword |
 | log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.fingerprint | Fingerprint of the log file. | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.offset | Log offset | long |
 
