@@ -6,9 +6,9 @@ This package contains Kibana assets for monitoring [AWS ELB load balancers](http
 
 ### EDOT Cloud Forwarder (ECF) for AWS
 
-ECF is the simplest way to configure AWS ELB log collection. Refer to the [ECF for AWS documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) for full setup instructions.
+ECF is the simplest way to configure AWS ELB log collection. See the [ECF for AWS documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) for full setup instructions including finding your OTLP Endpoint and API Key. 
 
-[![Launch CloudFormation Stack](../img/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home#/stacks/create/review?templateURL=https://edot-cloud-forwarder.s3.amazonaws.com/v1/latest/cloudformation/s3_logs-cloudformation.yaml&stackName=edot-cloud-forwarder-elbaccess&param_EdotCloudForwarderS3LogsType=elbaccess)
+[![Launch Cloud Forwarder](../img/edot.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/create/review?templateURL=https://edot-cloud-forwarder.s3.amazonaws.com/v1/latest/cloudformation/s3_logs-cloudformation.yaml&stackName=edot-cloud-forwarder-elbaccess&param_EdotCloudForwarderS3LogsType=elbaccess)
 
 ### Standalone OTel Collector
 
