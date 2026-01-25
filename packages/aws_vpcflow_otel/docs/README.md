@@ -8,7 +8,7 @@ This package contains Kibana assets for monitoring [Amazon Virtual Private Cloud
 
 ECF is the simplest way to configure AWS VPC Flow log collection. Refer to the [ECF for AWS documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) for full setup instructions.
 
-[![Launch CloudFormation Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws)
+[![Launch CloudFormation Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?templateURL=https://edot-cloud-forwarder.s3.amazonaws.com/v1/latest/cloudformation/s3_logs-cloudformation.yaml)
 
 ### Standalone OTel Collector
 
