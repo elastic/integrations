@@ -8,7 +8,7 @@ This package contains Kibana assets for monitoring [AWS CloudTrail Logs](https:/
 
 ECF is the simplest way to configure AWS CloudTrail log collection. Refer to the [ECF for AWS documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) for full setup instructions.
 
-[![Launch CloudFormation Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?templateURL=https://edot-cloud-forwarder.s3.amazonaws.com/v1/latest/cloudformation/s3_logs-cloudformation.yaml)
+[![Launch CloudFormation Stack](../img/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?templateURL=https://edot-cloud-forwarder.s3.amazonaws.com/v1/latest/cloudformation/s3_logs-cloudformation.yaml&param_EdotCloudForwarderS3LogsType=cloudtrail)
 
 ### Standalone OTel Collector
 
