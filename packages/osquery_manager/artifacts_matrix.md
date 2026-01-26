@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-26
-**Total Core Artifacts**: 37 available + 7 in progress + 6 not available = 50 total variants
-**Total Queries**: 60
-**Completion Rate**: 74.0% (37/50 core artifacts fully supported)
+**Total Core Artifacts**: 38 available + 6 in progress + 6 not available = 50 total variants
+**Total Queries**: 61
+**Completion Rate**: 76.0% (38/50 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 37     | 74.0%      |
-| ⚠️ In Progress (Needs Validation) | 7     | 14.0%      |
+| ✅ Available (Fully Supported) | 38     | 76.0%      |
+| ⚠️ In Progress (Needs Validation) | 6     | 12.0%      |
 | ❌ Not Available (Requires Extensions) | 6     | 12.0%      |
 
 ---
@@ -61,7 +61,7 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 17c | Suspicious Processes                  | ✅ | Win | suspicious_processes_windows               | [4537](kibana/osquery_saved_query/osquery_manager-45375d5b-c4a6-4cea-8f1b-eb1cbd3c6e9d.json)     | Suspicious process detection: LOLBins, unsigned, unusual paths (MITRE T1059, T1218) |
 | 17d | Suspicious Processes                  | ✅ | Linux | suspicious_processes_linux                 | [4da8](kibana/osquery_saved_query/osquery_manager-4da83919-be77-48df-ad50-4f5b464c2bab.json)     | Suspicious process detection: reverse shells, crypto-miners, container escapes (MITRE T1059, T1496, T1611) |
 | 17e | Suspicious Processes                  | ✅ | Mac | suspicious_processes_macos                 | [2b1b](kibana/osquery_saved_query/osquery_manager-2b1b604c-e355-4e23-b8b4-d014a0aa3197.json)     | Suspicious process detection: unsigned, osascript abuse, quarantine bypass (MITRE T1059, T1553.001) |
-| 18  | Registry                              | ⚠️ | Win   | -                                          | -                                                                                                | registry table                                                                                                                   |
+| 18 | Registry                              | ✅ | Win | registry_persistence_windows_elastic       | [5dd4](kibana/osquery_saved_query/osquery_manager-5dd4e2a9-eea7-4740-a1ec-1b1b7d120d77.json) | registry table - Persistence detection covering Run, RunOnce, Policy Run, Winlogon (Shell/Userinit), Active Setup with hash/signature enrichment. MITRE T1547.001, T1547.014 |
 | 19  | Shell History                         | ✅ | Linux | shell_history_linux_macos_elastic          | [8476](kibana/osquery_saved_query/osquery_manager-8476c6fe-9c0b-447b-a334-c5ecc0779d9d.json)     | shell_history table with LEFT JOIN for anti-forensics detection (users with no history). MITRE: T1059.004, T1552.003, T1070.003, T1105, T1562.001 |
 | 19a | Shell History                         | ✅ | Mac   | shell_history_linux_macos_elastic          | [8476](kibana/osquery_saved_query/osquery_manager-8476c6fe-9c0b-447b-a334-c5ecc0779d9d.json)     | shell_history table with LEFT JOIN for anti-forensics detection (users with no history). MITRE: T1059.004, T1552.003, T1070.003, T1105, T1562.001 |
 | 20  | Shellbags                             | ✅ | Win   | shellbags_windows_elastic                  | [a4b2](kibana/osquery_saved_query/osquery_manager-a4b2c8d0-8876-11f0-b4d1-4f9e8c3a1b2e.json)     | shellbags table - tracks directory access via Windows Explorer |
@@ -167,7 +167,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ✅ Startup Items - Linux (Dual-detection: User-created systemd/cron/XDG + LotL patterns - T1543.002, T1053.003, T1547.013, T1059.004, T1105)
 - ✅ Startup Items - macOS (Dual-detection: Non-Apple signed LaunchAgents/Daemons + LotL patterns - T1543.001, T1547.015, T1059.004, T1105)
 - ✅ Installed Services (All platforms: services table)
-- ⚠️ Registry (Windows: registry table)
+- ✅ Registry (Windows: registry table) - **Production-ready persistence query with hash/signature enrichment**
 - ✅ Scheduled Tasks:
   - Windows Scheduled Tasks 
   - Linux Cron Jobs 
