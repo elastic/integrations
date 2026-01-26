@@ -1,0 +1,148 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a high count of failed Microsoft Entra ID sign-in attempts as the result of the target user account being locked out. Adversaries may attempt to brute-force user accounts by repeatedly trying to authenticate with incorrect credentials, leading to account lockouts by Entra ID Smart Lockout policies.",
+        "false_positives": [
+            "Automated processes that attempt to authenticate using expired credentials or have misconfigured authentication settings may lead to false positives."
+        ],
+        "from": "now-30m",
+        "index": [
+            "filebeat-*",
+            "logs-azure.signinlogs-*"
+        ],
+        "interval": "15m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Entra ID Excessive Account Lockouts Detected",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Excessive Account Lockouts Detected\n\nThis rule detects a high number of sign-in failures due to account lockouts (error code `50053`) in Microsoft Entra ID sign-in logs. These lockouts are typically caused by repeated authentication failures, often as a result of brute-force tactics such as password spraying, credential stuffing, or automated guessing. This detection is time-bucketed and aggregates attempts to identify bursts or coordinated campaigns targeting multiple users. Error code `50053` indicates Entra ID Smart Lockout, which is IP-based and tracks \"unfamiliar\" vs \"familiar\" locations. Familiar IPs have a higher threshold before lockout, so if lockouts are occurring, the source IP was unfamiliar to those accounts.\n\n### Possible investigation steps\n\n- This is a threshold rule that aggregates events, so the alert document won't contain individual sign-in attempts. Pivot to the raw logs in Discover or Timeline using: `event.dataset: \"azure.signinlogs\" and azure.signinlogs.properties.status.error_code: 50053`. Match the time range to the alert window (rule lookback is 30 minutes).\n- Add relevant columns: `@timestamp`, `user.name`, `source.ip`, `user_agent.original`, `azure.signinlogs.properties.app_display_name`, `azure.signinlogs.properties.client_app_used`, `source.as.organization.name`, `geo.country_iso_code`, `azure.signinlogs.properties.authentication_details`.\n- Aggregate by `source.ip` and `user.name` to identify the attack pattern: password spray (single/small set of IPs targeting many accounts), credential stuffing (many source IPs, may target specific users with leaked credentials), targeted brute force (focused on single high-value account), or misconfigured service (single source IP with consistent user-agent matching legitimate application).\n- Analyze `user_agent.original` for indicators of automation. Values like `curl/*`, `python-requests/*`, `Go-http-client/*`, `axios/*` indicate scripted attacks. `BAV2ROPC` indicates Resource Owner Password Credential flow (legacy auth), commonly abused by spray tools like o365spray and MSOLSpray.\n- Review `azure.signinlogs.properties.client_app_used`. `Other clients` indicates legacy auth (IMAP, SMTP, POP) which is high-risk. `Exchange ActiveSync` is legacy auth often targeted.\n- Check `azure.signinlogs.properties.authentication_protocol` for `ropc` (Resource Owner Password Credential), a legacy flow where credentials are sent directly with no MFA interruption possible.\n- Review `source.as.organization.name`. Cloud hosting providers (DigitalOcean, Vultr, Linode, AWS, Azure, GCP) or VPN providers (NordVPN, ExpressVPN, Mullvad) are high-risk as attackers use this infrastructure.\n- Check `azure.signinlogs.properties.conditional_access_status`. `notApplied` means no CA policy evaluated, indicating a coverage gap. `failure` means CA policy blocked the sign-in.\n- Determine if any accounts were compromised. Query for successful sign-ins from attacking infrastructure: `event.dataset: \"azure.signinlogs\" and event.outcome: \"success\" and source.ip: \"<attacker_ip>\"`. Also query for successful sign-ins for affected users from any source during the attack window.\n- Check for MFA bypass: `event.dataset: \"azure.signinlogs\" and event.outcome: \"success\" and azure.signinlogs.properties.authentication_requirement: \"singleFactorAuthentication\" and source.ip: \"<attacker_ip>\"`\n- Review Entra ID Protection risk events for affected users by checking `risk_level_during_signin`, `risk_level_aggregated`, and `risk_state` for values other than `none`.\n- Check for username enumeration preceding the spray. Error code `50034` (user not found) indicates enumeration: `event.dataset: \"azure.signinlogs\" and azure.signinlogs.properties.status.error_code: 50034 and source.ip: \"<attacker_ip>\"`\n- Query for other error codes from the same source: `50126` (invalid password), `50034` (user not found), `50057` (account disabled), `50055` (password expired), `53003` (blocked by CA), `50158` (MFA challenge not satisfied). A mix of `50126` and `50053` confirms password guessing.\n\n### False positive analysis\n\n- Misconfigured clients, scripts, or services with outdated credentials may inadvertently cause lockouts.\n- Lockouts during credential rotation windows could be benign.\n- Legacy applications without modern auth support may repeatedly fail and trigger Smart Lockout.\n- Specific known user agents from corporate service accounts.\n- Cloud-hosted automation with expected failure behavior.\n- This rule can be customized. Adjust the threshold and/or interval/lookback window based on baselining efforts. Specific UPNs can be excluded if they generate known false positives.\n\n### Response and remediation\n\n- Confirm no successful authentications from attacking source.\n- Query for successful sign-ins to affected users from any source during the attack window.\n- If compromise confirmed: disable account, revoke refresh tokens (`Revoke-AzureADUserAllRefreshToken` or via portal), reset password, require MFA re-registration.\n- Block source IP/ASN via Conditional Access named locations.\n- If legacy auth was used: create CA policy blocking legacy authentication.\n- If MFA wasn't required: review CA policy coverage for gaps.\n- Document affected users for credential reset and monitoring.\n",
+        "query": "event.dataset: \"azure.signinlogs\" and event.category: \"authentication\"\n    and azure.signinlogs.category: (\"NonInteractiveUserSignInLogs\" or \"SignInLogs\")\n    and event.outcome: \"failure\"\n    and azure.signinlogs.properties.authentication_requirement: \"singleFactorAuthentication\"\n    and azure.signinlogs.properties.status.error_code: 50053\n    and azure.signinlogs.properties.user_principal_name: (* and not \"\")\n    and not source.as.organization.name: \"MICROSOFT-CORP-MSN-as-BLOCK\"\n    and not source.ip: (\"10.0.0.0/8\" or \"172.16.0.0/12\" or \"192.168.0.0/16\" or \"127.0.0.0/8\" or \"::1/128\" or \"fd00::/8\")\n",
+        "references": [
+            "https://www.microsoft.com/en-us/security/blog/2025/05/27/new-russia-affiliated-actor-void-blizzard-targets-critical-sectors-for-espionage/",
+            "https://cloud.hacktricks.xyz/pentesting-cloud/azure-security/az-unauthenticated-enum-and-initial-entry/az-password-spraying",
+            "https://learn.microsoft.com/en-us/security/operations/incident-response-playbook-password-spray",
+            "https://www.sprocketsecurity.com/blog/exploring-modern-password-spraying",
+            "https://learn.microsoft.com/en-us/purview/audit-log-detailed-properties",
+            "https://learn.microsoft.com/en-us/entra/identity-platform/reference-error-codes",
+            "https://github.com/0xZDH/Omnispray",
+            "https://github.com/0xZDH/o365spray"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.authentication_requirement",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.status.error_code",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_principal_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2d6f5332-42ea-11f0-b09a-f661ea17fbcd",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Entra ID",
+            "Data Source: Entra ID Sign-in Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            },
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            },
+                            {
+                                "id": "T1110.004",
+                                "name": "Credential Stuffing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "cardinality": [
+                {
+                    "field": "user.name",
+                    "value": 25
+                }
+            ],
+            "field": [],
+            "value": 30
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 206
+    },
+    "id": "2d6f5332-42ea-11f0-b09a-f661ea17fbcd_206",
+    "type": "security-rule"
+}
