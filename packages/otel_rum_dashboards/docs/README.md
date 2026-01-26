@@ -5,7 +5,7 @@ described in the comments.
 
 Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
 */}}
-# OpenTelemetry RUM Assets
+# RUM OpenTelemetry Assets
 
 ## Overview
 
