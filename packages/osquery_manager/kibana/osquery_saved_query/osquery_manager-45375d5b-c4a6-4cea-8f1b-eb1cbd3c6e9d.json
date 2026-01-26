@@ -1,0 +1,148 @@
+{
+    "attributes": {
+        "created_at": "2025-01-06T10:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Identifies Windows processes with suspicious characteristics: unsigned executables, unusual paths (temp, public, downloads), LOLBin abuse, UAC bypass tools, and suspicious parent-child relationships. Enriched with code signatures and file hashes for threat intelligence correlation.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.suspicious_processes"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.working_directory",
+                "value": {
+                    "field": "cwd"
+                }
+            },
+            {
+                "key": "process.parent.pid",
+                "value": {
+                    "field": "ppid"
+                }
+            },
+            {
+                "key": "process.parent.name",
+                "value": {
+                    "field": "parent_name"
+                }
+            },
+            {
+                "key": "process.parent.executable",
+                "value": {
+                    "field": "parent_path"
+                }
+            },
+            {
+                "key": "process.parent.command_line",
+                "value": {
+                    "field": "parent_cmdline"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "process.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "process.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "process.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "process.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "process.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "process",
+                        "suspicious_process",
+                        "threat_hunting",
+                        "windows"
+                    ]
+                }
+            }
+        ],
+        "id": "suspicious_processes_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Windows Suspicious Process Detection\n-- Identifies processes with potentially malicious characteristics\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.on_disk,\n    p.elevated_token,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link,\n    a.result AS signature_status,\n    a.subject_name AS signature_signer,\n    CASE\n        WHEN a.result IS NOT NULL AND a.result != 'trusted' THEN 'untrusted_signature'\n        WHEN a.result IS NULL AND p.path NOT LIKE 'C:\\\\Windows\\\\%' THEN 'unsigned_non_system'\n        WHEN p.path LIKE '%\\\\Temp\\\\%' OR p.path LIKE '%\\\\tmp\\\\%' THEN 'suspicious_path_temp'\n        WHEN p.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%' THEN 'suspicious_path_appdata_temp'\n        WHEN p.path LIKE '%\\\\Users\\\\Public\\\\%' THEN 'suspicious_path_public'\n        WHEN p.path LIKE '%\\\\Downloads\\\\%' THEN 'suspicious_path_downloads'\n        WHEN p.name IN ('powershell.exe', 'pwsh.exe') AND (p.cmdline LIKE '%encodedcommand%' OR p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-enc %' OR p.cmdline LIKE '%bypass%' OR p.cmdline LIKE '%hidden%') THEN 'powershell_suspicious_args'\n        WHEN p.name = 'cmd.exe' AND (p.cmdline LIKE '%/c %' OR p.cmdline LIKE '%/k %') AND pp.name NOT IN ('explorer.exe', 'cmd.exe', 'powershell.exe', 'pwsh.exe') THEN 'cmd_unusual_parent'\n        WHEN p.name IN ('mshta.exe', 'wscript.exe', 'cscript.exe') THEN 'script_host_execution'\n        WHEN p.name IN ('certutil.exe', 'bitsadmin.exe') AND (p.cmdline LIKE '%http%' OR p.cmdline LIKE '%ftp%' OR p.cmdline LIKE '%decode%' OR p.cmdline LIKE '%urlcache%') THEN 'lolbin_download'\n        WHEN p.name = 'rundll32.exe' AND (p.cmdline LIKE '%javascript%' OR p.cmdline LIKE '%vbscript%') THEN 'rundll32_script'\n        WHEN p.name IN ('regsvr32.exe', 'msiexec.exe') AND p.cmdline LIKE '%http%' THEN 'lolbin_remote_payload'\n        WHEN p.name IN ('msbuild.exe', 'installutil.exe', 'regasm.exe', 'regsvcs.exe') THEN 'dotnet_lolbin'\n        WHEN p.name IN ('eventvwr.exe', 'fodhelper.exe', 'computerdefaults.exe', 'sdclt.exe') AND pp.name NOT IN ('explorer.exe', 'svchost.exe') THEN 'uac_bypass_tool'\n        WHEN p.name = 'wmic.exe' AND (p.cmdline LIKE '%process%call%create%' OR p.cmdline LIKE '%/node:%') THEN 'wmic_execution'\n        WHEN pp.name = 'wmiprvse.exe' OR pp.name = 'wsmprovhost.exe' THEN 'remote_execution_parent'\n        WHEN p.on_disk = 0 THEN 'process_not_on_disk'\n        ELSE 'other_suspicious'\n    END AS detection_reason\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN authenticode a ON p.path = a.path\nWHERE p.path != ''\nAND p.name NOT IN ('Registry', 'Memory Compression')\nAND (\n    -- Untrusted signatures (explicit non-trusted result)\n    (a.result IS NOT NULL AND a.result != 'trusted')\n    -- Unsigned non-system binaries\n    OR (a.result IS NULL AND p.path NOT LIKE 'C:\\\\Windows\\\\%' AND p.path NOT LIKE 'C:\\\\Program Files\\\\%' AND p.path NOT LIKE 'C:\\\\Program Files (x86)\\\\%')\n    -- Suspicious execution paths (narrowed to reduce noise)\n    OR p.path LIKE '%\\\\Temp\\\\%'\n    OR p.path LIKE '%\\\\tmp\\\\%'\n    OR p.path LIKE '%\\\\AppData\\\\Local\\\\Temp\\\\%'\n    OR p.path LIKE '%\\\\Users\\\\Public\\\\%'\n    OR p.path LIKE '%\\\\Downloads\\\\%'\n    -- PowerShell abuse patterns\n    OR (p.name IN ('powershell.exe', 'pwsh.exe') AND (\n        p.cmdline LIKE '%encodedcommand%'\n        OR p.cmdline LIKE '%-e %'\n        OR p.cmdline LIKE '%-enc %'\n        OR p.cmdline LIKE '%bypass%'\n        OR p.cmdline LIKE '%hidden%'\n        OR p.cmdline LIKE '%downloadstring%'\n        OR p.cmdline LIKE '%iex%'\n        OR p.cmdline LIKE '%invoke-expression%'\n        OR p.cmdline LIKE '%webclient%'\n    ))\n    -- Script host execution\n    OR p.name IN ('mshta.exe', 'wscript.exe', 'cscript.exe')\n    -- LOLBin download/decode\n    OR (p.name IN ('certutil.exe', 'bitsadmin.exe') AND (p.cmdline LIKE '%http%' OR p.cmdline LIKE '%decode%' OR p.cmdline LIKE '%urlcache%'))\n    -- Rundll32 script execution\n    OR (p.name = 'rundll32.exe' AND (p.cmdline LIKE '%javascript%' OR p.cmdline LIKE '%vbscript%'))\n    -- Remote payload LOLBins\n    OR (p.name IN ('regsvr32.exe', 'msiexec.exe') AND p.cmdline LIKE '%http%')\n    -- .NET LOLBins (AppLocker bypass)\n    OR p.name IN ('msbuild.exe', 'installutil.exe', 'regasm.exe', 'regsvcs.exe')\n    -- UAC bypass tools with unusual parents\n    OR (p.name IN ('eventvwr.exe', 'fodhelper.exe', 'computerdefaults.exe', 'sdclt.exe') AND pp.name NOT IN ('explorer.exe', 'svchost.exe'))\n    -- WMIC lateral movement / execution\n    OR (p.name = 'wmic.exe' AND (p.cmdline LIKE '%process%call%create%' OR p.cmdline LIKE '%/node:%'))\n    -- Remote execution indicators\n    OR pp.name IN ('wmiprvse.exe', 'wsmprovhost.exe')\n    -- Process running from memory (not on disk)\n    OR p.on_disk = 0\n);",
+        "timeout": 180,
+        "updated_at": "2025-01-06T10:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-45375d5b-c4a6-4cea-8f1b-eb1cbd3c6e9d",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-06T10:00:00.000Z",
+    "version": "WzEsMV0="
+}
