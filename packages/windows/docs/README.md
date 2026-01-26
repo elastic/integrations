@@ -2156,7 +2156,6 @@ An example event for `powershell_operational` looks as following:
 | powershell.file.script_block_hash | A hash of the script to be used in rules. | keyword |
 | powershell.file.script_block_id | Id of the executed script block. | keyword |
 | powershell.file.script_block_length | Total number of characters in the script. | long |
-| powershell.file.script_block_signature | If present in the script, the script signature. | keyword |
 | powershell.file.script_block_surprisal_stdev | Consistency of randomness distribution across the script. Low values indicate uniform randomness. High values indicate mixed patterns with variability. | float |
 | powershell.file.script_block_text | Text of the executed script block. | text |
 | powershell.file.script_block_unique_symbols | Number of distinct characters used in the script. | long |

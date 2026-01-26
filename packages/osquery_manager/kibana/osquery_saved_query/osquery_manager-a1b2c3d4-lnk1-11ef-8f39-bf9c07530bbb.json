@@ -1,0 +1,168 @@
+{
+    "attributes": {
+        "created_at": "2025-11-20T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Comprehensive Windows LNK shortcut file forensics across all critical locations: user/system Startup folders (persistence), Desktop folders, Recent Items (user activity), Quick Launch, SendTo menu, and Start Menu Programs. Extracts full shortcut metadata (target path, target type, location, start_in, run mode, comment/arguments) enriched with hash values and authenticode signatures for both LNK files and their targets. Detects risky executables (LOLBins), suspicious command-line arguments (encoded commands, download cradles, UNC paths, hidden windows), HTTP/HTTPS URLs, and large LNK files. Uses the users table to dynamically enumerate all user directories. Uses path LIKE pattern instead of directory filter to ensure shortcut metadata is populated (osquery #8727 workaround).",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.lnk_forensics"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "filename"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "directory"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "created_time"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "changed_time"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.extension",
+                "value": {
+                    "field": "extension"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "file.code_signature.issuer",
+                "value": {
+                    "field": "signature_issuer"
+                }
+            },
+            {
+                "key": "file.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "shortcut_target_path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "combined_command"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "forensics",
+                        "persistence",
+                        "file-analysis",
+                        "windows"
+                    ]
+                }
+            },
+            {
+                "key": "labels.lnk_comment",
+                "value": {
+                    "field": "shortcut_comment"
+                }
+            }
+        ],
+        "id": "lnk_forensics_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Windows LNK Shortcut File Forensics with Suspicious Pattern Detection\n-- Source: file table with native Windows shortcut parsing + authenticode signatures\n-- Focus: Risky executables (LOLBins), malicious arguments, large files, persistence mechanisms\n-- Scope: Comprehensive coverage of forensically significant LNK locations (startup, desktop, recent, quick launch, sendto, start menu)\n-- Workaround: Uses path LIKE instead of directory = to ensure shortcut metadata is populated (osquery #8727)\n\nWITH user_lnk_paths AS (\n    -- Per-user LNK locations\n    SELECT \n        u.username,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup' AS user_startup,\n        u.directory || '\\Desktop' AS user_desktop,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Windows\\Recent' AS user_recent,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Internet Explorer\\Quick Launch' AS user_quicklaunch,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Windows\\SendTo' AS user_sendto,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs' AS user_startmenu\n    FROM users u\n    WHERE u.directory LIKE 'C:\\Users\\%'\n      AND u.username NOT IN ('Default', 'Default User', 'Public', 'All Users')\n),\nlnk_files AS (\n    -- User Startup folders (highest priority - persistence)\n    -- Uses path LIKE instead of directory = to get shortcut metadata (osquery #8727 workaround)\n    SELECT f.*, 'user_startup' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_startup || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- System-wide Startup folder (persistence)\n    SELECT f.*, 'system_startup' AS location_type\n    FROM file f\n    WHERE f.path LIKE 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\%.lnk'\n    \n    UNION ALL\n    \n    -- User Desktop folders\n    SELECT f.*, 'user_desktop' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_desktop || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- Public Desktop\n    SELECT f.*, 'public_desktop' AS location_type\n    FROM file f\n    WHERE f.path LIKE 'C:\\Users\\Public\\Desktop\\%.lnk'\n    \n    UNION ALL\n    \n    -- Recent Items (user activity tracking)\n    SELECT f.*, 'recent_items' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_recent || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- Quick Launch\n    SELECT f.*, 'quick_launch' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_quicklaunch || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- SendTo menu\n    SELECT f.*, 'sendto' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_sendto || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- Start Menu Programs (user)\n    SELECT f.*, 'user_startmenu' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_startmenu || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- Start Menu Programs (system-wide)\n    SELECT f.*, 'system_startmenu' AS location_type\n    FROM file f\n    WHERE f.path LIKE 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\%.lnk'\n),\nlnk_enriched AS (\n    SELECT\n        lnk.path,\n        lnk.filename,\n        lnk.directory,\n        lnk.size,\n        datetime(lnk.btime, 'unixepoch') AS created_time,\n        datetime(lnk.mtime, 'unixepoch') AS modified_time,\n        datetime(lnk.atime, 'unixepoch') AS accessed_time,\n        datetime(lnk.ctime, 'unixepoch') AS changed_time,\n        lnk.type,\n        lnk.shortcut_target_path,\n        lnk.shortcut_target_type,\n        lnk.shortcut_target_location,\n        lnk.shortcut_start_in,\n        lnk.shortcut_run,\n        lnk.shortcut_comment,\n        lnk.location_type,\n        'lnk' AS extension,\n        CASE \n            WHEN lnk.shortcut_target_path IS NOT NULL AND lnk.shortcut_comment IS NOT NULL \n            THEN lnk.shortcut_target_path || ' ' || lnk.shortcut_comment\n            WHEN lnk.shortcut_target_path IS NOT NULL \n            THEN lnk.shortcut_target_path\n            ELSE NULL\n        END AS combined_command\n    FROM lnk_files lnk\n)\nSELECT \n    lnk.path,\n    lnk.filename,\n    lnk.directory,\n    lnk.size,\n    lnk.created_time,\n    lnk.modified_time,\n    lnk.accessed_time,\n    lnk.changed_time,\n    lnk.type,\n    lnk.shortcut_target_path,\n    lnk.shortcut_target_type,\n    lnk.shortcut_target_location,\n    lnk.shortcut_start_in,\n    lnk.shortcut_run,\n    lnk.shortcut_comment,\n    lnk.combined_command,\n    lnk.location_type,\n    lnk.extension,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.subject_name AS signature_signer,\n    a.issuer_name AS signature_issuer,\n    a.result AS signature_status,\n    a.serial_number AS signature_serial,\n    CASE WHEN lnk.size > 20000 THEN 1 ELSE 0 END AS large_size_flag,\n    CASE WHEN lnk.location_type IN ('user_startup', 'system_startup') THEN 1 ELSE 0 END AS startup_persistence_flag,\n    CASE \n        WHEN lnk.shortcut_target_path LIKE '%\\cmd.exe' \n            OR lnk.shortcut_target_path LIKE '%\\powershell.exe'\n            OR lnk.shortcut_target_path LIKE '%\\pwsh.exe'\n            OR lnk.shortcut_target_path LIKE '%\\cscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\rundll32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\regsvr32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\mshta.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wmic.exe'\n            OR lnk.shortcut_target_path LIKE '%\\conhost.exe'\n            OR lnk.shortcut_target_path LIKE '%\\certutil.exe'\n            OR lnk.shortcut_target_path LIKE '%\\bitsadmin.exe'\n        THEN 1 ELSE 0 \n    END AS risky_executable_flag,\n    CASE \n        WHEN lnk.combined_command LIKE '%\\AppData\\%'\n            OR lnk.combined_command LIKE '%\\Users\\Public\\%'\n            OR lnk.combined_command LIKE '%\\Temp\\%'\n            OR lnk.combined_command LIKE '%comspec%'\n            OR lnk.combined_command LIKE '%&cd&echo%'\n            OR lnk.combined_command LIKE '% -NoP %'\n            OR lnk.combined_command LIKE '% -nop %'\n            OR lnk.combined_command LIKE '% -W Hidden %'\n            OR lnk.combined_command LIKE '% -w hidden %'\n            OR lnk.combined_command LIKE '% -WindowStyle Hidden %'\n            OR lnk.combined_command LIKE '% -decode %'\n            OR lnk.combined_command LIKE '% /decode %'\n            OR lnk.combined_command LIKE '% -e %JAB%'\n            OR lnk.combined_command LIKE '% -e %SUVYI%'\n            OR lnk.combined_command LIKE '% -e %SQBFAFgA%'\n            OR lnk.combined_command LIKE '% -e %aWV4I%'\n            OR lnk.combined_command LIKE '% -e %aQBlAHgA%'\n            OR lnk.combined_command LIKE '% -enc %'\n            OR lnk.combined_command LIKE '% -EncodedCommand %'\n            OR lnk.combined_command LIKE '%start /b%'\n            OR lnk.combined_command LIKE '%start \\b%'\n            OR lnk.combined_command LIKE '%.downloadstring(%'\n            OR lnk.combined_command LIKE '%.downloadfile(%'\n            OR lnk.combined_command LIKE '%Invoke-WebRequest%'\n            OR lnk.combined_command LIKE '%iwr %'\n            OR lnk.combined_command LIKE '%iex %'\n            OR lnk.combined_command LIKE '%Invoke-Expression%'\n        THEN 1 ELSE 0\n    END AS suspicious_arguments_flag,\n    CASE \n        WHEN lnk.combined_command LIKE '%http://%'\n            OR lnk.combined_command LIKE '%https://%'\n            OR lnk.combined_command LIKE '%ftp://%'\n            OR lnk.combined_command LIKE '%ftps://%'\n        THEN 1 ELSE 0\n    END AS http_download_flag,\n    CASE \n        WHEN lnk.combined_command LIKE '% \\\\\\\\%'\n            OR lnk.shortcut_start_in LIKE '\\\\\\\\%'\n        THEN 1 ELSE 0\n    END AS unc_path_flag,\n    CASE \n        WHEN LENGTH(lnk.shortcut_comment) > 250 \n        THEN 1 ELSE 0\n    END AS large_arguments_flag\nFROM lnk_enriched lnk\nLEFT JOIN hash h ON lnk.path = h.path\nLEFT JOIN authenticode a ON a.path = lnk.shortcut_target_path\nWHERE (\n    -- Always include startup locations (persistence focus)\n    lnk.location_type IN ('user_startup', 'system_startup')\n    -- For other locations, filter for suspicious indicators\n    OR lnk.size > 20000\n    OR lnk.shortcut_target_path LIKE '%\\cmd.exe'\n    OR lnk.shortcut_target_path LIKE '%\\powershell.exe'\n    OR lnk.shortcut_target_path LIKE '%\\pwsh.exe'\n    OR lnk.shortcut_target_path LIKE '%\\cscript.exe'\n    OR lnk.shortcut_target_path LIKE '%\\wscript.exe'\n    OR lnk.shortcut_target_path LIKE '%\\rundll32.exe'\n    OR lnk.shortcut_target_path LIKE '%\\regsvr32.exe'\n    OR lnk.shortcut_target_path LIKE '%\\mshta.exe'\n    OR lnk.shortcut_target_path LIKE '%\\wmic.exe'\n    OR lnk.shortcut_target_path LIKE '%\\conhost.exe'\n    OR lnk.shortcut_target_path LIKE '%\\certutil.exe'\n    OR lnk.shortcut_target_path LIKE '%\\bitsadmin.exe'\n    OR lnk.combined_command LIKE '%\\AppData\\%'\n    OR lnk.combined_command LIKE '%\\Users\\Public\\%'\n    OR lnk.combined_command LIKE '%\\Temp\\%'\n    OR lnk.combined_command LIKE '%comspec%'\n    OR lnk.combined_command LIKE '%&cd&echo%'\n    OR lnk.combined_command LIKE '% -NoP %'\n    OR lnk.combined_command LIKE '% -nop %'\n    OR lnk.combined_command LIKE '% -W Hidden %'\n    OR lnk.combined_command LIKE '% -w hidden %'\n    OR lnk.combined_command LIKE '% -WindowStyle Hidden %'\n    OR lnk.combined_command LIKE '% -decode %'\n    OR lnk.combined_command LIKE '% /decode %'\n    OR lnk.combined_command LIKE '% -e %JAB%'\n    OR lnk.combined_command LIKE '% -e %SUVYI%'\n    OR lnk.combined_command LIKE '% -e %SQBFAFgA%'\n    OR lnk.combined_command LIKE '% -e %aWV4I%'\n    OR lnk.combined_command LIKE '% -e %aQBlAHgA%'\n    OR lnk.combined_command LIKE '% -enc %'\n    OR lnk.combined_command LIKE '% -EncodedCommand %'\n    OR lnk.combined_command LIKE '%start /b%'\n    OR lnk.combined_command LIKE '%start \\b%'\n    OR lnk.combined_command LIKE '%.downloadstring(%'\n    OR lnk.combined_command LIKE '%.downloadfile(%'\n    OR lnk.combined_command LIKE '%Invoke-WebRequest%'\n    OR lnk.combined_command LIKE '%iwr %'\n    OR lnk.combined_command LIKE '%iex %'\n    OR lnk.combined_command LIKE '%Invoke-Expression%'\n    OR lnk.combined_command LIKE '%http://%'\n    OR lnk.combined_command LIKE '%https://%'\n    OR lnk.combined_command LIKE '%ftp://%'\n    OR lnk.combined_command LIKE '%ftps://%'\n    OR lnk.combined_command LIKE '% \\\\\\\\%'\n    OR lnk.shortcut_start_in LIKE '\\\\\\\\%'\n    OR LENGTH(lnk.shortcut_comment) > 250\n)\nORDER BY \n    -- Priority: Startup locations first\n    CASE WHEN lnk.location_type IN ('user_startup', 'system_startup') THEN 1 ELSE 2 END,\n    -- Then by risky executable\n    CASE \n        WHEN lnk.shortcut_target_path LIKE '%\\cmd.exe' \n            OR lnk.shortcut_target_path LIKE '%\\powershell.exe'\n            OR lnk.shortcut_target_path LIKE '%\\pwsh.exe'\n            OR lnk.shortcut_target_path LIKE '%\\cscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\rundll32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\regsvr32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\mshta.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wmic.exe'\n            OR lnk.shortcut_target_path LIKE '%\\conhost.exe'\n            OR lnk.shortcut_target_path LIKE '%\\certutil.exe'\n            OR lnk.shortcut_target_path LIKE '%\\bitsadmin.exe'\n        THEN 1 ELSE 2 \n    END,\n    lnk.location_type,\n    lnk.modified_time DESC;",
+        "updated_at": "2026-01-02T00:00:00.000Z",
+        "updated_by": "elastic",
+        "tags": [
+            "forensics",
+            "persistence",
+            "lateral-movement",
+            "user-activity",
+            "file-analysis",
+            "malware-detection",
+            "command-and-control"
+        ]
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-02T00:00:00.000Z",
+    "version": "WzEsMV0="
+}
