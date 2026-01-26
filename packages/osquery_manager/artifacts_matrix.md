@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-26
-**Total Core Artifacts**: 24 available + 14 in progress + 6 not available = 44 total variants
-**Total Queries**: 47
-**Completion Rate**: 54.5% (24/44 core artifacts fully supported)
+**Total Core Artifacts**: 27 available + 13 in progress + 6 not available = 46 total variants
+**Total Queries**: 50
+**Completion Rate**: 58.7% (27/46 core artifacts fully supported)
 
 ---
 
@@ -13,9 +13,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 24     | 54.5%      |
-| ⚠️ In Progress (Needs Validation) | 14    | 31.8%      |
-| ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
+| ✅ Available (Fully Supported) | 27     | 58.7%      |
+| ⚠️ In Progress (Needs Validation) | 13    | 28.3%      |
+| ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
 
@@ -205,12 +205,9 @@ This section documents the equivalent file monitoring capabilities across platfo
 |---------|----------------------|-----------------|------------------|
 | **Table** | `ntfs_journal_events` | `file_events` | `file_events` |
 | **File hashes** | ❌ | ✅ md5, sha1, sha256 | ✅ md5, sha1, sha256 |
-| **Process context** | ❌ | ❌ (use `process_file_events`) | ❌ (use `es_process_file_events`) |
 | **Deleted file tracking** | ✅ Excellent | ⚠️ Limited | ⚠️ Limited |
 | **Historical events** | ✅ Journal persists | ❌ Real-time only | ❌ Real-time only |
 | **Scale** | High | Medium (watch limits) | Medium |
 | **Noise level** | Medium | Configurable | Configurable |
-
-### Recommended Deployment
 
 ---
