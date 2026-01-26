@@ -1,0 +1,136 @@
+{
+  "attributes": {
+    "created_at": "2025-01-06T10:30:00.000Z",
+    "created_by": "elastic",
+    "description": "Identifies suspicious Windows services using multiple risk indicators: unsigned/untrusted binaries, executables in user-writable directories (Users, AppData, Temp, ProgramData), FailureCommand persistence mechanisms, and ServiceDLL hijacking with untrusted DLLs. Results prioritized by risk level.",
+    "ecs_mapping": [
+      {
+        "key": "event.category",
+        "value": {
+          "value": ["configuration"]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": ["info"]
+        }
+      },
+      {
+        "key": "event.action",
+        "value": {
+          "value": "osquery.windows_services"
+        }
+      },
+      {
+        "key": "service.name",
+        "value": {
+          "field": "name"
+        }
+      },
+      {
+        "key": "service.state",
+        "value": {
+          "field": "status"
+        }
+      },
+      {
+        "key": "process.command_line",
+        "value": {
+          "field": "cmdline"
+        }
+      },
+      {
+        "key": "process.executable",
+        "value": {
+          "field": "exe_path"
+        }
+      },
+      {
+        "key": "process.pid",
+        "value": {
+          "field": "pid"
+        }
+      },
+      {
+        "key": "user.name",
+        "value": {
+          "field": "user_account"
+        }
+      },
+      {
+        "key": "process.hash.sha256",
+        "value": {
+          "field": "sha256"
+        }
+      },
+      {
+        "key": "process.code_signature.subject_name",
+        "value": {
+          "field": "signature_signer"
+        }
+      },
+      {
+        "key": "process.code_signature.status",
+        "value": {
+          "field": "signature_status"
+        }
+      },
+      {
+        "key": "registry.path",
+        "value": {
+          "field": "registry_path"
+        }
+      },
+      {
+        "key": "file.mtime",
+        "value": {
+          "field": "modified_time"
+        }
+      },
+      {
+        "key": "dll.path",
+        "value": {
+          "field": "service_dll"
+        }
+      },
+      {
+        "key": "dll.hash.sha256",
+        "value": {
+          "field": "dll_sha256"
+        }
+      },
+      {
+        "key": "dll.code_signature.status",
+        "value": {
+          "field": "dll_signature_status"
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "osquery",
+            "persistence",
+            "threat_hunting",
+            "services",
+            "windows"
+          ]
+        }
+      }
+    ],
+    "id": "services_suspicious_windows_elastic",
+    "interval": "3600",
+    "timeout": 180,
+    "platform": "windows",
+    "query": "-- Windows Service Persistence Detection\n-- Identifies suspicious services based on signature, path, and persistence indicators\n\nWITH services_base AS (\n  SELECT\n    s.name,\n    s.display_name,\n    s.path AS cmdline,\n    CASE\n      WHEN s.path LIKE '\"%' THEN\n        SUBSTR(s.path, 2, INSTR(SUBSTR(s.path, 2), '\"') - 1)\n      WHEN INSTR(LOWER(s.path), '.exe ') > 0 THEN\n        SUBSTR(s.path, 1, INSTR(LOWER(s.path), '.exe') + 3)\n      WHEN INSTR(LOWER(s.path), '.sys ') > 0 THEN\n        SUBSTR(s.path, 1, INSTR(LOWER(s.path), '.sys') + 3)\n      ELSE s.path\n    END AS exe_path,\n    s.status,\n    s.start_type,\n    s.user_account,\n    s.service_type,\n    s.pid,\n    'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name AS registry_path,\n    r_key.mtime AS _registry_mtime_raw,\n    r_dll.data AS service_dll,\n    r_failcmd.data AS failure_command\n  FROM services s\n  LEFT JOIN registry r_key\n    ON r_key.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name\n    AND r_key.name = 'Start'\n  LEFT JOIN registry r_dll\n    ON r_dll.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name || '\\Parameters'\n    AND r_dll.name = 'ServiceDll'\n  LEFT JOIN registry r_failcmd\n    ON r_failcmd.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name\n    AND r_failcmd.name = 'FailureCommand'\n  WHERE s.service_type NOT LIKE '%DRIVER%'\n    AND s.path IS NOT NULL\n    AND s.path != ''\n),\nservices_enriched AS (\n  SELECT\n    sb.name,\n    sb.display_name,\n    sb.cmdline,\n    sb.exe_path,\n    sb.status,\n    sb.start_type,\n    sb.user_account,\n    sb.service_type,\n    sb.pid,\n    sb.registry_path,\n    sb.service_dll,\n    sb.failure_command,\n    datetime(sb._registry_mtime_raw, 'unixepoch') AS modified_time,\n    CAST((strftime('%s', 'now') - COALESCE(sb._registry_mtime_raw, 0)) / 86400 AS INTEGER) AS days_since_modified,\n    (SELECT sha256 FROM hash WHERE path = sb.exe_path LIMIT 1) AS sha256,\n    concat('https://www.virustotal.com/gui/file/', (SELECT sha256 FROM hash WHERE path = sb.exe_path LIMIT 1)) AS vt_link,\n    (SELECT subject_name FROM authenticode WHERE path = sb.exe_path LIMIT 1) AS signature_signer,\n    (SELECT result FROM authenticode WHERE path = sb.exe_path LIMIT 1) AS signature_status,\n    CASE WHEN sb.service_dll IS NOT NULL AND sb.service_dll != '' THEN\n      (SELECT sha256 FROM hash WHERE path = sb.service_dll LIMIT 1)\n    END AS dll_sha256,\n    CASE WHEN sb.service_dll IS NOT NULL AND sb.service_dll != '' THEN\n      (SELECT result FROM authenticode WHERE path = sb.service_dll LIMIT 1)\n    END AS dll_signature_status\n  FROM services_base sb\n)\n\nSELECT *\nFROM services_enriched\nWHERE (\n  (signature_status IS NULL OR signature_status != 'trusted')\n  OR exe_path LIKE 'C:\\\\Users\\\\%'\n  OR exe_path LIKE '%\\\\AppData\\\\%'\n  OR exe_path LIKE '%\\\\Temp\\\\%'\n  OR exe_path LIKE 'C:\\\\Temp\\\\%'\n  OR exe_path LIKE 'C:\\\\ProgramData\\\\%'\n  OR failure_command IS NOT NULL\n  OR (service_dll IS NOT NULL AND (dll_signature_status IS NULL OR dll_signature_status != 'trusted'))\n)\nORDER BY\n  CASE WHEN signature_status IS NULL OR signature_status != 'trusted' THEN 0 ELSE 1 END,\n  CASE WHEN failure_command IS NOT NULL THEN 0 ELSE 1 END,\n  CASE WHEN exe_path LIKE 'C:\\\\Users\\\\%' OR exe_path LIKE '%\\\\Temp\\\\%' THEN 0 ELSE 1 END;",
+    "updated_at": "2025-12-05T10:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.2.0",
+  "id": "osquery_manager-892ee425-60e7-4eb6-ba25-6e97dc3e2ea0",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-12-05T10:00:00.000Z",
+  "version": "WzgzLDJd"
+}

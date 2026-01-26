@@ -1,8 +1,13 @@
 {{#if use_logs_stream}}
 index: logs
 {{else}}
+
 data_stream:
   dataset: {{data_stream.dataset}}
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
+
 {{/if}}
 
 paths:
@@ -10,12 +15,9 @@ paths:
   - {{path}}
 {{/each}}
 
-{{#if gzip_experimental}}
-gzip_experimental: true
-{{/if}}
-
-{{#if pipeline}}
-pipeline: {{pipeline}}
+{{#if compression_gzip}}
+compression: auto
+gzip_experimental: true {{! kept for backwards compatibility with 9.2 }}
 {{/if}}
 
 {{#if recursive_glob}}
@@ -165,4 +167,11 @@ prospector.scanner.fingerprint.enabled: false
 
 {{#if condition }}
 condition: {{ condition }}
+{{/if}}
+
+{{#if delete_enabled }}
+delete.enabled: true
+{{# if delete_grace_period }}
+delete.grace_period: {{delete_grace_period}}
+{{/if}}
 {{/if}}
