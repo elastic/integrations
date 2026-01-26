@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-19
-**Total Core Artifacts**: 21 available + 17 in progress + 6 not available = 44 total variants
-**Total Queries**: 44
-**Completion Rate**: 47.7% (21/44 core artifacts fully supported)
+**Last Updated**: 2026-01-26
+**Total Core Artifacts**: 24 available + 14 in progress + 6 not available = 44 total variants
+**Total Queries**: 47
+**Completion Rate**: 54.5% (24/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 21     | 47.7%      |
-| ⚠️ In Progress (Needs Validation) | 17    | 38.6%      |
+| ✅ Available (Fully Supported) | 24     | 54.5%      |
+| ⚠️ In Progress (Needs Validation) | 14    | 31.8%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
@@ -32,9 +32,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 5 | File Listing            | ⚠️ | Win   | -     | -    | file and hash tables                                                                                                             |
 | 5a | File Listing            | ⚠️ | Linux | -     | -    | file and hash tables                                                                                                             |
 | 5b | File Listing            | ⚠️ | Mac   | -     | -    | file and hash tables                                                                                                             |
-| 6 | Installed Services      | ⚠️ | Win   | -     | -    | services table                                                                                                                   |
-| 6a | Installed Services      | ⚠️ | Linux | -     | -    | systemd table                                                                                                                    |
-| 6b | Installed Services      | ⚠️ | Mac   | -     | -    | launchd table                                                                                                                    |
+| 6 | Installed Services      | ✅ | Win | services_suspicious_windows_elastic | [892e](kibana/osquery_saved_query/osquery_manager-892ee425-60e7-4eb6-ba25-6e97dc3e2ea0.json) | Detects suspicious Windows services: unsigned binaries, unusual paths, FailureCommand persistence, ServiceDLL hijacking. Excludes Microsoft-signed services. MITRE: T1543.003 |
+| 6a | Installed Services      | ✅ | Linux | services_suspicious_linux_elastic | [f8b0](kibana/osquery_saved_query/osquery_manager-f8b0894b-772d-4242-8e19-dbc5d7ae2e06.json) | Detects suspicious systemd services in user directories, /tmp, ~/.config/systemd. Hash enrichment and file age tracking. MITRE: T1543.002 |
+| 6b | Installed Services      | ✅ | Mac | services_suspicious_darwin_elastic | [5823](kibana/osquery_saved_query/osquery_manager-5823a22e-5add-416d-a142-de323400edb0.json) | Detects ALL non-Apple-signed launchd services plus Apple-signed services in suspicious locations (/tmp, /Users, hidden dirs). Derives executable from program or program_arguments. Signature and hash enrichment. MITRE: T1543.001, T1543.004 |
 | 7 | Jumplists               | ❌ | Win   | -     | -    | Not natively supported — PR #7260 closed due to OLE format complexity                                                            |
 | 8 | LNK files               | ✅ | Win   | lnk_forensics_windows_elastic | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json) | file table with native shortcut parsing; can enrich with hash + authenticode; enumerate common locations via users table |
 | 9 | ARP Cache (Enriched)    | ✅ | All   | arp_cache_elastic | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-11ef-89c6-331eb0db6d02.json) | Enriched ARP cache with local interface details (local IP, local MAC). Combines arp_cache with interface_details and interface_addresses tables. Includes ECS mappings for destination.ip/mac, source.ip/mac, interface.name, network.type, and MITRE ATT&CK threat enrichment (T1016, T1018) |
@@ -160,7 +160,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ✅ Startup Items - Windows (Dual-detection: Non-whitelisted binaries + LotL indicators - T1547.001, T1059.001, T1105)
 - ✅ Startup Items - Linux (Dual-detection: User-created systemd/cron/XDG + LotL patterns - T1543.002, T1053.003, T1547.013, T1059.004, T1105)
 - ✅ Startup Items - macOS (Dual-detection: Non-Apple signed LaunchAgents/Daemons + LotL patterns - T1543.001, T1547.015, T1059.004, T1105)
-- ⚠️ Installed Services (All platforms: services table)
+- ✅ Installed Services (All platforms: services table)
 - ⚠️ Registry (Windows: registry table)
 - ⚠️ Tasks (All platforms: scheduled_tasks table)
 - ✅ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
