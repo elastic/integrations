@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-19
-**Total Core Artifacts**: 21 available + 17 in progress + 6 not available = 44 total variants
-**Total Queries**: 44
-**Completion Rate**: 47.7% (21/44 core artifacts fully supported)
+**Last Updated**: 2026-01-26
+**Total Core Artifacts**: 24 available + 14 in progress + 6 not available = 44 total variants
+**Total Queries**: 47
+**Completion Rate**: 54.5% (24/44 core artifacts fully supported)
 
 ---
 
@@ -13,8 +13,8 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 21     | 47.7%      |
-| ⚠️ In Progress (Needs Validation) | 17    | 38.6%      |
+| ✅ Available (Fully Supported) | 24     | 54.5%      |
+| ⚠️ In Progress (Needs Validation) | 14    | 31.8%      |
 | ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
 
 ---
