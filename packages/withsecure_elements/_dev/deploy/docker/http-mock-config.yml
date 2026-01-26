@@ -1,0 +1,250 @@
+rules:
+  # OAuth2 token endpoint
+  - path: /as/token.oauth2
+    methods: [POST]
+    query_params:
+      grant_type: client_credentials
+      scope: connect.api.read
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "access_token": "test-access-token-12345",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "scope": "connect.api.read"
+          }
+
+  # Incidents endpoint - GET /incidents/v1/incidents (initial request without anchor)
+  - path: /incidents/v1/incidents
+    methods: [GET]
+    query_params:
+      organizationId: "{organizationId:.*}"
+      updatedTimestampStart: "{updatedTimestampStart:.*}"
+      archived: "false"
+      limit: "{limit:.*}"
+      order: "asc"
+      anchor: null
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token-12345"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "items": [
+              {
+                "incidentId": "7b726ead-e6de-47a7-8ba8-3507d8506cec",
+                "incidentPublicId": "2532078-23320",
+                "organizationId": "777f240c-752d-4eb5-8422-94c5336e3005",
+                "name": "Detection in TEST-WORKSTATION-01",
+                "status": "closed",
+                "severity": "info",
+                "riskLevel": "info",
+                "riskScore": 0,
+                "resolution": "merged",
+                "createdTimestamp": "2025-11-26T15:39:57.574Z",
+                "updatedTimestamp": "2025-11-26T15:39:58.719Z",
+                "initialReceivedTimestamp": "2025-11-26T15:39:00.000Z",
+                "categories": ["ABNORMAL_PROCESS_EXECUTION"],
+                "sources": ["endpoint"]
+              },
+              {
+                "incidentId": "8c837fbe-f7ef-58b8-9cb9-4618e9617dfd",
+                "incidentPublicId": "2532078-23321",
+                "organizationId": "777f240c-752d-4eb5-8422-94c5336e3005",
+                "name": "Detection in TEST-WORKSTATION-02",
+                "status": "new",
+                "severity": "warning",
+                "riskLevel": "warning",
+                "riskScore": 50,
+                "resolution": "unconfirmed",
+                "createdTimestamp": "2025-11-26T16:40:00.000Z",
+                "updatedTimestamp": "2025-11-26T16:40:01.000Z",
+                "initialReceivedTimestamp": "2025-11-26T16:40:00.000Z",
+                "categories": ["MALWARE"],
+                "sources": ["endpoint"]
+              }
+            ],
+            "nextAnchor": "test-anchor-12345"
+          }
+
+  # Incidents endpoint - GET /incidents/v1/incidents (paginated request with anchor)
+  - path: /incidents/v1/incidents
+    methods: [GET]
+    query_params:
+      organizationId: "{organizationId:.*}"
+      updatedTimestampStart: "{updatedTimestampStart:.*}"
+      archived: "false"
+      limit: "{limit:.*}"
+      order: "asc"
+      anchor: "{anchor:.*}"
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token-12345"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "items": [
+              {
+                "incidentId": "9d948gcf-g8fg-69c9-0dca-5729fa072ege",
+                "incidentPublicId": "2532078-23322",
+                "organizationId": "777f240c-752d-4eb5-8422-94c5336e3005",
+                "name": "Detection in TEST-WORKSTATION-03",
+                "status": "in_progress",
+                "severity": "high",
+                "riskLevel": "high",
+                "riskScore": 85,
+                "resolution": "investigating",
+                "createdTimestamp": "2025-11-26T17:41:00.000Z",
+                "updatedTimestamp": "2025-11-26T17:41:02.000Z",
+                "initialReceivedTimestamp": "2025-11-26T17:41:00.000Z",
+                "categories": ["SUSPICIOUS_ACTIVITY"],
+                "sources": ["endpoint"]
+              }
+            ]
+          }
+
+  # Security events endpoint - POST /security-events/v1/security-events
+  - path: /security-events/v1/security-events
+    methods: [POST]
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token-12345"
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {
+            "items": [
+              {
+                "id": "594d2f17-79f6-3bc6-850b-e09e55340eb2_0",
+                "action": "trashed",
+                "engine": "fileScanning",
+                "severity": "warning",
+                "serverTimestamp": "2025-11-26T19:24:29.287Z",
+                "persistenceTimestamp": "2025-11-26T19:24:30.964Z",
+                "eventTransactionId": "0000-7edfb2260ba8479e",
+                "clientTimestamp": "2025-11-26T19:24:27.983Z",
+                "acknowledged": false,
+                "message": "\"Heuristic.HEUR/HTML.Agent.QT\" was detected on accessing \"113873.emlx\" and it was trashed",
+                "description": "File Scanning event",
+                "organization": {
+                  "id": "777f240c-752d-4eb5-8422-94c5336e3005",
+                  "name": "FR IT-Sec"
+                },
+                "target": {
+                  "name": "TEST-DESKTOP-01",
+                  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                },
+                "device": {
+                  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                  "name": "TEST-DESKTOP-01"
+                },
+                "userName": "testuser",
+                "details": {
+                  "alertSource": "sp.evt.oas.alert",
+                  "alertType": "file",
+                  "clientTimestamp": "1764185067983",
+                  "filePath": "/Users/testuser/Documents/test-file.emlx",
+                  "fileScanningType": "fileInfection",
+                  "name": "Heuristic.HEUR/HTML.Agent.QT",
+                  "profileId": "118181",
+                  "profileName": "Elastic-WithSecure",
+                  "profileVersion": "1649230230",
+                  "sha1": "a3e65d0ceb320cb60d1281360994615491f38c82",
+                  "userName": "testuser"
+                }
+              },
+              {
+                "id": "6a5e3g28-8a07-4cd7-961c-f10f66451fc3_1",
+                "action": "blocked",
+                "engine": "edr",
+                "severity": "high",
+                "serverTimestamp": "2025-11-26T20:25:30.388Z",
+                "persistenceTimestamp": "2025-11-26T20:25:31.065Z",
+                "eventTransactionId": "0000-8fe0c3371cb9589f",
+                "clientTimestamp": "2025-11-26T20:25:28.084Z",
+                "acknowledged": false,
+                "message": "Suspicious process execution detected and blocked",
+                "description": "EDR Detection event",
+                "organization": {
+                  "id": "777f240c-752d-4eb5-8422-94c5336e3005",
+                  "name": "FR IT-Sec"
+                },
+                "target": {
+                  "name": "TEST-DESKTOP-02",
+                  "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+                },
+                "device": {
+                  "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+                  "name": "TEST-DESKTOP-02"
+                },
+                "userName": "testuser2",
+                "details": {
+                  "incidentId": "test-incident-123",
+                  "incidentPublicId": "2532078-23323",
+                  "categories": ["SUSPICIOUS_PROCESS"],
+                  "risk": "high",
+                  "resolution": "investigating"
+                }
+              }
+            ],
+            "nextAnchor": "test-anchor-security-67890"
+          }
+          {{ else }}
+          {
+            "items": [
+              {
+                "id": "7b6f4h39-9b18-5de8-a72d-g21g77562gd4_2",
+                "action": "quarantined",
+                "engine": "dataGuard",
+                "severity": "critical",
+                "serverTimestamp": "2025-11-26T21:26:40.489Z",
+                "persistenceTimestamp": "2025-11-26T21:26:41.166Z",
+                "eventTransactionId": "0000-9gf1d4482dc069ag",
+                "clientTimestamp": "2025-11-26T21:26:38.185Z",
+                "acknowledged": false,
+                "message": "Sensitive data access attempt detected and file quarantined",
+                "description": "DataGuard Protection event",
+                "organization": {
+                  "id": "777f240c-752d-4eb5-8422-94c5336e3005",
+                  "name": "FR IT-Sec"
+                },
+                "target": {
+                  "name": "TEST-DESKTOP-03",
+                  "id": "c3d4e5f6-a7b8-9012-cdef-345678901234"
+                },
+                "device": {
+                  "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+                  "name": "TEST-DESKTOP-03"
+                },
+                "userName": "testuser3",
+                "details": {
+                  "filePath": "/Users/testuser3/Documents/sensitive-data.pdf",
+                  "initiatorHash": "b4e75e1dfc321dc71d2391380995726502g49h93",
+                  "targetData": "confidential",
+                  "vaultId": "vault-12345"
+                }
+              }
+            ]
+          }
+          {{ end }}

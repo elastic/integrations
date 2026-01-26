@@ -1,0 +1,128 @@
+---
+description: Build ECS indicator fields from an STIX pattern
+processors:
+
+  - grok:
+      field: _ingest._value
+      patterns:
+        - "file:hashes.'?MD5'?%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.md5}'"
+        - "file:hashes.'?SHA-?1'?%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.sha1}'"
+        - "file:hashes.'?SHA-?256'?%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.sha256}'"
+        - "file:name%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.name}'"
+        - "domain-name:value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.url.domain}'"
+        - "hostname:value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.url.domain}'"
+        - "url:value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.url.original}'"
+        - "email-addr:value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.email.address}'"
+        - "ipv4-addr:value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.ip}'"
+        - "ipv6-addr:value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.ip}'"
+        - "windows-registry-key:key%{SPACE}=%{SPACE}'%{DATA:_tmp_registry}'"
+      ignore_failure: true
+
+  - set:
+      if: ctx.threat?.indicator?.file?.name != null
+      field: threat.indicator.file.type
+      value: "file"
+      ignore_empty_value: true
+
+  - script:
+      description: Get file extensions from file names
+      tag: get_file_extensions
+      if: ctx.threat?.indicator?.file?.name != null
+      lang: painless
+      source: |
+        def tmp_file_name = ctx.threat.indicator.file.name;
+        if (tmp_file_name != null) {
+          def parts = /[\/\\]/.split(tmp_file_name);
+          def name = parts[parts.length - 1];
+          if (name.contains(".")) {
+            def nameParts = /\./.split(name);
+            def extension = nameParts[nameParts.length - 1];
+            if (extension.length() > 0) {
+              ctx.threat.indicator.file.extension = extension;
+            }
+          }
+        }
+
+  # For ECS, remove any subnet mask from IP values arriving in CIDR notation
+  - gsub:
+      field: threat.indicator.ip
+      pattern: '/\d+$'
+      replacement: ""
+      ignore_missing: true
+
+  - uri_parts:
+      field: threat.indicator.url.original
+      target_field: threat.indicator.url
+      keep_original: true
+      ignore_failure: true
+
+  - registered_domain:
+      field: threat.indicator.url.domain
+      target_field: threat.indicator.url
+      ignore_missing: true
+
+  - set:
+      field: threat.indicator.url.full
+      copy_from: threat.indicator.url.original
+      ignore_empty_value: true
+
+  - gsub:
+      field: _tmp_registry
+      pattern: '\\\\'
+      replacement: '\\'
+      ignore_missing: true
+
+  - grok:
+      tag: grok_registry_key
+      field: _tmp_registry
+      ignore_missing: true
+      patterns:
+        - '^(%{HIVE_NAMES:tmp_registry.hive}\\)?%{GREEDYDATA:tmp_registry.key}$'
+      pattern_definitions:
+        HIVE_NAMES: "(?i:HKEY_CLASSES_ROOT|HKCR|HKEY_CURRENT_USER|HKCU|HKEY_LOCAL_MACHINE|HKLM|HKEY_USERS|HKU|HKEY_CURRENT_CONFIG|HKCC)"
+
+  - script:
+      tag: normalize_registry_hive
+      description: Normalize hive names (ECS uses abbreviated names)
+      lang: painless
+      params:
+        HKEY_CLASSES_ROOT: HKCR
+        HKEY_CURRENT_USER: HKCU
+        HKEY_LOCAL_MACHINE: HKLM
+        HKEY_USERS: HKU
+        HKEY_CURRENT_CONFIG: HKCC
+      source: |
+        def name = ctx.tmp_registry.hive.toUpperCase();
+        ctx.tmp_registry.hive = params.getOrDefault(name, name);
+      if: ctx.tmp_registry?.hive != null
+
+  - rename:
+      field: tmp_registry
+      target_field: threat.indicator.registry
+      ignore_missing: true
+
+  - remove:
+      field: _tmp_registry
+      ignore_missing: true
+
+  # Convert string fields to arrays for consistency with observable-based extraction
+  - script:
+      tag: convert_strings_to_arrays
+      description: Convert string fields to single-element arrays
+      lang: painless
+      source: |
+        if (ctx.threat?.indicator?.file?.name != null && !(ctx.threat.indicator.file.name instanceof List)) {
+          ctx.threat.indicator.file.name = [ctx.threat.indicator.file.name];
+        }
+        if (ctx.threat?.indicator?.file?.extension != null && !(ctx.threat.indicator.file.extension instanceof List)) {
+          ctx.threat.indicator.file.extension = [ctx.threat.indicator.file.extension];
+        }
+        if (ctx.threat?.indicator?.email?.address != null && !(ctx.threat.indicator.email.address instanceof List)) {
+          ctx.threat.indicator.email.address = [ctx.threat.indicator.email.address];
+        }
+        if (ctx.threat?.indicator?.ip != null && !(ctx.threat.indicator.ip instanceof List)) {
+          ctx.threat.indicator.ip = [ctx.threat.indicator.ip];
+        }
+        if (ctx.threat?.indicator?.url != null && !(ctx.threat.indicator.url instanceof List)) {
+          ctx.threat.indicator.url = [ctx.threat.indicator.url];
+        }
