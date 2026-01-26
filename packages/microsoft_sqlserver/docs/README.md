@@ -730,30 +730,30 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
-| mssql.metrics.group_id | Unique identifier (GUID) of the availability group. | keyword |
-| mssql.metrics.name | Availability group name. | keyword |
-| mssql.metrics.primary_recovery_health | Primary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on secondary replicas). | long |
-| mssql.metrics.primary_replica | Server name of the current primary replica. | keyword |
-| mssql.metrics.secondary_recovery_health | Secondary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on primary replicas). | long |
-| mssql.metrics.server_name | SQL Server instance name where metrics were collected. | keyword |
-| mssql.metrics.synchronization_health | AG synchronization health status (0 = NOT_HEALTHY, 1 = PARTIALLY_HEALTHY, 2 = HEALTHY). | long |
-| mssql.metrics.synchronization_health_desc | Text description of AG synchronization health. | keyword |
-| mssql.query | The SQL queries executed. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| mssql.metrics.group_id | Unique identifier (GUID) of the availability group. | keyword |  |
+| mssql.metrics.name | Availability group name. | keyword |  |
+| mssql.metrics.primary_recovery_health | Primary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on secondary replicas). | long | gauge |
+| mssql.metrics.primary_replica | Server name of the current primary replica. | keyword |  |
+| mssql.metrics.secondary_recovery_health | Secondary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on primary replicas). | long | gauge |
+| mssql.metrics.server_name | SQL Server instance name where metrics were collected. | keyword |  |
+| mssql.metrics.synchronization_health | AG synchronization health status (0 = NOT_HEALTHY, 1 = PARTIALLY_HEALTHY, 2 = HEALTHY). | long | gauge |
+| mssql.metrics.synchronization_health_desc | Text description of AG synchronization health. | keyword |  |
+| mssql.query | The SQL queries executed. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
 ## Alerting Rule Template

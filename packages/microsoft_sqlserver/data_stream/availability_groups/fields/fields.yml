@@ -6,27 +6,38 @@
       fields:
         - name: server_name
           type: keyword
+          # Reason to add as a dimension field: support multiple server instances.
+          dimension: true
           description: SQL Server instance name where metrics were collected.
         - name: name
           type: keyword
+          # Reason to add as a dimension field: support multiple availability groups.
+          dimension: true
           description: Availability group name.
         - name: group_id
           type: keyword
+          # Reason to add as a dimension field: unique AG identifier, stable across renames
+          dimension: true
           description: Unique identifier (GUID) of the availability group.
         - name: primary_replica
           type: keyword
+          # Reason to add as a dimension field: track failover events when primary replica changes
+          dimension: true
           description: Server name of the current primary replica.
         - name: synchronization_health
           type: long
+          metric_type: gauge
           description: AG synchronization health status (0 = NOT_HEALTHY, 1 = PARTIALLY_HEALTHY, 2 = HEALTHY).
         - name: synchronization_health_desc
           type: keyword
           description: Text description of AG synchronization health.
         - name: primary_recovery_health
           type: long
+          metric_type: gauge
           description: Primary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on secondary replicas).
         - name: secondary_recovery_health
           type: long
+          metric_type: gauge
           description: Secondary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on primary replicas).
     - name: query
       type: keyword
