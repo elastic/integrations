@@ -21,14 +21,16 @@ This integration will show metrics only if you are monitoring web applications w
 
 
 ### Validation
-{{/* How can the user test whether the integration is working? Including example commands or test files if applicable */}}
 
-TODO
+#### Dashboards populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **OpenTelemetry RUM JS**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
 ## Troubleshooting
 
-TODO
+If you do not see data in the dashboard make sure that:
 
-### Inputs used
-{{/* All inputs used by this package will be automatically listed here. */}}
-{{ inputDocs }}
+- Elastic search has recevied the documents. You can search for the in discover with the filter `agent.name : "opentelemetry/webjs"`
+- The `APM` data view is present. You can check for it in Stack Management -> Data Views
