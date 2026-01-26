@@ -3,9 +3,9 @@
 This document tracks the coverage of forensic artifacts in Osquery.
 
 **Last Updated**: 2026-01-26
-**Total Core Artifacts**: 24 available + 14 in progress + 6 not available = 44 total variants
-**Total Queries**: 47
-**Completion Rate**: 54.5% (24/44 core artifacts fully supported)
+**Total Core Artifacts**: 27 available + 13 in progress + 6 not available = 46 total variants
+**Total Queries**: 50
+**Completion Rate**: 58.7% (27/46 core artifacts fully supported)
 
 ---
 
@@ -13,9 +13,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 24     | 54.5%      |
-| ⚠️ In Progress (Needs Validation) | 14    | 31.8%      |
-| ❌ Not Available (Requires Extensions) | 6     | 13.6%      |
+| ✅ Available (Fully Supported) | 27     | 58.7%      |
+| ⚠️ In Progress (Needs Validation) | 13    | 28.3%      |
+| ❌ Not Available (Requires Extensions) | 6     | 13.0%      |
 
 ---
 
@@ -44,7 +44,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 | 11 | Network Interfaces & IP Configuration | ✅ | Win | network_interfaces_windows_elastic | [9307](kibana/osquery_saved_query/osquery_manager-9307c448-d8e2-49a3-aeca-469881183087.json) | interface_details + interface_addresses with DHCP/DNS configuration |
 | 11a | Network Interfaces & IP Configuration | ✅ | Linux | network_interfaces_linux_macos_elastic | [c251](kibana/osquery_saved_query/osquery_manager-c251aeb1-698f-44a4-9526-cdd349b9ccbe.json) | interface_details + interface_addresses + interface_ipv6 (hop_limit, forwarding, redirect_accept) |
 | 11b | Network Interfaces & IP Configuration | ✅ | Mac | network_interfaces_linux_macos_elastic | [c251](kibana/osquery_saved_query/osquery_manager-c251aeb1-698f-44a4-9526-cdd349b9ccbe.json) | interface_details + interface_addresses + interface_ipv6 (hop_limit, forwarding, redirect_accept) |
-| 12 | NTFS USN Journal        | ⚠️ | Win   | -     | -    | ntfs_journal_events table                                                                                                        |
+| 12 | NTFS USN Journal        | ✅ | Win | ntfs_usn_journal_events_windows_elastic | [e4eb](kibana/osquery_saved_query/osquery_manager-e4ebcc53-fbb9-420a-9418-b8edc1f8f2df.json) | ntfs_journal_events table. Requires: `enable_ntfs_event_publisher=true`, `disable_events=false` |
+| 12a | File System Events     | ✅ | Linux | file_system_events_linux_elastic | [521f](kibana/osquery_saved_query/osquery_manager-521f7c0d-7ef4-4ff4-9510-e899bbc1b285.json) | file_events table (inotify). Includes hashes. Requires: `enable_file_events=true` |
+| 12b | File System Events     | ✅️ | Mac | file_system_events_macos_elastic | [6954](kibana/osquery_saved_query/osquery_manager-6954690d-32c3-4c50-a973-3fae66114349.json) | file_events (FSEvents). Includes hashes. Requires: `enable_file_events=true` |
 | 13 | Open Handles            | ❌ | Win   | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
 | 13a | Open Handles            | ❌ | Linux | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
 | 13b | Open Handles            | ❌ | Mac | -     | -    | PR #7835 open; external extension available: EclecticIQ ext                                                                      |
@@ -177,7 +179,9 @@ While some artifacts are not directly available, the existing queries provide st
 
 ### File System/Forensics
 - ⚠️ File Listing (All platforms: file and hash tables)
-- ⚠️ NTFS USN Journal (Windows: ntfs_journal_events table)
+- ✅ NTFS USN Journal (Windows: ntfs_journal_events table) - Query: `ntfs_usn_journal_events_windows_elastic`
+- ✅ File System Events (Linux: file_events table via inotify) - Query: `file_system_events_linux_elastic`
+- ✅️ File System Events (macOS: file_events table via FSEvents) - Query: `file_system_events_macos_elastic`
 - ❌ MFT (Not Available - Use NTFS USN Journal as alternative or Trail of Bits extension)
 
 ### Network/C2 Indicators
@@ -188,5 +192,22 @@ While some artifacts are not directly available, the existing queries provide st
 - ✅ Disks & Volumes (Windows: disk_info table, Linux/macOS: block_devices + mounts tables)
 - ⚠️ Process Listing (All platforms: processes table)
 - ❌ Open Handles (Not Available - PR #7835 open, EclecticIQ extension available)
+
+---
+
+## Cross-Platform File System Monitoring Reference
+
+This section documents the equivalent file monitoring capabilities across platforms for forensic investigations.
+
+### Platform Comparison Matrix
+
+| Feature | Windows (USN Journal) | Linux (inotify) | macOS (FSEvents) |
+|---------|----------------------|-----------------|------------------|
+| **Table** | `ntfs_journal_events` | `file_events` | `file_events` |
+| **File hashes** | ❌ | ✅ md5, sha1, sha256 | ✅ md5, sha1, sha256 |
+| **Deleted file tracking** | ✅ Excellent | ⚠️ Limited | ⚠️ Limited |
+| **Historical events** | ✅ Journal persists | ❌ Real-time only | ❌ Real-time only |
+| **Scale** | High | Medium (watch limits) | Medium |
+| **Noise level** | Medium | Configurable | Configurable |
 
 ---
