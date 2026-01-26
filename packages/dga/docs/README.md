@@ -90,7 +90,7 @@ For more detailed information refer to the following blogs:
 
 ## Customize ML jobs for Domain Generation Algorithm Detection 
 
-To customize the datafeed query and other settings of the Domain Generation Algorithm Detection ML jobs, follow the steps below.
+To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Domain Generation Algorithm Detection ML jobs, follow the steps below.
 1. To update the datafeed query, stop the datafeed and select **Edit job** from the Actions menu.
 ![Domain Generation Algorithm Detection jobs](../img/dga_ml_job_1.png)
 1. In the Edit job window, navigate to the **Datafeed** section and update the query filters. You can add or remove field values to help reduce noise and false positives based on your environment.

@@ -81,7 +81,7 @@ After the data view for the dashboard is configured, the **Data Exfiltration Det
 
 ## Customize ML jobs for Data Exfiltration Detection 
 
-To customize the datafeed query and other settings of the Data Exfiltration Detection ML jobs, follow the steps below.
+To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Data Exfiltration Detection ML jobs, follow the steps below.
 1. To update the datafeed query, stop the datafeed and select **Edit job** from the Actions menu.
 ![Data Exfiltration Detection jobs](../img/ded_ml_job_1.png)
 1. In the Edit job window, navigate to the **Datafeed** section and update the query filters. You can add or remove field values to help reduce noise and false positives based on your environment.

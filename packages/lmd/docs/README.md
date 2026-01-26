@@ -140,7 +140,7 @@ Detects potential lateral movement activity by identifying malicious file transf
 
 ## Customize ML jobs for Lateral Movement Detection
 
-To customize the datafeed query and other settings of the Lateral Movement Detection ML jobs, follow the steps below.
+To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Lateral Movement Detection ML jobs, follow the steps below.
 1. To update the datafeed query, stop the datafeed and select **Edit job** from the Actions menu.
 ![Lateral Movement Detection jobs](../img/lmd_ml_job_1.png)
 1. In the Edit job window, navigate to the **Datafeed** section and update the query filters. You can add or remove field values to help reduce noise and false positives based on your environment.

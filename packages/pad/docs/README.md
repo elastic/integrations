@@ -137,7 +137,7 @@ To customize filters in the Privileged Access Detection transform, follow the be
 
 ## Customize ML jobs for Privileged Access Detection
 
-To customize the datafeed query and other settings of the Privileged Access Detection ML jobs, follow the steps below.
+To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Privileged Access Detection ML jobs, follow the steps below.
 1. To update the datafeed query, stop the datafeed and select **Edit job** from the Actions menu.
 ![Privileged Access Detection jobs](../img/pad_ml_job_1.png)
 1. In the Edit job window, navigate to the **Datafeed** section and update the query filters. You can add or remove field values to help reduce noise and false positives based on your environment.

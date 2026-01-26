@@ -139,7 +139,7 @@ Detects potential LotL activity by identifying malicious processes.
 
 ## Customize ML jobs for Living off the Land Attack Detection 
 
-To customize the datafeed query and other settings of the Living off the Land Attack Detection ML jobs, follow the steps below.
+To customize the datafeed query and other settings such as model memory limit, frequency, query delay, bucket span and influencers for the Living off the Land Attack Detection ML jobs, follow the steps below.
 1. To update the datafeed query, stop the datafeed and select **Edit job** from the Actions menu.
 ![Living off the Land Attack Detection jobs](../img/problemchild_ml_job_1.png)
 1. In the Edit job window, navigate to the **Datafeed** section and update the query filters. You can add or remove field values to help reduce noise and false positives based on your environment.
