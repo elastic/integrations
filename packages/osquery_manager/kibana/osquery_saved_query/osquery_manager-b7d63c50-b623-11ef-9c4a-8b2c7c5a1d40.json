@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "created_at": "2025-12-09T10:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Enumerates files with hash values in common staging/temp directories on Linux. Detects suspicious files with container/namespace awareness via pid_with_namespace and mount_namespace_id columns. Useful for detecting containerized file access and suspicious binaries. Target directories: /tmp, /var/tmp, /dev/shm, /home, /opt.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.file_hash_info"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "directory"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "filename"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "changed_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "file.uid",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "file.gid",
+                "value": {
+                    "field": "gid"
+                }
+            },
+            {
+                "key": "file.mode",
+                "value": {
+                    "field": "mode"
+                }
+            },
+            {
+                "key": "file.inode",
+                "value": {
+                    "field": "inode"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "group.name",
+                "value": {
+                    "field": "groupname"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "file_forensics", "hash_analysis", "container_aware", "namespace", "linux"]
+                }
+            }
+        ],
+        "id": "file_hash_info_linux_elastic",
+        "interval": "3600",
+        "platform": "linux",
+        "query": "-- File Hash Information with Container/Namespace Awareness - Linux\n-- Enumerates files in common staging/temp directories with hash values\n-- Includes container awareness via pid_with_namespace and mount_namespace_id\n-- Useful for detecting containerized file access and suspicious binaries\n\nSELECT\n    f.path,\n    f.directory,\n    f.filename,\n    f.size,\n    f.type,\n    f.pid_with_namespace,\n    f.mount_namespace_id,\n    f.uid,\n    f.gid,\n    f.mode,\n    f.inode,\n    f.device,\n    f.hard_links,\n    f.symlink,\n    f.symlink_target_path,\n    u.username,\n    g.groupname,\n    CASE WHEN f.btime > 0 THEN datetime(f.btime, 'unixepoch') ELSE NULL END AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    CASE\n        WHEN f.filename LIKE '.%' AND (CAST(SUBSTR(f.mode, -1, 1) AS INTEGER) & 2) > 0 THEN 'hidden_world_writable'\n        WHEN f.filename LIKE '.%' THEN 'hidden'\n        WHEN (CAST(SUBSTR(f.mode, -1, 1) AS INTEGER) & 2) > 0 THEN 'world_writable'\n        ELSE 'normal'\n    END AS file_visibility,\n    LENGTH(f.mode) AS mode_length,\n    SUBSTR(f.mode, -1, 1) AS mode_digit_other,\n    SUBSTR(f.mode, -2, 1) AS mode_digit_group,\n    SUBSTR(f.mode, -3, 1) AS mode_digit_owner,\n    CASE\n        WHEN (CAST(SUBSTR(f.mode, -1, 1) AS INTEGER) & 1) > 0 THEN 'executable'\n        WHEN (CAST(SUBSTR(f.mode, -2, 1) AS INTEGER) & 1) > 0 THEN 'executable'\n        WHEN (CAST(SUBSTR(f.mode, -3, 1) AS INTEGER) & 1) > 0 THEN 'executable'\n        ELSE 'not_executable'\n    END AS executable_status,\n    CASE\n        WHEN f.mount_namespace_id != '' AND f.mount_namespace_id IS NOT NULL THEN 'containerized'\n        ELSE 'host'\n    END AS container_context\nFROM file f\nLEFT JOIN hash h ON h.path = TRIM(f.path)\nLEFT JOIN users u ON u.uid = f.uid\nLEFT JOIN groups g ON g.gid = f.gid\nWHERE (\n    f.path LIKE '/tmp/%'\n    OR f.path LIKE '/var/tmp/%'\n    OR f.path LIKE '/dev/shm/%'\n    OR f.path LIKE '/home/%'\n    OR f.path LIKE '/opt/%'\n    OR f.path LIKE '/etc/cron.d/%'\n    OR f.path LIKE '/etc/cron.daily/%'\n    OR f.path LIKE '/etc/cron.hourly/%'\n    OR f.path LIKE '/var/spool/cron/%'\n)\nAND f.type = 'regular'\nAND f.size > 0",
+        "updated_at": "2025-12-09T10:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-b7d63c50-b623-11ef-9c4a-8b2c7c5a1d40",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-12-09T10:00:00.000Z",
+    "version": "WzEsMV0="
+}
