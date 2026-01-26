@@ -52,13 +52,13 @@ An example event for `collection` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-31T07:31:24.050Z",
+    "@timestamp": "2025-11-24T06:34:44.007Z",
     "agent": {
-        "ephemeral_id": "bf237146-2d4b-427b-b731-6dadb1dfdd90",
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "7341c081-985b-4227-acc0-63922bca9eb4",
+        "id": "a15dcfd1-8131-4338-adde-2307c6e4daea",
+        "name": "elastic-agent-92788",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "bitwarden": {
         "collection": {
@@ -71,22 +71,22 @@ An example event for `collection` looks as following:
     },
     "data_stream": {
         "dataset": "bitwarden.collection",
-        "namespace": "ep",
+        "namespace": "39321",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
+        "id": "a15dcfd1-8131-4338-adde-2307c6e4daea",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-10-31T07:31:24.050Z",
+        "created": "2025-11-24T06:34:44.007Z",
         "dataset": "bitwarden.collection",
-        "ingested": "2023-10-31T07:31:27Z",
+        "ingested": "2025-11-24T06:34:47Z",
         "kind": "event",
         "original": "{\"externalId\":\"external_id_123456\",\"groups\":null,\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"object\":\"collection\"}",
         "type": [
@@ -135,11 +135,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2023-02-22T09:00:21.728Z",
     "agent": {
-        "ephemeral_id": "23334f92-55ed-4a8f-b7c3-9e36ff9d73a2",
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "aeab5036-1b44-459c-b887-77abed767e01",
+        "id": "070fe211-69a1-4d70-b6b0-3f7dda0734d9",
+        "name": "elastic-agent-60012",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "bitwarden": {
         "event": {
@@ -176,16 +176,16 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "bitwarden.event",
-        "namespace": "ep",
+        "namespace": "95718",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
+        "id": "070fe211-69a1-4d70-b6b0-3f7dda0734d9",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -193,9 +193,9 @@ An example event for `event` looks as following:
             "iam",
             "authentication"
         ],
-        "created": "2023-10-31T07:32:17.783Z",
+        "created": "2025-11-24T07:16:24.137Z",
         "dataset": "bitwarden.event",
-        "ingested": "2023-10-31T07:32:21Z",
+        "ingested": "2025-11-24T07:16:27Z",
         "kind": "event",
         "original": "{\"actingUserId\":\"a2549f79-a71f-4eb9-9234-eb7247333f94\",\"collectionId\":\"bce212a4-25f3-4888-8a0a-4c5736d851e0\",\"date\":\"2023-02-22T09:00:21.728Z\",\"device\":0,\"groupId\":\"f29a2515-91d2-4452-b49b-5e8040e6b0f4\",\"ipAddress\":\"172.16.254.1\",\"itemId\":\"3767a302-8208-4dc6-b842-030428a1cfad\",\"memberId\":\"e68b8629-85eb-4929-92c0-b84464976ba4\",\"object\":\"event\",\"policyId\":\"f29a2515-91d2-4452-b49b-5e8040e6b0f4\",\"type\":1000}",
         "outcome": "success",
@@ -275,13 +275,13 @@ An example event for `group` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-31T07:33:12.430Z",
+    "@timestamp": "2025-11-24T06:36:22.193Z",
     "agent": {
-        "ephemeral_id": "2531708a-f7fa-48b6-913e-7d5d7d08b29b",
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "576e204f-93fc-44f9-839e-c7b2dd4de267",
+        "id": "7057a05b-9ff3-4cc2-ada0-fbf3ee258298",
+        "name": "elastic-agent-62387",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "bitwarden": {
         "group": {
@@ -302,25 +302,25 @@ An example event for `group` looks as following:
     },
     "data_stream": {
         "dataset": "bitwarden.group",
-        "namespace": "ep",
+        "namespace": "50466",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
+        "id": "7057a05b-9ff3-4cc2-ada0-fbf3ee258298",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2023-10-31T07:33:12.430Z",
+        "created": "2025-11-24T06:36:22.193Z",
         "dataset": "bitwarden.group",
-        "ingested": "2023-10-31T07:33:15Z",
+        "ingested": "2025-11-24T06:36:25Z",
         "kind": "event",
         "original": "{\"accessAll\":true,\"collections\":[{\"id\":\"bfbc8338-e329-4dc0-b0c9-317c2ebf1a09\",\"readOnly\":true}],\"externalId\":\"external_id_123456\",\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"name\":\"Development Team\",\"object\":\"group\"}",
         "type": [
@@ -374,13 +374,13 @@ An example event for `member` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-31T07:34:06.988Z",
+    "@timestamp": "2025-11-24T06:37:12.467Z",
     "agent": {
-        "ephemeral_id": "ecbc5fc6-80f7-4b74-a759-47e029f39507",
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b33ea26f-2d3a-4907-8c88-8f45ffd44188",
+        "id": "e4edaabf-92d7-416b-8be7-657fc54ed284",
+        "name": "elastic-agent-41065",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "bitwarden": {
         "member": {
@@ -409,25 +409,25 @@ An example event for `member` looks as following:
     },
     "data_stream": {
         "dataset": "bitwarden.member",
-        "namespace": "ep",
+        "namespace": "60283",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
+        "id": "e4edaabf-92d7-416b-8be7-657fc54ed284",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2023-10-31T07:34:06.988Z",
+        "created": "2025-11-24T06:37:12.467Z",
         "dataset": "bitwarden.member",
-        "ingested": "2023-10-31T07:34:10Z",
+        "ingested": "2025-11-24T06:37:15Z",
         "kind": "event",
         "original": "{\"accessAll\":true,\"collections\":null,\"email\":\"jsmith@example.com\",\"externalId\":\"external_id_123456\",\"id\":\"1234\",\"name\":\"John Smith\",\"object\":\"member\",\"resetPasswordEnrolled\":true,\"status\":0,\"twoFactorEnabled\":true,\"type\":0,\"userId\":\"48b47ee1-493e-4c67-aef7-014996c40eca\"}",
         "type": [
@@ -498,13 +498,13 @@ An example event for `policy` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-31T07:35:03.192Z",
+    "@timestamp": "2025-11-24T06:38:00.683Z",
     "agent": {
-        "ephemeral_id": "eedf4c11-ed1e-4b64-b210-2c8120abdbbf",
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "ed7a29f4-b325-4462-8754-572c01e39dba",
+        "id": "65edca49-1af4-43c5-9b82-53c76a555cbd",
+        "name": "elastic-agent-72971",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "bitwarden": {
         "object": "policy",
@@ -536,22 +536,22 @@ An example event for `policy` looks as following:
     },
     "data_stream": {
         "dataset": "bitwarden.policy",
-        "namespace": "ep",
+        "namespace": "10332",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fa60f5ca-bf95-4706-9195-907dd5f9b537",
+        "id": "65edca49-1af4-43c5-9b82-53c76a555cbd",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-10-31T07:35:03.192Z",
+        "created": "2025-11-24T06:38:00.683Z",
         "dataset": "bitwarden.policy",
-        "ingested": "2023-10-31T07:35:06Z",
+        "ingested": "2025-11-24T06:38:03Z",
         "kind": "event",
         "original": "{\"data\":{\"capitalize\":true,\"defaultType\":\"password\",\"includeNumber\":true,\"minLength\":5,\"minNumberWords\":3,\"minNumbers\":1,\"minSpecial\":1,\"useLower\":true,\"useNumbers\":true,\"useSpecial\":true,\"useUpper\":true},\"enabled\":true,\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"object\":\"policy\",\"type\":0}",
         "type": [

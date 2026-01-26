@@ -18,6 +18,8 @@ processors:
       %{GREEDYDATA:message}"
     - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name}%{SPACE}(%{POSINT:process.pid:long}|-)( -)?%{SPACE}%{GREEDYDATA:message}"
     - "^ \\(%{TIMESTAMP_ISO8601:_tmp.timestamp} %{GREEDYDATA:message}\\)%{GREEDYDATA:_tmp.drop}"
+    - "^(%{ECS_SYSLOG_PRIORITY})?%{SYSLOGTIMESTAMP:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{DATA:process.name}(?:\\[%{POSINT:process.pid:long}\\])?\\:
+      %{GREEDYDATA:message}"
     pattern_definitions:
       ECS_SYSLOG_PRIORITY: "<%{NONNEGINT:log.syslog.priority:long}>(\\d )?"
       HOST: "(?:%{IP:host.ip}|%{HOSTNAME:host.name})"
@@ -99,6 +101,7 @@ processors:
     target_field: "@timestamp"
     formats:
     - ISO8601
+    - "MMM dd HH:mm:ss"
 - pipeline:
     name: '{{ IngestPipeline "dns" }}'
     if: "ctx.process?.name == 'dnsmasq'"

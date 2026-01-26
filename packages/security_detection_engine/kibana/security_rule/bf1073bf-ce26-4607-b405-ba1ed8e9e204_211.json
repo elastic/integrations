@@ -1,0 +1,120 @@
+{
+    "attributes": {
+        "author": [
+            "Austin Songer",
+            "Elastic"
+        ],
+        "description": "Identifies the restoration of an AWS RDS database instance from a snapshot or S3 backup. Adversaries with access to valid credentials may restore copies of existing databases to bypass logging and monitoring controls or to exfiltrate sensitive data from a duplicated environment. This rule detects successful restoration operations using \"RestoreDBInstanceFromDBSnapshot\" or \"RestoreDBInstanceFromS3\", which may indicate unauthorized data access or post-compromise defense evasion.",
+        "false_positives": [
+            "Restoring an RDS DB instance may be performed legitimately during troubleshooting, development refresh processes, migrations, or disaster-recovery drills. Validate the user identity, source IP, automation context, and whether the restoration aligns with a known maintenance or testing workflow before treating the event as suspicious. Expected behavior can be exempted through rule exceptions."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS RDS DB Instance Restored",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. \n> While every effort has been made to ensure its quality, validate and adapt it to suit your operational needs.\n\n### Investigating AWS RDS DB Instance Restored\n\nRestoring an RDS DB instance from a snapshot or from S3 is a powerful operation that recreates a full database environment. While legitimate for recovery, migrations, or cloning, adversaries may use restore actions to access historical data, duplicate sensitive environments, evade guardrails, or prepare for data exfiltration. \n\nThis rule detects successful invocation of `RestoreDBInstanceFromDBSnapshot` and `RestoreDBInstanceFromS3`, both of which may indicate attempts to rehydrate old datasets, bypass deletion protection, or establish a shadow environment for further malicious actions.\n\n#### Possible investigation steps\n\n- **Identify the actor and execution context**\n  - Review `aws.cloudtrail.user_identity.arn`, `aws.cloudtrail.user_identity.type`, and `aws.cloudtrail.user_identity.access_key_id`.\n  - Check `user.name`, `source.ip`, and `user_agent.original` to determine how the restore was executed (console, CLI, automation, SDK).\n\n- **Understand what was restored and why**\n  - Inspect `aws.cloudtrail.request_parameters` to identify:\n    - Snapshot identifier or S3 location used as the restore source.\n    - The new DB instance identifier and configuration parameters.\n  - Determine:\n    - Whether the snapshot/backup used for the restore contains sensitive or high-value data.\n    - Whether this restore created a publicly accessible instance, changed security groups, or used unusual storage/instance classes.\n\n- **Reconstruct the activity flow**\n  - Use `@timestamp` to correlate the restore event with:\n    - Snapshot creation, copy, or export events.\n    - IAM policy changes or privilege escalations.\n    - Deletion or modification of the original database.\n    - Other RDS lifecycle actions such as `ModifyDBInstance`, `DeleteDBInstance`, or backup configuration changes.\n  - Look for signs of attacker staging:\n    - Prior enumeration activity (`DescribeDBSnapshots`, `DescribeDBInstances`).\n    - Recent logins from unusual IPs or federated sessions without MFA.\n\n- **Correlate with broader behavior**\n  - Pivot in CloudTrail on:\n    - The same snapshot identifier.\n    - The same actor or access key ID.\n    - The newly created DB instance identifier.\n  - Examine:\n    - Whether the restored DB was modified immediately after (e.g., security groups opened, deletion protection disabled).\n    - Whether there were large-volume read operations or export actions following the restore.\n    - Whether the restore is part of a pattern of parallel suspicious activity (snapshot copying, S3 backups, cross-account actions).\n\n- **Validate intent with owners**\n  - Confirm with the application/database/platform teams:\n    - Whether the restore was requested or part of an authorized operational workflow.\n    - Whether this restore corresponds to migration, testing, DR drill, or another planned activity.\n    - Whether the restored environment should exist (and for how long).\n\n### False positive analysis\n\n- **Legitimate maintenance and DR workflows**\n  - Many teams restore databases for patch testing, DR validation, schema testing, or migration.\n- **Automated restore workflows**\n  - CI/CD pipelines or internal automation may restore DBs to generate staging or dev environments.\n- **Third-party tooling**\n  - Backup/DR solutions, migration tools, or observability platforms may restore DB instances for operational reasons. Tune based on `user_agent.original` or known service roles.\n\n### Response and remediation\n\n- **Contain the restored environment**\n  - If unauthorized:\n    - Apply restrictive security groups to block access.\n    - Disable public accessibility if enabled.\n    - Evaluate whether deletion protection or backup retention is misconfigured.\n\n- **Assess data exposure and intent**\n  - Work with data owners to evaluate:\n    - The sensitivity of the restored environment.\n    - Whether any reads, dumps, or exports occurred post-restore.\n    - Whether the restore enabled the attacker to access older or deleted data.\n\n- **Investigate scope and related activity**\n  - Review CloudTrail for:\n    - Additional restores, exports, or copies.\n    - IAM changes allowing expanded privileges.\n    - Unusual authentication events or federated sessions without MFA.\n    - Related destructive actions (snapshot deletion, backup disabled, instance deletion).\n\n- **Hardening and preventive controls**\n  - Enforce least privilege for `rds:RestoreDBInstanceFromDBSnapshot` and `rds:RestoreDBInstanceFromS3`.\n  - Use IAM conditions to restrict restore actions by network, principal, or region.\n  - Add AWS Config and Security Hub controls for monitoring:\n    - Unapproved restores.\n    - Public or misconfigured restored instances.\n  - Consider SCPs that prevent RDS restores in production accounts except through controlled roles.\n\n- **Post-incident improvements**\n  - Rotate credentials for affected IAM users/roles.\n  - Update change management processes to ensure restore actions are tracked and approved.\n  - Adjust rule exceptions sparingly and ensure high-risk restores continue to generate alerts.\n\n### Additional information\n\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.provider: \"rds.amazonaws.com\"\n    and event.action: (\"RestoreDBInstanceFromDBSnapshot\" or \"RestoreDBInstanceFromS3\")\n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_RestoreDBInstanceFromDBSnapshot.html",
+            "https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_RestoreDBInstanceFromS3.html",
+            "https://github.com/RhinoSecurityLabs/pacu/blob/master/pacu/modules/rds__explore_snapshots/main.py",
+            "https://cloud.hacktricks.xyz/pentesting-cloud/aws-security/aws-post-exploitation/aws-rds-post-exploitation#rds-createdbsnapshot-rds-restoredbinstancefromdbsnapshot-rds-modifydbinstance"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "bf1073bf-ce26-4607-b405-ba1ed8e9e204",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS RDS",
+            "Use Case: Asset Visibility",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1578",
+                        "name": "Modify Cloud Compute Infrastructure",
+                        "reference": "https://attack.mitre.org/techniques/T1578/",
+                        "subtechnique": [
+                            {
+                                "id": "T1578.002",
+                                "name": "Create Cloud Instance",
+                                "reference": "https://attack.mitre.org/techniques/T1578/002/"
+                            },
+                            {
+                                "id": "T1578.004",
+                                "name": "Revert Cloud Instance",
+                                "reference": "https://attack.mitre.org/techniques/T1578/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 211
+    },
+    "id": "bf1073bf-ce26-4607-b405-ba1ed8e9e204_211",
+    "type": "security-rule"
+}

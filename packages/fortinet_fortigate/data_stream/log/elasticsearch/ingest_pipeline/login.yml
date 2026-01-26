@@ -78,7 +78,7 @@ processors:
       field: "message"
       tag: "ssh login 3"
       patterns:
-          - "%{WORD:_tmp.user.roles} %{WORD:user.name} logged in %{WORD:event.outcome} from (?:jsconsole|%{WORD}\\(%{IP:source.ip}\\))"
+          - "%{WORD:_tmp.user.roles} %{NOTSPACE:user.name} logged in %{WORD:event.outcome} from (?:jsconsole|%{WORD}\\(%{IP:source.ip}\\))"
       if: "ctx.message != null && ctx.message.startsWith('Administrator') && ctx.message.toLowerCase().contains('logged in')"
       on_failure:
           - append:
@@ -166,3 +166,7 @@ on_failure:
       {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
       {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
       failed with message '{{{ _ingest.on_failure_message }}}'
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
