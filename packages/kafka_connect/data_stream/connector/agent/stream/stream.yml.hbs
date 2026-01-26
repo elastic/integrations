@@ -1,0 +1,30 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{period}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+namespace: "kafka_connect"
+jmx.mappings:
+  - mbean: 'kafka.connect:connector=*,type=connector-metrics'
+    attributes:
+      - attr: status
+        field: connector.status
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

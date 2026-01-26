@@ -1,0 +1,80 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafka-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    hostname: kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    networks:
+      - kafka-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+  kafka-connect:
+    build: .
+    hostname: kafka-connect
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: 'kafka:9092'
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: compose-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
+      KAFKA_OPTS: "-javaagent:/opt/jolokia/jolokia-jvm.jar=port=8778,host=0.0.0.0"
+    networks:
+      - kafka-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+  data-generator:
+    image: confluentinc/cp-kafka:7.5.0
+    hostname: data-generator
+    depends_on:
+      kafka-connect:
+        condition: service_healthy
+    command: "bash -c \"\n  # Wait a bit for everything to be ready\n  sleep 10\n  \n  echo 'Creating source and sink topics...'\n  kafka-topics --create --if-not-exists --topic source-topic --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1\n  kafka-topics --create --if-not-exists --topic sink-topic --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1\n  \n  echo 'Waiting for topics to be ready...'\n  sleep 5\n  \n  echo 'Creating VerifiableSourceConnector...'\n  curl -X POST http://kafka-connect:8083/connectors -H 'Content-Type: application/json' -d '{ \\\"name\\\": \\\"verifiable-source\\\", \\\"config\\\": { \\\"connector.class\\\": \\\"org.apache.kafka.connect.tools.VerifiableSourceConnector\\\", \\\"tasks.max\\\": \\\"1\\\", \\\"topic\\\": \\\"source-topic\\\", \\\"throughput\\\": \\\"10\\\" } }'\n  \n  echo 'Waiting for source connector to start...'\n  sleep 10\n  \n  echo 'Creating VerifiableSinkConnector...'\n  curl -X POST http://kafka-connect:8083/connectors -H 'Content-Type: application/json' -d '{ \\\"name\\\": \\\"verifiable-sink\\\", \\\"config\\\": { \\\"connector.class\\\": \\\"org.apache.kafka.connect.tools.VerifiableSinkConnector\\\", \\\"tasks.max\\\": \\\"1\\\", \\\"topics\\\": \\\"source-topic\\\" } }'\n  \n  echo 'Connectors created successfully!'\n  echo 'Source connector produces data to source-topic'\n  echo 'Sink connector consumes data from source-topic'\n  \n  # Keep container running to monitor\n  tail -f /dev/null\n\"\n"
+    networks:
+      - kafka-network
+networks:
+  kafka-network:
+    driver: bridge

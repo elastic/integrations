@@ -1,0 +1,78 @@
+name: kafka_connect
+title: Kafka Connect
+version: "0.1.0"
+description: Collect metrics from Kafka Connect instances with Elastic Agent.
+type: integration
+icons:
+  - src: /img/kafka-connect.svg
+    title: Kafka Connect
+    size: 32x32
+    type: image/svg+xml
+format_version: "3.0.2"
+categories:
+  - message_queue
+  - observability
+  - monitoring
+  - infrastructure
+conditions:
+  kibana:
+    version: "^8.17.0 || ^9.0.0"
+  elastic:
+    subscription: basic
+policy_templates:
+  - name: kafka_connect
+    title: Kafka Connect metrics
+    description: This Elastic integration collects metrics from Kafka Connect instances via Jolokia.
+    inputs:
+      - type: jolokia/metrics
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            description: Hosts for Kafka Connect Jolokia endpoint.
+            default:
+              - localhost:1099
+          - name: path
+            type: text
+            title: Path
+            multi: false
+            required: true
+            show_user: true
+            description: Path of Jolokia endpoint.
+            default: /jolokia/
+          - name: username
+            type: text
+            title: Username
+            multi: false
+            required: false
+            show_user: true
+            description: Username for authentication of Kafka Connect instance.
+          - name: password
+            type: password
+            title: Password
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+            description: Password for authentication of Kafka Connect instance.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            default: |
+              # ssl.verification_mode: full
+              # ssl.certificate_authorities: |
+              #   -----BEGIN CERTIFICATE-----
+              #   ...
+              #   -----END CERTIFICATE-----
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
+            multi: false
+            required: false
+            show_user: false
+        title: Collect Kafka Connect metrics
+        description: Collecting worker, connector, task, and client metrics from Kafka Connect instances via Jolokia.
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic

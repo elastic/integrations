@@ -1,0 +1,16 @@
+---
+description: Pipeline for processing Kafka Connect worker metrics
+processors:
+  - set:
+      field: ecs.version
+      value: '8.17.0'
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.module
+      value: kafka_connect
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
