@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "created_at": "2025-12-02T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detects Windows persistence via registry autostart locations. Enumerates Run, RunOnce, Policy Run, Winlogon, and Active Setup keys with file hash and code signature enrichment. Covers both HKLM and per-user (HKEY_USERS) locations including WOW64. Maps to MITRE ATT&CK T1547.001 (Registry Run Keys), T1547.014 (Active Setup).",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["registry"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.registry_persistence"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "executable_path"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "created_time"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "changed_time"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "directory"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "file.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "registry.key",
+                "value": {
+                    "field": "key"
+                }
+            },
+            {
+                "key": "registry.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "registry.data.strings",
+                "value": {
+                    "field": "data"
+                }
+            },
+            {
+                "key": "registry.value",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "persistence", "registry", "autostart", "windows"]
+                }
+            }
+        ],
+        "id": "registry_persistence_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Windows Registry Persistence Detection\n-- Enumerates autostart registry locations with hash/signature enrichment\n\nSELECT\n    r.name,\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END AS executable_path,\n    r.data,\n    r.key,\n    r.path,\n    r.type,\n    datetime(r.mtime, 'unixepoch') AS registry_modified_time,\n    CASE\n        WHEN r.key LIKE '%\\Run' THEN 'Registry Run Key'\n        WHEN r.key LIKE '%\\RunOnce' THEN 'Registry RunOnce Key'\n        WHEN r.key LIKE '%\\Winlogon' THEN 'Winlogon Persistence'\n        WHEN r.key LIKE '%\\Active Setup\\Installed Components' THEN 'Active Setup'\n        WHEN r.key LIKE '%\\Policies\\Explorer\\Run' THEN 'Policy Run Key'\n        ELSE 'Other Persistence'\n    END AS persistence_type,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    h.sha1,\n    f.size,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.directory\nFROM registry r\nLEFT JOIN hash h ON h.path = (\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END\n)\nLEFT JOIN authenticode a ON a.path = (\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END\n)\nLEFT JOIN file f ON f.path = (\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END\n)\nWHERE (\n    -- Run/RunOnce (HKLM)\n    r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce'\n    -- Run/RunOnce (Per-User)\n    OR r.key LIKE 'HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'\n    OR r.key LIKE 'HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce'\n    -- WOW64 (32-bit on 64-bit)\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run'\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnce'\n    -- Policy Run Keys (often missed by EDR)\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run'\n    OR r.key LIKE 'HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run'\n    -- Winlogon (specific persistence values only)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon'\n        AND r.name IN ('Shell', 'Userinit', 'Taskman', 'AppSetup'))\n    -- Active Setup (per-user persistence on login) - only StubPath contains the command\n    OR (r.key LIKE 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Active Setup\\Installed Components\\%'\n        AND r.name = 'StubPath')\n)\nAND r.type != 'subkey'\nAND r.data IS NOT NULL\nAND r.data != ''",
+        "updated_at": "2025-12-02T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-5dd4e2a9-eea7-4740-a1ec-1b1b7d120d77",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-12-02T00:00:00.000Z",
+    "version": "WzEwNTUzLDJd"
+}

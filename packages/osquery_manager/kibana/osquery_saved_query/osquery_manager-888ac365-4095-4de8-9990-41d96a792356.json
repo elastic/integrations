@@ -1,0 +1,165 @@
+{
+    "attributes": {
+        "created_at": "2025-01-06T10:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Comprehensive macOS process listing with parent process context, code signatures, file hashes, and username resolution. Provides full forensic visibility for threat hunting, incident response, and baseline analysis. Returns all running processes for complete system state assessment.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.process_listing"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.working_directory",
+                "value": {
+                    "field": "cwd"
+                }
+            },
+            {
+                "key": "process.parent.pid",
+                "value": {
+                    "field": "ppid"
+                }
+            },
+            {
+                "key": "process.parent.name",
+                "value": {
+                    "field": "parent_name"
+                }
+            },
+            {
+                "key": "process.parent.executable",
+                "value": {
+                    "field": "parent_path"
+                }
+            },
+            {
+                "key": "process.parent.command_line",
+                "value": {
+                    "field": "parent_cmdline"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "group.id",
+                "value": {
+                    "field": "gid"
+                }
+            },
+            {
+                "key": "process.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "process.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "process.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "process.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "process.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "process.code_signature.team_id",
+                "value": {
+                    "field": "team_identifier"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "process",
+                        "forensics",
+                        "macos"
+                    ]
+                }
+            }
+        ],
+        "id": "process_listing_macos_elastic",
+        "interval": "3600",
+        "platform": "darwin",
+        "query": "-- macOS Process Listing with Full Forensic Context\n-- Provides comprehensive process information including parent chain, hashes, code signatures, and username\n-- Use for: Threat hunting, incident response, baseline analysis\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    u.username,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.resident_size,\n    p.total_size,\n    p.threads,\n    p.nice,\n    p.on_disk,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link,\n    CASE\n        WHEN s.signed = 1 THEN 'signed'\n        WHEN s.signed = 0 THEN 'unsigned'\n        ELSE 'unknown'\n    END AS signature_status,\n    s.authority AS signature_signer,\n    s.identifier AS bundle_identifier,\n    s.team_identifier\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN users u ON p.uid = u.uid\nLEFT JOIN hash h ON p.path = h.path\nLEFT JOIN signature s ON p.path = s.path;",
+        "timeout": 180,
+        "updated_at": "2025-01-06T10:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-888ac365-4095-4de8-9990-41d96a792356",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-06T10:00:00.000Z",
+    "version": "WzEsMV0="
+}
