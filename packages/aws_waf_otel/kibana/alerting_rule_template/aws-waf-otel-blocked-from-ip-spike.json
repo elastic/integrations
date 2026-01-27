@@ -13,7 +13,7 @@
             "timeWindowSize": 10,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert triggers when any IP whose blocked requests exceed a threshold (e.g. > 1000 in 10 minutes)\n// You can adjust the threshold value by modifying the block_count in the WHERE clause.\nFROM logs-aws.waf.otel-default\n| WHERE @timestamp > NOW() - 10m\n| STATS block_count = COUNT(aws.waf.action == \"BLOCK\" OR NULL) BY client.address\n| WHERE block_count > 1000\n| SORT block_count DESC"
+                "esql": "// Alert triggers when any IP whose blocked requests exceed a threshold (e.g. > 1000 in 10 minutes)\n// You can adjust the threshold value by modifying the block_count in the WHERE clause.\nFROM logs-aws.waf.otel-default\n| STATS block_count = COUNT(aws.waf.action == \"BLOCK\" OR NULL) BY client.address\n| WHERE block_count > 1000\n| SORT block_count DESC"
             },
             "groupBy": "row",
             "timeField": "@timestamp"
