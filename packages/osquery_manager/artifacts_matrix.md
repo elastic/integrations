@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-26
-**Total Core Artifacts**: 44 available + 3 in progress + 6 not available = 53 total variants
-**Total Queries**: 67
-**Completion Rate**: 83.0% (44/53 core artifacts fully supported)
+**Last Updated**: 2026-01-27
+**Total Core Artifacts**: 45 available + 3 in progress + 6 not available = 54 total variants
+**Total Queries**: 69
+**Completion Rate**: 83.3% (45/54 core artifacts fully supported)
 
 ---
 
@@ -13,9 +13,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 44     | 83.0%      |
-| ⚠️ In Progress (Needs Validation) | 3     | 5.7%       |
-| ❌ Not Available (Requires Extensions) | 6     | 11.3%      |
+| ✅ Available (Fully Supported) | 45     | 83.3%      |
+| ⚠️ In Progress (Needs Validation) | 3     | 5.6%       |
+| ❌ Not Available (Requires Extensions) | 6     | 11.1%      |
 
 ---
 
@@ -23,12 +23,11 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | #   | Artifact                              | ✓ | OS    | Query                                      | File                                                                                             | Implementation Notes                                                                                                             |
 |-----|---------------------------------------|---|-------|--------------------------------------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| 1   | AppCompatCache                        | ✅ | Win   | appcompatcache_shimcache_windows_elastic   | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)     | shimcache table with signature-aware filtering (unsigned/untrusted binaries, suspicious paths), hash enrichment, excludes valid Microsoft-signed binaries                                                                                                                  |
+| 1   | AppCompatCache                        | ✅ | Win   | appcompatcache_shimcache_windows_elastic   | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)     | shimcache table with signature-aware filtering (unsigned/untrusted binaries, suspicious paths), hash enrichment, excludes valid Microsoft-signed binaries                                                                                                                 |
 | 2   | AmCache                               | ❌ | Win   | -                                          | -                                                                                                | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
 | 3   | BITS Jobs Database                    | ✅ | Win   | bits_monitoring_windows_elastic            | [4b2e](kibana/osquery_saved_query/osquery_manager-4b2e8f3a-9d5c-4e2a-b8f1-7c6d3e9a2b1f.json)     | Not a native table, but can be queried via windows_eventlog (EventID 59)                                                        |
-| 4   | Browser URL History                   | ⚠️ | Win   | -                                          | -                                                                                                | No native table. Can be supported via ATC custom tables                                                                          |
-| 4a  | Browser URL History                   | ⚠️ | Linux | -                                          | -                                                                                                | No native table. Can be supported via ATC custom tables                                                                          |
-| 4b  | Browser URL History                   | ⚠️ | Mac   | -                                          | -                                                                                                | No native table. Can be supported via ATC custom tables                                                                          |
+| 4 | Browser URL History Suspicious        | ✅ | All | browser_history_suspicious_elastic         | [b352f3c9](kibana/osquery_saved_query/osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874.json) | Requires Elastic Agent v9.3.0+. Cross-platform (Windows, macOS, Linux). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration needed.|
+| 4a | Browser URL History (Full Collection) | ✅ | All | browser_history_elastic                    | [2a5c0d4a](kibana/osquery_saved_query/osquery_manager-2a5c0d4a-21b8-4a37-8d71-2d5d2c8a0f45.json) | Complete browser history collection for forensic analysis. Requires Elastic Agent v9.3.0+. Discovers Chrome, Edge, Firefox, Safari histories. MITRE ATT&CK: T1217 |
 | 5   | File Hash Info                        | ✅ | Win | file_hash_info_windows_elastic             | [f8e71a30](kibana/osquery_saved_query/osquery_manager-f8e71a30-b621-11ef-9c4a-8b2c7c5a1d3e.json) | Files with hash & authenticode in staging directories (T1036, T1105, T1564.001) |
 | 5a  | File Hash Info                        | ✅ | Linux | file_hash_info_linux_elastic               | [b7d63c50](kibana/osquery_saved_query/osquery_manager-b7d63c50-b623-11ef-9c4a-8b2c7c5a1d40.json) | Files with hash & container/namespace awareness (T1036, T1105, T1565.001) |
 | 5b  | File Hash Info                        | ✅ | Mac | file_hash_info_darwin_elastic              | [a3c52b40](kibana/osquery_saved_query/osquery_manager-a3c52b40-b622-11ef-9c4a-8b2c7c5a1d3f.json) | Files with hash & Gatekeeper signature validation (T1036, T1105, T1564.001) |
@@ -132,16 +131,16 @@ The following artifacts cannot be queried with standard osquery and require exte
 
 | # | Artifact | Status | Notes |
 |:-:|----------|:------:|-------|
-| 1 | Browser URL History (All Platforms) | ⚠️ | No native table, databases locked while browser running. Can be supported via ATC custom tables. Alternative: Downloads folder analysis, file system queries for browser cache |
+| 1 | Browser URL History (All Platforms) | ✅ | **FULLY AVAILABLE**: Native `elastic_browser_history` table (requires Elastic Agent v9.3.0+). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration required. |
 | 2 | BITS Jobs Database (Windows) | ⚠️ | Not a native table, but can be queried via windows_eventlog table |
-| 3 | Prefetch Files (Windows) | ✅ | CORRECTED: Native prefetch table available since Osquery v5.x - fully parses .pf files to extract executable names, run counts, last run times, and accessed resources. Equivalent to VQL Windows.Forensics.Prefetch artifact. |
+| 3 | Prefetch Files (Windows) | ✅ | Native prefetch table available since Osquery v5.x - fully parses .pf files to extract executable names, run counts, last run times, and accessed resources. |
 
 ### Alternative Coverage
 
 While some artifacts are not directly available, the existing queries provide strong coverage through related artifacts:
 
 **Execution Tracking**: Use Prefetch (native prefetch table) + AppCompatCache (shimcache) + File Listing + Process Listing instead of AmCache
-**User Activity**: Use Shellbags + LNK Files + Recent Files instead of Jumplists/Browser History
+**User Activity**: Use Shellbags + LNK Files + Recent Files  + **Browser History (Elastic Agent v9.3.0+)** instead of Jumplists
 **File System Monitoring**: Use NTFS USN Journal + File Listing with Hashes instead of MFT
 **Resource Access**: Use Network Connections (process_open_sockets) + Process Listing instead of Open Handles
 
@@ -184,7 +183,7 @@ While some artifacts are not directly available, the existing queries provide st
 - ✅ Shell History (Linux/Mac: shell_history table with anti-forensics detection)
 - ✅ Shellbags (Windows: shellbags table)
 - ✅ User Assist (Windows: userassist table with user resolution and hash enrichment)
-- ⚠️ Browser URL History (All platforms: via ATC custom tables)
+- ✅ **Browser URL History (All platforms: `elastic_browser_history` table, requires Elastic Agent v9.3.0+ - Multi-browser support, MITRE ATT&CK T1217)**
 - ❌ Jumplists (Not Available - Use Shellbags + LNK Files as alternatives)
 
 ### File System/Forensics
