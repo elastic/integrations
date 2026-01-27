@@ -27,7 +27,7 @@ The following data can be collected with the Microsoft Office 365 Metrics integr
 | [Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Detail   |    `Day`-based   |       Reports.Read.All    |
 | [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Groups Activity   |   `Day`-based   |     Reports.Read.All    |
 | [Viva Engage Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-device-usage-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Device Usage User Counts metrics   |   `Period`-based   |      Reports.Read.All    |
-| [Service Health](https://learn.microsoft.com/en-us/graph/service-communications-concept-overview?view=o365-worldwide)                                                 |    [reportRoot: getServiceHealth](https://learn.microsoft.com/en-us/graph/api/servicehealth-get?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Service Health metrics   |   No aggregation  |    ServiceHealth.Read.All  |
+| [Service Health](https://learn.microsoft.com/en-us/graph/service-communications-concept-overview?view=o365-worldwide)                                                 |    [List healthOverviews](https://learn.microsoft.com/en-us/graph/api/serviceannouncement-list-healthoverviews?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Service Health metrics   |   No aggregation  |    ServiceHealth.Read.All  |
 | [Subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [subscribedSkus](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0), [subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/companysubscription?view=graph-rest-1.0)   |   Microsoft 365 Subscriptions metrics   |   No aggregation  | LicenseAssignment.Read.All  |
 | [Teams Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |   CallRecords.Read.All    |
 | Tenant Settings | [organization](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0), [adminReportSettings](https://learn.microsoft.com/en-us/graph/api/resources/adminreportsettings?view=graph-rest-1.0) | Microsoft 365 Tenant Settings | No aggregation | Organization.Read.All, ReportSettings.Read.All, Directory.Read.All  |
@@ -2371,70 +2371,86 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 
 ### Service Health
 
-Get details about Service Health from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/servicehealth-get?view=graph-rest-1.0&tabs=http).
+List service health overviews for all subscribed Microsoft 365 services from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/serviceannouncement-list-healthoverviews?view=graph-rest-1.0&tabs=http).
 
 An example event for `service_health` looks as following:
 
 ```json
 {
+    "@timestamp": "2026-01-21T07:20:41.187Z",
+    "agent": {
+        "ephemeral_id": "513b1e60-3be7-4c19-b6a9-8feb8d3b768a",
+        "id": "6e3e2a23-4c05-4d50-b1a0-2884b23593a5",
+        "name": "elastic-agent-59713",
+        "type": "filebeat",
+        "version": "9.2.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.service_health",
+        "namespace": "52940",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "6e3e2a23-4c05-4d50-b1a0-2884b23593a5",
+        "snapshot": false,
+        "version": "9.2.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.service_health",
+        "ingested": "2026-01-21T07:20:44Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "elastic-agent-59713",
+        "ip": [
+            "172.19.0.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "3E-47-CD-5F-93-2D",
+            "D2-FE-90-58-0E-33"
+        ],
+        "name": "elastic-agent-59713",
+        "os": {
+            "kernel": "6.6.87.2-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "service": {
                 "health": {
-                    "status": "serviceOperational",
-                    "id": "OSDPPlatform",
-                    "service": "Microsoft 365 suite"
+                    "services": [
+                        {
+                            "id": "OrgLiveID",
+                            "name": "Microsoft Entra",
+                            "status": "serviceOperational"
+                        },
+                        {
+                            "id": "OSDPPlatform",
+                            "name": "Microsoft 365 suite",
+                            "status": "serviceDegradation"
+                        },
+                        {
+                            "id": "CopilotChat",
+                            "name": "Microsoft 365 Copilot Chat",
+                            "status": "serviceOperational"
+                        }
+                    ]
                 }
             }
         }
-    },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
-        "ephemeral_id": "b21b52df-710e-4014-bb1c-d9e60091e1e7",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-07T10:36:47.702Z",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.service_health"
-    },
-    "elastic_agent": {
-        "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.15.153.1-microsoft-standard-WSL2",
-            "codename": "noble",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "24.04.1 LTS (Noble Numbat)",
-            "platform": "ubuntu"
-        },
-        "containerized": true,
-        "ip": [
-            "172.18.0.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-AC-12-00-07"
-        ],
-        "architecture": "x86_64"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-07T10:36:57Z",
-        "dataset": "o365_metrics.service_health",
-        "original": "{\"service\":\"Microsoft 365 suite\",\"status\":\"serviceOperational\",\"id\":\"OSDPPlatform\"}"
     },
     "tags": [
         "o365.metrics.service.health"
@@ -2459,9 +2475,9 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type. | keyword |
-| o365.metrics.service.health.id | The service id. | keyword |
-| o365.metrics.service.health.service | The service name. | keyword |
-| o365.metrics.service.health.status | The overall service health status (Eg. serviceOperational, serviceDegraded etc.). | keyword |
+| o365.metrics.service.health.services.id | The service id. | keyword |
+| o365.metrics.service.health.services.name | The service name. | keyword |
+| o365.metrics.service.health.services.status | The overall service health status (Eg. serviceOperational, serviceDegraded etc.). | keyword |
 
 
 
