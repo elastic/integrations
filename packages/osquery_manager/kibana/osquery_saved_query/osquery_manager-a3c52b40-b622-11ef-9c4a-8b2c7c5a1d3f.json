@@ -1,0 +1,147 @@
+{
+    "attributes": {
+        "created_at": "2025-12-09T10:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Enumerates files with hash values and code signature validation in common staging/temp directories on macOS. Detects suspicious files, hidden files (bsd_flags), and unsigned binaries. Includes Gatekeeper signature verification via signature table. Target directories: /tmp, /var/tmp, /Users/Shared, /Library/LaunchAgents, /Library/LaunchDaemons.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.file_hash_info"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "directory"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "filename"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "changed_time"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "created_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "file.uid",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "file.gid",
+                "value": {
+                    "field": "gid"
+                }
+            },
+            {
+                "key": "file.mode",
+                "value": {
+                    "field": "mode"
+                }
+            },
+            {
+                "key": "file.inode",
+                "value": {
+                    "field": "inode"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "file.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "file_forensics", "hash_analysis", "code_signature", "gatekeeper", "macos"]
+                }
+            }
+        ],
+        "id": "file_hash_info_darwin_elastic",
+        "interval": "3600",
+        "platform": "darwin",
+        "query": "-- File Hash Information with Code Signature Validation - macOS\n-- Enumerates files in common staging/temp directories with hash values and Gatekeeper signature validation\n-- Detects suspicious files, hidden files (bsd_flags), and unsigned binaries\n\nSELECT\n    f.path,\n    f.directory,\n    f.filename,\n    f.size,\n    f.type,\n    f.bsd_flags,\n    f.uid,\n    f.gid,\n    f.mode,\n    f.inode,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    s.authority AS signature_signer,\n    CASE\n        WHEN s.signed = 1 THEN 'valid'\n        WHEN s.signed = 0 THEN 'unsigned'\n        ELSE 'unknown'\n    END AS signature_status,\n    s.identifier AS signature_identifier,\n    s.cdhash AS signature_cdhash,\n    s.team_identifier AS signature_team_id,\n    CASE\n        WHEN f.bsd_flags LIKE '%HIDDEN%' OR f.filename LIKE '.%' THEN 'hidden'\n        WHEN f.bsd_flags LIKE '%IMMUTABLE%' THEN 'immutable'\n        WHEN f.bsd_flags LIKE '%APPEND%' THEN 'append_only'\n        ELSE 'normal'\n    END AS file_visibility\nFROM file f\nLEFT JOIN hash h ON h.path = f.path\nLEFT JOIN signature s ON s.path = f.path\nWHERE f.directory IN (\n    '/tmp',\n    '/var/tmp',\n    '/Users/Shared',\n    '/Library/LaunchAgents',\n    '/Library/LaunchDaemons',\n    '/Library/Application Support'\n)\nAND f.type = 'regular'\nAND f.size > 0\nGROUP BY f.path\nUNION\nSELECT\n    f.path,\n    f.directory,\n    f.filename,\n    f.size,\n    f.type,\n    f.bsd_flags,\n    f.uid,\n    f.gid,\n    f.mode,\n    f.inode,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    s.authority AS signature_signer,\n    CASE\n        WHEN s.signed = 1 THEN 'valid'\n        WHEN s.signed = 0 THEN 'unsigned'\n        ELSE 'unknown'\n    END AS signature_status,\n    s.identifier AS signature_identifier,\n    s.cdhash AS signature_cdhash,\n    s.team_identifier AS signature_team_id,\n    CASE\n        WHEN f.bsd_flags LIKE '%HIDDEN%' OR f.filename LIKE '.%' THEN 'hidden'\n        WHEN f.bsd_flags LIKE '%IMMUTABLE%' THEN 'immutable'\n        WHEN f.bsd_flags LIKE '%APPEND%' THEN 'append_only'\n        ELSE 'normal'\n    END AS file_visibility\nFROM users u\nJOIN file f ON f.directory = u.directory || '/Library/LaunchAgents'\nLEFT JOIN hash h ON h.path = f.path\nLEFT JOIN signature s ON s.path = f.path\nWHERE u.uid >= 500\nAND f.type = 'regular'\nAND f.size > 0\nGROUP BY f.path",
+        "updated_at": "2025-12-09T10:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.2.0",
+    "id": "osquery_manager-a3c52b40-b622-11ef-9c4a-8b2c7c5a1d3f",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-12-09T10:00:00.000Z",
+    "version": "WzEsMV0="
+}
