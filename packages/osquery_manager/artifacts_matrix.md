@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-26
-**Total Core Artifacts**: 44 available + 3 in progress + 6 not available = 53 total variants
-**Total Queries**: 67
-**Completion Rate**: 83.0% (44/53 core artifacts fully supported)
+**Last Updated**: 2026-01-27
+**Total Core Artifacts**: 45 available + 3 in progress + 6 not available = 54 total variants
+**Total Queries**: 69
+**Completion Rate**: 83.3% (45/54 core artifacts fully supported)
 
 ---
 
@@ -13,9 +13,9 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Available (Fully Supported) | 44     | 83.0%      |
-| ⚠️ In Progress (Needs Validation) | 3     | 5.7%       |
-| ❌ Not Available (Requires Extensions) | 6     | 11.3%      |
+| ✅ Available (Fully Supported) | 45     | 83.3%      |
+| ⚠️ In Progress (Needs Validation) | 3     | 5.6%       |
+| ❌ Not Available (Requires Extensions) | 6     | 11.1%      |
 
 ---
 
@@ -23,10 +23,11 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 | #   | Artifact                              | ✓ | OS    | Query                                      | File                                                                                             | Implementation Notes                                                                                                             |
 |-----|---------------------------------------|---|-------|--------------------------------------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| 1   | AppCompatCache                        | ✅ | Win   | appcompatcache_shimcache_windows_elastic   | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)     | shimcache table with signature-aware filtering (unsigned/untrusted binaries, suspicious paths), hash enrichment, excludes valid Microsoft-signed binaries                                                                                                                  |
+| 1   | AppCompatCache                        | ✅ | Win   | appcompatcache_shimcache_windows_elastic   | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)     | shimcache table with signature-aware filtering (unsigned/untrusted binaries, suspicious paths), hash enrichment, excludes valid Microsoft-signed binaries                                                                                                                 |
 | 2   | AmCache                               | ❌ | Win   | -                                          | -                                                                                                | Not natively supported — PR #7261 was closed due to lack of a SQL constraint, leading to indeterminate runtime                   |
 | 3   | BITS Jobs Database                    | ✅ | Win   | bits_monitoring_windows_elastic            | [4b2e](kibana/osquery_saved_query/osquery_manager-4b2e8f3a-9d5c-4e2a-b8f1-7c6d3e9a2b1f.json)     | Not a native table, but can be queried via windows_eventlog (EventID 59)                                                        |
-| 4 | Browser URL History                   | ✅ | All | browser_history_elastic                    | [b352f3c9](kibana/osquery_saved_query/osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874.json) | Requires Elastic Agent v9.3.0+. Cross-platform (Windows, macOS, Linux). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration needed. MITRE ATT&CK: T1217. See [Setup Guide](docs/browser_history_setup.md) |
+| 4 | Browser URL History Suspicious        | ✅ | All | browser_history_suspicious_elastic         | [b352f3c9](kibana/osquery_saved_query/osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874.json) | Requires Elastic Agent v9.3.0+. Cross-platform (Windows, macOS, Linux). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration needed.|
+| 4a | Browser URL History (Full Collection) | ✅ | All | browser_history_elastic                    | [2a5c0d4a](kibana/osquery_saved_query/osquery_manager-2a5c0d4a-21b8-4a37-8d71-2d5d2c8a0f45.json) | Complete browser history collection for forensic analysis. Requires Elastic Agent v9.3.0+. Discovers Chrome, Edge, Firefox, Safari histories. MITRE ATT&CK: T1217 |
 | 5   | File Hash Info                        | ✅ | Win | file_hash_info_windows_elastic             | [f8e71a30](kibana/osquery_saved_query/osquery_manager-f8e71a30-b621-11ef-9c4a-8b2c7c5a1d3e.json) | Files with hash & authenticode in staging directories (T1036, T1105, T1564.001) |
 | 5a  | File Hash Info                        | ✅ | Linux | file_hash_info_linux_elastic               | [b7d63c50](kibana/osquery_saved_query/osquery_manager-b7d63c50-b623-11ef-9c4a-8b2c7c5a1d40.json) | Files with hash & container/namespace awareness (T1036, T1105, T1565.001) |
 | 5b  | File Hash Info                        | ✅ | Mac | file_hash_info_darwin_elastic              | [a3c52b40](kibana/osquery_saved_query/osquery_manager-a3c52b40-b622-11ef-9c4a-8b2c7c5a1d3f.json) | Files with hash & Gatekeeper signature validation (T1036, T1105, T1564.001) |
