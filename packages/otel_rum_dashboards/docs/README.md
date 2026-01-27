@@ -13,7 +13,7 @@ Use this integration to get a dashboard which displays metrics from your web app
 
 ### Compatibility
 
-This integration has ben tested with OpenTelemetry JS SDK `2.2.0` and with OpenTelemetry semantic conventions `1.38.0`. It should work with work with newer versions as long as there are no breaking changes in `browser.*` namespace.
+This package has ben tested with OpenTelemetry JS SDK `2.2.0` and with OpenTelemetry semantic conventions `1.38.0`. It should work with work with newer versions as long as there are no breaking changes in `browser.*` namespace.
 
 ## What do I need to use this integration?
 
