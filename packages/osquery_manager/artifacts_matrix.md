@@ -168,67 +168,101 @@ Jumplists
 
 ---
 
-## Artifacts by Category
+## Artifacts by Investigative Goal
 
-### Execution Artifacts
+Queries are organized by investigative goal to support both **scheduled monitoring** and **on-demand forensic execution** via osquery packs.
 
-- ✅ AppCompatCache (Windows: shimcache table) - **Production query with signature-aware filtering**
-- ✅ PowerShell History (Windows: powershell_events + windows_eventlog)
-- ✅ Prefetch Files (Windows: native prefetch table - CORRECTED to use proper parsing, not file enumeration)
-- ❌ AmCache (Not Available - Use AppCompatCache + Prefetch as alternatives)
+### Process Execution
 
-### Persistence Mechanisms
+- ✅ **Prefetch** (Windows) - Recently executed binaries with run counts and timestamps. Query: `prefetch_windows_elastic`
+- ✅ **Shimcache / AppCompatCache** (Windows) - Application compatibility cache with signature-aware filtering. Query: `appcompatcache_shimcache_windows_elastic`
+- ✅ **Process Listing** (All) - Full forensic process listing with parent/child relationships. Queries: `process_listing_windows_elastic`, `process_listing_linux_elastic`, `process_listing_darwin_elastic`
+- ✅ **Suspicious Processes** (All) - LOLBins, unsigned binaries, unusual paths. Queries: `suspicious_processes_windows_elastic`, `suspicious_processes_linux_elastic`, `suspicious_processes_darwin_elastic`
+- ❌ **AmCache** - Not natively supported (PR #7261 closed). Use Shimcache + Prefetch as alternatives
+- ❌ **Jumplists** - Not natively supported (PR #7260 closed). Use Shellbags + LNK Files as alternatives
 
-- ✅ Startup Items - Windows (Dual-detection: Non-whitelisted binaries + LotL indicators - T1547.001, T1059.001, T1105)
-- ✅ Startup Items - Linux (Dual-detection: User-created systemd/cron/XDG + LotL patterns - T1543.002, T1053.003,
-  T1547.013, T1059.004, T1105)
-- ✅ Startup Items - macOS (Dual-detection: Non-Apple signed LaunchAgents/Daemons + LotL patterns - T1543.001, T1547.015,
-  T1059.004, T1105)
-- ✅ Installed Services (All platforms: services table)
-- ✅ Registry (Windows: registry table) - **Production-ready persistence query with hash/signature enrichment**
-- ✅ Scheduled Tasks:
-    - Windows Scheduled Tasks
-    - Linux Cron Jobs
-    - macOS Launch Agents/Daemons
-- ✅ WMI Config & Used Apps (Windows: wmi_cli_event_consumers, wmi_script_event_consumers)
-- ✅ WMI Providers & Filters (Windows: wmi_event_filters, wmi_filter_consumer_binding)
-- ✅ BITS Jobs Database (Windows: via windows_eventlog)
+### Persistence
+
+- ✅ **Services** (All) - Suspicious service detection (unsigned, unusual paths, ServiceDLL hijacking). Queries: `services_suspicious_windows_elastic`, `services_suspicious_linux_elastic`, `services_suspicious_darwin_elastic`
+- ✅ **Scheduled Tasks** (All) - Windows scheduled tasks (triage + enriched), Linux cron jobs, macOS launch agents/daemons. Queries: `scheduled_tasks_suspicious_windows_elastic`, `scheduled_tasks_enriched_windows_elastic`, `crontab_linux_elastic`, `launchd_darwin_elastic`
+- ✅ **Registry Keys** (Windows) - Persistence detection covering Run, RunOnce, Winlogon, Active Setup with hash/signature enrichment. Query: `registry_persistence_windows_elastic`
+- ✅ **Startup Items** (All) - Dual-detection: non-whitelisted binaries + LotL indicators. Queries: `startup_items_windows_elastic`, `startup_items_linux_elastic`, `startup_items_darwin_elastic`
+- ✅ **WMI Persistence** (Windows) - Event consumers, filters, and filter-consumer bindings. Query: `wmi_persistence_event_subscriptions_windows_elastic`
+- ✅ **BITS Jobs** (Windows) - Background Intelligent Transfer Service monitoring via windows_eventlog. Query: `bits_monitoring_windows_elastic`
 
 ### User Activity
 
-- ✅ LNK files (Windows: file table with native shortcut parsing using path LIKE pattern for full metadata + hash +
-  authenticode enrichment + 8+ locations via users table)
-- ✅ Shell History (Linux/Mac: shell_history table with anti-forensics detection)
-- ✅ Shellbags (Windows: shellbags table)
-- ✅ User Assist (Windows: userassist table with user resolution and hash enrichment)
-- ✅ **Browser URL History (All platforms: `elastic_browser_history` table, requires Elastic Agent v9.3.0+ -
-  Multi-browser support)**
-- ❌ Jumplists (Not Available - Use Shellbags + LNK Files as alternatives)
+- ✅ **PowerShell History** (Windows) - Forensic monitoring (Event IDs 4103, 4104, 4688) for fileless malware detection. Query: `powershell_history_windows_elastic`
+- ✅ **Shell History** (Linux/macOS) - Shell history with LEFT JOIN for anti-forensics detection (users with no history). Query: `shell_history_linux_darwin_elastic`
+- ✅ **User Assist** (Windows) - UserAssist registry with user resolution and hash enrichment. Query: `userassist_windows_elastic`
+- ✅ **Browser History** (All) - Native `elastic_browser_history` table (requires Elastic Agent v9.3.0+). Multi-browser support (Chrome, Edge, Firefox, Safari). Queries: `browser_history_elastic`, `browser_history_suspicious_elastic`
+- ✅ **Remote Desktop Sessions** (Windows) - RDP authentication and session lifecycle via windows_eventlog (Security + TerminalServices + System). Query: `rdp_authentication_windows_elastic`
+- ✅ **Logon Users** (All) - Cross-platform logged-in users with session details, lateral movement detection. Query: `logged_in_users_elastic`
+- ✅ **LNK Files** (Windows) - Shortcut file forensics with hash + authenticode enrichment. Query: `lnk_forensics_windows_elastic`
+- ✅ **Shellbags** (Windows) - Directory access tracking via Windows Explorer. Query: `shellbags_windows_elastic`
+- ❌ **Jumplists** - Not natively supported. Use Shellbags + LNK Files as alternatives
 
-### File System/Forensics
+### Lateral Movement & C2 Communication
 
-- ✅ NTFS USN Journal (Windows: ntfs_journal_events table) - Query: `ntfs_usn_journal_events_windows_elastic`
-- ✅ File System Events (Linux: file_events table via inotify) - Query: `file_system_events_linux_elastic`
-- ✅️ File System Events (macOS: file_events table via FSEvents) - Query: `file_system_events_darwin_elastic`
-- ✅ File Hash Info (Windows: file_hash_info_windows_elastic - file + hash + authenticode tables with PE metadata)
-- ✅ File Hash Info (Linux: file_hash_info_linux_elastic - file + hash tables with container/namespace awareness)
-- ✅ File Hash Info (macOS: file_hash_info_darwin_elastic - file + hash + signature tables with Gatekeeper validation)
-- ✅ NTFS USN Journal (Windows: ntfs_journal_events table)
-- ❌ MFT (Not Available - Use NTFS USN Journal as alternative or Trail of Bits extension)
+- ✅ **DNS Cache** (Windows) - Cached DNS queries for threat hunting, C2 beacon detection. Query: `dns_cache_snapshot_windows_elastic`
+- ✅ **DNS Event Log** (Windows) - DNS Client Operational log with process context (requires DNS logging enabled). Query: `dns_event_log_windows_elastic`
+- ✅ **Network Listening Ports** (All) - Network listening ports enumeration. Query: `listening_ports_elastic`
+- ✅ **ARP Cache** (All) - Enriched ARP cache with local interface details. Query: `arp_cache_elastic`
+- ✅ **Network Interfaces** (All) - Interface details with DHCP/DNS config (Windows), IPv6 config (Linux/macOS). Queries: `network_interfaces_windows_elastic`, `network_interfaces_linux_darwin_elastic`
+- ✅ **Remote Desktop Sessions** (Windows) - See User Activity above. Query: `rdp_authentication_windows_elastic`
+- ✅ **WMI Execution** (Windows) - See Persistence above. Query: `wmi_persistence_event_subscriptions_windows_elastic`
+- ✅ **BITS Transfers** (Windows) - See Persistence above. Query: `bits_monitoring_windows_elastic`
 
-### Network/C2 Indicators
+### Credential Access & Privilege Escalation
 
-- ✅ ARP Cache (arp_cache + interface_details + interface_addresses tables with joins, includes ECS mappings)
-- ✅ DNS Cache (Windows: dns_cache table - enumerates cached DNS queries for threat hunting, C2 beacon detection)
-- ✅ DNS Event Log (Windows: windows_eventlog DNS Client Operational with process context - requires DNS logging enabled)
-- ✅ Network Interfaces & IP Configuration (Windows: DHCP/DNS config; Linux/macOS: IPv6 config with hop_limit,
-  forwarding, redirect_accept)
+- ✅ **UAC Bypass Indicators** (Windows) - Covered by suspicious process detection (LOLBins, unsigned binaries in unusual paths). Query: `suspicious_processes_windows_elastic`
+- ✅ **Password Dumping Tools** (Windows) - Covered by suspicious process detection (mimikatz, procdump patterns). Query: `suspicious_processes_windows_elastic` — *verify coverage of specific tool signatures*
+- ✅ **Logon Users** (All) - See User Activity above. Query: `logged_in_users_elastic`
+- ⚠️ **SAM / Security Hive Access** (Windows) - Can be detected via `ntfs_journal_events` filtered by SAM, SYSTEM, SECURITY paths. Partially covered by `ntfs_usn_journal_events_windows_elastic` — *needs dedicated filter or standalone query*
+- ❌ **Logon Sessions** - `logon_sessions` table not yet covered by a dedicated query
 
-### System Information
+### Malware Execution & Injection
 
-- ✅ Disks & Volumes (Windows: disk_info table, Linux/macOS: block_devices + mounts tables)
-- ✅ Process Listing (All platforms: processes table) - Full forensic listing + suspicious detection queries available
-- ❌ Open Handles (Not Available - PR #7835 open, EclecticIQ extension available)
+- ✅ **Unsigned Executables & Drivers** (All) - Suspicious process detection + VirusTotal integration. Queries: `suspicious_processes_windows_elastic`, `suspicious_processes_linux_elastic`, `suspicious_processes_darwin_elastic`, `unsigned_processes_vt_windows_elastic`
+- ✅ **Code Execution from Non-Standard Paths** (All) - File hash info in staging directories with signature validation. Queries: `file_hash_info_windows_elastic`, `file_hash_info_linux_elastic`, `file_hash_info_darwin_elastic`
+- ✅ **Suspicious New Services** (All) - See Persistence above. Queries: `services_suspicious_windows_elastic`, `services_suspicious_linux_elastic`, `services_suspicious_darwin_elastic`
+- ❌ **Process Injection Attempts** - Requires `process_open_handles` (PR #7835 open) and `process_memory_map`. Not natively available — EclecticIQ extension provides partial coverage
+
+### Data Exfiltration & Collection
+
+- ✅ **Shell / PowerShell History** (All) - See User Activity above. Queries: `powershell_history_windows_elastic`, `shell_history_linux_darwin_elastic`
+- ✅ **External Device Usage** (Linux/macOS) - USB device enumeration. Query: `usb_devices_mac_or_linux_elastic`
+- ⚠️ **Sensitive Directory Access** - Partially covered by suspicious process queries (processes accessing sensitive paths). *Needs dedicated file access monitoring query*
+- ❌ **Screenshot Taken** (Windows) - Requires ETW/windows_events integration. Not available via standard osquery
+- ❌ **Large File Copies / Archival Tools** - Requires `process_events` detecting `rar`, `7z`, `tar`. Not yet covered
+- ❌ **Disk Events** (Windows) - `disk_events` table not yet covered by a dedicated query
+
+### Defense Evasion
+
+- ✅ **Defender Exclusions** (Windows) - Windows Defender exclusion paths. Query: `defender_exclusions_windows_elastic`
+- ⚠️ **Disabled Security Tools** (Windows) - Partially covered by `services_suspicious_windows_elastic` (stopped/paused services) and `defender_exclusions_windows_elastic`. *Needs dedicated query combining service status + registry check of `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Features`*
+- ❌ **Cleared Event Logs** (Windows) - Requires `windows_eventlog` filtered by Event IDs 1102, 104. Not yet covered as standalone query
+- ❌ **Timestomping Detection** - Can be partially detected via NTFS USN Journal anomalies. Not yet covered
+
+### File System Forensics (Supporting)
+
+These queries provide cross-cutting forensic support used across multiple investigative goals.
+
+- ✅ **NTFS USN Journal** (Windows) - File system change tracking. Query: `ntfs_usn_journal_events_windows_elastic`
+- ✅ **File System Events** (Linux/macOS) - Real-time file monitoring via inotify/FSEvents. Queries: `file_system_events_linux_elastic`, `file_system_events_darwin_elastic`
+- ✅ **File Hash Info** (All) - File hashing with signature validation. Queries: `file_hash_info_windows_elastic`, `file_hash_info_linux_elastic`, `file_hash_info_darwin_elastic`
+- ✅ **Disks & Volumes** (All) - Storage device enumeration. Queries: `disk_info_windows_elastic`, `disk_info_linux_darwin_elastic`
+- ❌ **MFT** (Windows) - Not natively supported. Trail of Bits extension available
+
+### System Information (Supporting)
+
+- ✅ **OS Information** (All) - Query: `system_os_elastic`
+- ✅ **System Hardware** (All) - Query: `system_info_elastic`
+- ✅ **Memory Information** (Linux) - Query: `system_memory_linux_elastic`
+- ✅ **Installed Applications** (Windows/macOS) - Queries: `applications_windows_elastic`, `applications_mac_elastic`
+- ✅ **User Accounts** (All) - Query: `users_elastic`
+- ✅ **Loaded Drivers** (Windows) - Query: `loaded_drivers_windows_elastic`
+- ✅ **Firewall Rules** (Windows) - Query: `firewall_rules_windows_elastic`
 
 ---
 
