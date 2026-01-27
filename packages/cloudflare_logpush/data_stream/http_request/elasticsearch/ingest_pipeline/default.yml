@@ -405,6 +405,12 @@ processors:
       if: ctx.json?.ClientRequestURI != null 
           && ctx.url?.scheme != null 
           && ctx.url?.domain != null
+          && ctx.json.ClientRequestURI.startsWith('/')
+  - set:
+      field: tmp.constructed_uri
+      tag: set_tmp_constructed_uri_from_ClientRequestURI
+      copy_from: json.ClientRequestURI
+      if: ctx.json?.ClientRequestURI != null && !ctx.json.ClientRequestURI.startsWith('/')
   - uri_parts:
       field: tmp.constructed_uri
       tag: uri_parts_tmp_constructed_uri
