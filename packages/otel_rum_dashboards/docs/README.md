@@ -17,7 +17,7 @@ This package has ben tested with OpenTelemetry JS SDK `2.2.0` and with OpenTelem
 
 ## What do I need to use this integration?
 
-This integration will show metrics only if you are monitoring web applications with OpenTelemetry JS SDK. If you are new to OpenTelemetry RUM you can check the [guide](https://www.elastic.co/docs/solutions/observability/applications/otel-rum) on how to start with the Elastic stack.
+This package will show metrics only if you are monitoring web applications with OpenTelemetry JS SDK. If you are new to OpenTelemetry RUM you can check the [guide](https://www.elastic.co/docs/solutions/observability/applications/otel-rum) on how to start with the Elastic stack.
 
 
 ### Validation
