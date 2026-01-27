@@ -9,7 +9,7 @@ Find more detailed documentation guidelines in https://www.elastic.co/docs/exten
 
 ## Overview
 
-Use this integration to get a dashboard which displays metrics from your web applications instrumented by Opentelemetry JS SDK.
+Use this package to get a dashboard which displays metrics from your web applications instrumented by Opentelemetry JS SDK.
 
 ### Compatibility
 
