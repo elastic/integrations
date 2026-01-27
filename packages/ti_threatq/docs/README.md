@@ -153,33 +153,33 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2019-11-15T00:00:02.000Z",
     "agent": {
-        "ephemeral_id": "39fde9a0-f31a-4aec-9ed5-0602336e804e",
-        "id": "daf58da9-096e-49f2-b17f-12aeb5058940",
-        "name": "elastic-agent-86862",
+        "ephemeral_id": "26ecf3eb-1377-4f0f-9a26-e0fc1e26c696",
+        "id": "6682ec55-39d7-4257-9b70-7746f52d4c96",
+        "name": "elastic-agent-84748",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_threatq.threat",
-        "namespace": "35607",
+        "namespace": "34591",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "daf58da9-096e-49f2-b17f-12aeb5058940",
+        "id": "6682ec55-39d7-4257-9b70-7746f52d4c96",
         "snapshot": false,
-        "version": "8.17.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2025-03-13T05:33:16.287Z",
+        "created": "2025-12-24T06:20:58.427Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2025-03-13T05:33:17Z",
+        "ingested": "2025-12-24T06:20:59Z",
         "kind": "enrichment",
         "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":3,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1877,\"indicator_id\":336,\"name\":\"Description\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"Malicious Host\"},{\"attribute_id\":4,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1878,\"indicator_id\":336,\"name\":\"Country\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"MP\"}],\"class\":\"network\",\"created_at\":\"2020-09-11 14:35:51\",\"expires_calculated_at\":\"2020-10-15 14:40:03\",\"hash\":\"1ece659dcec98b1e1141160b55655c96\",\"id\":336,\"published_at\":\"2020-09-11 14:35:51\",\"score\":4,\"sources\":[{\"created_at\":\"2020-09-11 14:35:53\",\"creator_source_id\":12,\"id\":336,\"indicator_id\":336,\"indicator_status_id\":2,\"indicator_type_id\":15,\"name\":\"AlienVault OTX\",\"published_at\":\"2020-09-11 14:35:53\",\"reference_id\":1,\"source_expire_days\":\"30\",\"source_id\":12,\"source_score\":1,\"source_type\":\"connectors\",\"updated_at\":\"2020-10-15 14:36:00\"}],\"status\":{\"description\":\"Poses a threat\",\"id\":2,\"name\":\"Active\"},\"status_id\":2,\"touched_at\":\"2021-06-07 19:47:27\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2019-11-15 00:00:02\",\"value\":\"89.160.20.156\"}",
         "type": [

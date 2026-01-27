@@ -159,40 +159,57 @@ processors:
       target_field: cisco_ise.log.calling_station.id
       ignore_missing: true
   - script:
-      tag: foreach_av_pair
-      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['cisco-av-pair'] instanceof List
-      params:
-        'coa-push': true
-        'cts-device-capability': true
-        'cts-environment-data': true
-        'cts-environment-version': true
-        'cts-pac-opaque': true
-      source: |-
-        def m = new HashMap();
-        for (val in ctx.cisco_ise.log.log_details['cisco-av-pair']) {
-          int pos = val.indexOf("=");
-          if (pos == -1) {
-            if(params.containsKey(val)) m[val] = null;
-          } else {
-            def key = val.substring(0,pos);
-            if(params.containsKey(key)) m[key] = val.substring(pos+1);
-          }
+      tag: script_parse_av_pairs
+      lang: painless
+      source: |
+        if (ctx.cisco_ise.log.log_details.get("cisco-av-pair") == null) {
+          return;
         }
-        
-        ctx.cisco_ise.log["cisco_av_pair"] = m;
-  - kv:
-      tag: kv_av_pair
-      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['cisco-av-pair'] instanceof String
-      field: cisco_ise.log.log_details.cisco-av-pair
-      target_field: cisco_ise.log.cisco_av_pair
-      field_split: ', '
-      value_split: =
-      ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_472be7cd
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+        if (ctx.cisco_ise.log.log_details.get("cisco-av-pair") instanceof String) {
+          ctx.cisco_ise.log.log_details["cisco-av-pair"] = [ctx.cisco_ise.log.log_details.get("cisco-av-pair")];
+        }
+
+        def attributes = [:];
+        ctx.cisco_ise.log.log_details.get("cisco-av-pair")?.forEach((v) -> {
+          def inEscape = false;
+          def start = 0;
+          def key = "";
+          def m = attributes;
+
+          for (def i = 0, n = v.length(); i < n; ++i) {
+            def c = v.charAt(i);
+            // Escape handling.
+            if (inEscape) {
+              inEscape = false;
+              continue;
+            }
+            if (c == (char)'\\') {
+              inEscape = true;
+              continue;
+            }
+
+            if (c == (char)'=') {
+              key = v.substring(start, i).trim();
+              def nextSplit = v.indexOf("=", i + 1);
+              if (nextSplit != -1 && v.charAt(nextSplit - 1) != (char)'\\') {
+                if (!m.containsKey(key)) {
+                  m[key] = [:];
+                }
+                m = m[key];
+              }
+              start = i + 1;
+            }
+            if (i == n - 1) {
+              m[key] = v.substring(start, n).trim();
+            }
+          }
+
+          return true;
+        });
+
+        if (attributes.size() > 0) {
+          ctx.cisco_ise.log["cisco_av_pair"] = attributes;
+        }
   - remove:
       tag: remove_cisco_ise_log_log_details_cisco-av-pair_f0af3b50
       field: cisco_ise.log.log_details.cisco-av-pair
