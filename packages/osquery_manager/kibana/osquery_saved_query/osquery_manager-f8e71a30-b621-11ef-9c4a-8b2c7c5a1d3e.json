@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "created_at": "2025-12-09T10:00:00.000Z",
+        "created_at": "2026-01-27T00:00:00.000Z",
         "created_by": "elastic",
         "description": "Enumerates files with hash values and code signature validation in common staging/temp directories on Windows. Detects suspicious files, renamed executables (original_filename comparison), hidden/system files, and unsigned binaries. Includes PE metadata, file attributes, and authenticode signature verification. Target directories: C:\\Users\\Public, C:\\Windows\\Temp, C:\\ProgramData, User temp folders.\n\nNote: osquery exposes Windows file attributes as compact letter-codes (for example, \"HSR\") in the `attributes` column. We intentionally do not map this value into ECS `file.attributes` (which ECS documents as an array of keywords like [\"hidden\",\"system\",\"readonly\"]) unless/until a normalization transform is introduced.",
         "ecs_mapping": [
@@ -158,14 +158,15 @@
         "id": "file_hash_info_windows_elastic",
         "interval": "3600",
         "platform": "windows",
+        "timeout": 180,
         "query": "-- File Hash Information with Code Signature Validation - Windows\n-- Enumerates files in common staging/temp directories with hash values and authenticode validation\n-- Detects suspicious files, renamed executables, hidden files, and unsigned binaries\n\nSELECT\n    f.path,\n    f.directory,\n    f.filename,\n    f.size,\n    f.type,\n    f.attributes,\n    f.original_filename,\n    f.file_version,\n    f.product_version,\n    f.volume_serial,\n    f.file_id,\n    f.shortcut_target_path,\n    f.uid,\n    f.gid,\n    f.mode,\n    f.inode,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    a.serial_number AS signature_serial,\n    a.issuer_name AS signature_issuer,\n    CASE\n        WHEN f.attributes LIKE '%H%' THEN 'hidden'\n        WHEN f.attributes LIKE '%S%' THEN 'system'\n        ELSE 'normal'\n    END AS file_visibility,\n    CASE\n        WHEN f.original_filename != '' AND f.original_filename != f.filename THEN 'renamed'\n        ELSE 'original'\n    END AS rename_status\nFROM file f\nLEFT JOIN hash h ON h.path = f.path\nLEFT JOIN authenticode a ON a.path = f.path\nWHERE (\n    f.path LIKE 'C:\\Users\\Public\\%'\n    OR f.path LIKE 'C:\\Windows\\Temp\\%'\n    OR f.path LIKE 'C:\\ProgramData\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Temp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\Downloads\\%'\n)\nAND f.type = 'regular'\nAND f.size > 0",
-        "updated_at": "2025-12-09T10:00:00.000Z",
+        "updated_at": "2026-01-27T00:00:00.000Z",
         "updated_by": "elastic"
     },
     "coreMigrationVersion": "9.3.0",
     "id": "osquery_manager-f8e71a30-b621-11ef-9c4a-8b2c7c5a1d3e",
     "references": [],
     "type": "osquery-saved-query",
-    "updated_at": "2025-12-09T10:00:00.000Z",
+    "updated_at": "2026-01-27T00:00:00.000Z",
     "version": "WzEsMV0="
 }

@@ -9,6 +9,15 @@ This document tracks the coverage of forensic artifacts in Osquery.
 
 ---
 
+### Metadata conventions (saved query JSON)
+
+The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved objects. Some fields are used by Kibana, while others are used by Osquery/Fleet.
+- **`attributes.platform`**: Target OS. Single platform is one of `windows`, `linux`, `darwin`. Cross-platform uses a comma-separated list (alphabetical, e.g. `darwin,linux,windows`).
+- **`coreMigrationVersion`**: Kibana saved object migration version (not the Elastic Agent minimum version). Agent requirements (e.g. “Elastic Agent v9.3.0+”) are documented in the query description and/or implementation notes.
+- **`version`**: Kibana saved object version metadata from export; this is not a semantic “query version”.
+
+---
+
 ## Coverage Summary
 
 | Status                                | Count | Percentage |

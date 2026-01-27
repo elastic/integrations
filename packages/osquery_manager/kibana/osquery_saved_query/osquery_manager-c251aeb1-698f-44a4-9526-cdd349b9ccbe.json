@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "created_at": "2025-11-30T10:15:00.000Z",
+        "created_at": "2026-01-27T00:00:00.000Z",
         "created_by": "elastic",
         "description": "Linux/macOS network interfaces with IPv6 configuration. Combines interface_details, interface_addresses, and interface_ipv6 for comprehensive network inventory including IPv6 hop limit, forwarding status, and redirect acceptance. Useful for asset discovery, IPv6 routing attacks, forwarding misconfiguration, and ICMP redirect vulnerabilities.",
         "ecs_mapping": [
@@ -74,14 +74,15 @@
         "id": "network_interfaces_linux_macos_elastic",
         "interval": "3600",
         "platform": "linux,darwin",
+        "timeout": 180,
         "query": "-- Linux/macOS network interface inventory with IPv6 configuration\n-- Source: interface_details + interface_addresses + interface_ipv6\n-- Use case: Asset discovery, IPv6 routing attacks, forwarding misconfiguration, ICMP redirect vulnerabilities\nWITH interface_info AS (\n    SELECT\n        id.interface AS interface_name,\n        id.friendly_name,\n        id.description,\n        UPPER(REPLACE(id.mac, ':', '-')) AS mac_address,\n        id.mtu,\n        id.link_speed,\n        id.flags,\n        datetime(id.last_change, 'unixepoch') AS last_change_time,\n        id.ibytes AS bytes_received,\n        id.obytes AS bytes_sent,\n        id.ipackets AS packets_received,\n        id.opackets AS packets_sent\n    FROM interface_details id\n),\nipv6_config AS (\n    SELECT\n        interface,\n        hop_limit,\n        forwarding_enabled,\n        redirect_accept\n    FROM interface_ipv6\n)\nSELECT\n    i.interface_name,\n    i.friendly_name,\n    i.description,\n    i.mac_address,\n    ia.address AS ip_address,\n    ia.mask AS netmask,\n    ia.broadcast AS broadcast_address,\n    ia.type AS address_type,\n    i.mtu,\n    i.link_speed,\n    i.flags,\n    i.last_change_time,\n    i.bytes_received,\n    i.bytes_sent,\n    i.packets_received,\n    i.packets_sent,\n    ic.hop_limit,\n    ic.forwarding_enabled,\n    ic.redirect_accept\nFROM interface_info i\nLEFT JOIN interface_addresses ia ON i.interface_name = ia.interface\nLEFT JOIN ipv6_config ic ON i.interface_name = ic.interface\nORDER BY i.interface_name, ia.address",
-        "updated_at": "2025-11-30T10:15:00.000Z",
+        "updated_at": "2026-01-27T00:00:00.000Z",
         "updated_by": "elastic"
     },
     "coreMigrationVersion": "9.3.0",
     "id": "osquery_manager-c251aeb1-698f-44a4-9526-cdd349b9ccbe",
     "references": [],
     "type": "osquery-saved-query",
-    "updated_at": "2025-11-30T10:15:00.000Z",
+    "updated_at": "2026-01-27T00:00:00.000Z",
     "version": "WzEsMV0="
 }
