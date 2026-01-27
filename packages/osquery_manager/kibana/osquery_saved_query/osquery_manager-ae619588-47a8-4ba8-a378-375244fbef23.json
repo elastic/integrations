@@ -1,0 +1,45 @@
+{
+  "attributes": {
+    "created_at": "2025-01-20T10:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Enumerates the Windows DNS resolver cache to identify recently queried domains. Useful for threat hunting suspicious domain lookups, C2 beacon detection, and incident response. Cache entries expire based on TTL (max 24 hours by default). Filters out reverse lookups and local service noise.",
+    "ecs_mapping": [
+      {
+        "key": "event.category",
+        "value": { "value": ["network"] }
+      },
+      {
+        "key": "event.type",
+        "value": { "value": ["info"] }
+      },
+      {
+        "key": "event.action",
+        "value": { "value": "osquery.dns_cache" }
+      },
+      {
+        "key": "dns.question.name",
+        "value": { "field": "query_name" }
+      },
+      {
+        "key": "dns.question.type",
+        "value": { "field": "query_type" }
+      },
+      {
+        "key": "tags",
+        "value": { "value": ["osquery", "network", "dns", "windows", "threat_hunting"] }
+      }
+    ],
+    "id": "dns_cache_snapshot_windows_elastic",
+    "interval": "900",
+    "platform": "windows",
+    "query": "-- Windows DNS Cache Snapshot\n-- Enumerates recently resolved domains from the DNS resolver cache\n-- Limitation: Shows domain names and record types, but NOT resolved IP addresses\n-- Cache entries expire based on TTL (max 24 hours by default)\nSELECT\n    name AS query_name,\n    type AS query_type,\n    flags\nFROM dns_cache\nWHERE name != ''\n    -- Filter out reverse DNS lookups (PTR records for IP-to-name resolution)\n    AND name NOT LIKE '%.in-addr.arpa'\n    AND name NOT LIKE '%.ip6.arpa'\n    -- Filter out Active Directory service location records\n    AND name NOT LIKE '_ldap%'\n    AND name NOT LIKE '_kerberos%'\n    AND name NOT LIKE '_gc%'\n    -- Filter out local names\n    AND name NOT LIKE 'localhost%'\n    AND name NOT LIKE 'wpad%'\nORDER BY name",
+    "updated_at": "2025-01-20T10:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.2.0",
+  "id": "osquery_manager-ae619588-47a8-4ba8-a378-375244fbef23",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-01-20T10:00:00.000Z",
+  "version": "WzEsMV0="
+}

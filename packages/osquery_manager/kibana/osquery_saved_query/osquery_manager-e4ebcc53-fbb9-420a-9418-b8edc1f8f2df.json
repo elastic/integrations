@@ -1,0 +1,81 @@
+{
+  "attributes": {
+    "created_at": "2025-12-01T10:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Tracks NTFS filesystem changes via the Update Sequence Number (USN) Journal including file creation, modification, deletion, and renames. Provides forensic evidence of file system activity even for deleted files. REQUIRED CONFIG: Add to Kibana osquery integration: {\"options\":{\"disable_events\":\"false\",\"enable_ntfs_event_publisher\":\"true\"},\"file_paths\":{\"tmp\":[\"C:\\\\Windows\\\\Temp\\\\%%\"],\"users\":[\"C:\\\\Users\\\\%%\"],\"programdata\":[\"C:\\\\ProgramData\\\\%%\"]}}.",
+    "ecs_mapping": [
+      {
+        "key": "event.category",
+        "value": {
+          "value": ["file"]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "field": "event_type"
+        }
+      },
+      {
+        "key": "event.kind",
+        "value": {
+          "value": "event"
+        }
+      },
+      {
+        "key": "event.action",
+        "value": {
+          "value": "osquery.ntfs_journal_events"
+        }
+      },
+      {
+        "key": "event.created",
+        "value": {
+          "field": "event_time"
+        }
+      },
+      {
+        "key": "file.path",
+        "value": {
+          "field": "path"
+        }
+      },
+      {
+        "key": "file.inode",
+        "value": {
+          "field": "mft_entry"
+        }
+      },
+      {
+        "key": "file.attributes",
+        "value": {
+          "field": "file_attributes"
+        }
+      },
+      {
+        "key": "file.parent.inode",
+        "value": {
+          "field": "parent_mft_entry"
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": ["osquery", "ntfs_journal", "usn", "filesystem_forensics", "windows"]
+        }
+      }
+    ],
+    "id": "ntfs_usn_journal_events_windows_elastic",
+    "interval": "3600",
+    "platform": "windows",
+    "query": "-- NTFS Update Sequence Number (USN) Journal Events\n-- Tracks filesystem changes including file creation, modification, deletion, and renames\n-- NOTE: Unlike Linux/macOS file_events, NTFS USN Journal does not provide file hashes (table limitation)\n-- REQUIRED: Enable in Kibana osquery integration config:\n-- {\"options\":{\"disable_events\":\"false\",\"enable_ntfs_event_publisher\":\"true\"},\n--  \"file_paths\":{\"tmp\":[\"C:\\\\Windows\\\\Temp\\\\%%\"],\"users\":[\"C:\\\\Users\\\\%%\"],\"programdata\":[\"C:\\\\ProgramData\\\\%%\"]}}\nSELECT\n  action,\n  CASE\n    WHEN action = 'FileCreation' THEN 'creation'\n    WHEN action = 'FileDeletion' THEN 'deletion'\n    WHEN action = 'Close' THEN 'info'\n    ELSE 'change'\n  END AS event_type,\n  path,\n  old_path,\n  category,\n  drive_letter,\n  file_attributes,\n  node_ref_number AS mft_entry,\n  parent_ref_number AS parent_mft_entry,\n  datetime(record_timestamp, 'unixepoch') AS record_time,\n  record_usn,\n  partial,\n  datetime(time, 'unixepoch') AS event_time\nFROM ntfs_journal_events\nWHERE action IS NOT NULL",
+    "updated_at": "2025-12-01T12:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "9.2.0",
+  "id": "osquery_manager-e4ebcc53-fbb9-420a-9418-b8edc1f8f2df",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-12-01T12:00:00.000Z",
+  "version": "WzEsMV0="
+}
