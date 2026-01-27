@@ -7,13 +7,17 @@
             {
                 "key": "event.category",
                 "value": {
-                    "value": ["host"]
+                    "value": [
+                        "host"
+                    ]
                 }
             },
             {
                 "key": "event.type",
                 "value": {
-                    "value": ["info"]
+                    "value": [
+                        "info"
+                    ]
                 }
             },
             {
@@ -43,11 +47,17 @@
             {
                 "key": "tags",
                 "value": {
-                    "value": ["osquery", "inventory", "disk", "linux", "macos"]
+                    "value": [
+                        "osquery",
+                        "inventory",
+                        "disk",
+                        "linux",
+                        "macos"
+                    ]
                 }
             }
         ],
-        "id": "disk_info_linux_macos_elastic",
+        "id": "disk_info_linux_darwin_elastic",
         "interval": "3600",
         "platform": "linux,darwin",
         "query": "-- Linux/macOS physical disk inventory\n-- Source: block_devices + mounts tables\n-- Filters out: snap mounts, disk images, virtual filesystems\n-- Note: model and device_type fields excluded from ECS mapping due to inconsistent behavior across platforms\n-- Note: Loop devices preserved for forensic value (ISO mounts, containers, encrypted volumes)\nSELECT\n    bd.name AS device_name,\n    bd.vendor,\n    bd.model,\n    bd.type AS device_type,\n    bd.uuid,\n    ROUND((bd.size * bd.block_size) / 1073741824.0, 2) AS size_gb,\n    m.path AS mount_point,\n    m.type AS filesystem_type,\n    CASE \n        WHEN m.blocks > 0 THEN \n            ROUND(100.0 * (m.blocks - m.blocks_free) / m.blocks, 2)\n        ELSE NULL \n    END AS usage_percent,\n    ROUND((m.blocks_available * m.blocks_size) / 1073741824.0, 2) AS available_gb\nFROM block_devices bd\nLEFT JOIN mounts m ON (\n    m.device LIKE '%' || bd.name || '%'\n    OR m.device_alias LIKE '%' || bd.name || '%'\n)\nWHERE bd.name != ''\n  AND bd.type != ''\n  -- Filter out disk images only (keep Virtual Interface for VMs)\n  AND bd.type != 'Disk Image'\n  -- Filter out squashfs (snap), devtmpfs, tmpfs, overlay\n  AND COALESCE(m.type, '') NOT IN ('squashfs', 'devtmpfs', 'tmpfs', 'overlay', 'autofs')\n  -- Filter out snap mount paths\n  AND COALESCE(m.path, '') NOT LIKE '/snap/%'\n  -- Filter out macOS system asset paths\n  AND COALESCE(m.path, '') NOT LIKE '/System/Library/Assets%'\n  -- Only show primary mount points (avoid duplicates)\n  AND (\n    m.path IS NULL \n    OR m.path IN ('/', '/boot', '/boot/efi', '/home', '/var', '/tmp', '/opt')\n    OR m.path LIKE '/Volumes/%'\n    OR m.path LIKE '/mnt/%'\n    OR m.path LIKE '/media/%'\n  );",
