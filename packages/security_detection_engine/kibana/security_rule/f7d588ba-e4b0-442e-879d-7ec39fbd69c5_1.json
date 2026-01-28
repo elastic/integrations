@@ -1,0 +1,97 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious Java file creation in the IRJ directory of the SAP NetWeaver application. This may indicate an attempt to deploy a webshell.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-endpoint.events.file*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential SAP NetWeaver WebShell Creation",
+        "note": "## Triage and analysis\n\n### Investigating Potential SAP NetWeaver WebShell Creation\n\n### Possible investigation steps\n\n- Examine the file creation event and the associated HTTP post request logs details to identify the source of the creation.\n- Examine the process tree to verify the parent-child relationship between the Java process and any suspicious child processes such as shell scripts or scripting languages (e.g., sh, bash, curl, python).\n- Check the command line arguments and environment variables of the suspicious child processes to identify any potentially malicious payloads or commands being executed.\n- Investigate the host's recent activity and logs for any other indicators of compromise or unusual behavior that might correlate with the suspected exploitation attempt.\n- Assess the system for any unauthorized changes or new files that may have been introduced as a result of the exploitation attempt, focusing on JSP files under the IRJ root directory.\n\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent further outbound connections and potential lateral movement.\n- Terminate any suspicious Java processes identified in the alert, especially those making outbound connections to LDAP, RMI, or DNS ports.\n- Conduct a thorough review of the affected system for any unauthorized changes or additional malicious processes, focusing on child processes like shell scripts or scripting languages.\n- Restore the affected system from a known good backup if unauthorized changes or malware are detected.\n- Update and patch Java and any related applications to the latest versions to mitigate known vulnerabilities.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on other systems within the network.",
+        "query": "file where host.os.type in (\"linux\", \"windows\") and event.action == \"creation\" and\n file.extension : (\"jsp\", \"java\", \"class\") and\n file.path : (\"/*/sap.com/*/servlet_jsp/irj/root/*\",\n              \"/*/sap.com/*/servlet_jsp/irj/work/*\",\n              \"?:\\\\*\\\\sap.com\\\\*\\\\servlet_jsp\\\\irj\\\\root\\\\*\",\n              \"?:\\\\*\\\\sap.com\\\\*\\\\servlet_jsp\\\\irj\\\\work\\\\*\")\n",
+        "references": [
+            "https://reliaquest.com/blog/threat-spotlight-reliaquest-uncovers-vulnerability-behind-sap-netweaver-compromise/",
+            "https://onapsis.com/blog/active-exploitation-of-sap-vulnerability-cve-2025-31324/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f7d588ba-e4b0-442e-879d-7ec39fbd69c5",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Use Case: Vulnerability",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1203",
+                        "name": "Exploitation for Client Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1203/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "f7d588ba-e4b0-442e-879d-7ec39fbd69c5_1",
+    "type": "security-rule"
+}

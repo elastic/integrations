@@ -1,0 +1,101 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects FortiGate alerts that are observed for the first time in the previous 5 days of alert history. Analysts can use this to prioritize triage and response.",
+        "from": "now-7205m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Newly Observed FortiGate Alert",
+        "note": "## Triage and analysis\n\n### Investigating Newly Observed Fortigate Alert\n\nThis rule surfaces newly observed, low-frequency high severity FortiGate alerts within the last 5 days.\n\nBecause the alert has not been seen previously, it should be prioritized for validation to determine whether it represents a true compromise or rare benign activity.\n\n### Investigation Steps\n\n- Identify the source address, affected host and review the associated message to understand the alert.\n- Validate the source address under which the activity occurred and assess whether it aligns with normal behavior.\n- Refer to the specific alert details like event.original to get more context.\n\n### False Positive Considerations\n\n- Vulnerability scanners and pentesting.\n- Administrative scripts or automation tools can trigger detections when first introduced.\n- Development or testing environments may produce one-off behaviors that resemble malicious techniques.\n\n### Response and Remediation\n\n- If the activity is confirmed malicious, isolate the affected host to prevent further execution or lateral movement.\n- Terminate malicious processes and remove any dropped files or persistence mechanisms.\n- Collect forensic artifacts to understand initial access and execution flow.\n- Patch or remediate any vulnerabilities or misconfigurations that enabled the behavior.\n- If benign, document the finding and consider tuning or exception handling to reduce future noise.\n- Continue monitoring the host and environment for recurrence of the behavior or related alerts.",
+        "query": "FROM logs-fortinet_fortigate.*, filebeat-* metadata _id\n\n| WHERE event.module == \"fortinet_fortigate\" and event.action in (\"signature\", \"ssl-anomaly\") and\n  message is not null and event.category != \"authentication\" and\n  message != \"Connection Failed\" and not message like \"Web.Client: *\" and\n  not message like \"Network.Service: *\" and not message like \"General.Interest*\" and not message like \"Update: *\"\n\n| STATS Esql.alerts_count = count(*),\n        Esql.first_time_seen = MIN(@timestamp),\n        Esql.distinct_count_src_ip = COUNT_DISTINCT(source.ip),\n        Esql.distinct_count_dst_ip = COUNT_DISTINCT(destination.ip),\n        src_ip = VALUES(source.ip),\n        dst_ip = VALUES(destination.ip),\n        url_domain = VALUES(url.domain),\n        url_path = VALUES(url.path) by message, event.category, event.outcome\n\n// first time seen is within 10m of the rule execution time\n| eval Esql.recent = DATE_DIFF(\"minute\", Esql.first_time_seen, now())\n| where Esql.recent <= 10 and Esql.alerts_count <= 5 and Esql.distinct_count_src_ip <= 2 and Esql.distinct_count_dst_ip <= 2\n\n// move dynamic fields to ECS equivalent for rule exceptions\n| eval source.ip = MV_FIRST(src_ip),\n       destination.ip = MV_FIRST(dst_ip),\n       url.domain = MV_FIRST(url_domain),\n       url.path = MV_FIRST(url_path)\n\n| keep message, event.category, event.outcome, Esql.*, source.ip, destination.ip, url.domain, url.path\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/fortinet_fortigate"
+        ],
+        "related_integrations": [
+            {
+                "package": "fortinet_fortigate",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.alerts_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.distinct_count_dst_ip",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.distinct_count_src_ip",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_time_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.recent",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "url.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "url.path",
+                "type": "wildcard"
+            }
+        ],
+        "risk_score": 99,
+        "rule_id": "2c40dfe2-c13e-48a8-8eff-fb9bfb2a7854",
+        "severity": "critical",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide",
+            "Domain: Network",
+            "Data Source: Fortinet"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "2c40dfe2-c13e-48a8-8eff-fb9bfb2a7854_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies the export of a DB snapshot or DB cluster data to Amazon S3. Snapshot exports can be used for analytics or migration workflows, but adversaries may abuse them to exfiltrate sensitive data outside of RDS-managed storage. Exporting a snapshot creates a portable copy of the database contents, which, if performed without authorization, can indicate data theft, staging for exfiltration, or operator misconfiguration that exposes regulated information.",
+        "false_positives": [
+            "Snapshot exports may be performed by administrators, automation pipelines, or data engineering workflows. Confirm whether the export was expected and initiated by an authorized user, role, or automation process. Snapshot exports by unfamiliar principals or from unexpected networks should be investigated. If known behavior causes false positives, it can be exempted from the rule."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS RDS Snapshot Export",
+        "note": "## Triage and analysis\n\n### Investigating AWS RDS Snapshot Export\n\nExporting an RDS snapshot to Amazon S3 allows the full contents of a database to be written outside the managed\nRDS service boundary. While legitimate for analytics or migration, this action can also be a mechanism for data\nexfiltration. Because snapshot exports produce files that can be downloaded, shared, or accessed by other AWS principals,\nunauthorized exports may indicate staging for data theft or attempts to bypass database access controls.\n\nThis rule detects successful `StartExportTask` events. Activity of this type should be validated to ensure that only\nauthorized database, platform engineering, or analytics workflows initiated the export.\n\n#### Possible investigation steps\n\n- **Identify the actor and context**\n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id` to determine which principal initiated the export.\n  - Look at `source.ip`, `user.name`, and `user_agent.original` to understand where the export originated (console, CLI, SDK, automation).\n  - Check whether the principal has historically performed snapshot exports.\n\n- **Determine what was exported**\n  - Examine `aws.cloudtrail.request_parameters`:\n    - Snapshot identifier being exported.\n    - S3 bucket name and path.\n    - KMS key used (or absence of encryption).\n  - Map the snapshot and destination bucket to:\n    - Application/owner team.\n    - Environment (prod/staging/dev).\n    - Data classification (PII, PHI, PCI, internal).\n\n- **Reconstruct timing and surrounding context**\n  - Use `@timestamp` to correlate the export with:\n    - Recent RDS modifications (`ModifyDBInstance`, `ModifyDBCluster`), snapshot deletions, or retention changes.\n    - IAM role changes, access key issuance, or privilege escalation attempts.\n    - Unusual authentication patterns (e.g., successful logins from new locations, failed console logins).\n  - Check whether the export timing aligns with approved deployments or maintenance windows.\n\n- **Correlate with broader CloudTrail activity**\n  - Pivot on the same user, role, or access key ID to look for:\n    - Prior reconnaissance (e.g., `DescribeDBSnapshots`, `DescribeDBClusters`, `ListBuckets`).\n    - Permission changes (`PutRolePolicy`, `AttachUserPolicy`).\n    - Public exposure (e.g., S3 bucket ACL changes).\n  - Determine whether multiple snapshots were exported around the same time.\n\n- **Validate intent with stakeholders**\n  - Confirm with the database owner, analytics team, or platform engineering team whether:\n    - The export was planned and authorized.\n    - The target S3 bucket is approved for storing database contents.\n    - Encryption and access controls meet organizational policy.\n\n### False positive analysis\n\n- **Authorized data analytics or ETL workflows**\n  - Many organizations export snapshots for reporting, ML pipelines, or external data processing.\n  - Validate that the export aligns with documented ETL or analytics processes.\n\n- **Automated snapshot export tools**\n  - Backup pipelines, cost optimization, or data replication systems may export snapshots.\n  - Tune the rule by excluding known IAM roles or automation user agents.\n\n- **CloudFormation or IaC triggers**\n  - Infrastructure-as-code pipelines may trigger snapshot exports as part of stack updates.\n  - Correlate with CloudFormation events to confirm legitimacy.\n\n### Response and remediation\n\n- **Contain potential exfiltration**\n  - Review access to the destination S3 bucket and confirm that:\n    - Bucket is encrypted with the expected KMS key.\n    - Access is restricted to authorized principals.\n    - No unusual downloads or cross-account accesses occurred.\n\n- **Investigate scope and impact**\n  - Use CloudTrail to enumerate:\n    - All export tasks started by the same actor.\n    - Other snapshot or data-access API calls in the same time window.\n  - Validate whether sensitive or regulated data may have been included.\n\n- **Credential and access remediation**\n  - If activity appears unauthorized:\n    - Revoke or rotate compromised IAM credentials.\n    - Review STS session activity related to the actor.\n    - Inspect IAM role policies for privilege escalation.\n\n- **Hardening and preventive controls**\n  - Restrict the ability to call `StartExportTask` using:\n    - IAM least-privilege policies.\n    - Service Control Policies (SCPs) in production accounts.\n    - Conditional IAM (e.g., requiring MFA, restricting by VPC endpoint or IP range).\n  - Enable guardrails:\n    - AWS Config/Security Hub controls for monitoring snapshot policy changes.\n    - Alerts for exports to buckets outside approved accounts.\n\n### Additional information\n\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n\n",
+        "query": "event.dataset: aws.cloudtrail \n    and event.provider: rds.amazonaws.com \n    and event.action: StartExportTask \n    and event.outcome: success\n",
+        "references": [
+            "https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_StartExportTask.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "119c8877-8613-416d-a98a-96b6664ee73a",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Use Case: Asset Visibility",
+            "Tactic: Collection",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": []
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/",
+                        "subtechnique": [
+                            {
+                                "id": "T1213.006",
+                                "name": "Databases",
+                                "reference": "https://attack.mitre.org/techniques/T1213/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 211
+    },
+    "id": "119c8877-8613-416d-a98a-96b6664ee73a_211",
+    "type": "security-rule"
+}

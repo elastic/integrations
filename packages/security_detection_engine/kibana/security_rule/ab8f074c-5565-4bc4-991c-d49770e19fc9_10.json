@@ -1,0 +1,210 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies use of the S3 CopyObject API where the destination object is encrypted using an AWS KMS key from an external AWS account. This behavior may indicate ransomware-style impact activity where an adversary with access to a misconfigured S3 bucket encrypts objects using a KMS key they control, preventing the bucket owner from decrypting their own data. This technique is a critical early signal of destructive intent or cross-account misuse.",
+        "false_positives": [
+            "Cross-account KMS key usage may be legitimate in multi-account AWS Organizations architectures where centralized encryption keys are used for data governance or auditing workflows. Confirm whether the external KMS key belongs to an expected account before taking action. Data migration or cross-account backup workflows may legitimately re-encrypt S3 objects using a key in another account. Ensure these workflows are documented, tied to known IAM roles, and occur on predictable schedules."
+        ],
+        "from": "now-6m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "aws.cloudtrail.resources.arn",
+                "aws.cloudtrail.resources.type",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements",
+                "Esql.aws_cloudtrail_request_parameters_target_bucket_name",
+                "Esql.aws_cloudtrail_request_parameters_target_object_key",
+                "Esql.aws_cloudtrail_request_parameters_kms_key_account_id",
+                "Esql.aws_cloudtrail_request_parameters_kms_key_id"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS S3 Object Encryption Using External KMS Key",
+        "note": "## Triage and analysis\n\n### Investigating AWS S3 Object Encryption Using External KMS Key\n\nThis rule detects when an S3 `CopyObject` operation encrypts an object using a KMS key belonging to a different AWS account than the bucket owner. This behavior is unusual and a strong indicator of:\n\n- Cloud ransomware techniques, where adversaries encrypt data using a key only they control.\n- Cross-account privilege misuse, especially when an unauthorized principal has write access to S3.\n- Misconfigured bucket permissions, enabling principals from another account to perform privileged copy operations.\n- Early impact-stage activity in incidents where attackers prepare to destroy availability or deny the owner access.\n\nThe rule uses ESQL to identify cases where the `cloud.account.id` (bucket owner) differs from the dissected `kms_key_account_id` used for encrypting the new object version.\n\n\n#### Possible investigation steps\n\n**Identify the actor and access pathway**\n- Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id`.\n- Check whether the caller is:\n  - A legitimate cross-account automation role,  \n  - A compromised IAM user or workload identity, or  \n  - A federated identity behaving outside of normal patterns.\n- Inspect `user_agent.original` to determine whether the action came from the AWS Console, CLI, SDK, or unusual tooling.\n\n**Analyze the encryption behavior**\n- Inspect the dissected KMS key fields:\n  - `Esql.aws_cloudtrail_request_parameters_kms_key_account_id`\n  - `Esql.aws_cloudtrail_request_parameters_kms_key_id`\n- Confirm whether the external key:\n  - Belongs to an attacker-controlled account,  \n  - Is unknown to your organization, or  \n  - Lives in a shared or security tooling account.\n\n**Assess the objects affected**\n- Review:\n  - `Esql.aws_cloudtrail_request_parameters_target_bucket_name`\n  - `Esql.aws_cloudtrail_request_parameters_target_object_key`\n- Identify:\n  - Whether objects were overwritten or new encrypted copies were created.\n  - The sensitivity or criticality of the affected data.\n  - Whether object versioning is enabled (important for recovery).\n\n**Correlate surrounding access patterns**\nPivot in CloudTrail on:\n- The same access key ID  \n- The same IAM principal  \n- Affected bucket ARN  \n\nLook for:\n- `DeleteObject` or `DeleteObjects` calls (common in ransomware behavior)\n- Mass enumeration prior to the event (`ListObjectsV2`, `GetObject`)\n- Other impact-stage actions (`PutBucketPolicy`, `PutBucketAcl`, disabling logging)\n- Attempts to encrypt additional objects in rapid succession\n\n**Evaluate bucket permissions and exposure**\nReview:\n- S3 bucket policy changes\n- IAM roles with `s3:PutObject` or `s3:PutObjectAcl` permissions\n- Whether unintended cross-account `Principal` entries exist\n- Whether the KMS key policy explicitly trusts your account or a foreign one\n\n**Validate business justification**\n- Confirm with storage, data engineering, or application teams whether:\n  - Any migration, transformation, or backup workflows should be encrypting objects cross-account.\n  - Scheduled jobs or CI/CD pipelines were operating at the time of the event.\n\n### False positive analysis\n\n- **Expected cross-account encryption**  \n  Many organizations use centralized encryption accounts or shared security accounts. Validate:\n  - Whether the KMS key account is part of your AWS Organization\n  - Whether the workflow, role, or application is documented\n  - Whether the principal routinely performs CopyObject operations\n\n### Response and remediation\n\n**Contain and prevent further impact**\n- Immediately restrict S3 write access for the principal involved.\n- If the KMS key is attacker-controlled, the impacted objects may be unrecoverable without versioning.\n- If object versioning is disabled, enable it on the affected bucket to strengthen future resilience.\n\n**Investigate scope and severity**\n- Identify:\n  - Additional objects encrypted using external keys\n  - Related suspicious actions (delete, modify, exfiltration events)\n  - Whether any ransom markers or unauthorized files were uploaded\n- Validate whether the external KMS key grants *decrypt* permission back to the bucket owner (rare in attacker use).\n\n**Recover and secure the bucket**\n- Restore accessible previous versions if versioning is enabled.\n- Revoke unauthorized access key pairs or session credentials.\n- Audit bucket policies, ACLs, and IAM conditions (`aws:PrincipalArn`, `aws:SourceAccount`, `aws:SourceArn`).\n- Tighten cross-account access controls:\n  - Remove unintended `Principal` clauses\n  - Restrict KMS usage to known accounts\n  - Enforce SCPs that block cross-account KMS use unless explicitly approved\n\n**Long-term hardening**\n- Integrate object-level access logging and S3 server access logging into security monitoring.\n- Add AWS Config rules (or Security Hub controls) detecting:\n  - Public buckets\n  - Cross-account access to S3\n  - KMS policies permitting foreign principals\n- Document required cross-account workflows and add explicit allowlists.\n\n### Additional information\n\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "from logs-aws.cloudtrail-* metadata _id, _version, _index\n\n// any successful S3 copy event\n| where\n  event.dataset == \"aws.cloudtrail\"\n  and event.provider == \"s3.amazonaws.com\"\n  and event.action == \"CopyObject\"\n  and event.outcome == \"success\"\n\n// dissect request parameters to extract KMS key info and target object info\n| dissect aws.cloudtrail.request_parameters\n    \"{%{?bucketName}=%{Esql.aws_cloudtrail_request_parameters_target_bucket_name},%{?x-amz-server-side-encryption-aws-kms-key-id}=%{?arn}:%{?aws}:%{?kms}:%{?region}:%{Esql.aws_cloudtrail_request_parameters_kms_key_account_id}:%{?key}/%{Esql.aws_cloudtrail_request_parameters_kms_key_id},%{?Host}=%{?tls.client.server.name},%{?x-amz-server-side-encryption}=%{?server_side_encryption},%{?x-amz-copy-source}=%{?bucket.object.name},%{?key}=%{Esql.aws_cloudtrail_request_parameters_target_object_key}}\"\n\n// detect cross-account key usage\n| where cloud.account.id != Esql.aws_cloudtrail_request_parameters_kms_key_account_id\n\n// keep ECS and dissected fields\n| keep\n  @timestamp,\n  data_stream.namespace,\n  user.name,\n  user_agent.original,\n  source.ip,\n  aws.cloudtrail.user_identity.arn,\n  aws.cloudtrail.user_identity.type,\n  aws.cloudtrail.user_identity.access_key_id,\n  aws.cloudtrail.resources.arn,\n  aws.cloudtrail.resources.type,\n  event.action,\n  event.outcome,\n  cloud.account.id,\n  cloud.region,\n  aws.cloudtrail.request_parameters,\n  aws.cloudtrail.response_elements,\n  Esql.aws_cloudtrail_request_parameters_target_bucket_name,\n  Esql.aws_cloudtrail_request_parameters_target_object_key,\n  Esql.aws_cloudtrail_request_parameters_kms_key_account_id,\n  Esql.aws_cloudtrail_request_parameters_kms_key_id,\n  _id,\n  _version,\n  _index\n",
+        "references": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html/",
+            "https://docs.aws.amazon.com/kms/latest/APIReference/API_GenerateDataKey.html/",
+            "https://www.gem.security/post/cloud-ransomware-a-new-take-on-an-old-attack-pattern/",
+            "https://rhinosecuritylabs.com/aws/s3-ransomware-part-1-attack-vector/"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws",
+                "version": "^4.0.0"
+            },
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.aws_cloudtrail_request_parameters_kms_key_account_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.aws_cloudtrail_request_parameters_kms_key_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.aws_cloudtrail_request_parameters_target_bucket_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.aws_cloudtrail_request_parameters_target_object_key",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.resources.arn",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.resources.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.response_elements",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.access_key_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.arn",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ab8f074c-5565-4bc4-991c-d49770e19fc9",
+        "setup": "AWS S3 data event types need to be enabled in the CloudTrail trail configuration for CopyObject events.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS S3",
+            "Data Source: AWS KMS",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1486",
+                        "name": "Data Encrypted for Impact",
+                        "reference": "https://attack.mitre.org/techniques/T1486/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 10
+    },
+    "id": "ab8f074c-5565-4bc4-991c-d49770e19fc9_10",
+    "type": "security-rule"
+}
