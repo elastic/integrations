@@ -1,0 +1,35 @@
+description: Aggregates daily deployment data from Stack Monitoring, writing to ESS Billing compatible format.
+source:
+  index:
+    - "monitoring-indices"
+    - "*:monitoring-indices"
+dest:
+  index: metrics-ess_billing.billing-onprem
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    cluster_uuid:
+      terms:
+        field: elasticsearch.cluster.name
+    cluster_name:
+      terms:
+        field: elasticsearch.cluster.name
+  aggregations:
+    doc_count:
+      value_count:
+        field: elasticsearch.cluster.name
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.1.0
