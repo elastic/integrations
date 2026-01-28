@@ -1,0 +1,37 @@
+receivers:
+  redis:
+    endpoint: {{endpoint}}
+    collection_interval: {{collection_interval}}
+    initial_delay: {{initial_delay}}
+{{#if username}}
+    username: {{username}}
+{{/if}}
+{{#if password}}
+    password: {{password}}
+{{/if}}
+    transport: {{transport}}
+    tls:
+      insecure: {{tls_insecure}}
+{{#if tls_insecure_skip_verify}}
+      insecure_skip_verify: {{tls_insecure_skip_verify}}
+{{/if}}
+{{#if tls_ca_file}}
+      ca_file: {{tls_ca_file}}
+{{/if}}
+{{#if tls_cert_file}}
+      cert_file: {{tls_cert_file}}
+{{/if}}
+{{#if tls_key_file}}
+      key_file: {{tls_key_file}}
+{{/if}}
+{{#if tls_server_name_override}}
+      server_name_override: {{tls_server_name_override}}
+{{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [redis]
+      processors: [resourcedetection/system]
