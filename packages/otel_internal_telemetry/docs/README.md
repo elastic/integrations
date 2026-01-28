@@ -1,8 +1,8 @@
-# OpenTelemetry internal telemetry content pack
+# OpenTelemetry internal telemetry Assets
 
 ## Overview
 
-This content pack contains dashboards that visualize the internal metrics from OpenTelemetry components.
+This package contains dashboards that visualize the internal metrics from OpenTelemetry components.
 
 ### Compatibility
 
