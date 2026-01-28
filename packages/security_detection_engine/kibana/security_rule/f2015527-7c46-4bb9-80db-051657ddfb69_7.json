@@ -1,0 +1,139 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the modification of the master password for an AWS RDS DB instance or cluster. Changing the master password is a legitimate recovery action when access is lost, but adversaries with sufficient permissions may modify it to regain access, establish persistence, bypass existing controls, or escalate privileges within a compromised environment. Because RDS does not expose the password in API responses, this operation can meaningfully alter access pathways to sensitive data stores.",
+        "event_category_override": "event.type",
+        "false_positives": [
+            "Master password modification may occur during legitimate administrative recovery (e.g., a lost password, rotation event, or Secrets Manager reassociation). Validate whether the change was expected, approved, and performed by authorized personnel. If known workflows routinely perform this action, consider adding targeted exceptions."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS RDS DB Instance or Cluster Password Modified",
+        "note": "## Triage and analysis\n\n### Investigating AWS RDS DB Instance or Cluster Password Modified\n\nThe RDS master user password controls privileged access to a database instance or cluster. Modifying it can immediately shift access from one operator to another, break application functionality, or allow an adversary to regain control over a compromised DB instance. Because RDS never returns the password via API, this operation is a strong signal of intentional access reconfiguration.\n\nThis rule detects successful password-modification events via `ModifyDBInstance` or `ModifyDBCluster`. Such changes may indicate credential loss recovery\u2014or malicious actions related to persistence, privilege escalation, or defense evasion.\n\n#### Possible investigation steps\n\n- **Identify the actor and execution context**  \n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id`.  \n  - Inspect `user.name`, `source.ip`, and `user_agent.original` to determine whether the modification originated from expected networks, automation roles, or unusual sources.\n\n- **Determine what was modified**  \n  - Examine `aws.cloudtrail.request_parameters` to identify:  \n    - The DB instance or cluster identifier.  \n    - Whether other parameters were modified in the same call (e.g., `manageMasterUserPassword`, engine version, instance class, parameter group).  \n  - Review instance metadata in AWS to understand the sensitivity level, environment (prod/stage/dev), and potential business impact.\n\n- **Reconstruct timing and associated actions**  \n  - Use `@timestamp` to compare the event against:  \n    - Recent configuration changes such as `ModifyDBInstance`, `ModifyDBCluster`, or networking/security group updates.  \n    - Other access-related operations (e.g., `AddRoleToDBInstance`, changes to Secrets Manager associations, disabling deletion protection).  \n  - Check for signs of credential misuse leading up to the event (e.g., `DescribeDBInstances`, `GetCallerIdentity`, unauthorized console logins).\n\n- **Correlate with broader activity**  \n  - Pivot in CloudTrail using the same access key, principal ARN, or source IP.  \n  - Look for:  \n    - Privilege-escalating or persistence-related behavior (IAM policy changes, role modifications, STS session creation).  \n    - Subsequent DB-impacting operations, such as snapshot deletion, backup retention changes, or cluster deletion.  \n    - Evidence of data access anomalies (backup exports, data snapshot copies, cross-region actions).\n\n- **Validate intent with operational owners**  \n  - Confirm with DBAs, platform engineers, and application owners whether the password change:  \n    - Was requested or scheduled.  \n    - Aligns with pending migrations, credential rotations, or recovery actions.  \n  - If not recognized, treat this as a high-risk event requiring deeper containment.\n\n### False positive analysis\n\n- **Recovery or maintenance tasks**  \n  - Password resets occur during lost-credential scenarios or planned rotations. Confirm if this aligns with a documented workflow.\n- **Secrets Manager integration changes**  \n  - When `manageMasterUserPassword` is toggled or Secrets Manager rotates passwords, a modification event may occur. Validate whether an automation pipeline triggered the change.\n- **Non-production workloads**  \n  - Development or staging environments may see frequent password resets. Consider tuning exceptions based on tags, instance identifiers, or IAM roles tied to automation.\n\n### Response and remediation\n\n- **Contain unauthorized access**  \n  - If activity is suspicious:  \n    - Immediately rotate the master password again using a secure, validated workflow.  \n    - Verify whether Secrets Manager integration was disabled (`manageMasterUserPassword=false`) and restore it if necessary.  \n    - Restrict inbound DB access by tightening associated security group rules or isolating the instance temporarily.\n\n- **Investigate surrounding activity**  \n  - Review CloudTrail to identify:  \n    - Who accessed the instance after the password change.  \n    - Whether any destructive or data-exfiltrating RDS actions occurred.  \n    - Other IAM or STS activity tied to the same user or session.\n\n- **Restore guardrails and enhance monitoring**  \n  - Ensure deletion protection, backup retention, and networking controls are correctly configured.  \n  - Add real-time alerts for password-related modifications and high-risk RDS API actions.\n\n- **Strengthen IAM and operational controls**  \n  - Limit permissions for `rds:ModifyDBInstance` and `rds:ModifyDBCluster`, especially when modifying authentication parameters.  \n  - Require MFA and role-based access for DB administrators.  \n  - Tighten SCPs or Config rules to restrict unauthorized DB configuration changes.\n\n### Additional information\n\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "info where event.dataset == \"aws.cloudtrail\"\n    and event.provider == \"rds.amazonaws.com\"\n    and event.action in (\"ModifyDBInstance\", \"ModifyDBCluster\")\n    and event.outcome == \"success\"\n    and stringContains(aws.cloudtrail.request_parameters, \"masterUserPassword=*\")\n",
+        "references": [
+            "https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_ModifyDBInstance.html",
+            "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html",
+            "https://cloud.hacktricks.xyz/pentesting-cloud/aws-security/aws-privilege-escalation/aws-rds-privesc#rds-modifydbinstance"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f2015527-7c46-4bb9-80db-051657ddfb69",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS RDS",
+            "Resources: Investigation Guide",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Tactic: Defense Evasion"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.001",
+                                "name": "Additional Cloud Credentials",
+                                "reference": "https://attack.mitre.org/techniques/T1098/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": []
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 7
+    },
+    "id": "f2015527-7c46-4bb9-80db-051657ddfb69_7",
+    "type": "security-rule"
+}

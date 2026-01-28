@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Austin Songer",
+            "Elastic"
+        ],
+        "description": "Identifies when an AWS Route 53 private hosted zone is associated with a new Virtual Private Cloud (VPC). Private hosted zones restrict DNS resolution to specific VPCs, and associating additional VPCs expands the scope of what networks can resolve internal DNS records. Adversaries with sufficient permissions may associate unauthorized VPCs to intercept, observe, or reroute internal traffic, establish persistence, or expand their visibility within an AWS environment.",
+        "false_positives": [
+            "Private hosted zones may be legitimately associated with VPCs by network or infrastructure administrators. Verify whether the user identity, user agent, and source IP address align with expected administrative behavior. Known and authorized associations may be exempted to reduce noise."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Route 53 Private Hosted Zone Associated With a VPC",
+        "note": "## Triage and analysis\n\n### Investigating AWS Route 53 Private Hosted Zone Associated With a VPC\n\nRoute 53 private hosted zones provide internal DNS capabilities accessible only to the VPCs explicitly associated with\nthem. Associating a new VPC expands DNS visibility and access. If an adversary gains sufficient IAM permissions, they may\nattach unauthorized VPCs to privileged hosted zones to perform internal reconnaissance, intercept service discovery,\nredirect traffic, or gain persistence by manipulating internal name resolution.\n\nThis rule detects successful `AssociateVPCWithHostedZone` events where a hosted zone's visibility scope is modified.\n\n### Possible investigation steps\n\n- **Identify the Actor**\n  - Review `aws.cloudtrail.user_identity.arn` and `access_key_id` to determine who initiated the association. Validate whether this identity is expected to manage Route 53 or VPC networking.\n\n- **Review Request Details**\n  - Examine `aws.cloudtrail.request_parameters` to confirm which hosted zone and VPC were associated. Determine if the hosted zone contains sensitive internal service records, privileged DNS, or identity service endpoints.\n\n- **Validate the VPC**\n  - Identify whether the associated VPC belongs to an authorized environment (e.g., known production, staging, or internal networks). Check for unusual VPC creation events, cross-account VPC behavior, or recently observed anomalous resource provisioning.\n\n- **Assess Source Context**\n  - Inspect `source.ip` and `user_agent.original` for geographic anomalies, automation patterns, or suspicious tooling.\n  - Look for correlations with unusual IAM activity, privilege escalations, or policy modifications.\n\n- **Correlate With Broader Activity**\n  - Search for additional changes involving the same identity, including:\n    - Route 53 hosted zone modifications\n    - VPC peering creation\n    - Network ACL or security group changes\n    - IAM privilege modifications\n  - Identify whether this association is part of a larger sequence suggesting lateral movement or internal reconnaissance.\n\n- **Engage Relevant Teams**\n  - If initiated by a user, confirm intent with networking or cloud infrastructure teams. Validate whether the association aligns with deployment, migration, or environment expansion activities.\n\n### False positive analysis\n\n- **Routine Infrastructure Updates**\n  - Associations may occur during normal environment expansions (new VPC for microservices, deployments, region expansion).\n\n- **Automated Tooling**\n  - Infrastructure-as-code pipelines (Terraform, CloudFormation, CDK) may regularly modify hosted zone associations.\n  - If confirmed legitimate, consider excluding specific automation IAM roles.\n\n- **Migration or Restructuring Events**\n  - Large-scale cloud migrations or VPC re-architecture work may trigger frequent legitimate associations.\n\n### Response and remediation\n\n- **Revoke Unauthorized Access**\n  - If the association is unauthorized, review and restrict IAM permissions for the actor.\n  - Remove the VPC association if it is not intended.\n\n- **Investigate Potential Impact**\n  - Review internal DNS query logs and VPC flow logs for any misuse, suspicious lookups, or unauthorized cross-VPC traffic.\n\n- **Strengthen IAM Controls**\n  - Limit `route53:AssociateVPCWithHostedZone` to specific administrative roles.\n  - Require MFA for accounts with Route 53 and VPC modification permissions.\n\n- **Monitor for Related Activity**\n  - Add monitoring for other hosted zone modifications, new VPC creation, and cross-account network configurations.\n\n- **Communicate and Document**\n  - Notify cloud networking and security operations of unauthorized changes.\n  - Document findings and update policy controls or automation baselines.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **[AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/)**\n",
+        "query": "event.dataset: aws.cloudtrail \n    and event.provider: route53.amazonaws.com \n    and event.action: AssociateVPCWithHostedZone \n    and event.outcome: success\n",
+        "references": [
+            "https://docs.aws.amazon.com/Route53/latest/APIReference/API_AssociateVPCWithHostedZone.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e3c27562-709a-42bd-82f2-3ed926cced19",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Route 53",
+            "Use Case: Asset Visibility",
+            "Tactic: Persistence",
+            "Tactic: Resource Development",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0042",
+                    "name": "Resource Development",
+                    "reference": "https://attack.mitre.org/tactics/TA0042/"
+                },
+                "technique": [
+                    {
+                        "id": "T1583",
+                        "name": "Acquire Infrastructure",
+                        "reference": "https://attack.mitre.org/techniques/T1583/",
+                        "subtechnique": [
+                            {
+                                "id": "T1583.001",
+                                "name": "Domains",
+                                "reference": "https://attack.mitre.org/techniques/T1583/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 211
+    },
+    "id": "e3c27562-709a-42bd-82f2-3ed926cced19_211",
+    "type": "security-rule"
+}
