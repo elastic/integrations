@@ -1,0 +1,37 @@
+{
+    "id": "pihole-slow-queries",
+    "type": "search",
+    "attributes": {
+        "title": "[Pi-hole] Slow DNS Queries",
+        "description": "DNS queries with reply time greater than 100ms",
+        "hits": 0,
+        "columns": [
+            "@timestamp",
+            "dns.question.name",
+            "dns.question.type",
+            "pihole.query.reply_time",
+            "pihole.query.status",
+            "destination.ip",
+            "source.domain"
+        ],
+        "sort": [
+            [
+                "pihole.query.reply_time",
+                "desc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"query\":{\"query\":\"pihole.query.reply_time > 0.1\",\"language\":\"kuery\"},\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern",
+            "id": "logs-pihole.dns_queries-*"
+        }
+    ],
+    "migrationVersion": {
+        "search": "9.1.0"
+    }
+}
