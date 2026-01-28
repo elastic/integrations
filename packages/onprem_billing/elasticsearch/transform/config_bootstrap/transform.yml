@@ -1,0 +1,39 @@
+description: Bootstrap onprem_billing_config lookup index with default settings using monitoring-indices as source.
+source:
+  index:
+    - "monitoring-indices"
+    - "*:monitoring-indices"
+  runtime_mappings:
+    deployment_id:
+      type: keyword
+      script:
+        source: "emit(doc['elasticsearch.cluster.name'].value)"
+    deployment_name:
+      type: keyword
+      script:
+        source: "emit(doc['elasticsearch.cluster.name'].value)"
+    daily_ecu:
+      type: double
+      script:
+        source: "emit(100.0)"  # Default: 100 ECU/day
+dest:
+  index: onprem_billing_config
+pivot:
+  group_by:
+    deployment_id:
+      terms:
+        field: deployment_id
+    deployment_name:
+      terms:
+        field: deployment_name
+  aggregations:
+    daily_ecu:
+      max:
+        field: daily_ecu
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.1.0
