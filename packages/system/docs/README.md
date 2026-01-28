@@ -1752,6 +1752,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.process.memory.rss.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float | percent | gauge |
 | system.process.memory.share | The shared memory the process uses. | long | byte | gauge |
 | system.process.memory.size | The total virtual memory the process has. On Windows this represents the Commit Charge (the total amount of memory that the memory manager has committed for a running process) value in bytes for this process. | long | byte | gauge |
+| system.process.memory.swap | The swap memory used by the process (supported only on Linux kernel version 2.6.34+). | long | byte | gauge |
 | system.process.num_threads | Number of threads in the process | integer |  |  |
 | system.process.state | The process state. For example: "running". | keyword |  |  |
 
@@ -1927,6 +1928,10 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 The following alert rule templates are available:
 
+**[System] CPU Utilization**
+
+
+
 **[System] Disk I/O Saturation**
 
 
@@ -1940,6 +1945,10 @@ The following alert rule templates are available:
 
 
 **[System] High Packet Drop Rate**
+
+
+
+**[System] Memory Utilization**
 
 
 
