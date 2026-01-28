@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "building_block_type": "default",
+        "description": "Detects the usage of commonly used system service discovery techniques, which attackers may use during the reconnaissance phase after compromising a system in order to gain a better understanding of the environment and/or escalate privileges.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-endpoint.events.process-*",
+            "logs-system.security*",
+            "logs-windows.*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "System Service Discovery through built-in Windows Utilities",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.parent.executable != null and\n  (\n  ((process.name: \"net.exe\" or process.pe.original_file_name == \"net.exe\" or (process.name : \"net1.exe\" and \n    not process.parent.name : \"net.exe\")) and process.args : (\"start\", \"use\") and process.args_count == 2 and\n    not process.parent.args : (\"*.bat\", \"*netlogon*\", \"\\\\\\\\*\")) or\n  ((process.name: \"sc.exe\" or process.pe.original_file_name == \"sc.exe\") and process.args: (\"query\", \"q*\") and not process.parent.args : \"*.bat\") or\n  ((process.name: \"tasklist.exe\" or process.pe.original_file_name == \"tasklist.exe\") and process.args: \"/svc\" and not process.command_line : \"*\\\\Windows\\\\TEMP\\\\nessus_task_list*\") or\n  (process.name : \"psservice.exe\" or process.pe.original_file_name == \"psservice.exe\")\n  ) and\n  not user.id in (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\") and\n  not process.parent.executable in\n                       (\"C:\\\\Program Files\\\\AzureConnectedMachineAgent\\\\himds.exe\",\n                        \"C:\\\\Program Files\\\\AzureConnectedMachineAgent\\\\azcmagent.exe\",\n                        \"C:\\\\Program Files\\\\Varian\\\\DICOMServices\\\\VMS.DICOMServices.ServiceFW.GenericControlledServiceHost.exe\",\n                        \"C:\\\\Senior\\\\HCM\\\\jdk-11.0.2\\\\bin\\\\java.exe\",\n                        \"D:\\\\biomerieux\\\\programs\\\\ServiceMonitor\\\\bin\\\\MylaServiceMonitor.exe\",\n                        \"C:\\\\ViewPowerPro\\\\openJDK\\\\bin\\\\javaw.exe\",\n                        \"C:\\\\ServiceNow MID Server mid-server-autosports-prod\\\\agent\\\\jre\\\\bin\\\\java.exe\") and\n  not process.command_line in (\"sc  queryex SCardSvr\",\n                               \"sc  query \\\"Axway_Integrator\\\" \",\n                               \"sc  query \\\"Delta enteliVAULT PostgreSQL\\\" \",\n                               \"sc  query \\\"WERMA-WIN-Connector\\\" \",\n                               \"sc  query _EWSSynchronizationServer_JDE \",\n                               \"sc query SchneiderUPSMySQL\")\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e0881d20-54ac-457f-8733-fe0bc5d44c55",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Rule Type: BBR",
+            "Data Source: Windows Security Event Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1007",
+                        "name": "System Service Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1007/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 113
+    },
+    "id": "e0881d20-54ac-457f-8733-fe0bc5d44c55_113",
+    "type": "security-rule"
+}
