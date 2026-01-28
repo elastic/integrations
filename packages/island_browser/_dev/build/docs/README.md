@@ -12,12 +12,13 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 ### How it works
 
-This integration periodically queries the Island Browser API to retrieve details for devices, users and compromised credentials, and to log audit events.
+This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to log audit events and admin action events.
 
 ## What data does this integration collect?
 
 This integration collects log messages of the following types:
 
+- `Admin Actions`: Collects all admin actions from the Island Browser vis [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
 - `Audit`: Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
 - `Compromised Credential`: Collects a list of all compromised credentials from the Island Browser via [Compromised Credential API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
@@ -25,7 +26,7 @@ This integration collects log messages of the following types:
 
 ### Supported use cases
 
-Integrating Island Browser User, Device, Audit, and Compromised Credential endpoint data with Elastic SIEM provides unified visibility into identity activity, device posture, account exposure, and security events across the environment. This integration enables analysts to correlate user behavior, device health, and credential risks within a single view, strengthening both detection and response capabilities.
+Integrating Island Browser User, Device, Audit, Admin Actions, and Compromised Credential endpoint data with Elastic SIEM provides unified visibility into identity activity, device posture, account exposure, and security events across the environment. This integration enables analysts to correlate user behavior, device health, and credential risks within a single view, strengthening both detection and response capabilities.
 
 Dashboards track total and active users, login trends, and group distributions, alongside device insights such as active, archived, and jailbroken states, OS platform distribution, policy updates, browser update status, Windows license status, and MDM provider compliance. Compromised Credential visualizations highlight account risks with timelines of exposed records, unresolved credential counts, breach source breakdowns, and distributions by status. Additional charts surface top impacted domains and most affected users, enabling security teams to quickly assess exposure, prioritize remediation, and mitigate identity-based threats.
 
@@ -110,6 +111,10 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
+#### Admin Actions
+
+{{fields "admin_actions"}}
+
 #### User
 
 {{fields "user"}}
@@ -127,6 +132,10 @@ For more information on architectures that can be used for scaling this integrat
 {{fields "compromised_credential"}}
 
 ### Example event
+
+#### Admin Actions
+
+{{event "admin_actions"}}
 
 #### User
 
@@ -154,6 +163,7 @@ These inputs can be used in this integration:
 
 This integration dataset uses the following APIs:
 
+- `Admin Actions`: [Island Browser API](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
 - `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 - `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `Audit`: [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
