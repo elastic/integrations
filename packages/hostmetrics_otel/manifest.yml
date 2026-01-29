@@ -1,0 +1,168 @@
+format_version: 3.5.0
+name: hostmetrics_otel
+title: "Host Metrics OpenTelemetry Input"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect host system metrics using the Host Metrics receiver of the OTel Collector."
+type: input
+categories:
+  - os_system
+  - monitoring
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/hostmetrics-logo.svg
+    title: Host Metrics logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: hostmetricsreceiver
+    type: metrics
+    title: Host Metrics
+    description: Collect host system metrics including CPU, memory, disk, and network.
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: collection_interval
+        type: text
+        title: Collection Interval
+        description: How often to collect metrics from the host system.
+        multi: false
+        required: true
+        show_user: true
+        default: 1m
+      - name: cpu_enabled
+        type: bool
+        title: Enable CPU Scraper
+        description: Collect CPU utilization metrics.
+        required: false
+        show_user: true
+        default: true
+      - name: cpu_per_cpu
+        type: bool
+        title: CPU Metrics Per CPU
+        description: Report CPU metrics per CPU core (in addition to system-wide totals).
+        required: false
+        show_user: false
+        default: false
+      - name: disk_enabled
+        type: bool
+        title: Enable Disk Scraper
+        description: Collect disk I/O metrics.
+        required: false
+        show_user: true
+        default: true
+      - name: load_enabled
+        type: bool
+        title: Enable Load Scraper
+        description: Collect CPU load average metrics.
+        required: false
+        show_user: true
+        default: true
+      - name: load_per_cpu
+        type: bool
+        title: Load Average Per CPU
+        description: Divide the average load by the number of logical CPUs.
+        required: false
+        show_user: false
+        default: false
+      - name: filesystem_enabled
+        type: bool
+        title: Enable Filesystem Scraper
+        description: Collect filesystem utilization metrics.
+        required: false
+        show_user: true
+        default: true
+      - name: memory_enabled
+        type: bool
+        title: Enable Memory Scraper
+        description: Collect memory utilization metrics.
+        required: false
+        show_user: true
+        default: true
+      - name: network_enabled
+        type: bool
+        title: Enable Network Scraper
+        description: Collect network interface I/O metrics.
+        required: false
+        show_user: true
+        default: true
+      - name: paging_enabled
+        type: bool
+        title: Enable Paging Scraper
+        description: Collect paging/swap space utilization and I/O metrics.
+        required: false
+        show_user: true
+        default: true
+      - name: processes_enabled
+        type: bool
+        title: Enable Processes Scraper
+        description: Collect process count metrics. (Linux only)
+        required: false
+        show_user: true
+        default: true
+      - name: process_enabled
+        type: bool
+        title: Enable Process Scraper
+        description: Collect per-process CPU, memory, and disk I/O metrics. (Linux and Windows only)
+        required: false
+        show_user: true
+        default: false
+      - name: process_include
+        type: text
+        title: Process Include Filter
+        description: Regex patterns for process names to include. Leave empty to include all.
+        multi: true
+        required: false
+        show_user: false
+      - name: process_exclude
+        type: text
+        title: Process Exclude Filter
+        description: Regex patterns for process names to exclude.
+        multi: true
+        required: false
+        show_user: false
+      - name: process_mute_process_all_errors
+        type: bool
+        title: Mute Process Errors
+        description: Mute errors encountered when trying to read info for a process.
+        required: false
+        show_user: false
+        default: false
+      - name: process_mute_process_name_error
+        type: bool
+        title: Mute Process Name Errors
+        description: Mute errors encountered when reading a process name.
+        required: false
+        show_user: false
+        default: false
+      - name: process_mute_process_exe_error
+        type: bool
+        title: Mute Process Executable Errors
+        description: Mute errors encountered when reading a process executable.
+        required: false
+        show_user: false
+        default: false
+      - name: process_mute_process_io_error
+        type: bool
+        title: Mute Process IO Errors
+        description: Mute errors encountered when reading a process IO stats.
+        required: false
+        show_user: false
+        default: false
+      - name: root_path
+        type: text
+        title: Root Path
+        description: The root path for filesystem, disk, and network metrics collection. Useful for containerized environments.
+        required: false
+        show_user: false
+
+owner:
+  github: elastic/ecosystem
+  type: elastic

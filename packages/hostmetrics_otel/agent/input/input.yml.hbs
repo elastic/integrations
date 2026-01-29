@@ -1,0 +1,67 @@
+receivers:
+  hostmetrics:
+    collection_interval: {{collection_interval}}
+{{#if root_path}}
+    root_path: {{root_path}}
+{{/if}}
+    scrapers:
+{{#if cpu_enabled}}
+      cpu:
+{{#if cpu_per_cpu}}
+        metrics:
+          system.cpu.utilization:
+            enabled: true
+{{/if}}
+{{/if}}
+{{#if disk_enabled}}
+      disk:
+{{/if}}
+{{#if load_enabled}}
+      load:
+{{#if load_per_cpu}}
+        cpu_average: true
+{{/if}}
+{{/if}}
+{{#if filesystem_enabled}}
+      filesystem:
+{{/if}}
+{{#if memory_enabled}}
+      memory:
+{{/if}}
+{{#if network_enabled}}
+      network:
+{{/if}}
+{{#if paging_enabled}}
+      paging:
+{{/if}}
+{{#if processes_enabled}}
+      processes:
+{{/if}}
+{{#if process_enabled}}
+      process:
+{{#if process_include}}
+        include:
+          match_type: regexp
+          names:
+{{#each process_include}}
+            - {{this}}
+{{/each}}
+{{/if}}
+{{#if process_exclude}}
+        exclude:
+          match_type: regexp
+          names:
+{{#each process_exclude}}
+            - {{this}}
+{{/each}}
+{{/if}}
+        mute_process_all_errors: {{process_mute_process_all_errors}}
+        mute_process_name_error: {{process_mute_process_name_error}}
+        mute_process_exe_error: {{process_mute_process_exe_error}}
+        mute_process_io_error: {{process_mute_process_io_error}}
+{{/if}}
+
+service:
+  pipelines:
+    metrics:
+      receivers: [hostmetrics]
