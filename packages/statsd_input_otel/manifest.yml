@@ -1,0 +1,67 @@
+format_version: 3.5.0
+name: statsd_otel_input
+title: "StatsD OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "StatsD OpenTelemetry Input Package"
+type: input
+categories:
+  - observability
+  - opentelemetry
+  - custom
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/statsd_otellogo.svg
+    title: StatsD OTel logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: statsdreceiver
+    type: metrics
+    title: StatsD OpenTelemetry Input
+    description: Collect StatsD metrics using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: endpoint
+        type: text
+        required: true
+        title: Endpoint
+        description: Address and port to listen on for StatsD metrics.
+        default: localhost:8125
+      - name: transport
+        type: text
+        required: false
+        title: Transport Protocol
+        description: Protocol used by the StatsD server. Supported values are udp, tcp, and unixgram.
+        default: udp
+        show_user: false
+      - name: aggregation_interval
+        type: duration
+        required: false
+        title: Aggregation Interval
+        description: The aggregation time that the receiver aggregates the metrics (similar to the flush interval in StatsD server).
+        default: 60s
+        show_user: false
+      - name: enable_metric_type
+        type: bool
+        required: false
+        title: Enable Metric Type
+        description: Emit the StatsD metric type (gauge, counter, timer, histogram) as a label.
+        default: false
+        show_user: false
+      - name: is_monotonic_counter
+        type: bool
+        required: false
+        title: Monotonic Counter
+        description: Set all counter metrics as monotonic.
+        default: false
+        show_user: false
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic

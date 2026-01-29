@@ -1,0 +1,23 @@
+receivers:
+  statsd:
+    endpoint: {{endpoint}}
+    {{#if transport}}
+    transport: {{transport}}
+    {{/if}}
+    {{#if aggregation_interval}}
+    aggregation_interval: {{aggregation_interval}}
+    {{/if}}
+    {{#if enable_metric_type}}
+    enable_metric_type: {{enable_metric_type}}
+    {{/if}}
+    {{#if is_monotonic_counter}}
+    is_monotonic_counter: {{is_monotonic_counter}}
+    {{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [statsd]
+      processors: [resourcedetection/system]
