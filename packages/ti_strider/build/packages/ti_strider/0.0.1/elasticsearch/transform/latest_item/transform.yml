@@ -1,0 +1,34 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-ti_strider.indicator-*"
+# The version suffix on the dest.index should be incremented if a breaking change
+# is made to the index mapping. You must also bump the fleet_transform_version
+# for any change to this transform configuration to take effect. The old destination
+# index is not automatically deleted. We are dependent on https://github.com/elastic/package-spec/issues/523 to give
+# us that ability in order to prevent having duplicate IoC data and prevent query
+# time field type conflicts.
+dest:
+  index: "logs-ti_strider_latest.indicator-1"
+  aliases:
+    - alias: "logs-ti_strider_latest.indicator"
+      move_on_creation: true
+latest:
+  unique_key:
+    - ioc.name_primary
+    - ioc.type
+  sort: "@timestamp"
+description: Latest deduplicated item data from Strider Shield integration
+frequency: 30s
+sync:
+  time:
+    field: "@timestamp"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s, sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: ioc.expires_at
+    max_age: 1m # how long items are retained in DEST index
+_meta:
+  managed: true
+  fleet_transform_version: 0.1.0

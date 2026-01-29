@@ -1,0 +1,60 @@
+config_version: 2
+interval: {{polling_interval}}
+
+resource.url: {{api_url}}
+
+state: 
+  auth_url: {{auth_url}}
+  client_id: {{strider_id}}
+  client_secret: {{strider_secret}}
+  audience: https://platform-api/
+
+redact:
+  fields:
+    - client_secret
+
+program: |
+  state.with(
+    post(
+      state.auth_url,
+      "application/json",
+      {
+        "client_id": state.client_id,
+        "client_secret": state.client_secret,
+        "audience": state.audience
+      }.encode_json()
+    ).as(
+      auth_resp,
+      auth_resp.StatusCode != 200 ? {
+        "events": {
+          "error": {
+            "message": "Auth error: " + string(auth_resp.Body)
+          }
+        }
+      } : auth_resp.Body.decode_json()
+    ).as(
+      auth_resp,
+      get_request(state.url)
+        .with({
+          "Header": {
+            "Authorization": ["Bearer " + auth_resp.access_token]
+          }
+        })
+        .do_request()
+        .as(
+          api_resp,
+          api_resp.StatusCode != 200 ? {
+            "events": {
+              "error": {
+                "message": "API error: " + string(api_resp.Body)
+              }
+            } 
+          } : {
+            "events":
+              api_resp.Body.decode_json().emailAddresses +
+              api_resp.Body.decode_json().emailDomains +
+              api_resp.Body.decode_json().terms
+          }
+        )
+    )
+  )

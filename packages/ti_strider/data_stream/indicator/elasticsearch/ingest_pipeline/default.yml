@@ -1,0 +1,59 @@
+---
+description: Ingest pipeline for Strider IOCs
+processors:
+  - rename:
+      field: md5
+      target_field: ioc.md5
+      
+  - rename:
+      field: riskSignal
+      target_field: ioc.risk_signal
+      
+  - rename:
+      field: itemType
+      target_field: ioc.type
+      
+  - rename:
+      field: itemNamePrimary
+      target_field: ioc.name_primary
+     
+  - rename:
+      field: itemNameSecondary
+      target_field: ioc.name_secondary_raw
+      
+  - rename:
+      field: dates_added
+      target_field: ioc.dates_added
+      
+  - rename:
+      field: isNew
+      target_field: ioc.is_new
+      
+  - rename:
+      field: changes
+      target_field: ioc.changes    
+
+  - json:
+      field: ioc.name_secondary_raw
+      target_field: ioc.name_secondary
+      add_to_root: false
+
+  - script:
+      lang: painless
+      tag: script-default-expired_at
+      description: Add default expires_at field based on archived status.
+      source: |
+        ZonedDateTime now = ZonedDateTime.parse(ctx['@timestamp']);
+        if (ctx.archive == 1) {
+          ctx.ioc.expires_at = now;
+        } else {
+          ctx.ioc.expires_at = now.plusDays(90);
+        }
+      
+  - remove:
+      field: ioc.name_secondary_raw
+      
+on_failure:
+  - set:
+      field: error.message
+      value: "Pipeline failed on field renaming or parsing"
