@@ -1,0 +1,73 @@
+format_version: 3.5.0
+name: elasticapm_otel_input
+title: "Elastic APM Intake OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Receive APM data from Elastic APM agents using the Elastic APM Intake receiver"
+type: input
+categories:
+  - monitoring
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_apm.svg
+    title: Elastic APM logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: elasticapmintakereceiver
+    type: logs
+    title: Elastic APM Intake
+    description: Receive APM data from Elastic APM agents using the OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: endpoint
+        type: text
+        title: Endpoint
+        required: true
+        description: The address to receive APM data from Elastic APM agents.
+        default: localhost:8200
+        show_user: true
+      - name: tls_enabled
+        type: bool
+        title: Enable TLS
+        required: false
+        description: Enable TLS to encrypt data in transit between APM agents and the receiver.
+        default: false
+        show_user: true
+      - name: tls_cert_file
+        type: text
+        title: TLS Certificate File
+        required: false
+        description: Path to the TLS certificate file for encrypted connections.
+        show_user: false
+      - name: tls_key_file
+        type: text
+        title: TLS Key File
+        required: false
+        description: Path to the TLS key file for encrypted connections.
+        show_user: false
+      - name: agent_config_enabled
+        type: bool
+        title: Enable Agent Configuration
+        required: false
+        description: Enable fetching APM Central Configurations from Elasticsearch.
+        default: false
+        show_user: false
+      - name: agent_config_cache_duration
+        type: duration
+        title: Agent Config Cache Duration
+        required: false
+        description: Timeout for fetching and updating agent configurations.
+        default: 30s
+        show_user: false
+owner:
+  github: elastic/obs-ds-intake-services
+  type: elastic

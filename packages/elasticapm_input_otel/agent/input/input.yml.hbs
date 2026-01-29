@@ -1,0 +1,27 @@
+receivers:
+  elasticapmintake:
+    endpoint: {{endpoint}}
+{{#if tls_enabled}}
+    tls:
+      cert_file: {{tls_cert_file}}
+      key_file: {{tls_key_file}}
+{{/if}}
+    agent_config:
+      enabled: {{agent_config_enabled}}
+{{#if agent_config_enabled}}
+      cache_duration: {{agent_config_cache_duration}}
+{{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    traces:
+      receivers: [elasticapmintake]
+      processors: [resourcedetection/system]
+    metrics:
+      receivers: [elasticapmintake]
+      processors: [resourcedetection/system]
+    logs:
+      receivers: [elasticapmintake]
+      processors: [resourcedetection/system]

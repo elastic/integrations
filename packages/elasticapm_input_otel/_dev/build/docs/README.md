@@ -1,0 +1,94 @@
+{{- generatedHeader }}
+# Elastic APM Intake OpenTelemetry Input Package
+
+## Overview
+
+The Elastic APM Intake OpenTelemetry Input Package enables the EDOT (Elastic Distribution of OpenTelemetry) Collector to receive APM data from Elastic APM agents using the [elasticapmintakereceiver](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver).
+
+This package allows existing Elastic APM agents to send telemetry data to an OpenTelemetry Collector instead of directly to APM Server, enabling integration with OpenTelemetry-based observability pipelines.
+
+### How it works
+
+This package configures the `elasticapmintakereceiver` in the EDOT Collector to accept HTTP data via the APM Intake V2 format. Elastic APM agents can then be configured to point to the collector endpoint instead of APM Server.
+
+The receiver accepts traces, metrics, and logs from Elastic APM agents and forwards them through the OpenTelemetry pipeline for processing and export to Elasticsearch.
+
+## What data does this integration collect?
+
+This integration collects APM telemetry data from Elastic APM agents:
+
+| Data Type | Description |
+|-----------|-------------|
+| Traces | Distributed tracing data including spans and transactions |
+| Metrics | Application performance metrics |
+| Logs | Application logs correlated with traces |
+
+## Compatibility
+
+- Only the APM Intake V2 protocol is supported
+- RUM (Real User Monitoring) intake and older protocols are not supported
+- Compatible with Elastic APM agents that support the Intake V2 protocol
+
+## How do I deploy this integration?
+
+### Prerequisites
+
+- Elastic Agent with EDOT Collector support
+- Elastic APM agents configured to send data to the collector endpoint
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+### Configuration
+
+Configure the following settings:
+
+1. **Endpoint**: The address where the receiver listens for APM agent connections (default: `localhost:8200`)
+2. **TLS Settings** (optional): Enable TLS for encrypted connections between APM agents and the receiver
+3. **Agent Configuration** (optional): Enable fetching APM Central Configurations from Elasticsearch
+
+### APM Agent Configuration
+
+Configure your Elastic APM agents to point to the collector:
+
+```bash
+# Example environment variables for APM agents
+ELASTIC_APM_SERVER_URL=http://localhost:8200
+```
+
+For TLS-enabled connections:
+```bash
+ELASTIC_APM_SERVER_URL=https://localhost:8200
+ELASTIC_APM_SERVER_CERT=/path/to/server.crt
+```
+
+### Validation
+
+Once configured, you can verify data is being received by checking for APM documents in Elasticsearch:
+
+1. Navigate to Kibana > Discover
+2. Search for APM-related indices (e.g., `traces-*`, `metrics-*`, `logs-*`)
+3. Verify that documents from your instrumented applications appear
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Common Issues
+
+- **Connection refused**: Ensure the endpoint is accessible from the APM agents
+- **TLS errors**: Verify certificate paths and that the APM agent trusts the server certificate
+- **No data appearing**: Check that APM agents are using the Intake V2 protocol
+
+## Scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### Inputs used
+
+This package uses the [Elastic APM Intake Receiver](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver) from the Elastic OpenTelemetry Collector Components.
+
+{{ inputDocs }}
