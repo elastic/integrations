@@ -56,6 +56,12 @@ policy_templates:
         description: Defines the network to use for connecting to the server (tcp or unix).
         default: tcp
         show_user: false
+      - name: dialer_timeout
+        type: duration
+        required: false
+        title: Dialer Timeout
+        description: Maximum amount of time a dial will wait for a connect to complete. If not set, there is no timeout.
+        show_user: false
 
       # TLS settings
       - name: tls_insecure
@@ -96,17 +102,36 @@ policy_templates:
         title: TLS Server Name Override
         description: Override the virtual host name of authority in TLS requests.
         show_user: false
+      - name: tls_min_version
+        type: text
+        required: false
+        title: TLS Min Version
+        description: Minimum acceptable TLS version. Options are 1.0, 1.1, 1.2, 1.3.
+        show_user: false
+      - name: tls_max_version
+        type: text
+        required: false
+        title: TLS Max Version
+        description: Maximum acceptable TLS version. Options are 1.0, 1.1, 1.2, 1.3.
+        show_user: false
+      - name: tls_include_system_ca_certs_pool
+        type: bool
+        required: false
+        title: Include System CA Certs Pool
+        description: Whether to load the system certificate authorities pool alongside the certificate authority.
+        default: false
+        show_user: false
 
       # Collection settings
       - name: collection_interval
-        type: text
+        type: duration
         required: false
         title: Collection Interval
         description: Time between each metric collection (e.g., 10s, 1m).
         default: 10s
         show_user: false
       - name: initial_delay
-        type: text
+        type: duration
         required: false
         title: Initial Delay
         description: Defines how long this receiver waits before starting.

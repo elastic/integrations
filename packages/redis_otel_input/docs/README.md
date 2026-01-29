@@ -24,6 +24,7 @@ This package receives telemetry data from Redis servers by configuring the Redis
 | Username | No | - | Redis ACL username (requires Redis 6.0+) |
 | Password | No | - | Redis password |
 | Transport | No | `tcp` | Network to use for connecting (`tcp` or `unix`) |
+| Dialer Timeout | No | - | Maximum amount of time to wait for a connection to complete |
 
 ### TLS Settings
 | Setting | Required | Default | Description |
@@ -34,6 +35,9 @@ This package receives telemetry data from Redis servers by configuring the Redis
 | TLS Certificate File | No | - | Path to client certificate file |
 | TLS Key File | No | - | Path to client key file |
 | TLS Server Name Override | No | - | Override server name for TLS verification |
+| TLS Min Version | No | - | Minimum TLS version (1.0, 1.1, 1.2, 1.3) |
+| TLS Max Version | No | - | Maximum TLS version (1.0, 1.1, 1.2, 1.3) |
+| Include System CA Certs Pool | No | `false` | Load system CA pool alongside custom CA |
 
 ### Collection Settings
 | Setting | Required | Default | Description |
