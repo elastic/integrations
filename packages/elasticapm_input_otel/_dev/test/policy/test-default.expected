@@ -1,9 +1,7 @@
 connectors:
     forward: {}
 exporters:
-    elasticsearch/componentid-0:
-        endpoints:
-            - https://elasticsearch:9200
+    elasticsearch/componentid-0: []
 inputs: []
 output_permissions:
     default:
@@ -15,8 +13,6 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - traces-*-*
-                    - metrics-*-*
                     - logs-*-*
                   privileges:
                     - auto_configure
@@ -30,19 +26,7 @@ processors:
             - context: log
               statements:
                 - set(attributes["data_stream.type"], "logs")
-                - set(attributes["data_stream.dataset"], "elasticapm_otel_input.elasticapmintakereceiver")
-                - set(attributes["data_stream.namespace"], "ep")
-        trace_statements:
-            - context: span
-              statements:
-                - set(attributes["data_stream.type"], "traces")
-                - set(attributes["data_stream.dataset"], "elasticapm_otel_input.elasticapmintakereceiver")
-                - set(attributes["data_stream.namespace"], "ep")
-        metric_statements:
-            - context: datapoint
-              statements:
-                - set(attributes["data_stream.type"], "metrics")
-                - set(attributes["data_stream.dataset"], "elasticapm_otel_input.elasticapmintakereceiver")
+                - set(attributes["data_stream.dataset"], "elasticapm_input_otel.elasticapmintakereceiver")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     elasticapmintake/componentid-0:
@@ -57,7 +41,7 @@ service:
                 - elasticsearch/componentid-0
             receivers:
                 - forward
-        logs/componentid-0:
+        logs/componentid-2:
             exporters:
                 - forward
             processors:
@@ -70,7 +54,7 @@ service:
                 - elasticsearch/componentid-0
             receivers:
                 - forward
-        metrics/componentid-0:
+        metrics/componentid-1:
             exporters:
                 - forward
             processors:
