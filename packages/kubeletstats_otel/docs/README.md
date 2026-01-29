@@ -42,7 +42,7 @@ The receiver supports multiple authentication methods:
 
 - **serviceAccount** (default): Uses the service account token mounted in the pod. Recommended for in-cluster deployments.
 - **tls**: Uses TLS client certificates for authentication.
-- **kubeConfig**: Uses a kubeconfig file for authentication.
+- **kubeConfig**: Uses a kubeconfig file for authentication. Optionally specify a `context` to use a specific kubeconfig context (defaults to the current or default context).
 - **none**: No authentication (uses read-only port 10255).
 
 ### Required Permissions
@@ -81,6 +81,50 @@ Example configuration with `extra_metadata_labels`:
 
 When collecting volume metadata from Persistent Volume Claims, you can also configure the Kubernetes API authentication to fetch metadata from the underlying storage resource. Set `k8s_api_config_auth_type` to `serviceAccount` to enable this functionality.
 
+### Kubernetes API Configuration
+
+When using `extra_metadata_labels` or node utilization metrics, you may need to configure authentication to the Kubernetes API. The following options are available:
+
+- **Kubernetes API Auth Type**: Authentication method (`none`, `tls`, `serviceAccount`, `kubeConfig`)
+- **Kubernetes API CA File**: Path to the CA file for TLS verification
+- **Kubernetes API Certificate File**: Path to the client certificate for TLS authentication
+- **Kubernetes API Key File**: Path to the client private key for TLS authentication
+- **Skip Kubernetes API TLS Verification**: Whether to skip TLS certificate verification (not recommended for production)
+
+### Node Utilization Metrics
+
+The receiver supports optional node utilization metrics that calculate resource usage as a ratio of total node capacity. These metrics require both the `node` name and `k8s_api_config` to be configured.
+
+Available node utilization metrics:
+
+| Metric | Description |
+|--------|-------------|
+| k8s.container.cpu.node.utilization | Container CPU usage as ratio of node capacity |
+| k8s.pod.cpu.node.utilization | Pod CPU usage as ratio of node capacity |
+| k8s.container.memory.node.utilization | Container memory usage as ratio of node capacity |
+| k8s.pod.memory.node.utilization | Pod memory usage as ratio of node capacity |
+
+Example configuration for node utilization metrics:
+
+- **Endpoint**: `https://${env:K8S_NODE_NAME}:10250`
+- **Auth Type**: `serviceAccount`
+- **Node Name**: `${env:K8S_NODE_NAME}` (set via downward API)
+- **Kubernetes API Auth Type**: `serviceAccount`
+- **Enable Container CPU Node Utilization**: `true`
+- **Enable Pod CPU Node Utilization**: `true`
+- **Enable Container Memory Node Utilization**: `true`
+- **Enable Pod Memory Node Utilization**: `true`
+
+To use the `K8S_NODE_NAME` environment variable, configure the downward API in your pod spec:
+
+```yaml
+env:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+```
+
 ### Sample Configuration
 
 Basic configuration with service account authentication:
@@ -96,6 +140,13 @@ For TLS authentication:
 - **CA File**: `/path/to/ca.crt`
 - **Cert File**: `/path/to/client.crt`
 - **Key File**: `/path/to/client.key`
+
+For kubeConfig authentication with a specific context:
+
+- **Endpoint**: `${env:K8S_NODE_NAME}` (node name only, not full URL)
+- **Auth Type**: `kubeConfig`
+- **Kubeconfig Context**: `my-cluster-context`
+- **Skip TLS Verification**: `true` (optional)
 
 ## Troubleshooting
 
