@@ -47,18 +47,39 @@ The receiver supports multiple authentication methods:
 
 ### Required Permissions
 
-When using `serviceAccount` authentication, the service account needs appropriate RBAC permissions:
+When using `serviceAccount` authentication, the service account needs appropriate RBAC permissions.
+
+The Kubelet Stats Receiver needs `get` permissions on the `nodes/stats` resources. Additionally, when using `extra_metadata_labels` or any of the `{request|limit}_utilization` metrics, the receiver also needs `get` permissions for `nodes/proxy` resources.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kubelet-stats-reader
+  name: otel-collector
 rules:
-- apiGroups: [""]
-  resources: ["nodes/stats"]
-  verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["nodes/stats"]
+    verbs: ["get"]
+
+  # Only needed if you are using extra_metadata_labels or
+  # are collecting the request/limit utilization metrics
+  - apiGroups: [""]
+    resources: ["nodes/proxy"]
+    verbs: ["get"]
 ```
+
+### Using Extra Metadata Labels
+
+To enrich metrics with additional metadata such as container IDs or volume types, configure `extra_metadata_labels`. This requires additional RBAC permissions as shown above.
+
+Example configuration with `extra_metadata_labels`:
+
+- **Endpoint**: `https://${env:K8S_NODE_NAME}:10250`
+- **Auth Type**: `serviceAccount`
+- **Extra Metadata Labels**: `container.id`, `k8s.volume.type`
+- **Skip TLS Verification**: `true` (for testing only)
+
+When collecting volume metadata from Persistent Volume Claims, you can also configure the Kubernetes API authentication to fetch metadata from the underlying storage resource. Set `k8s_api_config_auth_type` to `serviceAccount` to enable this functionality.
 
 ### Sample Configuration
 
@@ -66,7 +87,7 @@ Basic configuration with service account authentication:
 
 - **Endpoint**: `https://localhost:10250`
 - **Auth Type**: `serviceAccount`
-- **Collection Interval**: `10s`
+- **Collection Interval**: `20s`
 
 For TLS authentication:
 
