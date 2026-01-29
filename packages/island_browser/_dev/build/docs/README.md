@@ -18,7 +18,7 @@ This integration periodically queries the Island Browser API to retrieve details
 
 This integration collects log messages of the following types:
 
-- `Admin Actions`: Collects all admin actions from the Island Browser vis [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
+- `Admin Actions`: Collects all admin actions from the Island Browser via [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
 - `Audit`: Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
 - `Compromised Credential`: Collects a list of all compromised credentials from the Island Browser via [Compromised Credential API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
@@ -30,7 +30,7 @@ Integrating Island Browser User, Device, Audit, Admin Actions, and Compromised C
 
 Dashboards track total and active users, login trends, and group distributions, alongside device insights such as active, archived, and jailbroken states, OS platform distribution, policy updates, browser update status, Windows license status, and MDM provider compliance. Compromised Credential visualizations highlight account risks with timelines of exposed records, unresolved credential counts, breach source breakdowns, and distributions by status. Additional charts surface top impacted domains and most affected users, enabling security teams to quickly assess exposure, prioritize remediation, and mitigate identity-based threats.
 
-Audit dashboards further enhance oversight by showing event activity over time, verdicts and reasons, top rules, users, source IPs, event types, geographic distributions, and compatibility modes. Saved searches and tables consolidate essential attributes—including verified emails, device and host IDs, IPs, MACs, users, and organizations—adding valuable investigative context. Together, these insights allow organizations to monitor user behavior, track device health, detect compromised accounts, analyze audit activity, and strengthen compliance, identity management, and endpoint security oversight.
+Audit dashboards further enhance oversight by showing event activity over time, verdicts and reasons, top rules, users, source IPs, event types, geographic distributions, and compatibility modes. Saved searches and tables consolidate essential attributes—including verified emails, device and host IDs, IPs, MACs, users, and organizations—adding valuable investigative context. The Admin Actions dashboard shows activity over time, breaks down events by action domain, type, and status, and includes a table of the top source IPs. Together, these insights allow organizations to monitor user behavior, track device health, detect compromised accounts, analyze audit activity, and strengthen compliance, identity management, and endpoint security oversight.
 
 ## What do I need to use this integration?
 

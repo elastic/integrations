@@ -18,7 +18,7 @@ This integration periodically queries the Island Browser API to retrieve details
 
 This integration collects log messages of the following types:
 
-- `Admin Actions`: Collects all admin actions from the Island Browser vis [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
+- `Admin Actions`: Collects all admin actions from the Island Browser via [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
 - `Audit`: Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
 - `Compromised Credential`: Collects a list of all compromised credentials from the Island Browser via [Compromised Credential API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
@@ -30,7 +30,7 @@ Integrating Island Browser User, Device, Audit, Admin Actions, and Compromised C
 
 Dashboards track total and active users, login trends, and group distributions, alongside device insights such as active, archived, and jailbroken states, OS platform distribution, policy updates, browser update status, Windows license status, and MDM provider compliance. Compromised Credential visualizations highlight account risks with timelines of exposed records, unresolved credential counts, breach source breakdowns, and distributions by status. Additional charts surface top impacted domains and most affected users, enabling security teams to quickly assess exposure, prioritize remediation, and mitigate identity-based threats.
 
-Audit dashboards further enhance oversight by showing event activity over time, verdicts and reasons, top rules, users, source IPs, event types, geographic distributions, and compatibility modes. Saved searches and tables consolidate essential attributes—including verified emails, device and host IDs, IPs, MACs, users, and organizations—adding valuable investigative context. Together, these insights allow organizations to monitor user behavior, track device health, detect compromised accounts, analyze audit activity, and strengthen compliance, identity management, and endpoint security oversight.
+Audit dashboards further enhance oversight by showing event activity over time, verdicts and reasons, top rules, users, source IPs, event types, geographic distributions, and compatibility modes. Saved searches and tables consolidate essential attributes—including verified emails, device and host IDs, IPs, MACs, users, and organizations—adding valuable investigative context. The Admin Actions dashboard shows activity over time, breaks down events by action domain, type, and status, and includes a table of the top source IPs. Together, these insights allow organizations to monitor user behavior, track device health, detect compromised accounts, analyze audit activity, and strengthen compliance, identity management, and endpoint security oversight.
 
 ## What do I need to use this integration?
 
@@ -387,22 +387,22 @@ An example event for `admin_actions` looks as following:
 {
     "@timestamp": "2025-08-19T06:20:28.982Z",
     "agent": {
-        "ephemeral_id": "0bcc5cbb-2ec4-460e-9892-26ae05d5b93e",
-        "id": "2e11df4f-c6d7-4436-87b5-d0e879ecd24c",
-        "name": "elastic-agent-54515",
+        "ephemeral_id": "0c181bf7-edd6-4155-9c9e-c7614a7f1fdc",
+        "id": "49af89eb-a85d-4a4f-9c26-8d61dc0be442",
+        "name": "elastic-agent-88704",
         "type": "filebeat",
         "version": "8.18.8"
     },
     "data_stream": {
         "dataset": "island_browser.admin_actions",
-        "namespace": "38683",
+        "namespace": "85495",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "2e11df4f-c6d7-4436-87b5-d0e879ecd24c",
+        "id": "49af89eb-a85d-4a4f-9c26-8d61dc0be442",
         "snapshot": false,
         "version": "8.18.8"
     },
@@ -412,7 +412,7 @@ An example event for `admin_actions` looks as following:
         "created": "2025-08-19T06:20:28.983Z",
         "dataset": "island_browser.admin_actions",
         "id": "ac93aaca-e464-4c8c-bdda-84bc227bb8c7",
-        "ingested": "2026-01-28T05:29:53Z",
+        "ingested": "2026-01-29T05:44:58Z",
         "kind": "event",
         "original": "{\"actionDomain\":\"SystemSettings\",\"actionType\":\"Create\",\"createdDate\":\"2025-08-19T06:20:28.983078Z\",\"email\":\"clark.kent@example.com\",\"entityId\":\"fdaa9918-3f19-4596-8e9f-7bbec4ec5880\",\"entityName\":\"Generic SIEM Integration\",\"entityType\":\"SIEMConnector\",\"id\":\"ac93aaca-e464-4c8c-bdda-84bc227bb8c7\",\"sourceIp\":\"89.160.20.128\",\"tenantId\":\"elastic-testing\",\"timestamp\":\"2025-08-19T06:20:28.982451Z\",\"updatedDate\":\"2025-08-19T06:20:28.983078Z\",\"userId\":\"auth0|1e396c45-b365-4207-ae78-b35b10c06aaf\"}"
     },
@@ -449,6 +449,18 @@ An example event for `admin_actions` looks as following:
         ]
     },
     "source": {
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
         "ip": "89.160.20.128"
     },
     "tags": [

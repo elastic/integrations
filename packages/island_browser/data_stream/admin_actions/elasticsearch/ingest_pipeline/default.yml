@@ -35,9 +35,7 @@ processors:
       target_field: json
   - fingerprint:
       fields:
-        - json.id
-        - json.timestamp
-        - json.updatedDate
+        - event.original
       tag: fingerprint_island_browser_admin_actions
       target_field: _id
       ignore_missing: true
@@ -196,6 +194,11 @@ processors:
       tag: set_source_ip_from_admin_actions_source_ip
       copy_from: island_browser.admin_actions.source_ip
       ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
   - append:
       field: related.ip
       tag: append_admin_actions_source_ip_into_related_ip
