@@ -1,0 +1,56 @@
+receivers:
+  kubeletstats:
+    endpoint: {{endpoint}}
+    collection_interval: {{collection_interval}}
+    initial_delay: {{initial_delay}}
+    auth_type: {{auth_type}}
+{{#if ca_file}}
+    ca_file: {{ca_file}}
+{{/if}}
+{{#if cert_file}}
+    cert_file: {{cert_file}}
+{{/if}}
+{{#if key_file}}
+    key_file: {{key_file}}
+{{/if}}
+{{#if insecure_skip_verify}}
+    insecure_skip_verify: {{insecure_skip_verify}}
+{{/if}}
+{{#if metric_groups}}
+    metric_groups:
+{{#each metric_groups}}
+      - {{this}}
+{{/each}}
+{{/if}}
+{{#if extra_metadata_labels}}
+    extra_metadata_labels:
+{{#each extra_metadata_labels}}
+      - {{this}}
+{{/each}}
+{{/if}}
+{{#if node}}
+    node: {{node}}
+{{/if}}
+{{#if k8s_api_config_auth_type}}
+    k8s_api_config:
+      auth_type: {{k8s_api_config_auth_type}}
+{{/if}}
+{{#if collect_all_network_interfaces_pod}}{{#if collect_all_network_interfaces_node}}
+    collect_all_network_interfaces:
+      pod: {{collect_all_network_interfaces_pod}}
+      node: {{collect_all_network_interfaces_node}}
+{{else}}
+    collect_all_network_interfaces:
+      pod: {{collect_all_network_interfaces_pod}}
+{{/if}}{{else}}{{#if collect_all_network_interfaces_node}}
+    collect_all_network_interfaces:
+      node: {{collect_all_network_interfaces_node}}
+{{/if}}{{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [kubeletstats]
+      processors: [resourcedetection/system]

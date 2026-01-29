@@ -1,0 +1,148 @@
+format_version: 3.5.0
+name: kubeletstats_otel
+title: "Kubelet Stats OpenTelemetry Input"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect Kubernetes node, pod, container, and volume metrics from the Kubelet API using the OpenTelemetry Collector."
+type: input
+categories:
+  - containers
+  - kubernetes
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/kubeletstats-logo.svg
+    title: Kubelet Stats logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: kubeletstatsreceiver
+    type: metrics
+    title: Kubelet Stats
+    description: Collect Kubernetes metrics from the Kubelet API using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: endpoint
+        type: text
+        title: Kubelet API Endpoint
+        description: The endpoint of the Kubelet API. Defaults to localhost with read-only port 10255 for auth_type none, or secure port 10250 for authenticated methods.
+        required: true
+        show_user: true
+        default: https://localhost:10250
+      - name: collection_interval
+        type: text
+        title: Collection Interval
+        description: The interval at which to collect metrics.
+        required: false
+        show_user: true
+        default: 10s
+      - name: initial_delay
+        type: text
+        title: Initial Delay
+        description: Defines how long this receiver waits before starting.
+        required: false
+        show_user: false
+        default: 1s
+      - name: auth_type
+        type: select
+        title: Authentication Type
+        description: Specifies the authentication method to use when connecting to the Kubelet API.
+        required: true
+        show_user: true
+        default: serviceAccount
+        options:
+          - value: none
+            text: None
+          - value: tls
+            text: TLS
+          - value: serviceAccount
+            text: Service Account
+          - value: kubeConfig
+            text: Kube Config
+      - name: ca_file
+        type: text
+        title: CA File Path
+        description: Path to the certificate authority file for TLS verification.
+        required: false
+        show_user: false
+      - name: cert_file
+        type: text
+        title: Certificate File Path
+        description: Path to the client certificate file for TLS authentication.
+        required: false
+        show_user: false
+      - name: key_file
+        type: text
+        title: Key File Path
+        description: Path to the client private key file for TLS authentication.
+        required: false
+        show_user: false
+      - name: insecure_skip_verify
+        type: bool
+        title: Skip TLS Verification
+        description: Whether to skip TLS certificate verification. Not recommended for production.
+        required: false
+        show_user: false
+        default: false
+      - name: metric_groups
+        type: text
+        title: Metric Groups
+        description: Specify which metric groups to collect. Valid values are container, pod, node, volume. Comma-separated list.
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - container
+          - pod
+          - node
+          - volume
+      - name: extra_metadata_labels
+        type: text
+        title: Extra Metadata Labels
+        description: Additional metadata labels to include in metrics. Valid values are container.id, k8s.volume.type.
+        multi: true
+        required: false
+        show_user: false
+      - name: node
+        type: text
+        title: Node Name
+        description: Node name to limit the discovery of nodes. Required when enabling node utilization metrics.
+        required: false
+        show_user: false
+      - name: k8s_api_config_auth_type
+        type: select
+        title: Kubernetes API Auth Type
+        description: Authentication type for the Kubernetes API when fetching additional metadata.
+        required: false
+        show_user: false
+        options:
+          - value: none
+            text: None
+          - value: serviceAccount
+            text: Service Account
+          - value: kubeConfig
+            text: Kube Config
+      - name: collect_all_network_interfaces_pod
+        type: bool
+        title: Collect All Pod Network Interfaces
+        description: Enable collecting network metrics from all pod interfaces.
+        required: false
+        show_user: false
+        default: false
+      - name: collect_all_network_interfaces_node
+        type: bool
+        title: Collect All Node Network Interfaces
+        description: Enable collecting network metrics from all node interfaces.
+        required: false
+        show_user: false
+        default: false
+owner:
+  github: elastic/ecosystem
+  type: elastic
