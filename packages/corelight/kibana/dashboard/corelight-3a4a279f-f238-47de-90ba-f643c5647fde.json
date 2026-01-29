@@ -14,7 +14,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "source.ip",
-                        "id": "283ff494-ed87-44c1-b0cf-9eb8fdce11c4",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -94,7 +93,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**Corelight**\n\n- [Security Posture](#/dashboard/corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b)\n- Data Insights\n  - [Name Resolution Insights](#/dashboard/corelight-8546a96c-86c9-4edf-9d46-88338d6ac40e)\n  - [Secure Channel Insights](#/dashboard/corelight-45197477-c13f-4e52-a5dd-fb4f53564963)\n  - [Remote Activity Insights](#/dashboard/corelight-f4864774-ed73-4b78-b861-5b8235ec12cf)\n- **Security Workflows**\n  - [Intel](#/dashboard/corelight-323b0f27-993e-4fee-ae6e-b5977d7cab11)\n  - **IP Interrogation**\n  - [Log Hunting](#/dashboard/corelight-ff07e65c-2703-4cbe-a45f-3881025352a3)\n  - [Notices](#/dashboard/corelight-f7da14f0-85db-48e8-a591-1f650af0f618)\n  - [RDP Inferences Overview](#/dashboard/corelight-2d4dc345-cbbe-4d7a-9203-5ab11c8cb5ba)\n  - [SSH Inferences Overview](#/dashboard/corelight-65a5fa91-06e4-459b-b4bb-998c85a6cf08)\n  - [Corelight Suricata IDS Alert Overview](#/dashboard/corelight-f1208ffe-d168-46d1-9531-24de523d1bfb)\n  - [VPN Insights](#/dashboard/corelight-023162b6-94da-4d8d-b1f6-de6192356cce)\n- Data Explorer\n  - [Connections](#/dashboard/corelight-eff0434c-1e27-4c02-959e-9f5d95488efb)\n  - [DNS](#/dashboard/corelight-58885f47-95e1-4242-a1ee-783de69ace17)\n  - [Files](#/dashboard/corelight-0cfc8a95-4979-4265-b9ad-91edf63f01a9)\n  - [HTTP](#/dashboard/corelight-8c5f15f7-7063-4228-be54-fb8c20b29caa)\n  - [Software](#/dashboard/corelight-40bbc19b-dd9c-4b43-a88a-e29fc8701902)\n  - [SSL and x509](#/dashboard/corelight-e4a93cfe-4b1f-44df-ab99-50c74f6f2203)\n\n[**Integrations Page**](/app/integrations/detail/corelight/overview)",
+                            "markdown": "**Navigation**\n\n**Corelight**\n\n- [Security Posture](#/dashboard/corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b)\n- Data Insights\n  - [Name Resolution Insights](#/dashboard/corelight-8546a96c-86c9-4edf-9d46-88338d6ac40e)\n  - [Secure Channel Insights](#/dashboard/corelight-45197477-c13f-4e52-a5dd-fb4f53564963)\n  - [Remote Activity Insights](#/dashboard/corelight-f4864774-ed73-4b78-b861-5b8235ec12cf)\n- **Security Workflows**\n  - [Intel](#/dashboard/corelight-323b0f27-993e-4fee-ae6e-b5977d7cab11)\n  - **IP Interrogation**\n  - [Log Hunting](#/dashboard/corelight-ff07e65c-2703-4cbe-a45f-3881025352a3)\n  - [Notices](#/dashboard/corelight-f7da14f0-85db-48e8-a591-1f650af0f618)\n  - [RDP Inferences Overview](#/dashboard/corelight-2d4dc345-cbbe-4d7a-9203-5ab11c8cb5ba)\n  - [SSH Inferences Overview](#/dashboard/corelight-65a5fa91-06e4-459b-b4bb-998c85a6cf08)\n  - [Corelight Suricata IDS Alert Overview](#/dashboard/corelight-f1208ffe-d168-46d1-9531-24de523d1bfb)\n  - [VPN Insights](#/dashboard/corelight-023162b6-94da-4d8d-b1f6-de6192356cce)\n- Data Explorer\n  - [AWS VPC Flow](#/dashboard/corelight-caf92ff9-71b9-402c-813a-75ba5a3cb3b8)\n  - [Connections](#/dashboard/corelight-eff0434c-1e27-4c02-959e-9f5d95488efb)\n  - [DNS](#/dashboard/corelight-58885f47-95e1-4242-a1ee-783de69ace17)\n  - [Files](#/dashboard/corelight-0cfc8a95-4979-4265-b9ad-91edf63f01a9)\n  - [HTTP](#/dashboard/corelight-8c5f15f7-7063-4228-be54-fb8c20b29caa)\n  - [Software](#/dashboard/corelight-40bbc19b-dd9c-4b43-a88a-e29fc8701902)\n  - [SSL and x509](#/dashboard/corelight-e4a93cfe-4b1f-44df-ab99-50c74f6f2203)\n\n[**Integrations Page**](/app/integrations/detail/corelight/overview)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -241,10 +240,18 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Connections",
-                    "disabledActions": [
-                        "OPEN_FLYOUT_ADD_DRILLDOWN"
-                    ],
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "from logs-corelight.conn*\r\n| limit 10000\r\n| where (source.ip is not null or destination.ip is not null) and destination.port not in (80, 8080 ,443)\r\n| stats values(destination.port), values(network.transport), count() by network.transport, destination.port\r\n| eval tp = concat(`values(network.transport)`,\"/\",to_string(`values(destination.port)`))\r\n| rename `count()` as Count, tp as `transport/port`\r\n| sort Count desc\r\n| limit 10\r\n| keep Count, `transport/port`"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 16,
@@ -364,10 +371,18 @@
                         "visualizationType": "lnsPie"
                     },
                     "description": "Connections",
-                    "disabledActions": [
-                        "OPEN_FLYOUT_ADD_DRILLDOWN"
-                    ],
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE source.ip IS NOT NULL AND destination.ip IS NOT NULL\r\n| STATS VALUES(destination.ip) BY event.id\r\n| EVAL is_dest_internal_ip = CASE(CIDR_MATCH(`VALUES(destination.ip)`, \"10.0.0.0/8\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"172.16.0.0/12\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"192.168.0.0/16\")==\"true\",\"true\",\"false\")\r\n| EVAL ie=CASE(is_dest_internal_ip==\"true\", \"Internal\",is_dest_internal_ip==\"false\",\"External\",\"unknown\")\r\n| STATS COUNT() by ie\r\n| RENAME `COUNT()` as Count\r\n| KEEP Count,ie"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 16,
@@ -510,10 +525,18 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "Connections",
-                    "disabledActions": [
-                        "OPEN_FLYOUT_ADD_DRILLDOWN"
-                    ],
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and source.ip not in (\"0.0.0.0\", \"255.255.255.255\") and destination.ip NOT IN (\"0.0.0.0\", \"255.255.255.255\", \"192.168.0.255\") and network.bytes IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(network.transport), values(destination.port), values(event.id), values(destination.geo.country_iso_code), sum(network.bytes) BY source.ip, destination.ip, event.id\r\n| EVAL tp = concat(`values(network.transport)`,\"/\", to_string(`values(destination.port)`))\r\n| SORT `sum(network.bytes)` DESC\r\n| LIMIT 10\r\n| RENAME `values(source.ip)` AS `Source IP`, `values(destination.ip)` AS `Destination IP`, tp AS Service, `values(event.id)` AS UID, `values(destination.geo.country_iso_code)` AS Country, `sum(network.bytes)` AS Bytes\r\n| KEEP `Source IP`,`Destination IP`, Service, UID, Country, Bytes"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 16,
@@ -643,10 +666,18 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "HTTP",
-                    "disabledActions": [
-                        "OPEN_FLYOUT_ADD_DRILLDOWN"
-                    ],
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-corelight.http*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and http.request.method IS NOT NULL and url.path IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(http.request.method), values(url.path), count() BY source.ip, destination.ip, http.request.method, url.path\r\n| RENAME `values(destination.ip)` AS `Destination IP`, `values(source.ip)` AS `Source IP`, `values(http.request.method)` AS Method, url.path AS URI, `count()` AS Count\r\n| SORT Count DESC\r\n| LIMIT 10\r\n| KEEP `Destination IP`, `Source IP`, Method, URI, Count"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 16,
@@ -851,7 +882,80 @@
                         "visualizationType": "lnsPie"
                     },
                     "description": "Corelight Data Sets",
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.dataset",
+                                "index": "444f7ca5-079b-430f-83f9-02e142da61ea",
+                                "key": "event.dataset",
+                                "negate": true,
+                                "params": [
+                                    "conn",
+                                    "conn_long",
+                                    "conn_red",
+                                    "http",
+                                    "asoc:nba:event"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "conn",
+                                    "conn_long",
+                                    "conn_red",
+                                    "http",
+                                    "asoc:nba:event"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "conn"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "conn_long"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "conn_red"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "http"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "asoc:nba:event"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
@@ -1065,7 +1169,88 @@
                         "visualizationType": "lnsPie"
                     },
                     "description": "HTTP",
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.dataset",
+                                "index": "e1d561aa-25f3-4fbb-ab01-4054b54d0c86",
+                                "key": "event.dataset",
+                                "negate": false,
+                                "params": [
+                                    "http",
+                                    "http_red",
+                                    "http2"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "http",
+                                    "http_red",
+                                    "http2"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "http"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "http_red"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "http2"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "observer.vendor",
+                                "index": "76b26419-9095-4bf6-be35-c6871285ffa5",
+                                "key": "observer.vendor",
+                                "negate": false,
+                                "params": {
+                                    "query": "Corelight"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "observer.vendor": "Corelight"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
@@ -1321,7 +1506,124 @@
                         "visualizationType": "lnsPie"
                     },
                     "description": "HTTP",
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.dataset",
+                                "index": "a0e55d4a-d548-4d69-97f0-d43090275ba9",
+                                "key": "event.dataset",
+                                "negate": false,
+                                "params": [
+                                    "conn",
+                                    "conn_long",
+                                    "conn_red"
+                                ],
+                                "type": "phrases"
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "conn"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "conn_long"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "event.dataset": "conn_red"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "observer.vendor",
+                                "index": "5f695c0d-e064-4010-8391-56f57ab7ae44",
+                                "key": "observer.vendor",
+                                "negate": false,
+                                "params": {
+                                    "query": "Corelight"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "observer.vendor": "Corelight"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "destination.port",
+                                "index": "4a02769b-f355-4b0d-bd04-e5fa08518bbd",
+                                "key": "destination.port",
+                                "negate": false,
+                                "params": [
+                                    "80",
+                                    "8080",
+                                    "443"
+                                ],
+                                "type": "phrases"
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "destination.port": "80"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "destination.port": "8080"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "destination.port": "443"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
@@ -1337,12 +1639,11 @@
         ],
         "timeRestore": false,
         "title": "[Logs Corelight] IP Interrogation",
-        "version": 2
+        "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-29T12:29:11.476Z",
+    "created_at": "2026-01-06T09:23:28.311Z",
     "id": "corelight-3a4a279f-f238-47de-90ba-f643c5647fde",
-    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -1367,6 +1668,11 @@
         {
             "id": "logs-*",
             "name": "controlGroup_283ff494-ed87-44c1-b0cf-9eb8fdce11c4:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         }
     ],
