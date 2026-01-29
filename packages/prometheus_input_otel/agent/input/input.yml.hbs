@@ -1,0 +1,34 @@
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'prometheus_scrape'
+          scrape_interval: {{scrape_interval}}
+          {{#if scrape_timeout}}
+          scrape_timeout: {{scrape_timeout}}
+          {{/if}}
+          {{#if metrics_path}}
+          metrics_path: {{metrics_path}}
+          {{/if}}
+          {{#if scheme}}
+          scheme: {{scheme}}
+          {{/if}}
+          {{#if honor_labels}}
+          honor_labels: {{honor_labels}}
+          {{/if}}
+          {{#if honor_timestamps}}
+          honor_timestamps: {{honor_timestamps}}
+          {{/if}}
+          static_configs:
+            - targets:
+{{#each targets}}
+                - {{this}}
+{{/each}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [resourcedetection/system]

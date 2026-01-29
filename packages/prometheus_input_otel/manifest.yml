@@ -1,0 +1,89 @@
+format_version: 3.5.0
+name: prometheus_input_otel
+title: "Prometheus OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Scrape Prometheus metrics endpoints using the OpenTelemetry Collector Prometheus receiver"
+type: input
+categories:
+  - monitoring
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_prometheus.svg
+    title: Prometheus logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: prometheusreceiver
+    type: metrics
+    title: Prometheus Metrics
+    description: Scrape metrics from Prometheus-compatible endpoints using the OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: targets
+        type: text
+        title: Scrape Targets
+        required: true
+        multi: true
+        description: List of Prometheus scrape targets (e.g., localhost:9090/metrics)
+        default:
+          - localhost:9090/metrics
+        show_user: true
+      - name: scrape_interval
+        type: text
+        title: Scrape Interval
+        required: false
+        description: How frequently to scrape targets (e.g., 15s, 30s, 1m)
+        default: 60s
+        show_user: true
+      - name: scrape_timeout
+        type: text
+        title: Scrape Timeout
+        required: false
+        description: Timeout for scraping (must be less than scrape_interval)
+        default: 10s
+        show_user: false
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        required: false
+        description: The HTTP resource path to fetch metrics from targets
+        default: /metrics
+        show_user: false
+      - name: scheme
+        type: select
+        title: Scheme
+        required: false
+        description: Protocol scheme to use for scraping
+        default: http
+        show_user: false
+        options:
+          - text: HTTP
+            value: http
+          - text: HTTPS
+            value: https
+      - name: honor_labels
+        type: bool
+        title: Honor Labels
+        required: false
+        description: Honor labels from the scraped metrics
+        default: false
+        show_user: false
+      - name: honor_timestamps
+        type: bool
+        title: Honor Timestamps
+        required: false
+        description: Honor timestamps from the scraped metrics
+        default: true
+        show_user: false
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
