@@ -14,22 +14,67 @@ jobs:
       group: claude-pr-review-${{ github.event.pull_request.number }}
       cancel-in-progress: false
     runs-on: ubuntu-latest
-    if: |
-      contains(fromJSON('["strawgate","AlexanderWert","perk","graphaelli","cmacknz","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet"]'), github.event.pull_request.user.login)
     steps:
+      - name: Debug PR context
+        run: |
+          echo "PR user login: ${{ github.event.pull_request.user.login }}"
+          echo "PR author association: ${{ github.event.pull_request.author_association }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Event action: ${{ github.event.action }}"
+          
+      - name: Check authorization
+        id: check-auth
+        run: |
+          USER_LOGIN="${{ github.event.pull_request.user.login }}"
+          AUTHOR_ASSOC="${{ github.event.pull_request.author_association }}"
+          APPROVED_USERS='["strawgate","AlexanderWert","perk","graphaelli","cmacknz","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet"]'
+          APPROVED_ROLES='["OWNER","MEMBER","COLLABORATOR"]'
+          
+          echo "Checking if $USER_LOGIN is in approved list..."
+          echo "Checking if $AUTHOR_ASSOC is in approved roles..."
+          
+          if echo "$APPROVED_USERS" | jq -e --arg user "$USER_LOGIN" 'contains([$user])' > /dev/null; then
+            echo "✓ User is in approved list"
+            USER_OK=true
+          else
+            echo "✗ User is NOT in approved list"
+            USER_OK=false
+          fi
+          
+          if echo "$APPROVED_ROLES" | jq -e --arg role "$AUTHOR_ASSOC" 'contains([$role])' > /dev/null; then
+            echo "✓ Author association is approved"
+            ROLE_OK=true
+          else
+            echo "✗ Author association is NOT approved"
+            ROLE_OK=false
+          fi
+          
+          if [ "$USER_OK" = "true" ] && [ "$ROLE_OK" = "true" ]; then
+            echo "authorized=true" >> $GITHUB_OUTPUT
+            echo "✓ Authorization passed"
+          else
+            echo "authorized=false" >> $GITHUB_OUTPUT
+            echo "✗ Authorization failed"
+            exit 1
+          fi
+          
       - name: Checkout
+        if: steps.check-auth.outputs.authorized == 'true'
         uses: actions/checkout@v6
 
       - name: Setup Go
+        if: steps.check-auth.outputs.authorized == 'true'
         uses: actions/setup-go@v5
         with:
           go-version-file: .go-version
 
       - name: Install elastic-package
+        if: steps.check-auth.outputs.authorized == 'true'
         run: |
           go install github.com/elastic/elastic-package@latest
 
       - name: Run Claude PR Review
+        if: steps.check-auth.outputs.authorized == 'true'
         uses: elastic/ai-github-actions/workflows/pr-review/rwx@v0
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
