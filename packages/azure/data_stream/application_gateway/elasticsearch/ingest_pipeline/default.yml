@@ -148,6 +148,18 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
+      if: ctx.json?.properties?.timeTaken != null
+      params:
+        S_TO_NS: 1000000000
+      source: >-
+        if (ctx.json.properties.timeTaken instanceof String) {
+          ctx.event.duration = (long)(Double.parseDouble(ctx.json.properties.timeTaken) * params.S_TO_NS);
+        } else {
+          ctx.event.duration = (long)(ctx.json.properties.timeTaken * params.S_TO_NS);
+        }
+      description: Convert timeTaken from seconds to nanoseconds
+  - script:
+      lang: painless
       if: ctx.event?.duration != null
       params:
         MS_TO_NS: 1000000
@@ -289,6 +301,104 @@ processors:
   - rename:
       field: json.properties.policyScopeName
       target_field: azure.application_gateway.policy.scope_name
+      ignore_missing: true
+  - rename:
+      field: json.backendPoolName
+      target_field: azure.application_gateway.backend_pool_name
+      ignore_missing: true
+  - rename:
+      field: json.backendSettingName
+      target_field: azure.application_gateway.backend_setting_name
+      ignore_missing: true
+  - rename:
+      field: json.listenerName
+      target_field: azure.application_gateway.listener_name
+      ignore_missing: true
+  - rename:
+      field: json.ruleName
+      target_field: azure.application_gateway.rule_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.originalHost
+      target_field: azure.application_gateway.original_host
+      ignore_missing: true
+  - rename:
+      field: json.properties.originalRequestUriWithArgs
+      target_field: azure.application_gateway.original_request_uri_with_args
+      ignore_missing: true
+  - rename:
+      field: json.properties.sslEnabled
+      target_field: azure.application_gateway.ssl_enabled
+      ignore_missing: true
+  - rename:
+      field: json.properties.sslClientVerify
+      target_field: azure.application_gateway.ssl_client_verify
+      ignore_missing: true
+  - rename:
+      field: json.properties.sslClientCertificateFingerprint
+      target_field: azure.application_gateway.ssl_client_certificate_fingerprint
+      ignore_missing: true
+  - rename:
+      field: json.properties.sslClientCertificateIssuerName
+      target_field: azure.application_gateway.ssl_client_certificate_issuer_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.backendSslProtocol
+      target_field: azure.application_gateway.backend_ssl_protocol
+      ignore_missing: true
+  - rename:
+      field: json.properties.backendSslCipher
+      target_field: azure.application_gateway.backend_ssl_cipher
+      ignore_missing: true
+  - rename:
+      field: json.properties.serverRouted
+      target_field: azure.application_gateway.server_routed
+      ignore_missing: true
+  - rename:
+      field: json.properties.serverStatus
+      target_field: azure.application_gateway.server_status
+      ignore_missing: true
+  - convert:
+      field: json.properties.serverResponseLatency
+      target_field: azure.application_gateway.server_response_latency
+      type: float
+      ignore_missing: true
+  - convert:
+      field: json.properties.serverConnectTime
+      target_field: azure.application_gateway.server_connect_time
+      type: float
+      ignore_missing: true
+  - convert:
+      field: json.properties.serverHeaderTime
+      target_field: azure.application_gateway.server_header_time
+      type: float
+      ignore_missing: true
+  - convert:
+      field: json.properties.clientResponseTime
+      target_field: azure.application_gateway.client_response_time
+      type: float
+      ignore_missing: true
+  - convert:
+      field: json.properties.connectionSerialNumber
+      target_field: azure.application_gateway.connection_serial_number
+      type: long
+      ignore_missing: true
+  - convert:
+      field: json.properties.noOfConnectionRequests
+      target_field: azure.application_gateway.no_of_connection_requests
+      type: long
+      ignore_missing: true
+  - rename:
+      field: json.properties.error_info
+      target_field: azure.application_gateway.error_info
+      ignore_missing: true
+  - rename:
+      field: json.properties.contentType
+      target_field: azure.application_gateway.content_type
+      ignore_missing: true
+  - rename:
+      field: json.properties.upstreamSourcePort
+      target_field: azure.application_gateway.upstream_source_port
       ignore_missing: true
   - set:
       field: observer.type
