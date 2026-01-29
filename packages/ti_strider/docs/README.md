@@ -27,43 +27,45 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-10T17:39:26.680Z",
+    "@timestamp": "2025-06-11T15:10:15.351Z",
     "agent": {
-        "ephemeral_id": "4b56d09d-0475-40a3-9aeb-5b49a4f82c2b",
-        "id": "c00985e3-3268-4a43-92db-ec29f6fc8a77",
-        "name": "elastic-agent-68585",
+        "ephemeral_id": "421d9d51-5675-4ee5-801c-d96ab603cd9a",
+        "id": "b579255e-b46b-4be7-884d-67f2bd6232e4",
+        "name": "elastic-agent-42318",
         "type": "filebeat",
         "version": "8.17.4"
     },
     "data_stream": {
         "dataset": "ti_strider.indicator",
-        "namespace": "31572",
+        "namespace": "58899",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "c00985e3-3268-4a43-92db-ec29f6fc8a77",
+        "id": "b579255e-b46b-4be7-884d-67f2bd6232e4",
         "snapshot": false,
         "version": "8.17.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "ti_strider.indicator",
-        "ingested": "2025-06-10T17:39:27Z"
+        "ingested": "2025-06-11T15:10:15Z"
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-68585",
+        "hostname": "elastic-agent-42318",
         "ip": [
-            "10.10.10.10"
+            "172.19.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "00-1A-2B-3C-4D-5E."
+            "2E-0B-3E-A0-2B-AA",
+            "82-55-19-ED-C0-78"
         ],
-        "name": "elastic-agent-68585",
+        "name": "elastic-agent-42318",
         "os": {
             "family": "",
             "kernel": "6.10.14-linuxkit",
@@ -82,13 +84,8 @@ An example event for `indicator` looks as following:
         "expires_at": "2025-07-10T12:00:00.000Z",
         "is_new": 0,
         "md5": "001259ecf5401350737e51e405954357",
-        "name_primary": "example@email.address",
-        "name_secondary": [
-            {
-                "name": "辅助名称示例",
-                "language": "zn"
-            }
-        ],
+        "name_primary": "abagautdinova@itmo.ru",
+        "name_secondary": [],
         "risk_signal": "GT",
         "type": "emailAddress"
     }
