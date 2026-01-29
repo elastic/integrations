@@ -1,0 +1,30 @@
+name: Debug Author Association
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print PR context
+        run: |
+          echo "=== PR Author Info ==="
+          echo "PR user login: ${{ github.event.pull_request.user.login }}"
+          echo "PR author_association: ${{ github.event.pull_request.author_association }}"
+          echo ""
+          echo "=== Actor Info ==="
+          echo "Actor: ${{ github.actor }}"
+          echo ""
+          echo "=== Repository Info ==="
+          echo "Head repo: ${{ github.event.pull_request.head.repo.full_name }}"
+          echo "Base repo: ${{ github.event.pull_request.base.repo.full_name }}"
+          echo "Is fork: ${{ github.event.pull_request.head.repo.fork }}"
+          echo ""
+          echo "=== Event Info ==="
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event action: ${{ github.event.action }}"
+          echo ""
+          echo "=== Condition Check ==="
+          echo "User in list: ${{ contains(fromJSON('["strawgate","AlexanderWert","perk","graphaelli","cmacknz","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet"]'), github.event.pull_request.user.login) }}"
+          echo "Author assoc in allowed: ${{ contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.pull_request.author_association) }}"
