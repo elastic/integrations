@@ -1,7 +1,7 @@
-# System OpenTelemetry Input Package
+# Host Metrics OpenTelemetry Input Package
 
 ## Overview
-The System OpenTelemetry Input Package for Elastic enables collection of telemetry data about the host system through OpenTelemetry protocols using the [hostmetricsreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#host-metrics-receiver).
+The Host Metrics OpenTelemetry Input Package for Elastic enables collection of telemetry data about the host system through OpenTelemetry protocols using the [hostmetricsreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#host-metrics-receiver).
 
 
 ### How it works
