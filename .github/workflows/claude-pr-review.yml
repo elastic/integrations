@@ -1,6 +1,6 @@
 name: Claude PR Review
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, labeled]
 
 permissions:
@@ -15,14 +15,11 @@ jobs:
       cancel-in-progress: false
     runs-on: ubuntu-latest
     if: |
-      (github.event.action == 'labeled' && github.event.label.name == 'claude-plz-review' && contains(fromJSON('["strawgate","AlexanderWert","perk","graphaelli","cmacknz","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet"]'), github.actor)) ||
-      ((github.event.action == 'opened' || github.event.action == 'synchronize') && contains(fromJSON('["strawgate","AlexanderWert","perk","graphaelli","cmacknz","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet"]'), github.event.pull_request.user.login))
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.pull_request.author_association) &&
+      contains(fromJSON('["strawgate","AlexanderWert","perk","graphaelli","cmacknz","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet"]'), github.event.pull_request.user.login)
     steps:
-      - name: Checkout PR head branch
+      - name: Checkout
         uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v5
