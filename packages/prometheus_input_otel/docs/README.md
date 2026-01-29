@@ -31,6 +31,43 @@ The protocol to use when scraping. Options:
 - `http` (default) - Use HTTP
 - `https` - Use HTTPS for secure endpoints
 
+### TLS Configuration
+
+When using HTTPS endpoints, you can configure TLS settings:
+
+| Option | Description |
+|--------|-------------|
+| **Enable TLS Configuration** | Must be enabled to use any TLS options |
+| **Skip TLS Verification** | Disable certificate verification (useful for self-signed certificates) |
+| **CA Certificate Path** | Path to a custom CA certificate file for verifying the server |
+| **Client Certificate Path** | Path to client certificate for mutual TLS (mTLS) authentication |
+| **Client Key Path** | Path to client private key for mTLS authentication |
+
+> **Note:** For mutual TLS authentication, both the client certificate and client key must be provided together.
+
+#### Example: Self-signed certificate
+
+1. Set **Scheme** to `https`
+2. Enable **TLS Configuration**
+3. Enable **Skip TLS Verification**
+
+#### Example: Custom CA
+
+1. Set **Scheme** to `https`
+2. Enable **TLS Configuration**
+3. Set **CA Certificate Path** to `/path/to/ca.crt`
+
+### Basic Authentication
+
+For endpoints that require HTTP basic authentication, provide the username and password:
+
+| Option | Description |
+|--------|-------------|
+| **Username** | Username for basic authentication |
+| **Password** | Password for basic authentication (stored securely) |
+
+> **Note:** Both username and password must be provided together for basic authentication to work.
+
 ## Use Cases
 
 - Monitor applications exposing Prometheus metrics
