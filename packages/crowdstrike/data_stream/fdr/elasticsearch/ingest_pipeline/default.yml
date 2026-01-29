@@ -356,6 +356,10 @@ processors:
       tag: pipeline_data_protection_detection_summary_cd21f5a1
       if: ctx.crowdstrike?.ExternalApiType == 'Event_DataProtectionDetectionSummaryEvent'
       name: '{{ IngestPipeline "data_protection_detection_summary" }}'
+  - pipeline:
+      tag: pipeline_epp_detection_summary_b611643c
+      if: ctx.crowdstrike?.ExternalApiType == 'Event_EppDetectionSummaryEvent'
+      name: '{{ IngestPipeline "epp_detection_summary" }}'
 
   # Handle case changes.
   - rename:
@@ -467,64 +471,6 @@ processors:
       target_field: crowdstrike.DetectName
       ignore_missing: true
       ignore_failure: true
-
-  # EppDetectionSummaryEvent converts
-  - convert:
-      tag: convert_crowdstrike_LocalIPv6_to_ip_19315481
-      if: ctx.crowdstrike?.LocalIPv6 != null && ctx.crowdstrike.LocalIPv6 != ''
-      field: crowdstrike.LocalIPv6
-      type: ip
-      on_failure:
-        - remove:
-            tag: remove_crowdstrike_LocalIPv6_f0bb947a
-            field:
-              - crowdstrike.LocalIPv6
-        - append:
-            tag: append_error_message_2d13d307
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_of_crowdstrike_FilesAccessed_7975c0fe
-      if: ctx.crowdstrike?.FilesAccessed instanceof List
-      field: crowdstrike.FilesAccessed
-      processor:
-        date:
-          tag: date__ingest__value_Timestamp_into__ingest__value_Timestamp_b9dba206
-          field: _ingest._value.Timestamp
-          target_field: _ingest._value.Timestamp
-          formats:
-            - UNIX
-          on_failure:
-            - remove:
-                tag: remove__ingest__value_Timestamp_1e9e21da
-                field:
-                  - _ingest._value.Timestamp
-                ignore_failure: true
-            - append:
-                tag: append_error_message_8eaed846
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_of_crowdstrike_FilesWritten_069e87ee
-      if: ctx.crowdstrike?.FilesWritten instanceof List
-      field: crowdstrike.FilesWritten
-      processor:
-        date:
-          tag: date__ingest__value_Timestamp_into__ingest__value_Timestamp_3d945d16
-          field: _ingest._value.Timestamp
-          target_field: _ingest._value.Timestamp
-          formats:
-            - UNIX
-          on_failure:
-            - remove:
-                tag: remove__ingest__value_Timestamp_151916ea
-                field:
-                  - _ingest._value.Timestamp
-                ignore_failure: true
-            - append:
-                tag: append_error_message_cccd8556
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Handle additional added fields.
   - date:
@@ -2187,13 +2133,13 @@ processors:
       target_field: file.device
       ignore_missing: true
   - set:
-      tag: set_file_type_c7c034b0
-      if: ctx.file?.path != null && !ctx.event.action.contains("Directory")
+      tag: set_file_type_f7adee81
+      if: ctx.file?.path != null && ctx.event?.action != null && !ctx.event.action.contains("Directory")
       field: file.type
       value: file
   - set:
-      tag: set_file_type_b27f1482
-      if: ctx.file?.path != null && (ctx.event.action.contains("Directory") || ctx.file.path.endsWith("\\") || ctx.file.path.endsWith("/"))
+      tag: set_file_type_d001ae21
+      if: ctx.file?.path != null && ctx.event?.action != null && (ctx.event.action.contains("Directory") || ctx.file.path.endsWith("\\") || ctx.file.path.endsWith("/"))
       field: file.type
       value: dir
   - script:
@@ -2318,6 +2264,47 @@ processors:
           tag: append_threat_tactic_name_9aebe2d8
           field: threat.tactic.name
           value: '{{{_ingest._value.Tactic}}}'
+          allow_duplicates: false
+
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_Tactic_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_threat_tactic_name_b021c3ec
+          field: threat.tactic.name
+          value: '{{{_ingest._value.Tactic}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_TacticID_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_threat_tactic_id_4d499747
+          field: threat.tactic.id
+          value: '{{{_ingest._value.TacticID}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_Technique_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_threat_technique_name_af6387ac
+          field: threat.technique.name
+          value: '{{{_ingest._value.Technique}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_TechniqueID_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_threat_technique_id_70f7c093
+          field: threat.technique.id
+          value: '{{{_ingest._value.TechniqueID}}}'
           allow_duplicates: false
 
   # Package fields.
@@ -2808,6 +2795,7 @@ processors:
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
         - crowdstrike.BrowserExtensionArchitecture
+        - crowdstrike.MitreAttack
         - _conf
       ignore_missing: true
   - script:
