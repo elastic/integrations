@@ -24,18 +24,19 @@ This package receives telemetry data from MySQL servers by configuring the MySQL
 | Username | Yes | `root` | MySQL username |
 | Password | No | - | MySQL password |
 | Database | No | - | Specific database to collect metrics from (all if not set) |
-| Transport | No | `tcp` | Network to use for connecting |
+| Transport | No | `tcp` | Network to use for connecting (tcp, tcp4, tcp6, unix) |
 | Allow Native Passwords | No | `true` | Allow native password authentication |
 
 ### TLS Settings
 | Setting | Required | Default | Description |
 |---------|----------|---------|-------------|
-| Disable TLS | No | `false` | Set to true to disable TLS connections |
 | Skip TLS Verification | No | `false` | Set to true to skip certificate verification |
 | TLS Server Name Override | No | - | Override the ServerName in TLSConfig |
 | TLS CA File | No | - | Path to CA certificate file for verifying the server certificate |
 | TLS Certificate File | No | - | Path to client certificate file for mTLS authentication |
 | TLS Key File | No | - | Path to client key file for mTLS authentication |
+
+Note: TLS is disabled by default. To enable TLS, configure at least one TLS setting (e.g., TLS CA File or Skip TLS Verification).
 
 ### Collection Settings
 | Setting | Required | Default | Description |

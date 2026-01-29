@@ -57,11 +57,21 @@ policy_templates:
         description: The database name. If not specified, metrics will be collected for all databases.
         show_user: true
       - name: transport
-        type: text
+        type: select
         required: false
         title: Transport
         description: Defines the network to use for connecting to the server.
+        multi: false
         default: tcp
+        options:
+          - text: TCP
+            value: tcp
+          - text: TCP IPv4-only
+            value: tcp4
+          - text: TCP IPv6-only
+            value: tcp6
+          - text: Unix Socket
+            value: unix
         show_user: false
       - name: allow_native_passwords
         type: bool
@@ -71,14 +81,7 @@ policy_templates:
         default: true
         show_user: false
         secret: false
-      # TLS settings
-      - name: tls_insecure
-        type: bool
-        required: false
-        title: Disable TLS
-        description: Set to true to disable TLS connections.
-        default: false
-        show_user: false
+      # TLS settings (only applies when TLS certificates are configured)
       - name: tls_insecure_skip_verify
         type: bool
         required: false
@@ -112,14 +115,14 @@ policy_templates:
         show_user: false
       # Collection settings
       - name: collection_interval
-        type: text
+        type: duration
         required: false
         title: Collection Interval
         description: Time between each collection (e.g., 10s, 1m).
         default: 10s
         show_user: false
       - name: initial_delay
-        type: text
+        type: duration
         required: false
         title: Initial Delay
         description: Defines how long this receiver waits before starting.
@@ -134,7 +137,7 @@ policy_templates:
         default: 120
         show_user: false
       - name: statement_events_time_limit
-        type: text
+        type: duration
         required: false
         title: Statement Events Time Limit
         description: Maximum time since the statements have been observed last time.
@@ -178,7 +181,7 @@ policy_templates:
         default: 200
         show_user: false
       - name: top_query_collection_interval
-        type: text
+        type: duration
         required: false
         title: Top Query Collection Interval
         description: The interval at which top queries should be emitted.
@@ -192,7 +195,7 @@ policy_templates:
         default: 1000
         show_user: false
       - name: top_query_plan_cache_ttl
-        type: text
+        type: duration
         required: false
         title: Query Plan Cache TTL
         description: How long until a query plan expires in the cache.
