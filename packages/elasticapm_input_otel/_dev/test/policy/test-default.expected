@@ -1,0 +1,77 @@
+connectors:
+    forward: {}
+exporters:
+    elasticsearch/componentid-0: []
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+    transform/componentid-1:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "elasticapm_input_otel.elasticapmintakereceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    elasticapmintake/componentid-0:
+        agent_config:
+            enabled: false
+        endpoint: localhost:8200
+secret_references: []
+service:
+    pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        logs/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - elasticapmintake/componentid-0
+        metrics:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        metrics/componentid-1:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - elasticapmintake/componentid-0
+        traces:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        traces/componentid-2:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - elasticapmintake/componentid-0
