@@ -12,8 +12,8 @@ The Prometheus receiver is built to be a drop-in replacement for Prometheus, ful
 
 Specify one or more targets to scrape. Each target should be in the format `host:port`. The metrics path is configured separately using the `metrics_path` option (default: `/metrics`). For example:
 
-- `localhost:9090/metrics` - Prometheus server
-- `localhost:9100/metrics` - Node Exporter
+- `localhost:9090` - Prometheus server
+- `localhost:9100`metrics`` - Node Exporter
 - `localhost:8080/actuator/prometheus` - Spring Boot application
 
 ### Scrape Interval
