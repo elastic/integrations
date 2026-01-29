@@ -1,0 +1,28 @@
+{
+    "id": "aws-vpcflow-otel-high-data-transfer-rate",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[AWS VPC OTEL] High data transfer rate",
+        "tags": ["AWS","AWS VPC Flow Logs", "OTel"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert triggers when any source whose bytes exceed a threshold (e.g. > 50GB in 10 minutes)\n// You can adjust the threshold value in WHERE clause as needed.\nFROM logs-aws.vpcflow.otel-default| WHERE aws.vpc.flow.action == \"ACCEPT\"| STATS total_bytes = SUM(aws.vpc.flow.bytes) BY network.interface.name| WHERE total_bytes > 53687091200"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
