@@ -43,12 +43,13 @@ This package receives telemetry data from Apache HTTP servers by configuring the
 ### TLS Settings
 | Setting | Required | Default | Description |
 |---------|----------|---------|-------------|
-| Disable TLS | No | `false` | Set to true to disable TLS |
 | Skip TLS Verification | No | `false` | Set to true to skip certificate verification |
 | TLS CA File | No | - | Path to CA certificate file |
 | TLS Certificate File | No | - | Path to client certificate file |
 | TLS Key File | No | - | Path to client key file |
 | TLS Server Name Override | No | - | Override server name for TLS verification |
+
+Note: TLS is controlled by the endpoint URL protocol. Use `http://` for plain HTTP or `https://` for TLS connections.
 
 
 ## Metrics reference
