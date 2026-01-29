@@ -1,0 +1,203 @@
+format_version: 3.5.0
+name: mysql_otel_input
+title: "MySQL OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect MySQL metrics using OpenTelemetry Collector"
+type: input
+categories:
+  - datastore
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_mysql_otel.svg
+    title: MySQL logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: mysqlreceiver
+    type: metrics
+    title: MySQL Metrics (OpenTelemetry)
+    description: Collect MySQL metrics using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      # Connection settings
+      - name: endpoint
+        type: text
+        required: true
+        title: Endpoint
+        description: The endpoint of the MySQL server (host:port).
+        default: localhost:3306
+        show_user: true
+      - name: username
+        type: text
+        required: true
+        title: Username
+        description: The username used to connect to MySQL.
+        default: root
+        show_user: true
+      - name: password
+        type: password
+        required: false
+        title: Password
+        description: The password used to connect to MySQL.
+        secret: true
+        show_user: true
+      - name: database
+        type: text
+        required: false
+        title: Database
+        description: The database name. If not specified, metrics will be collected for all databases.
+        show_user: true
+      - name: transport
+        type: text
+        required: false
+        title: Transport
+        description: Defines the network to use for connecting to the server.
+        default: tcp
+        show_user: false
+      - name: allow_native_passwords
+        type: bool
+        required: false
+        title: Allow Native Passwords
+        description: Allow the use of the native password authentication method.
+        default: true
+        show_user: false
+        secret: false
+      # TLS settings
+      - name: tls_insecure
+        type: bool
+        required: false
+        title: Disable TLS
+        description: Set to true to disable TLS connections.
+        default: false
+        show_user: false
+      - name: tls_insecure_skip_verify
+        type: bool
+        required: false
+        title: Skip TLS Verification
+        description: Set to true to enable TLS but not verify the certificate.
+        default: false
+        show_user: false
+      - name: tls_server_name_override
+        type: text
+        required: false
+        title: TLS Server Name Override
+        description: Sets the ServerName in the TLSConfig.
+        show_user: false
+      - name: tls_ca_file
+        type: text
+        required: false
+        title: TLS CA File
+        description: Path to CA certificate file for verifying the server certificate.
+        show_user: false
+      - name: tls_cert_file
+        type: text
+        required: false
+        title: TLS Certificate File
+        description: Path to client certificate file for mutual TLS (mTLS) authentication.
+        show_user: false
+      - name: tls_key_file
+        type: text
+        required: false
+        title: TLS Key File
+        description: Path to client key file for mutual TLS (mTLS) authentication.
+        show_user: false
+      # Collection settings
+      - name: collection_interval
+        type: text
+        required: false
+        title: Collection Interval
+        description: Time between each collection (e.g., 10s, 1m).
+        default: 10s
+        show_user: false
+      - name: initial_delay
+        type: text
+        required: false
+        title: Initial Delay
+        description: Defines how long this receiver waits before starting.
+        default: 1s
+        show_user: false
+      # Statement events settings
+      - name: statement_events_digest_text_limit
+        type: integer
+        required: false
+        title: Statement Events Digest Text Limit
+        description: Maximum length of digest_text for statement events.
+        default: 120
+        show_user: false
+      - name: statement_events_time_limit
+        type: text
+        required: false
+        title: Statement Events Time Limit
+        description: Maximum time since the statements have been observed last time.
+        default: 24h
+        show_user: false
+      - name: statement_events_limit
+        type: integer
+        required: false
+        title: Statement Events Limit
+        description: Maximum number of statement event records (generated metrics).
+        default: 250
+        show_user: false
+      # Query sample collection settings
+      - name: query_sample_max_rows_per_query
+        type: integer
+        required: false
+        title: Query Sample Max Rows Per Query
+        description: Maximum number of rows to collect per scrape for query samples.
+        default: 100
+        show_user: false
+      # Top query collection settings
+      - name: top_query_lookback_time
+        type: integer
+        required: false
+        title: Top Query Lookback Time (seconds)
+        description: The time window in seconds to query for top queries.
+        default: 60
+        show_user: false
+      - name: top_query_max_query_sample_count
+        type: integer
+        required: false
+        title: Top Query Max Sample Count
+        description: Maximum number of records to fetch in a single run.
+        default: 1000
+        show_user: false
+      - name: top_query_count
+        type: integer
+        required: false
+        title: Top Query Count
+        description: Maximum number of active queries to report in a single run.
+        default: 200
+        show_user: false
+      - name: top_query_collection_interval
+        type: text
+        required: false
+        title: Top Query Collection Interval
+        description: The interval at which top queries should be emitted.
+        default: 60s
+        show_user: false
+      - name: top_query_plan_cache_size
+        type: integer
+        required: false
+        title: Query Plan Cache Size
+        description: The query plan cache size for storing explain query results.
+        default: 1000
+        show_user: false
+      - name: top_query_plan_cache_ttl
+        type: text
+        required: false
+        title: Query Plan Cache TTL
+        description: How long until a query plan expires in the cache.
+        default: 1h
+        show_user: false
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic

@@ -1,0 +1,52 @@
+receivers:
+  mysql:
+    endpoint: {{endpoint}}
+    username: {{username}}
+{{#if password}}
+    password: {{password}}
+{{/if}}
+{{#if database}}
+    database: {{database}}
+{{/if}}
+    transport: {{transport}}
+    allow_native_passwords: {{allow_native_passwords}}
+    tls:
+      insecure: {{tls_insecure}}
+{{#if tls_insecure_skip_verify}}
+      insecure_skip_verify: {{tls_insecure_skip_verify}}
+{{/if}}
+{{#if tls_server_name_override}}
+      server_name_override: {{tls_server_name_override}}
+{{/if}}
+{{#if tls_ca_file}}
+      ca_file: {{tls_ca_file}}
+{{/if}}
+{{#if tls_cert_file}}
+      cert_file: {{tls_cert_file}}
+{{/if}}
+{{#if tls_key_file}}
+      key_file: {{tls_key_file}}
+{{/if}}
+    collection_interval: {{collection_interval}}
+    initial_delay: {{initial_delay}}
+    statement_events:
+      digest_text_limit: {{statement_events_digest_text_limit}}
+      time_limit: {{statement_events_time_limit}}
+      limit: {{statement_events_limit}}
+    query_sample_collection:
+      max_rows_per_query: {{query_sample_max_rows_per_query}}
+    top_query_collection:
+      lookback_time: {{top_query_lookback_time}}
+      max_query_sample_count: {{top_query_max_query_sample_count}}
+      top_query_count: {{top_query_count}}
+      collection_interval: {{top_query_collection_interval}}
+      query_plan_cache_size: {{top_query_plan_cache_size}}
+      query_plan_cache_ttl: {{top_query_plan_cache_ttl}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [mysql]
+      processors: [resourcedetection/system]
