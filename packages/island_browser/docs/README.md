@@ -12,7 +12,7 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 ### How it works
 
-This integration periodically queries the Island Browser API to retrieve details for devices, users and compromised credentials, and to log audit events.
+This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to log audit events.
 
 ## What data does this integration collect?
 
@@ -92,7 +92,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 #### Dashboards populated
 
 1. In the top search bar in Kibana, search for **Dashboards**.
-2. In the search bar, type **island_browser**.
+2. In the search bar, type **Island Browser**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
 #### Transforms healthy
@@ -110,7 +110,7 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
-#### User
+#### Audit
 
 **Exported fields**
 
@@ -123,27 +123,83 @@ For more information on architectures that can be used for scaling this integrat
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| island_browser.user.allowed_tenants_ids |  | keyword |
-| island_browser.user.claims |  | flattened |
-| island_browser.user.connection_name |  | keyword |
-| island_browser.user.created_date |  | date |
-| island_browser.user.email |  | keyword |
-| island_browser.user.email_verified |  | boolean |
-| island_browser.user.expiration_date |  | date |
-| island_browser.user.first_name |  | keyword |
-| island_browser.user.groups |  | keyword |
-| island_browser.user.id |  | keyword |
-| island_browser.user.invitation_date |  | date |
-| island_browser.user.last_login |  | date |
-| island_browser.user.last_name |  | keyword |
-| island_browser.user.last_seen |  | date |
-| island_browser.user.scim_id |  | keyword |
-| island_browser.user.tenant_id |  | keyword |
-| island_browser.user.updated_date |  | date |
-| island_browser.user.user_id |  | keyword |
-| island_browser.user.user_source |  | keyword |
-| island_browser.user.user_status |  | keyword |
-| island_browser.user.user_type |  | keyword |
+| island_browser.audit.client_event_id |  | keyword |
+| island_browser.audit.compatibility_mode |  | keyword |
+| island_browser.audit.country |  | keyword |
+| island_browser.audit.country_code |  | keyword |
+| island_browser.audit.created_date |  | date |
+| island_browser.audit.details |  | flattened |
+| island_browser.audit.device_id |  | keyword |
+| island_browser.audit.device_posture_matching_details |  | keyword |
+| island_browser.audit.domain_or_tenant |  | keyword |
+| island_browser.audit.email |  | keyword |
+| island_browser.audit.frame_id |  | keyword |
+| island_browser.audit.frame_url |  | keyword |
+| island_browser.audit.id |  | keyword |
+| island_browser.audit.incognito |  | boolean |
+| island_browser.audit.is_island_private_access |  | boolean |
+| island_browser.audit.keystrokes |  | keyword |
+| island_browser.audit.machine_id |  | keyword |
+| island_browser.audit.machine_name |  | keyword |
+| island_browser.audit.matched_device_posture |  | keyword |
+| island_browser.audit.matched_user_group |  | keyword |
+| island_browser.audit.origin |  | keyword |
+| island_browser.audit.os_platform |  | keyword |
+| island_browser.audit.os_user_name |  | keyword |
+| island_browser.audit.processed_date |  | date |
+| island_browser.audit.public_ip |  | ip |
+| island_browser.audit.region |  | keyword |
+| island_browser.audit.rule_id |  | keyword |
+| island_browser.audit.rule_name |  | keyword |
+| island_browser.audit.saas_application_category |  | keyword |
+| island_browser.audit.saas_application_id |  | keyword |
+| island_browser.audit.saas_application_name |  | keyword |
+| island_browser.audit.screenshot_file_name |  | keyword |
+| island_browser.audit.short_top_level_url |  | keyword |
+| island_browser.audit.source_ip |  | ip |
+| island_browser.audit.submitted_url |  | keyword |
+| island_browser.audit.tab_id |  | keyword |
+| island_browser.audit.tenant_id |  | keyword |
+| island_browser.audit.timestamp |  | date |
+| island_browser.audit.top_level_url |  | keyword |
+| island_browser.audit.type |  | keyword |
+| island_browser.audit.updated_date |  | date |
+| island_browser.audit.url_web_categories |  | keyword |
+| island_browser.audit.url_web_reputation |  | long |
+| island_browser.audit.user_id |  | keyword |
+| island_browser.audit.user_name |  | keyword |
+| island_browser.audit.verdict |  | keyword |
+| island_browser.audit.verdict_reason |  | keyword |
+| island_browser.audit.website_top_level_url |  | keyword |
+| island_browser.audit.window_id |  | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+
+
+#### Compromised Credential
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| island_browser.compromised_credential.breach_source |  | keyword |
+| island_browser.compromised_credential.compromised_date |  | date |
+| island_browser.compromised_credential.created_date |  | date |
+| island_browser.compromised_credential.email |  | keyword |
+| island_browser.compromised_credential.id |  | keyword |
+| island_browser.compromised_credential.impacted_domain |  | keyword |
+| island_browser.compromised_credential.status |  | keyword |
+| island_browser.compromised_credential.tenant_id |  | keyword |
+| island_browser.compromised_credential.updated_date |  | date |
+| island_browser.compromised_credential.username |  | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
@@ -242,7 +298,7 @@ For more information on architectures that can be used for scaling this integrat
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
-#### Audit
+#### User
 
 **Exported fields**
 
@@ -255,83 +311,27 @@ For more information on architectures that can be used for scaling this integrat
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| island_browser.audit.client_event_id |  | keyword |
-| island_browser.audit.compatibility_mode |  | keyword |
-| island_browser.audit.country |  | keyword |
-| island_browser.audit.country_code |  | keyword |
-| island_browser.audit.created_date |  | date |
-| island_browser.audit.details |  | flattened |
-| island_browser.audit.device_id |  | keyword |
-| island_browser.audit.device_posture_matching_details |  | keyword |
-| island_browser.audit.domain_or_tenant |  | keyword |
-| island_browser.audit.email |  | keyword |
-| island_browser.audit.frame_id |  | keyword |
-| island_browser.audit.frame_url |  | keyword |
-| island_browser.audit.id |  | keyword |
-| island_browser.audit.incognito |  | boolean |
-| island_browser.audit.is_island_private_access |  | boolean |
-| island_browser.audit.keystrokes |  | keyword |
-| island_browser.audit.machine_id |  | keyword |
-| island_browser.audit.machine_name |  | keyword |
-| island_browser.audit.matched_device_posture |  | keyword |
-| island_browser.audit.matched_user_group |  | keyword |
-| island_browser.audit.origin |  | keyword |
-| island_browser.audit.os_platform |  | keyword |
-| island_browser.audit.os_user_name |  | keyword |
-| island_browser.audit.processed_date |  | date |
-| island_browser.audit.public_ip |  | ip |
-| island_browser.audit.region |  | keyword |
-| island_browser.audit.rule_id |  | keyword |
-| island_browser.audit.rule_name |  | keyword |
-| island_browser.audit.saas_application_category |  | keyword |
-| island_browser.audit.saas_application_id |  | keyword |
-| island_browser.audit.saas_application_name |  | keyword |
-| island_browser.audit.screenshot_file_name |  | keyword |
-| island_browser.audit.short_top_level_url |  | keyword |
-| island_browser.audit.source_ip |  | ip |
-| island_browser.audit.submitted_url |  | keyword |
-| island_browser.audit.tab_id |  | keyword |
-| island_browser.audit.tenant_id |  | keyword |
-| island_browser.audit.timestamp |  | date |
-| island_browser.audit.top_level_url |  | keyword |
-| island_browser.audit.type |  | keyword |
-| island_browser.audit.updated_date |  | date |
-| island_browser.audit.url_web_categories |  | keyword |
-| island_browser.audit.url_web_reputation |  | long |
-| island_browser.audit.user_id |  | keyword |
-| island_browser.audit.user_name |  | keyword |
-| island_browser.audit.verdict |  | keyword |
-| island_browser.audit.verdict_reason |  | keyword |
-| island_browser.audit.website_top_level_url |  | keyword |
-| island_browser.audit.window_id |  | keyword |
-| log.offset | Log offset. | long |
-| observer.product | The product name of the observer. | constant_keyword |
-| observer.vendor | Vendor name of the observer. | constant_keyword |
-
-
-#### Compromised Credential
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| input.type | Type of Filebeat input. | keyword |
-| island_browser.compromised_credential.breach_source |  | keyword |
-| island_browser.compromised_credential.compromised_date |  | date |
-| island_browser.compromised_credential.created_date |  | date |
-| island_browser.compromised_credential.email |  | keyword |
-| island_browser.compromised_credential.id |  | keyword |
-| island_browser.compromised_credential.impacted_domain |  | keyword |
-| island_browser.compromised_credential.status |  | keyword |
-| island_browser.compromised_credential.tenant_id |  | keyword |
-| island_browser.compromised_credential.updated_date |  | date |
-| island_browser.compromised_credential.username |  | keyword |
+| island_browser.user.allowed_tenants_ids |  | keyword |
+| island_browser.user.claims |  | flattened |
+| island_browser.user.connection_name |  | keyword |
+| island_browser.user.created_date |  | date |
+| island_browser.user.email |  | keyword |
+| island_browser.user.email_verified |  | boolean |
+| island_browser.user.expiration_date |  | date |
+| island_browser.user.first_name |  | keyword |
+| island_browser.user.groups |  | keyword |
+| island_browser.user.id |  | keyword |
+| island_browser.user.invitation_date |  | date |
+| island_browser.user.last_login |  | date |
+| island_browser.user.last_name |  | keyword |
+| island_browser.user.last_seen |  | date |
+| island_browser.user.scim_id |  | keyword |
+| island_browser.user.tenant_id |  | keyword |
+| island_browser.user.updated_date |  | date |
+| island_browser.user.user_id |  | keyword |
+| island_browser.user.user_source |  | keyword |
+| island_browser.user.user_status |  | keyword |
+| island_browser.user.user_type |  | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
@@ -339,279 +339,6 @@ For more information on architectures that can be used for scaling this integrat
 
 
 ### Example event
-
-#### User
-
-An example event for `user` looks as following:
-
-```json
-{
-    "@timestamp": "2025-09-10T08:13:15.704Z",
-    "agent": {
-        "ephemeral_id": "a5e6d1ff-3024-4cd8-9dda-7550c7058387",
-        "id": "2aac32f5-2967-4646-9ad6-57e343544d85",
-        "name": "elastic-agent-15932",
-        "type": "filebeat",
-        "version": "8.18.5"
-    },
-    "data_stream": {
-        "dataset": "island_browser.user",
-        "namespace": "13484",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.17.0"
-    },
-    "elastic_agent": {
-        "id": "2aac32f5-2967-4646-9ad6-57e343544d85",
-        "snapshot": false,
-        "version": "8.18.5"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "iam"
-        ],
-        "created": "2025-08-15T10:30:00.000Z",
-        "dataset": "island_browser.user",
-        "id": "f3d9a7c8-42b1-4f19-9b51-8a3c56e6d912",
-        "ingested": "2025-09-10T08:13:18Z",
-        "kind": "event",
-        "original": "{\"allowedTenantsIds\":[\"acme-tenant-001\",\"partner-tenant-002\"],\"claims\":{},\"connectionName\":\"AzureAD\",\"createdDate\":\"2025-08-15T10:30:00Z\",\"email\":\"john.doe@example.com\",\"emailVerified\":true,\"expirationDate\":null,\"firstName\":\"John\",\"groups\":[\"Admins\",\"Security\"],\"id\":\"f3d9a7c8-42b1-4f19-9b51-8a3c56e6d912\",\"invitationDate\":\"2025-08-10T09:00:00Z\",\"lastLogin\":\"2025-08-18T14:40:10Z\",\"lastName\":\"Doe\",\"lastSeen\":\"2025-08-18T14:41:55Z\",\"scimId\":null,\"tenantId\":\"acme-tenant-001\",\"updatedDate\":\"2025-08-18T14:45:00Z\",\"userId\":\"user-12345\",\"userSource\":\"Email\",\"userStatus\":\"Active\",\"userType\":\"Management\"}",
-        "type": [
-            "user"
-        ]
-    },
-    "input": {
-        "type": "cel"
-    },
-    "island_browser": {
-        "user": {
-            "allowed_tenants_ids": [
-                "acme-tenant-001",
-                "partner-tenant-002"
-            ],
-            "connection_name": "AzureAD",
-            "created_date": "2025-08-15T10:30:00.000Z",
-            "email": "john.doe@example.com",
-            "email_verified": true,
-            "first_name": "John",
-            "groups": [
-                "Admins",
-                "Security"
-            ],
-            "id": "f3d9a7c8-42b1-4f19-9b51-8a3c56e6d912",
-            "invitation_date": "2025-08-10T09:00:00.000Z",
-            "last_login": "2025-08-18T14:40:10.000Z",
-            "last_name": "Doe",
-            "last_seen": "2025-08-18T14:41:55.000Z",
-            "tenant_id": "acme-tenant-001",
-            "updated_date": "2025-08-18T14:45:00.000Z",
-            "user_id": "user-12345",
-            "user_source": "Email",
-            "user_status": "Active",
-            "user_type": "Management"
-        }
-    },
-    "organization": {
-        "id": "acme-tenant-001"
-    },
-    "related": {
-        "user": [
-            "john.doe@example.com",
-            "John",
-            "user-12345"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
-        "forwarded",
-        "island_browser-user"
-    ],
-    "user": {
-        "domain": "example.com",
-        "email": "john.doe@example.com",
-        "full_name": "John Doe",
-        "group": {
-            "name": [
-                "Admins",
-                "Security"
-            ]
-        },
-        "id": "user-12345",
-        "name": "John"
-    }
-}
-```
-
-#### Device
-
-An example event for `device` looks as following:
-
-```json
-{
-    "@timestamp": "2025-09-10T08:12:25.812Z",
-    "agent": {
-        "ephemeral_id": "be045035-c72f-4da7-a7b6-dcd3b43a2dd1",
-        "id": "51e6bec8-8fea-454f-9ff8-82dd3fb69a8d",
-        "name": "elastic-agent-71934",
-        "type": "filebeat",
-        "version": "8.18.5"
-    },
-    "data_stream": {
-        "dataset": "island_browser.device",
-        "namespace": "33808",
-        "type": "logs"
-    },
-    "device": {
-        "manufacturer": "VMware, Inc.",
-        "model": {
-            "name": "VMware Virtual Platform"
-        }
-    },
-    "ecs": {
-        "version": "8.17.0"
-    },
-    "elastic_agent": {
-        "id": "51e6bec8-8fea-454f-9ff8-82dd3fb69a8d",
-        "snapshot": false,
-        "version": "8.18.5"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "host"
-        ],
-        "created": "2025-08-21T08:38:14.478Z",
-        "dataset": "island_browser.device",
-        "id": "7748cf6a-1a23-4572-b5ee-129962616b25",
-        "ingested": "2025-09-10T08:12:28Z",
-        "kind": "asset",
-        "original": "{\"architecture\":\"x86_64\",\"authMethod\":\"TenantToken\",\"browserName\":\"Island\",\"browserUpdateStatus\":\"UpToDate\",\"browserVersion\":\"1.72.30\",\"chassisType\":\"Laptop\",\"chromiumVersion\":\"139.0.7258.128\",\"country\":\"India\",\"countryCode\":\"IN\",\"cpuModel\":\"Intel(R) Xeon(R) Gold 5220R CPU @ 2.20GHz\",\"createdDate\":\"2025-08-21T08:38:14.478259Z\",\"deviceType\":\"Laptop\",\"diskEncrypted\":false,\"email\":\"john.doe@example.com\",\"extensionVersion\":\"1.12546.6\",\"externalIpAddress\":\"89.160.20.112\",\"id\":\"7748cf6a-1a23-4572-b5ee-129962616b25\",\"internalIpAddress\":\"10.50.6.126\",\"isArchived\":false,\"isDefaultBrowser\":false,\"isVirtualMachine\":true,\"islandPlatform\":\"Browser\",\"lastSeen\":\"2025-08-31T04:19:55.342111Z\",\"macAddresses\":\"00:50:56:81:c9:17 | 02:42:7e:fe:2e:0b | 00:50:56:81:82:be\",\"machineId\":\"iNUa5F_2xgA1L51ZX5_YCXX7b7Z\",\"machineModel\":\"VMware Virtual Platform\",\"machineName\":\"ub22-50-6-126.manage.local\",\"manufacturer\":\"VMware, Inc.\",\"osCodeName\":\"Ubuntu 22.04.5 LTS\",\"osDomain\":\"\",\"osFirewallEnabled\":true,\"osPlatform\":\"Linux\",\"osScreenLockEnabled\":true,\"osUserName\":\"serviceuser\",\"osVersion\":\"22.04\",\"policyUpdateTime\":\"2025-07-08T14:17:18.527794Z\",\"ramSize\":16,\"serialNumber\":\"\",\"status\":\"Active\",\"storageCapacity\":48,\"syncEnabled\":true,\"tenantId\":\"elastic-testing\",\"updatedDate\":\"2025-08-31T04:19:55.345783Z\",\"userId\":\"auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486\",\"userName\":\"John Doe\",\"windowsLicenseStatus\":\"Unlicensed\"}",
-        "type": [
-            "info"
-        ]
-    },
-    "host": {
-        "architecture": "x86_64",
-        "geo": {
-            "city_name": "Linköping",
-            "continent_name": "Europe",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
-            "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
-            },
-            "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
-        },
-        "id": "iNUa5F_2xgA1L51ZX5_YCXX7b7Z",
-        "ip": [
-            "89.160.20.112"
-        ],
-        "mac": [
-            "00-50-56-81-C9-17",
-            "02-42-7E-FE-2E-0B",
-            "00-50-56-81-82-BE"
-        ],
-        "name": "ub22-50-6-126.manage.local",
-        "os": {
-            "name": "serviceuser",
-            "platform": "Linux",
-            "version": "22.04"
-        },
-        "type": "Laptop"
-    },
-    "input": {
-        "type": "cel"
-    },
-    "island_browser": {
-        "device": {
-            "architecture": "x86_64",
-            "auth_method": "TenantToken",
-            "browser_name": "Island",
-            "browser_update_status": "UpToDate",
-            "browser_version": "1.72.30",
-            "chassis_type": "Laptop",
-            "chromium_version": "139.0.7258.128",
-            "country": "India",
-            "country_code": "IN",
-            "cpu_model": "Intel(R) Xeon(R) Gold 5220R CPU @ 2.20GHz",
-            "created_date": "2025-08-21T08:38:14.478Z",
-            "device_type": "Laptop",
-            "disk_encrypted": false,
-            "email": "john.doe@example.com",
-            "extension_version": "1.12546.6",
-            "external_ip_address": "89.160.20.112",
-            "id": "7748cf6a-1a23-4572-b5ee-129962616b25",
-            "internal_ip_address": "10.50.6.126",
-            "is_archived": false,
-            "is_default_browser": false,
-            "is_virtual_machine": true,
-            "island_platform": "Browser",
-            "last_seen": "2025-08-31T04:19:55.342Z",
-            "mac_addresses": "00:50:56:81:c9:17 | 02:42:7e:fe:2e:0b | 00:50:56:81:82:be",
-            "machine_id": "iNUa5F_2xgA1L51ZX5_YCXX7b7Z",
-            "machine_model": "VMware Virtual Platform",
-            "machine_name": "ub22-50-6-126.manage.local",
-            "manufacturer": "VMware, Inc.",
-            "os_code_name": "Ubuntu 22.04.5 LTS",
-            "os_firewall_enabled": true,
-            "os_platform": "Linux",
-            "os_screen_lock_enabled": true,
-            "os_user_name": "serviceuser",
-            "os_version": "22.04",
-            "policy_update_time": "2025-07-08T14:17:18.527Z",
-            "ram_size": 16,
-            "status": "Active",
-            "storage_capacity": 48,
-            "sync_enabled": true,
-            "tenant_id": "elastic-testing",
-            "updated_date": "2025-08-31T04:19:55.345Z",
-            "user_id": "auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486",
-            "user_name": "John Doe",
-            "windows_license_status": "Unlicensed"
-        }
-    },
-    "organization": {
-        "id": "elastic-testing"
-    },
-    "related": {
-        "hosts": [
-            "7748cf6a-1a23-4572-b5ee-129962616b25",
-            "iNUa5F_2xgA1L51ZX5_YCXX7b7Z",
-            "ub22-50-6-126.manage.local"
-        ],
-        "ip": [
-            "89.160.20.112",
-            "10.50.6.126"
-        ],
-        "user": [
-            "john.doe@example.com",
-            "serviceuser",
-            "auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486",
-            "John Doe"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
-        "forwarded",
-        "island_browser-device"
-    ],
-    "user": {
-        "domain": "example.com",
-        "email": "john.doe@example.com",
-        "id": "auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486",
-        "name": "John Doe"
-    },
-    "user_agent": {
-        "name": "Island"
-    }
-}
-```
 
 #### Audit
 
@@ -877,9 +604,283 @@ An example event for `compromised_credential` looks as following:
 }
 ```
 
+#### Device
+
+An example event for `device` looks as following:
+
+```json
+{
+    "@timestamp": "2026-01-21T05:41:55.492Z",
+    "agent": {
+        "ephemeral_id": "1acea623-edaf-4dc1-b6c8-e0148a626751",
+        "id": "419f391f-6ad0-4b8d-98e9-870acc0e0474",
+        "name": "elastic-agent-20749",
+        "type": "filebeat",
+        "version": "8.18.8"
+    },
+    "data_stream": {
+        "dataset": "island_browser.device",
+        "namespace": "98934",
+        "type": "logs"
+    },
+    "device": {
+        "manufacturer": "VMware, Inc.",
+        "model": {
+            "name": "VMware Virtual Platform"
+        }
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "419f391f-6ad0-4b8d-98e9-870acc0e0474",
+        "snapshot": false,
+        "version": "8.18.8"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "created": "2025-08-21T08:38:14.478Z",
+        "dataset": "island_browser.device",
+        "id": "7748cf6a-1a23-4572-b5ee-129962616b25",
+        "ingested": "2026-01-21T05:41:58Z",
+        "kind": "asset",
+        "original": "{\"architecture\":\"x86_64\",\"authMethod\":\"TenantToken\",\"browserName\":\"Island\",\"browserUpdateStatus\":\"UpToDate\",\"browserVersion\":\"1.72.30\",\"chassisType\":\"Laptop\",\"chromiumVersion\":\"139.0.7258.128\",\"country\":\"India\",\"countryCode\":\"IN\",\"cpuModel\":\"Intel(R) Xeon(R) Gold 5220R CPU @ 2.20GHz\",\"createdDate\":\"2025-08-21T08:38:14.478259Z\",\"deviceType\":\"Laptop\",\"diskEncrypted\":false,\"email\":\"john.doe@example.com\",\"extensionVersion\":\"1.12546.6\",\"externalIpAddress\":\"89.160.20.112\",\"id\":\"7748cf6a-1a23-4572-b5ee-129962616b25\",\"internalIpAddress\":\"10.50.6.126\",\"isArchived\":false,\"isDefaultBrowser\":false,\"isVirtualMachine\":true,\"islandPlatform\":\"Browser\",\"lastSeen\":\"2025-08-31T04:19:55.342111Z\",\"macAddresses\":\"00:50:56:81:c9:17 | 02:42:7e:fe:2e:0b | 00:50:56:81:82:be\",\"machineId\":\"iNUa5F_2xgA1L51ZX5_YCXX7b7Z\",\"machineModel\":\"VMware Virtual Platform\",\"machineName\":\"ub22-50-6-126.manage.local\",\"manufacturer\":\"VMware, Inc.\",\"osCodeName\":\"Ubuntu 22.04.5 LTS\",\"osDomain\":\"\",\"osFirewallEnabled\":true,\"osPlatform\":\"Linux\",\"osScreenLockEnabled\":true,\"osUserName\":\"serviceuser\",\"osVersion\":\"22.04\",\"policyUpdateTime\":\"2025-07-08T14:17:18.527794Z\",\"ramSize\":16,\"serialNumber\":\"\",\"status\":\"Active\",\"storageCapacity\":48,\"syncEnabled\":true,\"tenantId\":\"elastic-testing\",\"updatedDate\":\"2025-08-31T04:19:55.345783Z\",\"userId\":\"auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486\",\"userName\":\"John Doe\",\"windowsLicenseStatus\":\"Unlicensed\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "id": "iNUa5F_2xgA1L51ZX5_YCXX7b7Z",
+        "ip": [
+            "89.160.20.112"
+        ],
+        "mac": [
+            "00-50-56-81-C9-17",
+            "02-42-7E-FE-2E-0B",
+            "00-50-56-81-82-BE"
+        ],
+        "name": "ub22-50-6-126.manage.local",
+        "os": {
+            "name": "serviceuser",
+            "platform": "Linux",
+            "type": "linux",
+            "version": "22.04"
+        },
+        "type": "Laptop"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "island_browser": {
+        "device": {
+            "architecture": "x86_64",
+            "auth_method": "TenantToken",
+            "browser_name": "Island",
+            "browser_update_status": "UpToDate",
+            "browser_version": "1.72.30",
+            "chassis_type": "Laptop",
+            "chromium_version": "139.0.7258.128",
+            "country": "India",
+            "country_code": "IN",
+            "cpu_model": "Intel(R) Xeon(R) Gold 5220R CPU @ 2.20GHz",
+            "created_date": "2025-08-21T08:38:14.478Z",
+            "device_type": "Laptop",
+            "disk_encrypted": false,
+            "email": "john.doe@example.com",
+            "extension_version": "1.12546.6",
+            "external_ip_address": "89.160.20.112",
+            "id": "7748cf6a-1a23-4572-b5ee-129962616b25",
+            "internal_ip_address": "10.50.6.126",
+            "is_archived": false,
+            "is_default_browser": false,
+            "is_virtual_machine": true,
+            "island_platform": "Browser",
+            "last_seen": "2025-08-31T04:19:55.342Z",
+            "mac_addresses": "00:50:56:81:c9:17 | 02:42:7e:fe:2e:0b | 00:50:56:81:82:be",
+            "machine_id": "iNUa5F_2xgA1L51ZX5_YCXX7b7Z",
+            "machine_model": "VMware Virtual Platform",
+            "machine_name": "ub22-50-6-126.manage.local",
+            "manufacturer": "VMware, Inc.",
+            "os_code_name": "Ubuntu 22.04.5 LTS",
+            "os_firewall_enabled": true,
+            "os_platform": "Linux",
+            "os_screen_lock_enabled": true,
+            "os_user_name": "serviceuser",
+            "os_version": "22.04",
+            "policy_update_time": "2025-07-08T14:17:18.527Z",
+            "ram_size": 16,
+            "status": "Active",
+            "storage_capacity": 48,
+            "sync_enabled": true,
+            "tenant_id": "elastic-testing",
+            "updated_date": "2025-08-31T04:19:55.345Z",
+            "user_id": "auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486",
+            "user_name": "John Doe",
+            "windows_license_status": "Unlicensed"
+        }
+    },
+    "organization": {
+        "id": "elastic-testing"
+    },
+    "related": {
+        "hosts": [
+            "7748cf6a-1a23-4572-b5ee-129962616b25",
+            "iNUa5F_2xgA1L51ZX5_YCXX7b7Z",
+            "ub22-50-6-126.manage.local"
+        ],
+        "ip": [
+            "89.160.20.112",
+            "10.50.6.126"
+        ],
+        "user": [
+            "john.doe@example.com",
+            "serviceuser",
+            "auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486",
+            "John Doe"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "island_browser-device"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "john.doe@example.com",
+        "id": "auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486",
+        "name": "John Doe"
+    },
+    "user_agent": {
+        "name": "Island"
+    }
+}
+```
+
+#### User
+
+An example event for `user` looks as following:
+
+```json
+{
+    "@timestamp": "2025-09-10T08:13:15.704Z",
+    "agent": {
+        "ephemeral_id": "a5e6d1ff-3024-4cd8-9dda-7550c7058387",
+        "id": "2aac32f5-2967-4646-9ad6-57e343544d85",
+        "name": "elastic-agent-15932",
+        "type": "filebeat",
+        "version": "8.18.5"
+    },
+    "data_stream": {
+        "dataset": "island_browser.user",
+        "namespace": "13484",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "2aac32f5-2967-4646-9ad6-57e343544d85",
+        "snapshot": false,
+        "version": "8.18.5"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "created": "2025-08-15T10:30:00.000Z",
+        "dataset": "island_browser.user",
+        "id": "f3d9a7c8-42b1-4f19-9b51-8a3c56e6d912",
+        "ingested": "2025-09-10T08:13:18Z",
+        "kind": "event",
+        "original": "{\"allowedTenantsIds\":[\"acme-tenant-001\",\"partner-tenant-002\"],\"claims\":{},\"connectionName\":\"AzureAD\",\"createdDate\":\"2025-08-15T10:30:00Z\",\"email\":\"john.doe@example.com\",\"emailVerified\":true,\"expirationDate\":null,\"firstName\":\"John\",\"groups\":[\"Admins\",\"Security\"],\"id\":\"f3d9a7c8-42b1-4f19-9b51-8a3c56e6d912\",\"invitationDate\":\"2025-08-10T09:00:00Z\",\"lastLogin\":\"2025-08-18T14:40:10Z\",\"lastName\":\"Doe\",\"lastSeen\":\"2025-08-18T14:41:55Z\",\"scimId\":null,\"tenantId\":\"acme-tenant-001\",\"updatedDate\":\"2025-08-18T14:45:00Z\",\"userId\":\"user-12345\",\"userSource\":\"Email\",\"userStatus\":\"Active\",\"userType\":\"Management\"}",
+        "type": [
+            "user"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "island_browser": {
+        "user": {
+            "allowed_tenants_ids": [
+                "acme-tenant-001",
+                "partner-tenant-002"
+            ],
+            "connection_name": "AzureAD",
+            "created_date": "2025-08-15T10:30:00.000Z",
+            "email": "john.doe@example.com",
+            "email_verified": true,
+            "first_name": "John",
+            "groups": [
+                "Admins",
+                "Security"
+            ],
+            "id": "f3d9a7c8-42b1-4f19-9b51-8a3c56e6d912",
+            "invitation_date": "2025-08-10T09:00:00.000Z",
+            "last_login": "2025-08-18T14:40:10.000Z",
+            "last_name": "Doe",
+            "last_seen": "2025-08-18T14:41:55.000Z",
+            "tenant_id": "acme-tenant-001",
+            "updated_date": "2025-08-18T14:45:00.000Z",
+            "user_id": "user-12345",
+            "user_source": "Email",
+            "user_status": "Active",
+            "user_type": "Management"
+        }
+    },
+    "organization": {
+        "id": "acme-tenant-001"
+    },
+    "related": {
+        "user": [
+            "john.doe@example.com",
+            "John",
+            "user-12345"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "island_browser-user"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "john.doe@example.com",
+        "full_name": "John Doe",
+        "group": {
+            "name": [
+                "Admins",
+                "Security"
+            ]
+        },
+        "id": "user-12345",
+        "name": "John"
+    }
+}
+```
+
 ### Inputs used
 
-These inputs can be used in this integration:
+This input is used in this integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
@@ -887,10 +888,10 @@ These inputs can be used in this integration:
 
 This integration dataset uses the following APIs:
 
-- `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
-- `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `Audit`: [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
 - `Compromised Credential`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
+- `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
+- `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 
 #### ILM Policy
 

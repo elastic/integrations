@@ -12,7 +12,7 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 ### How it works
 
-This integration periodically queries the Island Browser API to retrieve details for devices, users and compromised credentials, and to log audit events.
+This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to log audit events.
 
 ## What data does this integration collect?
 
@@ -92,7 +92,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 #### Dashboards populated
 
 1. In the top search bar in Kibana, search for **Dashboards**.
-2. In the search bar, type **island_browser**.
+2. In the search bar, type **Island Browser**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
 #### Transforms healthy
@@ -110,14 +110,6 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
-#### User
-
-{{fields "user"}}
-
-#### Device
-
-{{fields "device"}}
-
 #### Audit
 
 {{fields "audit"}}
@@ -126,15 +118,15 @@ For more information on architectures that can be used for scaling this integrat
 
 {{fields "compromised_credential"}}
 
-### Example event
+#### Device
+
+{{fields "device"}}
 
 #### User
 
-{{event "user"}}
+{{fields "user"}}
 
-#### Device
-
-{{event "device"}}
+### Example event
 
 #### Audit
 
@@ -144,9 +136,17 @@ For more information on architectures that can be used for scaling this integrat
 
 {{event "compromised_credential"}}
 
+#### Device
+
+{{event "device"}}
+
+#### User
+
+{{event "user"}}
+
 ### Inputs used
 
-These inputs can be used in this integration:
+This input is used in this integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
@@ -154,10 +154,10 @@ These inputs can be used in this integration:
 
 This integration dataset uses the following APIs:
 
-- `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
-- `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `Audit`: [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
 - `Compromised Credential`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
+- `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
+- `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 
 #### ILM Policy
 
