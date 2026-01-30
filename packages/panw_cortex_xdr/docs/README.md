@@ -590,6 +590,82 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.uuid |  | keyword |
 
 
+An example event for `event` looks as following:
+
+```json
+{
+    "@timestamp": "2026-01-09T09:53:25.240Z",
+    "agent": {
+        "ephemeral_id": "41b0fb66-8a23-49d9-ad8f-de62d6617c6f",
+        "id": "6a5b6dac-f7f7-4ab2-bfed-80a8c1b2bd0c",
+        "name": "elastic-agent-55081",
+        "type": "filebeat",
+        "version": [
+            "8.18.0"
+        ]
+    },
+    "cloud": {
+        "provider": "google cloud"
+    },
+    "data_stream": {
+        "dataset": "panw_cortex_xdr.event",
+        "namespace": "14968",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "6a5b6dac-f7f7-4ab2-bfed-80a8c1b2bd0c",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "panw_cortex_xdr.event",
+        "ingested": "2026-01-09T09:53:28Z",
+        "kind": "event"
+    },
+    "gcs": {
+        "storage": {
+            "bucket": {
+                "name": "testbucket"
+            },
+            "object": {
+                "content_type": "application/x-ndjson",
+                "name": "test-event.log"
+            }
+        }
+    },
+    "input": {
+        "type": "gcs"
+    },
+    "log": {
+        "file": {
+            "path": "gs://testbucket/test-event.log"
+        },
+        "offset": 0
+    },
+    "observer": {
+        "product": "Cortex XDR",
+        "vendor": "Palo Alto Networks"
+    },
+    "panw_cortex": {
+        "xdr": {
+            "event": {
+                "agent": {
+                    "os_type": "NO_HOST"
+                }
+            }
+        }
+    },
+    "tags": [
+        "forwarded",
+        "panw_cortex_xdr-event"
+    ]
+}
+```
+
 ### Incidents
 
 This is the `Incidents` dataset.
