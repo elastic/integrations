@@ -23,6 +23,7 @@ processors:
       field: message
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
+        - "^A LENOVO COMPANY, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       tag: date__tmp_timestamp_to_@timestamp_247df7be
@@ -67,6 +68,7 @@ processors:
       field_split: ', '
       value_split: =
       ignore_failure: true
+      if: ctx.cisco_ise?.log.log_details_raw != null
   - grok:
       tag: grok_cisco_ise_log_message_description_859375fa
       field: cisco_ise.log.message.description
