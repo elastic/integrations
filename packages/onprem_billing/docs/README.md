@@ -262,17 +262,6 @@ PUT _ingest/pipeline/calculate_cost
   "description": "On-Prem Billing: Computes mERU from ERU or RAM config and maps to ESS Billing schema",
   "processors": [
     {
-      "enrich": {
-        "policy_name": "onprem_billing_org_config_policy",
-        "field": "_org_lookup",
-        "target_field": "org_config",
-        "max_matches": 1,
-        "ignore_missing": true,
-        "ignore_failure": true,
-        "override": false
-      }
-    },
-    {
       "set": {
         "field": "_org_lookup",
         "value": "organization",
@@ -304,89 +293,7 @@ PUT _ingest/pipeline/calculate_cost
         "lang": "painless",
         "ignore_failure": true,
         "description": "Compute mERU from ERU or RAM config and map to ESS Billing schema",
-        "source": """
-          String deploymentId = ctx.cluster_uuid;
-          String deploymentName = ctx.cluster_name;
-          long dailyMeru = 1000L;  // Default: 1 ERU = 1000 mERU
-          List deploymentTags = new ArrayList();
-          
-          // Organization config defaults
-          int eruToRamGb = 64;
-          
-          // Get org config if available
-          if (ctx.org_config != null) {
-            if (ctx.org_config.eru_to_ram_gb != null) {
-              eruToRamGb = (int) ctx.org_config.eru_to_ram_gb;
-            }
-          }
-          
-          // Get deployment config
-          if (ctx.cost_config != null) {
-            if (ctx.cost_config.deployment_name != null) {
-              deploymentName = ctx.cost_config.deployment_name;
-            }
-            if (ctx.cost_config.deployment_tags != null) {
-              deploymentTags = ctx.cost_config.deployment_tags;
-            }
-            
-            // Priority 1: Use pre-computed daily_meru if available
-            if (ctx.cost_config.daily_meru != null) {
-              dailyMeru = (long) ctx.cost_config.daily_meru;
-            }
-            // Priority 2: Compute from deployment_erus
-            else if (ctx.cost_config.deployment_erus != null) {
-              double erus = ctx.cost_config.deployment_erus;
-              dailyMeru = (long) (erus * 1000.0);
-            }
-            // Priority 3: Compute from RAM config
-            else if (ctx.cost_config.node_count != null && ctx.cost_config.ram_per_node_gb != null) {
-              int nodeCount = (int) ctx.cost_config.node_count;
-              int ramPerNode = (int) ctx.cost_config.ram_per_node_gb;
-              int totalRamGb = nodeCount * ramPerNode;
-              double erus = (double) totalRamGb / (double) eruToRamGb;
-              dailyMeru = (long) (erus * 1000.0);
-            }
-          }
-          
-          // Build ESS Billing compatible output
-          if (ctx.ess == null) ctx.ess = new HashMap();
-          if (ctx.ess.billing == null) ctx.ess.billing = new HashMap();
-          
-          ctx.ess.billing.deployment_id = deploymentId;
-          ctx.ess.billing.deployment_name = deploymentName;
-          ctx.ess.billing.deployment_type = 'onprem';
-          ctx.ess.billing.deployment_tags = deploymentTags;
-          ctx.ess.billing.kind = 'elasticsearch';
-          ctx.ess.billing.type = 'capacity';
-          ctx.ess.billing.unit = 'day';
-          ctx.ess.billing.zone_count = 1;
-          ctx.ess.billing.name = 'On-Premises: ' + deploymentName;
-          ctx.ess.billing.sku = 'onprem-daily-' + deploymentId;
-          
-          if (ctx['@timestamp'] != null) {
-            ctx.ess.billing.from = ctx['@timestamp'];
-            String ts = ctx['@timestamp'].toString();
-            if (ts.length() >= 10) {
-              ctx.ess.billing.to = ts.substring(0, 10) + 'T23:59:59.999Z';
-            }
-          }
-          
-          // Output mERU as total_ecu for Chargeback compatibility
-          ctx.ess.billing.total_ecu = dailyMeru;
-          ctx.ess.billing.put('quantity.value', 1.0);
-          ctx.ess.billing.put('quantity.formatted_value', '1 day');
-          ctx.ess.billing.put('display_quantity.value', 1.0);
-          ctx.ess.billing.put('display_quantity.formatted_value', '1 day');
-          ctx.ess.billing.put('display_quantity.type', 'default');
-          
-          // Cleanup temporary fields
-          ctx.remove('cluster_uuid');
-          ctx.remove('cluster_name');
-          ctx.remove('cost_config');
-          ctx.remove('org_config');
-          ctx.remove('_org_lookup');
-          ctx.remove('doc_count');
-        """
+        "source": "String deploymentId = ctx.cluster_uuid; String deploymentName = ctx.cluster_name; long dailyMeru = 1000L; List deploymentTags = new ArrayList(); int eruToRamGb = 64; if (ctx.org_config != null && ctx.org_config.eru_to_ram_gb != null) { eruToRamGb = (int) ctx.org_config.eru_to_ram_gb; } if (ctx.cost_config != null) { if (ctx.cost_config.deployment_name != null) { deploymentName = ctx.cost_config.deployment_name; } Object rawTags = ctx.cost_config.deployment_tags; if (rawTags != null) { if (rawTags instanceof List) { deploymentTags = (List) rawTags; } else { deploymentTags.add(rawTags.toString()); } } if (ctx.cost_config.daily_meru != null) { dailyMeru = (long) ctx.cost_config.daily_meru; } else if (ctx.cost_config.deployment_erus != null) { dailyMeru = (long) (ctx.cost_config.deployment_erus * 1000.0); } else if (ctx.cost_config.node_count != null && ctx.cost_config.ram_per_node_gb != null) { int totalRamGb = (int) ctx.cost_config.node_count * (int) ctx.cost_config.ram_per_node_gb; dailyMeru = (long) ((double) totalRamGb / (double) eruToRamGb * 1000.0); } } if (ctx.ess == null) ctx.ess = new HashMap(); if (ctx.ess.billing == null) ctx.ess.billing = new HashMap(); ctx.ess.billing.deployment_id = deploymentId; ctx.ess.billing.deployment_name = deploymentName; ctx.ess.billing.deployment_type = 'onprem'; ctx.ess.billing.deployment_tags = deploymentTags != null ? deploymentTags : new ArrayList(); ctx.ess.billing.kind = 'elasticsearch'; ctx.ess.billing.type = 'capacity'; ctx.ess.billing.unit = 'day'; ctx.ess.billing.zone_count = 1; ctx.ess.billing.name = 'On-Premises: ' + deploymentName; ctx.ess.billing.sku = 'onprem_node'; if (ctx['@timestamp'] != null) { ctx.ess.billing.from = ctx['@timestamp']; String ts = ctx['@timestamp'].toString(); if (ts.length() >= 10) { ctx.ess.billing.to = ts.substring(0, 10) + 'T23:59:59.999Z'; } } ctx.ess.billing.total_ecu = dailyMeru; ctx.ess.billing.put('quantity.value', 1.0); ctx.ess.billing.put('quantity.formatted_value', '1 day'); ctx.ess.billing.put('display_quantity.value', 1.0); ctx.ess.billing.put('display_quantity.formatted_value', '1 day'); ctx.ess.billing.put('display_quantity.type', 'default'); ctx.remove('cluster_uuid'); ctx.remove('cluster_name'); ctx.remove('cost_config'); ctx.remove('org_config'); ctx.remove('_org_lookup'); ctx.remove('doc_count');"
       }
     },
     {
@@ -407,10 +314,12 @@ PUT _ingest/pipeline/calculate_cost
 }
 ```
 
+This pipeline is identical to the one in [elasticsearch-chargeback](https://github.com/elastic/elasticsearch-chargeback) (`scripts/onprem_billing_calculate_cost_pipeline.json`). Processor order: set `_org_lookup`, enrich org config, enrich deployment config, script, then Fleet pipelines.
+
 **3d. Update the billing transform to use the pipeline:**
 
 ```json
-POST _transform/logs-onprem_billing.billing-default-0.1.0/_update
+POST _transform/logs-onprem_billing.billing-default-0.2.0/_update
 {
   "dest": {
     "index": "metrics-ess_billing.billing-onprem",
@@ -422,7 +331,7 @@ POST _transform/logs-onprem_billing.billing-default-0.1.0/_update
 ### Step 4: Start the Billing Transform
 
 ```json
-POST _transform/logs-onprem_billing.billing-default-0.1.0/_start
+POST _transform/logs-onprem_billing.billing-default-0.2.0/_start
 ```
 
 Or via Kibana: **Stack Management → Transforms** → Find `billing` transform → **Start**

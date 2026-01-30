@@ -26,6 +26,11 @@ source:
       type: double
       script:
         source: "emit(1.0)"
+    # Placeholder so dest index mapping includes deployment_tags; user overwrites via _update
+    deployment_tags:
+      type: keyword
+      script:
+        source: "emit('')"
 dest:
   index: onprem_billing_config
 pivot:
@@ -39,6 +44,9 @@ pivot:
     deployment_name:
       terms:
         field: deployment_name
+    deployment_tags:
+      terms:
+        field: deployment_tags
   aggregations:
     daily_meru:
       max:
@@ -52,4 +60,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0

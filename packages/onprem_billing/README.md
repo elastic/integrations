@@ -29,4 +29,4 @@ See full documentation after installation.
 
 ## Known Limitations
 
-- **Single SKU per deployment**: Currently uses one SKU (`onprem-daily-{id}`) per deployment. When Chargeback adds SKU-level cost breakdown, this integration will need updates to support granular cost allocation (compute, storage, etc.).
+- **Single SKU per deployment**: Currently uses one SKU (`onprem_node`) per deployment. When Chargeback adds SKU-level cost breakdown, this integration will need updates to support granular cost allocation (compute, storage, etc.).
