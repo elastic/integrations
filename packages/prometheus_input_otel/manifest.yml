@@ -23,8 +23,8 @@ icons:
 policy_templates:
   - name: prometheusreceiver
     type: metrics
-    title: Prometheus Metrics
-    description: Scrape metrics from Prometheus-compatible endpoints using the OpenTelemetry Collector
+    title: Prometheus Metrics (Guided)
+    description: Scrape metrics from Prometheus-compatible endpoints using guided configuration fields
     input: otelcol
     template_path: input.yml.hbs
     vars:
@@ -128,6 +128,27 @@ policy_templates:
         required: false
         secret: true
         description: Password for basic authentication. Must be used together with Username.
+        show_user: true
+  - name: prometheusreceiver_raw
+    type: metrics
+    title: Prometheus Metrics (Raw Config)
+    description: Paste your existing Prometheus scrape configuration directly
+    input: otelcol
+    template_path: input_raw.yml.hbs
+    vars:
+      - name: scrape_configs
+        type: yaml
+        title: Prometheus Scrape Configuration
+        required: true
+        description: |
+          Paste your Prometheus scrape_configs YAML directly from prometheus.yml.
+          Example:
+          ```yaml
+          - job_name: 'myapp'
+            scrape_interval: 15s
+            static_configs:
+              - targets: ['localhost:9090']
+          ```
         show_user: true
 owner:
   github: elastic/ecosystem
