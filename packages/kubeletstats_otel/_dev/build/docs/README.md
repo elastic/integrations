@@ -1,3 +1,4 @@
+{{- generatedHeader }}
 # Kubelet Stats OpenTelemetry Input Package
 
 ## Overview
@@ -66,7 +67,7 @@ Basic configuration with service account authentication:
 
 - **Endpoint**: `https://localhost:10250`
 - **Auth Type**: `serviceAccount`
-- **Collection Interval**: `10s`
+- **Collection Interval**: `20s`
 
 For TLS authentication:
 
