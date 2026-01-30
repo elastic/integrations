@@ -1,27 +1,70 @@
 {
     "attributes": {
-        "created_at": "2022-04-05T06:01:14.069Z",
+        "created_at": "2026-01-27T00:00:00.000Z",
         "created_by": "elastic",
-        "description": "Get all users who are currently logged in.",
+        "description": "Enumerate all currently logged-in users across Windows, Linux, and macOS systems. Retrieves session details including login timestamp, username, logon type, TTY/terminal device, remote host (for remote sessions), and process ID. On Windows, also captures the user's SID and registry hive path. Use cases: user activity forensics, lateral movement detection (remote logon types), active session enumeration, and identifying interactive vs service accounts.",
         "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "session"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.logged_in_users"
+                }
+            },
             {
                 "key": "user.name",
                 "value": {
-                    "field": "user"
+                    "field": "username"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "user_sid"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "source.address",
+                "value": {
+                    "field": "remote_host"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "user_activity",
+                        "session"
+                    ]
                 }
             }
         ],
         "id": "logged_in_users_elastic",
-        "query": "SELECT * FROM logged_in_users;",
         "interval": "3600",
-        "platform": "darwin",
-        "updated_at": "2022-04-05T06:01:14.069Z",
+        "platform": "linux,darwin,windows",
+        "timeout": 180,
+        "query": "-- Logged In Users Enumeration (Cross-Platform)\n-- Lists all currently logged-in users with session details\n-- Use case: User activity forensics, lateral movement detection, active session enumeration\n-- Windows logon types: console (interactive), remote (RDP), service, etc.\n-- Linux/macOS: pts (pseudo-terminal), tty (console), etc.\nSELECT\n  datetime(time, 'unixepoch') AS login_time,\n  user AS username,\n  type AS logon_type,\n  tty,\n  host AS remote_host,\n  pid,\n  sid AS user_sid,\n  registry_hive\nFROM logged_in_users\nORDER BY time DESC",
+        "updated_at": "2026-01-27T00:00:00.000Z",
         "updated_by": "elastic"
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "9.3.0",
     "id": "osquery_manager-ccd3f850-b4a5-11ec-8f39-bf9c07530bbb",
     "references": [],
     "type": "osquery-saved-query",
-    "updated_at": "2022-04-05T06:01:14.071Z",
+    "updated_at": "2026-01-27T00:00:00.000Z",
     "version": "WzcyNywxXQ=="
 }
