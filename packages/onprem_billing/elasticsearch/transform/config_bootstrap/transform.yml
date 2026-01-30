@@ -1,9 +1,13 @@
-description: Bootstrap onprem_billing_config lookup index with default settings using monitoring-indices as source.
+description: Bootstrap onprem_billing_config lookup index with organization defaults and discovered deployments using mERU (milli-ERU) as the internal unit.
 source:
   index:
     - "monitoring-indices"
     - "*:monitoring-indices"
   runtime_mappings:
+    config_type:
+      type: keyword
+      script:
+        source: "emit('deployment')"
     deployment_id:
       type: keyword
       script:
@@ -12,14 +16,23 @@ source:
       type: keyword
       script:
         source: "emit(doc['elasticsearch.cluster.name'].value)"
-    daily_ecu:
+    # Default: 1 ERU = 1000 mERU, so 1 ERU/day = 1000 mERU/day
+    daily_meru:
+      type: long
+      script:
+        source: "emit(1000L)"
+    # Default deployment_erus (what the user will configure)
+    deployment_erus:
       type: double
       script:
-        source: "emit(100.0)"  # Default: 100 ECU/day
+        source: "emit(1.0)"
 dest:
   index: onprem_billing_config
 pivot:
   group_by:
+    config_type:
+      terms:
+        field: config_type
     deployment_id:
       terms:
         field: deployment_id
@@ -27,9 +40,12 @@ pivot:
       terms:
         field: deployment_name
   aggregations:
-    daily_ecu:
+    daily_meru:
       max:
-        field: daily_ecu
+        field: daily_meru
+    deployment_erus:
+      max:
+        field: deployment_erus
 settings:
   deduce_mappings: false
   unattended: true

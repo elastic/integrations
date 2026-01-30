@@ -2,7 +2,14 @@
 
 Generates ESS Billing-compatible metrics for on-premises, ECE, and ECK deployments, enabling the Chargeback integration to work in non-cloud environments.
 
-**Fixed Daily ECU Model** - each deployment is assigned a configurable daily ECU value.
+**mERU Cost Model** - Uses milli-ERUs (mERU) internally where 1 ERU = 1000 mERU, avoiding awkward fractional values while supporting deployments of any size.
+
+## Features
+
+- **Organization-level config**: Set total license cost, ERUs purchased, and ERU-to-RAM ratio
+- **Flexible deployment config**: Configure via direct ERU input or RAM-based calculation
+- **Clean internal values**: 0.25 ERU = 250 mERU, 5 ERU = 5000 mERU
+- **Chargeback compatible**: Outputs to standard ESS Billing format
 
 ## Requirements
 
@@ -14,8 +21,9 @@ This integration enables the Chargeback integration (0.2.x+) to work on non-clou
 ## Quick Setup
 
 1. Install integration on monitoring cluster
-2. Configure deployments with `daily_ecu` and `deployment_tags`
-3. Create enrich policy and start billing transform
+2. Configure organization settings (license cost, total ERUs)
+3. Configure each deployment with `deployment_erus` OR `node_count`/`ram_per_node_gb`
+4. Create enrich policies and start billing transform
 
 See full documentation after installation.
 

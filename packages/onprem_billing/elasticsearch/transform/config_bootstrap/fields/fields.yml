@@ -1,12 +1,48 @@
+# Organization-level configuration fields
+- name: config_type
+  type: keyword
+  description: Type of configuration record ('organization' or 'deployment')
+
+# Organization config (config_type: organization)
+- name: total_annual_license_cost
+  type: float
+  description: Total annual license cost in local currency
+- name: total_erus_purchased
+  type: float
+  description: Total ERUs (Elastic Resource Units) purchased in the license
+- name: eru_to_ram_gb
+  type: integer
+  description: RAM (in GB) that equals 1 ERU (from license terms, typically 64GB)
+- name: currency_unit
+  type: keyword
+  description: Currency code for cost calculations (e.g., EUR, USD, GBP)
+
+# Deployment config (config_type: deployment)
 - name: deployment_id
   type: keyword
   description: Cluster UUID / deployment identifier
 - name: deployment_name
   type: keyword
-  description: Cluster name / deployment name
+  description: Human-readable deployment name
 - name: deployment_tags
   type: keyword
   description: Array of deployment tags for grouping (e.g., chargeback_group:team_name)
-- name: daily_ecu
+
+# ERU allocation (choose one input method per deployment)
+- name: deployment_erus
   type: float
-  description: Fixed daily cost allocation units per deployment (named 'ecu' for Chargeback compatibility)
+  description: ERUs allocated to this deployment (direct input method)
+- name: node_count
+  type: integer
+  description: Number of nodes in the deployment (for RAM-based calculation)
+- name: ram_per_node_gb
+  type: integer
+  description: RAM per node in GB (for RAM-based calculation)
+- name: total_ram_gb
+  type: integer
+  description: Computed total RAM in GB (node_count * ram_per_node_gb)
+
+# Computed mERU values (internal unit - 1 ERU = 1000 mERU)
+- name: daily_meru
+  type: long
+  description: Daily milli-ERUs for this deployment (1 ERU = 1000 mERU). Computed from deployment_erus or RAM config.
