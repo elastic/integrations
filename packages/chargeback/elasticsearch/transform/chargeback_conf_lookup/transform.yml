@@ -1,0 +1,73 @@
+description: Bootstrap chargeback configuration lookup index with default settings using billing data as source trigger.
+source:
+  index:
+    - metrics-ess_billing.billing-*
+  runtime_mappings:
+    config_join_key:
+      type: keyword
+      script:
+        source: "emit('chargeback_config')"
+    conf_ecu_rate:
+      type: double
+      script:
+        source: "emit(0.85)"
+    conf_ecu_rate_unit:
+      type: keyword
+      script:
+        source: "emit('EUR')"
+    conf_indexing_weight:
+      type: long
+      script:
+        source: "emit(20)"
+    conf_query_weight:
+      type: long
+      script:
+        source: "emit(20)"
+    conf_storage_weight:
+      type: long
+      script:
+        source: "emit(40)"
+    conf_start_date:
+      type: date
+      script:
+        source: "emit(1262304000000L)"  # 2010-01-01T00:00:00.000Z - Elasticsearch birthdate
+    conf_end_date:
+      type: date
+      script:
+        source: "emit(2430518399999L)"  # 2046-12-31T23:59:59.999Z - 20 years from now
+dest:
+  index: chargeback_conf_lookup
+pivot:
+  group_by:
+    config_join_key:
+      terms:
+        field: config_join_key
+    conf_ecu_rate_unit:
+      terms:
+        field: conf_ecu_rate_unit
+  aggregations:
+    conf_ecu_rate:
+      max:
+        field: conf_ecu_rate
+    conf_indexing_weight:
+      max:
+        field: conf_indexing_weight
+    conf_query_weight:
+      max:
+        field: conf_query_weight
+    conf_storage_weight:
+      max:
+        field: conf_storage_weight
+    conf_start_date:
+      max:
+        field: conf_start_date
+    conf_end_date:
+      max:
+        field: conf_end_date
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.1.0
