@@ -1,0 +1,39 @@
+{
+  "attributes": {
+    "name": "nginx_request_availability_99.9_Rolling30Days",
+    "description": "This SLO tracks the request availability of Nginx, ensuring that 99.9% of HTTP requests receive successful responses (status code < 400) over a rolling period of 30 days to maintain reliable web service operations.",
+    "indicator": {
+      "type": "sli.kql.custom",
+      "params": {
+        "index": "logs-nginx.access-default",
+        "filter": "",
+        "good": "(event.outcome : \"success\"  OR http.response.status_code : (404 OR 429)) AND data_stream.dataset : \"nginx.access\" ",
+        "total": "event.outcome : * AND data_stream.dataset : \"nginx.access\" ",
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.9990000000000001
+    },
+    "tags": [
+      "nginx"
+    ],
+    "groupBy": [
+      "source.address"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nginx-55a9e6e0-a29e-11e7-928f-5dbe6f6f5519"
+        }
+      ]
+    }
+  },
+  "id": "nginx_request_availability_99.9_Rolling30Days",
+  "type": "slo_template"
+}
