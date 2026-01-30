@@ -6,6 +6,41 @@ This package allows you to scrape Prometheus-compatible metrics endpoints using 
 
 The Prometheus receiver is built to be a drop-in replacement for Prometheus, fully supporting the Prometheus exposition format. It can scrape metrics from any endpoint that exposes metrics in the Prometheus format.
 
+## Migrating from Prometheus
+
+If you have an existing Prometheus scrape configuration, you can migrate it directly to this package. The configuration options map one-to-one:
+
+**Prometheus scrape config:**
+
+```yaml
+scrape_configs:
+  - job_name: 'my-app'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+          - 'localhost:9100'
+    honor_labels: true
+    honor_timestamps: true
+```
+
+**Equivalent package configuration:**
+
+| Prometheus Config | Package Setting | Value |
+|-------------------|-----------------|-------|
+| `targets` | Scrape Targets | `localhost:9090`, `localhost:9100` |
+| `scrape_interval` | Scrape Interval | `15s` |
+| `scrape_timeout` | Scrape Timeout | `10s` |
+| `metrics_path` | Metrics Path | `/metrics` |
+| `scheme` | Scheme | `http` |
+| `honor_labels` | Honor Labels | `true` |
+| `honor_timestamps` | Honor Timestamps | `true` |
+
+The package supports the same features as Prometheus scrape configs, including basic authentication, TLS configuration, and custom metrics paths.
+
 ## Configuration
 
 ### Scrape Targets
