@@ -24,7 +24,8 @@ provider "aws" {
 }
 
 resource "aws_cloudwatch_log_group" "activemq_audit" {
-  name = local.activemq_audit_log_group
+  name              = local.activemq_audit_log_group
+  retention_in_days = 1
 }
 
 resource "aws_cloudwatch_log_stream" "activemq_audit" {

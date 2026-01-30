@@ -24,7 +24,8 @@ provider "aws" {
 }
 
 resource "aws_cloudwatch_log_group" "rabbitmq_general" {
-  name = local.rabbitmq_general_log_group
+  name              = local.rabbitmq_general_log_group
+  retention_in_days = 1
 }
 
 resource "aws_cloudwatch_log_stream" "rabbitmq_general" {
