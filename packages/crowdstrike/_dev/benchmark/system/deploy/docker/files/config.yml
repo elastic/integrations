@@ -86,3 +86,43 @@ rules:
               {"id":"CVE-2023-12345","cid":"92012896127c4a948236ba7601b886b0","aid":"2ce412d17b334ad4adc8c1c54dbfec4b","vulnerability_id":"CVE-2023-12345","status":"open","cve":{"severity":"MEDIUM","references":["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-1234"]},"created_timestamp":"2023-11-03T18:01:23.995794943Z","updated_timestamp":"2023-11-03T19:00:23.985007341Z"}
             ]
           }
+  - path: /sensors/entities/datafeed/v2
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+              "resources": [
+                  {
+                      "dataFeedURL": "http://svc-crowdstrike:8080/events",
+                      "sessionToken": {
+                          "token": "secretsessiontoken"
+                      },
+                      "refreshActiveSessionURL": "http://svc-crowdstrike:8080/refresh",
+                      "refreshActiveSessionInterval": 1800
+                  }
+              ]
+          }
+  - path: /events
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{- $g := glob "/var/log/corpus-*" -}}
+          {{- range $g -}}
+            {{- file . -}}
+          {{- end -}}
+  - path: /refresh
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: ''
