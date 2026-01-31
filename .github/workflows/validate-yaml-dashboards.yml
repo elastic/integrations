@@ -27,6 +27,11 @@ jobs:
         with:
           enable-cache: true
 
+      # Note: Tool versions are pinned to @latest for now. Consider pinning to specific versions
+      # for better reproducibility. Check available versions at:
+      # - https://pypi.org/project/kb-dashboard-lint/
+      # - https://pypi.org/project/kb-dashboard-cli/
+
       - name: Find changed YAML dashboard files
         id: find-changed
         run: |
@@ -38,6 +43,7 @@ jobs:
           if [ -z "$CHANGED_YAML_FILES" ]; then
             echo "No YAML dashboard files changed in this PR"
             echo "changed_files=" >> $GITHUB_OUTPUT
+            echo "unique_dirs=" >> $GITHUB_OUTPUT
             exit 0
           fi
           
@@ -45,10 +51,17 @@ jobs:
           echo "$CHANGED_YAML_FILES"
           echo ""
           
-          # Store the list of changed files for the next step
-          # Convert newlines to spaces and escape for output
+          # Store the list of changed files for linting (we lint each file individually)
           CHANGED_FILES_ESCAPED=$(echo "$CHANGED_YAML_FILES" | tr '\n' ' ' | sed 's/ $//')
           echo "changed_files=$CHANGED_FILES_ESCAPED" >> $GITHUB_OUTPUT
+          
+          # Find unique input directories to avoid redundant compilation
+          # Group files by their input directory (e.g., packages/aws_vpcflow_otel/_dev/build/kibana)
+          UNIQUE_DIRS=$(echo "$CHANGED_YAML_FILES" | xargs -n1 dirname | sort -u | tr '\n' ' ' | sed 's/ $//')
+          echo "Unique input directories (for compilation):"
+          echo "$UNIQUE_DIRS"
+          echo ""
+          echo "unique_dirs=$UNIQUE_DIRS" >> $GITHUB_OUTPUT
 
       - name: Lint changed YAML dashboards
         id: lint
@@ -69,13 +82,14 @@ jobs:
             echo ""
             
             # First, show all linting results (warnings, info, errors)
+            # Using @latest - consider pinning to a specific version for reproducibility
             echo "Linting results:"
-            uvx --from kb-dashboard-lint kb-dashboard-lint check \
+            uvx --from kb-dashboard-lint@latest kb-dashboard-lint check \
                 --input-file "$yaml_file" || true
             echo ""
             
             # Then check specifically for warnings/errors (this will exit non-zero on warnings or errors)
-            if ! uvx --from kb-dashboard-lint kb-dashboard-lint check \
+            if ! uvx --from kb-dashboard-lint@latest kb-dashboard-lint check \
                 --input-file "$yaml_file" \
                 --severity-threshold warning > /dev/null 2>&1; then
               echo "❌ ERROR: Linting found warnings or errors in $yaml_file"
@@ -103,29 +117,28 @@ jobs:
 
       - name: Compile changed YAML dashboards
         id: compile
-        if: steps.find-changed.outputs.changed_files != ''
+        if: steps.find-changed.outputs.unique_dirs != ''
         run: |
           set -e
           
-          CHANGED_FILES="${{ steps.find-changed.outputs.changed_files }}"
+          UNIQUE_DIRS="${{ steps.find-changed.outputs.unique_dirs }}"
           
           # Track compilation results
           COMPILATION_FAILED=0
-          COMPILED_FILES=""
+          COMPILED_DIRS=""
           
           # Create temporary directory for compiled outputs
           TEMP_DIR=$(mktemp -d)
           echo "Temporary compilation directory: $TEMP_DIR"
           
-          # Process each changed YAML file
-          for yaml_file in $CHANGED_FILES; do
+          # Process each unique input directory (avoids redundant compilation)
+          for input_dir in $UNIQUE_DIRS; do
             echo "=========================================="
-            echo "Compiling: $yaml_file"
+            echo "Compiling directory: $input_dir"
             echo "=========================================="
             
             # Extract package name from path (e.g., packages/aws_vpcflow_otel/_dev/...)
-            package_name=$(echo "$yaml_file" | sed 's|packages/\([^/]*\)/.*|\1|')
-            input_dir="$(dirname "$yaml_file")"
+            package_name=$(echo "$input_dir" | sed 's|packages/\([^/]*\)/.*|\1|')
             temp_output_dir="$TEMP_DIR/${package_name}/kibana/dashboard"
             
             # Create temp output directory
@@ -135,52 +148,53 @@ jobs:
             echo "Temp output directory: $temp_output_dir"
             echo ""
             
-            # Compile YAML to JSON format to temporary location
-            if uvx --from kb-dashboard-cli kb-dashboard compile \
+            # Compile entire directory to JSON format (compiles all YAML files in the directory)
+            # Using @latest - consider pinning to a specific version for reproducibility
+            if uvx --from kb-dashboard-cli@latest kb-dashboard compile \
                 --input-dir "$input_dir" \
                 --output-dir "$temp_output_dir" \
                 --format json; then
-              echo "✅ Compiled: $yaml_file"
-              COMPILED_FILES="$COMPILED_FILES $yaml_file"
+              echo "✅ Compiled directory: $input_dir"
+              COMPILED_DIRS="$COMPILED_DIRS $input_dir"
             else
-              echo "❌ ERROR: Failed to compile $yaml_file"
+              echo "❌ ERROR: Failed to compile directory $input_dir"
               COMPILATION_FAILED=1
             fi
             
             echo ""
           done
           
-          # Store temp directory and compiled files for comparison step
+          # Store temp directory and compiled directories for comparison step
           echo "temp_dir=$TEMP_DIR" >> $GITHUB_OUTPUT
-          if [ -n "$COMPILED_FILES" ]; then
-            COMPILED_FILES_ESCAPED=$(echo "$COMPILED_FILES" | tr '\n' ' ' | sed 's/^ *//;s/ *$//')
-            echo "compiled_files=$COMPILED_FILES_ESCAPED" >> $GITHUB_OUTPUT
+          if [ -n "$COMPILED_DIRS" ]; then
+            COMPILED_DIRS_ESCAPED=$(echo "$COMPILED_DIRS" | tr '\n' ' ' | sed 's/^ *//;s/ *$//')
+            echo "compiled_dirs=$COMPILED_DIRS_ESCAPED" >> $GITHUB_OUTPUT
           fi
           
           if [ $COMPILATION_FAILED -eq 1 ]; then
-            echo "❌ Compilation failed for one or more files"
+            echo "❌ Compilation failed for one or more directories"
             rm -rf "$TEMP_DIR"
             exit 1
           fi
 
       - name: Compare compiled vs existing dashboards
         id: compare
-        if: steps.compile.outputs.compiled_files != ''
+        if: steps.compile.outputs.compiled_dirs != ''
         run: |
           set -e
           
-          CHANGED_FILES="${{ steps.find-changed.outputs.changed_files }}"
+          COMPILED_DIRS="${{ steps.compile.outputs.compiled_dirs }}"
           TEMP_DIR="${{ steps.compile.outputs.temp_dir }}"
           VALIDATION_FAILED=0
           
-          # Process each changed YAML file
-          for yaml_file in $CHANGED_FILES; do
+          # Process each compiled directory
+          for input_dir in $COMPILED_DIRS; do
             echo "=========================================="
-            echo "Comparing: $yaml_file"
+            echo "Comparing compiled output for: $input_dir"
             echo "=========================================="
             
             # Extract package name from path
-            package_name=$(echo "$yaml_file" | sed 's|packages/\([^/]*\)/.*|\1|')
+            package_name=$(echo "$input_dir" | sed 's|packages/\([^/]*\)/.*|\1|')
             existing_output_dir="packages/${package_name}/kibana/dashboard"
             compiled_output_dir="$TEMP_DIR/${package_name}/kibana/dashboard"
             
@@ -193,7 +207,7 @@ jobs:
             
             # Compare compiled files with existing files
             if diff -r "$compiled_output_dir" "$existing_output_dir" > /dev/null 2>&1; then
-              echo "✅ PASSED: $yaml_file compiles correctly and matches existing JSON files"
+              echo "✅ PASSED: YAML dashboards in $input_dir compile correctly and match existing JSON files"
             else
               echo ""
               echo "❌ ERROR: Compiled output does not match existing JSON files in $existing_output_dir"
@@ -201,9 +215,9 @@ jobs:
               echo "Differences found:"
               diff -r "$compiled_output_dir" "$existing_output_dir" || true
               echo ""
-              echo "The YAML dashboard was modified but the JSON was not updated."
+              echo "The YAML dashboard(s) were modified but the JSON was not updated."
               echo "Please run the following command to update the JSON files:"
-              echo "  cd \$(dirname $yaml_file) && uvx --from kb-dashboard-cli kb-dashboard compile --input-dir . --output-dir ../../kibana/dashboard --format json"
+              echo "  cd $input_dir && uvx --from kb-dashboard-cli@latest kb-dashboard compile --input-dir . --output-dir ../../kibana/dashboard --format json"
               echo ""
               VALIDATION_FAILED=1
             fi
