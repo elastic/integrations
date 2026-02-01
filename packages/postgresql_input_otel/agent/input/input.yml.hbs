@@ -1,0 +1,62 @@
+receivers:
+  postgresql:
+    {{#if endpoint}}
+    endpoint: {{endpoint}}
+    {{/if}}
+    {{#if transport}}
+    transport: {{transport}}
+    {{/if}}
+    username: {{username}}
+    password: {{password}}
+    {{#if databases}}
+    databases:
+      {{#each databases}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+    collection_interval: {{collection_interval}}
+    initial_delay: {{initial_delay}}
+    tls:
+      {{#if insecure}}
+      insecure: {{insecure}}
+      {{/if}}
+      {{#if insecure_skip_verify}}
+      insecure_skip_verify: {{insecure_skip_verify}}
+      {{/if}}
+      {{#if ca_pem}}
+      ca_pem: {{ca_pem}}
+      {{/if}}
+      {{#if cert_pem}}
+      cert_pem: {{cert_pem}}
+      {{/if}}
+      {{#if key_pem}}
+      key_pem: {{key_pem}}
+      {{/if}}
+    events:
+      db.server.query_sample:
+        {{#if query_sample_enabled}}
+        enabled: {{query_sample_enabled}}
+        {{/if}}
+      db.server.top_query:
+        {{#if top_query_enabled}}
+        enabled: {{top_query_enabled}}
+        {{/if}}
+    query_sample_collection:
+      {{#if query_sample_max_rows_per_query}}
+      max_rows_per_query: {{query_sample_max_rows_per_query}}
+      {{/if}}
+    top_query_collection:
+      {{#if top_query_max_rows_per_query}}
+      max_rows_per_query: {{top_query_max_rows_per_query}}
+      {{/if}}
+      {{#if top_query_top_n_query}}
+      top_n_query: {{top_query_top_n_query}}
+      {{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [postgresql]
+      processors: [resourcedetection/system]

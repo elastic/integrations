@@ -1,0 +1,125 @@
+format_version: 3.5.5
+name: postgresql_input_otel
+title: "PostgreSQL OpenTelemetry Input"
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "Collect PostgreSQL metrics using OpenTelemetry Collector"
+type: input
+categories:
+  - web
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.3"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sample-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: postgresqlreceiver
+    type: metrics
+    title: PostgreSQL OpenTelemetry Input
+    description: Collect PostgreSQL metrics using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: username
+        type: text
+        required: true
+        description: username
+      - name: password
+        type: password
+        required: true
+        description: password
+        secret: true
+      - name: endpoint
+        type: text
+        required: false
+        description: The endpoint of the postgresql server.
+        default: localhost:5432
+      - name: databases
+        type: text
+        multi: true
+        required: false
+        description: The list of databases for which the receiver will attempt to collect statistics. If an empty list is provided, the receiver will attempt to collect statistics for all non-template databases.
+      - name: transport
+        type: text
+        required: false
+        description: The transport protocol being used to connect to postgresql. Available options are tcp and unix.
+        default: tcp
+      - name: collection_interval
+        type: duration
+        required: false
+        description: Time between each collection.
+        default: 10s
+        show_user: false
+      - name: initial_delay
+        type: duration
+        required: false
+        description: Defines how long this receiver waits before starting.
+        default: 1s
+        show_user: false
+      - name: insecure
+        type: bool
+        required: false
+        description: Whether to enable client transport security for the postgresql connection.
+        default: false
+        show_user: true
+      - name: cert_pem
+        type: text
+        required: false
+        description: A certificate used for client authentication, if necessary.
+        default: ""
+      - name: ca_pem
+        type: text
+        required: false
+        description: A set of certificate authorities used to validate the database server's SSL certificate.
+        default: ""
+      - name: key_pem
+        type: text
+        required: false
+        description: An SSL key used for client authentication, if necessary.
+        default: ""
+      - name: insecure_skip_verify
+        type: bool
+        required: false
+        description: Whether to validate server name and certificate if client transport security is enabled.
+        default: false
+      - name: query_sample_enabled
+        type: bool
+        required: false
+        description: Query sample collection. To use it, you will need to grant the user you are using pg_monitor. See [postgresqlreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver)
+        default: false
+      - name: top_query_enabled
+        type: bool
+        required: false
+        description: Most executed queries from postgresql. To use it, you will need to create the extension to every database. See [postgresqlreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver)
+        default: false
+      - name: query_sample_max_rows_per_query
+        type: integer
+        required: false
+        description: The max number of rows would return from the query against pg_stat_statements.
+        default: 100
+      - name: top_query_max_rows_per_query
+        type: integer
+        required: false
+        description: The max number of rows would return from the query against pg_stat_statements.
+        default: 100
+      - name: top_query_top_n_query
+        type: integer
+        required: false
+        description: The maximum number of active queries to report (to the next consumer) in a single run.
+        default: 100
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
