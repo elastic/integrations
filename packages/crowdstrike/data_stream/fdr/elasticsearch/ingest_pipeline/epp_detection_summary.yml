@@ -1,0 +1,260 @@
+---
+description: Pipeline for processing Epp Detection Summary events.
+processors:
+
+  # EppDetectionSummaryEvent converts
+  - convert:
+      tag: convert_CloudIndicator_to_boolean_552bc0f4
+      if: ctx.crowdstrike?.CloudIndicator != null && ctx.crowdstrike?.CloudIndicator != ''
+      field: crowdstrike.CloudIndicator
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_CloudIndicator_7bd12275
+            field:
+              - crowdstrike.CloudIndicator
+        - append:
+            tag: append_error_message_1c33af04
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_PatternDispositionValue_to_long_1e7a32d8
+      if: ctx.crowdstrike?.PatternDispositionValue != null && ctx.crowdstrike?.PatternDispositionValue != ''
+      field: crowdstrike.PatternDispositionValue
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_PatternDispositionValue_b117c4a5
+            field:
+              - crowdstrike.PatternDispositionValue
+        - append:
+            tag: append_error_message_c637ab38
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_LocalIP_to_ip_85a6b836
+      if: ctx.crowdstrike?.LocalIP != null && ctx.crowdstrike.LocalIP != ''
+      field: crowdstrike.LocalIP
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_LocalIP_f70dd2bb
+            field:
+              - crowdstrike.LocalIP
+        - append:
+            tag: append_error_message_c42100f6
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_LocalIPv6_to_ip_9e08b342
+      if: ctx.crowdstrike?.LocalIPv6 != null && ctx.crowdstrike.LocalIPv6 != ''
+      field: crowdstrike.LocalIPv6
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_LocalIPv6_20f3473b
+            field:
+              - crowdstrike.LocalIPv6
+        - append:
+            tag: append_error_message_a7e996f2
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # timestamps
+  - foreach:
+      tag: foreach_crowdstrike_FilesAccessed_7975c0fe
+      if: ctx.crowdstrike?.FilesAccessed instanceof List
+      field: crowdstrike.FilesAccessed
+      processor:
+        date:
+          tag: date__ingest__value_Timestamp_b9dba206
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_Timestamp_1e9e21da
+                field:
+                  - _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                tag: append_error_message_8eaed846
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_crowdstrike_FilesWritten_069e87ee
+      if: ctx.crowdstrike?.FilesWritten instanceof List
+      field: crowdstrike.FilesWritten
+      processor:
+        date:
+          tag: date__ingest__value_Timestamp_3d945d16
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                tag: remove__ingest__value_Timestamp_151916ea
+                field:
+                  - _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                tag: append_error_message_cccd8556
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # event categorization fields
+  - set:
+      tag: set_event_kind_to_alert_39295792
+      field: event.kind
+      value: alert
+  - append:
+      tag: append_malware_category_425d1f27
+      field: event.category
+      value: malware
+  - append:
+      tag: append_info_type_8a66ccaa
+      field: event.type
+      value: info
+
+  # ECS field mappings
+  - rename:
+      tag: rename_crowdstrike_LocalIP_to_source_ip_383fbff4
+      if: ctx.crowdstrike?.LocalIP != null && ctx.crowdstrike.LocalIP != ""
+      field: crowdstrike.LocalIP
+      target_field: source.ip
+      ignore_missing: true
+  - convert:
+      tag: convert_crowdstrike_ProcessId_to_string_7dfed8f3
+      if: ctx.crowdstrike?.ProcessId != null && !(ctx.crowdstrike.ProcessId instanceof String)
+      field: crowdstrike.ProcessId
+      type: string
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_ProcessId_to_process_pid_08662a31
+      if: ctx.process?.entity_id == null
+      field: crowdstrike.ProcessId
+      target_field: process.entity_id
+      ignore_missing: true
+  - split:
+      tag: split_crowdstrike_HostGroups_f53aac76
+      field: crowdstrike.HostGroups
+      separator: ','
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_ParentImageFileName_to_process_parent_executable_0b7a24c2
+      if: ctx.process?.parent?.name == null
+      field: crowdstrike.ParentImageFileName
+      target_field: process.parent.name
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_ParentImageFilePath_to_process_parent_executable_730e3198
+      if: ctx.process?.parent?.executable == null
+      field: crowdstrike.ParentImageFilePath
+      target_field: process.parent.executable
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_Description_to_message_bf015ca8
+      field: crowdstrike.Description
+      target_field: message
+      ignore_missing: true
+  - set:
+      tag: set_rule_description_from_message_1343fd6e
+      if: ctx.message != null
+      field: rule.description
+      copy_from: message
+  - set:
+      tag: set_process_name_from_crowdstrike_FileName_56043937
+      field: process.name
+      copy_from: crowdstrike.FileName
+      ignore_empty_value: true
+  - set:
+      tag: set_process_executable_from_crowdstrike_FilePath_68aaf1a2
+      field: process.executable
+      copy_from: crowdstrike.FilePath
+      ignore_empty_value: true
+  - rename:
+      tag: rename_crowdstrike_SHA256String_to_file_hash_sha256_aa319d9c
+      field: crowdstrike.SHA256String
+      target_field: file.hash.sha256
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_MD5String_to_file_hash_md5_adef1944
+      field: crowdstrike.MD5String
+      target_field: file.hash.md5
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_SHA1String_to_file_hash_sha1_b607b768
+      field: crowdstrike.SHA1String
+      target_field: file.hash.sha1
+      ignore_missing: true
+  - append:
+      tag: append_file_hash_sha1_to_related_hash_c997d53d
+      if: ctx.file.hash.sha1 != null && ctx.file.hash.sha1 != ""
+      field: related.hash
+      value: '{{{file.hash.sha1}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_file_hash_sha256_to_related_hash_78d565ff
+      if: ctx.file.hash.sha256 != null && ctx.file.hash.sha256 != ""
+      field: related.hash
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_file_hash_md5_to_related_hash_6d53928a
+      if: ctx.file.hash.md5 != null && ctx.file.hash.md5 != ""
+      field: related.hash
+      value: '{{{file.hash.md5}}}'
+      allow_duplicates: false
+  - rename:
+      tag: rename_crowdstrike_FileName_to_file_name_ef2fa373
+      field: crowdstrike.FileName
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_FilePath_to_file_path_da7c5277
+      field: crowdstrike.FilePath
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_Name_to_rule_name_0af962b5
+      field: crowdstrike.Name
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_DetectId_to_rule_id_64a9abd2
+      field: crowdstrike.DetectId
+      target_field: rule.id
+      ignore_missing: true
+  - append:
+      tag: append_crowdstrike_MACAddress_into_host_mac_c3cddec3
+      if: ctx.crowdstrike?.MACAddress != null && ctx.crowdstrike.MACAddress != ""
+      field: host.mac
+      value: '{{{crowdstrike.MACAddress}}}'
+      allow_duplicates: false
+  - uppercase:
+      tag: uppercase_host_mac_a2d4985e
+      if: ctx.host?.mac != null
+      field: host.mac
+      ignore_missing: true
+
+  # error handling
+on_failure:
+  - append:
+      tag: append_error_message_9319ae1f
+      field: error.message
+      value: Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_pipeline_error_into_event_kind_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_into_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

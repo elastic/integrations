@@ -356,6 +356,10 @@ processors:
       tag: pipeline_data_protection_detection_summary_cd21f5a1
       if: ctx.crowdstrike?.ExternalApiType == 'Event_DataProtectionDetectionSummaryEvent'
       name: '{{ IngestPipeline "data_protection_detection_summary" }}'
+  - pipeline:
+      tag: pipeline_epp_detection_summary_b611643c
+      if: ctx.crowdstrike?.ExternalApiType == 'Event_EppDetectionSummaryEvent'
+      name: '{{ IngestPipeline "epp_detection_summary" }}'
 
   # Handle case changes.
   - rename:
@@ -467,64 +471,6 @@ processors:
       target_field: crowdstrike.DetectName
       ignore_missing: true
       ignore_failure: true
-
-  # EppDetectionSummaryEvent converts
-  - convert:
-      tag: convert_crowdstrike_LocalIPv6_to_ip_19315481
-      if: ctx.crowdstrike?.LocalIPv6 != null && ctx.crowdstrike.LocalIPv6 != ''
-      field: crowdstrike.LocalIPv6
-      type: ip
-      on_failure:
-        - remove:
-            tag: remove_crowdstrike_LocalIPv6_f0bb947a
-            field:
-              - crowdstrike.LocalIPv6
-        - append:
-            tag: append_error_message_2d13d307
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_of_crowdstrike_FilesAccessed_7975c0fe
-      if: ctx.crowdstrike?.FilesAccessed instanceof List
-      field: crowdstrike.FilesAccessed
-      processor:
-        date:
-          tag: date__ingest__value_Timestamp_into__ingest__value_Timestamp_b9dba206
-          field: _ingest._value.Timestamp
-          target_field: _ingest._value.Timestamp
-          formats:
-            - UNIX
-          on_failure:
-            - remove:
-                tag: remove__ingest__value_Timestamp_1e9e21da
-                field:
-                  - _ingest._value.Timestamp
-                ignore_failure: true
-            - append:
-                tag: append_error_message_8eaed846
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_of_crowdstrike_FilesWritten_069e87ee
-      if: ctx.crowdstrike?.FilesWritten instanceof List
-      field: crowdstrike.FilesWritten
-      processor:
-        date:
-          tag: date__ingest__value_Timestamp_into__ingest__value_Timestamp_3d945d16
-          field: _ingest._value.Timestamp
-          target_field: _ingest._value.Timestamp
-          formats:
-            - UNIX
-          on_failure:
-            - remove:
-                tag: remove__ingest__value_Timestamp_151916ea
-                field:
-                  - _ingest._value.Timestamp
-                ignore_failure: true
-            - append:
-                tag: append_error_message_cccd8556
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Handle additional added fields.
   - date:
@@ -822,18 +768,18 @@ processors:
       copy_from: host.hostname
       ignore_empty_value: true
       ignore_failure: true
+  - append:
+      tag: append_related_hosts_369b21b5
+      if: ctx.crowdstrike?.info?.host?.ComputerName != null
+      field: related.hosts
+      value: '{{{crowdstrike.info.host.ComputerName}}}'
+      allow_duplicates: false
   - rename:
       tag: rename_crowdstrike_info_host_ComputerName_to_host_name_a1ee7f6f
       if: ctx.host?.name == null
       field: crowdstrike.info.host.ComputerName
       target_field: host.name
       ignore_missing: true
-  - append:
-      tag: append_related_hosts_2fa72197
-      if: ctx.host?.name != null
-      field: related.hosts
-      value: '{{{crowdstrike.info.host.ComputerName}}}'
-      allow_duplicates: false
   - append:
       tag: append_related_hosts_452ef445
       if: ctx.host?.name != null
@@ -1088,7 +1034,7 @@ processors:
       ignore_missing: true
   - script:
       description: Calculate process.uptime
-      tag: process_uptime_528bb619
+      tag: process_uptime_d1b24ab9
       if: |-
         ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != "" &&
         ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
@@ -1097,7 +1043,7 @@ processors:
         float e = Float.parseFloat(ctx.crowdstrike?.ProcessEndTime);
         if (e >= s) {
           if (ctx.process == null) {
-            ctx.process = [];
+            ctx.process = [:];
           }
           ctx.process.uptime = (long) ((e-s)/1000L);
         }
@@ -1585,6 +1531,18 @@ processors:
       target_field: user.name
       ignore_missing: true
   - rename:
+      tag: rename_crowdstrike_User_ID_to_user_id
+      if: ctx.crowdstrike?.User instanceof Map && ctx.crowdstrike.User.ID != null && ctx.user?.id == null
+      field: crowdstrike.User.ID
+      target_field: user.id
+      ignore_missing: true
+  - remove:
+      tag: remove_crowdstrike_User
+      description: Remove User field if it still exist as Map.
+      if: ctx.crowdstrike?.User instanceof Map
+      field: crowdstrike.User
+      ignore_missing: true
+  - rename:
       tag: rename_crowdstrike_UserName_to_user_name_5437c07f
       if: ctx.crowdstrike?.UserName != null && ctx.user?.name == null
       field: crowdstrike.UserName
@@ -1615,8 +1573,8 @@ processors:
       ignore_empty_value: true
       ignore_failure: true
   - append:
-      tag: append_user_domain_76fba8f0
-      if: ctx.user?.domain != null && ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2 && ctx.user.domain != ctx._temp.user_parts[0]
+      tag: append_user_domain_536a37ed
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
       field: user.domain
       value: '{{{_temp.user_parts.1}}}'
       allow_duplicates: false
@@ -2175,13 +2133,13 @@ processors:
       target_field: file.device
       ignore_missing: true
   - set:
-      tag: set_file_type_c7c034b0
-      if: ctx.file?.path != null && !ctx.event.action.contains("Directory")
+      tag: set_file_type_f7adee81
+      if: ctx.file?.path != null && ctx.event?.action != null && !ctx.event.action.contains("Directory")
       field: file.type
       value: file
   - set:
-      tag: set_file_type_b27f1482
-      if: ctx.file?.path != null && (ctx.event.action.contains("Directory") || ctx.file.path.endsWith("\\") || ctx.file.path.endsWith("/"))
+      tag: set_file_type_d001ae21
+      if: ctx.file?.path != null && ctx.event?.action != null && (ctx.event.action.contains("Directory") || ctx.file.path.endsWith("\\") || ctx.file.path.endsWith("/"))
       field: file.type
       value: dir
   - script:
@@ -2256,12 +2214,6 @@ processors:
       copy_from: crowdstrike.ContextImageFileName
       ignore_empty_value: true
   - set:
-      tag: set_process_entity_id_d4090d0f
-      if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'linux'
-      field: process.entity_id
-      copy_from: crowdstrike.ContextProcessId
-      ignore_empty_value: true
-  - set:
       tag: set_file_hash_sha256_1abd2cde
       if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'linux'
       field: file.hash.sha256
@@ -2312,6 +2264,47 @@ processors:
           tag: append_threat_tactic_name_9aebe2d8
           field: threat.tactic.name
           value: '{{{_ingest._value.Tactic}}}'
+          allow_duplicates: false
+
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_Tactic_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_threat_tactic_name_b021c3ec
+          field: threat.tactic.name
+          value: '{{{_ingest._value.Tactic}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_TacticID_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_threat_tactic_id_4d499747
+          field: threat.tactic.id
+          value: '{{{_ingest._value.TacticID}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_Technique_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_threat_technique_name_af6387ac
+          field: threat.technique.name
+          value: '{{{_ingest._value.Technique}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_of_crowdstrike_MitreAttack_for_TechniqueID_268c02de
+      if: ctx.crowdstrike?.MitreAttack instanceof List
+      field: crowdstrike.MitreAttack
+      processor:
+        append:
+          tag: append_threat_technique_id_70f7c093
+          field: threat.technique.id
+          value: '{{{_ingest._value.TechniqueID}}}'
           allow_duplicates: false
 
   # Package fields.
@@ -2802,6 +2795,7 @@ processors:
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
         - crowdstrike.BrowserExtensionArchitecture
+        - crowdstrike.MitreAttack
         - _conf
       ignore_missing: true
   - script:
@@ -2837,9 +2831,9 @@ processors:
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_preserve_original_event_into_event_kind_a0b8d607
+      tag: append_preserve_original_event_into_tags_9fe66b2c
       if: ctx.error?.message != null
-      field: event.kind
+      field: tags
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
