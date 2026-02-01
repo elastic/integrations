@@ -36,11 +36,10 @@ processors:
         - '^%{SYSLOGTIMESTAMP} (?:%{IP:observer.ip}|%{HOSTNAME:observer.hostname}) CEF'
       ignore_failure: true
       ignore_missing: true
-  - set: 
-     tag: set_host_ip_1d72afcb 
-     field: host.ip 
-     value: ['{{{host.ip}}}'] 
-     if: ctx.host?.ip instanceof String 
+  - script:
+      if: ctx.observer?.ip instanceof String
+      source: |-
+        ctx.observer.ip = Collections.singletonList(ctx.observer.ip);
   - rename:
       field: message
       target_field: event.reason
