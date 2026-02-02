@@ -400,6 +400,15 @@ processors:
       field: azure.platformlogs.resultDescription
       target_field: azure.platformlogs.result_description
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
