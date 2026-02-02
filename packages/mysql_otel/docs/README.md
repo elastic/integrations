@@ -1,8 +1,8 @@
-# MYSQL metrics for OpenTelemetry Collector
+# MySQL integration for OpenTelemetry Collector
 
-The MySQL metrics from MySQL OpenTelemetry receiver allow you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
+This integration allows you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
 
-The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics collected via OpenTelemetry ([MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/mysqlreceiver)), enabling you to monitor database performance and troubleshoot issues effectively in real time.
+The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics and logs collected via the [OpenTelemetry MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.129.0/receiver/mysqlreceiver), enabling you to monitor database performance and troubleshoot issues effectively in real time.
 
 ## Compatibility
 
@@ -19,86 +19,141 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-1. Install and configure the upstream OpenTelemetry Collector to export metrics to ElasticSearch, as shown in the following example:
+### Prerequisites
+
+The MySQL user configured for monitoring requires the following minimum permissions:
+
+```sql
+GRANT SELECT ON performance_schema.* TO '<MYSQL_USER>'@'%';
+```
+
+To collect replication metrics (`mysql.replica.sql_delay`, `mysql.replica.time_behind_source`), additional permissions are required:
+
+**MySQL:**
+```sql
+GRANT REPLICATION CLIENT ON *.* TO '<MYSQL_USER>'@'%';
+```
+
+**MariaDB:**
+```sql
+GRANT REPLICA MONITOR ON *.* TO '<MYSQL_USER>'@'%';
+```
+
+### Configuration
+
+Install and configure the upstream OpenTelemetry Collector to export metrics to Elasticsearch. The configuration below uses separate receivers for primary and replica instances since replication metrics are only available on replicas.
 
 ```yaml
 receivers:
-  mysql:
-    endpoint: localhost:3306
+  mysql/primary:
+    endpoint: <MYSQL_PRIMARY_ENDPOINT>
     username: <MYSQL_USER>
     password: <MYSQL_PASSWORD>
-    database: <your database name>
     collection_interval: 10s
-    initial_delay: 1s
     statement_events:
       digest_text_limit: 120
       time_limit: 24h
       limit: 250
+    query_sample_collection:
+      max_rows_per_query: 100
+    top_query_collection:
+      collection_interval: 30s
+      lookback_time: 60
+      max_query_sample_count: 1000
+      top_query_count: 100
+    events:
+      db.server.query_sample:
+        enabled: true
+      db.server.top_query:
+        enabled: true
     metrics:
-      mysql.query.client.count:
-        enabled: true
-      mysql.client.network.io:
-        enabled: true
-      mysql.commands:
-        enabled: true
-      mysql.max_used_connections:
+      mysql.connection.count:
         enabled: true
       mysql.connection.errors:
         enabled: true
+      mysql.max_used_connections:
+        enabled: true
+      mysql.query.count:
+        enabled: true
+      mysql.query.client.count:
+        enabled: true
+      mysql.query.slow.count:
+        enabled: true
+      mysql.commands:
+        enabled: true
+      mysql.client.network.io:
+        enabled: true
+      mysql.table.io.wait.count:
+        enabled: true
+      mysql.table.io.wait.time:
+        enabled: true
+      mysql.index.io.wait.count:
+        enabled: true
+      mysql.index.io.wait.time:
+        enabled: true
+      mysql.table.lock_wait.read.count:
+        enabled: true
+      mysql.table.lock_wait.read.time:
+        enabled: true
+      mysql.table.lock_wait.write.count:
+        enabled: true
+      mysql.table.lock_wait.write.time:
+        enabled: true
+      mysql.table.size:
+        enabled: true
+      mysql.table.rows:
+        enabled: true
+      mysql.table.average_row_length:
+        enabled: true
+      mysql.statement_event.count:
+        enabled: true
+      mysql.statement_event.wait.time:
+        enabled: true
       mysql.table_open_cache:
+        enabled: true
+      mysql.joins:
+        enabled: true
+      mysql.page_size:
+        enabled: true
+      mysql.mysqlx_worker_threads:
+        enabled: true
+
+  mysql/replica:
+    endpoint: <MYSQL_REPLICA_ENDPOINT>
+    username: <MYSQL_USER>
+    password: <MYSQL_PASSWORD>
+    collection_interval: 10s
+    metrics:
+      mysql.replica.time_behind_source:
         enabled: true
       mysql.replica.sql_delay:
         enabled: true
-      mysql.replica.time_behind_source:
-        enabled: true
+
 exporters:
-  debug:
-    verbosity: detailed
   elasticsearch/otel:
-    endpoints: https://elasticsearch:9200
-    user: <userid>
-    password: <pwd>
+    endpoint: <ES_ENDPOINT>
+    api_key: <ES_API_KEY>
     mapping:
       mode: otel
-    metrics_dynamic_index:
-      enabled: true
+
 service:
   pipelines:
     metrics:
-      exporters: [debug, elasticsearch/otel]
-      receivers: [mysql]
+      receivers: [mysql/primary, mysql/replica]
+      exporters: [elasticsearch/otel]
+    logs:
+      receivers: [mysql/primary]
+      exporters: [elasticsearch/otel]
 ```
 
-Use this configuration to run the collector.
+> **Note:** If you don't have a replica instance, remove the `mysql/replica` receiver and its reference from the metrics pipeline.
 
-The following metrics should be enabled in the `mysqlreceiver` configuration for the dashboards to be populated:
+## Reference
 
-For Database Overview dashboard:
-```yaml
-mysql.query.client.count:
-  enabled: true
-mysql.client.network.io:
-  enabled: true
-mysql.commands:
-  enabled: true
-mysql.max_used_connections:
-  enabled: true
-mysql.connection.errors:
-  enabled: true
-mysql.table_open_cache:
-  enabled: true
-```
+### Metrics
 
-For Replica Status dashboard:
-```yaml
-mysql.replica.sql_delay:
-  enabled: true
-mysql.replica.time_behind_source:
-  enabled: true
-```
+Please refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/metadata.yaml) of the OpenTelemetry MySQL receiver for details on available metrics.
 
-## Metrics reference
+### Logs
 
-### MySQL metrics
-
-Please refer to [the documentation of the OpenTelemetry's MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/mysqlreceiver/documentation.md).
+Please refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/documentation.md) of the OpenTelemetry MySQL receiver for details on log collection.
