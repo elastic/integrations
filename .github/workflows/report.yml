@@ -14,7 +14,7 @@ name: Vale Report
 
 on:
   workflow_run:
-    workflows: ["Vale Lint"]  # Must match the 'name' in vale-lint.yml exactly
+    workflows: ["Vale Lint"]  # Must match the 'name' in lint.yml exactly
     types:
       - completed
 
@@ -33,7 +33,8 @@ jobs:
 
     steps:
       - name: Post Vale Results
-        uses: elastic/vale-rules/report@main
+        # TODO: Change to @main after https://github.com/elastic/vale-rules/pull/XX is merged
+        uses: elastic/vale-rules/report@fix/report-download-artifacts-condition
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # download_artifacts: true (default)
