@@ -1,0 +1,40 @@
+# Vale Report Workflow
+#
+# This workflow posts Vale linting results as PR comments.
+#
+# IMPORTANT: This workflow requires vale-lint.yml to run first.
+# The workflow name in the 'workflows' array below must match exactly.
+#
+# Why two workflows?
+# GitHub restricts fork PRs from having write access to the base repo.
+# Using workflow_run trigger allows posting comments even on fork PRs
+# because this workflow runs in the context of the base repository.
+
+name: Vale Report
+
+on:
+  workflow_run:
+    workflows: ["Vale Lint"]  # Must match the 'name' in vale-lint.yml exactly
+    types:
+      - completed
+
+permissions:
+  pull-requests: write
+
+jobs:
+  report:
+    name: Post Results
+    runs-on: ubuntu-latest
+    # Only run for pull_request events, not push events
+    # Don't run if the lint workflow was cancelled
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion != 'cancelled'
+
+    steps:
+      - name: Post Vale Results
+        uses: elastic/vale-rules/report@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # download_artifacts: true (default)
+          # Downloads vale_report.md from the Vale Lint workflow
