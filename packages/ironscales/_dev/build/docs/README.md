@@ -43,7 +43,7 @@ To collect data through the IRONSCALES APIs, you need to provide an **API Token*
 1. Log in to the **IRONSCALES** instance.
 2. Navigate to **Settings > Account Settings > General & Security**.
 3. Locate the **APP API Token** and **Company ID** values in this section.
-4.Copy both values and store them securely for use in the Integration configuration.
+4. Copy both values and store them securely for use in the Integration configuration.
 
 ## How do I deploy this integration?
 
