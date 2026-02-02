@@ -1,4 +1,4 @@
-# Prometheus OpenTelemetry Input Package
+# Prometheus OpenTelemetry Input
 
 ## Overview
 
@@ -8,53 +8,34 @@ This package allows you to scrape Prometheus-compatible metrics endpoints using 
 
 This package configures the Prometheus receiver in the EDOT collector to scrape metrics from Prometheus-compatible endpoints. The Elastic Agent processes and enriches the data before sending it to Elasticsearch for indexing and analysis.
 
-## Configuration Modes
+## Configuration
 
-This package offers two configuration modes to accommodate different user preferences:
+Configure individual fields like targets, scrape interval, and TLS settings through the Fleet UI.
 
-### Guided Mode (Prometheus Metrics - Guided)
+**Looking for raw config mode?** If you have an existing Prometheus `scrape_configs` YAML that you want to use directly, consider using the [Prometheus OpenTelemetry Raw Input](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel_raw) package instead.
 
-Use this mode if you want a simplified setup experience. Configure individual fields like targets, scrape interval, and TLS settings through the Fleet UI. This mode is recommended for new setups.
+### Settings
 
-### Raw Config Mode (Prometheus Metrics - Raw Config)
+| Setting | Description | Default |
+|---------|-------------|---------|
+| Scrape Targets | List of targets in `host:port` format | `localhost:9090` |
+| Scrape Interval | How frequently to scrape targets | `60s` |
+| Scrape Timeout | Timeout for scraping | `10s` |
+| Metrics Path | HTTP path to fetch metrics | `/metrics` |
+| Scheme | Protocol scheme (HTTP/HTTPS) | `http` |
+| Honor Labels | Honor labels from scraped metrics | `false` |
+| Honor Timestamps | Honor timestamps from scraped metrics | `true` |
 
-Use this mode if you have an existing Prometheus `scrape_configs` YAML that you want to use directly. Simply paste your existing Prometheus scrape configuration and the package will use it as-is.
+### TLS Configuration
 
-**Example - paste your existing scrape config:**
+For HTTPS endpoints, you can configure:
+- Skip TLS verification for self-signed certificates
+- CA certificate path for custom certificate authorities
+- Client certificate and key for mutual TLS authentication
 
-```yaml
-- job_name: 'my-app'
-  scrape_interval: 15s
-  scrape_timeout: 10s
-  metrics_path: /metrics
-  scheme: http
-  static_configs:
-    - targets:
-        - 'localhost:9090'
-        - 'localhost:9100'
-  honor_labels: true
-  honor_timestamps: true
-```
+### Basic Authentication
 
-This becomes the literal receiver config:
-
-```yaml
-receivers:
-  prometheus:
-    config:
-      scrape_configs:
-        - job_name: 'my-app'
-          scrape_interval: 15s
-          scrape_timeout: 10s
-          metrics_path: /metrics
-          scheme: http
-          static_configs:
-            - targets:
-                - 'localhost:9090'
-                - 'localhost:9100'
-          honor_labels: true
-          honor_timestamps: true
-```
+Username and password can be configured for endpoints requiring basic authentication.
 
 ## Configuration Reference
 
