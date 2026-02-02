@@ -35,12 +35,13 @@
           type: long
           metric_type: counter
           description: |
-            The value of CPU usage since starting the process.           
-        - name: system.ticks
-          type: long
-          metric_type: counter
+            The value of CPU usage since starting the process.
+        - name: total.pct
+          type: scaled_float
+          unit: percent
+          metric_type: gauge
           description: |
-           Number of CPU ticks consumed by the process in kernel space.
+            The percentage of CPU time spent in states other than Idle and IOWait.
         - name: total.ticks
           type: long
           metric_type: counter
@@ -50,12 +51,17 @@
           type: long
           metric_type: counter
           description: |
-            Total CPU time spent by the process.
+            The amount of CPU time spent by the process.
         - name: user.time.ms
           type: long
           metric_type: counter
           description: |
             The amount of CPU time the process spent in user space.
+        - name: system.ticks
+          type: long
+          metric_type: counter
+          description: |
+            Number of CPU ticks consumed by the process in kernel space.
         - name: system.time.ms
           type: long
           metric_type: counter
@@ -71,6 +77,12 @@
           metric_type: gauge
           description: |
             The total virtual memory the process has. On Windows this represents the Commit Charge (the total amount of memory that the memory manager has committed for a running process) value in bytes for this process.
+        - name: rss.bytes
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: |
+            The Resident Set Size. The amount of memory the process occupied in main memory (RAM). On Windows this represents the current working set size, in bytes.
     - name: fd
       type: group
       fields:
@@ -425,8 +437,20 @@
 - name: component
   type: group
   fields:
+    - name: id
+      type: keyword
+      dimension: true
+      ignore_above: 1024
+      description: Component id
+    - name: type
+      type: keyword
+      ignore_above: 1024
+      description: The type of the component
     - name: binary
       type: keyword
       ignore_above: 1024
       description: The binary that exeuctes the component
       example: filebeat
+    - name: dataset
+      type: keyword
+      ignore_above: 1024

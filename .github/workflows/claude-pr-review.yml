@@ -1,0 +1,40 @@
+name: Claude PR Review
+on:
+  pull_request_target:
+    types: [opened, synchronize, labeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    concurrency:
+      group: claude-pr-review-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    if: |
+      contains(fromJSON('["strawgate","AlexanderWert","perk","graphaelli","cmacknz","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet","teresaromero","mrodm","jsoriano","kpollich","andrewkroh","norrietaylor"]'), github.event.pull_request.user.login)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: .go-version
+
+      - name: Install elastic-package
+        run: |
+          go install github.com/elastic/elastic-package@latest
+
+      - name: Run Claude PR Review
+        uses: elastic/ai-github-actions/workflows/pr-review/rwx@v0
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          additional-instructions: |
+            Environment setup:
+            - Go is configured (version from .go-version)
+            - elastic-package tool is installed and available
