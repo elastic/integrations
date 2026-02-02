@@ -1,0 +1,53 @@
+{
+  "attributes": {
+    "name": "kafka_consumer_lag_freshness_99.5_Rolling30Days",
+    "description": "This SLO tracks the consumer lag of Kafka consumer groups, ensuring that 99.5% of 1-minute intervals over a rolling 30-day period have maximum consumer lag below the defined threshold. Consumer lag represents the number of messages a consumer is behind the latest produced offset, directly reflecting message processing freshness and consumer health.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"kafka.consumergroup\" ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "kafka.consumergroup.consumer_lag",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 10000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "kafka"
+    ],
+    "groupBy": [
+      "kafka.topic.name",
+      "kafka.consumergroup.id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "kafka-ea488d90-8e63-11e8-8fa2-3d5f811fbd0f"
+        }
+      ]
+    }
+  },
+  "id": "kafka_consumer_lag_freshness_99.5_Rolling30Days",
+  "type": "slo_template"
+}
