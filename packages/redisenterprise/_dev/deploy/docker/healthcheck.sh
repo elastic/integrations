@@ -6,12 +6,12 @@ CHECK_CLUSTER_CREATED=/opt/redislabs/config/check_cluster_created
 CHECK_DATABASE_CREATED=/opt/redislabs/config/check_database_created
 
 if [[ ! -f "${CHECK_CLUSTER_CREATED}" ]]; then
-  rladmin cluster create name cluster.local username cihan@redislabs.com password redislabs123
+  rladmin cluster create name cluster.local username example@example.com password redislabs123
   touch ${CHECK_CLUSTER_CREATED}
 fi
 
 if [[ ! -f "${CHECK_DATABASE_CREATED}" ]]; then
-  curl -s -k -u "cihan@redislabs.com:redislabs123" --request POST \
+  curl -s -k -u "example@example.com:redislabs123" --request POST \
     --url "https://localhost:9443/v1/bdbs" \
     --header 'content-type: application/json' \
     --data '{"name":"db1","type":"redis","memory_size":102400,"port":12000}'
