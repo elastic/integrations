@@ -1,7 +1,7 @@
 name: Claude Issue Triage
 on:
   issues:
-    types: [labeled]
+    types: [opened, labeled]
 
 permissions:
   contents: read
@@ -14,9 +14,8 @@ jobs:
       group: claude-triage-${{ github.event.issue.number }}
     runs-on: ubuntu-latest
     if: |
-      github.event.label.name == 'claude-plz-triage' &&
-      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association) &&
-      contains(fromJSON('["strawgate","AlexanderWert","perk","graphaelli","cmacknz","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet","teresaromero","mrodm","jsoriano","kpollich"]'), github.actor)
+      (github.event.action == 'opened' && contains(fromJSON('["strawgate","AlexanderWert","perk","graphaelli","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet","teresaromero","mrodm","jsoriano","kpollich","andrewkroh","norrietaylor"]'), github.actor)) ||
+      (github.event.action == 'labeled' && github.event.label.name == 'claude-plz-triage' && contains(fromJSON('["strawgate","AlexanderWert","perk","graphaelli","cmacknz","axw","theletterf","jlind23","nimarezainia","pierrehilbert","bturquet","teresaromero","mrodm","jsoriano","kpollich","andrewkroh","norrietaylor"]'), github.actor))
     steps:
       - name: Checkout
         uses: actions/checkout@v6
