@@ -14,20 +14,41 @@ processors:
         - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
         - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
         - '^<%{NUMBER}>%{NUMBER} (%{TIMESTAMP_ISO8601:_tmp.timestamp}|-) (%{SYSLOGHOST:citrix.host}|-) (%{DATA:_tmp.appname}|-) (%{DATA:_tmp.procid}|-) (%{DATA:_tmp.msgid}|-) (%{DATA:_tmp.structured_data}|-) (%{DATA:_tmp.details} :)?%{SPACE}"?%{GREEDYDATA:citrix.extended.message}"?$'
+        - '^%{HEADERLESS_DETAILS:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"$'
+        - '^%{HEADERLESS_DETAILS:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}$'
 
       pattern_definitions:
         HEADER_NOTIMEZONE: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
         HEADER: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone}? (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
         NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}|%{MONTHDAY}/%{MONTHNUM}/%{YEAR}):%{HOUR}:%{MINUTE}:%{SECOND}'
+        HEADERLESS_DETAILS: '(?:<%{NUMBER}>%{SPACE})?default %{WORD} %{INT} %{INT}'
   - grok:
       description: Parse out details.
       tag: grok_tmp_details
       field: _tmp.details
       patterns:
-        - '^%{DEFAULT:_tmp.default}?%{WORD:citrix.device_event_class_id} %{GREEDYDATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
+        - '^%{SYSLOG_PRI}?%{DEFAULT:_tmp.default}%{WORD:citrix.device_event_class_id} %{DATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
+        - '^%{SYSLOG_PRI}?%{DEFAULT:_tmp.default}%{WORD:citrix.name} %{INT:event.id} %{INT:event.severity}$'
+        - '^%{SYSLOG_PRI}?%{WORD:citrix.device_event_class_id} %{DATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
       pattern_definitions:
         DEFAULT: 'default '
+        SYSLOG_PRI: '<%{NUMBER}>%{SPACE}'
       ignore_missing: true
+  - set:
+      field: citrix.device_event_class_id
+      tag: set_device_event_class_id_from_appname
+      copy_from: _tmp.appname
+      if: ctx.citrix?.device_event_class_id == null && ctx._tmp?.appname != null && ['TCP', 'ACL', 'ALG', 'SSLVPN', 'AAATM', 'CI', 'SSLLOG', 'TRANSFORM', 'ICA', 'APPFW', 'CVPN', 'BOT', 'PITBOSS', 'UI', 'CLI', 'GUI', 'API', 'CONSOLE', 'AAA', 'DNS', 'SSLI'].contains(ctx._tmp.appname.toUpperCase())
+  - set:
+      field: citrix.device_event_class_id
+      tag: set_device_event_class_id_sslvpn_from_name
+      value: SSLVPN
+      if: ctx.citrix?.device_event_class_id == null && ctx.citrix?.name != null && ['LOGOUT', 'LOGIN', 'HTTPREQUEST', 'ICASTART', 'ICAEND_CONNSTAT', 'TCPCONNSTAT', 'TCPCONN_TIMEDOUT', 'UDPFLOWSTAT', 'NONHTTP_RESOURCEACCESS_DENIED', 'HTTP_RESOURCEACCESS_DENIED', 'LICLMT_REACHED', 'CLISEC_CHECK', 'STA_VALIDATE_RESP', 'REMOVE_SESSION_DEBUG', 'CLISEC_EXP_EVAL'].contains(ctx.citrix.name)
+  - set:
+      field: citrix.device_event_class_id
+      tag: set_device_event_class_id_cli_from_name
+      value: CLI
+      if: ctx.citrix?.device_event_class_id == null && ctx.citrix?.name != null && ['CMD_EXECUTED'].contains(ctx.citrix.name)
   - set:
       field: event.category
       tag: set_event_category_network

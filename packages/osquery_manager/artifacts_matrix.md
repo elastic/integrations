@@ -2,10 +2,10 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-27
-**Total Core Artifacts**: 46 available + 6 in progress= 52 total variants
-**Total Queries**: 69
-**Completion Rate**: 88.5% (46/52 core artifacts fully supported)
+**Last Updated**: 2026-01-28
+**Total Core Artifacts**: 48 available + 6 in progress = 54 total variants
+**Total Queries**: 71
+**Completion Rate**: 88.9% (48/54 core artifacts fully supported)
 
 ---
 
@@ -22,8 +22,8 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 
 | Status                             | Count | Percentage |
 |------------------------------------|-------|------------|
-| ✅ Available (Fully Supported)      | 46    | 88.5%      |
-| ⚠️ In Progress (Needs Validation)  | 6     | 11.5%      |
+| ✅ Available (Fully Supported)      | 48    | 88.9%      |
+| ⚠️ In Progress (Needs Validation)  | 6     | 11.1%      |
 
 ---
 
@@ -81,6 +81,8 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 | 26  | Remote Desktop Protocol               | ✅ | Win   | rdp_authentication_windows_elastic         | [d8d7](kibana/osquery_saved_query/osquery_manager-d8d79510-6f58-44e1-b7fc-63a073158096.json)     | Comprehensive RDP authentication and session lifecycle events via windows_eventlog (Security + TerminalServices + System channels)                                                                                                          |
 | 27  | DNS Cache                             | ✅ | Win   | dns_cache_snapshot_windows_elastic         | [ae61](kibana/osquery_saved_query/osquery_manager-ae619588-47a8-4ba8-a378-375244fbef23.json)     | dns_cache table - enumerates cached DNS queries for threat hunting, C2 detection. Filters reverse lookups and AD noise                                                                                                                      |
 | 27a | DNS Event Log                         | ✅ | Win   | dns_event_log_windows_elastic              | [66ee](kibana/osquery_saved_query/osquery_manager-66ee8c5f-7030-4641-a14b-f4a45d1edd6a.json)     | windows_eventlog (DNS Client Operational, Event ID 3008) with process context via LEFT JOIN. Requires DNS logging enabled                                                                                                                   |
+| 28  | Event Log Cleared                     | ✅ | Win   | event_log_cleared_windows_elastic          | [f2a9](kibana/osquery_saved_query/osquery_manager-f2a9c7d5-e3b1-4f8a-9c2e-6d4b8a1e3f5c.json)     | Defense Evasion: Detects Security/System event log clearing (Event IDs 1102, 104) via windows_eventlog.                                                                                                        |
+| 29  | Security Products Disabled            | ✅ | Win   | security_products_disabled_windows_elastic | [a8f3](kibana/osquery_saved_query/osquery_manager-a8f3c5e7-d9b4-4a21-8f6c-2e9d1b3a5c7e.json)     | Defense Evasion: Detects disabled security products (15+ vendors incl. Elastic Defend) via services and Windows Defender registry tampering (12 values).                                                                            |
 
 ---
 
@@ -205,8 +207,8 @@ Queries are organized by investigative goal to support both **scheduled monitori
 ### Defense Evasion
 
 - ✅ **Defender Exclusions** (Windows) - Windows Defender exclusion paths. Query: `defender_exclusions_windows_elastic`
-- ⚠️ **Disabled Security Tools** (Windows) - Partially covered by `services_suspicious_windows_elastic` (stopped/paused services) and `defender_exclusions_windows_elastic`. *Needs dedicated query combining service status + registry check of `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Features`*
-- ⚠️ **Cleared Event Logs** (Windows) - In Progress
+- ✅ **Disabled Security Tools** (Windows) - Detects stopped/paused security services across major vendors and Windows Defender registry tampering (12 values). Query: `security_products_disabled_windows_elastic` ([a8f3](kibana/osquery_saved_query/osquery_manager-a8f3c5e7-d9b4-4a21-8f6c-2e9d1b3a5c7e.json)) — MITRE ATT&CK: TA0005, T1562.001
+- ✅ **Cleared Event Logs** (Windows) - Detects Security/System event log clearing via Event IDs 1102 and 104 (windows_eventlog). Query: `event_log_cleared_windows_elastic` ([f2a9](kibana/osquery_saved_query/osquery_manager-f2a9c7d5-e3b1-4f8a-9c2e-6d4b8a1e3f5c.json)) — MITRE ATT&CK: TA0005, T1070.001
 - ⚠️ **Timestomping Detection** - In Progress
 
 ### File System Forensics (Supporting)
