@@ -1,6 +1,9 @@
 ---
 description: Pipeline for processing admin action logs.
 processors:
+  - drop:
+      if: ctx.message == 'retry'
+      tag: drop_retry_events
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -9,9 +12,6 @@ processors:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
-  - drop:
-      if: ctx.message == 'retry'
-      tag: drop_retry_events
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -53,7 +53,7 @@ processors:
       field: event.outcome
       tag: set_event_outcome_to_success
       value: success
-      if: |
+      if: >-
         ctx.island_browser?.admin_actions?.action_status != null && (
           ctx.island_browser.admin_actions.action_status == 'Applied' ||
           ctx.island_browser.admin_actions.action_status == 'Done'
@@ -321,10 +321,10 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}} 
+        with tag {{{_ingest.on_failure_processor_tag}}} 
+        in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
