@@ -1,0 +1,59 @@
+{
+  "attributes": {
+    "name": "postgresql_query_latency_100ms_p95_Rolling30Days",
+    "description": "This SLO tracks the query execution latency of PostgreSQL databases, ensuring that 95% of all SQL queries complete within 100 milliseconds over a rolling period of 30 days to maintain responsive application performance.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"postgresql.statement\"  ",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "postgresql.statement.query.calls",
+              "filter": "postgresql.statement.query.time.mean.ms < 100"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "postgresql.statement.query.calls",
+              "filter": ""
+            }
+          ],
+          "equation": "A"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.95
+    },
+    "tags": [
+      "postgresql"
+    ],
+    "groupBy": [
+      "service.address"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql-4288b790-b79f-11e9-a579-f5c0a5d81340"
+        }
+      ]
+    }
+  },
+  "id": "postgresql_query_latency_100ms_p95_Rolling30Days",
+  "type": "slo_template"
+}

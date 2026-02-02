@@ -1,0 +1,66 @@
+{
+  "attributes": {
+    "name": "postgresql_transaction_availability_99.5_Rolling30Days",
+    "description": "This SLO tracks the transaction success rate of PostgreSQL databases, ensuring that 99.5% of all transactions complete successfully (commit) rather than fail (rollback) over a rolling period of 30 days to maintain reliable data operations and application functionality.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"postgresql.database\"   ",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "postgresql.database.transactions.commit",
+              "filter": ""
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "filter": "",
+              "field": "postgresql.database.transactions.commit"
+            },
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "postgresql.database.transactions.rollback",
+              "filter": ""
+            }
+          ],
+          "equation": "A + B"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99
+    },
+    "tags": [
+      "postgresql"
+    ],
+    "groupBy": [
+      "service.address",
+      "postgresql.database.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql-4288b790-b79f-11e9-a579-f5c0a5d81340"
+        }
+      ]
+    }
+  },
+  "id": "postgresql_transaction_availability_99.5_Rolling30Days",
+  "type": "slo_template"
+}
