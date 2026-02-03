@@ -5,7 +5,13 @@
             "aws": {
                 "waf": {
                     "arn": "arn:aws:wafv2:ap-southeast-2:EXAMPLE12345:regional/webacl/STMTest/1EXAMPLE-2ARN-3ARN-4ARN-123456EXAMPLE",
+                    "format_version": "1",
                     "id": "regional/webacl/STMTest/1EXAMPLE-2ARN-3ARN-4ARN-123456EXAMPLE",
+                    "labels": [
+                        {
+                            "name": "value"
+                        }
+                    ],
                     "request": {
                         "headers": {
                             "Accept": "*/*",
@@ -106,7 +112,13 @@
             "aws": {
                 "waf": {
                     "arn": "arn:aws:wafv2:us-east-1:123456789012:global/webacl/hello-world/5933d6d9-9dde-js82-v8aw-9ck28nv9",
+                    "format_version": "1",
                     "id": "global/webacl/hello-world/5933d6d9-9dde-js82-v8aw-9ck28nv9",
+                    "labels": [
+                        {
+                            "name": "value"
+                        }
+                    ],
                     "non_terminating_matching_rules": [
                         {
                             "action": "COUNT",
@@ -213,7 +225,13 @@
             "aws": {
                 "waf": {
                     "arn": "arn:aws:wafv2:us-east-1:123456789012:global/webacl/hello-world/5933d6d9-9dde-js82-v8aw-9ck28nv9",
+                    "format_version": "1",
                     "id": "global/webacl/hello-world/5933d6d9-9dde-js82-v8aw-9ck28nv9",
+                    "labels": [
+                        {
+                            "name": "value"
+                        }
+                    ],
                     "request": {
                         "headers": {
                             "Accept": "*/*",
@@ -340,7 +358,13 @@
             "aws": {
                 "waf": {
                     "arn": "arn:aws:wafv2:ap-southeast-2:12345:regional/webacl/test/111",
+                    "format_version": "1",
                     "id": "regional/webacl/test/111",
+                    "labels": [
+                        {
+                            "name": "value"
+                        }
+                    ],
                     "source": {
                         "id": "alb",
                         "name": "ALB"
@@ -428,6 +452,127 @@
             "tags": [
                 "preserve_original_event"
             ]
+        },
+        {
+            "@timestamp": "2019-12-13T23:40:12.771Z",
+            "aws": {
+                "waf": {
+                    "arn": "arn:aws:wafv2:ap-southeast-2:12345:regional/webacl/test/111",
+                    "captcha_response": {
+                        "failure_reason": "TOKEN_MISSING",
+                        "response_code": 0,
+                        "solve_timestamp": "1970-01-19T21:27:00.429Z"
+                    },
+                    "format_version": "1",
+                    "id": "regional/webacl/test/111",
+                    "ja4_fingerprint": "t13d1510h2_8dadd6152771_dfbe2de304cd",
+                    "labels": [
+                        {
+                            "name": "awswaf:managed-token:absent"
+                        }
+                    ],
+                    "request_headers_inserted": {
+                        "x-amzn-waf-test-header-name": "test-header-value"
+                    },
+                    "response_code_sent": 405,
+                    "source": {
+                        "id": "alb",
+                        "name": "ALB"
+                    },
+                    "terminating_rule_match_details": [
+                        {
+                            "conditionType": "SQL_INJECTION",
+                            "location": "UNKNOWN",
+                            "matchedData": [
+                                "10",
+                                "AND",
+                                "1"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "cloud": {
+                "account": {
+                    "id": "12345"
+                },
+                "provider": "aws",
+                "region": "ap-southeast-2",
+                "service": {
+                    "name": "wafv2"
+                }
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "BLOCK",
+                "category": [
+                    "web",
+                    "network"
+                ],
+                "kind": "alert",
+                "original": "{\"timestamp\":1576280412771,\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:ap-southeast-2:12345:regional/webacl/test/111\",\"terminatingRuleId\":\"STMTest_SQLi_XSS\",\"terminatingRuleType\":\"REGULAR\",\"action\":\"BLOCK\",\"terminatingRuleMatchDetails\":[{\"conditionType\":\"SQL_INJECTION\",\"location\":\"UNKNOWN\",\"matchedData\":[\"10\",\"AND\",\"1\"]}],\"httpSourceName\":\"ALB\",\"httpSourceId\":\"alb\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"responseCodeSent\":405,\"httpRequest\":{\"clientIp\":\"89.160.20.128\",\"country\":\"AU\",\"headers\":[],\"uri\":\"\",\"args\":\"\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"POST\",\"requestId\":\"null\",\"host\":\"farsharbor.com\",\"scheme\":\"https\"},\"labels\":[{\"name\":\"awswaf:managed-token:absent\"}],\"captchaResponse\":{\"responseCode\":0,\"solveTimestamp\":1632420429,\"failureReason\":\"TOKEN_MISSING\"},\"ja3Fingerprint\":\"4ab0360295808cf27301e94571be303f\",\"ja4Fingerprint\":\"t13d1510h2_8dadd6152771_dfbe2de304cd\",\"requestHeadersInserted\":[{\"name\":\"x-amzn-waf-test-header-name\",\"value\":\"test-header-value\"}]}",
+                "type": [
+                    "access",
+                    "denied"
+                ]
+            },
+            "host": {
+                "domain": "farsharbor.com"
+            },
+            "http": {
+                "request": {
+                    "id": "null",
+                    "method": "POST"
+                },
+                "version": "1.1"
+            },
+            "network": {
+                "protocol": "http",
+                "transport": "tcp"
+            },
+            "related": {
+                "ip": [
+                    "89.160.20.128"
+                ]
+            },
+            "rule": {
+                "id": "STMTest_SQLi_XSS",
+                "ruleset": "REGULAR"
+            },
+            "source": {
+                "as": {
+                    "number": 29518,
+                    "organization": {
+                        "name": "Bredband2 AB"
+                    }
+                },
+                "geo": {
+                    "city_name": "Linköping",
+                    "continent_name": "Europe",
+                    "country_iso_code": "SE",
+                    "country_name": "Sweden",
+                    "location": {
+                        "lat": 58.4167,
+                        "lon": 15.6167
+                    },
+                    "region_iso_code": "SE-E",
+                    "region_name": "Östergötland County"
+                },
+                "ip": "89.160.20.128"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "tls": {
+                "client": {
+                    "ja3": "4ab0360295808cf27301e94571be303f"
+                }
+            },
+            "url": {
+                "scheme": "https"
+            }
         }
     ]
 }

@@ -64,10 +64,113 @@ processors:
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
+- convert:
+    field: json.captchaResponse.responseCode
+    target_field: aws.waf.captcha_response.response_code
+    tag: convert_captchaResponse_responseCode_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- date:
+    field: json.captchaResponse.solveTimestamp
+    target_field: aws.waf.captcha_response.solve_timestamp
+    tag: date_captchaResponse_solveTimestamp
+    formats:
+    - UNIX_MS
+    if: ctx.json?.captchaResponse?.solveTimestamp != null && ctx.json?.captchaResponse?.solveTimestamp != ''
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- rename:
+    field: json.captchaResponse.failureReason
+    tag: rename_captchaResponse_failureReason_to_captcha_response_failure_reason
+    target_field: aws.waf.captcha_response.failure_reason
+    ignore_missing: true
+- convert:
+    field: json.challengeResponse.responseCode
+    target_field: aws.waf.challenge_response.response_code
+    tag: convert_challengeResponse_responseCode_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- date:
+    field: json.challengeResponse.solveTimestamp
+    target_field: aws.waf.challenge_response.solve_timestamp
+    tag: date_challengeResponse_solveTimestamp
+    formats:
+    - UNIX_MS
+    if: ctx.json?.challengeResponse?.solveTimestamp != null && ctx.json?.challengeResponse?.solveTimestamp != ''
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- rename:
+    field: json.challengeResponse.failureReason
+    tag: rename_challengeResponse_failureReason_to_challenge_response_failure_reason
+    target_field: aws.waf.challenge_response.failure_reason
+    ignore_missing: true
+- convert:
+    field: json.formatVersion
+    target_field: aws.waf.format_version
+    tag: convert_format_version_to_string
+    type: string
+    ignore_missing: true
+- rename:
+    field: json.httpRequest.fragment
+    tag: rename_httpRequest_fragment_to_url_fragment
+    target_field: url.fragment
+    ignore_missing: true
+- rename:
+    field: json.httpRequest.host
+    tag: rename_httpRequest_host_to_host_domain
+    target_field: host.domain
+    ignore_missing: true
 - rename:
     field: json.httpRequest.requestId
     target_field: http.request.id
     ignore_missing: true
+- rename:
+    field: json.httpRequest.scheme
+    tag: rename_httpRequest_scheme_to_url_scheme
+    target_field: url.scheme
+    ignore_missing: true
+- convert:
+    field: json.requestBodySize
+    target_field: aws.waf.request_body_size
+    tag: convert_requestBodySize_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: json.requestBodySizeInspectedByWAF
+    target_field: aws.waf.request_body_size_inspected_by_waf
+    tag: convert_requestBodySizeInspectedByWAF_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: json.responseCodeSent
+    target_field: aws.waf.response_code_sent
+    tag: convert_responseCodeSent_to_long
+    type: long
+    ignore_missing: true
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
     field: json.httpRequest.httpMethod
     target_field: http.request.method
@@ -90,6 +193,26 @@ processors:
 - rename:
     field: json.httpRequest.uri
     target_field: url.path
+    ignore_missing: true
+- rename:
+    field: json.ja3Fingerprint
+    tag: rename_ja3Fingerprint_to_tls_client_ja3
+    target_field: tls.client.ja3
+    ignore_missing: true
+- rename:
+    field: json.ja4Fingerprint
+    tag: rename_ja4Fingerprint_to_ja4_fingerprint
+    target_field: aws.waf.ja4_fingerprint
+    ignore_missing: true
+- rename:
+    field: json.labels
+    tag: rename_labels_to_aws_waf_labels
+    target_field: aws.waf.labels
+    ignore_missing: true
+- rename:
+    field: json.oversizeFields
+    tag: rename_oversizeFields_to_aws_waf_oversize_fields
+    target_field: aws.waf.oversize_fields
     ignore_missing: true
 - rename:
     field: json.terminatingRuleMatchDetails
@@ -118,6 +241,20 @@ processors:
         }
       }
     ignore_failure: true
+- script:
+    lang: painless
+    tag: script_request_headers_inserted
+    description: Script to map requestHeadersInserted name to requestHeadersInserted value.
+    if: ctx.json?.requestHeadersInserted != null && ctx.aws?.waf != null
+    source: >-
+      ctx.aws.waf.request_headers_inserted = new HashMap();
+      for (def i = 0; i < ctx.json.requestHeadersInserted.length; i++) {
+        ctx.aws.waf.request_headers_inserted[ctx.json.requestHeadersInserted[i].name] = ctx.json.requestHeadersInserted[i].value;
+      }
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
     field: json.action
     target_field: event.action

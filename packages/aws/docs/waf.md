@@ -38,7 +38,7 @@ If you want to collect data from two or more AWS services, consider using the **
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 ### Advanced options
 
@@ -75,16 +75,30 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | aws.waf.arn | AWS ARN of ACL | keyword |
+| aws.waf.captcha_response.failure_reason |  | keyword |
+| aws.waf.captcha_response.response_code |  | long |
+| aws.waf.captcha_response.solve_timestamp |  | date |
+| aws.waf.challenge_response.failure_reason |  | keyword |
+| aws.waf.challenge_response.response_code |  | long |
+| aws.waf.challenge_response.solve_timestamp |  | date |
+| aws.waf.format_version | The format version for the log. | keyword |
 | aws.waf.id | ID of ACL | keyword |
+| aws.waf.ja4_fingerprint | The JA4 fingerprint of the request. | keyword |
+| aws.waf.labels.name |  | keyword |
 | aws.waf.non_terminating_matching_rules.action |  | keyword |
 | aws.waf.non_terminating_matching_rules.ruleId |  | keyword |
 | aws.waf.non_terminating_matching_rules.ruleMatchDetails.conditionType |  | keyword |
 | aws.waf.non_terminating_matching_rules.ruleMatchDetails.location |  | keyword |
 | aws.waf.non_terminating_matching_rules.ruleMatchDetails.matchedData |  | keyword |
+| aws.waf.oversize_fields | The list of fields in the web request that were inspected by the protection pack (web ACL) and that are over the AWS WAF inspection limit. | keyword |
 | aws.waf.rate_based_rule_list.conditionType |  | keyword |
 | aws.waf.rate_based_rule_list.location |  | keyword |
 | aws.waf.rate_based_rule_list.matchedData |  | keyword |
 | aws.waf.request.headers | List of request headers | flattened |
+| aws.waf.request_body_size |  | long |
+| aws.waf.request_body_size_inspected_by_waf |  | long |
+| aws.waf.request_headers_inserted | The list of headers inserted for custom request handling. | flattened |
+| aws.waf.response_code_sent | The response code sent with a custom response. | long |
 | aws.waf.rule_group_list.nonTerminatingMatchingRules.action |  | keyword |
 | aws.waf.rule_group_list.nonTerminatingMatchingRules.ruleId |  | keyword |
 | aws.waf.rule_group_list.nonTerminatingMatchingRules.ruleMatchDetails.conditionType |  | keyword |
@@ -119,17 +133,17 @@ An example event for `waf` looks as following:
 {
     "@timestamp": "2019-12-13T23:40:12.771Z",
     "agent": {
-        "ephemeral_id": "ee12ef97-ab06-4022-b797-dc57893e4369",
-        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "3f08e9d1-4bf2-48ac-a1c2-5f964731b310",
+        "id": "43134ba7-5828-4a32-939f-51cbba764839",
+        "name": "elastic-agent-83365",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.19.4"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-aws-bucket-55867",
-                "name": "elastic-package-aws-bucket-55867"
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-75204",
+                "name": "elastic-package-aws-bucket-75204"
             },
             "object": {
                 "key": "waf.log"
@@ -137,7 +151,13 @@ An example event for `waf` looks as following:
         },
         "waf": {
             "arn": "arn:aws:wafv2:ap-southeast-2:EXAMPLE12345:regional/webacl/STMTest/1EXAMPLE-2ARN-3ARN-4ARN-123456EXAMPLE",
+            "format_version": "1",
             "id": "regional/webacl/STMTest/1EXAMPLE-2ARN-3ARN-4ARN-123456EXAMPLE",
+            "labels": [
+                {
+                    "name": "value"
+                }
+            ],
             "request": {
                 "headers": {
                     "Accept": "*/*",
@@ -171,16 +191,16 @@ An example event for `waf` looks as following:
     },
     "data_stream": {
         "dataset": "aws.waf",
-        "namespace": "ep",
+        "namespace": "99205",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "id": "43134ba7-5828-4a32-939f-51cbba764839",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.19.4"
     },
     "event": {
         "action": "BLOCK",
@@ -190,7 +210,7 @@ An example event for `waf` looks as following:
             "network"
         ],
         "dataset": "aws.waf",
-        "ingested": "2023-11-08T08:24:54Z",
+        "ingested": "2026-01-29T05:58:10Z",
         "kind": "alert",
         "original": "{\"timestamp\":1576280412771,\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:ap-southeast-2:EXAMPLE12345:regional/webacl/STMTest/1EXAMPLE-2ARN-3ARN-4ARN-123456EXAMPLE\",\"terminatingRuleId\":\"STMTest_SQLi_XSS\",\"terminatingRuleType\":\"REGULAR\",\"action\":\"BLOCK\",\"terminatingRuleMatchDetails\":[{\"conditionType\":\"SQL_INJECTION\",\"location\":\"HEADER\",\"matchedData\":[\"10\",\"AND\",\"1\"]}],\"httpSourceName\":\"-\",\"httpSourceId\":\"-\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"httpRequest\":{\"clientIp\":\"89.160.20.156\",\"country\":\"AU\",\"headers\":[{\"name\":\"Host\",\"value\":\"localhost:1989\"},{\"name\":\"User-Agent\",\"value\":\"curl/7.61.1\"},{\"name\":\"Accept\",\"value\":\"*/*\"},{\"name\":\"x-stm-test\",\"value\":\"10 AND 1=1\"}],\"uri\":\"/foo\",\"args\":\"\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"GET\",\"requestId\":\"rid\"},\"labels\":[{\"name\":\"value\"}]}",
         "type": [
@@ -210,7 +230,7 @@ An example event for `waf` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-aws-bucket-55867.s3.us-east-1.amazonaws.com/waf.log"
+            "path": "https://elastic-package-aws-bucket-75204.s3.us-east-1.amazonaws.com/waf.log"
         },
         "offset": 0
     },
