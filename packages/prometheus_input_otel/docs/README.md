@@ -1,4 +1,4 @@
-# Prometheus OpenTelemetry Input
+# Prometheus OTel Scrape (Guided)
 
 ## Overview
 
@@ -12,7 +12,7 @@ This package configures the Prometheus receiver in the EDOT collector to scrape 
 
 Configure individual fields like targets, scrape interval, and TLS settings through the Fleet UI.
 
-**Looking for raw config mode?** If you have an existing Prometheus `scrape_configs` YAML that you want to use directly, consider using the [Prometheus OpenTelemetry Raw Input](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel_raw) package instead.
+**Looking for raw config mode?** If you have an existing Prometheus `scrape_configs` YAML that you want to use directly, consider using the [Prometheus OTel Scrape (Bring Your Own Config)](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel_raw) package instead.
 
 ### Settings
 

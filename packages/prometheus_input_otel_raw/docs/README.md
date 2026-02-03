@@ -1,4 +1,4 @@
-# Prometheus OpenTelemetry Raw Input
+# Prometheus OTel Scrape (Bring Your Own Config)
 
 ## Overview
 
@@ -8,7 +8,7 @@ This package allows you to scrape Prometheus-compatible metrics endpoints using 
 
 This package configures the Prometheus receiver in the EDOT collector to scrape metrics from Prometheus-compatible endpoints. Simply paste your existing Prometheus `scrape_configs` YAML and the package will use it as-is. The Elastic Agent processes and enriches the data before sending it to Elasticsearch for indexing and analysis.
 
-**Looking for guided configuration?** If you prefer configuring individual settings through the Fleet UI, consider using the [Prometheus OpenTelemetry Input](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel) package instead.
+**Looking for guided configuration?** If you prefer configuring individual settings through the Fleet UI, consider using the [Prometheus OTel Scrape (Guided)](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel) package instead.
 
 ## Configuration
 
