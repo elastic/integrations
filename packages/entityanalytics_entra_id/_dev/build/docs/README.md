@@ -26,6 +26,26 @@ The following Azure API permissions are required:
 | User.Read.All        | Application |
 | Device.Read.All      | Application |
 
+#### Additional permissions for Intune-managed device properties
+
+If you want to collect device properties that are managed by Microsoft Intune, the following additional permission is required:
+
+| Permission                            | Type        |
+|---------------------------------------|-------------|
+| DeviceManagementManagedDevices.Read.All | Application |
+
+Without this permission, the following device fields will return `null` values even if the devices are enrolled in Intune:
+
+- `entityanalytics_entra_id.device.is_compliant`
+- `entityanalytics_entra_id.device.is_managed`
+- `entityanalytics_entra_id.device.compliance_expiration_date_time`
+- `entityanalytics_entra_id.device.category`
+- `entityanalytics_entra_id.device.ownership`
+- `entityanalytics_entra_id.device.enrollment_profile_name`
+- `entityanalytics_entra_id.device.mdm_app_id`
+
+**Note:** An active Microsoft Intune license is also required for the tenant for these properties to be populated.
+
 For more details on how to set up the necessary App Registration, permission granting, and secret configuration, refer to this [guide](https://learn.microsoft.com/en-us/graph/auth-v2-service).
 
 ### Enable the integration in Elastic
