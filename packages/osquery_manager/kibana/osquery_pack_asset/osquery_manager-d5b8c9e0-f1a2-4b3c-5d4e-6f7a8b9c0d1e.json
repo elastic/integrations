@@ -1,12 +1,114 @@
 {
     "attributes": {
-        "description": "Forensic pack for defense evasion detection — suspicious services, registry persistence, NTFS journal monitoring, and file hash verification.",
+        "description": "Forensic pack for defense evasion detection \u2014 event log clearing (T1070.001) and security product tampering (T1562.001).",
         "name": "forensic-defense-evasion",
         "version": 1,
         "queries": [
             {
-                "id": "services_suspicious_windows_elastic",
-                "query": "-- Windows Service Persistence Detection\n-- Identifies suspicious services based on signature, path, and persistence indicators\n\nWITH services_base AS (\n  SELECT\n    s.name,\n    s.display_name,\n    s.path AS cmdline,\n    CASE\n      WHEN s.path LIKE '\"%' THEN\n        SUBSTR(s.path, 2, INSTR(SUBSTR(s.path, 2), '\"') - 1)\n      WHEN INSTR(LOWER(s.path), '.exe ') > 0 THEN\n        SUBSTR(s.path, 1, INSTR(LOWER(s.path), '.exe') + 3)\n      WHEN INSTR(LOWER(s.path), '.sys ') > 0 THEN\n        SUBSTR(s.path, 1, INSTR(LOWER(s.path), '.sys') + 3)\n      ELSE s.path\n    END AS exe_path,\n    s.status,\n    s.start_type,\n    s.user_account,\n    s.service_type,\n    s.pid,\n    'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name AS registry_path,\n    r_key.mtime AS _registry_mtime_raw,\n    r_dll.data AS service_dll,\n    r_failcmd.data AS failure_command\n  FROM services s\n  LEFT JOIN registry r_key\n    ON r_key.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name\n    AND r_key.name = 'Start'\n  LEFT JOIN registry r_dll\n    ON r_dll.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name || '\\Parameters'\n    AND r_dll.name = 'ServiceDll'\n  LEFT JOIN registry r_failcmd\n    ON r_failcmd.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name\n    AND r_failcmd.name = 'FailureCommand'\n  WHERE s.service_type NOT LIKE '%DRIVER%'\n    AND s.path IS NOT NULL\n    AND s.path != ''\n),\nservices_enriched AS (\n  SELECT\n    sb.name,\n    sb.display_name,\n    sb.cmdline,\n    sb.exe_path,\n    sb.status,\n    sb.start_type,\n    sb.user_account,\n    sb.service_type,\n    sb.pid,\n    sb.registry_path,\n    sb.service_dll,\n    sb.failure_command,\n    datetime(sb._registry_mtime_raw, 'unixepoch') AS modified_time,\n    CAST((strftime('%s', 'now') - COALESCE(sb._registry_mtime_raw, 0)) / 86400 AS INTEGER) AS days_since_modified,\n    (SELECT sha256 FROM hash WHERE path = sb.exe_path LIMIT 1) AS sha256,\n    concat('https://www.virustotal.com/gui/file/', (SELECT sha256 FROM hash WHERE path = sb.exe_path LIMIT 1)) AS vt_link,\n    (SELECT subject_name FROM authenticode WHERE path = sb.exe_path LIMIT 1) AS signature_signer,\n    (SELECT result FROM authenticode WHERE path = sb.exe_path LIMIT 1) AS signature_status,\n    CASE WHEN sb.service_dll IS NOT NULL AND sb.service_dll != '' THEN\n      (SELECT sha256 FROM hash WHERE path = sb.service_dll LIMIT 1)\n    END AS dll_sha256,\n    CASE WHEN sb.service_dll IS NOT NULL AND sb.service_dll != '' THEN\n      (SELECT result FROM authenticode WHERE path = sb.service_dll LIMIT 1)\n    END AS dll_signature_status\n  FROM services_base sb\n)\n\nSELECT *\nFROM services_enriched\nWHERE (\n  (signature_status IS NULL OR signature_status != 'trusted')\n  OR exe_path LIKE 'C:\\\\Users\\\\%'\n  OR exe_path LIKE '%\\\\AppData\\\\%'\n  OR exe_path LIKE '%\\\\Temp\\\\%'\n  OR exe_path LIKE 'C:\\\\Temp\\\\%'\n  OR exe_path LIKE 'C:\\\\ProgramData\\\\%'\n  OR failure_command IS NOT NULL\n  OR (service_dll IS NOT NULL AND (dll_signature_status IS NULL OR dll_signature_status != 'trusted'))\n)\nORDER BY\n  CASE WHEN signature_status IS NULL OR signature_status != 'trusted' THEN 0 ELSE 1 END,\n  CASE WHEN failure_command IS NOT NULL THEN 0 ELSE 1 END,\n  CASE WHEN exe_path LIKE 'C:\\\\Users\\\\%' OR exe_path LIKE '%\\\\Temp\\\\%' THEN 0 ELSE 1 END;",
+                "id": "event_log_cleared_windows_elastic",
+                "query": "-- Defense Evasion: Event Log Cleared Detection\n-- Related to MITRE T1070.001 (Indicator Removal on Host: Clear Windows Event Logs)\n-- Detects Security and System event log clearing activities\n-- Event ID 1102: Security log cleared\n-- Event ID 104: System log cleared\n\nWITH extracted AS (\n  SELECT\n    datetime,\n    eventid,\n    provider_name,\n    channel,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectUserName') AS user_name,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectDomainName') AS user_domain,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectUserSid') AS user_sid,\n    CASE\n      WHEN eventid = 1102 THEN 'Security Event Log Cleared'\n      WHEN eventid = 104 THEN 'System Event Log Cleared'\n      ELSE 'Event Log Cleared'\n    END AS detection_reason,\n    CASE\n      WHEN channel = 'Security' THEN 'Security Log'\n      WHEN channel = 'System' THEN 'System Log'\n      ELSE channel\n    END AS log_channel\n  FROM windows_eventlog\n  WHERE channel IN ('Security', 'System')\n    AND eventid IN (1102, 104)\n)\n\nSELECT\n  datetime AS event_time,  -- Already ISO8601 from windows_eventlog table\n  eventid AS event_id,\n  provider_name,\n  channel,\n  log_channel,\n  user_name,\n  user_domain,\n  COALESCE(user_domain || char(92) || user_name, user_name, 'Unknown') AS full_username,\n  user_sid,\n  detection_reason,\n  'EVENT_LOG_CLEARED' AS detection_method\nFROM extracted\nORDER BY datetime DESC;\n",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "change"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.event_log_cleared"
+                        }
+                    },
+                    {
+                        "key": "event.code",
+                        "value": {
+                            "field": "event_id"
+                        }
+                    },
+                    {
+                        "key": "event.provider",
+                        "value": {
+                            "field": "provider_name"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "user_name"
+                        }
+                    },
+                    {
+                        "key": "user.domain",
+                        "value": {
+                            "field": "user_domain"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "user_sid"
+                        }
+                    },
+                    {
+                        "key": "user.full_name",
+                        "value": {
+                            "field": "full_username"
+                        }
+                    },
+                    {
+                        "key": "log.level",
+                        "value": {
+                            "field": "log_channel"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "defense_evasion",
+                                "event_log",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "security_products_disabled_windows_elastic",
+                "query": "-- Defense Evasion: Security Products Disabled Detection\n-- Detects disabled security products via TWO mechanisms:\n-- 1. Services check: Security product services with STOPPED/PAUSED status\n-- 2. Registry check: Windows Defender disabled status in registry (12 values from WA Cyber T1562.001)\n\nWITH defender_registry AS (\n  SELECT\n    r.key,\n    r.path,\n    r.name,\n    r.data,\n    r.type,\n    datetime(r.mtime, 'unixepoch') AS modified_time,\n    CASE\n      -- Features (value 0 = disabled)\n      WHEN r.name = 'TamperProtection' AND (r.data = '0' OR r.data = '4') THEN 'Tamper Protection Disabled'\n      WHEN r.name = 'MpEnablePus' AND r.data = '0' THEN 'PUA Protection Disabled'\n      -- Policies (value 1 = disabled)\n      WHEN r.name = 'DisableAntiSpyware' AND r.data = '1' THEN 'Windows Defender Disabled via Policy'\n      WHEN r.name = 'DisableAntiVirus' AND r.data = '1' THEN 'Antivirus Disabled via Policy'\n      -- Real-Time Protection (value 1 = disabled)\n      WHEN r.name = 'DisableRealtimeMonitoring' AND r.data = '1' THEN 'Real-time Monitoring Disabled'\n      WHEN r.name = 'DisableBehaviorMonitoring' AND r.data = '1' THEN 'Behavior Monitoring Disabled'\n      WHEN r.name = 'DisableOnAccessProtection' AND r.data = '1' THEN 'On-Access Protection Disabled'\n      WHEN r.name = 'DisableScanOnRealtimeEnable' AND r.data = '1' THEN 'Scan on Real-time Enable Disabled'\n      WHEN r.name = 'DisableIOAVProtection' AND r.data = '1' THEN 'IOAV Protection Disabled'\n      WHEN r.name = 'DisableScriptScanning' AND r.data = '1' THEN 'Script Scanning Disabled'\n      -- Spynet/MAPS (value 0 = disabled)\n      WHEN r.name = 'SpynetReporting' AND r.data = '0' THEN 'Cloud Protection Reporting Disabled'\n      WHEN r.name = 'SubmitSamplesConsent' AND r.data = '0' THEN 'Sample Submission Disabled'\n      ELSE 'Unknown Defender Tampering'\n    END AS tampering_description,\n    'DEFENDER_REGISTRY_TAMPERING' AS detection_method\n  FROM registry r\n  WHERE (\n    -- Windows Defender Features (value 0 or 4 = disabled)\n    (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows Defender\\Features'\n     AND r.name = 'TamperProtection'\n     AND (r.data = '0' OR r.data = '4'))\n    -- MpEngine (value 0 = disabled)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows Defender\\MpEngine'\n        AND r.name = 'MpEnablePus'\n        AND r.data = '0')\n    -- Windows Defender Policies (value 1 = disabled)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender'\n        AND r.name IN ('DisableAntiSpyware', 'DisableAntiVirus')\n        AND r.data = '1')\n    -- Real-time Protection (value 1 = disabled)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection'\n        AND r.name IN ('DisableRealtimeMonitoring', 'DisableBehaviorMonitoring',\n                       'DisableOnAccessProtection', 'DisableScanOnRealtimeEnable',\n                       'DisableIOAVProtection', 'DisableScriptScanning')\n        AND r.data = '1')\n    -- Spynet/MAPS (value 0 = disabled)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Spynet'\n        AND r.name IN ('SpynetReporting', 'SubmitSamplesConsent')\n        AND r.data = '0')\n  )\n),\nsecurity_services AS (\n  SELECT\n    s.name AS service_name,\n    s.display_name,\n    s.status,\n    s.start_type,\n    s.path AS service_path,\n    s.user_account,\n    datetime(r_key.mtime, 'unixepoch') AS service_modified_time,\n    CASE\n      WHEN s.name IN ('MsMpSvc', 'WinDefend', 'WdNisSvc', 'WdNisDrv', 'WdBoot', 'WdFilter', 'Sense') THEN 'Microsoft Defender'\n      WHEN s.name LIKE 'CSFalcon%' OR s.name = 'CSAgent' THEN 'CrowdStrike'\n      WHEN s.name LIKE 'Sep%' OR s.name LIKE 'Symantec%' OR s.name = 'ccSvcHst' THEN 'Symantec/Broadcom'\n      WHEN s.name LIKE 'mfe%' OR s.name LIKE 'McAfee%' THEN 'McAfee'\n      WHEN s.name LIKE 'ekrn%' OR s.name LIKE 'eset%' OR s.name = 'ekm' THEN 'ESET'\n      WHEN s.name LIKE 'Sophos%' OR s.name = 'SAVService' THEN 'Sophos'\n      WHEN s.name LIKE '%Trend%' OR s.name LIKE 'Tmx%' OR s.name = 'TmListen' THEN 'Trend Micro'\n      WHEN s.name LIKE 'Carbon%' OR s.name = 'CbDefense' THEN 'Carbon Black'\n      WHEN s.name LIKE 'Sentinel%' THEN 'SentinelOne'\n      WHEN s.name LIKE 'Cylance%' THEN 'Cylance'\n      WHEN s.name LIKE 'AVP%' OR s.name LIKE 'klnagent%' OR s.name LIKE 'Kaspersky%' THEN 'Kaspersky'\n      WHEN s.name LIKE 'MBAMService%' OR s.name LIKE 'Malwarebytes%' THEN 'Malwarebytes'\n      WHEN s.name LIKE 'Palo%' OR s.name = 'traps' OR s.name = 'cyserver' THEN 'Palo Alto Networks'\n      WHEN s.name LIKE 'Bit%Defender%' OR s.name LIKE 'bdredline%' THEN 'Bitdefender'\n      WHEN s.name LIKE 'elastic-endpoint%' OR s.name LIKE 'ElasticEndpoint%' OR s.name = 'elastic-agent' THEN 'Elastic Defend'\n      ELSE 'Other Security Product'\n    END AS security_vendor,\n    'SECURITY_SERVICE_STOPPED' AS detection_method\n  FROM services s\n  LEFT JOIN registry r_key\n    ON r_key.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name\n    AND r_key.name = 'Start'\n  WHERE s.status IN ('STOPPED', 'PAUSED', 'STOP_PENDING', 'PAUSE_PENDING')\n    AND (\n      -- Microsoft Defender services\n      s.name IN ('MsMpSvc', 'WinDefend', 'WdNisSvc', 'WdNisDrv', 'WdBoot', 'WdFilter', 'Sense')\n      -- CrowdStrike\n      OR s.name LIKE 'CSFalcon%' OR s.name = 'CSAgent'\n      -- Symantec/Broadcom\n      OR s.name LIKE 'Sep%' OR s.name LIKE 'Symantec%' OR s.name = 'ccSvcHst'\n      -- McAfee\n      OR s.name LIKE 'mfe%' OR s.name LIKE 'McAfee%'\n      -- ESET\n      OR s.name LIKE 'ekrn%' OR s.name LIKE 'eset%' OR s.name = 'ekm'\n      -- Sophos\n      OR s.name LIKE 'Sophos%' OR s.name = 'SAVService'\n      -- Trend Micro\n      OR s.name LIKE '%Trend%' OR s.name LIKE 'Tmx%' OR s.name = 'TmListen'\n      -- Carbon Black\n      OR s.name LIKE 'Carbon%' OR s.name = 'CbDefense'\n      -- SentinelOne\n      OR s.name LIKE 'Sentinel%'\n      -- Cylance\n      OR s.name LIKE 'Cylance%'\n      -- Kaspersky\n      OR s.name LIKE 'AVP%' OR s.name LIKE 'klnagent%' OR s.name LIKE 'Kaspersky%'\n      -- Malwarebytes\n      OR s.name LIKE 'MBAMService%' OR s.name LIKE 'Malwarebytes%'\n      -- Palo Alto Networks\n      OR s.name LIKE 'Palo%' OR s.name = 'traps' OR s.name = 'cyserver'\n      -- Bitdefender\n      OR s.name LIKE 'Bit%Defender%' OR s.name LIKE 'bdredline%'\n      -- Elastic Defend\n      OR s.name LIKE 'elastic-endpoint%' OR s.name LIKE 'ElasticEndpoint%' OR s.name = 'elastic-agent'\n    )\n)\n\n-- Combine results from both detection methods\nSELECT * FROM (\n  SELECT\n    ss.service_name,\n    ss.display_name,\n    ss.status,\n    ss.start_type,\n    ss.service_path,\n    ss.user_account,\n    ss.service_modified_time AS modified_time,\n    ss.security_vendor,\n    ss.detection_method,\n    'Service Stopped/Paused' AS detection_reason,\n    NULL AS registry_key,\n    NULL AS registry_path,\n    NULL AS registry_name,\n    NULL AS registry_value\n  FROM security_services ss\n\n  UNION ALL\n\n  SELECT\n    NULL AS service_name,\n    NULL AS display_name,\n    NULL AS status,\n    NULL AS start_type,\n    NULL AS service_path,\n    NULL AS user_account,\n    dr.modified_time,\n    'Windows Defender' AS security_vendor,\n    dr.detection_method,\n    dr.tampering_description AS detection_reason,\n    dr.key AS registry_key,\n    dr.path AS registry_path,\n    dr.name AS registry_name,\n    dr.data AS registry_value\n  FROM defender_registry dr\n) AS combined\nORDER BY\n  CASE WHEN detection_method = 'DEFENDER_REGISTRY_TAMPERING' THEN 0 ELSE 1 END,\n  security_vendor,\n  service_name;\n",
                 "interval": 3600,
                 "platform": "windows",
                 "timeout": 180,
@@ -30,13 +132,25 @@
                     {
                         "key": "event.action",
                         "value": {
-                            "value": "osquery.windows_services"
+                            "value": "osquery.security_products_disabled"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
                         }
                     },
                     {
                         "key": "service.name",
                         "value": {
-                            "field": "name"
+                            "field": "service_name"
                         }
                     },
                     {
@@ -46,21 +160,9 @@
                         }
                     },
                     {
-                        "key": "process.command_line",
-                        "value": {
-                            "field": "cmdline"
-                        }
-                    },
-                    {
                         "key": "process.executable",
                         "value": {
-                            "field": "exe_path"
-                        }
-                    },
-                    {
-                        "key": "process.pid",
-                        "value": {
-                            "field": "pid"
+                            "field": "service_path"
                         }
                     },
                     {
@@ -70,21 +172,9 @@
                         }
                     },
                     {
-                        "key": "process.hash.sha256",
+                        "key": "registry.key",
                         "value": {
-                            "field": "sha256"
-                        }
-                    },
-                    {
-                        "key": "process.code_signature.subject_name",
-                        "value": {
-                            "field": "signature_signer"
-                        }
-                    },
-                    {
-                        "key": "process.code_signature.status",
-                        "value": {
-                            "field": "signature_status"
+                            "field": "registry_key"
                         }
                     },
                     {
@@ -94,166 +184,15 @@
                         }
                     },
                     {
-                        "key": "file.mtime",
+                        "key": "registry.value",
                         "value": {
-                            "field": "modified_time"
-                        }
-                    },
-                    {
-                        "key": "dll.path",
-                        "value": {
-                            "field": "service_dll"
-                        }
-                    },
-                    {
-                        "key": "dll.hash.sha256",
-                        "value": {
-                            "field": "dll_sha256"
-                        }
-                    },
-                    {
-                        "key": "dll.code_signature.status",
-                        "value": {
-                            "field": "dll_signature_status"
-                        }
-                    },
-                    {
-                        "key": "tags",
-                        "value": {
-                            "value": [
-                                "osquery",
-                                "persistence",
-                                "threat_hunting",
-                                "services",
-                                "windows"
-                            ]
-                        }
-                    }
-                ]
-            },
-            {
-                "id": "registry_persistence_windows_elastic",
-                "query": "-- Windows Registry Persistence Detection\n-- Enumerates autostart registry locations with hash/signature enrichment\n\nSELECT\n    r.name,\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END AS executable_path,\n    r.data,\n    r.key,\n    r.path,\n    r.type,\n    datetime(r.mtime, 'unixepoch') AS registry_modified_time,\n    CASE\n        WHEN r.key LIKE '%\\Run' THEN 'Registry Run Key'\n        WHEN r.key LIKE '%\\RunOnce' THEN 'Registry RunOnce Key'\n        WHEN r.key LIKE '%\\Winlogon' THEN 'Winlogon Persistence'\n        WHEN r.key LIKE '%\\Active Setup\\Installed Components' THEN 'Active Setup'\n        WHEN r.key LIKE '%\\Policies\\Explorer\\Run' THEN 'Policy Run Key'\n        ELSE 'Other Persistence'\n    END AS persistence_type,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    h.sha1,\n    f.size,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.directory\nFROM registry r\nLEFT JOIN hash h ON h.path = (\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END\n)\nLEFT JOIN authenticode a ON a.path = (\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END\n)\nLEFT JOIN file f ON f.path = (\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END\n)\nWHERE (\n    -- Run/RunOnce (HKLM)\n    r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce'\n    -- Run/RunOnce (Per-User)\n    OR r.key LIKE 'HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'\n    OR r.key LIKE 'HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce'\n    -- WOW64 (32-bit on 64-bit)\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run'\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnce'\n    -- Policy Run Keys (often missed by EDR)\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run'\n    OR r.key LIKE 'HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run'\n    -- Winlogon (specific persistence values only)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon'\n        AND r.name IN ('Shell', 'Userinit', 'Taskman', 'AppSetup'))\n    -- Active Setup (per-user persistence on login) - only StubPath contains the command\n    OR (r.key LIKE 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Active Setup\\Installed Components\\%'\n        AND r.name = 'StubPath')\n)\nAND r.type != 'subkey'\nAND r.data IS NOT NULL\nAND r.data != ''",
-                "interval": 3600,
-                "platform": "windows",
-                "timeout": 180,
-                "ecs_mapping": [
-                    {
-                        "key": "event.category",
-                        "value": {
-                            "value": [
-                                "registry"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.type",
-                        "value": {
-                            "value": [
-                                "info"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.action",
-                        "value": {
-                            "value": "osquery.registry_persistence"
-                        }
-                    },
-                    {
-                        "key": "file.path",
-                        "value": {
-                            "field": "executable_path"
-                        }
-                    },
-                    {
-                        "key": "file.hash.sha256",
-                        "value": {
-                            "field": "sha256"
-                        }
-                    },
-                    {
-                        "key": "file.hash.sha1",
-                        "value": {
-                            "field": "sha1"
-                        }
-                    },
-                    {
-                        "key": "file.hash.md5",
-                        "value": {
-                            "field": "md5"
-                        }
-                    },
-                    {
-                        "key": "file.size",
-                        "value": {
-                            "field": "size"
-                        }
-                    },
-                    {
-                        "key": "file.created",
-                        "value": {
-                            "field": "created_time"
-                        }
-                    },
-                    {
-                        "key": "file.mtime",
-                        "value": {
-                            "field": "modified_time"
-                        }
-                    },
-                    {
-                        "key": "file.accessed",
-                        "value": {
-                            "field": "accessed_time"
-                        }
-                    },
-                    {
-                        "key": "file.ctime",
-                        "value": {
-                            "field": "changed_time"
-                        }
-                    },
-                    {
-                        "key": "file.directory",
-                        "value": {
-                            "field": "directory"
-                        }
-                    },
-                    {
-                        "key": "file.code_signature.subject_name",
-                        "value": {
-                            "field": "signature_signer"
-                        }
-                    },
-                    {
-                        "key": "file.code_signature.status",
-                        "value": {
-                            "field": "signature_status"
-                        }
-                    },
-                    {
-                        "key": "registry.key",
-                        "value": {
-                            "field": "key"
-                        }
-                    },
-                    {
-                        "key": "registry.path",
-                        "value": {
-                            "field": "path"
+                            "field": "registry_name"
                         }
                     },
                     {
                         "key": "registry.data.strings",
                         "value": {
-                            "field": "data"
-                        }
-                    },
-                    {
-                        "key": "registry.value",
-                        "value": {
-                            "field": "name"
+                            "field": "registry_value"
                         }
                     },
                     {
@@ -261,254 +200,8 @@
                         "value": {
                             "value": [
                                 "osquery",
-                                "persistence",
-                                "registry",
-                                "autostart",
-                                "windows"
-                            ]
-                        }
-                    }
-                ]
-            },
-            {
-                "id": "ntfs_usn_journal_events_windows_elastic",
-                "query": "-- NTFS Update Sequence Number (USN) Journal Events\n-- Tracks filesystem changes including file creation, modification, deletion, and renames\n-- NOTE: Unlike Linux/macOS file_events, NTFS USN Journal does not provide file hashes (table limitation)\n-- REQUIRED: Enable in Kibana osquery integration config:\n-- {\"options\":{\"disable_events\":\"false\",\"enable_ntfs_event_publisher\":\"true\"},\n--  \"file_paths\":{\"tmp\":[\"C:\\\\Windows\\\\Temp\\\\%%\"],\"users\":[\"C:\\\\Users\\\\%%\"],\"programdata\":[\"C:\\\\ProgramData\\\\%%\"]}}\nSELECT\n  action,\n  CASE\n    WHEN action = 'FileCreation' THEN 'creation'\n    WHEN action = 'FileDeletion' THEN 'deletion'\n    WHEN action = 'Close' THEN 'info'\n    ELSE 'change'\n  END AS event_type,\n  path,\n  old_path,\n  category,\n  drive_letter,\n  file_attributes,\n  node_ref_number AS mft_entry,\n  parent_ref_number AS parent_mft_entry,\n  datetime(record_timestamp, 'unixepoch') AS record_time,\n  record_usn,\n  partial,\n  datetime(time, 'unixepoch') AS event_time\nFROM ntfs_journal_events\nWHERE action IS NOT NULL",
-                "interval": 3600,
-                "platform": "windows",
-                "ecs_mapping": [
-                    {
-                        "key": "event.category",
-                        "value": {
-                            "value": [
-                                "file"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.type",
-                        "value": {
-                            "field": "event_type"
-                        }
-                    },
-                    {
-                        "key": "event.kind",
-                        "value": {
-                            "value": "event"
-                        }
-                    },
-                    {
-                        "key": "event.action",
-                        "value": {
-                            "value": "osquery.ntfs_journal_events"
-                        }
-                    },
-                    {
-                        "key": "event.created",
-                        "value": {
-                            "field": "event_time"
-                        }
-                    },
-                    {
-                        "key": "file.path",
-                        "value": {
-                            "field": "path"
-                        }
-                    },
-                    {
-                        "key": "file.inode",
-                        "value": {
-                            "field": "mft_entry"
-                        }
-                    },
-                    {
-                        "key": "file.attributes",
-                        "value": {
-                            "field": "file_attributes"
-                        }
-                    },
-                    {
-                        "key": "file.parent.inode",
-                        "value": {
-                            "field": "parent_mft_entry"
-                        }
-                    },
-                    {
-                        "key": "tags",
-                        "value": {
-                            "value": [
-                                "osquery",
-                                "ntfs_journal",
-                                "usn",
-                                "filesystem_forensics",
-                                "windows"
-                            ]
-                        }
-                    }
-                ]
-            },
-            {
-                "id": "file_hash_info_windows_elastic",
-                "query": "-- File Hash Information with Code Signature Validation - Windows\n-- Enumerates files in common staging/temp directories with hash values and authenticode validation\n-- Detects suspicious files, renamed executables, hidden files, and unsigned binaries\n\nSELECT\n    f.path,\n    f.directory,\n    f.filename,\n    f.size,\n    f.type,\n    f.attributes,\n    f.original_filename,\n    f.file_version,\n    f.product_version,\n    f.volume_serial,\n    f.file_id,\n    f.shortcut_target_path,\n    f.uid,\n    f.gid,\n    f.mode,\n    f.inode,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    a.serial_number AS signature_serial,\n    a.issuer_name AS signature_issuer,\n    CASE\n        WHEN f.attributes LIKE '%H%' THEN 'hidden'\n        WHEN f.attributes LIKE '%S%' THEN 'system'\n        ELSE 'normal'\n    END AS file_visibility,\n    CASE\n        WHEN f.original_filename != '' AND f.original_filename != f.filename THEN 'renamed'\n        ELSE 'original'\n    END AS rename_status\nFROM file f\nLEFT JOIN hash h ON h.path = f.path\nLEFT JOIN authenticode a ON a.path = f.path\nWHERE (\n    f.path LIKE 'C:\\Users\\Public\\%'\n    OR f.path LIKE 'C:\\Windows\\Temp\\%'\n    OR f.path LIKE 'C:\\ProgramData\\%'\n    OR f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Temp\\%'\n    OR f.path LIKE 'C:\\Users\\%\\Downloads\\%'\n)\nAND f.type = 'regular'\nAND f.size > 0",
-                "interval": 3600,
-                "platform": "windows",
-                "timeout": 180,
-                "ecs_mapping": [
-                    {
-                        "key": "event.category",
-                        "value": {
-                            "value": [
-                                "file"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.type",
-                        "value": {
-                            "value": [
-                                "info"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.action",
-                        "value": {
-                            "value": "osquery.file_hash_info"
-                        }
-                    },
-                    {
-                        "key": "file.path",
-                        "value": {
-                            "field": "path"
-                        }
-                    },
-                    {
-                        "key": "file.directory",
-                        "value": {
-                            "field": "directory"
-                        }
-                    },
-                    {
-                        "key": "file.name",
-                        "value": {
-                            "field": "filename"
-                        }
-                    },
-                    {
-                        "key": "file.size",
-                        "value": {
-                            "field": "size"
-                        }
-                    },
-                    {
-                        "key": "file.mtime",
-                        "value": {
-                            "field": "modified_time"
-                        }
-                    },
-                    {
-                        "key": "file.ctime",
-                        "value": {
-                            "field": "changed_time"
-                        }
-                    },
-                    {
-                        "key": "file.created",
-                        "value": {
-                            "field": "created_time"
-                        }
-                    },
-                    {
-                        "key": "file.accessed",
-                        "value": {
-                            "field": "accessed_time"
-                        }
-                    },
-                    {
-                        "key": "file.uid",
-                        "value": {
-                            "field": "uid"
-                        }
-                    },
-                    {
-                        "key": "file.gid",
-                        "value": {
-                            "field": "gid"
-                        }
-                    },
-                    {
-                        "key": "file.mode",
-                        "value": {
-                            "field": "mode"
-                        }
-                    },
-                    {
-                        "key": "file.inode",
-                        "value": {
-                            "field": "inode"
-                        }
-                    },
-                    {
-                        "key": "file.type",
-                        "value": {
-                            "field": "type"
-                        }
-                    },
-                    {
-                        "key": "file.pe.original_file_name",
-                        "value": {
-                            "field": "original_filename"
-                        }
-                    },
-                    {
-                        "key": "file.pe.file_version",
-                        "value": {
-                            "field": "file_version"
-                        }
-                    },
-                    {
-                        "key": "file.pe.product",
-                        "value": {
-                            "field": "product_version"
-                        }
-                    },
-                    {
-                        "key": "file.hash.md5",
-                        "value": {
-                            "field": "md5"
-                        }
-                    },
-                    {
-                        "key": "file.hash.sha1",
-                        "value": {
-                            "field": "sha1"
-                        }
-                    },
-                    {
-                        "key": "file.hash.sha256",
-                        "value": {
-                            "field": "sha256"
-                        }
-                    },
-                    {
-                        "key": "file.code_signature.subject_name",
-                        "value": {
-                            "field": "signature_signer"
-                        }
-                    },
-                    {
-                        "key": "file.code_signature.status",
-                        "value": {
-                            "field": "signature_status"
-                        }
-                    },
-                    {
-                        "key": "tags",
-                        "value": {
-                            "value": [
-                                "osquery",
-                                "file_forensics",
-                                "hash_analysis",
-                                "code_signature",
+                                "defense_evasion",
+                                "security_products",
                                 "windows"
                             ]
                         }
