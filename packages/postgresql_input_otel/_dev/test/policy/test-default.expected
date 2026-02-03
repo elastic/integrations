@@ -18,10 +18,7 @@ output_permissions:
                     - auto_configure
                     - create_doc
 processors:
-    resourcedetection/componentid-0:
-        detectors:
-            - system
-    transform/componentid-1:
+    transform/componentid-0:
         metric_statements:
             - context: datapoint
               statements:
@@ -37,7 +34,24 @@ receivers:
                 enabled: true
             db.server.top_query: null
         initial_delay: 1s
-        password: ${SECRET_0}
+        metrics:
+            postgresql.blks_hit:
+                enabled: true
+            postgresql.blks_read:
+                enabled: true
+            postgresql.database.locks:
+                enabled: true
+            postgresql.tup_deleted:
+                enabled: true
+            postgresql.tup_fetched:
+                enabled: true
+            postgresql.tup_inserted:
+                enabled: true
+            postgresql.tup_returned:
+                enabled: true
+            postgresql.tup_updated:
+                enabled: true
+        password: postgresql
         query_sample_collection:
             max_rows_per_query: 100
         tls:
@@ -47,10 +61,21 @@ receivers:
             top_n_query: 100
         transport: tcp
         username: postgresql
-secret_references:
-    - {}
+secret_references: []
 service:
     pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        logs/componentid-1:
+            exporters:
+                - forward
+            processors:
+                - transform/componentid-0
+            receivers:
+                - postgresql/componentid-0
         metrics:
             exporters:
                 - elasticsearch/componentid-0
@@ -60,7 +85,6 @@ service:
             exporters:
                 - forward
             processors:
-                - resourcedetection/componentid-0
-                - transform/componentid-1
+                - transform/componentid-0
             receivers:
                 - postgresql/componentid-0

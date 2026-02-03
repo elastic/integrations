@@ -52,11 +52,26 @@ receivers:
       {{#if top_query_top_n_query}}
       top_n_query: {{top_query_top_n_query}}
       {{/if}}
-processors:
-  resourcedetection/system:
-    detectors: ["system"]
+    metrics:
+      postgresql.database.locks:
+        enabled: true
+      postgresql.tup_updated:
+        enabled: true
+      postgresql.tup_returned:
+        enabled: true
+      postgresql.tup_fetched:
+        enabled: true
+      postgresql.tup_inserted:
+        enabled: true
+      postgresql.tup_deleted:
+        enabled: true
+      postgresql.blks_hit:
+        enabled: true
+      postgresql.blks_read:
+        enabled: true
 service:
   pipelines:
     metrics:
       receivers: [postgresql]
-      processors: [resourcedetection/system]
+    logs:
+      receivers: [postgresql]
