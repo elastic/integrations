@@ -1,4 +1,4 @@
-ARG SERVICE_VERSION=${SERVICE_VERSION:-9.5.25}
+ARG SERVICE_VERSION=${SERVICE_VERSION:-18.1}
 FROM postgres:${SERVICE_VERSION}
 
 COPY docker-entrypoint-initdb.d /docker-entrypoint-initdb.d
