@@ -1,0 +1,39 @@
+{
+  "attributes": {
+    "name": "iis_request_availability_99.5_Rolling30Days",
+    "description": "This SLO tracks the availability of IIS web server requests, ensuring that 99.5% of HTTP requests receive successful responses (status code < 400, status_code = 404 or status_code = 429) over a rolling 30-day period to ensure reliable web service delivery.",
+    "indicator": {
+      "type": "sli.kql.custom",
+      "params": {
+        "index": "logs-iis.access-default",
+        "filter": "data_stream.dataset : \"iis.access\" ",
+        "good": "event.outcome : \"success\" OR http.response.status_code : (404 OR 429)",
+        "total": "event.outcome : *",
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "iis"
+    ],
+    "groupBy": [
+      "source.address"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "iis-4278ad30-fe16-11e7-a3b0-d13028918f9f"
+        }
+      ]
+    }
+  },
+  "id": "iis_request_availability_99.5_Rolling30Days",
+  "type": "slo_template"
+}
