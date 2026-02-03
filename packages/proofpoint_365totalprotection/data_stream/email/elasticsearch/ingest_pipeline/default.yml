@@ -1,0 +1,232 @@
+---
+processors:
+    - json:
+            field: message
+            target_field: parsed_email
+            if: ctx.message != null
+    - script:
+            lang: painless
+            source: |
+                if (ctx.containsKey('parsed_email')) {
+                    ctx.proofpoint = ['email': ctx.parsed_email];
+                    ctx.remove('parsed_email');
+                    ctx.remove('message');
+                    // Convert size object to string
+                    if (ctx.proofpoint.email.containsKey('size') && ctx.proofpoint.email.size instanceof Map) {
+                        ctx.proofpoint.email.size = ctx.proofpoint.email.size.value + ' ' + ctx.proofpoint.email.size.unit;
+                    }
+                    // Convert attachments array of objects to list of filenames
+                    if (ctx.proofpoint.email.containsKey('attachments') && ctx.proofpoint.email.attachments instanceof List) {
+                        def attachmentNames = [];
+                        def attachmentExtensions = [];
+                        for (att in ctx.proofpoint.email.attachments) {
+                            if (att instanceof Map && att.containsKey('name')) {
+                                attachmentNames.add(att.name);
+                                // Extract file extension
+                                def filename = att.name;
+                                def lastDot = filename.lastIndexOf('.');
+                                if (lastDot > 0 && lastDot < filename.length() - 1) {
+                                    def ext = filename.substring(lastDot + 1).toLowerCase();
+                                    if (!attachmentExtensions.contains(ext)) {
+                                        attachmentExtensions.add(ext);
+                                    }
+                                }
+                            }
+                        }
+                        ctx.proofpoint.email.attachmentsList = attachmentNames;
+                        ctx.proofpoint.email.attachmentsExtensions = attachmentExtensions;
+                        ctx.proofpoint.email.attachments = attachmentNames.size() > 0 ? 'yes' : 'no';
+                    } else if (!ctx.proofpoint.email.containsKey('attachments') || ctx.proofpoint.email.attachments == null || (ctx.proofpoint.email.attachments instanceof List && ctx.proofpoint.email.attachments.size() == 0)) {
+                        ctx.proofpoint.email.attachments = 'no';
+                        ctx.proofpoint.email.attachmentsList = [];
+                        ctx.proofpoint.email.attachmentsExtensions = [];
+                    }
+                }
+    - drop:
+            if: ctx.proofpoint?.email?.message_id == null
+    - script:
+            lang: painless
+            if: ctx.proofpoint?.email?.message_id != null
+            source: |
+                ctx._id = ctx.proofpoint.email.message_id
+    - date:
+            field: proofpoint.email.date
+            target_field: '@timestamp'
+            formats:
+                - 'yyyy-MM-dd HH:mm:ss'
+                - 'ISO8601'
+            ignore_failure: true
+
+    - script:
+            lang: painless
+            if: ctx.proofpoint?.email?.classification instanceof Map
+            source: |
+                if (ctx.proofpoint.email.classification.containsKey('text')) {
+                    ctx.proofpoint.email.classification_text = ctx.proofpoint.email.classification.text;
+                    ctx.proofpoint.email.classification_id = ctx.proofpoint.email.classification.id;
+                }
+            ignore_failure: true
+
+    - script:
+            lang: painless
+            if: ctx.proofpoint?.email?.status instanceof Map
+            source: |
+                if (ctx.proofpoint.email.status.containsKey('text')) {
+                    ctx.proofpoint.email.status_text = ctx.proofpoint.email.status.text;
+                    ctx.proofpoint.email.status_id = ctx.proofpoint.email.status.id;
+                }
+            ignore_failure: true
+
+    - script:
+            lang: painless
+            if: ctx.proofpoint?.email?.direction != null
+            source: |
+                def dir = ctx.proofpoint.email.direction;
+                if (dir == 1) {
+                    ctx.proofpoint.email.direction_text = 'Inbound';
+                } else if (dir == 2) {
+                    ctx.proofpoint.email.direction_text = 'Outbound';
+                } else {
+                    ctx.proofpoint.email.direction_text = 'Unknown';
+                }
+            ignore_failure: true
+
+    - script:
+            lang: painless
+            if: ctx.proofpoint?.email?.crypt_type_in instanceof Map
+            source: |
+                if (ctx.proofpoint.email.crypt_type_in.containsKey('text')) {
+                    ctx.proofpoint.email.incoming_encryption = ctx.proofpoint.email.crypt_type_in.text;
+                }
+            ignore_failure: true
+
+    - script:
+            lang: painless
+            if: ctx.proofpoint?.email?.crypt_type_out instanceof Map
+            source: |
+                if (ctx.proofpoint.email.crypt_type_out.containsKey('text')) {
+                    ctx.proofpoint.email.outgoing_encryption = ctx.proofpoint.email.crypt_type_out.text;
+                }
+            ignore_failure: true
+
+    - script:
+            lang: painless
+            if: ctx.proofpoint?.email?.comm_partner != null
+            source: |
+                def direction = ctx.proofpoint.email.containsKey('direction') ? ctx.proofpoint.email.direction : null;
+                if (direction != null && direction == 1) {
+                    ctx.proofpoint.email.from = ctx.proofpoint.email.comm_partner;
+                } else if (direction != null && direction == 2) {
+                    ctx.proofpoint.email.to = ctx.proofpoint.email.comm_partner;
+                }
+            ignore_failure: true
+
+    - script:
+            lang: painless
+            if: ctx.proofpoint?.email?.owner != null
+            source: |
+                def direction = ctx.proofpoint.email.containsKey('direction') ? ctx.proofpoint.email.direction : null;
+                if (direction != null && direction == 1) {
+                    ctx.proofpoint.email.to = ctx.proofpoint.email.owner;
+                } else if (direction != null && direction == 2) {
+                    ctx.proofpoint.email.from = ctx.proofpoint.email.owner;
+                }
+            ignore_failure: true
+
+    - set:
+        field: email.from.address
+        copy_from: proofpoint.email.from
+        ignore_empty_value: true
+    - set:
+        field: email.to.address
+        copy_from: proofpoint.email.to
+        ignore_empty_value: true
+    - set:
+        field: email.subject
+        copy_from: proofpoint.email.subject
+        ignore_empty_value: true
+    - set:
+        field: email.message_id
+        copy_from: proofpoint.email.message_id
+        ignore_empty_value: true
+    - set:
+        field: email.direction
+        copy_from: proofpoint.email.direction_text
+        ignore_empty_value: true
+    - set:
+        field: source.ip
+        copy_from: proofpoint.email.source_ip
+        ignore_empty_value: true
+    - set:
+        field: destination.ip
+        copy_from: proofpoint.email.destination_ip
+        ignore_empty_value: true
+    - convert:
+        field: proofpoint.email.source_ip
+        type: ip
+        ignore_missing: true
+        ignore_failure: true
+    - convert:
+        field: proofpoint.email.destination_ip
+        type: ip
+        ignore_missing: true
+        ignore_failure: true
+    - convert:
+        field: source.ip
+        type: ip
+        ignore_missing: true
+        ignore_failure: true
+    - convert:
+        field: destination.ip
+        type: ip
+        ignore_missing: true
+        ignore_failure: true
+    - set:
+        field: event.kind
+        value: event
+    - set:
+        field: event.category
+        value: ["email"]
+    - set:
+        field: event.type
+        value: ["info"]
+    - append:
+        field: related.ip
+        value: "{{{proofpoint.email.source_ip}}}"
+        if: ctx.proofpoint?.email?.source_ip != null
+        allow_duplicates: false
+    - append:
+        field: related.ip
+        value: "{{{proofpoint.email.destination_ip}}}"
+        if: ctx.proofpoint?.email?.destination_ip != null
+        allow_duplicates: false
+    - append:
+        field: related.user
+        value: "{{{proofpoint.email.from}}}"
+        if: ctx.proofpoint?.email?.from != null
+        allow_duplicates: false
+    - append:
+        field: related.user
+        value: "{{{proofpoint.email.to}}}"
+        if: ctx.proofpoint?.email?.to != null
+        allow_duplicates: false
+    - append:
+        field: related.user
+        value: "{{{proofpoint.email.comm_partner}}}"
+        if: ctx.proofpoint?.email?.comm_partner != null
+        allow_duplicates: false
+    - append:
+        field: related.user
+        value: "{{{proofpoint.email.owner}}}"
+        if: ctx.proofpoint?.email?.owner != null
+        allow_duplicates: false
+    - remove:
+        field: message
+        ignore_missing: true
+    - remove:
+        field: event.original
+        ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

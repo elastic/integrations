@@ -1,0 +1,40 @@
+type: httpjson
+interval: {{interval}}
+config_version: 2
+request.url: "https://cp.proofpoint.com/api/v0/object/?name={{domain_or_email}}"
+request.method: GET
+request.transforms:
+- set:
+    target: header.Authorization
+    value: 'Token {{apikey}}'
+- set:
+    target: header.App-ID
+    value: '1080999989'
+chain:
+- step:
+    request.method: POST
+    request.url: "https://cp.proofpoint.com/api/v0/emails/_search/"
+    request.encode_as: application/json
+    replace: object_id
+    request.body:
+      cluster_id: 0
+      limit: 5000
+      offset: 0
+    request.transforms:
+    - set:
+        target: body.date_to
+        value: '[[ formatDate now "2006-01-02T15:04:05Z" ]]'
+    - set:
+        target: body.date_from
+        value: '[[ formatDate ((now.Add (parseDuration "-{{interval}}")).Add (parseDuration "-30m")) "2006-01-02T15:04:05Z" ]]'
+    - set:
+        target: url.params.object_id
+        value: '[[ sprintf "%.0f" .last_response.body.object_id ]]'
+    - set:
+        target: header.Authorization
+        value: 'Token {{apikey}}'
+    - set:
+        target: header.App-ID
+        value: '1080999989'
+    response.split:
+      target: body.emails

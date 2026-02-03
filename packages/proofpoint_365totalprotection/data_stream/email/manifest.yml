@@ -1,0 +1,48 @@
+title: "Email logs"
+type: logs
+streams:
+  - input: httpjson
+    title: "Email logs via HTTP JSON"
+    description: |-
+      Collect email logs from Proofpoint 365 Total Protection
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: data_stream.dataset
+        type: text
+        title: "Dataset name"
+        description: |-
+          Dataset to write data to. Changing the dataset will send the data to a different index.
+        required: true
+        show_user: true
+        default: proofpoint_365totalprotection.email
+      - name: apikey
+        type: password
+        title: "API Key"
+        description: |-
+          The API Key for Control Panel API authentication (https://cp.proofpoint.com -> My Settings -> API Token -> Create token).
+        required: true
+        show_user: true
+        secret: true
+      - name: domain_or_email
+        type: text
+        title: "Domain or Email"
+        description: |-
+          The domain name (e.g., example.com) or email address to monitor.
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: "Interval"
+        description: |-
+          Polling interval (e.g. 5m, 10m, 15m)
+        default: 5m
+        required: true
+        show_user: true
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Processors to run on the data before indexing.
+        multi: false
+        required: false
+        show_user: false
