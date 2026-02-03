@@ -488,6 +488,12 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.packet_capture_name |  | keyword |
 | checkpoint.packet_capture_time |  | keyword |
 | checkpoint.packet_capture_unique_id | Identifier of the packet capture files. | keyword |
+| checkpoint.packets_dropped.destination.ip | Destination IP address of the dropped packet. | ip |
+| checkpoint.packets_dropped.destination.port | Destination port of the dropped packet. | long |
+| checkpoint.packets_dropped.interface.name | Interface name where the packet was dropped. | keyword |
+| checkpoint.packets_dropped.network.iana_number | IANA protocol number of the dropped packet. | keyword |
+| checkpoint.packets_dropped.source.ip | Source IP address of the dropped packet. | ip |
+| checkpoint.packets_dropped.source.port | Source port of the dropped packet. | long |
 | checkpoint.parent_file_hash | Archive's hash in case of extracted files. | keyword |
 | checkpoint.parent_file_name | Archive's name in case of extracted files. | keyword |
 | checkpoint.parent_file_uid | Archive's UID in case of extracted files. | keyword |
@@ -534,12 +540,14 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.rule_action | Action of the matched rule in the access policy. | keyword |
 | checkpoint.rulebase_id | Layer number. | integer |
 | checkpoint.scan_direction | Scan direction. | keyword |
+| checkpoint.scan_ended | Scan end time. | keyword |
 | checkpoint.scan_hosts_day | Number of unique hosts during the last day. | integer |
 | checkpoint.scan_hosts_hour | Number of unique hosts during the last hour. | integer |
 | checkpoint.scan_hosts_week | Number of unique hosts during the last week. | integer |
 | checkpoint.scan_id | Sequential number of scan. | keyword |
 | checkpoint.scan_mail | Number of emails that were scanned by "AB malicious activity" engine. | integer |
 | checkpoint.scan_results | "Infected"/description of a failure. | keyword |
+| checkpoint.scan_started | Scan start time. | keyword |
 | checkpoint.scheme | Describes the scheme used for the log. | keyword |
 | checkpoint.scope | IP related to the attack. | keyword |
 | checkpoint.script_value_for_one_time_scripts |  | keyword |

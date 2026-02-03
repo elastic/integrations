@@ -1752,6 +1752,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.process.memory.rss.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float | percent | gauge |
 | system.process.memory.share | The shared memory the process uses. | long | byte | gauge |
 | system.process.memory.size | The total virtual memory the process has. On Windows this represents the Commit Charge (the total amount of memory that the memory manager has committed for a running process) value in bytes for this process. | long | byte | gauge |
+| system.process.memory.swap | The swap memory used by the process (supported only on Linux kernel version 2.6.34+). | long | byte | gauge |
 | system.process.num_threads | Number of threads in the process | integer |  |  |
 | system.process.state | The process state. For example: "running". | keyword |  |  |
 
@@ -1916,4 +1917,38 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | system.uptime.duration.ms | The OS uptime in milliseconds. | long | ms | counter |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[System] CPU Utilization**
+
+
+
+**[System] Disk I/O Saturation**
+
+
+
+**[System] High Disk I/O Latency**
+
+
+
+**[System] High Network Error Rate**
+
+
+
+**[System] High Packet Drop Rate**
+
+
+
+**[System] Memory Utilization**
+
+
 
