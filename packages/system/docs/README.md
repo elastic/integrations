@@ -740,7 +740,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.OpCorrelationID |  | keyword |
 | winlog.event_data.Operation |  | keyword |
 | winlog.event_data.OperationType |  | keyword |
-| winlog.event_data.Options |  | long |
+| winlog.event_data.Options |  | keyword |
 | winlog.event_data.OriginalFileName |  | keyword |
 | winlog.event_data.OriginalProfile |  | keyword |
 | winlog.event_data.PackageName |  | keyword |
@@ -832,7 +832,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.StartUSN |  | long |
 | winlog.event_data.State |  | keyword |
 | winlog.event_data.Status |  | keyword |
-| winlog.event_data.StatusCode |  | long |
+| winlog.event_data.StatusCode |  | keyword |
 | winlog.event_data.StatusDescription |  | keyword |
 | winlog.event_data.StopTime |  | keyword |
 | winlog.event_data.SubCategory |  | keyword |
