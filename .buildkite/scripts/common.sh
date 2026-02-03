@@ -832,9 +832,25 @@ list_all_directories() {
     find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
 }
 
+# Remove _dev folder for content packages before validation
+# Content packages don't support _dev folders in the package spec,
+# but we want to store YAML source files in _dev for development purposes.
+# The YAML files are compiled to JSON and stored alongside the YAML.
+# This function removes _dev before validation so CI passes.
+remove_dev_folder_for_content_packages() {
+    local pkg_type
+    pkg_type=$(cat manifest.yml | yq -r '.type // "integration"')
+
+    if [[ "${pkg_type}" == "content" ]] && [[ -d "_dev" ]]; then
+        echo "Removing _dev folder for content package (not allowed in content package spec)"
+        rm -rf _dev
+    fi
+}
+
 check_package() {
     local package=$1
     echo "Check package: ${package}"
+    remove_dev_folder_for_content_packages
     if ! ${ELASTIC_PACKAGE_BIN} check -v ; then
         return 1
     fi
@@ -845,6 +861,7 @@ check_package() {
 build_zip_package() {
     local package=$1
     echo "Build zip package: ${package}"
+    remove_dev_folder_for_content_packages
     if ! ${ELASTIC_PACKAGE_BIN} build --zip ; then
         return 1
     fi
