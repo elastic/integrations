@@ -67,17 +67,19 @@ response.split:
 response.pagination:
   - set:
       target: body.request_data.search_from
-      value: '[[if (ne (len .last_response.body.reply.alerts) 0)]][[mul .last_response.page 100]][[end]]'
+      value: '[[if (ne (len .last_response.body.reply.alerts) 0)]][[mul (add .last_response.page 1) 100]][[end]]'
       value_type: int
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: body.request_data.search_to
-      value: '[[if (ne (len .last_response.body.reply.alerts) 0)]][[add (mul .last_response.page 100) 100]][[end]]'
+      value: '[[if (ne (len .last_response.body.reply.alerts) 0)]][[add (mul (add .last_response.page 1) 100) 100]][[end]]'
       value_type: int
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   next_ts:
-    value: "[[.last_event.local_insert_ts]]"
+    value: '[[if index .last_event "local_insert_ts"]][[.last_event.local_insert_ts]][[end]]'
 
 tags:
 {{#if preserve_original_event}}
