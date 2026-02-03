@@ -379,11 +379,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.memory.max.value | Memory limit. | long | gauge |
 | redis.info.memory.total_system | Total amount in bytes of memory available to Redis. | long |  |
 | redis.info.memory.used.dataset | The size in bytes of the dataset | long | gauge |
-| redis.info.memory.used.lua | Used memory by the Lua engine. | long | gauge |
+| redis.info.memory.used.functions | Memory overhead from Functions (part of used_memory). Added in Redis 7.0. | long |  |
+| redis.info.memory.used.lua | Used memory by the Lua engine. Deprecated in Redis 7.0; use vm.eval instead. | long | gauge |
 | redis.info.memory.used.peak | Peak memory consumed by Redis. | long | gauge |
 | redis.info.memory.used.rss | Number of bytes that Redis allocated as seen by the operating system (a.k.a resident set size). | long | gauge |
-| redis.info.memory.used.scripts | Used memory by Lua scripts. | long |  |
+| redis.info.memory.used.scripts | Combined memory overhead from EVAL scripts and Functions (part of used_memory). Added in Redis 7.0. | long |  |
+| redis.info.memory.used.scripts_eval | Memory overhead from EVAL scripts (part of used_memory). Added in Redis 7.0. | long |  |
 | redis.info.memory.used.value | Total number of bytes allocated by Redis. | long | gauge |
+| redis.info.memory.vm.eval | Number of bytes used by the script VM engines for EVAL framework. This is the replacement for used_memory_lua. | long |  |
+| redis.info.memory.vm.functions | Number of bytes used by the script VM engines for Functions framework. | long |  |
+| redis.info.memory.vm.total | Total VM memory (vm.eval + vm.functions). | long |  |
 | redis.info.persistence.aof.bgrewrite.last_status | Status of the last AOF rewrite operatio | keyword |  |
 | redis.info.persistence.aof.buffer.size | Size of the AOF buffer | long | gauge |
 | redis.info.persistence.aof.copy_on_write.last_size | The size in bytes of copy-on-write allocations during the last RBD save operation | long | gauge |
@@ -433,7 +438,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.server.lru_clock |  | long |  |
 | redis.info.server.mode |  | keyword |  |
 | redis.info.server.multiplexing_api |  | keyword |  |
-| redis.info.server.number_of_cached_scripts |  | long |  |
+| redis.info.server.number_of_cached_scripts | Number of EVAL scripts cached by the server. Added in Redis 7.0. | long |  |
+| redis.info.server.number_of_functions | Number of Functions loaded. Added in Redis 7.0. | long |  |
+| redis.info.server.number_of_libraries | Number of Function libraries loaded. Added in Redis 7.0. | long |  |
 | redis.info.server.run_id |  | keyword |  |
 | redis.info.server.tcp_port |  | long |  |
 | redis.info.server.uptime |  | long | gauge |
@@ -462,9 +469,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | redis.info.stats.sync.full | The number of full resyncs with slaves | long | gauge |
 | redis.info.stats.sync.partial.err | The number of denied partial resync requests | long | gauge |
 | redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long | gauge |
-| redis.info.stats.tracking.total_items | Total number of tracked items. | long |  |
-| redis.info.stats.tracking.total_keys | Total number of keys being tracked. | long |  |
-| redis.info.stats.tracking.total_prefixes | Total number of tracked prefixes. | long |  |
+| redis.info.stats.tracking.total_items | Number of items (sum of clients per tracked key). | long |  |
+| redis.info.stats.tracking.total_keys | Number of keys being tracked by the server. | long |  |
+| redis.info.stats.tracking.total_prefixes | Number of tracked prefixes in the server's prefix table (broadcast mode only). | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
