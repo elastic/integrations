@@ -13,7 +13,7 @@
             "timeWindowSize": 10,
             "timeWindowUnit": "m",
             "esqlQuery": {
-                "esql": "// Alert triggers when the BLOCK to ALLOW ratio is higher than the set value (default 0.5 - 50%)\n// You can adjust the threshold value by modifying the ratio in the WHERE clause.\nFROM logs-aws.waf.otel-default\n| STATS block_count = COUNT(aws.waf.action == \"BLOCK\" OR NULL), allow_count = COUNT(aws.waf.action == \"ALLOW\" OR NULL)\n| EVAL ratio = block_count / TO_DOUBLE(allow_count)\n| KEEP block_count, allow_count, ratio\n| WHERE ratio >= 0.5"
+                "esql": "// Alert triggers when the BLOCK to ALLOW ratio is higher than the set value (default 0.5 - 50%)\n// You can adjust the threshold value by modifying the ratio in the WHERE clause.\nFROM logs-aws.waf.otel-default\n| STATS block_count = COUNT(*) WHERE aws.waf.action == \"BLOCK\", allow_count = COUNT(*) WHERE aws.waf.action == \"ALLOW\"\n| EVAL ratio = block_count / TO_DOUBLE(allow_count)\n| KEEP block_count, allow_count, ratio\n| WHERE ratio >= 0.5"
             },
             "groupBy": "row",
             "timeField": "@timestamp"
