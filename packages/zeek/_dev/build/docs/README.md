@@ -10,11 +10,11 @@ This integration facilitates:
 - Threat hunting: You can search and analyze detailed connection logs, file hashes, and protocol-specific data to proactively hunt for threats.
 - Incident response: You'll accelerate investigations with rich, contextual network data to understand the scope and impact of security events.
 - Security monitoring: You use pre-built Kibana dashboards to monitor network traffic for anomalies, policy violations, and known attack patterns.
-- Network visibility: You gain deep insights into network activity, including encrypted traffic via SSL/TLS metadata, DNS requests, and file transfers.
+- Network visibility: You gain deep insights into network activity, including encrypted traffic using SSL/TLS metadata, DNS requests, and file transfers.
 
 ### Compatibility
 
-This integration has been tested against Zeek version 2.6.1, which was the primary version used during development. However, it's expected to work with all newer versions, including the latest LTS releases.
+This integration has been tested against Zeek version 2.6.1, which was the primary version used during development. However, it's expected to work with all later versions, including the latest LTS releases.
 
 For the integration to parse data correctly, you must configure Zeek with the `json-logs` policy.
 
@@ -68,13 +68,13 @@ The Zeek integration collects log messages of the following types:
 *   `syslog`: Syslog messages captured directly from network traffic.
 *   `traceroute`: Detected traceroute attempts and network path information.
 *   `tunnel`: Metadata for encapsulated or tunneled traffic, such as Teredo or GRE.
-*   `weird`: Unexpected or malformed protocol behavior that may indicate network issues or attacks.
+*   `weird`: Unexpected or malformed protocol behavior that might indicate network issues or attacks.
 *   `x509`: Detailed metadata for X.509 certificates observed in encrypted traffic.
 
 ### Supported use cases
 
 Integrating Zeek logs with Elastic provides you with a powerful solution for enhancing network visibility and security posture. You can use this integration to support the following use cases:
-*   Real-time threat detection: You can use Elastic Security to alert on suspicious network patterns, such as data exfiltration via DNS or unauthorized SSH connections.
+*   Real-time threat detection: You can use Elastic Security to alert on suspicious network patterns, such as data exfiltration using DNS or unauthorized SSH connections.
 *   Incident response and forensics: You'll have access to a rich repository of protocol-specific metadata to investigate the scope and timeline of a security breach.
 *   Network performance monitoring: You can analyze `capture_loss` and `stats` data to ensure your network monitoring infrastructure is operating efficiently.
 *   Compliance and auditing: You can maintain long-term, searchable archives of network transactions, including file transfers and authentication events, to meet regulatory requirements.
@@ -102,7 +102,7 @@ Your Zeek environment must meet these conditions:
 
 Elastic Agent must be installed on the host where Zeek is running or where its logs are stored. For detailed installation instructions, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the log files and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the log files and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in Zeek
 
@@ -113,7 +113,7 @@ Follow these steps to enable JSON logging:
 1.  Locate the site configuration file. Identify the `local.zeek` file for your site-specific configuration. Common paths include:
     *   `/opt/zeek/share/zeek/site/local.zeek` (standard package install)
     *   `/usr/local/zeek/share/zeek/site/local.zeek` (source install)
-2.  Edit the configuration. Open the file with root privileges using a text editor like `nano` or `vi`.
+2.  Edit the configuration. Open the file with root privileges using a text editor.
 3.  Enable JSON logging. Append the following line to the end of the file to force all log streams into JSON format:
     ```zeek
     @load policy/tuning/json-logs.zeek
@@ -127,7 +127,7 @@ Follow these steps to enable JSON logging:
     ```bash
     sudo zeekctl deploy
     ```
-7.  Verify JSON format. Check one of the current logs to ensure it's formatted as JSON. The output should start with a `{` character:
+7.  Verify JSON format. Check one of the current logs to ensure it's formatted as JSON. The output should start with a `{` character. For example:
     ```bash
     head -n 1 /opt/zeek/logs/current/conn.log
     ```
@@ -199,20 +199,20 @@ To set up the integration in Kibana:
     *   **Preserve original event**: If enabled, this stores a raw copy of the original log in the `event.original` field. Use this for auditing or legal compliance, but be aware it increases storage requirements.
     *   **Tags**: Add custom tags to your events for easier filtering (e.g., `['forwarded', 'zeek-sensor-1']`).
     *   **Processors**: Add Elastic Agent processors to filter or enhance data before ingestion.
-8.  Click **Save and continue**.
+8.  Click **Save and continue** or **Add Integration**.
 
 ### Validation
 
 Follow these steps to verify that the integration is working correctly and data is flowing into Elasticsearch:
 
-1.  In Kibana, navigate to **Management > Fleet > Agents** and verify that the Elastic Agent is online and has a healthy status.
+1.  In Kibana, navigate to **Fleet > Agents** and verify that the Elastic Agent is online and has a healthy status.
 2.  Generate network traffic or activity on the host monitored by Zeek to trigger log generation.
-3.  Navigate to **Analytics > Discover**.
+3.  Navigate to **Discover**.
 4.  Select the `logs-*` data view.
 5.  Filter the results using a KQL query such as `data_stream.dataset : "zeek.connection"`.
-6.  Verify that events are appearing with recent timestamps and that the `event.dataset` field matches the expected data stream.
-7.  Check that protocol-specific fields are populated correctly (e.g., `source.ip`, `destination.ip`, `zeek.connection.id`).
-8.  Navigate to **Analytics > Dashboards** and search for "Zeek" to view the pre-built dashboards, such as the Network Traffic or Protocol Overview dashboards, and confirm they are populated with data.
+6.  Verify that events are appearing with recent timestamps.
+7.  Check that protocol-specific fields are populated correctly (for example, `source.ip`, `destination.ip`, `zeek.connection.id`).
+8.  Navigate to **Dashboards** and search for "Zeek" to view the pre-built dashboards, such as the Network Traffic or Protocol Overview dashboards, and confirm they are populated with data.
 
 ## Troubleshooting
 
@@ -252,6 +252,13 @@ In a high-volume environment, you may need to scale your `Zeek` deployment into 
 
 This integration supports the following inputs:
 {{ inputDocs }}
+
+### Vendor documentation links
+
+You can find more information about Zeek logs and configuration in the following resources:
+*   [Official Zeek Website](https://zeek.org/)
+*   [Zeek JSON Logs Policy Documentation](https://docs.zeek.org/en/lts/scripts/policy/tuning/json-logs.zeek.html)
+*   [Zeek Known Certs and Software Documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-certs-log)
 
 ### Data streams
 
@@ -607,7 +614,7 @@ The `smb_cmd` data stream provides events from Zeek smb_cmd logs, documenting in
 
 #### Smb files
 
-The `smb_files` data stream provides events from Zeek smb_files logs, tracking files accessed or transferred via SMB.
+The `smb_files` data stream provides events from Zeek smb_files logs, tracking files accessed or transferred using SMB.
 
 ##### Smb files fields
 
@@ -773,9 +780,3 @@ The `x509` data stream provides events from Zeek x509 logs, containing detailed 
 
 {{ event "x509" }}
 
-### Vendor documentation links
-
-You can find more information about Zeek logs and configuration in the following resources:
-*   [Official Zeek Website](https://zeek.org/)
-*   [Zeek JSON Logs Policy Documentation](https://docs.zeek.org/en/lts/scripts/policy/tuning/json-logs.zeek.html)
-*   [Zeek Known Certs and Software Documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-certs-log)
