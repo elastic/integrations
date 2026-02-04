@@ -11,6 +11,14 @@ of the OTel Collector.
 
 This integration can be used to collect logs from files.
 
+## British spellings test
+
+We need to optimise the system and customise the behaviour.
+
+## Word choice test
+
+Simply whitelist the IP and blacklist the domain. This is easy.
+
 ### How it works
 
 This integration tails and parses logs from files. Observed files are the ones
