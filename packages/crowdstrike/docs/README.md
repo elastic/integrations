@@ -1543,6 +1543,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ClientComputerName |  | keyword |
 | crowdstrike.ClientId |  | match_only_text |
 | crowdstrike.ClientProcessStartKey |  | keyword |
+| crowdstrike.CloudIndicator |  | boolean |
 | crowdstrike.CommandCount |  | match_only_text |
 | crowdstrike.CommandCountMax |  | match_only_text |
 | crowdstrike.CommandHistory |  | keyword |
@@ -1611,6 +1612,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.DirectoryEnumeratedCount |  | long |
 | crowdstrike.DllCharacteristics |  | keyword |
 | crowdstrike.DnsRequestCount |  | long |
+| crowdstrike.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.DnsResponseType |  | keyword |
 | crowdstrike.DocumentFileWrittenCount |  | long |
 | crowdstrike.DomainSid |  | keyword |
