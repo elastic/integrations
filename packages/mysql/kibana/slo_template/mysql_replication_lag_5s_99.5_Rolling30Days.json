@@ -1,0 +1,53 @@
+{
+  "attributes": {
+    "name": "mysql_replication_lag_5s_99.5_Rolling30Days",
+    "description": "This SLO tracks the replication lag of MySQL replicas, ensuring that 99.5% of 1-minute intervals over a rolling 30-day period have replication lag below 5 seconds. Replication lag, measured as the number of seconds a replica is behind the primary, reflects data freshness and the health of the replica. Maintaining low lag is critical for read-heavy workloads, geographically distributed replicas, or cases where stale data cannot be tolerated.\n",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"mysql.replica_status\" ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "mysql.replica_status.seconds_behind_source",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 5
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "mysql"
+    ],
+    "groupBy": [
+      "mysql.replica_status.source.server.id",
+      "mysql.replica_status.source.server.uuid"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mysql-df471c8c-e8d0-4a06-8a3c-44a4e0429bca"
+        }
+      ]
+    }
+  },
+  "id": "mysql_replication_lag_5s_99.5_Rolling30Days",
+  "type": "slo_template"
+}
