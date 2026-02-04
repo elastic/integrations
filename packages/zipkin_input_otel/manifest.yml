@@ -1,0 +1,46 @@
+format_version: 3.5.0
+name: zipkin_input_otel
+title: "Zipkin OpenTelemetry Input Package"
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: "Collect Zipkin traces using OpenTelemetry Collector"
+type: input
+categories:
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/zipkin_otellogo.svg
+    title: Zipkin OTel logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: zipkinreceiver
+    type: traces
+    title: Zipkin OpenTelemetry Input
+    description: Collect Zipkin traces using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: endpoint
+        type: text
+        title: Endpoint
+        required: true
+        description: The host:port address to listen on for Zipkin spans.
+        default: localhost:9411
+        show_user: true
+      - name: parse_string_tags
+        type: bool
+        title: Parse String Tags
+        required: false
+        description: If enabled, string tags/binary annotations will be parsed into int/bool/float types.
+        default: false
+        show_user: true
+owner:
+  github: elastic/ecosystem
+  type: elastic

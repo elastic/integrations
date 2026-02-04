@@ -1,0 +1,14 @@
+version: '2.3'
+services:
+  zipkin_input_otel:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_traces:/sample_traces:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:9411/api/v2/spans
+      - STREAM_WEBHOOK_HEADER=Content-Type=application/json
+      - STREAM_START_SIGNAL=SIGHUP
+      - STREAM_DELAY=10s
+    command: log /sample_traces/zipkin_spans.ndjson
