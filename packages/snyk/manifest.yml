@@ -1,7 +1,7 @@
 format_version: "3.3.2"
 name: snyk
 title: "Snyk"
-version: "3.2.0"
+version: "3.3.0"
 description: Collect logs from Snyk with Elastic Agent.
 type: integration
 categories:
@@ -34,6 +34,29 @@ policy_templates:
         title: Collect data from Snyk API
         description: Collect Audit Logs and Issues data from the Snyk REST API
         vars:
+          - name: oauth_enable
+            type: bool
+            title: Enable OAuth
+            multi: false
+            required: false
+            show_user: false
+            default: false
+            description: Enable OAuth authentication. client id and client secret are required.
+          - name: client_id
+            type: text
+            title: Client id
+            multi: false
+            required: false
+            show_user: false
+            description: Client id for OAuth authentication. Required if Enable OAuth toggle is on.
+          - name: client_secret
+            type: password
+            title: Client secret
+            multi: false
+            required: false
+            show_user: false
+            description: Client secret for OAuth authentication. Required if Enable OAuth toggle is on.
+            secret: true
           - name: url
             type: text
             title: Base URL of Snyk API Server
@@ -54,8 +77,9 @@ policy_templates:
             title: Snyk API Token
             multi: false
             show_user: true
-            required: true
+            required: false
             secret: true
+            description: API token for authentication. Required if Enable OAuth toggle is off.
           - name: http_client_timeout
             type: text
             title: HTTP Client Timeout

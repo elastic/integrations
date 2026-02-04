@@ -21,6 +21,11 @@ state:
   version: "2024-04-29"
   audit_id: {{audit_id}}
   api_token: {{api_token}}
+  oauth_enable: {{oauth_enable}}
+{{#if oauth_enable}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+{{/if}}
 {{#if first_interval}}
   lookback: {{first_interval}}
 {{/if}}
@@ -48,12 +53,48 @@ redact:
 max_executions: {{max_executions}}
 {{/if}}
 program: |
-  state.with({
-    "Header": {
-      "Accept": ["application/vnd.api+json"],
-      "Authorization": ["Token " + state.api_token],
-    }
-  }.as(auth_header,
+  state.with(
+    (
+      state.oauth_enable ?
+        post_request(
+          state.url.trim_right("/") + "/oauth2/token",
+          "application/x-www-form-urlencoded",
+          "grant_type=client_credentials&client_id=" + state.client_id + "&client_secret=" + state.client_secret
+        ).do_request().as(token_resp,
+          token_resp.StatusCode == 200 ?
+            bytes(token_resp.Body).decode_json().access_token.as(token,
+              {
+                "Header": {
+                  "Accept": ["application/vnd.api+json"],
+                  "Authorization": ["Bearer " + token]
+                }
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(token_resp.StatusCode),
+                  "id": string(token_resp.Status),
+                  "message": "POST /oauth2/token :" +(
+                    size(token_resp.Body) != 0 ?
+                      string(token_resp.Body)
+                    :
+                      string(token_resp.Status) + ' (' + string(token_resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      :
+        {
+          "Header": {
+              "Accept": ["application/vnd.api+json"],
+              "Authorization": ["Token " + state.api_token]
+            }
+        }
+    ).as(auth_header, has(auth_header.error) ? auth_header : // Exit early due to Oauth authentication failure.
     (
       has(state.work_list) ?
         // We have a work-list, do that first.
