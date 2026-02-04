@@ -2,7 +2,7 @@
 
 ## Common use cases
 
-The Cisco ISE integration collects and parses security and operational data from Cisco Identity Services Engine via Syslog, enabling centralized monitoring and analysis of network access, authentication, and accounting events within the Elastic Stack.
+The Cisco ISE integration collects and parses security and operational data from Cisco Identity Services Engine using Syslog, enabling centralized monitoring and analysis of network access, authentication, and accounting events within the Elastic Stack.
 
 -   **Monitor Authentication and Authorization Events:** Track successful and failed authentication attempts, authorization policies applied, and user access details to identify potential security breaches or policy violations.
 -   **Analyze Network Access Behavior:** Gain insights into who is accessing the network, from where, and with what devices, by collecting detailed accounting data from Cisco ISE.
@@ -12,9 +12,9 @@ The Cisco ISE integration collects and parses security and operational data from
 ## Data types collected
 
 This integration can collect the following types of data:
-- **Cisco_ISE logs** (type: logs, input: tcp): Collect Cisco ISE logs via TCP input. This datastream includes authentication, authorization, accounting (AAA) events, system messages, and policy-related logs.
-- **Cisco_ISE logs** (type: logs, input: udp): Collect Cisco ISE logs via UDP input. This datastream includes authentication, authorization, accounting (AAA) events, system messages, and policy-related logs.
-- **Cisco_ISE logs** (type: logs, input: filestream): Collect Cisco ISE logs via file input. This datastream collects logs from local files, typically used when direct syslog forwarding is not preferred or for ingesting historical data.
+- **Cisco_ISE logs** (type: logs, input: tcp): Collect Cisco ISE logs by TCP input. This datastream includes authentication, authorization, accounting (AAA) events, system messages, and policy-related logs.
+- **Cisco_ISE logs** (type: logs, input: udp): Collect Cisco ISE logs by UDP input. This datastream includes authentication, authorization, accounting (AAA) events, system messages, and policy-related logs.
+- **Cisco_ISE logs** (type: logs, input: filestream): Collect Cisco ISE logs by file input. This datastream collects logs from local files, typically used when direct syslog forwarding is not preferred or for ingesting historical data.
 
 ## Compatibility
 
@@ -45,7 +45,7 @@ This integration has been tested against and is compatible with **Cisco Identity
 
 ### For Syslog (TCP/UDP) Collection:
 
-Cisco ISE sends logs to external syslog servers by defining a "Remote Logging Target." This target specifies the destination server (Elastic Agent) and the protocol. After creating the target, you must assign it to the relevant log categories to start the log flow.
+Cisco ISE sends logs to external syslog servers by defining a "Remote Logging Target". This target specifies the destination server (Elastic Agent) and the protocol. After creating the target, you must assign it to the relevant log categories to start the log flow.
 
 1.  Log in to your Cisco ISE Administration Interface.
 2.  Navigate to **Administration > System > Logging > Remote Logging Targets**.
@@ -60,7 +60,7 @@ Cisco ISE sends logs to external syslog servers by defining a "Remote Logging Ta
     *   **Maximum Length**: **CRITICAL** - Set this value to `8192` bytes to prevent log messages from being truncated, which can lead to parsing errors.
 5.  Click **Save** to create the target. Acknowledge any warning about creating an unsecure (TCP/UDP) connection if it appears.
 6.  Next, assign the new target to the log categories you wish to export. Navigate to **Administration > System > Logging > Logging Categories**.
-7.  For each category you want to forward, select it from the list (e.g., `Passed Authentications`, `Failed Attempts`, `Radius Accounting`).
+7.  For each category you want to forward, select it from the list (for example, `Passed Authentications`, `Failed Attempts`, `Radius Accounting`).
 8.  In the edit view for the category, find the **Targets** section.
 9.  Move your newly created target (e.g., `elastic-agent-syslog`) from the **Available** list to the **Selected** list using the arrow icon.
 10. Click **Save** for that category.
@@ -87,8 +87,8 @@ If direct Syslog forwarding is not feasible or desired, logs can be collected fr
 4. Follow the prompts to add the integration to an existing Elastic Agent policy or create a new one.
 5. Choose your desired input type based on how Cisco ISE is configured to send logs, and configure the following fields:
 
-### Collecting Cisco ISE logs via TCP input.
-To collect logs via TCP, configure the following:
+### Collecting Cisco ISE logs by TCP input.
+To collect logs by TCP, configure the following:
 -   **Listen Address** (`listen_address`): The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
 -   **Listen Port** (`listen_port`): The TCP port number to listen on. Default: `9025`.
 -   **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event, added to the field `event.original`. Default: `False`.
@@ -96,8 +96,8 @@ To collect logs via TCP, configure the following:
 -   **Tags** (`tags`): Default: `['forwarded', 'cisco_ise-log']`.
 -   **Processors** (`processors`): Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-### Collecting Cisco ISE logs via UDP input.
-To collect logs via UDP, configure the following:
+### Collecting Cisco ISE logs by UDP input.
+To collect logs by UDP, configure the following:
 -   **Listen Address** (`listen_address`): The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
 -   **Listen Port** (`listen_port`): The UDP port number to listen on. Default: `9026`.
 -   **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event, added to the field `event.original`. Default: `False`.
@@ -127,7 +127,7 @@ After configuration is complete, follow these steps to verify data is flowing co
 1.  **Generate a successful authentication event:** Authenticate a test user or device against Cisco ISE. For example, log in to a network device or wireless network controlled by ISE.
 2.  **Generate a failed authentication event:** Attempt to log in with incorrect credentials for a test user or device.
 3.  **Perform an administrative action:** Log in to the Cisco ISE Administrator Portal and make a minor configuration change, then save it (e.g., enable/disable a logging category, then revert the change).
-4.  **Initiate a RADIUS accounting session:** If applicable, connect a device that generates RADIUS accounting start/stop messages via ISE.
+4.  **Initiate a RADIUS accounting session:** If applicable, connect a device that generates RADIUS accounting start/stop messages using ISE.
 
 ### 2. Check Data in Kibana:
 1.  Navigate to **Analytics > Discover**.
@@ -135,7 +135,7 @@ After configuration is complete, follow these steps to verify data is flowing co
 3.  Enter the following KQL filter: `data_stream.dataset : "cisco_ise.log"`
 4.  Verify logs appear in the results. Expand a log entry and confirm these fields are populated:
     -   `event.dataset` (should be `cisco_ise.log`)
-    -   `source.ip` and/or `destination.ip`
+    -   `source.ip` and `destination.ip`
     -   `event.action` or `event.outcome`
     -   `cisco_ise.event_id` or `cisco_ise.message_code` (for specific ISE event identification)
     -   `message` (containing the raw log payload)
@@ -156,8 +156,8 @@ After configuration is complete, follow these steps to verify data is flowing co
     -   **Cause**: Firewalls (host-based or network), routing issues, or incorrect IP address/hostname configuration can prevent Cisco ISE from reaching the Elastic Agent's listening port.
     -   **Solution**:
         -   Verify the **IP Address / Hostname** of the Elastic Agent host is correctly entered in the Cisco ISE remote logging target.
-        -   Check firewall rules on both the Cisco ISE server and the Elastic Agent host to ensure the configured syslog port (e.g., 9025 TCP, 9026 UDP) is open and accessible.
-        -   Perform network tests (e.g., `ping`, `telnet` to the syslog port from Cisco ISE CLI) to confirm connectivity.
+        -   Check firewall rules on both the Cisco ISE server and the Elastic Agent host to ensure the configured syslog port (for example, 9025 TCP, 9026 UDP) is open and accessible.
+        -   Perform network tests (for example, `ping`, `telnet` to the syslog port from Cisco ISE CLI) to confirm connectivity.
 -   **Logging Categories Not Enabled**:
     -   **Cause**: Even if a remote logging target is configured, Cisco ISE will not send logs unless specific logging categories (e.g., `Passed Authentications`, `Failed Attempts`) are explicitly assigned to that target.
     -   **Solution**: Navigate to **Administration > System > Logging > Logging Categories** in the Cisco ISE Administrator Portal. For each desired log category, ensure your `elastic-agent-syslog` target is selected in the "Remote Logging Targets" list for that category.
