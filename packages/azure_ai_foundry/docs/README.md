@@ -273,7 +273,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.ai_foundry.properties.backend_response_body.error.param | Parameter passed to the API. | keyword |
 | azure.ai_foundry.properties.backend_response_body.error.status | The response status code. | long |
 | azure.ai_foundry.properties.backend_response_body.id | A unique identifier for the request. | keyword |
-| azure.ai_foundry.properties.backend_response_body.model | The ID of the Azure AI Foundry model used to generate the response. | keyword |
+| azure.ai_foundry.properties.backend_response_body.model | The ID of the Microsoft Foundry model used to generate the response. | keyword |
 | azure.ai_foundry.properties.backend_response_body.object | The operation type. | keyword |
 | azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.hate.filtered | True if the content filtered based on severity level. | boolean |
 | azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.hate.severity | The severity levels (safe, low, medium, and high) for hate category. | keyword |
@@ -294,14 +294,14 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.ai_foundry.properties.backend_response_body.usage.total_tokens | The sum of input and output tokens. | long |
 | azure.ai_foundry.properties.backend_response_code | The backend HTTP response code. | long |
 | azure.ai_foundry.properties.backend_time | The backend response time. | long |
-| azure.ai_foundry.properties.backend_url | The backend URL connects to the Azure AI Foundry model. | keyword |
+| azure.ai_foundry.properties.backend_url | The backend URL connects to the Microsoft Foundry model. | keyword |
 | azure.ai_foundry.properties.cache | The request cache. | keyword |
 | azure.ai_foundry.properties.client_protocol | The client HTTP protocol. | keyword |
 | azure.ai_foundry.properties.client_tls_cipher_suite | The client TLS Cipher Suite. | keyword |
 | azure.ai_foundry.properties.client_tls_version | The client TLS version. | keyword |
 | azure.ai_foundry.properties.model_deployment_name | The deployed model name. | keyword |
-| azure.ai_foundry.properties.model_name | The Azure AI Foundry model. | keyword |
-| azure.ai_foundry.properties.model_version | The Azure AI Foundry model version. | keyword |
+| azure.ai_foundry.properties.model_name | The Microsoft Foundry model. | keyword |
+| azure.ai_foundry.properties.model_version | The Microsoft Foundry model version. | keyword |
 | azure.ai_foundry.properties.object_id | The object id of the request. | keyword |
 | azure.ai_foundry.properties.operation_id | The operation performed. | keyword |
 | azure.ai_foundry.properties.request_length | Length of the request. | double |
