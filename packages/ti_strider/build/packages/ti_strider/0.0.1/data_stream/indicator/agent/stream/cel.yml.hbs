@@ -25,13 +25,23 @@ program: |
       }.encode_json()
     ).as(
       auth_resp,
-      auth_resp.StatusCode != 200 ? {
-        "events": {
-          "error": {
-            "message": "Auth error: " + string(auth_resp.Body)
-          }
+      auth_resp.StatusCode == 200 ?
+        auth_resp.Body.decode_json()
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(auth_resp.StatusCode),
+              "id": string(auth_resp.Status),
+              "message": "POST " + state.auth_url + ": " + (
+                size(auth_resp.Body) != 0 ?
+                  string(auth_resp.Body)
+                :
+                  string(auth_resp.Status) + " (" + string(auth_resp.StatusCode) + ")"
+              ),
+            },
+          },
         }
-      } : auth_resp.Body.decode_json()
     ).as(
       auth_resp,
       get_request(state.url)
@@ -43,18 +53,31 @@ program: |
         .do_request()
         .as(
           api_resp,
-          api_resp.StatusCode != 200 ? {
-            "events": {
-              "error": {
-                "message": "API error: " + string(api_resp.Body)
+          api_resp.StatusCode == 200 ?
+            api_resp.Body.decode_json().as(
+              body,
+              {
+                "events":
+                  body.emailAddresses +
+                  body.emailDomains +
+                  body.terms
               }
-            } 
-          } : {
-            "events":
-              api_resp.Body.decode_json().emailAddresses +
-              api_resp.Body.decode_json().emailDomains +
-              api_resp.Body.decode_json().terms
-          }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(api_resp.StatusCode),
+                  "id": string(api_resp.Status),
+                  "message": "GET " + state.url + ": " + (
+                    size(api_resp.Body) != 0 ?
+                      string(api_resp.Body)
+                    :
+                      string(api_resp.Status) + " (" + string(api_resp.StatusCode) + ")"
+                  ),
+                },
+              },
+            }
         )
     )
   )

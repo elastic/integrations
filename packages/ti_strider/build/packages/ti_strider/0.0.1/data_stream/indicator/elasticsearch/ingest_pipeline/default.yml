@@ -3,39 +3,39 @@ description: Ingest pipeline for Strider IOCs
 processors:
   - rename:
       field: md5
-      target_field: ioc.md5
+      target_field: ti_strider.indicator.md5
       
   - rename:
       field: riskSignal
-      target_field: ioc.risk_signal
+      target_field: ti_strider.indicator.risk_signal
       
   - rename:
       field: itemType
-      target_field: ioc.type
+      target_field: ti_strider.indicator.type
       
   - rename:
       field: itemNamePrimary
-      target_field: ioc.name_primary
+      target_field: ti_strider.indicator.name_primary
      
   - rename:
       field: itemNameSecondary
-      target_field: ioc.name_secondary_raw
+      target_field: ti_strider.indicator.name_secondary_raw
       
   - rename:
       field: dates_added
-      target_field: ioc.dates_added
+      target_field: ti_strider.indicator.dates_added
       
   - rename:
       field: isNew
-      target_field: ioc.is_new
+      target_field: ti_strider.indicator.is_new
       
   - rename:
       field: changes
-      target_field: ioc.changes    
+      target_field: ti_strider.indicator.changes    
 
   - json:
-      field: ioc.name_secondary_raw
-      target_field: ioc.name_secondary
+      field: ti_strider.indicator.name_secondary_raw
+      target_field: ti_strider.indicator.name_secondary
       add_to_root: false
 
   - script:
@@ -45,15 +45,26 @@ processors:
       source: |
         ZonedDateTime now = ZonedDateTime.parse(ctx['@timestamp']);
         if (ctx.archive == 1) {
-          ctx.ioc.expires_at = now;
+          ctx['ti_strider']['indicator']['expires_at'] = now;
         } else {
-          ctx.ioc.expires_at = now.plusDays(90);
+          ctx['ti_strider']['indicator']['expires_at'] = now.plusDays(90);
         }
       
   - remove:
-      field: ioc.name_secondary_raw
+      field: ti_strider.indicator.name_secondary_raw
       
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "Pipeline failed on field renaming or parsing"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
