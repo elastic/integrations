@@ -1,0 +1,35 @@
+receivers:
+  jaeger:
+    protocols:
+      {{#if grpc_enabled}}
+      grpc:
+        endpoint: {{grpc_endpoint}}
+      {{/if}}
+      {{#if thrift_http_enabled}}
+      thrift_http:
+        endpoint: {{thrift_http_endpoint}}
+      {{/if}}
+      {{#if thrift_binary_enabled}}
+      thrift_binary:
+        endpoint: {{thrift_binary_endpoint}}
+        queue_size: {{thrift_binary_queue_size}}
+        max_packet_size: {{thrift_binary_max_packet_size}}
+        workers: {{thrift_binary_workers}}
+        socket_buffer_size: {{thrift_binary_socket_buffer_size}}
+      {{/if}}
+      {{#if thrift_compact_enabled}}
+      thrift_compact:
+        endpoint: {{thrift_compact_endpoint}}
+        queue_size: {{thrift_compact_queue_size}}
+        max_packet_size: {{thrift_compact_max_packet_size}}
+        workers: {{thrift_compact_workers}}
+        socket_buffer_size: {{thrift_compact_socket_buffer_size}}
+      {{/if}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    traces:
+      receivers: [jaeger]
+      processors: [resourcedetection/system]

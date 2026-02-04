@@ -1,0 +1,51 @@
+connectors:
+    forward: {}
+exporters:
+    elasticsearch/componentid-0: {}
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - traces-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+    transform/componentid-1:
+        trace_statements:
+            - context: span
+              statements:
+                - set(attributes["data_stream.type"], "traces")
+                - set(attributes["data_stream.dataset"], "jaeger_otel_input.jaegerreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    jaeger/componentid-0:
+        protocols:
+            grpc:
+                endpoint: localhost:14250
+secret_references: []
+service:
+    pipelines:
+        traces:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        traces/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - jaeger/componentid-0

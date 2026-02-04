@@ -1,0 +1,140 @@
+format_version: 3.5.0
+name: jaeger_otel_input
+title: "Jaeger OpenTelemetry Input Package"
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: "Jaeger OpenTelemetry Input Package"
+type: input
+categories:
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/jaeger_otellogo.svg
+    title: Jaeger OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: jaegerreceiver
+    type: traces
+    title: Jaeger OpenTelemetry Input
+    description: Collect Jaeger traces using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      # gRPC protocol (default endpoint localhost:14250)
+      - name: grpc_enabled
+        type: bool
+        required: false
+        title: Enable gRPC protocol
+        description: Receive traces over gRPC. At least one protocol must be enabled.
+        default: true
+      - name: grpc_endpoint
+        type: text
+        required: false
+        title: gRPC endpoint
+        description: Endpoint for the Jaeger gRPC protocol.
+        default: localhost:14250
+      # Thrift HTTP protocol (default endpoint localhost:14268)
+      - name: thrift_http_enabled
+        type: bool
+        required: false
+        title: Enable Thrift HTTP protocol
+        description: Receive traces over Thrift HTTP.
+        default: false
+      - name: thrift_http_endpoint
+        type: text
+        required: false
+        title: Thrift HTTP endpoint
+        description: Endpoint for the Jaeger Thrift HTTP protocol.
+        default: localhost:14268
+      # Thrift Binary UDP protocol (default endpoint localhost:6832)
+      - name: thrift_binary_enabled
+        type: bool
+        required: false
+        title: Enable Thrift Binary UDP protocol
+        description: Receive traces over Thrift Binary UDP (e.g. Jaeger agent).
+        default: false
+      - name: thrift_binary_endpoint
+        type: text
+        required: false
+        title: Thrift Binary UDP endpoint
+        description: Endpoint for the Jaeger Thrift Binary UDP protocol.
+        default: localhost:6832
+      - name: thrift_binary_queue_size
+        type: integer
+        required: false
+        title: Thrift Binary queue size
+        description: Max not yet handled requests for Thrift Binary UDP (default 1000).
+        default: 1000
+        show_user: false
+      - name: thrift_binary_max_packet_size
+        type: integer
+        required: false
+        title: Thrift Binary max packet size
+        description: Max UDP packet size in bytes for Thrift Binary (default 65000).
+        default: 65000
+        show_user: false
+      - name: thrift_binary_workers
+        type: integer
+        required: false
+        title: Thrift Binary workers
+        description: Number of workers consuming the Thrift Binary UDP queue (default 10).
+        default: 10
+        show_user: false
+      - name: thrift_binary_socket_buffer_size
+        type: integer
+        required: false
+        title: Thrift Binary socket buffer size
+        description: Buffer size of the Thrift Binary UDP connection socket in bytes (0 = no buffer).
+        default: 0
+        show_user: false
+      # Thrift Compact UDP protocol (default endpoint localhost:6831)
+      - name: thrift_compact_enabled
+        type: bool
+        required: false
+        title: Enable Thrift Compact UDP protocol
+        description: Receive traces over Thrift Compact UDP (e.g. Jaeger agent).
+        default: false
+      - name: thrift_compact_endpoint
+        type: text
+        required: false
+        title: Thrift Compact UDP endpoint
+        description: Endpoint for the Jaeger Thrift Compact UDP protocol.
+        default: localhost:6831
+      - name: thrift_compact_queue_size
+        type: integer
+        required: false
+        title: Thrift Compact queue size
+        description: Max not yet handled requests for Thrift Compact UDP (default 1000).
+        default: 1000
+        show_user: false
+      - name: thrift_compact_max_packet_size
+        type: integer
+        required: false
+        title: Thrift Compact max packet size
+        description: Max UDP packet size in bytes for Thrift Compact (default 65000).
+        default: 65000
+        show_user: false
+      - name: thrift_compact_workers
+        type: integer
+        required: false
+        title: Thrift Compact workers
+        description: Number of workers consuming the Thrift Compact UDP queue (default 10).
+        default: 10
+        show_user: false
+      - name: thrift_compact_socket_buffer_size
+        type: integer
+        required: false
+        title: Thrift Compact socket buffer size
+        description: Buffer size of the Thrift Compact UDP connection socket in bytes (0 = no buffer).
+        default: 0
+        show_user: false
+owner:
+  github: elastic/ecosystem
+  type: elastic
