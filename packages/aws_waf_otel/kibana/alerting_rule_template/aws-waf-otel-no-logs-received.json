@@ -1,0 +1,28 @@
+{
+    "id": "aws-waf-otel-no-logs-received",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[AWS WAF OTEL] High request rate from single source IP",
+        "tags": ["AWS", "AWS WAF", "OTel"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alerts when no WAF logs are received for 10 minutes, indicating potential logging pipeline issues, WAF misconfiguration, or complete traffic loss. Loss of visibility into WAF logs is a critical operational and security concern.\nFROM logs-aws.waf.otel-default | STATS log_count = COUNT(*), last_seen = MAX(@timestamp) BY cloud.resource_id, cloud.region | EVAL minutes_ago = DATE_DIFF(\"minutes\", last_seen, NOW()) | WHERE minutes_ago > 10 OR log_count == 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

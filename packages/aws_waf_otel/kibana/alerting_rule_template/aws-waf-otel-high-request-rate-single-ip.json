@@ -1,0 +1,28 @@
+{
+    "id": "aws-waf-otel-high-request-rate-single-ip",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[AWS WAF OTEL] High request rate from single source IP",
+        "tags": ["AWS", "AWS WAF", "OTel"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "10m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alerts when a single IP address generates more than 500 requests in 10 minutes, indicating potential brute force attack, web scraping, or DDoS activity. Normal users rarely exceed 100 requests in 10 minutes.\n// You can adjust the threshold value by modifying the request_count in the WHERE clause.\nFROM logs-aws.waf.otel-default | WHERE client.address IS NOT NULL | STATS request_count = COUNT(*) BY client.address | WHERE request_count > 500 | SORT request_count DESC | LIMIT 20"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
