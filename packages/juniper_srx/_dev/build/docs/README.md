@@ -30,6 +30,35 @@ The Juniper SRX integration collects log messages in structured-data format from
 *   Security intelligence logs: Data related to security intelligence actions (`RT_SECINTEL`).
 *   Juniper SRX logs: Captures all the security and system processes mentioned above in structured-data format.
 
+The following processes and tags are supported:
+
+| JunOS processes | JunOS tags                                |
+|-----------------|-------------------------------------------|
+| RT_FLOW         | RT_FLOW_SESSION_CREATE                    |
+|                 | RT_FLOW_SESSION_CLOSE                     |
+|                 | RT_FLOW_SESSION_DENY                      |
+|                 | APPTRACK_SESSION_CREATE                   |
+|                 | APPTRACK_SESSION_CLOSE                    |
+|                 | APPTRACK_SESSION_VOL_UPDATE               |
+| RT_IDS          | RT_SCREEN_TCP                             |
+|                 | RT_SCREEN_UDP                             |
+|                 | RT_SCREEN_ICMP                            |
+|                 | RT_SCREEN_IP                              |
+|                 | RT_SCREEN_TCP_DST_IP                      |
+|                 | RT_SCREEN_TCP_SRC_IP                      |
+| RT_UTM          | WEBFILTER_URL_PERMITTED                   |
+|                 | WEBFILTER_URL_BLOCKED                     |
+|                 | AV_VIRUS_DETECTED_MT                      |
+|                 | CONTENT_FILTERING_BLOCKED_MT              |
+|                 | ANTISPAM_SPAM_DETECTED_MT                 |
+| RT_IDP          | IDP_ATTACK_LOG_EVENT                      |
+|                 | IDP_APPDDOS_APP_STATE_EVENT               |
+| RT_AAMW         | SRX_AAMW_ACTION_LOG                       |
+|                 | AAMW_MALWARE_EVENT_LOG                    |
+|                 | AAMW_HOST_INFECTED_EVENT_LOG              |
+|                 | AAMW_ACTION_LOG                           |
+| RT_SECINTEL     | SECINTEL_ACTION_LOG                       |
+
 ### Supported use cases
 
 Integrating your Juniper SRX logs with the Elastic Stack provides several security and operational benefits. You can use this integration for the following:
@@ -168,13 +197,13 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ### Common configuration issues
 
-You may encounter the following issues when configuring the Juniper SRX integration:
+You might encounter the following issues when configuring the Juniper SRX integration:
 - Missing structured data format: If logs appear in Kibana as a raw string in the `message` field and are not parsed, ensure you've committed the `set system syslog host <IP> structured-data brief` command on the SRX device. This integration requires the `structured-data` format to identify fields.
-- Security logs not sent: If you receive system logs but traffic or IDP logs (like `RT_FLOW` or `RT_IDS`) are missing, verify that `set security log mode event` is configured in the Junos CLI. By default, SRX devices may send security logs using the data plane, bypassing system syslog settings.
+- Security logs not sent: If you receive system logs but traffic or IDP logs (like `RT_FLOW` or `RT_IDS`) are missing, verify that `set security log mode event` is configured in the Junos CLI. By default, SRX devices might send security logs using the data plane, bypassing system syslog settings.
 - Port mismatch: Confirm that the port configured on the Juniper SRX (for example, `set system syslog host <IP> port 9006`) matches the `syslog_port` value in your Elastic Agent integration settings.
 - Network connectivity issues: Verify there are no firewalls or network Access Control Lists (ACLs) blocking UDP or TCP traffic on port `9006` between the SRX management interface and the Elastic Agent host.
 - Parsing failures: Check the `error.message` field in Kibana. If it contains "Provided Grok expressions do not match", it typically indicates the device is sending logs in standard syslog format instead of the required `structured-data` format.
-- Incomplete or truncated logs: If log messages are cut off, you may need to increase the `max_message_size` in the integration's UDP or TCP options to accommodate large structured-data payloads.
+- Incomplete or truncated logs: If log messages are cut off, you might need to increase the `max_message_size` in the integration's UDP or TCP options to accommodate large structured-data payloads.
 
 ### Vendor resources
 

@@ -42,7 +42,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 ## Elastic prerequisites
 
 - Elastic Agent must be installed and enrolled in Fleet or running in standalone mode.
-- The Juniper SRX integration package (version 1.26.0 or higher) must be installed in Kibana.
+- The Juniper SRX integration package (version 1.26.0 or later) must be installed in Kibana.
 - Network access must be available for the Agent to receive inbound syslog traffic on the specified port.
 
 ## Vendor set up steps
@@ -85,7 +85,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 
 ## Kibana set up steps
 
-Enable and configure the input method which matches your Juniper configuration. Disable input types which will not be used.
+Enable and configure the input method which matches your Juniper configuration. Deselect input types which will not be used.
 
 ### Collecting syslog from Juniper SRX via UDP.
 1. In Kibana, navigate to **Integrations** and search for **Juniper SRX**.
