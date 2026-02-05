@@ -1,10 +1,10 @@
 # Kafka Connect Integration
 
-This integration collects metrics from Kafka Connect via the Jolokia JMX bridge.
+This integration collects metrics from Kafka Connect using the Jolokia JMX bridge.
 
 ## Compatibility
 
-This integration has been tested with Kafka Connect version 2.8.x and 3.x, but should work with any version that exposes JMX metrics via Jolokia.
+This integration has been tested with Kafka Connect version 2.8.x and 3.x, but should work with any version that exposes JMX metrics using Jolokia.
 
 ## Requirements
 
@@ -24,7 +24,7 @@ The `worker` data stream collects metrics related to the Kafka Connect worker, i
 
 **ECS Field Reference**
 
-Please refer to the following document for detailed information on ECS fields:
+Refer to the following document for detailed information on ECS fields:
 https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html
 
 **Exported fields**
@@ -56,7 +56,7 @@ The `connector` data stream collects metrics related to individual connectors. T
 | kafka_connect.connector.class   | The fully qualified class name of the connector implementation | keyword |
 | kafka_connect.connector.type    | The type of the connector                                      | keyword |
 | kafka_connect.connector.version | The version of the connector                                   | keyword |
-| kafka_connect.connector.status  | The status of the connector (e.g., running, paused, failed)    | keyword |
+| kafka_connect.connector.status  | The status of the connector (for example: running, paused, failed)    | keyword |
 
 ### Task
 
@@ -127,4 +127,4 @@ The `client` data stream collects Kafka client metrics from the Kafka Connect wo
 
 ## Logs
 
-This integration does not currently collect logs. It focuses on metrics collection via Jolokia.
+This integration does not currently collect logs. It focuses on metrics collection using Jolokia.
