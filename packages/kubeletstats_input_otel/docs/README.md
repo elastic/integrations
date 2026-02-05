@@ -12,7 +12,7 @@ This package configures the Kubelet Stats receiver in the EDOT (Elastic Distribu
 
 ## Configuration
 
-For the full list of settings exposed for the receiver and exampples, refer to the [configuration](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kubeletstatsreceiver#configuration) section.
+For the full list of settings exposed for the receiver and examples, refer to the [configuration](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kubeletstatsreceiver#configuration) section.
 
 ## Reference
 
