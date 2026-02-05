@@ -197,13 +197,13 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ### Common configuration issues
 
-You may encounter the following issues when configuring the Juniper SRX integration:
+You might encounter the following issues when configuring the Juniper SRX integration:
 - Missing structured data format: If logs appear in Kibana as a raw string in the `message` field and are not parsed, ensure you've committed the `set system syslog host <IP> structured-data brief` command on the SRX device. This integration requires the `structured-data` format to identify fields.
-- Security logs not sent: If you receive system logs but traffic or IDP logs (like `RT_FLOW` or `RT_IDS`) are missing, verify that `set security log mode event` is configured in the Junos CLI. By default, SRX devices may send security logs using the data plane, bypassing system syslog settings.
+- Security logs not sent: If you receive system logs but traffic or IDP logs (like `RT_FLOW` or `RT_IDS`) are missing, verify that `set security log mode event` is configured in the Junos CLI. By default, SRX devices might send security logs using the data plane, bypassing system syslog settings.
 - Port mismatch: Confirm that the port configured on the Juniper SRX (for example, `set system syslog host <IP> port 9006`) matches the `syslog_port` value in your Elastic Agent integration settings.
 - Network connectivity issues: Verify there are no firewalls or network Access Control Lists (ACLs) blocking UDP or TCP traffic on port `9006` between the SRX management interface and the Elastic Agent host.
 - Parsing failures: Check the `error.message` field in Kibana. If it contains "Provided Grok expressions do not match", it typically indicates the device is sending logs in standard syslog format instead of the required `structured-data` format.
-- Incomplete or truncated logs: If log messages are cut off, you may need to increase the `max_message_size` in the integration's UDP or TCP options to accommodate large structured-data payloads.
+- Incomplete or truncated logs: If log messages are cut off, you might need to increase the `max_message_size` in the integration's UDP or TCP options to accommodate large structured-data payloads.
 
 ### Vendor resources
 
