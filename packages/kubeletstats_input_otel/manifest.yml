@@ -132,34 +132,28 @@ policy_templates:
             text: Service Account
           - value: kubeConfig
             text: Kube Config
-      - name: metrics_container_cpu_node_utilization
-        type: bool
-        title: Enable Container CPU Node Utilization Metric
-        description: Enable the k8s.container.cpu.node.utilization metric. Requires node and k8s_api_config to be configured.
+      - name: k8s_api_config_context
+        type: text
+        title: Kubernetes API Context
+        description: The kubeconfig context to use when k8s_api_config_auth_type is kubeConfig. If not specified, the current or default context is used.
         required: false
         show_user: false
-        default: false
-      - name: metrics_pod_cpu_node_utilization
-        type: bool
-        title: Enable Pod CPU Node Utilization Metric
-        description: Enable the k8s.pod.cpu.node.utilization metric. Requires node and k8s_api_config to be configured.
+      - name: metrics
+        type: yaml
+        title: Metrics Configuration
+        description: |
+          Configuration for enabling optional metrics. The node utilization metrics require `node` and `k8s_api_config` to be configured.
+          Example:
+            k8s.container.cpu.node.utilization:
+              enabled: true
+            k8s.pod.cpu.node.utilization:
+              enabled: true
+            k8s.container.memory.node.utilization:
+              enabled: true
+            k8s.pod.memory.node.utilization:
+              enabled: true
         required: false
         show_user: false
-        default: false
-      - name: metrics_container_memory_node_utilization
-        type: bool
-        title: Enable Container Memory Node Utilization Metric
-        description: Enable the k8s.container.memory.node.utilization metric. Requires node and k8s_api_config to be configured.
-        required: false
-        show_user: false
-        default: false
-      - name: metrics_pod_memory_node_utilization
-        type: bool
-        title: Enable Pod Memory Node Utilization Metric
-        description: Enable the k8s.pod.memory.node.utilization metric. Requires node and k8s_api_config to be configured.
-        required: false
-        show_user: false
-        default: false
       - name: collect_all_network_interfaces_pod
         type: bool
         title: Collect All Pod Network Interfaces

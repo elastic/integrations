@@ -37,51 +37,16 @@ receivers:
 {{#if k8s_api_config_auth_type}}
     k8s_api_config:
       auth_type: {{k8s_api_config_auth_type}}
+{{#if k8s_api_config_context}}
+      context: {{k8s_api_config_context}}
+{{/if}}
 {{/if}}
     collect_all_network_interfaces:
       pod: {{collect_all_network_interfaces_pod}}
       node: {{collect_all_network_interfaces_node}}
-{{#if metrics_container_cpu_node_utilization}}
-    metrics:
-      k8s.container.cpu.node.utilization:
-        enabled: true
-{{#if metrics_pod_cpu_node_utilization}}
-      k8s.pod.cpu.node.utilization:
-        enabled: true
+{{#if metrics}}
+    metrics: {{metrics}}
 {{/if}}
-{{#if metrics_container_memory_node_utilization}}
-      k8s.container.memory.node.utilization:
-        enabled: true
-{{/if}}
-{{#if metrics_pod_memory_node_utilization}}
-      k8s.pod.memory.node.utilization:
-        enabled: true
-{{/if}}
-{{else}}{{#if metrics_pod_cpu_node_utilization}}
-    metrics:
-      k8s.pod.cpu.node.utilization:
-        enabled: true
-{{#if metrics_container_memory_node_utilization}}
-      k8s.container.memory.node.utilization:
-        enabled: true
-{{/if}}
-{{#if metrics_pod_memory_node_utilization}}
-      k8s.pod.memory.node.utilization:
-        enabled: true
-{{/if}}
-{{else}}{{#if metrics_container_memory_node_utilization}}
-    metrics:
-      k8s.container.memory.node.utilization:
-        enabled: true
-{{#if metrics_pod_memory_node_utilization}}
-      k8s.pod.memory.node.utilization:
-        enabled: true
-{{/if}}
-{{else}}{{#if metrics_pod_memory_node_utilization}}
-    metrics:
-      k8s.pod.memory.node.utilization:
-        enabled: true
-{{/if}}{{/if}}{{/if}}{{/if}}
 processors:
   resourcedetection/system:
     detectors: ["system"]
