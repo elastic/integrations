@@ -34,7 +34,7 @@ Once the logs are ingested, the integration automatically parses the CEF header 
 The Common Event Format (CEF) integration collects log messages of the following types:
 *   `logfile` logs: Gathers CEF logs from specified local file paths, which allows you to ingest security and audit events recorded by various applications and devices.
 *   `udp` logs: Collects CEF logs sent over UDP, which is commonly used by network devices to forward security events to a syslog host.
-*   `tcp` logs: Receives CEF logs transmitted via TCP, providing a reliable transport mechanism for security events from your sources to the Elastic Agent.
+*   `tcp` logs: Receives CEF logs transmitted using TCP, providing a reliable transport mechanism for security events from your sources to the Elastic Agent.
 
 ### Supported use cases
 
@@ -169,7 +169,7 @@ You can verify the integration is working correctly by triggering data flow and 
 
 Generate test logs depending on your configured source:
 - **Forcepoint NGFW SMC**: Log in to the SMC, make a small change to a policy or rule (for example, toggle a rule), and install the policy to generate configuration change logs. You can also browse websites from a client behind the Forcepoint firewall to generate traffic logs.
-- **Check Point**: Log in to SmartConsole and install the policy on a Gateway. Initiate network traffic (for example, browse to a site) through the gateway to trigger log generation via Log Exporter.
+- **Check Point**: Log in to SmartConsole and install the policy on a Gateway. Initiate network traffic (for example, browse to a site) through the gateway to trigger log generation using Log Exporter.
 - **Log file input**: Manually append a test CEF message to your configured log file:
   ```bash
   echo "CEF:0|TestVendor|TestProduct|1.0|100|Test Event|1|msg=This is a test event" >> /var/log/cef.log
@@ -193,7 +193,7 @@ For help with Elastic ingest tools, check the [common problems documentation](ht
 You can use the following information to resolve common issues you might encounter while using this integration:
 
 - No data is being collected:
-    * Verify that the Elastic Agent is listening on the expected interface and port. Use `netstat -tulnp` on the Agent host to confirm it's bound to the correct `syslog_host` and `syslog_port` (e.g., `9003` or `9004`).
+    * Verify that the Elastic Agent is listening on the expected interface and port. Use `netstat -tulnp` on the Agent host to confirm it's bound to the correct `syslog_host` and `syslog_port` (for example, `9003` or `9004`).
     * Check network connectivity between your vendor device and the Elastic Agent host using `ping`.
     * Ensure firewall rules or network Access Control Lists (ACLs) are not blocking traffic on the configured syslog ports.
     * Use a tool like `tcpdump` or `wireshark` on the Elastic Agent host to confirm that packets are reaching the network interface.
@@ -203,7 +203,7 @@ You can use the following information to resolve common issues you might encount
 - Empty CEF fields causing ingestion failures:
     * If your logs contain empty extension fields that cause parsing errors, ensure the `Ignore Empty Values` setting is set to `true` in the integration configuration.
 - Incorrect event timestamps:
-    * If the `@timestamp` field doesn't match the event time, check if the CEF message includes a timezone. If it doesn't, you must configure the correct `CEF Timezone` (e.g., `+0200` or an IANA name like `America/New_York`) in the integration settings.
+    * If the `@timestamp` field doesn't match the event time, check if the CEF message includes a timezone. If it doesn't, you must configure the correct `CEF Timezone` (for example, `+0200` or an IANA name like `America/New_York`) in the integration settings.
 - TCP framing issues:
     * If you're using the TCP input, ensure the `framing` and `line_delimiter` settings in the integration's custom TCP options match the format used by your log source. Mismatched framing can result in merged logs or parsing failures.
 - Check Point Log Exporter instance is not running:
