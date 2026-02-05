@@ -207,7 +207,6 @@ Queries are organized by investigative goal to support both **scheduled monitori
 
 ### Defense Evasion
 
-- ✅ **Defender Exclusions** (Windows) - Windows Defender exclusion paths. Query: `defender_exclusions_windows_elastic`
 - ✅ **Disabled Security Tools** (Windows) - Detects stopped/paused security services across major vendors and Windows Defender registry tampering (12 values). Query: `security_products_disabled_windows_elastic` ([a8f3](kibana/osquery_saved_query/osquery_manager-a8f3c5e7-d9b4-4a21-8f6c-2e9d1b3a5c7e.json)) 
 - ✅ **Cleared Event Logs** (Windows) - Detects Security/System event log clearing via Event IDs 1102 and 104 (windows_eventlog). Query: `event_log_cleared_windows_elastic` ([f2a9](kibana/osquery_saved_query/osquery_manager-f2a9c7d5-e3b1-4f8a-9c2e-6d4b8a1e3f5c.json)) 
 - ⚠️ **Timestomping Detection** - In Progress
