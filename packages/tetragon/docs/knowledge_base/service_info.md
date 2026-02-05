@@ -101,7 +101,7 @@ To ensure optimal performance in high-volume Kubernetes environments, consider t
        enabledCommand: false
        enabledArgs: false
        image:
-         override: "docker.elastic.co/beats/filebeat:9.3.0"
+         override: "docker.elastic.co/beats/filebeat:<<stack version>>"
        extraVolumeMounts:
          - name: filebeat-config
            mountPath: /usr/share/filebeat/filebeat.yml
