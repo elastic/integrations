@@ -1,0 +1,217 @@
+{
+    "attributes": {
+        "description": "Forensic pack for defense evasion detection \u2014 event log clearing (T1070.001) and security product tampering (T1562.001).",
+        "name": "forensic-defense-evasion",
+        "version": 1,
+        "queries": [
+            {
+                "id": "event_log_cleared_windows_elastic",
+                "query": "-- Defense Evasion: Event Log Cleared Detection\n-- Related to MITRE T1070.001 (Indicator Removal on Host: Clear Windows Event Logs)\n-- Detects Security and System event log clearing activities\n-- Event ID 1102: Security log cleared\n-- Event ID 104: System log cleared\n\nWITH extracted AS (\n  SELECT\n    datetime,\n    eventid,\n    provider_name,\n    channel,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectUserName') AS user_name,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectDomainName') AS user_domain,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectUserSid') AS user_sid,\n    CASE\n      WHEN eventid = 1102 THEN 'Security Event Log Cleared'\n      WHEN eventid = 104 THEN 'System Event Log Cleared'\n      ELSE 'Event Log Cleared'\n    END AS detection_reason,\n    CASE\n      WHEN channel = 'Security' THEN 'Security Log'\n      WHEN channel = 'System' THEN 'System Log'\n      ELSE channel\n    END AS log_channel\n  FROM windows_eventlog\n  WHERE channel IN ('Security', 'System')\n    AND eventid IN (1102, 104)\n)\n\nSELECT\n  datetime AS event_time,  -- Already ISO8601 from windows_eventlog table\n  eventid AS event_id,\n  provider_name,\n  channel,\n  log_channel,\n  user_name,\n  user_domain,\n  COALESCE(user_domain || char(92) || user_name, user_name, 'Unknown') AS full_username,\n  user_sid,\n  detection_reason,\n  'EVENT_LOG_CLEARED' AS detection_method\nFROM extracted\nORDER BY datetime DESC;\n",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "change"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.event_log_cleared"
+                        }
+                    },
+                    {
+                        "key": "event.code",
+                        "value": {
+                            "field": "event_id"
+                        }
+                    },
+                    {
+                        "key": "event.provider",
+                        "value": {
+                            "field": "provider_name"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "user_name"
+                        }
+                    },
+                    {
+                        "key": "user.domain",
+                        "value": {
+                            "field": "user_domain"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "user_sid"
+                        }
+                    },
+                    {
+                        "key": "user.full_name",
+                        "value": {
+                            "field": "full_username"
+                        }
+                    },
+                    {
+                        "key": "log.level",
+                        "value": {
+                            "field": "log_channel"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "defense_evasion",
+                                "event_log",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "security_products_disabled_windows_elastic",
+                "query": "-- Defense Evasion: Security Products Disabled Detection\n-- Detects disabled security products via TWO mechanisms:\n-- 1. Services check: Security product services with STOPPED/PAUSED status\n-- 2. Registry check: Windows Defender disabled status in registry (12 values from WA Cyber T1562.001)\n\nWITH defender_registry AS (\n  SELECT\n    r.key,\n    r.path,\n    r.name,\n    r.data,\n    r.type,\n    datetime(r.mtime, 'unixepoch') AS modified_time,\n    CASE\n      -- Features (value 0 = disabled)\n      WHEN r.name = 'TamperProtection' AND (r.data = '0' OR r.data = '4') THEN 'Tamper Protection Disabled'\n      WHEN r.name = 'MpEnablePus' AND r.data = '0' THEN 'PUA Protection Disabled'\n      -- Policies (value 1 = disabled)\n      WHEN r.name = 'DisableAntiSpyware' AND r.data = '1' THEN 'Windows Defender Disabled via Policy'\n      WHEN r.name = 'DisableAntiVirus' AND r.data = '1' THEN 'Antivirus Disabled via Policy'\n      -- Real-Time Protection (value 1 = disabled)\n      WHEN r.name = 'DisableRealtimeMonitoring' AND r.data = '1' THEN 'Real-time Monitoring Disabled'\n      WHEN r.name = 'DisableBehaviorMonitoring' AND r.data = '1' THEN 'Behavior Monitoring Disabled'\n      WHEN r.name = 'DisableOnAccessProtection' AND r.data = '1' THEN 'On-Access Protection Disabled'\n      WHEN r.name = 'DisableScanOnRealtimeEnable' AND r.data = '1' THEN 'Scan on Real-time Enable Disabled'\n      WHEN r.name = 'DisableIOAVProtection' AND r.data = '1' THEN 'IOAV Protection Disabled'\n      WHEN r.name = 'DisableScriptScanning' AND r.data = '1' THEN 'Script Scanning Disabled'\n      -- Spynet/MAPS (value 0 = disabled)\n      WHEN r.name = 'SpynetReporting' AND r.data = '0' THEN 'Cloud Protection Reporting Disabled'\n      WHEN r.name = 'SubmitSamplesConsent' AND r.data = '0' THEN 'Sample Submission Disabled'\n      ELSE 'Unknown Defender Tampering'\n    END AS tampering_description,\n    'DEFENDER_REGISTRY_TAMPERING' AS detection_method\n  FROM registry r\n  WHERE (\n    -- Windows Defender Features (value 0 or 4 = disabled)\n    (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows Defender\\Features'\n     AND r.name = 'TamperProtection'\n     AND (r.data = '0' OR r.data = '4'))\n    -- MpEngine (value 0 = disabled)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows Defender\\MpEngine'\n        AND r.name = 'MpEnablePus'\n        AND r.data = '0')\n    -- Windows Defender Policies (value 1 = disabled)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender'\n        AND r.name IN ('DisableAntiSpyware', 'DisableAntiVirus')\n        AND r.data = '1')\n    -- Real-time Protection (value 1 = disabled)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection'\n        AND r.name IN ('DisableRealtimeMonitoring', 'DisableBehaviorMonitoring',\n                       'DisableOnAccessProtection', 'DisableScanOnRealtimeEnable',\n                       'DisableIOAVProtection', 'DisableScriptScanning')\n        AND r.data = '1')\n    -- Spynet/MAPS (value 0 = disabled)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Spynet'\n        AND r.name IN ('SpynetReporting', 'SubmitSamplesConsent')\n        AND r.data = '0')\n  )\n),\nsecurity_services AS (\n  SELECT\n    s.name AS service_name,\n    s.display_name,\n    s.status,\n    s.start_type,\n    s.path AS service_path,\n    s.user_account,\n    datetime(r_key.mtime, 'unixepoch') AS service_modified_time,\n    CASE\n      WHEN s.name IN ('MsMpSvc', 'WinDefend', 'WdNisSvc', 'WdNisDrv', 'WdBoot', 'WdFilter', 'Sense') THEN 'Microsoft Defender'\n      WHEN s.name LIKE 'CSFalcon%' OR s.name = 'CSAgent' THEN 'CrowdStrike'\n      WHEN s.name LIKE 'Sep%' OR s.name LIKE 'Symantec%' OR s.name = 'ccSvcHst' THEN 'Symantec/Broadcom'\n      WHEN s.name LIKE 'mfe%' OR s.name LIKE 'McAfee%' THEN 'McAfee'\n      WHEN s.name LIKE 'ekrn%' OR s.name LIKE 'eset%' OR s.name = 'ekm' THEN 'ESET'\n      WHEN s.name LIKE 'Sophos%' OR s.name = 'SAVService' THEN 'Sophos'\n      WHEN s.name LIKE '%Trend%' OR s.name LIKE 'Tmx%' OR s.name = 'TmListen' THEN 'Trend Micro'\n      WHEN s.name LIKE 'Carbon%' OR s.name = 'CbDefense' THEN 'Carbon Black'\n      WHEN s.name LIKE 'Sentinel%' THEN 'SentinelOne'\n      WHEN s.name LIKE 'Cylance%' THEN 'Cylance'\n      WHEN s.name LIKE 'AVP%' OR s.name LIKE 'klnagent%' OR s.name LIKE 'Kaspersky%' THEN 'Kaspersky'\n      WHEN s.name LIKE 'MBAMService%' OR s.name LIKE 'Malwarebytes%' THEN 'Malwarebytes'\n      WHEN s.name LIKE 'Palo%' OR s.name = 'traps' OR s.name = 'cyserver' THEN 'Palo Alto Networks'\n      WHEN s.name LIKE 'Bit%Defender%' OR s.name LIKE 'bdredline%' THEN 'Bitdefender'\n      WHEN s.name LIKE 'elastic-endpoint%' OR s.name LIKE 'ElasticEndpoint%' OR s.name = 'elastic-agent' THEN 'Elastic Defend'\n      ELSE 'Other Security Product'\n    END AS security_vendor,\n    'SECURITY_SERVICE_STOPPED' AS detection_method\n  FROM services s\n  LEFT JOIN registry r_key\n    ON r_key.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name\n    AND r_key.name = 'Start'\n  WHERE s.status IN ('STOPPED', 'PAUSED', 'STOP_PENDING', 'PAUSE_PENDING')\n    AND (\n      -- Microsoft Defender services\n      s.name IN ('MsMpSvc', 'WinDefend', 'WdNisSvc', 'WdNisDrv', 'WdBoot', 'WdFilter', 'Sense')\n      -- CrowdStrike\n      OR s.name LIKE 'CSFalcon%' OR s.name = 'CSAgent'\n      -- Symantec/Broadcom\n      OR s.name LIKE 'Sep%' OR s.name LIKE 'Symantec%' OR s.name = 'ccSvcHst'\n      -- McAfee\n      OR s.name LIKE 'mfe%' OR s.name LIKE 'McAfee%'\n      -- ESET\n      OR s.name LIKE 'ekrn%' OR s.name LIKE 'eset%' OR s.name = 'ekm'\n      -- Sophos\n      OR s.name LIKE 'Sophos%' OR s.name = 'SAVService'\n      -- Trend Micro\n      OR s.name LIKE '%Trend%' OR s.name LIKE 'Tmx%' OR s.name = 'TmListen'\n      -- Carbon Black\n      OR s.name LIKE 'Carbon%' OR s.name = 'CbDefense'\n      -- SentinelOne\n      OR s.name LIKE 'Sentinel%'\n      -- Cylance\n      OR s.name LIKE 'Cylance%'\n      -- Kaspersky\n      OR s.name LIKE 'AVP%' OR s.name LIKE 'klnagent%' OR s.name LIKE 'Kaspersky%'\n      -- Malwarebytes\n      OR s.name LIKE 'MBAMService%' OR s.name LIKE 'Malwarebytes%'\n      -- Palo Alto Networks\n      OR s.name LIKE 'Palo%' OR s.name = 'traps' OR s.name = 'cyserver'\n      -- Bitdefender\n      OR s.name LIKE 'Bit%Defender%' OR s.name LIKE 'bdredline%'\n      -- Elastic Defend\n      OR s.name LIKE 'elastic-endpoint%' OR s.name LIKE 'ElasticEndpoint%' OR s.name = 'elastic-agent'\n    )\n)\n\n-- Combine results from both detection methods\nSELECT * FROM (\n  SELECT\n    ss.service_name,\n    ss.display_name,\n    ss.status,\n    ss.start_type,\n    ss.service_path,\n    ss.user_account,\n    ss.service_modified_time AS modified_time,\n    ss.security_vendor,\n    ss.detection_method,\n    'Service Stopped/Paused' AS detection_reason,\n    NULL AS registry_key,\n    NULL AS registry_path,\n    NULL AS registry_name,\n    NULL AS registry_value\n  FROM security_services ss\n\n  UNION ALL\n\n  SELECT\n    NULL AS service_name,\n    NULL AS display_name,\n    NULL AS status,\n    NULL AS start_type,\n    NULL AS service_path,\n    NULL AS user_account,\n    dr.modified_time,\n    'Windows Defender' AS security_vendor,\n    dr.detection_method,\n    dr.tampering_description AS detection_reason,\n    dr.key AS registry_key,\n    dr.path AS registry_path,\n    dr.name AS registry_name,\n    dr.data AS registry_value\n  FROM defender_registry dr\n) AS combined\nORDER BY\n  CASE WHEN detection_method = 'DEFENDER_REGISTRY_TAMPERING' THEN 0 ELSE 1 END,\n  security_vendor,\n  service_name;\n",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.security_products_disabled"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "service_name"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "status"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "service_path"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "user_account"
+                        }
+                    },
+                    {
+                        "key": "registry.key",
+                        "value": {
+                            "field": "registry_key"
+                        }
+                    },
+                    {
+                        "key": "registry.path",
+                        "value": {
+                            "field": "registry_path"
+                        }
+                    },
+                    {
+                        "key": "registry.value",
+                        "value": {
+                            "field": "registry_name"
+                        }
+                    },
+                    {
+                        "key": "registry.data.strings",
+                        "value": {
+                            "field": "registry_value"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "defense_evasion",
+                                "security_products",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-d5b8c9e0-f1a2-4b3c-5d4e-6f7a8b9c0d1e",
+    "references": [],
+    "type": "osquery-pack-asset"
+}
