@@ -329,26 +329,99 @@ processors:
       source: |-
         // Entropy Variance from: https://github.com/elastic/toutoumomoma/blob/be287c9c0d0e435572e3889a6584199983c688f0/toutoumomoma.go#L326-L363.
         String script = ctx._temp.script_block_no_signature;
-        
-        script = java.text.Normalizer.normalize(script, java.text.Normalizer.Form.NFC);
-        
-        int n = script.codePointCount(0, script.length());
 
-        if (n == 0) {
+        int length = script.length();
+        if (length == 0) {
           return;
         }
 
-        Map counts = script.codePoints().boxed().collect(Collectors.groupingBy(c -> c, Collectors.counting()));
-        int uniqueSymbols = counts.size();
+        // Skip signature only scripts:
+        // - Inspect only line 2 (line 1 can be truncated mid-signature).
+        // - Match "# " + base64-ish content at the fixed signature line length (64 chars).
+        int lf = 10;    // '\n'
+        int cr = 13;    // '\r'
+        int hash = 35;  // '#'
+        int space = 32; // ' '
+        int sigLineLen = 64; // Content length, excluding "# " prefix.
+
+        int firstLineEnd = -1;
+        for (int idx = 0; idx < length; idx++) {
+          if (script.charAt(idx) == lf) {
+            firstLineEnd = idx;
+            break;
+          }
+        }
+
+        if (firstLineEnd > 0) {
+          int secondLineStart = firstLineEnd + 1;
+          if (secondLineStart < length) {
+            int secondLineEnd = length;
+            for (int idx = secondLineStart; idx < length; idx++) {
+              if (script.charAt(idx) == lf) {
+                secondLineEnd = idx;
+                break;
+              }
+            }
+
+            if (secondLineEnd > secondLineStart && script.charAt(secondLineEnd - 1) == cr) {
+              secondLineEnd--;
+            }
+
+            if (secondLineStart < secondLineEnd && script.charAt(secondLineStart) == hash) {
+              int contentStart = secondLineStart + 1;
+              if (contentStart < secondLineEnd && script.charAt(contentStart) == space) {
+                contentStart++;
+              }
+              int lineLen = secondLineEnd - contentStart;
+              if (lineLen == sigLineLen) {
+                boolean base64Line = true;
+                for (int i = contentStart; i < secondLineEnd; i++) {
+                  int c = (int) script.charAt(i);
+                  if (!((c >= 65 && c <= 90) || (c >= 97 && c <= 122) ||
+                        (c >= 48 && c <= 57) || c == 43 || c == 47 || c == 61)) {
+                    base64Line = false;
+                    break;
+                  }
+                }
+                if (base64Line) {
+                  return;
+                }
+              }
+            }
+          }
+        }
+        
+        script = java.text.Normalizer.normalize(script, java.text.Normalizer.Form.NFC);
+        
+        length = script.length();
+        if (length == 0) {
+          return;
+        }
+
+        int[] counts = new int[65536];
+        int[] seen = new int[length];
+        int seenCount = 0;
+        int uniqueSymbols = 0;
+        for (int i = 0; i < length; i++) {
+            int ch = script.charAt(i);
+            if (counts[ch] == 0) {
+                counts[ch] = 1;
+                seen[seenCount++] = ch;
+                uniqueSymbols++;
+            } else {
+                counts[ch]++;
+            }
+        }
 
         double invLog2 = 1.0 / Math.log(2.0);
         double entropy = 0.0;
         double surprisalVar = 0.0;
         double pSum = 0.0;
 
-        for (def value : counts.values()) {
-            double cnt = ((Number) value).doubleValue();
-            double p = cnt / (double) n;
+        for (int i = 0; i < seenCount; i++) {
+            int code = seen[i];
+            double cnt = (double) counts[code];
+            double p = cnt / (double) length;
             double l2p = Math.log(p) * invLog2;
 
             pSum += p;
@@ -363,10 +436,19 @@ processors:
         if (entropyBits == -0.0) {
             entropyBits = 0.0;
         }
+
+        double normalizedEntropy = 0.0;
+        if (length > 1) {
+            double maxEntropy = Math.log((double) length) * invLog2; // max bits if every character is unique
+            normalizedEntropy = entropyBits / maxEntropy;           // scale 0..1 against script length
+            if (normalizedEntropy < 0.0) normalizedEntropy = 0.0;
+            else if (normalizedEntropy > 1.0) normalizedEntropy = 1.0;
+        }
         
         ctx.powershell.file.script_block_entropy_bits = entropyBits;
+        ctx.powershell.file.script_block_entropy_normalized = normalizedEntropy;
         ctx.powershell.file.script_block_surprisal_stdev = surprisalSd;
-        ctx.powershell.file.script_block_length = n;
+        ctx.powershell.file.script_block_length = length;
         ctx.powershell.file.script_block_unique_symbols = uniqueSymbols;
 
   - split:

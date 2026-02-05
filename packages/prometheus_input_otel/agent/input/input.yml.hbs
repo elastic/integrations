@@ -1,0 +1,48 @@
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'prometheus_scrape'
+          scrape_interval: {{scrape_interval}}
+{{#if scrape_timeout}}
+          scrape_timeout: {{scrape_timeout}}
+{{/if}}
+{{#if metrics_path}}
+          metrics_path: {{metrics_path}}
+{{/if}}
+{{#if scheme}}
+          scheme: {{scheme}}
+{{/if}}
+          honor_labels: {{honor_labels}}
+          honor_timestamps: {{honor_timestamps}}
+{{#if tls_enabled}}
+          tls_config:
+            insecure_skip_verify: {{tls_skip_verify}}
+{{#if tls_ca_file}}
+            ca_file: {{tls_ca_file}}
+{{/if}}
+{{#if tls_cert_file}}
+            cert_file: {{tls_cert_file}}
+{{/if}}
+{{#if tls_key_file}}
+            key_file: {{tls_key_file}}
+{{/if}}
+{{/if}}
+{{#if username}}
+          basic_auth:
+            username: {{username}}
+            password: {{password}}
+{{/if}}
+          static_configs:
+            - targets:
+{{#each targets}}
+                - {{this}}
+{{/each}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [resourcedetection/system]

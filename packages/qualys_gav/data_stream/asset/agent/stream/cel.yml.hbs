@@ -29,93 +29,142 @@ redact:
   fields:
     - password
 program: |
-  state.url.trim_right("/").as(base_url, state.with(
-    (has(state.expiry) && timestamp(state.expiry) > now ?
-      {
-        "access_token": state.access_token,
-        "expiry": state.expiry
-      }
-    :
-      post_request(
-        base_url + "/auth",
-        "application/x-www-form-urlencoded",
-        {"username":[state.username],"password":[state.password]}.format_query()
-      ).do_request().as(resp, resp.StatusCode == 201 ?
+  dyn(state.with({
+    "interval": {
+      "start": state.?interval.start.orValue(now),
+      "id": state.?interval.id.orValue(uuid()),
+    }
+  })).as(state,
+    state.url.trim_right("/").as(base_url, state.with(
+      (has(state.expiry) && timestamp(state.expiry) > now ?
         {
-          "access_token": string(resp.Body),
-          // Include 30s grace period to manage session expiry.
-          "expiry": (now() + duration("4h") - duration("30s")).format(time_layout.RFC3339),
+          "access_token": state.access_token,
+          "expiry": state.expiry
         }
       :
-        {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "POST: "+ base_url + "/auth" + (
-                size(resp.Body) != 0 ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-              ),
-            },
-          },
-          "want_more": false,
-        }
-      )
-    ).as(token,
-      has(token.events) ? token : // Exit early due to failure.
-        request(
-          "POST",
-          base_url + "/rest/2.0/search/am/asset?" + {
-            "pageSize": [string(state.batch_size)],
-            "lastSeenAssetId": [string(int(state.asset_id))],
-            ?"exclude_fields": (state.?exclude_fields.orValue("") != "") ? optional.of([string(state.exclude_fields)]) : optional.none(),
-            ?"include_fields": (state.?include_fields.orValue("") != "") ? optional.of([string(state.include_fields)]) : optional.none(),
-          }.format_query()
-        ).with({
-          "Header":{
-            "Authorization": ["Bearer " + token.access_token],
+        post_request(
+          base_url + "/auth",
+          "application/x-www-form-urlencoded",
+          {"username":[state.username],"password":[state.password]}.format_query()
+        ).do_request().as(resp, (resp.StatusCode == 201 ?
+          {
+            "access_token": string(resp.Body),
+            // Include 30s grace period to manage session expiry.
+            "expiry": (now() + duration("4h") - duration("30s")).format(time_layout.RFC3339),
           }
-        }).do_request().as(resp, resp.StatusCode == 200 ?
-          resp.Body.decode_json().as(body, {
-            "events": body.assetListData.asset.map(e,{
-              "message": e.encode_json(),
-            }),
-            "want_more": body.hasMore != 0,
-            "access_token": token.access_token,
-            "expiry": token.expiry,
-            "asset_id": body.hasMore != 0 ? body.assetListData.asset.map(e, e.assetId).max() : 0,
-          })
         :
-          (resp.StatusCode == 204) ?
-            // 204 No Content - Terminate Pagination and Publish Empty Event.
-            {
-              "events": [],
-              "want_more": false,
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST: "+ base_url + "/auth" + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+              "interval_start": state.interval.start,
+              "interval_id": state.interval.id,
+            },
+            "want_more": false,
+          }
+        ))
+      ).as(token,
+        has(token.events) ? token : // Exit early due to failure.
+          request(
+            "POST",
+            base_url + "/rest/2.0/search/am/asset?" + {
+              "pageSize": [string(state.batch_size)],
+              "lastSeenAssetId": [string(int(state.asset_id))],
+              ?"excludeFields": (state.?exclude_fields.orValue("") != "") ? optional.of([string(state.exclude_fields)]) : optional.none(),
+              ?"includeFields": (state.?include_fields.orValue("") != "") ? optional.of([string(state.include_fields)]) : optional.none(),
+            }.format_query()
+          ).with({
+            "Header":{
+              "Authorization": ["Bearer " + token.access_token],
+            }
+          }).do_request().as(resp, (resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body, {
+              "events": body.assetListData.asset.map(e,{
+                "message": e.encode_json(),
+                "interval_start": state.interval.start,
+                "interval_id": state.interval.id,
+              }),
+              "want_more": body.hasMore != 0,
               "access_token": token.access_token,
               "expiry": token.expiry,
-              "asset_id": 0,
-            }
+              "asset_id": body.hasMore != 0 ? body.assetListData.asset.map(e, e.assetId).max() : 0,
+            })
           :
-            {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  "message": "POST: "+ base_url + "/rest/2.0/search/am/asset" + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                  ),
+            (resp.StatusCode == 204) ?
+              // 204 No Content - Terminate Pagination and Publish Empty Event.
+              {
+                "events": [],
+                "want_more": false,
+                "access_token": token.access_token,
+                "expiry": token.expiry,
+                "asset_id": 0,
+              }
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "POST: "+ base_url + "/rest/2.0/search/am/asset" + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    ),
+                  },
+                  "interval_start": state.interval.start,
+                  "interval_id": state.interval.id,
                 },
-              },
-              "want_more": false,
-            }
-        )
-    )
-  ))
+                "want_more": false,
+              }
+          ).with(
+            resp.Header.transformMapEntry(k, v,
+              // Canonicalise header keys to match rate_limit conventions.
+              // -Limit, -Remaining and -Reset are magic suffixes in rate_limit.
+              {
+                k.has_suffix("-Limit") ?
+                  (k.trim_suffix("-Limit").to_lower() + "-Limit")
+                : k.has_suffix("-Remaining") ?
+                  (k.trim_suffix("-Remaining").to_lower() + "-Remaining")
+                :
+                  k.to_lower(): v,
+              }
+            ).as(headers,
+              // Calculate rate limits.
+              rate_limit(
+                headers.with(
+                  {
+                    "x-ratelimit-Reset": [string(headers[?"x-ratelimit-towait-sec"][0].orValue("3600"))],
+                  }
+                ),
+                "x-ratelimit",
+                false,
+                true,
+                duration(string(headers[?"x-ratelimit-window-sec"][0].orValue("3600")) + "s"),
+                0
+              )
+            ).as(rate_headers, rate_headers.with({
+              // Work around inf detection in input.
+              // If the headers are missing or rate_limit failed, rate and
+              // next may be missing. So use optional types.
+              ?"rate": rate_headers.?rate == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
+              ?"next": rate_headers.?next == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
+            })).as(limit, {
+              "header": resp.Header,
+              "rate_limit": limit,
+            })
+          ))
+      )
+    ))
+  ).as(state, state.want_more ? state : state.drop("interval"))
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
