@@ -124,15 +124,29 @@ streams:
         default: $Default
         description: >-
           We recommend using a dedicated consumer group for the azure input. Reusing consumer groups among non-related consumers can cause unexpected behavior and possibly lost events.
+      - name: auth_type
+        type: select
+        title: Authentication Type
+        multi: false
+        required: false
+        show_user: true
+        default: connection_string
+        options:
+          - text: Connection String (Shared Access Key)
+            value: connection_string
+          - text: Client Secret (OAuth2 with RBAC)
+            value: client_secret
+        description: >-
+          Authentication method to use for Event Hub and Storage Account. When set to 'connection_string' or left blank: connection_string and storage_account_key are required. When set to 'client_secret': OAuth2 authentication with Azure AD is used, requiring tenant_id, client_id, client_secret, and eventhub_namespace. Note: The same authentication type applies to both Event Hub and Storage Account for security consistency.
       - name: connection_string
         type: password
+        secret: true
         title: Connection String
         multi: false
-        required: true
+        required: false
         show_user: true
-        secret: true
         description: >-
-          The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) to learn more.
+          (Required when auth_type is 'connection_string' or left blank) The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) to learn more.
       - name: storage_account
         type: text
         title: Storage Account
@@ -141,15 +155,57 @@ streams:
         show_user: true
         description: >-
           The name of the storage account where the consumer group's state/offsets will be stored and updated.
-      - name: storage_account_key
-        type: password
-        title: Storage Account Key
+      - name: eventhub_namespace
+        type: text
+        title: Event Hub Namespace
         multi: false
-        required: true
+        required: false
         show_user: true
         description: >-
-          The storage account key, this key will be used to authorize access to data in your storage account.
+          (Required when auth_type is 'client_secret') Fully qualified Event Hub namespace (e.g., namespace.servicebus.windows.net). Do not use the short namespace name; use the complete FQDN.
+      - name: tenant_id
+        type: text
+        title: Tenant ID
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          (Required when auth_type is 'client_secret') Azure AD (Microsoft Entra ID) tenant ID. This is the directory/tenant where your Azure AD application is registered.
+      - name: client_id
+        type: text
+        title: Client ID
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          (Required when auth_type is 'client_secret') Azure AD application (client) ID. The service principal must have 'Azure Event Hubs Data Receiver' role on the Event Hub and 'Storage Blob Data Contributor' role on the Storage Account.
+      - name: client_secret
+        type: password
         secret: true
+        title: Client Secret
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          (Required when auth_type is 'client_secret') Azure AD application client secret. Generate this secret in your Azure AD app registration.
+      - name: authority_host
+        type: text
+        title: Authority Host
+        multi: false
+        required: false
+        show_user: false
+        default: https://login.microsoftonline.com
+        description: >-
+          (Optional, for OAuth2) Azure AD authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud). Change for other Azure environments: Azure Government (https://login.microsoftonline.us), Azure China (https://login.chinacloudapi.cn), or Azure Germany (https://login.microsoftonline.de).
+      - name: storage_account_key
+        type: password
+        secret: true
+        title: Storage Account Key
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          (Required when auth_type is 'connection_string' or left blank) The storage account key used to authorize access to data in your storage account. Not used when auth_type is 'client_secret'; OAuth2 is used for storage authentication instead.
       - name: storage_account_container
         type: text
         title: Storage Account Container
