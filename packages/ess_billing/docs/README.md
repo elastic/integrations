@@ -23,6 +23,7 @@ You will need to recover the identifier of your organization, which can be seen 
 You will also need to provision an API key with the `Billing admin` role in the [API keys page](https://cloud.elastic.co/account/keys).
 
 For private cloud, or admin users, the cloud endpoint can be altered to match your requirements. You can change this in the "advanced settings" section of the integration configuration.
+GovCloud users need to replace URL with `https://billing.us-gov-east-1.aws.elastic-cloud.com`
 
 ## Setup
 
