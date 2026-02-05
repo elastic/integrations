@@ -35,12 +35,14 @@ services:
       timeout: 10s
       retries: 5
       start_period: 20s
-  kafka-connect:
+  kafka_connect:
     build: .
     hostname: kafka-connect
     depends_on:
       kafka:
         condition: service_healthy
+    ports:
+      - 8778
     environment:
       CONNECT_BOOTSTRAP_SERVERS: 'kafka:9092'
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
@@ -70,7 +72,7 @@ services:
     image: confluentinc/cp-kafka:7.5.0
     hostname: data-generator
     depends_on:
-      kafka-connect:
+      kafka_connect:
         condition: service_healthy
     command: "bash -c \"\n  # Wait a bit for everything to be ready\n  sleep 10\n  \n  echo 'Creating source and sink topics...'\n  kafka-topics --create --if-not-exists --topic source-topic --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1\n  kafka-topics --create --if-not-exists --topic sink-topic --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1\n  \n  echo 'Waiting for topics to be ready...'\n  sleep 5\n  \n  echo 'Creating VerifiableSourceConnector...'\n  curl -X POST http://kafka-connect:8083/connectors -H 'Content-Type: application/json' -d '{ \\\"name\\\": \\\"verifiable-source\\\", \\\"config\\\": { \\\"connector.class\\\": \\\"org.apache.kafka.connect.tools.VerifiableSourceConnector\\\", \\\"tasks.max\\\": \\\"1\\\", \\\"topic\\\": \\\"source-topic\\\", \\\"throughput\\\": \\\"10\\\" } }'\n  \n  echo 'Waiting for source connector to start...'\n  sleep 10\n  \n  echo 'Creating VerifiableSinkConnector...'\n  curl -X POST http://kafka-connect:8083/connectors -H 'Content-Type: application/json' -d '{ \\\"name\\\": \\\"verifiable-sink\\\", \\\"config\\\": { \\\"connector.class\\\": \\\"org.apache.kafka.connect.tools.VerifiableSinkConnector\\\", \\\"tasks.max\\\": \\\"1\\\", \\\"topics\\\": \\\"source-topic\\\" } }'\n  \n  echo 'Connectors created successfully!'\n  echo 'Source connector produces data to source-topic'\n  echo 'Sink connector consumes data from source-topic'\n  \n  # Keep container running to monitor\n  tail -f /dev/null\n\"\n"
     networks:

@@ -13,10 +13,19 @@ password: {{password}}
 {{/if}}
 namespace: "kafka_connect"
 jmx.mappings:
-  - mbean: 'kafka.connect:connector=*,type=connector-metrics'
+  - mbean: 'kafka.connect:type=connector-metrics,connector=*'
     attributes:
+      - attr: connector-type
+        field: connector.type
+      - attr: connector-class
+        field: connector.class
+      - attr: connector-version
+        field: connector.version
       - attr: status
         field: connector.status
+    event:
+      - attr: connector
+        field: connector.name
 tags:
 {{#each tags as |tag|}}
   - {{tag}}

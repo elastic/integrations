@@ -13,7 +13,7 @@ password: {{password}}
 {{/if}}
 namespace: "kafka_connect"
 jmx.mappings:
-  - mbean: 'kafka.connect:connector=*,task=*,type=connector-task-metrics'
+  - mbean: 'kafka.connect:type=*-task-metrics,connector=*,task=*'
     attributes:
       - attr: batch-size-avg
         field: task.batch_size_avg
@@ -33,20 +33,14 @@ jmx.mappings:
         field: task.running_ratio
       - attr: status
         field: task.status
-  - mbean: 'kafka.connect:connector=*,task=*,type=sink-task-metrics'
-    attributes:
       - attr: sink-record-read-total
         field: task.sink_record_read_total
       - attr: sink-record-send-total
         field: task.sink_record_send_total
-  - mbean: 'kafka.connect:connector=*,task=*,type=source-task-metrics'
-    attributes:
       - attr: source-record-write-total
         field: task.source_record_write_total
       - attr: source-record-poll-total
         field: task.source_record_poll_total
-  - mbean: 'kafka.connect:connector=*,task=*,type=task-error-metrics'
-    attributes:
       - attr: deadletterqueue-produce-failures
         field: task.deadletterqueue_produce_failures
       - attr: deadletterqueue-produce-requests
@@ -63,6 +57,11 @@ jmx.mappings:
         field: task.total_records_skipped
       - attr: total-retries
         field: task.total_retries
+    event:
+      - attr: connector
+        field: task.connector
+      - attr: task
+        field: task.id
 tags:
 {{#each tags as |tag|}}
   - {{tag}}

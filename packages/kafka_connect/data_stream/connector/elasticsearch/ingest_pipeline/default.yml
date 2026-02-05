@@ -10,6 +10,14 @@ processors:
   - set:
       field: event.module
       value: kafka_connect
+  - rename:
+      field: jolokia.kafka_connect
+      target_field: kafka_connect
+      ignore_missing: true
+      ignore_failure: true
+  - dissect:
+      field: kafka_connect.mbean
+      pattern: 'kafka.connect:connector=%{kafka_connect.connector.name},%{}'
 on_failure:
   - set:
       field: error.message
