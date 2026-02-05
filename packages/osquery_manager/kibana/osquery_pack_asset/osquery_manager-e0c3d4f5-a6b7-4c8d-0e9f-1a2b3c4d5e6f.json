@@ -1,0 +1,890 @@
+{
+    "attributes": {
+        "description": "Forensic pack for user activity investigation — shell/PowerShell history, browser history, RDP, logged-in users, LNK files, shellbags, and UserAssist.",
+        "name": "forensic-user-activity",
+        "version": 1,
+        "queries": [
+            {
+                "id": "powershell_history_windows_elastic",
+                "query": "-- Comprehensive PowerShell Forensic Monitoring Query (Hybrid Approach)\n-- Uses powershell_events for Event ID 4104 (Script Block Logging) with automatic reconstruction\n-- Uses windows_eventlog for Event ID 4103 (Module Logging) and 4688 (Process Creation)\n-- Focus: Fileless malware detection, obfuscated command tracking\n-- Last updated: 2025-12-09\n--\n-- PREREQUISITES:\n-- 1. Windows Script Block Logging must be enabled (GPO or registry)\n-- 2. Elastic Agent osquery integration requires this config in Fleet policy:\n--    { \"options\": { \"disable_events\": \"false\", \"enable_powershell_events_subscriber\": \"true\", \"enable_windows_events_subscriber\": \"true\" } }\n--\n-- PERFORMANCE TIP: For large environments, add time filter to powershell_events:\n-- WHERE time > (strftime('%s', 'now') - 86400)  -- last 24 hours\n\n-- Part 1: Script Block Logging (Event ID 4104) via powershell_events\n-- Benefits: Automatic script reconstruction across fragmented blocks\nSELECT\n    datetime AS event_time,\n    time,\n    4104 AS eventid,\n    'Microsoft-Windows-PowerShell' AS provider_name,\n    NULL AS level,\n    NULL AS task,\n    NULL AS computer_name,\n    'Microsoft-Windows-PowerShell/Operational' AS channel,\n    NULL AS pid,\n    NULL AS tid,\n    NULL AS data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    script_block_id,\n    script_block_count,\n    script_text,\n    script_name,\n    script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM powershell_events\n\nUNION ALL\n\n-- Part 2: Module Logging (Event ID 4103) via windows_eventlog\n-- Captures obfuscated command context and payload\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    json_extract(data, '$.EventData.ProviderName') AS ps_provider_name,\n    json_extract(data, '$.EventData.ContextInfo') AS context_info,\n    json_extract(data, '$.EventData.Payload') AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Microsoft-Windows-PowerShell/Operational'\n    AND eventid = 4103\n\nUNION ALL\n\n-- Part 3: Process Creation (Event ID 4688) via windows_eventlog\n-- Captures command line and parent/child process relationships\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    json_extract(data, '$.EventData.CommandLine') AS command_line,\n    json_extract(data, '$.EventData.NewProcessName') AS process_name,\n    json_extract(data, '$.EventData.ParentProcessName') AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Security'\n    AND eventid = 4688\n    AND data LIKE '%powershell%'\n\nORDER BY event_time DESC;",
+                "interval": 300,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.powershell_history"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "event.code",
+                        "value": {
+                            "field": "eventid"
+                        }
+                    },
+                    {
+                        "key": "event.provider",
+                        "value": {
+                            "field": "provider_name"
+                        }
+                    },
+                    {
+                        "key": "log.level",
+                        "value": {
+                            "field": "level"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.thread.id",
+                        "value": {
+                            "field": "tid"
+                        }
+                    },
+                    {
+                        "key": "powershell.provider.name",
+                        "value": {
+                            "field": "ps_provider_name"
+                        }
+                    },
+                    {
+                        "key": "powershell.context_info",
+                        "value": {
+                            "field": "context_info"
+                        }
+                    },
+                    {
+                        "key": "powershell.payload",
+                        "value": {
+                            "field": "payload"
+                        }
+                    },
+                    {
+                        "key": "powershell.file.script_block_id",
+                        "value": {
+                            "field": "script_block_id"
+                        }
+                    },
+                    {
+                        "key": "powershell.file.script_block_count",
+                        "value": {
+                            "field": "script_block_count"
+                        }
+                    },
+                    {
+                        "key": "powershell.file.script_block_text",
+                        "value": {
+                            "field": "script_text"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "script_name"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "script_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "command_line"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_process_name"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "powershell",
+                                "execution",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "shell_history_linux_darwin_elastic",
+                "query": "-- Shell History - Command Execution Forensics with Anti-Forensics Detection\n-- Platforms: Linux, macOS\n-- Uses LEFT JOIN to detect users with no shell history (anti-forensics indicator)\n-- Note: UID >= 500 captures regular users on both macOS (500+) and Linux (1000+)\n-- Note: Look for suspicious patterns and users with no_history_suspicious='yes'\nSELECT\n  u.username,\n  u.uid,\n  u.gid,\n  u.directory AS user_home,\n  sh.command,\n  sh.history_file,\n  CASE\n    WHEN sh.history_file LIKE '%bash_history%' THEN 'bash'\n    WHEN sh.history_file LIKE '%zsh_history%' THEN 'zsh'\n    WHEN sh.history_file LIKE '%fish_history%' THEN 'fish'\n    WHEN sh.history_file LIKE '%ash_history%' THEN 'ash'\n    WHEN sh.history_file LIKE '%ksh_history%' THEN 'ksh'\n    WHEN sh.history_file LIKE '%tcsh_history%' OR sh.history_file LIKE '%.history%' THEN 'tcsh'\n    WHEN sh.history_file LIKE '%csh_history%' THEN 'csh'\n    ELSE 'unknown'\n  END AS shell_type,\n  CASE\n    WHEN sh.command IS NULL THEN 'yes'\n    ELSE 'no'\n  END AS no_history_suspicious\nFROM users u\nLEFT JOIN shell_history sh ON sh.uid = u.uid\nWHERE (u.uid >= 500 OR sh.command IS NOT NULL)\n  AND (sh.command IS NULL OR sh.command != '')\nORDER BY u.username, sh.time DESC",
+                "interval": 3600,
+                "platform": "linux,darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.shell_history"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "user.group.id",
+                        "value": {
+                            "field": "gid"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "command"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "history_file"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "shell_history",
+                                "forensics",
+                                "linux",
+                                "macos"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "userassist_windows_elastic",
+                "query": "-- UserAssist: Track applications executed via Windows Explorer\n-- Forensic value: Shows user-initiated program executions with timestamps\nSELECT\n  ua.path AS path,\n  REPLACE(ua.path, RTRIM(ua.path, REPLACE(ua.path, '\\', '')), '') AS name,\n  ua.sid AS user_sid,\n  u.username AS username,\n  datetime(ua.last_execution_time, 'unixepoch') AS last_execution,\n  ua.count AS execution_count\nFROM userassist ua\nLEFT JOIN users u ON ua.sid = u.uuid\nWHERE ua.path != ''\n  AND ua.last_execution_time > 0",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.userassist"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "user_sid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "last_execution"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "userassist",
+                                "forensics",
+                                "execution",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "browser_history_elastic",
+                "query": "-- Browser history from Elastic osquery extension\n-- Supports: Chrome, Edge, Firefox, Safari\n-- Returns complete browser history for forensic analysis\nSELECT\n  datetime AS event_time,\n  url,\n  title,\n  browser,\n  user AS username,\n  domain,\n  transition_type\nFROM elastic_browser_history\nORDER BY event_time DESC;",
+                "interval": 3600,
+                "platform": "linux,darwin,windows",
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "web"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "access"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.browser_history"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "url.full",
+                        "value": {
+                            "field": "url"
+                        }
+                    },
+                    {
+                        "key": "url.domain",
+                        "value": {
+                            "field": "domain"
+                        }
+                    },
+                    {
+                        "key": "user_agent.name",
+                        "value": {
+                            "field": "browser"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "browser_history",
+                                "forensics",
+                                "full_history"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "browser_history_suspicious_elastic",
+                "query": "-- Browser history from Elastic osquery extension\n-- Supports: Chrome, Edge, Firefox, Safari\n-- Filters out common legitimate domains (allowlist) to surface suspicious/malicious activity\n-- NOTE: Avoids regex_match() to prevent Windows failures due to the 256-byte regex limit\nWITH\n  allow_suffix(suffix) AS (\n    VALUES\n      -- Search engines\n      ('google.com'), ('googleapis.com'), ('gstatic.com'), ('bing.com'), ('yahoo.com'), ('duckduckgo.com'), ('baidu.com'), ('yandex.ru'),\n      -- Microsoft ecosystem\n      ('microsoft.com'), ('microsoftonline.com'), ('office.com'), ('office365.com'), ('windows.net'), ('windows.com'), ('live.com'), ('outlook.com'), ('azure.com'), ('visualstudio.com'),\n      -- Apple ecosystem\n      ('apple.com'), ('icloud.com'), ('itunes.com'),\n      -- Amazon/AWS\n      ('amazon.com'), ('amazonaws.com'), ('aws.amazon.com'),\n      -- Social media\n      ('facebook.com'), ('fb.com'), ('instagram.com'), ('twitter.com'), ('x.com'), ('linkedin.com'), ('reddit.com'), ('pinterest.com'), ('tiktok.com'), ('snapchat.com'), ('whatsapp.com'), ('discord.com'), ('telegram.org'),\n      -- Video/Streaming\n      ('youtube.com'), ('youtu.be'), ('netflix.com'), ('hulu.com'), ('disneyplus.com'), ('twitch.tv'), ('vimeo.com'), ('spotify.com'), ('soundcloud.com'),\n      -- Shopping/Commerce\n      ('ebay.com'), ('walmart.com'), ('target.com'), ('bestbuy.com'), ('etsy.com'), ('shopify.com'), ('paypal.com'), ('stripe.com'),\n      -- News/Media\n      ('cnn.com'), ('bbc.com'), ('bbc.co.uk'), ('nytimes.com'), ('reuters.com'), ('wsj.com'), ('theguardian.com'), ('forbes.com'), ('bloomberg.com'),\n      -- Cloud/Storage\n      ('dropbox.com'), ('box.com'), ('onedrive.com'), ('drive.google.com'),\n      -- CDN/Infrastructure\n      ('cloudflare.com'), ('akamai.net'), ('akamaized.net'), ('fastly.net'), ('cloudfront.net'), ('azureedge.net'), ('cdnjs.com'), ('jsdelivr.net'), ('unpkg.com'),\n      -- Developer/Tech\n      ('github.com'), ('github.io'), ('gitlab.com'), ('stackoverflow.com'), ('stackexchange.com'), ('npmjs.com'), ('docker.com'), ('atlassian.com'), ('atlassian.net'), ('jira.com'), ('bitbucket.org'), ('mozilla.org'), ('mozilla.com'),\n      -- Business tools\n      ('slack.com'), ('zoom.us'), ('zoom.com'), ('teams.microsoft.com'), ('salesforce.com'), ('hubspot.com'), ('zendesk.com'), ('intercom.com'), ('notion.so'),\n      -- Security vendors\n      ('elastic.co'), ('splunk.com'), ('crowdstrike.com'), ('virustotal.com'), ('malwarebytes.com'), ('norton.com'), ('mcafee.com'), ('kaspersky.com'),\n      -- Other common legitimate\n      ('wikipedia.org'), ('wikimedia.org'), ('archive.org'), ('w3.org'), ('jquery.com'), ('bootstrapcdn.com'), ('fontawesome.com'), ('fonts.googleapis.com'), ('recaptcha.net'), ('googletagmanager.com'), ('google-analytics.com'), ('doubleclick.net'), ('googlesyndication.com')\n  ),\n  -- Handle ccTLD variants that were previously expressed as regex (e.g. google.co.[a-z]{2})\n  allow_glob(pattern) AS (\n    VALUES\n      ('google.co.[a-z][a-z]'), ('*.google.co.[a-z][a-z]'),\n      ('amazon.co.[a-z][a-z]'), ('*.amazon.co.[a-z][a-z]')\n  )\nSELECT\n  datetime AS event_time,\n  url,\n  title,\n  browser,\n  user AS username,\n  domain,\n  transition_type\nFROM elastic_browser_history\nWHERE\n  NOT (\n    EXISTS (\n      SELECT 1\n      FROM allow_suffix s\n      WHERE lower(domain) = s.suffix\n         OR lower(domain) LIKE '%.' || s.suffix\n    )\n    OR EXISTS (\n      SELECT 1\n      FROM allow_glob g\n      WHERE lower(domain) GLOB g.pattern\n    )\n  )\nORDER BY event_time DESC;",
+                "interval": 3600,
+                "platform": "linux,darwin,windows",
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "web"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "access"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.browser_history_suspicious"
+                        }
+                    },
+                    {
+                        "key": "url.full",
+                        "value": {
+                            "field": "url"
+                        }
+                    },
+                    {
+                        "key": "url.domain",
+                        "value": {
+                            "field": "domain"
+                        }
+                    },
+                    {
+                        "key": "user_agent.name",
+                        "value": {
+                            "field": "browser"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "browser_history",
+                                "forensics",
+                                "threat_hunting",
+                                "filtered"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "rdp_authentication_windows_elastic",
+                "query": "-- Windows RDP Authentication and Session Events\n-- Coverage: Security, System, and TerminalServices event logs\n--\n-- Security Channel Events:\n--   4624 (LogonType 3,7,10): Successful logon\n--   4625: Failed logon\n--   4634: Logoff\n--   4647: User-initiated logoff\n--   4778: Session reconnect\n--   4779: Session disconnect\n--\n-- TerminalServices-LocalSessionManager/Operational:\n--   21: RDP Local Connected\n--   22: RDP Remote Connected\n--   23: RDP Session Logoff\n--   24: RDP Local Disconnected\n--   25: RDP Remote Reconnection\n--   39: RDP Remote Disconnected (Formal)\n--   40: RDP Remote Disconnected (Reason)\n--\n-- TerminalServices-RemoteConnectionManager/Operational:\n--   1149: RDP Initiation Successful\n--\n-- System Channel:\n--   9009: Desktop Window Manager Closed\n\n-- Part 1: Security Channel - Authentication Events\nSELECT\n    datetime AS event_time,\n    computer_name,\n    'Security' AS channel,\n    eventid,\n    provider_name,\n    level,\n    json_extract(data, '$.EventData.TargetDomainName') AS domain_name,\n    json_extract(data, '$.EventData.TargetUserName') AS user_name,\n    json_extract(data, '$.EventData.LogonType') AS logon_type,\n    json_extract(data, '$.EventData.IpAddress') AS source_ip,\n    json_extract(data, '$.EventData.IpPort') AS source_port,\n    json_extract(data, '$.EventData.WorkstationName') AS workstation_name,\n    json_extract(data, '$.EventData.LogonProcessName') AS logon_process,\n    json_extract(data, '$.EventData.AuthenticationPackageName') AS auth_package,\n    json_extract(data, '$.EventData.TargetLogonId') AS logon_id,\n    json_extract(data, '$.EventData.SubjectUserName') AS subject_user,\n    json_extract(data, '$.EventData.SubjectDomainName') AS subject_domain,\n    json_extract(data, '$.EventData.Status') AS status_code,\n    json_extract(data, '$.EventData.SubStatus') AS sub_status_code,\n    json_extract(data, '$.EventData.FailureReason') AS failure_reason,\n    CASE\n        WHEN eventid = 4624 AND json_extract(data, '$.EventData.LogonType') = '10' THEN 'RDP_LOGON_SUCCESSFUL_NEW'\n        WHEN eventid = 4624 AND json_extract(data, '$.EventData.LogonType') = '3' THEN 'LOGON_SUCCESSFUL_NETWORK'\n        WHEN eventid = 4624 AND json_extract(data, '$.EventData.LogonType') = '7' THEN 'LOGON_SUCCESSFUL_UNLOCK'\n        WHEN eventid = 4625 AND json_extract(data, '$.EventData.LogonType') = '10' THEN 'RDP_LOGON_FAILED'\n        WHEN eventid = 4625 AND json_extract(data, '$.EventData.LogonType') = '3' THEN 'LOGON_FAILED_NETWORK'\n        WHEN eventid = 4634 THEN 'LOGOFF_DISCONNECT'\n        WHEN eventid = 4647 THEN 'USER_INITIATED_LOGOFF'\n        WHEN eventid = 4778 THEN 'SESSION_RECONNECTED'\n        WHEN eventid = 4779 THEN 'SESSION_DISCONNECTED'\n        ELSE 'UNKNOWN_' || eventid\n    END AS event_description,\n    pid,\n    data\nFROM windows_eventlog\nWHERE \n    channel = 'Security'\n    AND (\n        (eventid IN (4624, 4634) AND json_extract(data, '$.EventData.LogonType') IN ('3', '7', '10'))\n        OR eventid IN (4778, 4625, 4779, 4647)\n    )\n\nUNION ALL\n\n-- Part 2: TerminalServices-LocalSessionManager - RDP Session Events\nSELECT\n    datetime AS event_time,\n    computer_name,\n    'Microsoft-Windows-TerminalServices-LocalSessionManager/Operational' AS channel,\n    eventid,\n    provider_name,\n    level,\n    COALESCE(\n        SUBSTR(json_extract(data, '$.UserData.EventXML.User'), 1, INSTR(json_extract(data, '$.UserData.EventXML.User'), '\\\\') - 1),\n        json_extract(data, '$.UserData.EventXML.Param2')\n    ) AS domain_name,\n    COALESCE(\n        SUBSTR(json_extract(data, '$.UserData.EventXML.User'), INSTR(json_extract(data, '$.UserData.EventXML.User'), '\\\\') + 1),\n        json_extract(data, '$.UserData.EventXML.Param1')\n    ) AS user_name,\n    NULL AS logon_type,\n    COALESCE(\n        json_extract(data, '$.UserData.EventXML.Address'),\n        json_extract(data, '$.UserData.EventXML.Param3')\n    ) AS source_ip,\n    NULL AS source_port,\n    NULL AS workstation_name,\n    NULL AS logon_process,\n    NULL AS auth_package,\n    json_extract(data, '$.UserData.EventXML.SessionID') AS logon_id,\n    NULL AS subject_user,\n    NULL AS subject_domain,\n    NULL AS status_code,\n    NULL AS sub_status_code,\n    json_extract(data, '$.UserData.EventXML.Reason') AS failure_reason,\n    CASE eventid\n        WHEN 21 THEN 'RDP_LOCAL_CONNECTED'\n        WHEN 22 THEN 'RDP_REMOTE_CONNECTED'\n        WHEN 23 THEN 'RDP_SESSION_LOGOFF'\n        WHEN 24 THEN 'RDP_LOCAL_DISCONNECTED'\n        WHEN 25 THEN 'RDP_REMOTE_RECONNECTION'\n        WHEN 39 THEN 'RDP_REMOTE_DISCONNECTED_FORMAL'\n        WHEN 40 THEN 'RDP_REMOTE_DISCONNECTED_REASON'\n        ELSE 'UNKNOWN_TSL_' || eventid\n    END AS event_description,\n    pid,\n    data\nFROM windows_eventlog\nWHERE \n    channel = 'Microsoft-Windows-TerminalServices-LocalSessionManager/Operational'\n    AND eventid IN (21, 22, 23, 24, 25, 39, 40)\n\nUNION ALL\n\n-- Part 3: TerminalServices-RemoteConnectionManager - RDP Initiation\nSELECT\n    datetime AS event_time,\n    computer_name,\n    'Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational' AS channel,\n    eventid,\n    provider_name,\n    level,\n    json_extract(data, '$.UserData.EventXML.Param2') AS domain_name,\n    json_extract(data, '$.UserData.EventXML.Param1') AS user_name,\n    NULL AS logon_type,\n    json_extract(data, '$.UserData.EventXML.Param3') AS source_ip,\n    NULL AS source_port,\n    NULL AS workstation_name,\n    NULL AS logon_process,\n    NULL AS auth_package,\n    NULL AS logon_id,\n    NULL AS subject_user,\n    NULL AS subject_domain,\n    NULL AS status_code,\n    NULL AS sub_status_code,\n    NULL AS failure_reason,\n    'RDP_INITIATION_SUCCESSFUL' AS event_description,\n    pid,\n    data\nFROM windows_eventlog\nWHERE \n    channel = 'Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational'\n    AND eventid = 1149\n\nUNION ALL\n\n-- Part 4: System Channel - Desktop Window Manager Closed\nSELECT\n    datetime AS event_time,\n    computer_name,\n    'System' AS channel,\n    eventid,\n    provider_name,\n    level,\n    NULL AS domain_name,\n    NULL AS user_name,\n    NULL AS logon_type,\n    NULL AS source_ip,\n    NULL AS source_port,\n    NULL AS workstation_name,\n    NULL AS logon_process,\n    NULL AS auth_package,\n    NULL AS logon_id,\n    NULL AS subject_user,\n    NULL AS subject_domain,\n    NULL AS status_code,\n    NULL AS sub_status_code,\n    NULL AS failure_reason,\n    'DESKTOPWINDOWMANAGER_CLOSED' AS event_description,\n    pid,\n    data\nFROM windows_eventlog\nWHERE \n    channel = 'System'\n    AND eventid = 9009\n\nORDER BY event_time DESC;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "session"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.rdp_authentication"
+                        }
+                    },
+                    {
+                        "key": "event.code",
+                        "value": {
+                            "field": "eventid"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "log.level",
+                        "value": {
+                            "field": "level"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "user_name"
+                        }
+                    },
+                    {
+                        "key": "user.domain",
+                        "value": {
+                            "field": "domain_name"
+                        }
+                    },
+                    {
+                        "key": "event.reason",
+                        "value": {
+                            "field": "event_description"
+                        }
+                    },
+                    {
+                        "key": "source.ip",
+                        "value": {
+                            "field": "source_ip"
+                        }
+                    },
+                    {
+                        "key": "source.port",
+                        "value": {
+                            "field": "source_port"
+                        }
+                    },
+                    {
+                        "key": "winlog.channel",
+                        "value": {
+                            "field": "channel"
+                        }
+                    },
+                    {
+                        "key": "winlog.logon.type",
+                        "value": {
+                            "field": "logon_type"
+                        }
+                    },
+                    {
+                        "key": "winlog.logon.id",
+                        "value": {
+                            "field": "logon_id"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.WorkstationName",
+                        "value": {
+                            "field": "workstation_name"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.LogonProcessName",
+                        "value": {
+                            "field": "logon_process"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.AuthenticationPackageName",
+                        "value": {
+                            "field": "auth_package"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.SubjectUserName",
+                        "value": {
+                            "field": "subject_user"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.SubjectDomainName",
+                        "value": {
+                            "field": "subject_domain"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.Status",
+                        "value": {
+                            "field": "status_code"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.SubStatus",
+                        "value": {
+                            "field": "sub_status_code"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.FailureReason",
+                        "value": {
+                            "field": "failure_reason"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "rdp",
+                                "authentication",
+                                "lateral_movement",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "logged_in_users_elastic",
+                "query": "-- Logged In Users Enumeration (Cross-Platform)\n-- Lists all currently logged-in users with session details\n-- Use case: User activity forensics, lateral movement detection, active session enumeration\n-- Windows logon types: console (interactive), remote (RDP), service, etc.\n-- Linux/macOS: pts (pseudo-terminal), tty (console), etc.\nSELECT\n  datetime(time, 'unixepoch') AS login_time,\n  user AS username,\n  type AS logon_type,\n  tty,\n  host AS remote_host,\n  pid,\n  sid AS user_sid,\n  registry_hive\nFROM logged_in_users\nORDER BY time DESC",
+                "interval": 3600,
+                "platform": "linux,darwin,windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "session"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.logged_in_users"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "user_sid"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "source.address",
+                        "value": {
+                            "field": "remote_host"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "user_activity",
+                                "session"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "lnk_forensics_windows_elastic",
+                "query": "-- Windows LNK Shortcut File Forensics with Suspicious Pattern Detection\n-- Source: file table with native Windows shortcut parsing + authenticode signatures\n-- Focus: Risky executables (LOLBins), malicious arguments, large files, persistence mechanisms\n-- Scope: Comprehensive coverage of forensically significant LNK locations (startup, desktop, recent, quick launch, sendto, start menu)\n-- Workaround: Uses path LIKE instead of directory = to ensure shortcut metadata is populated (osquery #8727)\n\nWITH user_lnk_paths AS (\n    -- Per-user LNK locations\n    SELECT \n        u.username,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup' AS user_startup,\n        u.directory || '\\Desktop' AS user_desktop,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Windows\\Recent' AS user_recent,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Internet Explorer\\Quick Launch' AS user_quicklaunch,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Windows\\SendTo' AS user_sendto,\n        u.directory || '\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs' AS user_startmenu\n    FROM users u\n    WHERE u.directory LIKE 'C:\\Users\\%'\n      AND u.username NOT IN ('Default', 'Default User', 'Public', 'All Users')\n),\nlnk_files AS (\n    -- User Startup folders (highest priority - persistence)\n    -- Uses path LIKE instead of directory = to get shortcut metadata (osquery #8727 workaround)\n    SELECT f.*, 'user_startup' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_startup || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- System-wide Startup folder (persistence)\n    SELECT f.*, 'system_startup' AS location_type\n    FROM file f\n    WHERE f.path LIKE 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\%.lnk'\n    \n    UNION ALL\n    \n    -- User Desktop folders\n    SELECT f.*, 'user_desktop' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_desktop || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- Public Desktop\n    SELECT f.*, 'public_desktop' AS location_type\n    FROM file f\n    WHERE f.path LIKE 'C:\\Users\\Public\\Desktop\\%.lnk'\n    \n    UNION ALL\n    \n    -- Recent Items (user activity tracking)\n    SELECT f.*, 'recent_items' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_recent || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- Quick Launch\n    SELECT f.*, 'quick_launch' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_quicklaunch || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- SendTo menu\n    SELECT f.*, 'sendto' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_sendto || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- Start Menu Programs (user)\n    SELECT f.*, 'user_startmenu' AS location_type\n    FROM user_lnk_paths p\n    CROSS JOIN file f\n    WHERE f.path LIKE p.user_startmenu || '\\%.lnk'\n    \n    UNION ALL\n    \n    -- Start Menu Programs (system-wide)\n    SELECT f.*, 'system_startmenu' AS location_type\n    FROM file f\n    WHERE f.path LIKE 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\%.lnk'\n),\nlnk_enriched AS (\n    SELECT\n        lnk.path,\n        lnk.filename,\n        lnk.directory,\n        lnk.size,\n        datetime(lnk.btime, 'unixepoch') AS created_time,\n        datetime(lnk.mtime, 'unixepoch') AS modified_time,\n        datetime(lnk.atime, 'unixepoch') AS accessed_time,\n        datetime(lnk.ctime, 'unixepoch') AS changed_time,\n        lnk.type,\n        lnk.shortcut_target_path,\n        lnk.shortcut_target_type,\n        lnk.shortcut_target_location,\n        lnk.shortcut_start_in,\n        lnk.shortcut_run,\n        lnk.shortcut_comment,\n        lnk.location_type,\n        'lnk' AS extension,\n        CASE \n            WHEN lnk.shortcut_target_path IS NOT NULL AND lnk.shortcut_comment IS NOT NULL \n            THEN lnk.shortcut_target_path || ' ' || lnk.shortcut_comment\n            WHEN lnk.shortcut_target_path IS NOT NULL \n            THEN lnk.shortcut_target_path\n            ELSE NULL\n        END AS combined_command\n    FROM lnk_files lnk\n)\nSELECT \n    lnk.path,\n    lnk.filename,\n    lnk.directory,\n    lnk.size,\n    lnk.created_time,\n    lnk.modified_time,\n    lnk.accessed_time,\n    lnk.changed_time,\n    lnk.type,\n    lnk.shortcut_target_path,\n    lnk.shortcut_target_type,\n    lnk.shortcut_target_location,\n    lnk.shortcut_start_in,\n    lnk.shortcut_run,\n    lnk.shortcut_comment,\n    lnk.combined_command,\n    lnk.location_type,\n    lnk.extension,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.subject_name AS signature_signer,\n    a.issuer_name AS signature_issuer,\n    a.result AS signature_status,\n    a.serial_number AS signature_serial,\n    CASE WHEN lnk.size > 20000 THEN 1 ELSE 0 END AS large_size_flag,\n    CASE WHEN lnk.location_type IN ('user_startup', 'system_startup') THEN 1 ELSE 0 END AS startup_persistence_flag,\n    CASE \n        WHEN lnk.shortcut_target_path LIKE '%\\cmd.exe' \n            OR lnk.shortcut_target_path LIKE '%\\powershell.exe'\n            OR lnk.shortcut_target_path LIKE '%\\pwsh.exe'\n            OR lnk.shortcut_target_path LIKE '%\\cscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\rundll32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\regsvr32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\mshta.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wmic.exe'\n            OR lnk.shortcut_target_path LIKE '%\\conhost.exe'\n            OR lnk.shortcut_target_path LIKE '%\\certutil.exe'\n            OR lnk.shortcut_target_path LIKE '%\\bitsadmin.exe'\n        THEN 1 ELSE 0 \n    END AS risky_executable_flag,\n    CASE \n        WHEN lnk.combined_command LIKE '%\\AppData\\%'\n            OR lnk.combined_command LIKE '%\\Users\\Public\\%'\n            OR lnk.combined_command LIKE '%\\Temp\\%'\n            OR lnk.combined_command LIKE '%comspec%'\n            OR lnk.combined_command LIKE '%&cd&echo%'\n            OR lnk.combined_command LIKE '% -NoP %'\n            OR lnk.combined_command LIKE '% -nop %'\n            OR lnk.combined_command LIKE '% -W Hidden %'\n            OR lnk.combined_command LIKE '% -w hidden %'\n            OR lnk.combined_command LIKE '% -WindowStyle Hidden %'\n            OR lnk.combined_command LIKE '% -decode %'\n            OR lnk.combined_command LIKE '% /decode %'\n            OR lnk.combined_command LIKE '% -e %JAB%'\n            OR lnk.combined_command LIKE '% -e %SUVYI%'\n            OR lnk.combined_command LIKE '% -e %SQBFAFgA%'\n            OR lnk.combined_command LIKE '% -e %aWV4I%'\n            OR lnk.combined_command LIKE '% -e %aQBlAHgA%'\n            OR lnk.combined_command LIKE '% -enc %'\n            OR lnk.combined_command LIKE '% -EncodedCommand %'\n            OR lnk.combined_command LIKE '%start /b%'\n            OR lnk.combined_command LIKE '%start \\b%'\n            OR lnk.combined_command LIKE '%.downloadstring(%'\n            OR lnk.combined_command LIKE '%.downloadfile(%'\n            OR lnk.combined_command LIKE '%Invoke-WebRequest%'\n            OR lnk.combined_command LIKE '%iwr %'\n            OR lnk.combined_command LIKE '%iex %'\n            OR lnk.combined_command LIKE '%Invoke-Expression%'\n        THEN 1 ELSE 0\n    END AS suspicious_arguments_flag,\n    CASE \n        WHEN lnk.combined_command LIKE '%http://%'\n            OR lnk.combined_command LIKE '%https://%'\n            OR lnk.combined_command LIKE '%ftp://%'\n            OR lnk.combined_command LIKE '%ftps://%'\n        THEN 1 ELSE 0\n    END AS http_download_flag,\n    CASE \n        WHEN lnk.combined_command LIKE '% \\\\\\\\%'\n            OR lnk.shortcut_start_in LIKE '\\\\\\\\%'\n        THEN 1 ELSE 0\n    END AS unc_path_flag,\n    CASE \n        WHEN LENGTH(lnk.shortcut_comment) > 250 \n        THEN 1 ELSE 0\n    END AS large_arguments_flag\nFROM lnk_enriched lnk\nLEFT JOIN hash h ON lnk.path = h.path\nLEFT JOIN authenticode a ON a.path = lnk.shortcut_target_path\nWHERE (\n    -- Always include startup locations (persistence focus)\n    lnk.location_type IN ('user_startup', 'system_startup')\n    -- For other locations, filter for suspicious indicators\n    OR lnk.size > 20000\n    OR lnk.shortcut_target_path LIKE '%\\cmd.exe'\n    OR lnk.shortcut_target_path LIKE '%\\powershell.exe'\n    OR lnk.shortcut_target_path LIKE '%\\pwsh.exe'\n    OR lnk.shortcut_target_path LIKE '%\\cscript.exe'\n    OR lnk.shortcut_target_path LIKE '%\\wscript.exe'\n    OR lnk.shortcut_target_path LIKE '%\\rundll32.exe'\n    OR lnk.shortcut_target_path LIKE '%\\regsvr32.exe'\n    OR lnk.shortcut_target_path LIKE '%\\mshta.exe'\n    OR lnk.shortcut_target_path LIKE '%\\wmic.exe'\n    OR lnk.shortcut_target_path LIKE '%\\conhost.exe'\n    OR lnk.shortcut_target_path LIKE '%\\certutil.exe'\n    OR lnk.shortcut_target_path LIKE '%\\bitsadmin.exe'\n    OR lnk.combined_command LIKE '%\\AppData\\%'\n    OR lnk.combined_command LIKE '%\\Users\\Public\\%'\n    OR lnk.combined_command LIKE '%\\Temp\\%'\n    OR lnk.combined_command LIKE '%comspec%'\n    OR lnk.combined_command LIKE '%&cd&echo%'\n    OR lnk.combined_command LIKE '% -NoP %'\n    OR lnk.combined_command LIKE '% -nop %'\n    OR lnk.combined_command LIKE '% -W Hidden %'\n    OR lnk.combined_command LIKE '% -w hidden %'\n    OR lnk.combined_command LIKE '% -WindowStyle Hidden %'\n    OR lnk.combined_command LIKE '% -decode %'\n    OR lnk.combined_command LIKE '% /decode %'\n    OR lnk.combined_command LIKE '% -e %JAB%'\n    OR lnk.combined_command LIKE '% -e %SUVYI%'\n    OR lnk.combined_command LIKE '% -e %SQBFAFgA%'\n    OR lnk.combined_command LIKE '% -e %aWV4I%'\n    OR lnk.combined_command LIKE '% -e %aQBlAHgA%'\n    OR lnk.combined_command LIKE '% -enc %'\n    OR lnk.combined_command LIKE '% -EncodedCommand %'\n    OR lnk.combined_command LIKE '%start /b%'\n    OR lnk.combined_command LIKE '%start \\b%'\n    OR lnk.combined_command LIKE '%.downloadstring(%'\n    OR lnk.combined_command LIKE '%.downloadfile(%'\n    OR lnk.combined_command LIKE '%Invoke-WebRequest%'\n    OR lnk.combined_command LIKE '%iwr %'\n    OR lnk.combined_command LIKE '%iex %'\n    OR lnk.combined_command LIKE '%Invoke-Expression%'\n    OR lnk.combined_command LIKE '%http://%'\n    OR lnk.combined_command LIKE '%https://%'\n    OR lnk.combined_command LIKE '%ftp://%'\n    OR lnk.combined_command LIKE '%ftps://%'\n    OR lnk.combined_command LIKE '% \\\\\\\\%'\n    OR lnk.shortcut_start_in LIKE '\\\\\\\\%'\n    OR LENGTH(lnk.shortcut_comment) > 250\n)\nORDER BY \n    -- Priority: Startup locations first\n    CASE WHEN lnk.location_type IN ('user_startup', 'system_startup') THEN 1 ELSE 2 END,\n    -- Then by risky executable\n    CASE \n        WHEN lnk.shortcut_target_path LIKE '%\\cmd.exe' \n            OR lnk.shortcut_target_path LIKE '%\\powershell.exe'\n            OR lnk.shortcut_target_path LIKE '%\\pwsh.exe'\n            OR lnk.shortcut_target_path LIKE '%\\cscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wscript.exe'\n            OR lnk.shortcut_target_path LIKE '%\\rundll32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\regsvr32.exe'\n            OR lnk.shortcut_target_path LIKE '%\\mshta.exe'\n            OR lnk.shortcut_target_path LIKE '%\\wmic.exe'\n            OR lnk.shortcut_target_path LIKE '%\\conhost.exe'\n            OR lnk.shortcut_target_path LIKE '%\\certutil.exe'\n            OR lnk.shortcut_target_path LIKE '%\\bitsadmin.exe'\n        THEN 1 ELSE 2 \n    END,\n    lnk.location_type,\n    lnk.modified_time DESC;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.lnk_forensics"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.created",
+                        "value": {
+                            "field": "created_time"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.extension",
+                        "value": {
+                            "field": "extension"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.issuer",
+                        "value": {
+                            "field": "signature_issuer"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "shortcut_target_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "combined_command"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "forensics",
+                                "persistence",
+                                "file-analysis",
+                                "windows"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "labels.lnk_comment",
+                        "value": {
+                            "field": "shortcut_comment"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "shellbags_windows_elastic",
+                "query": "SELECT\n  sid AS user_sid,\n  source,\n  path,\n  datetime(modified_time, 'unixepoch') AS modified_time,\n  datetime(created_time, 'unixepoch') AS created_time,\n  datetime(accessed_time, 'unixepoch') AS accessed_time,\n  mft_entry,\n  mft_sequence\nFROM shellbags\nWHERE path != '' AND path IS NOT NULL\nORDER BY modified_time DESC;",
+                "interval": 3600,
+                "platform": "windows",
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "registry"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.shellbags"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "user_sid"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.created",
+                        "value": {
+                            "field": "created_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.inode",
+                        "value": {
+                            "field": "mft_entry"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "shellbags",
+                                "user_activity",
+                                "forensics",
+                                "registry",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-e0c3d4f5-a6b7-4c8d-0e9f-1a2b3c4d5e6f",
+    "references": [],
+    "type": "osquery-pack-asset"
+}
