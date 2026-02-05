@@ -1,7 +1,7 @@
 format_version: 3.5.0
 name: nginx_otel_input
 title: "NGINX OpenTelemetry Input Package"
-version: 0.1.0
+version: 0.2.0
 source:
   license: "Elastic-2.0"
 description: "NGINX OpenTelemetry Input Package"
@@ -28,15 +28,23 @@ policy_templates:
     input: otelcol
     template_path: input.yml.hbs
     vars:
-      - name: receiver_config
-        type: yaml
-        title: Receiver Configuration
+      - name: endpoint
+        type: text
         required: true
-        show_user: true
-        description: Configuration for the NGINX receiver. This configuration will be inserted directly into the receiver section of the OpenTelemetry Collector configuration.
-        default: |
-          endpoint: http://localhost:80/status
-          collection_interval: 10s
+        description: The URL of the NGINX status endpoint.
+        default: http://localhost:80/status
+      - name: collection_interval
+        type: duration
+        required: false
+        description: Time between each collection.
+        default: 10s
+        show_user: false
+      - name: initial_delay
+        type: duration
+        required: false
+        description: Defines how long this receiver waits before starting.
+        default: 1s
+        show_user: false
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic

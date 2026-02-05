@@ -97,8 +97,10 @@ For Filebeat input documentation, refer to the following pages:
 | github.login_method |  | keyword |
 | github.logout_reason |  | keyword |
 | github.message |  | keyword |
+| github.multi_repo |  | boolean |
 | github.name |  | keyword |
 | github.new_role |  | keyword |
+| github.number |  | long |
 | github.old_role |  | keyword |
 | github.operation_type |  | keyword |
 | github.org | GitHub organization name. | keyword |
@@ -106,6 +108,7 @@ For Filebeat input documentation, refer to the following pages:
 | github.permission | GitHub user permissions for the event. | keyword |
 | github.programmatic_access_type | Type of authentication used. | keyword |
 | github.public_repo |  | boolean |
+| github.publicly_leaked |  | boolean |
 | github.pull_request_id |  | keyword |
 | github.pull_request_title |  | keyword |
 | github.pull_request_url |  | keyword |
@@ -120,6 +123,8 @@ For Filebeat input documentation, refer to the following pages:
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
 | github.request_category |  | keyword |
+| github.secret_type |  | keyword |
+| github.secret_type_display_name |  | keyword |
 | github.secrets_updated |  | keyword |
 | github.source_branch |  | keyword |
 | github.target_branch |  | keyword |
@@ -774,6 +779,11 @@ All issues including `closed` are retrieved by default. If users want to retriev
 To use this integration, users must use GitHub Apps or Personal Access Token with `read` permission to repositories or organization. Refer to [GitHub Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
 
 **Note**: The Issues API can fetch a maximum of 30,000 issues when querying at the organization level. No limitation exists when querying for the repository level.
+
+**Note**: Ensure the GitHub Personal Access Token includes following fine-grained permission for the repository:
+- At least `Read-only` permission on Issues
+- At least `Read-only` permission on Metadata
+If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
 
 **Exported fields**
 

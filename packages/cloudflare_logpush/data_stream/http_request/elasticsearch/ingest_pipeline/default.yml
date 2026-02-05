@@ -22,6 +22,17 @@ processors:
   - set:
       field: event.type
       value: [info]
+## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+## When "Data Deduplication" is not enabled, this field must be removed.
+## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, the _id field (used for _id Based Deduplication)
+        must be removed.
+      if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
+      ignore_missing: true
   - script:
       lang: painless
       tag: painless_edge_start_timestamp_to_milli
@@ -336,10 +347,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - uri_parts:
-      field: json.ClientRequestURI
-      ignore_failure: true
-      if: ctx.json?.ClientRequestURI != null
   - rename:
       field: json.ContentScanObjResults
       target_field: cloudflare_logpush.http_request.content_scan.results
@@ -391,6 +398,27 @@ processors:
       copy_from: json.ClientRequestQuery
       ignore_empty_value: true
       if: ctx.url?.query == null
+  - set:
+      field: tmp.constructed_uri
+      tag: set_tmp_constructed_uri
+      value: '{{url.scheme}}://{{url.domain}}{{json.ClientRequestURI}}'
+      if: ctx.json?.ClientRequestURI != null 
+          && ctx.url?.scheme != null 
+          && ctx.url?.domain != null
+          && ctx.json.ClientRequestURI.startsWith('/')
+  - set:
+      field: tmp.constructed_uri
+      tag: set_tmp_constructed_uri_from_ClientRequestURI
+      copy_from: json.ClientRequestURI
+      if: ctx.json?.ClientRequestURI != null && !ctx.json.ClientRequestURI.startsWith('/')
+  - uri_parts:
+      field: tmp.constructed_uri
+      tag: uri_parts_tmp_constructed_uri
+      ignore_failure: true
+      if: ctx.tmp?.constructed_uri != null
+  - remove:
+      field: tmp.constructed_uri
+      ignore_missing: true
   - rename:
       field: json.ClientRequestHost
       target_field: cloudflare_logpush.http_request.client.request.host
@@ -914,7 +942,10 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - remove:
-      field: json
+      tag: remove_json_conf
+      field:
+        - json
+        - _conf
       ignore_missing: true
   - remove:
       field:

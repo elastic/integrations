@@ -263,6 +263,9 @@ An example event for `alert` looks as following:
 | trend_micro_vision_one.alert.indicators.related_entities | Related entities. | keyword |
 | trend_micro_vision_one.alert.indicators.type | Indicator type. | keyword |
 | trend_micro_vision_one.alert.indicators.value | Indicator value. | keyword |
+| trend_micro_vision_one.alert.indicators.value_object.guid | GUID. | keyword |
+| trend_micro_vision_one.alert.indicators.value_object.ips | Set of IPs. | ip |
+| trend_micro_vision_one.alert.indicators.value_object.name | Host name. | keyword |
 | trend_micro_vision_one.alert.industry | Industry. | keyword |
 | trend_micro_vision_one.alert.investigation_status | Workbench alert status. | keyword |
 | trend_micro_vision_one.alert.matched_indicator_count | Matched indicator pattern count. | long |

@@ -143,6 +143,7 @@ An example event for `billing` looks as following:
 | ess.billing.cloud.service.type | The service type of the serverless project. | keyword |
 | ess.billing.deployment_id | ID of the Elasticsearch Service deployment. | keyword |
 | ess.billing.deployment_name | Name of the Elasticsearch Service deployment. | keyword |
+| ess.billing.deployment_tags | Tags associated with the Elasticsearch Service deployment. | keyword |
 | ess.billing.deployment_type | Type of the Elasticsearch Service deployment. | keyword |
 | ess.billing.display_quantity.formatted_value | Human-readable representation of the quantity used (e.g., "24 hours"). | keyword |
 | ess.billing.display_quantity.type | Type of quantity displayed (default or custom). | keyword |
