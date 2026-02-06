@@ -56,7 +56,7 @@ This integration collects the following types of metrics:
 
 ### Docker Endpoint
 
-The endpoint of the Docker daemon. Default is `unix:///var/run/docker.sock`.
+The endpoint of the Docker daemon. If not specified, the receiver uses `unix:///var/run/docker.sock` on Linux.
 
 For remote Docker hosts, you can use TCP endpoints like `tcp://docker-host:2375`.
 
@@ -72,7 +72,9 @@ Example:
 
 ### API Version
 
-The Docker API version to use. Default is `1.25` (the minimum supported version).
+The Docker API version to use. Default is mandated by the docker stats receiver.
+
+For Docker Engine v29, API version `"1.44"` or higher has to be used.
 
 ### Per-Core CPU Metrics
 
