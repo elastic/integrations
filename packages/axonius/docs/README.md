@@ -831,9 +831,9 @@ An example event for `alert_and_incident` looks as following:
 {
     "@timestamp": "2025-04-14T13:38:49.000Z",
     "agent": {
-        "ephemeral_id": "75b1cfdf-ae0c-40a8-9d99-62cefac0f26c",
-        "id": "df2f55f5-9ed0-46f7-81aa-76e2347d5e98",
-        "name": "elastic-agent-29558",
+        "ephemeral_id": "6b155ea6-8ef2-449b-856d-84cae60dc418",
+        "id": "75ab51fa-c835-4f00-ac5d-517de5821dce",
+        "name": "elastic-agent-26199",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -869,14 +869,14 @@ An example event for `alert_and_incident` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.alert_and_incident",
-        "namespace": "47334",
+        "namespace": "82639",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "df2f55f5-9ed0-46f7-81aa-76e2347d5e98",
+        "id": "75ab51fa-c835-4f00-ac5d-517de5821dce",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -884,7 +884,7 @@ An example event for `alert_and_incident` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.alert_and_incident",
         "id": "66447fe5e6c4840f32a5b94f",
-        "ingested": "2025-12-29T06:05:21Z",
+        "ingested": "2026-02-06T06:47:49Z",
         "kind": "alert"
     },
     "input": {
