@@ -39,7 +39,6 @@ This integration has been tested against and is compatible with **Cisco Identity
 
 -   **Elastic Agent Deployment:** An Elastic Agent must be deployed and enrolled in Fleet.
 -   **Input Configuration:** The Elastic Agent must have the TCP or UDP input enabled and configured with a listening port that matches the remote logging target settings in Cisco ISE (e.g., TCP: 9025, UDP: 9026).
--   **Elastic Stack Version:** This integration requires Elastic Stack version 8.0 or newer.
 
 ## Vendor set up steps
 
@@ -87,7 +86,7 @@ If direct Syslog forwarding is not feasible or desired, logs can be collected fr
 4. Follow the prompts to add the integration to an existing Elastic Agent policy or create a new one.
 5. Choose your desired input type based on how Cisco ISE is configured to send logs, and configure the following fields:
 
-### Collecting Cisco ISE logs by TCP input.
+### Collecting Cisco ISE logs by TCP input
 To collect logs by TCP, configure the following:
 -   **Listen Address** (`listen_address`): The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
 -   **Listen Port** (`listen_port`): The TCP port number to listen on. Default: `9025`.
@@ -96,7 +95,7 @@ To collect logs by TCP, configure the following:
 -   **Tags** (`tags`): Default: `['forwarded', 'cisco_ise-log']`.
 -   **Processors** (`processors`): Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-### Collecting Cisco ISE logs by UDP input.
+### Collecting Cisco ISE logs by UDP input
 To collect logs by UDP, configure the following:
 -   **Listen Address** (`listen_address`): The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
 -   **Listen Port** (`listen_port`): The UDP port number to listen on. Default: `9026`.
@@ -109,7 +108,7 @@ To collect logs by UDP, configure the following:
 `.
 -   **Processors** (`processors`): Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-### Collecting Cisco ISE logs using filestream input.
+### Collecting Cisco ISE logs using filestream input
 To collect logs from local files, configure the following:
 -   **Paths** (`paths`): Default: `['/var/log/cisco_ise*']`.
 -   **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event, added to the field `event.original`. Default: `False`.

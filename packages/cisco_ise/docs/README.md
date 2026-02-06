@@ -10,11 +10,11 @@ This integration facilitates:
 - Security monitoring and threat detection: You can track successful and failed authentication attempts, authorization policies applied, and user access details to identify potential security breaches or policy violations.
 - Network access behavior analysis: You'll gain insights into who is accessing the network, from where, and with what devices by collecting detailed accounting data.
 - Compliance and auditability: You can maintain a comprehensive audit trail of all network access activities, user authentications, and policy changes to meet regulatory compliance requirements.
-- System health monitoring and troubleshooting: You can utilize detailed system and operational logs to diagnose problems related to network access, policy enforcement, or RADIUS server communication.
+- System health monitoring and troubleshooting: You can use detailed system and operational logs to diagnose problems related to network access, policy enforcement, or RADIUS server communication.
 
 ### Compatibility
 
-This integration has been tested against Cisco Identity Services Engine (ISE) version 3.1.0.518 and above. For full compatibility, you should use ISE version 3.1.0.518 or higher.
+This integration has been tested against Cisco Identity Services Engine (ISE) version 3.1.0.518 and later. For full compatibility, you should use ISE version 3.1.0.518 or later.
 
 It is compatible with Elastic Stack version 8.11.0 or later.
 
@@ -53,7 +53,7 @@ To use this integration, you'll need the following:
 - Familiarity with Cisco ISE logging categories, like passed authentications or failed attempts, to select and forward the relevant log types.
 - An Elastic Agent deployed and enrolled in Fleet.
 - The TCP or UDP input enabled on the Elastic Agent with a listening port that matches the remote logging target settings in Cisco ISE.
-- Elastic Stack version 8.0 or newer.
+- Elastic Stack version 8.0 or later.
 
 ### SSL/TLS configuration
 
