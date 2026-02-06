@@ -20,13 +20,18 @@ Since Totemo has a very flexible logging output it is important to have the log4
 
 ```
 %-5p <%d{ISO8601}> [%t] [%-30c{1}] %X{mailID} %m %n
-
 ```
 
 ## Setup
-
+### Syslog over Network
 1. Enable the integration with TCP/UDP input.
-2. ...? #TODO: Findout how
+1. Login to your Totemo Mail Appliance and navigate to:
+* Settings
+  * Logging + Tracking
+    * audit.adminSyslogHost = Elastic Agent Hostname
+    * auditadminSyslogPort = Integration Port
+    * audit.adminSyslogProtocol = TCP or UDP
+    * totemo.log4j2.appender.syslog.layout.pattern = ``%-5p <%d{ISO8601}> [%t] [%-30c{1}] %X{mailID} %m %n``
 
 ### Enable the integration in Elastic
 
@@ -111,16 +116,14 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.ip |  | ip |
+| client.port |  | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
-| pps.entry.name | The name of an entry in the password manager | keyword |
-| pps.entry.path | Password Path | keyword |
-| pps.entry.reason | Reason the user interacted with a password | keyword |
-| pps.entry.target.name | The new name of an entry in the password manager if it was changed | keyword |
-| pps.entry.target.username | The new username of an entry in the password manager if it was changed | keyword |
-| pps.entry.username | The username of an entry in the password manager | keyword |
+| server.ip |  | ip |
+| server.port |  | long |
 
