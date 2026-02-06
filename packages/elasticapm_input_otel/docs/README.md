@@ -81,7 +81,6 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 - **Connection refused**: Ensure the endpoint is accessible from the APM agents
 - **TLS errors**: Verify certificate paths and that the APM agent trusts the server certificate
 - **No data appearing**: Check that APM agents are using the Intake V2 protocol
-- **"failed to index document" with `security_exception`**: The collector writes to Elasticsearch data stream indices built from `data_stream.type`, `data_stream.dataset`, and `data_stream.namespace` (e.g. `metrics-elasticapm_input_otel.elasticapmintakereceiver-ep`). The agent’s output must have index privileges for those patterns (e.g. `logs-*-*`, `metrics-*-*`, `traces-*-*`). With Fleet, ensure the integration’s output permissions include all three patterns for multi-signal data. If the runtime config uses a different dataset or namespace, the granted index pattern must still match the actual index names.
 
 ## Scaling
 
