@@ -17,7 +17,7 @@ This integration supports below API versions to collect data.
   - [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
     - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
   - [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
-    - Supported Microsoft Defender XDR Streaming event types are listed below. For more details on all available event types, see [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
+    - Supported Microsoft Defender XDR Streaming event types are listed below. For more details on all available event types, refer to [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
         | Resource types            | Description                                                                                                                                                                       |
         | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
         | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts.                                                                                                              |
@@ -50,7 +50,7 @@ The Microsoft Defender XDR integration collects logs for four types of events: A
 
 **Alerts:** This data streams uses the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)'s [`/security/alerts_v2`](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0) endpoint to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
 
-**Events:** This data stream uses the [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of supported events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
+**Events:** This data stream uses the [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of supported events exposed by the Streaming API and supported by Elastic's integration, please refer to Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
 
 **Incidents and Alerts:** This data streams uses the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)'s [`/security/incidents`](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0) endpoint to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in Microsoft Defender XDR. Incidents stemming from Microsoft Defender XDR, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
 
@@ -71,24 +71,24 @@ Version `4.0.0` of the Microsoft Defender XDR integration adds [Elastic latest t
 ### From Microsoft Defender XDR
 Follow the steps below to configure data collection from Microsoft sources.
 
-#### 1. Collecting Data via Azure Event Hub
+#### 1. Collecting Data using Azure Event Hub
 
 - [Configure Microsoft Defender XDR to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/defender-xdr/streaming-api-event-hub?view=o365-worldwide).
 - A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping filebeat it can start back up at the spot that it stopped processing messages.
 
-#### 2. Collecting Data via Microsoft Graph Security REST API (for Incidents & Alerts)
+#### 2. Collecting Data using Microsoft Graph Security REST API (for Incidents & Alerts)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
-- Assign the required permission: **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0).
+- Assign the required permission: **SecurityIncident.Read.All**. Refer to [documentation](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0&tabs=http#step-1-configure-permissions-for-microsoft-graph) on how to configure permissions. Refer to [documentation](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http#permissions) on required permissions for incidents and alerts.
 - Once the application is registered, note the following values for use during configuration:
   - Client ID
   - Client Secret
   - Tenant ID
 
-#### 3. Collecting Data via Microsoft Defender for Endpoint API (for Vulnerabilities)
+#### 3. Collecting Data using Microsoft Defender for Endpoint API (for Vulnerabilities)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
-- Assign the required permissions: **Vulnerability.Read.All**. See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#22-permissions).
+- Assign the required permissions: **Vulnerability.Read.All**. Refer to [documentation](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0&tabs=http#step-1-configure-permissions-for-microsoft-graph) on how to configure permissions. Refer to [documentation](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#22-permissions) on required permissions for vulnerability.
 - After registration, retrieve the following credentials needed for configuration:
   - Client ID
   - Client Secret
@@ -116,13 +116,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 4. Select **Add Microsoft Defender XDR** to add the integration.
 5. Enable and configure only the collection methods which you will use.
 
-    * To **Collect alerts and incidents via Microsoft Graph Security API**, you'll need to:
+    * To **Collect alerts and incidents using Microsoft Graph Security API**, you'll need to:
 
         - Configure **Client ID**, **Client Secret** and **Tenant ID**.
-    * To **Collect vulnerabilities via Microsoft Defender for Endpoint API**, you'll need to:
+    * To **Collect vulnerabilities using Microsoft Defender for Endpoint API**, you'll need to:
 
         - Configure **Client ID**, **Client Secret** and **Tenant ID**. Configure either **Subscription ID** or **Management Group Name** as the scope.
-    * To **Collect events via Azure Event Hub**, you'll need to:
+    * To **Collect events using Azure Event Hub**, you'll need to:
 
         - Configure **Azure Event Hub**, **Connection String**, **Storage Account**, and **storage_account_key**.
 
