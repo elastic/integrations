@@ -1,8 +1,10 @@
 format_version: 3.5.0
 name: docker_otel_input
 title: "Docker (OpenTelemetry)"
-version: 0.2.0
+version: 0.1.0
 description: "Collect Docker container metrics using OpenTelemetry Collector"
+source:
+  license: "Elastic-2.0"
 type: input
 categories:
   - containers
@@ -16,7 +18,7 @@ conditions:
     subscription: "basic"
 icons:
   - src: /img/docker_logo.svg
-    title: Sample logo
+    title: Docker logo
     size: 32x32
     type: image/svg+xml
 policy_templates:
@@ -28,9 +30,10 @@ policy_templates:
     template_path: input.yml.hbs
     vars:
       - name: period
-        type: text
+        type: duration
         title: Collection Interval
         description: How often to collect metrics (e.g., 10s, 1m). Default is 60s.
+        default: 60s
         required: true
       - name: endpoint
         type: text
@@ -44,7 +47,7 @@ policy_templates:
         multi: true
         required: false
       - name: timeout
-        type: text
+        type: duration
         title: Timeout
         description: Timeout for Docker API requests
         required: false
