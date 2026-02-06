@@ -48,39 +48,21 @@ Configure the following settings:
 1. **Endpoint**: The address where the receiver listens for APM agent connections (default: `localhost:8200`)
 2. **TLS Settings** (optional): Enable TLS for encrypted connections between APM agents and the receiver
 3. **Agent Configuration** (optional): Enable fetching APM Central Configurations from Elasticsearch
-4. **API key authentication** (optional): When enabled, the receiver validates Elastic APM API keys via the apikeyauth extension. Configure the Elasticsearch endpoint used for validation and set `ELASTIC_APM_API_KEY` on your APM agents.
 
 ### APM Agent Configuration
 
-Configure your Elastic APM agents to point to the collector. The receiver supports the following agent environment variables:
+Configure your Elastic APM agents to point to the collector:
 
-| Variable | Description |
-|----------|-------------|
-| `ELASTIC_APM_SERVER_URL` | URL of the APM server (the collector endpoint). |
-| `ELASTIC_APM_SERVER_CERT` | Path to the server certificate file (for TLS). |
-| `ELASTIC_APM_API_KEY` | API key for authentication. Required when the collector has API key authentication enabled; the receiver validates keys via the apikeyauth extension. |
-
-**Basic configuration (no TLS, no auth):**
 ```bash
+# Example environment variables for APM agents
 ELASTIC_APM_SERVER_URL=http://localhost:8200
 ```
 
-**TLS-enabled connections:**
+For TLS-enabled connections:
 ```bash
 ELASTIC_APM_SERVER_URL=https://localhost:8200
 ELASTIC_APM_SERVER_CERT=/path/to/server.crt
 ```
-
-### Authentication
-
-When API key authentication is enabled in the integration (using the apikeyauth extension), only requests with a valid Elastic APM API key are accepted. Configure your Elastic APM agents with the same API key used in Elasticsearch/Kibana:
-
-```bash
-ELASTIC_APM_SERVER_URL=https://your-collector:8200
-ELASTIC_APM_API_KEY=your-api-key
-```
-
-The receiver validates the key against the Elasticsearch endpoint you configure in the integration (typically the same cluster the agent outputs to).
 
 ### Validation
 
@@ -99,6 +81,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 - **Connection refused**: Ensure the endpoint is accessible from the APM agents
 - **TLS errors**: Verify certificate paths and that the APM agent trusts the server certificate
 - **No data appearing**: Check that APM agents are using the Intake V2 protocol
+- **"failed to index document" with `security_exception`**: The collector writes to Elasticsearch data stream indices built from `data_stream.type`, `data_stream.dataset`, and `data_stream.namespace` (e.g. `metrics-elasticapm_input_otel.elasticapmintakereceiver-ep`). The agent’s output must have index privileges for those patterns (e.g. `logs-*-*`, `metrics-*-*`, `traces-*-*`). With Fleet, ensure the integration’s output permissions include all three patterns for multi-signal data. If the runtime config uses a different dataset or namespace, the granted index pattern must still match the actual index names.
 
 ## Scaling
 
