@@ -4,111 +4,115 @@ processors:
   - set:
       field: ecs.version
       value: 9.2.0
-      description: set_ecs_version
+      tag: set_ecs_version
   - append:
       field: event.category
       value: file
-      description: append_ecs_version
+      tag: append_ecs_version
   - set:
       field: event.kind
       value: event
-      description: set_event_kind
+      tag: set_event_kind
   - append:
       field: event.type
       value: info
-      description: append_event_type
+      tag: append_event_type
   - rename:
       ignore_missing: true
       field: message
       target_field: event.original
       if: ctx.event?.original == null
-      description: rename_message_to_event_original
+      tag: rename_message_to_event_original
   - remove:
       ignore_missing: true
       field: message
       if: ctx.event?.original != null
-      description: remove_message_if_event_original_present
+      tag: remove_message_if_event_original_present
   - json:
       ignore_failure: true
       field: event.original
       target_field: thor
-      description: parse_event_original_json
+      tag: parse_event_original_json
   - rename:
       field: thor.file
       target_field: file.name
       if: ctx.thor?.file != null && ctx.thor?.file instanceof String
-      description: rename_thor_file_to_file_name
+      tag: rename_thor_file_to_file_name
   - date:
       formats:
       - ISO8601
       field: thor.time
       target_field: "@timestamp"
-      description: parse_thor_time
+      tag: parse_thor_time
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       ignore_missing: true
       field: thor.time
       if: ctx['@timestamp'] != null
-      description: remove_thor_time_if_timestamp_set
+      tag: remove_thor_time_if_timestamp_set
   - rename:
       ignore_missing: true
       field: thor.end_time
       target_field: event.end
-      description: rename_thor_end_time_to_event_end
+      tag: rename_thor_end_time_to_event_end
   - rename:
       ignore_missing: true
       field: thor.level
       target_field: log.level
-      description: rename_thor_level_to_log_level
+      tag: rename_thor_level_to_log_level
   - rename:
       ignore_missing: true
       field: thor.message
       target_field: message
-      description: rename_thor_message_to_message
+      tag: rename_thor_message_to_message
   - rename:
       ignore_missing: true
       field: thor.module
       target_field: event.module
-      description: rename_thor_module_to_event_module
+      tag: rename_thor_module_to_event_module
   - rename:
       ignore_missing: true
       field: thor.log_version
       target_field: event.version
-      description: rename_thor_log_version_to_event_version
+      tag: rename_thor_log_version_to_event_version
   - rename:
       ignore_missing: true
       field: thor.user
       target_field: user.name
-      description: rename_thor_user_to_user_name
+      tag: rename_thor_user_to_user_name
   - rename:
       ignore_missing: true
       field: thor.userid
       target_field: user.id
-      description: rename_thor_userid_to_user_id
+      tag: rename_thor_userid_to_user_id
   - rename:
       ignore_missing: true
       field: thor.hostname
       target_field: host.name
-      description: rename_thor_hostname_to_host_name
+      tag: rename_thor_hostname_to_host_name
   - rename:
       ignore_missing: true
       field: thor.file.group
       target_field: file.group
-      description: rename_thor_file_group_to_file_group
+      tag: rename_thor_file_group_to_file_group
   - rename:
       ignore_missing: true
       field: thor.file.md5
       target_field: file.hash.md5
-      description: rename_thor_file_md5_to_file_hash_md5
+      tag: rename_thor_file_md5_to_file_hash_md5
   - rename:
       ignore_missing: true
       field: thor.file.owner
       target_field: file.owner
-      description: rename_thor_file_owner_to_file_owner
+      tag: rename_thor_file_owner_to_file_owner
   - rename:
       ignore_missing: true
       field: thor.file.path
       target_field: file.path
-      description: rename_thor_file_path_to_file_path
+      tag: rename_thor_file_path_to_file_path
   - grok:
       ignore_missing: true
       field: file.path
@@ -116,204 +120,216 @@ processors:
         FILENAME: "[^/]+$"
       patterns:
       - ".+/%{FILENAME:file.name}"
-      description: extract_file_name_from_path
+      tag: extract_file_name_from_path
   - rename:
       ignore_missing: true
       field: thor.file.sha1
       target_field: file.hash.sha1
-      description: rename_thor_file_sha1_to_file_hash_sha1
+      tag: rename_thor_file_sha1_to_file_hash_sha1
   - rename:
       ignore_missing: true
       field: thor.file.sha256
       target_field: file.hash.sha256
-      description: rename_thor_file_sha256_to_file_hash_sha256
+      tag: rename_thor_file_sha256_to_file_hash_sha256
   - rename:
       ignore_missing: true
       field: thor.file.size
       target_field: file.size
-      description: rename_thor_file_size_to_file_size
+      tag: rename_thor_file_size_to_file_size
   - rename:
       ignore_missing: true
       field: thor.lastrun
       target_field: thor.last_run
-      description: rename_thor_lastrun_to_thor_last_run
+      tag: rename_thor_lastrun_to_thor_last_run
   - rename:
       ignore_missing: true
       field: thor.nextrun
       target_field: thor.next_run
-      description: rename_thor_nextrun_to_thor_next_run
+      tag: rename_thor_nextrun_to_thor_next_run
   - rename:
       ignore_missing: true
       field: thor.scanid
       target_field: thor.scan_id
-      description: rename_thor_scanid_to_thor_scan_id
+      tag: rename_thor_scanid_to_thor_scan_id
   - rename:
       ignore_missing: true
       field: thor.firstbytes
       target_field: thor.first_bytes
-      description: rename_thor_firstbytes_to_thor_first_bytes
+      tag: rename_thor_firstbytes_to_thor_first_bytes
   - rename:
       ignore_missing: true
       field: thor.file.firstbytes
       target_field: thor.file.first_bytes
-      description: rename_thor_file_firstbytes_to_thor_file_first_bytes
+      tag: rename_thor_file_firstbytes_to_thor_file_first_bytes
   - foreach:
       field: thor.files
       if: ctx.thor?.files instanceof List
       ignore_missing: true
-      description: rename_thor_files_desc_to_thor_files_description  
+      tag: rename_thor_files_desc_to_thor_files_description
       processor:
         rename:
           field: _ingest._value.firstbytes
           target_field: _ingest._value.first_bytes
           ignore_missing: true
-          description: rename_thor_files_firstbytes_to_thor_files_first_bytes
+          tag: rename_thor_files_firstbytes_to_thor_files_first_bytes
   - rename:
       ignore_missing: true
       field: thor.eventconsumername
       target_field: thor.event_consumer_name
-      description: rename_thor_eventconsumername_to_thor_event_consumer_name
+      tag: rename_thor_eventconsumername_to_thor_event_consumer_name
   - rename:
       ignore_missing: true
       field: thor.eventconsumer
       target_field: thor.event_consumer
-      description: rename_thor_eventconsumer_to_thor_event_consumer
+      tag: rename_thor_eventconsumer_to_thor_event_consumer
   - rename:
       ignore_missing: true
       field: thor.eventfiltername
       target_field: thor.event_filter_name
-      description: rename_thor_eventfiltername_to_thor_event_filter_name
+      tag: rename_thor_eventfiltername_to_thor_event_filter_name
   - rename:
       ignore_missing: true
       field: thor.eventfilter
       target_field: thor.event_filter
-      description: rename_thor_eventfilter_to_thor_event_filter
+      tag: rename_thor_eventfilter_to_thor_event_filter
   - rename:
       ignore_missing: true
       field: thor.filtertype
       target_field: thor.filter_type
-      description: rename_thor_filtertype_to_thor_filter_type
+      tag: rename_thor_filtertype_to_thor_filter_type
   - rename:
       ignore_missing: true
       field: thor.file.desc
       target_field: thor.file.description
-      description: rename_thor_file_desc_to_thor_file_description   
+      tag: rename_thor_file_desc_to_thor_file_description
   - foreach:
       field: thor.files
       if: ctx.thor?.files instanceof List
       ignore_missing: true
-      description: rename_thor_files_desc_to_thor_files_description  
+      tag: rename_thor_files_desc_to_thor_files_description
       processor:
         rename:
           field: _ingest._value.desc
           target_field: _ingest._value.description
           ignore_missing: true
-          description: rename_thor_files_desc_to_thor_files_description
+          tag: rename_thor_files_desc_to_thor_files_description
   - rename:
       ignore_missing: true
       field: thor.image.desc
       target_field: thor.image.description
-      description: rename_thor_image_desc_to_thor_image_description
+      tag: rename_thor_image_desc_to_thor_image_description
   - rename:
       ignore_missing: true
       field: thor.image.firstbytes
       target_field: thor.image.first_bytes
-      description: rename_thor_image_firstbytes_to_thor_first_bytes_description
+      tag: rename_thor_image_firstbytes_to_thor_first_bytes_description
   - date:
       formats:
       - ISO8601
       field: thor.file.accessed
       target_field: file.accessed
       if: ctx.thor?.file?.accessed != null
-      description: parse_thor_file_accessed
+      tag: parse_thor_file_accessed
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       ignore_missing: true
       field: thor.file.accessed
       if: ctx.file?.accessed != null
-      description: remove_thor_file_accessed_if_file_accessed_set
+      tag: remove_thor_file_accessed_if_file_accessed_set
   - date:
       formats:
       - ISO8601
       field: thor.file.changed
       target_field: file.ctime
       if: ctx.thor?.file?.changed != null
-      description: parse_thor_file_changed
+      tag: parse_thor_file_changed
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       ignore_missing: true
       field: thor.file.changed
       if: ctx.file?.ctime != null
-      description: remove_thor_file_changed_if_file_ctime_set
+      tag: remove_thor_file_changed_if_file_ctime_set
   - date:
       formats:
       - ISO8601
       field: thor.file.modified
       target_field: file.mtime
       if: ctx.thor?.file?.modified != null
-      description: parse_thor_file_modified
+      tag: parse_thor_file_modified
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: thor.file.modified
       if: ctx.file?.mtime != null
-      description: remove_thor_file_modified_if_file_mtime_set
+      tag: remove_thor_file_modified_if_file_mtime_set
   - append:
       field: event.category
       value: malware
       if: ctx.message == "Malware file found"
-      description: append_event_category_malware
+      tag: append_event_category_malware
   - append:
       field: related.hash
       value: "{{{file.hash.md5}}}"
       ignore_empty_values: true
-      description: append_related_hash_md5
+      tag: append_related_hash_md5
   - append:
       field: related.hash
       value: "{{{file.hash.sha1}}}"
       ignore_empty_values: true
-      description: append_related_hash_sha1
+      tag: append_related_hash_sha1
   - append:
       field: related.hash
       value: "{{{file.hash.sha256}}}"
       ignore_empty_values: true
-      description: append_related_hash_sha256
+      tag: append_related_hash_sha256
   - append:
       field: related.user
       value: "{{{file.owner}}}"
       ignore_empty_values: true
-      description: append_related_user_file_owner
+      tag: append_related_user_file_owner
   - append:
       field: related.user
       value: "{{{thor.run_as_user}}}"
       ignore_empty_values: true
-      description: append_related_user_run_as_user
+      tag: append_related_user_run_as_user
   - append:
       field: related.user
       value: "{{{thor.run_as_user}}}"
       ignore_empty_values: true
-      description: append_related_user_run_as_user_duplicate
+      tag: append_related_user_run_as_user_duplicate
   - append:
       field: related.user
       value: "{{{thor.exe_owner}}}"
       ignore_empty_values: true
-      description: append_related_user_exe_owner
+      tag: append_related_user_exe_owner
   - append:
       field: related.user
       value: "{{{thor.files.owner}}}"
       ignore_empty_values: true
-      description: append_related_user_files_owner
+      tag: append_related_user_files_owner
   - append:
       field: related.user
       value: "{{{thor.image.owner}}}"
       ignore_empty_values: true
-      description: append_related_user_image_owner
+      tag: append_related_user_image_owner
   - append:
       field: related.user
       value: "{{{thor.owner}}}"
       ignore_empty_values: true
-      description: append_related_user_owner
+      tag: append_related_user_owner
   - append:
       field: related.user
       value: "{{{thor.unit_owner}}}"
       ignore_empty_values: true
-      description: append_related_user_unit_owner
+      tag: append_related_user_unit_owner
   - fingerprint:
       ignore_missing: true
       target_field: _id
@@ -323,37 +339,34 @@ processors:
       - "@timestamp"
       - file
       method: SHA-256
-      description: fingerprint_event
+      tag: fingerprint_event
   - pipeline:
       name: global@custom
       ignore_missing_pipeline: true
-      description: "[Fleet] Global pipeline for all data streams"
+      tag: pipeline_global_custom
   - pipeline:
       name: logs@custom
       ignore_missing_pipeline: true
-      description: "[Fleet] Pipeline for all data streams of type `logs`"
+      tag: pipeline_logs_custom
   - pipeline:
       name: logs-nextron_thor_apt_scanner.integration@custom
       ignore_missing_pipeline: true
-      description: "[Fleet] Pipeline for all data streams of type `logs` defined by
-        the `nextron_thor_apt_scanner` integration"
+      tag: pipeline_logs_integration_custom
   - pipeline:
       name: logs-nextron_thor_apt_scanner.thor_forwarding@custom
       ignore_missing_pipeline: true
-      description: "[Fleet] Pipeline for the `nextron_thor_apt_scanner.thor_forwarding`
-        dataset"
+      tag: pipeline_logs_thor_forwarding_custom
 on_failure:
   - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-      description: append_pipeline_error_message
+      tag: append_pipeline_error_message
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
-      description: set_event_kind_pipeline_error
   - append:
       field: tags
       value: preserve_original_event
       allow_duplicates: false
-      description: append_preserve_original_event_tag
+      tag: append_preserve_original_event_tag
