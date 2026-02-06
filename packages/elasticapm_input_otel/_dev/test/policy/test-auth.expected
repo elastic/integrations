@@ -2,6 +2,15 @@ connectors:
     forward: {}
 exporters:
     elasticsearch/componentid-0: {}
+extensions:
+    apikeyauth/componentid-0:
+        application_privileges:
+            - application: apm
+              privileges:
+                - event:write
+              resources:
+                - '-'
+        endpoint: https://my-cluster.es.io:9200
 inputs: []
 output_permissions:
     default:
@@ -32,9 +41,13 @@ receivers:
     elasticapmintake/componentid-0:
         agent_config:
             enabled: false
+        auth:
+            authenticator: apikeyauth
         endpoint: localhost:8200
 secret_references: []
 service:
+    extensions:
+        - apikeyauth
     pipelines:
         logs:
             exporters:

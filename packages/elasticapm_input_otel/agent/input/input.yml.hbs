@@ -1,3 +1,14 @@
+{{#if auth_enabled}}
+extensions:
+  apikeyauth:
+    endpoint: {{auth_elasticsearch_endpoint}}
+    application_privileges:
+      - application: "apm"
+        privileges:
+          - "event:write"
+        resources:
+          - "-"
+{{/if}}
 receivers:
   elasticapmintake:
     endpoint: {{endpoint}}
@@ -5,6 +16,13 @@ receivers:
     tls:
       cert_file: {{tls_cert_file}}
       key_file: {{tls_key_file}}
+{{#if tls_client_ca_file}}
+      client_ca_file: {{tls_client_ca_file}}
+{{/if}}
+{{/if}}
+{{#if auth_enabled}}
+    auth:
+      authenticator: apikeyauth
 {{/if}}
     agent_config:
       enabled: {{agent_config_enabled}}
@@ -15,6 +33,9 @@ processors:
   resourcedetection/system:
     detectors: ["system"]
 service:
+{{#if auth_enabled}}
+  extensions: [apikeyauth]
+{{/if}}
   pipelines:
     logs:
       receivers: [elasticapmintake]

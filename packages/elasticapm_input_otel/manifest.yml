@@ -1,4 +1,4 @@
-format_version: 3.5.0
+format_version: 3.6.0
 name: elasticapm_input_otel
 title: "Elastic APM Intake OpenTelemetry Input Package"
 version: 0.1.0
@@ -27,6 +27,7 @@ policy_templates:
     description: Receive APM data from Elastic APM agents using the OpenTelemetry Collector
     input: otelcol
     template_path: input.yml.hbs
+    dynamic_signal_types: true
     vars:
       - name: endpoint
         type: text
@@ -54,6 +55,12 @@ policy_templates:
         required: false
         description: Path to the TLS key file for encrypted connections.
         show_user: false
+      - name: tls_client_ca_file
+        type: text
+        title: TLS Client CA File (mTLS)
+        required: false
+        description: Path to the CA certificate file for validating client certificates (mutual TLS). Optional; when set with TLS enabled, only clients presenting a certificate signed by this CA are accepted.
+        show_user: false
       - name: agent_config_enabled
         type: bool
         title: Enable Agent Configuration
@@ -68,6 +75,19 @@ policy_templates:
         description: Timeout for fetching and updating agent configurations.
         default: 30s
         show_user: false
+      - name: auth_enabled
+        type: bool
+        title: Enable API key authentication
+        required: false
+        description: Validate Elastic APM API keys using the apikeyauth extension. When enabled, APM agents must send a valid API key (e.g. via ELASTIC_APM_API_KEY).
+        default: false
+        show_user: true
+      - name: auth_elasticsearch_endpoint
+        type: text
+        title: Elasticsearch endpoint for API key validation
+        required: false
+        description: Elasticsearch URL used by the apikeyauth extension to validate API keys (e.g. https://your-cluster.es.io:9200). Required when API key authentication is enabled.
+        show_user: true
 owner:
   github: elastic/obs-ds-intake-services
   type: elastic
