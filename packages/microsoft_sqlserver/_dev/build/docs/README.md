@@ -151,7 +151,7 @@ Collects metrics related to Always On Availability Groups, including replica sta
 **Prerequisites**: To collect Availability Groups metrics, ensure the following:
 
 1. Always On Availability Groups feature is enabled on the SQL Server instance.
-2. The user account configured for the integration has `VIEW SERVER STATE` and `VIEW ANY DEFINITION` permissions. *Additionaly look at secion [Microsoft SQL Server permissions](#microsoft-sql-server-permissions)*.
+2. The user account configured for the integration has `VIEW SERVER STATE` and `VIEW ANY DEFINITION` permissions. *Additionally look at section [Microsoft SQL Server permissions](#microsoft-sql-server-permissions)*.
 
 Read more in [Monitor Availability Groups](https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/monitoring-of-availability-groups-sql-server?view=sql-server-ver16) and [Always On Availability Groups](https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/overview-of-always-on-availability-groups-sql-server?view=sql-server-ver16) overview.
 
