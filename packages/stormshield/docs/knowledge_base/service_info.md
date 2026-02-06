@@ -46,7 +46,6 @@ To ensure optimal performance in high-volume security environments, consider the
 ## Elastic prerequisites
 
 - **Elastic Agent:** An active Elastic Agent must be installed and enrolled in a policy.
-- **Elastic Stack Version:** Kibana version 8.11.4 or higher (or 9.0.0+) is required for this integration.
 - **Connectivity:** The host running the Elastic Agent must be reachable by the SNS appliance on the configured syslog port.
 - **Permissions:** Elastic Stack user with permissions to manage Integrations and Fleet policies.
 
