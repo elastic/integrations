@@ -32,15 +32,18 @@ processors:
             - context: datapoint
               statements:
                 - set(attributes["data_stream.type"], "metrics")
-                - set(attributes["data_stream.dataset"], "docker_otel_input.dockerstatsreceiver")
+                - set(attributes["data_stream.dataset"], "docker_input_otel.dockerstatsreceiver")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     docker_stats/componentid-0:
         api_version: "1.44"
         collection_interval: 10s
-        container_labels_to_metric_labels: com.docker.compose.service,com.docker.compose.project
+        container_labels_to_metric_labels:
+            com.docker.compose.service: compose_service
+            com.docker.compose.project: compose_project
         endpoint: unix:///var/run/docker.sock
-        env_vars_to_metric_labels: ENVIRONMENT
+        env_vars_to_metric_labels: 
+            ENVIRONMENT: environment
         excluded_images:
             - nginx:latest
             - redis:alpine
