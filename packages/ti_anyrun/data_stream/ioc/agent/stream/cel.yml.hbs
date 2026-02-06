@@ -1,0 +1,125 @@
+config_version: "2"
+interval: {{interval}}
+resource.url: {{url}}/v1/feeds/taxii2/api1/collections/3dce855a-c044-5d49-9334-533c24678c5a/objects/
+
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+
+state:
+  url: {{url}}/v1/feeds/taxii2/api1/collections/3dce855a-c044-5d49-9334-533c24678c5a/objects/
+  access_key: {{access_key}}
+  initial_interval: {{initial_interval}}
+  limit: 10000
+  want_more: false
+redact:
+  fields:
+    - access_key
+
+# CEL program to follow TAXII 2.1 protocol. See https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html
+program: |
+    state.with({
+        "modified_after": has(state.modified_after) && state.?want_more.orValue(false) ?
+            state.modified_after
+        :
+            state.?cursor.last_timestamp.orValue(
+                (now - duration(
+                    string(state.initial_interval).endsWith("d") ? 
+                        string(int(string(state.initial_interval).trim_right("d")) * 24) + "h" 
+                    : state.initial_interval
+                )).format(time_layout.RFC3339)
+            ),
+    }).as(state, state.with(
+        request(
+            "GET",
+            state.?want_more.orValue(false) ?
+                (
+                    state.url.trim_right("/") + "/?" + {
+                        "match[type]": ["indicator"],
+                        "modified_after": [state.modified_after],
+                        "limit": [string(state.limit)],
+                        "next": [state.next],
+                    }.format_query()
+                )
+            :
+                (
+                    state.url.trim_right("/") + "/?" + {
+                        "match[type]": ["indicator"],
+                        "modified_after": [state.modified_after],
+                        "limit": [string(state.limit)],
+                    }.format_query()
+                )
+        ).with(
+            {
+                "Header": {
+                    "Accept": ["application/taxii+json;version=2.1"],
+                    "Content-Type": ["application/taxii+json;version=2.1"],
+                    "x-anyrun-connector": ["Elastic_Security:1.0.0"],
+                    "Authorization": (has(state.access_key) && state.access_key != "") ?
+                        ["API-Key " + string(state.access_key)]
+                    :
+                        []
+                },
+            }
+        ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
+            bytes(resp.Body).decode_json().as(body,
+                {
+                    "events": body.objects.map(e,
+                        {
+                            "message": e.encode_json(),
+                        }
+                    ),
+                    "url": state.url,
+                    "access_key": state.access_key,
+                    "limit": state.limit,
+                    "want_more": has(body.next) && body.next != null && body.next != "",
+                    "next": has(body.next) && body.next != null && body.next != "" ? body.next : null,
+                    "cursor": {
+                        "last_timestamp": (
+                            (has(resp.Header) && "X-Taxii-Date-Modified-Last" in resp.Header &&
+                            timestamp(resp.Header["X-Taxii-Date-Modified-Last"][0]) >
+                            timestamp(state.?cursor.last_timestamp.orValue(state.modified_after))) ?
+                                resp.Header["X-Taxii-Date-Modified-Last"][0]
+                            :
+                                state.?cursor.last_timestamp.orValue(state.modified_after)
+                        ),
+                    },
+                }
+            )
+        :
+            {
+                "events": {
+                    "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET:" +
+                        (
+                            (size(resp.Body) != 0) ?
+                                string(resp.Body)
+                            :
+                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        ),
+                    },
+                },
+                "want_more": false,
+            }
+        )
+    ))
+
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: {{ioc_expiration_duration}}
+{{/if}}
+
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
