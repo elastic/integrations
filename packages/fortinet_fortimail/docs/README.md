@@ -239,6 +239,7 @@ An example event for `log` looks as following:
 | fortinet_fortimail.log.type |  | keyword |
 | fortinet_fortimail.log.ui |  | keyword |
 | fortinet_fortimail.log.ui_ip |  | ip |
+| fortinet_fortimail.log.url |  | keyword |
 | fortinet_fortimail.log.user |  | keyword |
 | fortinet_fortimail.log.virus |  | keyword |
 | fortinet_fortimail.log.xfer_time |  | double |
