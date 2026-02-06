@@ -1,7 +1,7 @@
 format_version: "3.4.0"
 name: m365_defender
 title: Microsoft Defender XDR
-version: "5.5.0"
+version: "5.6.0"
 description: Collect logs from Microsoft Defender XDR with Elastic Agent.
 categories:
   - "security"
@@ -17,7 +17,7 @@ conditions:
 policy_templates:
   - name: m365_defender
     title: Microsoft Defender XDR Logs
-    description: Collect logs from Microsoft Defender XDR API
+    description: Collect logs from Microsoft Defender XDR.
     deployment_modes:
       default:
         enabled: true
@@ -31,8 +31,8 @@ policy_templates:
             memory: 4Gi # Due to the large volume of data being processed in memory, a 4 GB allocation is required for agentless deployment-anything less may lead to out-of-memory (OOM) issue.
     inputs:
       - type: httpjson
-        title: "Collect logs from Microsoft Defender XDR API"
-        description: "Collect logs from Microsoft Defender XDR via API"
+        title: "Collect alerts and incidents via Microsoft Graph Security API"
+        description: "Collect alerts and incidents from Microsoft Defender XDR via Microsoft Graph Security API"
         vars:
           - name: login_url
             type: text
@@ -128,20 +128,20 @@ policy_templates:
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
       - type: azure-eventhub
-        title: "Collect logs from Azure Event Hub"
-        description: "Collect logs from Azure Event Hub"
+        title: "Collect events via Azure Event Hub"
+        description: "Collect events from Microsoft Defender XDR via Azure Event Hub"
       - type: cel
-        title: "Collect logs from Microsoft Defender for Endpoint API"
-        description: "Collecting logs via Microsoft Defender for Endpoint API."
+        title: "Collect vulnerabilities via Microsoft Defender for Endpoint API"
+        description: "Collect vulnerabilities from Microsoft Defender XDR via Microsoft Defender for Endpoint API."
         vars: 
           - name: url
             type: text
             title: URL
-            description: By default, the URL is set to `https://api.securitycenter.microsoft.com`. It is observed that Microsoft Defender XDR Base URL changes based on location so find your own base URL.
+            description: By default, the URL is set to `https://api.security.microsoft.com`. For better performance, use a server closer to your geolocation. See [documentation](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list#versioning) for details.
             multi: false
             required: true
             show_user: false
-            default: https://api.securitycenter.microsoft.com
+            default: https://api.security.microsoft.com
           - name: client_id
             type: text
             title: Client ID

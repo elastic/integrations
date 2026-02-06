@@ -6,54 +6,57 @@ The [Microsoft Defender XDR](https://learn.microsoft.com/en-us/defender-xdr/) in
 
 ### How it works
 
-The integration works by collecting data from the Microsoft Azure Event Hub, Microsoft Graph Security v1.0 REST API, and the Microsoft Defender Endpoint API.
+The integration works by collecting data from the Microsoft Azure Event Hub, Microsoft Graph Security REST API, and the Microsoft Defender Endpoint API.
 
 ### Compatibility
 
 This integration supports below API versions to collect data.
-  - [Microsoft Graph Security v1.0 REST API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0)
+  - [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
+    - [Alerts](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0)
+    - [Incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0)
+  - [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
+    - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
   - [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
-  - Supported Microsoft Defender XDR streaming event types:
-      | Resource types            | Description                                                                                                                                                                       |
-      | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-      | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts.                                                                                                              |
-      | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization.                                                                                             |
-      | DeviceEvents              | Event types, including events triggered by security controls.                                                                                                                     |
-      | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints.                                                                               |
-      | DeviceFileEvents          | File creation, modification, and other file system events.                                                                                                                        |
-      | DeviceImageLoadEvents     | DLL loading events.                                                                                                                                                               |
-      | DeviceInfo                | Machine information, including OS information.                                                                                                                                    |
-      | DeviceLogonEvents         | Sign-ins and other authentication events on devices.                                                                                                                              |
-      | DeviceNetworkEvents       | Network connection and related events.                                                                                                                                            |
-      | DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains.                                                                                                         |
-      | DeviceProcessEvents       | Process creation and related events.                                                                                                                                              |
-      | DeviceRegistryEvents      | Creation and modification of registry entries.                                                                                                                                    |
-      | EmailAttachmentInfo       | Information about files attached to emails.                                                                                                                                       |
-      | EmailEvents               | Microsoft 365 email events, including email delivery and blocking events.                                                                                                         |
-      | EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox.                                                                       |
-      | EmailUrlInfo              | Information about URLs in emails.                                                                                                                                                 |
-      | IdentityInfo              | Account information from various sources, including Microsoft Entra ID.                                                                                                           |
-      | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services.                                                                                                          |
-      | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains.                                                                                                |
-      | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
-      | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
-      | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps.                                                                                                                |
-  - [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
-    - [Vulnerabilities API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
+    - Supported Microsoft Defender XDR Streaming event types are listed below. For more details on all available event types, see [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
+        | Resource types            | Description                                                                                                                                                                       |
+        | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+        | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts.                                                                                                              |
+        | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization.                                                                                             |
+        | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
+        | DeviceEvents              | Event types, including events triggered by security controls.                                                                                                                     |
+        | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints.                                                                               |
+        | DeviceFileEvents          | File creation, modification, and other file system events.                                                                                                                        |
+        | DeviceImageLoadEvents     | DLL loading events.                                                                                                                                                               |
+        | DeviceInfo                | Machine information, including OS information.                                                                                                                                    |
+        | DeviceLogonEvents         | Sign-ins and other authentication events on devices.                                                                                                                              |
+        | DeviceNetworkEvents       | Network connection and related events.                                                                                                                                            |
+        | DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains.                                                                                                         |
+        | DeviceProcessEvents       | Process creation and related events.                                                                                                                                              |
+        | DeviceRegistryEvents      | Creation and modification of registry entries.                                                                                                                                    |
+        | EmailAttachmentInfo       | Information about files attached to emails.                                                                                                                                       |
+        | EmailEvents               | Microsoft 365 email events, including email delivery and blocking events.                                                                                                         |
+        | EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox.                                                                       |
+        | EmailUrlInfo              | Information about URLs in emails.                                                                                                                                                 |
+        | IdentityInfo              | Account information from various sources, including Microsoft Entra ID.                                                                                                           |
+        | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services.                                                                                                          |
+        | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains.                                                                                                |
+        | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
+        | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
+        | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps.                                                                                                                |
 
 ## What data does this integration collect?
 
-The Microsoft Defender XDR integration collects logs for four types of events: Alert, Event, Incident, and Vulnerability.
+The Microsoft Defender XDR integration collects logs for four types of events: Alerts, Events, Incidents, and Vulnerabilities.
 
-**Alert:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
+**Alerts:** This data streams uses the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)'s [`/security/alerts_v2`](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0) endpoint to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
 
-**Event:** This data stream leverages the [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of supported events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
+**Events:** This data stream uses the [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of supported events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
 
-**Incidents and Alerts:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0) to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in Microsoft Defender XDR. Incidents stemming from Microsoft Defender XDR, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
+**Incidents and Alerts:** This data streams uses the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)'s [`/security/incidents`](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0) endpoint to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in Microsoft Defender XDR. Incidents stemming from Microsoft Defender XDR, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
 
-**Vulnerability:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) to collect vulnerability assessments.
+**Vulnerabilities:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)'s [`/api/machines/SoftwareVulnerabilitiesExport`](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint to collect vulnerability assessments.
 
-**Note:** **Alert** data stream ingests individual detection events surfaced by Microsoft and partner security providers, while **Incidents and Alerts** data stream ingests correlated collections of alerts that represent a broader attack.
+**Note:** **Alerts** data stream ingests individual detection events surfaced by Microsoft and partner security providers, while **Incidents and Alerts** data stream ingests correlated collections of alerts that represent a broader attack.
 
 ### Supported Use Cases
 
@@ -63,17 +66,17 @@ Use the data from this integration to consolidate and correlate security alerts 
 
 ### From Elastic
 
-Version 4.0.0 of the Microsoft Defender XDR integration adds [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+Version `4.0.0` of the Microsoft Defender XDR integration adds [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
 
 ### From Microsoft Defender XDR
 Follow the steps below to configure data collection from Microsoft sources.
 
-#### 1. Collecting Data from Microsoft Azure Event Hub
+#### 1. Collecting Data via Azure Event Hub
 
 - [Configure Microsoft Defender XDR to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/defender-xdr/streaming-api-event-hub?view=o365-worldwide).
 - A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping filebeat it can start back up at the spot that it stopped processing messages.
 
-#### 2. Collecting Data from Microsoft Graph Security v1.0 REST API (for Incidents & Alerts)
+#### 2. Collecting Data via Microsoft Graph Security REST API (for Incidents & Alerts)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
 - Assign the required permission: **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0).
@@ -82,7 +85,7 @@ Follow the steps below to configure data collection from Microsoft sources.
   - Client Secret
   - Tenant ID
 
-#### 3. Collecting Data from Microsoft Defender for Endpoint API (for Vulnerabilities)
+#### 3. Collecting Data via Microsoft Defender for Endpoint API (for Vulnerabilities)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
 - Assign the required permissions: **Vulnerability.Read.All**. See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#22-permissions).
@@ -113,13 +116,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 4. Select **Add Microsoft Defender XDR** to add the integration.
 5. Enable and configure only the collection methods which you will use.
 
-    * To **Collect logs from Microsoft Defender XDR API**, you'll need to:
+    * To **Collect alerts and incidents via Microsoft Graph Security API**, you'll need to:
 
         - Configure **Client ID**, **Client Secret** and **Tenant ID**.
-    * To **Collect logs from Microsoft Defender for Endpoint API**, you'll need to:
+    * To **Collect vulnerabilities via Microsoft Defender for Endpoint API**, you'll need to:
 
         - Configure **Client ID**, **Client Secret** and **Tenant ID**. Configure either **Subscription ID** or **Management Group Name** as the scope.
-    * To **Collect logs from Azure Event Hub**, you'll need to:
+    * To **Collect events via Azure Event Hub**, you'll need to:
 
         - Configure **Azure Event Hub**, **Connection String**, **Storage Account**, and **storage_account_key**.
 
@@ -1511,7 +1514,7 @@ These inputs are used in this integration:
 
 This integration dataset uses the following APIs:
 
-- `Alert`: [List alerts_v2](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0&tabs=http).
-- `Event`: [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide).
-- `Incident`: [List incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http)
-- `Vulnerability`: [Get software vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
+- `Alerts`: [List alerts_v2](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
+- `Events`: [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
+- `Incidents`: [List incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
+- `Vulnerabilities`: [Get software vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint from [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
