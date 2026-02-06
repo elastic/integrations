@@ -41,7 +41,7 @@ To ensure optimal performance in high-volume security environments, consider the
 - **Network Connectivity:** Ensure the SNS appliance can reach the Elastic Agent host over the network.
 - **Port Availability:** Open the required Syslog ports (default `514` for UDP or `601` for TCP) in any intermediate firewalls.
 - **Knowledge of Agent IP:** You must have the static IP address or FQDN of the host where the Elastic Agent is installed.
-- **Licensing:** An active SNS license that supports remote logging features.
+- **Licensing:** No additional license is required for standard syslog forwarding (note: Stormshield Log Supervisor (SLS) requires a separate license, but this integration uses standard syslog).
 
 ## Elastic prerequisites
 
@@ -60,7 +60,7 @@ To configure Stormshield Network Security (SNS) to forward logs to the Elastic A
 3. Go to **NOTIFICATIONS > LOGS - SYSLOG - IPFIX**.
 4. In the **Syslog** section, ensure the service is enabled by switching the status to **ON**.
 5. Select a **Profile** slot to edit (e.g., Profile 1).
-6. In the **IP Address** field, enter the IP address of the host where the Elastic Agent is running.
+6. In the **Syslog server** field, select or create a host object corresponding to the Elastic Agent host.
 7. Enter the **Port** number matching your Elastic Agent configuration (e.g., `514` for UDP or `601` for TCP).
 8. Select the **Protocol** (**UDP** or **TCP**) that matches your integration input.
 9. Choose the **Format**: **RFC5424** is recommended for modern logging, though **Legacy** (BSD) is also supported.
@@ -78,6 +78,7 @@ To configure Stormshield Network Security (SNS) to forward logs to the Elastic A
 
 ### Vendor Set up Resources
 
+- [Stormshield SNS Syslog Configuration](https://documentation.stormshield.eu/SNS/v4/en/Content/User_Configuration_Manual_SNS_v4/Logs-syslog/Syslog_tab.htm) - Detailed guide on configuring syslog profiles.
 - [Stormshield SNS Log Configuration Documentation](https://documentation.stormshield.eu/SNS/v4/en/Content/Description_of_Audit_logs/Configure_logs.htm) - Detailed guide on configuring SNS logs and syslog profiles.
 - [FireMon - Stormshield Device Configuration Guide](https://docs.firemon.com/feature/Content/ADMINISTRATION/DEVICE/Devices/StormShield/Stormshield_Network_Security.htm?TocPath=Administration|Device|Devices|Choose+a+Device+to+Onboard|_____51) - Additional reference for device onboarding and log management.
 

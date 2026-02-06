@@ -50,7 +50,7 @@ Before you begin, ensure you have these vendor-specific requirements:
 - Network connectivity between the SNS appliance and the host where you've installed Elastic Agent.
 - Open syslog ports on any intermediate firewalls, such as the default `514` for UDP or `601` for TCP.
 - The static IP address or FQDN of the host running the Elastic Agent.
-- An active SNS license that supports remote logging features.
+- No additional license is required for standard syslog forwarding (note: Stormshield Log Supervisor (SLS) requires a separate license, but this integration uses standard syslog).
 
 ### Elastic prerequisites
 
@@ -65,7 +65,7 @@ You'll also need the following Elastic Stack components:
 
 You'll need to install Elastic Agent. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events are processed using the integration's ingest pipelines.
+Elastic Agent is required to receive syslog data over UDP or TCP and ship the data to Elastic, where the events are processed using the integration's ingest pipelines.
 
 ### Set up steps in Stormshield SNS
 
@@ -78,7 +78,7 @@ To configure Stormshield Network Security (SNS) to forward logs to the Elastic A
 3. Go to **NOTIFICATIONS > LOGS - SYSLOG - IPFIX**.
 4. In the **Syslog** section, make sure the service is enabled by switching the status to **ON**.
 5. Select a **Profile** slot to edit (e.g., Profile 1).
-6. In the **IP Address** field, enter the IP address of the host where the Elastic Agent is running (replace with your actual value).
+6. In the **Syslog server** field, select or create a host object corresponding to the Elastic Agent host.
 7. Enter the **Port** number matching your Elastic Agent configuration (e.g., `514` for UDP or `601` for TCP).
 8. Select the **Protocol** (**UDP** or **TCP**) that matches your integration input.
 9. Choose the **Format**: **RFC5424** is recommended for modern logging, though **Legacy** (BSD) is also supported.
@@ -96,6 +96,7 @@ To configure Stormshield Network Security (SNS) to forward logs to the Elastic A
 
 #### Vendor resources
 
+- [Stormshield SNS Syslog Configuration](https://documentation.stormshield.eu/SNS/v4/en/Content/User_Configuration_Manual_SNS_v4/Logs-syslog/Syslog_tab.htm)
 - [Stormshield SNS Log Configuration Documentation](https://documentation.stormshield.eu/SNS/v4/en/Content/Description_of_Audit_logs/Configure_logs.htm)
 - [FireMon - Stormshield Device Configuration Guide](https://docs.firemon.com/feature/Content/ADMINISTRATION/DEVICE/Devices/StormShield/Stormshield_Network_Security.htm?TocPath=Administration|Device|Devices|Choose+a+Device+to+Onboard|_____51)
 
@@ -186,13 +187,6 @@ If you're having trouble getting data from your Stormshield SNS appliance into t
 - Parsing errors or missing data: You should verify that the syslog `Format` on your SNS appliance is set to `RFC5424`. If you see `_syslog_parse_failure` tags in your logs, the format might be mismatched.
 - TCP message splitting issues: If you're using `TCP`, you should check that the `framing` setting in your integration (like `rfc6587`) matches the output configuration of your SNS appliance.
 - Missing specific log types: If you aren't seeing specific logs like filter or alarm events, you should verify that you've enabled the specific log families in the `Advanced properties` section of your SNS syslog profile. You'll need to ensure that families like `Filter Policy`, `Administration`, `System`, and `Alarms` are set to active.
-
-### Vendor resources
-
-You can find more detailed information about configuring logs in the Stormshield documentation:
-
-- [Stormshield SNS Log Configuration Documentation](https://documentation.stormshield.eu/SNS/v4/en/Content/Description_of_Audit_logs/Configure_logs.htm)
-- [FireMon - Stormshield Device Configuration Guide](https://docs.firemon.com/feature/Content/ADMINISTRATION/DEVICE/Devices/StormShield/Stormshield_Network_Security.htm?TocPath=Administration|Device|Devices|Choose+a+Device+to+Onboard|_____51)
 
 ## Performance and scaling
 
