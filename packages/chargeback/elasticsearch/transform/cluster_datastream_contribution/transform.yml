@@ -1,0 +1,64 @@
+description: Aggregates daily total ECU usage per datastream from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+source:
+  index:
+    - "monitoring-indices"
+    - "*:monitoring-indices" # Dependency: ES Integration added, but not neceserily installed. Need the output of the transform only.
+dest:
+  index: cluster_datastream_contribution_lookup
+  pipeline: 0.2.10-usage
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    cluster_name:
+      terms:
+        field: elasticsearch.cluster.name
+    datastream:
+      terms:
+        script:
+          lang: painless
+          source: >
+            if (doc.containsKey('elasticsearch.index.datastream') && !doc['elasticsearch.index.datastream'].empty) {
+              return doc['elasticsearch.index.datastream'].value;
+            }
+
+            def name = doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty
+              ? doc['elasticsearch.index.name'].value
+              : null;
+            if (name == null) return 'unknown';
+
+            def matcher = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(name);
+            if (matcher.matches()) {
+              return matcher.group(1);
+            }
+            return 'unknown';
+  aggregations:
+    datastream_sum_indexing_time:
+      sum:
+        field: elasticsearch.index.total.indexing.index_time_in_millis
+    datastream_sum_query_time:
+      sum:
+        field: elasticsearch.index.total.search.query_time_in_millis
+    datastream_sum_store_size:
+      sum:
+        field: elasticsearch.index.total.store.size_in_bytes
+    datastream_sum_data_set_store_size:
+      sum:
+        field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.2.9

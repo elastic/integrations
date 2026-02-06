@@ -1,0 +1,62 @@
+description: Aggregates daily total ECU usage per deployment from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+source:
+  index:
+    - metrics-ess_billing.billing-*
+  query:
+    range:
+      ess.billing.total_ecu:
+        gt: 0
+  runtime_mappings:
+    deployment_group:
+      type: keyword
+      script:
+        source: |
+          if (params._source?.ess?.billing?.deployment_tags != null) {
+            for (tag in params._source.ess.billing.deployment_tags) {
+              if (tag.startsWith('chargeback_group:')) {
+                emit(tag.substring('chargeback_group:'.length()));
+                return;
+              }
+            }
+          }
+          emit('');
+dest:
+  index: billing_cluster_cost_lookup
+  pipeline: 0.2.10-billing
+frequency: 60m
+sync:
+  time:
+    field: event.ingested
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    deployment_group:
+      terms:
+        field: deployment_group
+    deployment_id:
+      terms:
+        field: ess.billing.deployment_id
+    deployment_name:
+      terms:
+        field: ess.billing.deployment_name
+    sku:
+      terms:
+        field: ess.billing.sku
+  aggregations:
+    total_ecu:
+      sum:
+        field: ess.billing.total_ecu
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.2.5
