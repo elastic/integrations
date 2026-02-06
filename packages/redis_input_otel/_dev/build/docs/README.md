@@ -8,42 +8,10 @@ The Redis OpenTelemetry Input Package for Elastic enables collection of telemetr
 This package receives telemetry data from Redis servers by configuring the Redis endpoint and credentials in the Input Package, which then gets applied to the redisreceiver present in the EDOT collector, which then forwards the data to Elastic Agent. The Elastic Agent processes and enriches the data before sending it to Elasticsearch for indexing and analysis.
 
 
-## Requirements
+## Configuration
 
-- Redis 3.0+ (any version supporting INFO command)
-- Network connectivity from the Elastic Agent to the Redis server
-- For authentication: Redis password or Redis ACL credentials (Redis 6.0+)
+For the full list of settings exposed for the receiver and examples, refer to the [configuration](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/redisreceiver#configuration) section.
 
-
-## Configuration Options
-
-### Connection Settings
-| Setting | Required | Default | Description |
-|---------|----------|---------|-------------|
-| Endpoint | Yes | `localhost:6379` | The Redis server endpoint (host:port) |
-| Username | No | - | Redis ACL username (requires Redis 6.0+) |
-| Password | No | - | Redis password |
-| Transport | No | `tcp` | Network to use for connecting (`tcp` or `unix`) |
-| Dialer Timeout | No | - | Maximum amount of time to wait for a connection to complete |
-
-### TLS Settings
-| Setting | Required | Default | Description |
-|---------|----------|---------|-------------|
-| Disable TLS | No | `true` | Set to false to enable TLS connections |
-| Skip TLS Verification | No | `false` | Set to true to skip certificate verification |
-| TLS CA File | No | - | Path to CA certificate file |
-| TLS Certificate File | No | - | Path to client certificate file |
-| TLS Key File | No | - | Path to client key file |
-| TLS Server Name Override | No | - | Override server name for TLS verification |
-| TLS Min Version | No | - | Minimum TLS version (1.0, 1.1, 1.2, 1.3) |
-| TLS Max Version | No | - | Maximum TLS version (1.0, 1.1, 1.2, 1.3) |
-| Include System CA Certs Pool | No | `false` | Load system CA pool alongside custom CA |
-
-### Collection Settings
-| Setting | Required | Default | Description |
-|---------|----------|---------|-------------|
-| Collection Interval | No | `10s` | Time between each metric collection |
-| Initial Delay | No | `1s` | Delay before starting collection |
 
 
 ## Metrics reference
