@@ -1,262 +1,248 @@
-# Cisco Secure Email Gateway
+# Cisco Secure Email Gateway Integration for Elastic
 
-The [Cisco Email Security Appliance](https://www.cisco.com/c/en/us/products/security/email-security/index.html) integration collects and parses data from Cisco Secure Email Gateway using TCP/UDP and logfile.
+> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
 
-## Compatibility
+## Overview
 
-This module has been tested against **Cisco Secure Email Gateway server version 14.0.0 Virtual Gateway C100V with the below given logs pattern**.
+The Cisco Secure Email Gateway (formerly known as Cisco Email Security Appliance or ESA) integration for Elastic enables you to collect and analyze mail flow, security events, and system performance data from your appliances. By centralizing these logs in the Elastic Stack, you'll gain visibility into your messaging environment's security posture and can monitor for email-borne threats in real-time.
 
-## Configurations
+This integration facilitates:
+- Threat detection and response: Monitor Advanced Malware Protection (AMP), anti-spam, and anti-virus logs to identify and mitigate malicious email attachments, phishing attempts, and spam campaigns.
+- Mail flow auditing: Track message transitions, delivery status, and internal SMTP system events using Text Mail logs and Consolidated Event logs to ensure reliable communication.
+- Administrative compliance: Audit system access and configuration changes by collecting authentication and system logs to ensure only authorized users manage your security infrastructure.
+- System health monitoring: Analyze status logs to track resource utilization like CPU, RAM, disk I/O, and queue lengths to proactively manage appliance performance.
 
-- Sign-in to Cisco Secure Email Gateway Portal and follow the below steps for configurations:
-  1. In Cisco Secure Email Gateway Administrator Portal, go to **System Administration** > **Log Subscriptions**.
-  2. Click **Add Log Subscription**.
-  3. Enter all the **Required Details**.
-  4. Set **Log Name** as below for the respective category:
-      - AMP Engine Logs -> amp
-      - Anti-Spam Logs -> antispam
-      - Antivirus Logs -> antivirus
-      - Authentication Logs -> authentication
-      - Bounce Logs -> bounces
-      - Consolidated Event Logs -> consolidated_event
-      - Content Scanner Logs -> content_scanner
-      - HTTP Logs -> gui_logs
-      - IronPort Text Mail Logs -> error_logs
-      - Text Mail Logs -> mail_logs
-      - Status Logs -> status
-      - System Logs -> system
-  5. Select **Log Level** as Information.
-  6. Select **Retrieval Method**.
-  7. Click **Submit** and commit the Changes.
+### Compatibility
 
-## Note
+This integration is compatible with:
+- Cisco Secure Email Gateway Server version 14.0.0
+- Virtual Gateway Model C100V
+- Logs following standard patterns defined in the Cisco ESA documentation
 
-- **Retrieval Method** Supported:
-  - **FTP Push to Remote Server** for the below categories:
-    AMP Engine Logs, Anti-Spam Logs, Antivirus Logs, Authentication Logs, Bounce Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs and System Logs.
-  - **Syslog Push** for the below categories:
-	  AMP Engine Logs, Anti-Spam Logs, Antivirus Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs and System Logs.
+### How it works
 
-## [Sample Logs](https://www.cisco.com/c/en/us/td/docs/security/ces/user_guide/esa_user_guide_14-0/b_ESA_Admin_Guide_ces_14-0/b_ESA_Admin_Guide_12_1_chapter_0100111.html)
-Below are the samples logs of respective category:
+This integration collects data from Cisco Secure Email Gateway using three primary methods:
+- TCP: Streams logs in real-time for reliable delivery from the appliance to the Elastic Agent.
+- UDP: Provides high-throughput, low-overhead collection, which is ideal for high-volume mail environments.
+- Logfile: Reads logs that you've pushed via FTP to a directory monitored by the Elastic Agent.
 
-## AMP Engine Logs:
-```
-File reputation query initiating. File Name = 'mod-6.exe', MID = 5, File Size = 1673216 bytes, File Type = application/x-dosexec
+Once the logs are received, the Elastic Agent parses the data into the Elastic Common Schema (ECS). This allows you to correlate email security events with other data sources in your environment for comprehensive analysis. The integration covers various log types including security engine results, mail flow envelopes, administrative activity, and operational performance metrics.
 
-Response received for file reputation query from Cloud. FileName = 'mod-6.exe', MID = 5, Disposition = MALICIOUS, Malware = W32.061DEF69B5-100.SBX.TG,Reputation Score = 73, sha256 =061def69b5c100e9979610fa5675bd19258b19a7ff538b5c2d230b467c312f19, upload_action = 2
+## What data does this integration collect?
 
-File Analysis complete. SHA256: 16454aff5082c2e9df43f3e3b9cdba3c6ae1766416e548c30a971786db570bfc, Submit Timestamp: 1475825466, Update Timestamp: 1475825953, Disposition: 3 Score: 100, run_id: 194926004 Details: Analysis is completed for the File SHA256[16454aff5082c2e9df43f3e3b9cdba3c6ae1766416e548c30a971786db570bfc] Spyname:[W32.16454AFF50-100.SBX.TG]
+The Cisco Secure Email Gateway integration collects various log messages from your appliance and maps them to the Elastic Common Schema (ECS). You can collect this data using the `log` data stream via log file monitoring, TCP, or UDP.
 
-File not uploaded for analysis. MID = 0 File SHA256[a5f28f1fed7c2fe88bcdf403710098977fa12c32d13bfbd78bbe27e95b245f82] file mime[text/plain] Reason: No active/dynamic contents exists
+The integration collects the following functional log types:
+*   Security logs: Events from security engines including Advanced Malware Protection (AMP) file reputation and analysis, anti-spam, and antivirus results.
+*   Mail flow logs: Text mail logs (`mail_logs`) and Consolidated Event logs (`consolidated_event`) that contain envelope information, recipient details, and filtering verdicts.
+*   Administrative logs: Authentication events, GUI logs (`gui_logs`), and system logs that track administrative logins, session activity, and configuration commits.
+*   Operational logs: Status logs containing performance metrics such as CPU load, disk I/O, RAM utilization, and queue statistics.
+*   Error and bounce logs: IronPort text mail logs (`error_logs`) and bounce logs that track system errors and undeliverable messages.
 
-File analysis upload skipped. SHA256: b5c7e26491983baa713c9a2910ee868efd891661c6a0553b28f17b8fdc8cc3ef,Timestamp[1454782976] details[File SHA256[b5c7e26491983baa713c9a2910ee868efd891661c6a0553b28f17b8fdc8cc3ef] file mime[application/pdf], upload priority[Low] not uploaded, re-tries[3], backoff[986] discarding ...]
+### Supported use cases
 
-SHA256: 69e17e213732da0d0cbc48ae7030a4a18e0c1289f510e8b139945787f67692a5,Timestamp[1454959409] details[Server Response HTTP code:[502]]
+Integrating your Cisco Secure Email Gateway logs with the Elastic Stack helps you achieve several security and operational goals:
+- Security monitoring and threat detection: You'll use security and mail flow logs to identify malicious email campaigns, monitor for malware attachments via AMP, and analyze spam trends.
+- Mail flow visibility: You can track the delivery status of emails, investigate delivery failures using bounce logs, and monitor recipient activity.
+- Compliance and auditing: You'll maintain a searchable record of administrative actions and configuration changes to help you meet regulatory requirements and conduct security audits.
+- Operational health monitoring: You use system and status logs to monitor the performance of your gateway, ensuring resource usage remains within healthy thresholds and identifying potential hardware or software issues.
 
-Retrospective verdict received. SHA256: 16454aff5082c2e9df43f3e3b9cdba3c6ae1766416e548c30a971786db570bfc, Timestamp: 1475832815.7, Verdict: MALICIOUS, Reputation Score: 0, Spyname: W32.16454AFF50-100.SBX.
-```
-## Anti-Spam Logs
-```
-case antispam - engine (72324) : case-daemon: Initializing Child
+## What do I need to use this integration?
 
-case antispam - engine (15703) : case-daemon: all children killed, exitting
+Before you can use this integration, you'll need the following Cisco Secure Email Gateway prerequisites:
+- Administrative access to the gateway to configure log subscriptions.
+- Network connectivity so the gateway can reach the Elastic Agent over the configured protocol, such as `TCP/UDP 514` or a custom port.
+- Licenses for features like AMP, Anti-Spam, and Antivirus to generate the corresponding logs.
+- An FTP server configured on the Elastic Agent host or a shared storage location if you're using the FTP Push method.
+- The IP address of the Elastic Agent and a decision on which transport protocol (TCP, UDP, or Logfile) you'll use.
 
-case antispam - engine (15703) : case-daemon: server killed by SIGHUP, shutting down
-```
-## Antivirus Logs
-```
-sophos  antivirus - MID 69391938 - Result 'CLEAN' ()
+You also need to meet these Elastic prerequisites:
+- Elastic Stack version `8.11.0` or later.
+- An Elastic Agent installed on a host machine and enrolled in a Fleet policy.
+- Network connectivity allowing the gateway to reach the Elastic Agent host, typically over port `514`.
+- The Cisco Secure Email Gateway integration added to your Elastic Agent's policy.
 
-sophos  antivirus - MID 68431780 0 - Error - 'Encrypted' '0x8004021'
+## How do I deploy this integration?
 
-sophos  antivirus - MID 66842418 0 - Virus 'CXmail/Phish-O' 'body.scan/Payment.html' 1 0
+### Agent-based deployment
 
-sophos  antivirus - MID 66784457 0 - Virus 'CXmail/MalPE-HB' 'body.scan/242426.cab/rockro9046.exe' 1 0
+You must install Elastic Agent on a host that can receive syslog data or access the log files from your Cisco Secure Email Gateway. For detailed installation steps, refer to the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can only install one Elastic Agent per host.
 
-sophos  antivirus - MID 68016096 0 - Virus 'CXmail/MalPE-FL' 'body.scan/redactedFileName.rar/redactedFileName.exe' 1 0
+The Elastic Agent acts as a receiver for syslog streams or log files and ships the data to Elastic. Once the data reaches Elastic, ingest pipelines process the events into the correct format.
 
-sophos  antivirus - MID 68016096 0 - Virus 'CXmail/MalPE-AC' 'body.scan/redactedFileName.rar' 1 0
+### Set up steps in Cisco Secure Email Gateway
 
-sophos  antivirus - MID 66301278 0 - Virus 'Mal/DrodRar-AIC' 'body.scan/anotherFileName.arj' 1 0
+Cisco Secure Email Gateway (formerly ESA) supports multiple methods to retrieve logs. You'll need to configure log subscriptions to push data to your Elastic Agent.
 
-sophos  antivirus - MID 67753636 0 - Virus 'Troj/MSIL-TAR' 'body.scan/otherFileName.exe' 1 0
+#### For syslog push (TCP/UDP)
 
-sophos  antivirus - MID 66710307 7 - Limit - 'Max Files Exceeded'
+To configure the gateway to push logs via syslog, follow these steps:
 
-sophos  antivirus - MID 66708787 - timed out on message
-```
-## Authentication Logs
-```
-The user admin successfully logged on from 1.128.3.4 with privilege admin using an HTTPS connection.
+1. Log in to the Cisco Secure Email Gateway Administrator Portal.
+2. Navigate to **System Administration** > **Log Subscriptions**.
+3. Click **Add Log Subscription**.
+4. In the **Log Type** dropdown, select a category (e.g., *Text Mail Logs*).
+5. **CRITICAL:** Set the **Log Name** to exactly match the required identifier for that category. Use the mapping table below to find the correct string.
+6. Set the **Log Level** to **Information**.
+7. For **Retrieval Method**, select **Syslog Push**.
+8. Enter the **Hostname** (the IP address of your Elastic Agent) and the **Port** you'll configure in Kibana (e.g., `514`).
+9. Choose the **Protocol** (**TCP** or **UDP**) and select a **Facility** (e.g., `Local7`).
+10. Click **Submit**. Repeat these steps for all necessary categories, then click **Commit Changes**.
 
-CLI: User admin logged out from 1.128.3.4 because of inactivity timeout
+#### For FTP push (logfile)
 
-GUI: User admin logged out from session d0PfzQa02E8NwMiah2jx because of inactivity timeout
+Some logs, such as Authentication and Bounce logs, require the FTP push method. To set this up, follow these steps:
 
-logout:1.128.3.4 user:admin session:wKV0AK29Ggdhztfl4Sal
+1. Log in to the Cisco Secure Email Gateway Administrator Portal.
+2. Navigate to **System Administration** > **Log Subscriptions**.
+3. Click **Add Log Subscription**.
+4. Select the **Log Type**.
+5. **CRITICAL:** Set the **Log Name** field based on the mapping table below.
+6. Set the **Log Level** to **Information**.
+7. For **Retrieval Method**, select **FTP Push**.
+8. Enter the **FTP Server** IP, credentials, and the destination **Directory** where the Elastic Agent will monitor files.
+9. Configure the **Rollover Interval** to determine how frequently the gateway pushes logs.
+10. Click **Submit** and then **Commit Changes**.
 
-User admin logged out of SSH session 1.128.3.4
+The following table lists the required log names for each log type:
 
-An authentication attempt by the user admin from 1.128.3.4 failed using an HTTPS connection.
+| Log type selection               | Required log name (string) |
+| :------------------------------- | :------------------------- |
+| AMP Engine Logs                  | `amp`                      |
+| Anti-Spam Logs                   | `antispam`                 |
+| Anti-Virus Logs                  | `antivirus`                |
+| Authentication Logs              | `authentication`           |
+| Bounce Logs                      | `bounces`                  |
+| Consolidated Event Logs          | `consolidated_event`       |
+| Content Scanner Logs             | `content_scanner`          |
+| HTTP Logs                        | `gui_logs`                 |
+| IronPort Text Mail Logs (Errors) | `error_logs`               |
+| Text Mail Logs                   | `mail_logs`                |
+| Status Logs                      | `status`                   |
+| System Logs                      | `system`                   |
 
-User admin was authenticated successfully.
+#### Vendor resources
 
-User joe failed authentication.
-```
-## Bounce Logs
-```
-Bounced: DCID 2 MID 15232 From:<example.com> To:<example.com> RID 0 - 5.1.0 - Unknown address error ('550', ['5.1.1 The email account that you tried to reach does not exist. Please try', "5.1.1 double-checking the recipient's email address for typos or", '5.1.1 unnecessary spaces. Learn more at', '5.1.1  xxxxx ay44si12078156oib.94 - gsmtp'])
+You can find more details in the following vendor documentation:
+- [User Guide for AsyncOS 14.0.2 for Cisco Secure Email Gateway - Logging](https://www.cisco.com/c/en/us/td/docs/security/esa/esa14-0-2/user_guide/b_ESA_Admin_Guide_14-0-2/b_ESA_Admin_Guide_12_1_chapter_0100111.html)
 
-Bounced: 123:123 From:<example.com> To:<example.com>
-```
-## Consolidated Event Logs
-```
-CEF:0|Cisco|C100V Email Security Virtual Appliance|14.0.0-657|ESA_CONSOLIDATED_LOG_EVENT|Consolidated Log Event|5|deviceExternalId=42127C7DDEE76852677B-F80CE8074CD3 ESAMID=1053 ESAICID=134 ESAAMPVerdict=UNKNOWN ESAASVerdict=NEGATIVE ESAAVVerdict=NEGATIVE  ESACFVerdict=MATCH endTime=Thu Mar 18 08:04:46 2021 ESADLPVerdict=NOT_EVALUATED dvc=1.128.3.4 ESAAttachmentDetails={'test.txt': {'AMP': {'Verdict': 'FILE UNKNOWN', 'fileHash': '7f843d263304fb0516d6210e9de4fa7f01f2f623074aab6e3ee7051f7b785cfa'}, 'BodyScanner': {'fsize': 10059}}} ESAFriendlyFrom=example.com ESAGMVerdict=NEGATIVE startTime=Thu Mar 18 08:04:29 2021 deviceInboundInterface=Incomingmail deviceDirection=0 ESAMailFlowPolicy=ACCEPT suser=example.com cs1Label=MailPolicy cs1=DEFAULT ESAMFVerdict=NOT_EVALUATED act=QUARANTINED ESAFinalActionDetails=To POLICY cs4Label=ExternalMsgID cs4='<example.com>' ESAMsgSize=11873 ESAOFVerdict=POSITIVE duser=example.com ESAHeloIP=1.128.3.4 cfp1Label=SBRSScore cfp1=None ESASDRDomainAge=27 years 2 months 15 days cs3Label=SDRThreatCategory cs3=N/A cs6Label=SDRRepScore cs6=Weak ESASPFVerdict={'mailfrom': {'result': 'None', 'sender': 'example.com'}, 'helo': {'result': 'None', 'sender': 'postmaster'}, 'pra': {'result': 'None', 'sender': 'example.com'}} sourceHostName=unknown ESASenderGroup=UNKNOWNLIST sourceAddress=1.128.3.4 msg='Testing'
-```
-## Content Scanner Logs
-```
-PF: Starting multi-threaded Perceptive server (pid=17729)
+### Set up steps in Kibana
 
-PF: Restarting content_scanner service.
-```
-## IronPort Text Mail Logs
-```
-Quarantine: Failed to connect to quarantine
+To set up the integration in Kibana, follow these steps:
 
-Internal SMTP giving up on message to example.com with subject 'Warning <System> example.com: Your "IronPort Email Encryption" key will expire in under 60...': Unrecoverable error.
+1. In Kibana, navigate to **Management > Integrations**.
+2. Search for **Cisco Secure Email Gateway** and select it.
+3. Click **Add Cisco Secure Email Gateway**.
+4. Choose the appropriate input method (`logfile`, `tcp`, or `udp`) based on how you configured your Cisco gateway.
+5. Enter the configuration values as detailed in the subsections below.
+6. Click **Save and continue** to add the integration to your Agent policy.
 
-Error while sending alert: Unable to send System/Warning alert to example.com with subject "Warning <System> example.com: Your "IronPort Email Encryption" key will expire in under 60...".
+#### Log file input configuration
 
-Internal SMTP system attempting to send a message to example.com with subject 'Critical <System> example.com: Log Error: Subscription error_logs: Failed to connect to 10....' (attempt #0).
-```
-## HTTP Logs
-```
-req:1.128.3.4 user:admin id:2v10z5fEuDsvhdbVE6Ck 200 GET xxx.png HTTP/1.1 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36
+Use this section if you're collecting logs from local files or files received via FTP:
 
-req:1.128.3.4 user:- id:2v10z5fEuDsvhdbVE6Ck 200 GET xxx.png HTTP/1.1 -
+- **Paths**: Specify the list of file paths to monitor for new log data (e.g., `/var/log/cisco-esa/*.log`).
+- **Preserve original event**: If you enable this, the integration adds a raw copy of the original event to the `event.original` field.
+- **Tags**: Add custom tags to your exported events. The default is `['forwarded', 'cisco_secure_email_gateway-log']`.
+- **Processors**: Add custom processors to reduce fields or enhance metadata before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+- **Timezone**: Set the IANA time zone or time offset (e.g., `+0200`) to interpret syslog timestamps that don't have a time zone.
 
-Action: User admin logged out from session 5GPz0QDlfxUYQ0Y3PgYN beacuse of inactivity timeout
+#### TCP input configuration
 
-Session fRK3TSjzhHhoI9CV5Kvt user:admin expired
+Use this section to configure the Agent to listen for real-time TCP syslog streams:
 
-Session fRK3TSjzhHhoI9CV5Kvt from 1.128.3.4 not found Destination:/mail_policies/email_security_manager/incoming_mail_policies
+- **Listen Address**: The bind address the Agent uses to listen for TCP connections. Use `0.0.0.0` to listen on all interfaces.
+- **Listen Port**: The TCP port number the Agent listens on (e.g., `514`).
+- **Preserve original event**: If you enable this, the integration adds a raw copy of the original event to the `event.original` field.
+- **SSL Configuration**: Configure SSL options for encrypted transport. You'll need to provide the certificate and key paths in YAML format.
+- **Tags**: Add custom tags to your exported events.
+- **Processors**: Add custom processors to enhance or filter data at the Agent level. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+- **Timezone**: Set the IANA time zone or time offset for timestamps without zone data.
 
-SourceIP:1.128.3.4 Destination:/login Username:admin Privilege:admin session:5GPz0QDlfxUYQ0Y3PgYN Action: The HTTPS session has been established successfully.
+#### UDP input configuration
 
-PERIODIC REPORTS: No root directory for Periodic Reports Archive. Probably, running first time...
+Use this section to configure the Agent to listen for UDP syslog datagrams:
 
-Could not fetch current Virus Threat Level: OS error opening URL '<EXAMPLE_URL>/xxxxx/xxxxx.txt'
+- **Listen Address**: The bind address the Agent uses to listen for UDP connections.
+- **Listen Port**: The UDP port number the Agent listens on.
+- **Preserve original event**: If you enable this, the integration adds a raw copy of the original event to the `event.original` field.
+- **Tags**: Add custom tags to your exported events.
+- **Custom UDP Options**: Specify advanced options like `read_buffer`, `max_message_size`, or `timeout`.
+- **Processors**: Add custom processors to enhance or filter data at the Agent level. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+- **Timezone**: Set the IANA time zone or time offset for timestamps without zone data.
 
-SSL error with client 1.128.3.4:000 - (336151574, 'error:14094416:SSL routines:ssl3_read_bytes:sslv3 alert certificate unknown')
+### Validation
 
-Error in https connection from host 1.128.3.4 port 000 - [Errno 54] Connection reset by peer
+To verify the integration is working correctly, you'll need to trigger some log activity and then check Kibana.
 
-Passphrase has been changed for user admin
-```
-## Text Mail Logs
-```
-MID 111 DLP violation. Severity: LOW (Risk Factor: 15). DLP policy match: 'PCI-DSS (Payment Card Industry Data Security Standard)'.
+#### Trigger data flow on Cisco Secure Email Gateway
 
-graymail [CONFIG] Starting graymail configuration handler
+You can generate logs by performing these actions on your gateway:
 
-URL_REP_CLIENT: Configuration changed. Triggering restart of URL Reputation client service.
+- **Authentication event**: Log out of the Cisco Secure Email Gateway Administrator Portal and log back in.
+- **Configuration event**: Change a minor setting in the portal, click **Submit**, and then **Commit Changes**.
+- **Mail flow event**: Send a test email through the gateway.
+- **System event**: Run a CLI command like `status` or `version` on the appliance.
 
-A System/Warning alert was sent to example.com with subject "Warning <System> cisco.esa: URL category definitions have changed.; Added new category '...".
+#### Check data in Kibana
 
-New SMTP ICID 5 interface Management (1.128.3.4) address 1.128.3.4 reverse dns host example.com verified yes
+Once you've generated some activity, verify the data in Kibana:
 
-Start MID 6 ICID 5
+1. Navigate to **Analytics > Discover**.
+2. Select the `logs-*` data view.
+3. Enter the KQL filter: `data_stream.dataset : "cisco_secure_email_gateway.log"`.
+4. Check that logs appear and verify that fields like `event.dataset`, `source.ip`, and `message` are populated.
+5. Navigate to **Analytics > Dashboards** and search for **Cisco Secure Email Gateway** to see if the pre-built dashboards show your data.
 
-MID 6 ICID 5 From: <example.com>
+## Troubleshooting
 
-MID 6 ICID 5 RID 0 To: <example.com>
+For help with Elastic ingest tools, check the [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems) documentation.
 
-MID 6 ready 100 bytes from <example.com>
+### Common configuration issues
 
-ICID 5 close
+Use the following tips to resolve common issues you might encounter while using this integration:
 
-New SMTP DCID 8 interface 1.128.3.4 address 1.128.3.4
+- **Log name mismatch**: The most common issue is entering a custom string in the Log Name field on the Cisco appliance. The integration parser specifically looks for the identifiers such as `mail_logs`, `amp`, or `antispam`. If these do not match the expected strings exactly, logs will not be parsed into ECS fields.
+- **Missing authentication or bounce logs**: If you are using Syslog Push and notice that Authentication and Bounce logs are missing, this is expected behavior. The Cisco appliance does not support streaming these specific categories via Syslog. You must configure an FTP Push subscription for these log types and use the logfile input.
+- **Incorrect log level**: If logs are reaching Elastic but essential details are missing, verify that the Log Level on the gateway is set to `Information`. Lower levels like Warning or Error do not provide enough data for the integration to function correctly. Avoid using the `Debug` level unless you are actively troubleshooting, as it can significantly increase ingest volume.
+- **Port conflicts or connectivity issues**: Ensure that the port configured in the integration settings (e.g., `514`) is not being used by another service or another Elastic Agent integration. Verify that the listen address is set to `0.0.0.0` if the Agent needs to listen on all interfaces, and check that no firewalls are blocking the traffic.
+- **Parsing failures**: If logs appear in Kibana but are not parsed into specific fields, check the `error.message` field in the event. This often happens if the log format has been customized on the Cisco appliance. The integration expects the standard default logging format at the `Information` level.
+- **Timezone offsets**: If logs appear with the wrong timestamp, verify the Timezone (`tz_offset`) setting in the integration configuration to ensure it matches the timezone configured on the Cisco Secure Email Gateway appliance.
 
-Delivery start DCID 8 MID 6 to RID [0]
+## Performance and scaling
 
-Message done DCID 8 MID 6 to RID [0]
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
-DCID 8 close
+To ensure optimal performance in high-volume email environments, consider the following strategies:
+- Use TCP instead of UDP for log transmission if you require delivery guarantees for auditing or threat detection. While UDP has lower overhead, TCP ensures you don't lose log messages during network congestion.
+- Use the FTP Push (logfile) method for bounce logs if your gateway version doesn't support sending them via syslog.
+- Set the log level to `Information`. You should avoid using the `Debug` level unless you're actively troubleshooting, as it significantly increases CPU load and ingest volume.
+- Apply log subscription filters on the gateway to exclude verbose categories like status logs if you're already monitoring those metrics with other tools.
+- Scale your deployment by placing multiple Elastic Agents behind a network load balancer to distribute syslog traffic. You should place agents geographically close to your gateway appliances to minimize latency and potential packet loss for UDP traffic.
 
-URL category definitions have changed. Please check and update your filters to use the new definitions
+## Reference
 
-Error while sending alert: Unable to send System/Warning alert to example.com with subject "Warning <System> example.com: Your "IronPort Email Encryption" key will expire in under 60...".
+### Inputs used
 
-Your "IronPort Anti-Spam" key will expire in under 60 day(s). Please contact your authorized Cisco sales representative.
+{{ inputDocs }}
 
-Internal SMTP system successfully sent a message to example.com with subject 'Warning <System> cisco.esa: Your "Sophos Anti-Virus" key will expire in under 60 day(s)....'.
+### Data streams
 
-Internal SMTP giving up on message to example.com with subject 'Warning <System> example.com: Your "IronPort Email Encryption" key will expire in under 60...': Unrecoverable error.
+#### log
 
-Internal SMTP Error: Failed to send message to host 1.128.3.4:000 for recipient example: Unexpected SMTP response "553", expecting code starting with "2", response was ['#5.1.8 Domain of sender address <example.xxx> does not exist'].
+The `log` data stream provides events from Cisco Secure Email Gateway of the following types: mail logs, system logs, authentication logs, anti-spam logs, and anti-virus logs.
 
-MID 68119155 RID [0] Response '2.0.0 OK  1687954632 redactedstring - gsmtp'
+##### log fields
 
-MID 68119155 Subject "redacted subject"
+{{ fields "log" }}
 
-MID 68119155 queued for delivery
+##### log sample event
 
-Message finished MID 68119155 done
+{{ event "log" }}
 
-MID 68119155 interim verdict using engine: CASE bulk
+### Vendor documentation links
 
-MID 68119155 interim AV verdict using Sophos CLEAN
-
-MID 68119155 using engine: GRAYMAIL positive
-
-MID 68119155 Outbreak Filters: verdict negative
-
-MID 68119155 using engine: SPF Verdict Cache using cached verdict
-
-MID 68119155 Message-ID '<redacted@redactedMailFrom.com>'
-
-MID 68119155 DMARC: Verification passed
-
-MID 68119155 SPF: mailfrom identity no-reply@redactedMailFrom.com Pass (v=spf1)
-
-MID 68119155 matched all recipients for per-recipient policy DEFAULT in the inbound table
-
-MID 68119155 SDR: Tracker Header : redactedTrackerHeader
-
-MID 68119155 SDR: Domains for which SDR is requested: reverse DNS host: redacted.redactedMailFrom.com, helo: redacted.redactedMailFrom.com, env-from: redactedMailFrom.com, header-from: redactedMailFrom.com, reply-to: redactedMailFrom.com
-
-MID 68119155 SDR: Consolidated Sender Threat Level: Neutral, Threat Category: N/A, Suspected Domain(s) : N/A (other reasons for verdict). Sender Maturity: 30 days (or greater) for domain: redacted.redactedMailFrom.com
-
-MID 68119155 DMARC: Message from domain redactedMailFrom.com, DMARC pass (SPF aligned True, DKIM aligned True)
-
-MID 68119155 DKIM: pass signature verified (d=redactedMailFrom.com s=srsa2048 i=@redactedMailFrom.com)
-
-MID 68119155 AMP file reputation verdict : SKIPPED (no attachment in message)
-```
-## Status Logs
-```
-Status: CPULd 0 DskIO 0 RAMUtil 1 QKUsd 0 QKFre 8388608 CrtMID 0 CrtICID 0 CrtDCID 1 InjMsg 0 InjRcp 0 GenBncRcp 0 RejRcp 0 DrpMsg 0 SftBncEvnt 0 CmpRcp 0 HrdBncRcp 0 DnsHrdBnc 0 5XXHrdBnc 0 FltrHrdBnc 0 ExpHrdBnc 0 OtrHrdBnc 0 DlvRcp 0 DelRcp 0 GlbUnsbHt 0 ActvRcp 0 UnatmptRcp 0 AtmptRcp 0 CrtCncIn 0 CrtCncOut 0 DnsReq 0 NetReq 0 CchHit 0 CchMis 0 CchEct 0 CchExp 0 CPUTTm 91 CPUETm 32182 MaxIO 487 RAMUsd 125195690 MMLen 0 DstInMem 3 ResCon 0 WorkQ 0 QuarMsgs 0 QuarQKUsd 0 LogUsd 5 SophLd 99 BMLd 0 CASELd 0 TotalLd 47 LogAvail 148G EuQ 0 EuqRls 0 CmrkLd 0 McafLd 0 SwIn 338 SwOut 681 SwPgIn 2123 SwPgOut 7156 SwapUsage 0% RptLd 0 QtnLd 0 EncrQ 0 InjBytes 0
-```
-## System Logs
-```
-PID 1237: User admin commit changes: Added a second CLI log for examples
-
-lame DNS referral: qname:example.net ns_name:example.net zone:example.net ref_zone:example.net referrals:[(524666183436709L, 0, 'insecure', 'example.net'), (524666183436709L, 0, 'insecure', 'example.net')]
-
-Failed to bootstrap the DNS resolver. Unable to contact root servers.
-
-DNS query network error '[Errno 51] Network is unreachable' to 'dummy_ip' looking up ' '
-
-Received an invalid DNS Response: '' to IP dummy_ip looking up example.de
-```
-
-## Logs
-
-### log
-
-This is the `log` dataset.
-
-{{event "log"}}
-
-{{fields "log"}}
+You can find more information about Cisco Secure Email Gateway logging in the following resources:
+- [Cisco Secure Email Product Page](https://www.cisco.com/site/us/en/products/security/secure-email/index.html)
+- [Cisco ESA User Guide & Log Samples](https://www.cisco.com/c/en/us/td/docs/security/ces/user_guide/esa_user_guide_14-0/b_ESA_Admin_Guide_ces_14-0/b_ESA_Admin_Guide_12_1_chapter_0100111.html)
+- [User Guide for AsyncOS 14.0.2 for Cisco Secure Email Gateway - Logging](https://www.cisco.com/c/en/us/td/docs/security/esa/esa14-0-2/user_guide/b_ESA_Admin_Guide_14-0-2/b_ESA_Admin_Guide_12_1_chapter_0100111.html)
