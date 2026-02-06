@@ -6,6 +6,7 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+
   - set:
       field: ecs.version
       value: "8.17.0"
@@ -78,8 +79,10 @@ processors:
       ignore_failure: true
       patterns:
         - '^Connection\sfrom\s%{HOSTNAME:client.domain}\s+\(%{IP:client.ip}\)'
-        - 'Ending\s+connection\s+on\s+%{IP:server.ip}:%{INT:server.port}\s+from\s+%{IP:client.ip}:%{INT:client.port}'
-        - '%{DATA:event.type}:\s+%{INT:event.code}\s+%{HOSTNAME:server.domain}%{DATA}\(%{HOSTNAME:client.domain}\s+\[%{IP:client_ip}\]\)'
+        - '(Ending|Starting)\s+connection\s+on\s+%{IP:server.ip}:%{INT:server.port}\s+from\s+%{IP:client.ip}:%{INT:client.port}'
+        - '%{DATA:event.action}:\s+%{INT:event.code}\s+%{HOSTNAME:server.domain}%{DATA}\(%{HOSTNAME:client.domain}\s+\[%{IP:client.ip}\]\)'
+        - '%{DATA:event.action}:\s+%{INT:event.code}\s+%{HOSTNAME:server.domain}%{DATA}\s%{GREEDYDATA:message}'
+        - '%{DATA:email.local_id}\:\s+%{DATA:event.action}:\s+%{GREEDYDATA:message}'
   - set:
       field: "client.address"
       copy_from: client.domain
