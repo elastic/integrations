@@ -56,7 +56,6 @@ Before you begin, ensure you have these vendor-specific requirements:
 
 You'll also need the following Elastic Stack components:
 - An active Elastic Agent installed and enrolled in a policy.
-- Kibana version `8.11.4` or higher (or `9.0.0+`) is required for this integration.
 - Reachability from the SNS appliance to the host running the Elastic Agent on the configured syslog port.
 - An Elastic Stack user with permissions to manage integrations and Fleet policies.
 
