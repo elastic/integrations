@@ -1,0 +1,138 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a high number of failed force push attempts to protected branches by a single user within a short time frame. Adversaries may attempt multiple force pushes to overwrite commit history on protected branches, potentially leading to data loss or disruption of development workflows.",
+        "from": "now-9m",
+        "interval": "8m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Several Failed Protected Branch Force Pushes by User",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Several Failed Protected Branch Force Pushes by User\n\nThis rule flags a single user generating multiple failed force push attempts to protected branches within a short span, indicating attempts to rewrite commit history and bypass branch protections. An attacker with a compromised maintainer role repeatedly tries to roll back a security fix, delete prior commits, and erase history entries before pushing a malicious revision. This activity threatens code integrity, disrupts pipelines, and can propagate harmful changes across repositories.\n\n### Possible investigation steps\n\n- Pull audit entries for the rejected updates to confirm the rejection reasons and the exact org/repo/branch targets, then reconstruct the timeline and sequence of attempts.\n- Verify the user's current and recent permissions, team membership, and role changes, and confirm whether any admin or ownership transfers occurred before the attempts.\n- Correlate the attempts with authentication and token activity (SSO logins, PAT/SSH key usage, IP/device fingerprints, geo), flagging any new or unusual sources.\n- Review branch protection settings and recent edits (require status checks, linear history, admin enforcement, force push exemptions) to detect policy tampering or misconfiguration.\n- Identify the specific commits the force pushes sought to overwrite by diffing the attempted ref against the protected branch head, prioritizing impacts to security fixes, release branches, or signed commits.\n\n### False positive analysis\n\n- During a repository migration or history cleanup, a maintainer runs a local script that loops through branches and tries to push rewritten commits with --force, but newly tightened branch protection rejects each attempt, resulting in multiple failures.\n- A developer who previously had a force-push exemption on a protected release branch loses that permission during a role or team change and continues their usual rebase-and-force-push workflow, causing several rapid rejected ref updates.\n\n### Response and remediation\n\n- Immediately block the user in the GitHub organization, revoke all active personal access tokens and SSH keys from their account, and force sign-out to stop further push attempts.\n- On each affected repository and branch (e.g., main, release/*), remove any force-push exemptions, enable \u201cInclude administrators,\u201d require signed commits and status checks, and restrict push access to specific teams.\n- Purge staging artifacts by deleting any branches or tags the user created around the attempts, rotate the user\u2019s password and regenerate PATs/SSH keys, and remove newly registered keys or OAuth apps added during the window.\n- Validate recovery by confirming the protected branch HEAD matches the last known good signed commit SHA, re-running CI for impacted repos, and creating a restore point tag for rapid rollback.\n- Escalate to incident response if any attempts targeted main or release branches, originated from a newly created PAT/SSH key or an unrecognized IP/device, or the user holds repo admin/organization owner rights.\n- Harden long term by enforcing org-wide 2FA/SSO, removing all standing force-push exemptions, requiring CODEOWNERS approvals on protected branches, and enabling audit alerts for branch protection edits and new credential creation.\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n  data_stream.dataset == \"github.audit\" and\n  github.category == \"protected_branch\" and\n  event.action == \"protected_branch.rejected_ref_update\"\n| stats\n  Esql.document_count = COUNT(*),\n  Esql.github_org_values = values(github.org),\n  Esql.github_repo_values = values(github.repo),\n  Esql.github_branch_values = values(github.branch),\n  Esql.github_reasons_code_values = values(github.reasons.code),\n  Esql.github_reasons_message_value = values(github.reasons.message),\n  Esql.user_name_values = values(user.name),\n  Esql.agent_id_values = values(agent.id),\n  Esql.event_dataset_values = values(event.dataset),\n  Esql.data_stream_namespace_values = values(data_stream.namespace)\n\n  by user.name\n\n| keep Esql.*\n\n| where\n  Esql.document_count >= 5\n",
+        "references": [
+            "https://www.wiz.io/blog/shai-hulud-2-0-ongoing-supply-chain-attack",
+            "https://trigger.dev/blog/shai-hulud-postmortem",
+            "https://posthog.com/blog/nov-24-shai-hulud-attack-post-mortem"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.agent_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.data_stream_namespace_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.document_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_dataset_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.github_branch_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.github_org_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.github_reasons_code_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.github_reasons_message_value",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.github_repo_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_name_values",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8bd1c36a-2c4f-4801-a43d-ba696c13ffc2",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Tactic: Exfiltration",
+            "Data Source: Github",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1020",
+                        "name": "Automated Exfiltration",
+                        "reference": "https://attack.mitre.org/techniques/T1020/"
+                    },
+                    {
+                        "id": "T1567",
+                        "name": "Exfiltration Over Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1567/",
+                        "subtechnique": [
+                            {
+                                "id": "T1567.001",
+                                "name": "Exfiltration to Code Repository",
+                                "reference": "https://attack.mitre.org/techniques/T1567/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "8bd1c36a-2c4f-4801-a43d-ba696c13ffc2_1",
+    "type": "security-rule"
+}
