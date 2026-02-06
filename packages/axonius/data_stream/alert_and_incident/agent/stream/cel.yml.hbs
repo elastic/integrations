@@ -78,16 +78,19 @@ program: |
               })
             ).flatten()
           :
-            [{"message":"empty_data"}]
+            []
           ),
           "worklist": {
-            "asset_type_list": (has(body.meta.page.number) && has(body.meta.page.totalPages) &&
-            int(body.meta.page.number) < int(body.meta.page.totalPages)) ? state.worklist.asset_type_list : tail(state.worklist.asset_type_list),
-            "next_page": (has(body.meta.page.number) && has(body.meta.page.totalPages) &&
-            int(body.meta.page.number) < int(body.meta.page.totalPages)) ? (body.?meta.?next_page) : null,
+            "asset_type_list": int(body.?meta.page.number.orValue(0)) < int(body.?meta.page.totalPages.orValue(0)) ?
+              state.worklist.asset_type_list
+            :
+              tail(state.worklist.asset_type_list),
+            ?"next_page": int(body.?meta.page.number.orValue(0)) < int(body.?meta.page.totalPages.orValue(0)) ?
+              body.?meta.next_page
+            :
+              optional.none(),
           },
-          "want_more": (has(body.meta.page.number) && has(body.meta.page.totalPages) &&
-          int(body.meta.page.number) < int(body.meta.page.totalPages) || size(state.worklist.asset_type_list) > 1),
+          "want_more": int(body.?meta.page.number.orValue(0)) < int(body.?meta.page.totalPages.orValue(0)) || size(state.worklist.asset_type_list) > 1,
         }
       )
     :
