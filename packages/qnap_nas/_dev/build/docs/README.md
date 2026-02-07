@@ -16,8 +16,6 @@ This integration facilitates:
 
 This integration has been tested against QNAP NAS QTS 4.5.4 and is expected to work with versions later than QTS 4.5.4. It's only compatible with logs sent using the "Send to Syslog Server" option, which uses the RFC-3164 syslog format.
 
-This integration is compatible with Elastic Stack version 8.11.0 or higher.
-
 ### How it works
 
 This integration collects logs by receiving syslog data over TCP or UDP. You configure your QNAP NAS device to forward its logs to an Elastic Agent running on a host that is reachable from your NAS. The agent acts as a syslog receiver, processes the RFC-3164 formatted logs from the `log` data stream, and forwards them to your Elastic deployment for monitoring and analysis.
@@ -108,7 +106,7 @@ This input collects logs over a TCP socket. Configure the following fields:
 - Syslog Host: The host address to listen on for syslog messages (for example, `0.0.0.0` or `localhost`).
 - Syslog Port: The port number to listen on (for example, `9301`).
 - Timezone Offset: By default, log timestamps are interpreted based on the agent host's timezone. Use this field to set the correct offset (for example, `Europe/Amsterdam` or `-05:00`) if the logs come from a different timezone.
-- SSL Configuration: Configure SSL options for encrypted communication. See the [SSL documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+- SSL Configuration: Configure SSL options for encrypted communication. Refer to the [SSL documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
 - Preserve original event: If enabled, a raw copy of the original log is stored in the `event.original` field.
 - Tags: Add custom tags to your events (defaults to `qnap-nas` and `forwarded`).
 - Processors: Add custom processors to enhance or reduce event fields before parsing.
@@ -156,7 +154,7 @@ For help with Elastic ingest tools, check the [Common problems](https://www.elas
 
 If you encounter problems with the integration, check these common issues:
 - No logs appearing in Kibana: Verify that the server IP address you configured in the QNAP QuLog Center's Send to Syslog Server tab matches the IP address of the Elastic Agent host. Make sure the port number matches the `syslog_port` you configured in your integration (the default is `9301`). You'll also want to confirm that the protocol (UDP, TCP, or TLS) on the QNAP NAS matches the input type you selected in the integration. Also, check firewall rules on both the NAS and the Agent host to ensure traffic can pass through. You can use a utility like `tcpdump` on the Agent host to verify reception: `tcpdump -i any port 9301`.
-- Logs are present but unparsed or missing fields: In the QNAP QuLog Center, confirm that you've set the log format to `RFC-3164`, as other formats aren't supported. Check the `error.message` field in Kibana Discover for specific parsing error details. If you've enabled the `preserve_original_event` setting, check the `event.original` field to see the raw log payload. Additionally, verify that you've correctly configured the `Timezone Offset` if the NAS is in a different timezone than the Elastic Agent host.
+- Logs are present but unparsed or missing fields: In the QNAP QuLog Center, confirm that you've set the log format to `RFC-3164`, as other formats aren't supported. Check the `error.message` field in Kibana Discover for specific parsing error details. If you've enabled the `preserve_original_event` setting, check the `event.original` field to view the raw log payload. Additionally, verify that you've correctly configured the `Timezone Offset` if the NAS is in a different timezone than the Elastic Agent host.
 - Parsing failures for specific log types: If you receive certain logs but they aren't processed correctly, inspect the `error.message` field for clues. This often happens if the log content deviates from the expected `RFC-3164` standard. You can compare the raw log in `event.original` with the standard format to identify discrepancies.
 
 ### Vendor resources
