@@ -17,7 +17,7 @@ This integration facilitates:
 
 You can use this integration with the following:
 - FortiProxy versions 7.x up to 7.4.3.
-- Newer versions of FortiProxy are expected to work correctly because they typically maintain backward compatibility with the default `syslog` format.
+- Later versions of FortiProxy are expected to work correctly because they typically maintain backward compatibility with the default `syslog` format, but have not been tested.
 
 ### How it works
 
@@ -55,7 +55,7 @@ To use this integration, you need the following vendor-specific prerequisites:
 
 You also need the following Elastic prerequisites:
 - Elastic Agent installed and enrolled in Fleet on a host that's network-accessible to the FortiProxy.
-- Kibana and Elasticsearch version 8.0 or higher for full compatibility with integration data streams.
+- Kibana and Elasticsearch version 8.0 or later for full compatibility with integration data streams.
 - The Elastic Agent must be assigned to a policy that includes the Fortinet FortiProxy integration.
 - The host running the Elastic Agent must listen on the specified port (for example, `514`) and can't have local firewall rules (like `iptables` or Windows Firewall) blocking incoming syslog traffic.
 
@@ -197,7 +197,7 @@ If you encounter issues while collecting logs from Fortinet FortiProxy, consider
 - Network port conflicts: If the Elastic Agent can't start the input, another service like a local syslog daemon might be using the configured port. You can check for port usage on Linux systems using the command `netstat -tulpn`.
 - Firewall or connectivity problems: If logs aren't appearing in Kibana, verify that the FortiProxy device can reach the Elastic Agent host. You can use a packet capture tool like `tcpdump port 514` on the Agent host to confirm that traffic is reaching the network interface.
 - Incorrect log format: Ensure that your FortiProxy device is configured to use the default log format with the CLI command `set format default`. If the device sends logs in CSV or a custom format, the integration's ingest pipeline won't be able to parse the data correctly.
-- Incomplete log messages or truncation: If very large log entries, such as those from SSL inspection, are appearing cut off, you may need to increase the `max_message_size` in the integration's advanced settings for the TCP or UDP input.
+- Incomplete log messages or truncation: If very large log entries, such as those from SSL inspection, are appearing cut off, you might need to increase the `max_message_size` in the integration's advanced settings for the TCP or UDP input.
 - Troubleshooting parsing failures: You can look for the `error.message` field in Kibana to identify why a specific log failed to parse. To help with this, you should enable the **Preserve original event** option in the integration settings so you can compare the raw log in `event.original` against the expected format.
 
 ## Performance and scaling

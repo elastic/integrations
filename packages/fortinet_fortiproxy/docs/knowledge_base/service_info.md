@@ -28,7 +28,7 @@ This integration can collect the following types of data from Fortinet FortiProx
 The **Fortinet FortiProxy** integration has been specifically tested and validated against the following versions:
 
 *   **FortiProxy versions 7.x up to 7.4.3**
-*   Newer versions of FortiProxy are expected to function correctly as they typically maintain backward compatibility with the default syslog format.
+*   Later versions of FortiProxy are expected to function correctly as they typically maintain backward compatibility with the default syslog format.
 
 ## Scaling and Performance
 
