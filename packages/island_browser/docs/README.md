@@ -747,17 +747,17 @@ An example event for `device` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-01-21T05:41:55.492Z",
+    "@timestamp": "2026-02-09T10:24:46.642Z",
     "agent": {
-        "ephemeral_id": "1acea623-edaf-4dc1-b6c8-e0148a626751",
-        "id": "419f391f-6ad0-4b8d-98e9-870acc0e0474",
-        "name": "elastic-agent-20749",
+        "ephemeral_id": "558993e6-d167-44d3-9a9e-93b7b5a192ab",
+        "id": "4ec57e22-e711-492b-87b6-eed1ae2c21e6",
+        "name": "elastic-agent-53014",
         "type": "filebeat",
         "version": "8.18.8"
     },
     "data_stream": {
         "dataset": "island_browser.device",
-        "namespace": "98934",
+        "namespace": "44095",
         "type": "logs"
     },
     "device": {
@@ -770,7 +770,7 @@ An example event for `device` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "419f391f-6ad0-4b8d-98e9-870acc0e0474",
+        "id": "4ec57e22-e711-492b-87b6-eed1ae2c21e6",
         "snapshot": false,
         "version": "8.18.8"
     },
@@ -782,7 +782,7 @@ An example event for `device` looks as following:
         "created": "2025-08-21T08:38:14.478Z",
         "dataset": "island_browser.device",
         "id": "7748cf6a-1a23-4572-b5ee-129962616b25",
-        "ingested": "2026-01-21T05:41:58Z",
+        "ingested": "2026-02-09T10:24:49Z",
         "kind": "asset",
         "original": "{\"architecture\":\"x86_64\",\"authMethod\":\"TenantToken\",\"browserName\":\"Island\",\"browserUpdateStatus\":\"UpToDate\",\"browserVersion\":\"1.72.30\",\"chassisType\":\"Laptop\",\"chromiumVersion\":\"139.0.7258.128\",\"country\":\"India\",\"countryCode\":\"IN\",\"cpuModel\":\"Intel(R) Xeon(R) Gold 5220R CPU @ 2.20GHz\",\"createdDate\":\"2025-08-21T08:38:14.478259Z\",\"deviceType\":\"Laptop\",\"diskEncrypted\":false,\"email\":\"john.doe@example.com\",\"extensionVersion\":\"1.12546.6\",\"externalIpAddress\":\"89.160.20.112\",\"id\":\"7748cf6a-1a23-4572-b5ee-129962616b25\",\"internalIpAddress\":\"10.50.6.126\",\"isArchived\":false,\"isDefaultBrowser\":false,\"isVirtualMachine\":true,\"islandPlatform\":\"Browser\",\"lastSeen\":\"2025-08-31T04:19:55.342111Z\",\"macAddresses\":\"00:50:56:81:c9:17 | 02:42:7e:fe:2e:0b | 00:50:56:81:82:be\",\"machineId\":\"iNUa5F_2xgA1L51ZX5_YCXX7b7Z\",\"machineModel\":\"VMware Virtual Platform\",\"machineName\":\"ub22-50-6-126.manage.local\",\"manufacturer\":\"VMware, Inc.\",\"osCodeName\":\"Ubuntu 22.04.5 LTS\",\"osDomain\":\"\",\"osFirewallEnabled\":true,\"osPlatform\":\"Linux\",\"osScreenLockEnabled\":true,\"osUserName\":\"serviceuser\",\"osVersion\":\"22.04\",\"policyUpdateTime\":\"2025-07-08T14:17:18.527794Z\",\"ramSize\":16,\"serialNumber\":\"\",\"status\":\"Active\",\"storageCapacity\":48,\"syncEnabled\":true,\"tenantId\":\"elastic-testing\",\"updatedDate\":\"2025-08-31T04:19:55.345783Z\",\"userId\":\"auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486\",\"userName\":\"John Doe\",\"windowsLicenseStatus\":\"Unlicensed\"}",
         "type": [
@@ -814,7 +814,6 @@ An example event for `device` looks as following:
         ],
         "name": "ub22-50-6-126.manage.local",
         "os": {
-            "name": "serviceuser",
             "platform": "Linux",
             "type": "linux",
             "version": "22.04"
