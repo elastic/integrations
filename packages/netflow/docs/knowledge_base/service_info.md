@@ -26,7 +26,7 @@ The integration handles several specific flow record types:
 The NetFlow integration is compatible with any network hardware or software that supports standard flow export protocols.
 
 - **Vendor Compatibility:**
-  - **Cisco Systems** devices supporting NetFlow v1, v5, v7, or v9.
+  - **Cisco Systems** devices supporting NetFlow v1, v5, v6, v7, v8, or v9.
   - **IETF IPFIX** compliant devices from various vendors including **Juniper**, **Palo Alto Networks**, and **Fortinet**.
   - Software-based flow exporters like **fprobe** or **nProbe** that generate standard NetFlow or IPFIX records.
 - **Elastic Requirements:**
@@ -43,8 +43,8 @@ To ensure optimal performance in high-volume environments, consider the followin
 # Set Up Instructions
 
 ## Vendor prerequisites
-- **Administrative Access:** Ability to access the command-line interface (CLI) or web-based management console of the network device (e.g., router, firewall).
-- **Network Connectivity:** The network device must have a clear network path to the Elastic Agent host via the configured UDP port (default 2055).
+- **Administrative Access:** Ability to access the command-line interface (CLI) or web-based management console of the network device (for example, router, firewall).
+- **Network Connectivity:** The network device must have a clear network path to the Elastic Agent host using the configured UDP port (default 2055).
 - **Firewall Permissions:** Intermediate firewalls or Access Control Lists (ACLs) must allow UDP traffic from the exporter's IP to the Elastic Agent's IP.
 - **NetFlow License:** Ensure the device has the necessary software features enabled to support NetFlow or IPFIX export.
 - **Configuration Knowledge:** Knowledge of the local interface names and IP addresses used for source-interface binding.
@@ -72,13 +72,13 @@ Configure your network devices to export NetFlow or IPFIX records to the IP addr
 - **Time duration before an idle session or unused template is expired. Valid time units are h, m, s.** (`expiration_timeout`): Period after which inactive templates or sessions are removed from memory. Default: `30m`.
 - **Number of Workers** (`workers`): The number of workers to read and decode concurrently netflow packets. Increase this for higher performance. Default: `1`.
 - **Maximum number of packets that can be queued for processing** (`queue_size`): The buffer size for incoming packets before they are processed. Default: `8192`.
-- **Read Buffer Size** (`read_buffer`): Sets the size of the OS read buffer on the UDP socket in format KiB/MiB (e.g., `10MiB`). If not set, the OS default is used.
+- **Read Buffer Size** (`read_buffer`): Sets the size of the OS read buffer on the UDP socket in format KiB/MiB (for example, `10MiB`). If not set, the OS default is used.
 - **Custom definitions** (`custom_definitions`): Optional user-defined field mappings for proprietary NetFlow implementations.
-- **Whether to detect sequence reset** (`detect_sequence_reset`): Boolean to identify if flow sequence numbers have reset (e.g., after a device reboot). Default: `True`.
+- **Whether to detect sequence reset** (`detect_sequence_reset`): Boolean to identify if flow sequence numbers have reset (for example, after a device reboot). Default: `True`.
 - **Maximum size of the message received over UDP** (`max_message_size`): The maximum size allowed for a single packet. Default: `10KiB`.
 - **Tags** (`tags`): Custom tags to apply to the events for easier filtering. Default: `['netflow', 'forwarded']`.
 - **Read timeout for socket operations. Valid time units are ns, us, ms, s, m, h.** (`timeout`): The specific time limit for socket read actions.
-- **Processors** (`processors`): Add custom Elastic Agent processors to filter or enhance data (e.g., adding metadata) before it is sent to Elasticsearch.
+- **Processors** (`processors`): Add custom Elastic Agent processors to filter or enhance data (for example, adding metadata) before it is sent to Elasticsearch.
 
 4. Click **Save and continue** to save the integration and deploy it to your Elastic Agent policy.
 
@@ -98,7 +98,7 @@ After configuration is complete, verify that data is flowing correctly.
 4. Verify logs appear. Expand a log entry and confirm these fields:
    - `event.dataset` (should be `netflow.log`)
    - `flow.id` and `flow.locality`
-   - `network.transport` (e.g., `tcp`, `udp`, or `icmp`)
+   - `network.transport` (for example, `tcp`, `udp`, or `icmp`)
    - `network.bytes` and `network.packets`
    - `message` (the raw log payload or flow summary)
 5. Navigate to **Analytics > Dashboards** and search for "Netflow" to view the pre-built traffic overview dashboards.
@@ -107,10 +107,10 @@ After configuration is complete, verify that data is flowing correctly.
 
 ## Common Configuration Issues
 
-- **UDP Port Blocked**: Ensure that the host firewall (e.g., iptables, ufw, or Windows Firewall) on the Elastic Agent machine is configured to allow inbound UDP traffic on the specified port (default 2055).
+- **UDP Port Blocked**: Ensure that the host firewall (for example, iptables, ufw, or Windows Firewall) on the Elastic Agent machine is configured to allow inbound UDP traffic on the specified port (default 2055).
 - **Incorrect Listening Interface**: If the **UDP host to listen on** is set to `localhost`, the agent will not receive packets from external network devices. Change this to `0.0.0.0` or the specific LAN IP of the agent host.
 - **Template Mismatch (NetFlow v9/IPFIX)**: NetFlow v9 and IPFIX use templates. If the agent starts after the device has already sent templates, it may take several minutes (depending on the device's template refresh rate) before the agent can decode the incoming data.
-- **Clock Skew**: Ensure the clocks on the network devices and the Elastic Agent host are synchronized via NTP, as significant timing differences can cause issues with flow duration calculations.
+- **Clock Skew**: Ensure the clocks on the network devices and the Elastic Agent host are synchronized using NTP, as significant timing differences can cause issues with flow duration calculations.
 
 ## Ingestion Errors
 
@@ -121,8 +121,3 @@ After configuration is complete, verify that data is flowing correctly.
 ## Vendor Resources
 - [Cisco Systems NetFlow Services Export Version 9 (RFC 3954)](https://www.ietf.org/rfc/rfc3954.txt)
 - [IPFIX Protocol Specification (RFC 7011)](https://www.ietf.org/rfc/rfc7011.txt)
-
-# Documentation sites
-
-- [Cisco Systems NetFlow Services Export Version 9 (RFC 3954)](https://www.ietf.org/rfc/rfc3954.txt)
-- [Specification of the IPFIX Protocol (RFC 7011)](https://www.ietf.org/rfc/rfc7011.txt)

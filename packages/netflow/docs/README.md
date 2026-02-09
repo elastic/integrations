@@ -53,7 +53,7 @@ To use the NetFlow Records integration, you'll need the following:
 ### Vendor prerequisites
 You must ensure your network devices meet these requirements:
 - Administrative access to the command-line interface (CLI) or web-based management console of the network device, such as a router or firewall.
-- Network connectivity from the network device to the Elastic Agent host via the configured UDP port, which is `2055` by default (replace with your actual port if it's different).
+- Network connectivity from the network device to the Elastic Agent host using the configured UDP port, which is `2055` by default (replace with your actual port if it's different).
 - Firewall permissions or Access Control Lists (ACLs) that allow UDP traffic from the exporter's IP to the Elastic Agent's IP.
 - The necessary software features or license enabled on the device to support NetFlow or IPFIX export.
 - Knowledge of the local interface names and IP addresses used for source-interface binding.
@@ -71,7 +71,7 @@ You also need to set up your Elastic environment:
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the NetFlow or IPFIX exporter and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the NetFlow or IPFIX exporter and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in NetFlow Records
 
@@ -89,7 +89,7 @@ This integration supports the following configuration options:
 
 | Setting                   | Description                                                                                                  |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **UDP host to listen on** | The IP address the agent should bind to (e.g., `0.0.0.0` to listen on all interfaces). Default: `localhost`. |
+| **UDP host to listen on** | The IP address the agent should bind to (for example, `0.0.0.0` to listen on all interfaces). Default: `localhost`. |
 | **UDP port to listen on** | The UDP port used to receive NetFlow packets from your network devices. Default: `2055`.                     |
 | **Internal Networks**     | A list of CIDR ranges describing the IP addresses that are considered internal. Default: `[private]`.        |
 
@@ -97,15 +97,15 @@ Under **Advanced Options**, you can configure the following optional parameters:
 
 | Setting                                           | Description                                                                                      |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Expiration timeout**                            | Time duration before an idle session or unused template is expired (e.g., `30m`).                |
+| **Expiration timeout**                            | Time duration before an idle session or unused template is expired (for example, `30m`).                |
 | **Number of Workers**                             | The number of workers to read and decode NetFlow packets concurrently. Default: `1`.             |
 | **Queue size**                                    | Maximum number of packets that can be queued for processing. Default: `8192`.                    |
-| **Read Buffer Size**                              | The size of the OS read buffer on the UDP socket (e.g., `10MiB`).                                |
+| **Read Buffer Size**                              | The size of the OS read buffer on the UDP socket (for example, `10MiB`).                                |
 | **Custom definitions**                            | Optional user-defined field mappings for proprietary NetFlow implementations.                    |
-| **Whether to detect sequence reset**              | Identify if flow sequence numbers have reset (e.g., after a device reboot). Default: `true`.     |
+| **Whether to detect sequence reset**              | Identify if flow sequence numbers have reset (for example, after a device reboot). Default: `true`.     |
 | **Maximum size of the message received over UDP** | The maximum size allowed for a single packet. Default: `10KiB`.                                  |
 | **Tags**                                          | Custom tags to apply to the events for easier filtering. Default: `['netflow', 'forwarded']`.    |
-| **Read timeout**                                  | The specific time limit for socket read actions (e.g., `30s`).                                   |
+| **Read timeout**                                  | The specific time limit for socket read actions (for example, `30s`).                                   |
 | **Processors**                                    | Add custom Elastic Agent processors to filter or enhance data before it's sent to Elasticsearch. |
 
 4. Click **Save and continue** to save the integration and deploy it to your Elastic Agent policy.
@@ -148,7 +148,7 @@ You can use the following information to resolve common issues with the NetFlow 
 - **UDP port blocked**: Ensure that the host firewall (such as iptables, ufw, or Windows Firewall) on the Elastic Agent machine is configured to allow inbound UDP traffic on the specified port.
 - **Incorrect listening interface**: If you set the UDP host to listen on `localhost`, the agent won't receive packets from external network devices. Change this to `0.0.0.0` or the specific LAN IP of the agent host.
 - **Template mismatch (NetFlow v9/IPFIX)**: NetFlow v9 and IPFIX protocols use templates. If the agent starts after the device has already sent templates, it might take several minutes (depending on the device's template refresh rate) before the agent can decode the incoming data.
-- **Clock skew**: Ensure the clocks on your network devices and the Elastic Agent host are synchronized via NTP. Significant timing differences can cause issues with flow duration calculations and event timestamps.
+- **Clock skew**: Ensure the clocks on your network devices and the Elastic Agent host are synchronized using NTP. Significant timing differences can cause issues with flow duration calculations and event timestamps.
 - **Parsing failures**: Check the `error.message` field in Kibana. This often occurs if the incoming data format doesn't match the expected NetFlow version or if you use custom vendor fields without defining them in the configuration.
 - **UDP packet drops**: If the `read_buffer` or `queue_size` settings are too small, the operating system might drop UDP packets during traffic spikes. Monitor the agent host's network statistics for dropped packets and increase these values in the integration settings if necessary.
 - **Sequence resets**: If you've enabled `detect_sequence_reset`, logs might indicate resets if the network device reboots or the flow engine restarts. This is normal behavior but helps you diagnose gaps in collected data.
