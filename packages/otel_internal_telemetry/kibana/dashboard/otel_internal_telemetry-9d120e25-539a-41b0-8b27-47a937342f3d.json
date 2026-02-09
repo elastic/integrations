@@ -9,7 +9,24 @@
                 "ignoreTimerange": false,
                 "ignoreValidations": false
             },
-            "panelsJSON": {},
+            "panelsJSON": {
+                "1982cf34-ed7e-4134-b9d5-6dd97b97bf41": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "FROM metrics-collectortelemetry* | WHERE @timestamp <= ?_tend AND @timestamp > ?_tstart\n| STATS BY service.instance.id",
+                        "selectedOptions": [
+                            "3e931e78-4c9d-4938-ba7a-dff36587aa30"
+                        ],
+                        "title": "Collector instanceId",
+                        "variableName": "instanceId",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "esqlControl",
+                    "width": "medium"
+                }
+            },
             "showApplySelections": false
         },
         "description": "",
@@ -87,7 +104,7 @@
                                             "columns": [],
                                             "index": "d3b7e528216ce7ef65e68e07a803b7ab53e440cafdb52d9d7ee1ef4bbf5d8afa",
                                             "query": {
-                                                "esql": "TS metrics-* |\nWHERE otelcol_process_uptime IS NOT  NULL"
+                                                "esql": "TS metrics-* |\nWHERE otelcol_process_uptime IS NOT  NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             },
                                             "timeField": "@timestamp"
                                         },
@@ -120,7 +137,7 @@
                                             ],
                                             "index": "d3b7e528216ce7ef65e68e07a803b7ab53e440cafdb52d9d7ee1ef4bbf5d8afa",
                                             "query": {
-                                                "esql": "TS metrics-* |\nWHERE otelcol_process_uptime IS NOT  NULL"
+                                                "esql": "TS metrics-* |\nWHERE otelcol_process_uptime IS NOT  NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             }
                                         }
                                     }
@@ -129,7 +146,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics-* |\nWHERE otelcol_process_uptime IS NOT  NULL"
+                                "esql": "TS metrics-* |\nWHERE otelcol_process_uptime IS NOT  NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                             },
                             "visualization": {
                                 "layerId": "92cab1f8-7a0d-4ef7-b956-e43da85a449d",
@@ -152,7 +169,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics-* |\nWHERE otelcol_process_uptime IS NOT  NULL"
+                        "esql": "TS metrics-* |\nWHERE otelcol_process_uptime IS NOT  NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -227,14 +244,14 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_process_cpu_seconds IS NOT NULL"
+                                                "esql": "TS metrics* | \nWHERE otelcol_process_cpu_seconds IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             }
                                         },
                                         "ce65e66b-bc32-47c5-908b-3f778771ecd0": {
                                             "columns": [],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_process_cpu_seconds IS NOT NULL"
+                                                "esql": "TS metrics* | \nWHERE otelcol_process_cpu_seconds IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -244,7 +261,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics* | \nWHERE otelcol_process_cpu_seconds IS NOT NULL"
+                                "esql": "TS metrics* | \nWHERE otelcol_process_cpu_seconds IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                             },
                             "visualization": {
                                 "layerId": "9d054691-c9f2-4c7a-b494-d76de431176e",
@@ -267,7 +284,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics* | \nWHERE otelcol_process_cpu_seconds IS NOT NULL"
+                        "esql": "TS metrics* | \nWHERE otelcol_process_cpu_seconds IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -342,14 +359,14 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*  |\nWHERE otelcol_process_memory_rss IS NOT NULL\n"
+                                                "esql": "TS metrics*  |\nWHERE otelcol_process_memory_rss IS NOT NULL\n\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             }
                                         },
                                         "eedbeea7-e0a1-469e-bf9d-882a634a3874": {
                                             "columns": [],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*  |\nWHERE otelcol_process_memory_rss IS NOT NULL\n"
+                                                "esql": "TS metrics*  |\nWHERE otelcol_process_memory_rss IS NOT NULL\n\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -359,7 +376,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*  |\nWHERE otelcol_process_memory_rss IS NOT NULL\n"
+                                "esql": "TS metrics*  |\nWHERE otelcol_process_memory_rss IS NOT NULL\n\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                             },
                             "visualization": {
                                 "layerId": "ede26d22-61cd-447d-b391-4556a4fd5e98",
@@ -378,7 +395,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*  |\nWHERE otelcol_process_memory_rss IS NOT NULL\n"
+                        "esql": "TS metrics*  |\nWHERE otelcol_process_memory_rss IS NOT NULL\n\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -428,7 +445,7 @@
                                             "columns": [],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* |\nWHERE otelcol_process_runtime_heap_alloc_bytes IS NOT NULL"
+                                                "esql": "TS metrics* |\nWHERE otelcol_process_runtime_heap_alloc_bytes IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             },
                                             "timeField": "@timestamp"
                                         },
@@ -461,7 +478,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* |\nWHERE otelcol_process_runtime_heap_alloc_bytes IS NOT NULL"
+                                                "esql": "TS metrics* |\nWHERE otelcol_process_runtime_heap_alloc_bytes IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             }
                                         }
                                     }
@@ -470,7 +487,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics* |\nWHERE otelcol_process_runtime_heap_alloc_bytes IS NOT NULL"
+                                "esql": "TS metrics* |\nWHERE otelcol_process_runtime_heap_alloc_bytes IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                             },
                             "visualization": {
                                 "layerId": "df2f0e7c-9477-41ae-95b4-fa6327505dc2",
@@ -493,7 +510,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics* |\nWHERE otelcol_process_runtime_heap_alloc_bytes IS NOT NULL"
+                        "esql": "TS metrics* |\nWHERE otelcol_process_runtime_heap_alloc_bytes IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -543,7 +560,7 @@
                                             "columns": [],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_alloc_bytes IS NOT NULL\n"
+                                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_alloc_bytes IS NOT NULL\n\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             },
                                             "timeField": "@timestamp"
                                         },
@@ -576,7 +593,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_alloc_bytes IS NOT NULL\n"
+                                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_alloc_bytes IS NOT NULL\n\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             }
                                         }
                                     }
@@ -585,7 +602,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_alloc_bytes IS NOT NULL\n"
+                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_alloc_bytes IS NOT NULL\n\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                             },
                             "visualization": {
                                 "layerId": "e0c9526f-84a1-41cd-8b5f-2db97dc46eaa",
@@ -608,7 +625,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_alloc_bytes IS NOT NULL\n"
+                        "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_alloc_bytes IS NOT NULL\n\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -683,14 +700,14 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_sys_memory_bytes IS NOT NULL"
+                                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_sys_memory_bytes IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             }
                                         },
                                         "b2ee2658-26e0-4667-884f-69d7443fa62b": {
                                             "columns": [],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_sys_memory_bytes IS NOT NULL"
+                                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_sys_memory_bytes IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -700,7 +717,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_sys_memory_bytes IS NOT NULL"
+                                "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_sys_memory_bytes IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                             },
                             "visualization": {
                                 "layerId": "7f675a57-8f9b-4b2a-8957-726eac639ff9",
@@ -723,7 +740,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_sys_memory_bytes IS NOT NULL"
+                        "esql": "TS metrics* | \nWHERE otelcol_process_runtime_total_sys_memory_bytes IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -799,7 +816,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_size is not null"
+                                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_size is not null\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             }
                                         },
                                         "7e270713-8742-46ee-b5c7-466e49a9d8ff": {
@@ -844,7 +861,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_size is not null"
+                                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_size is not null\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -854,7 +871,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_size is not null"
+                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_size is not null\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -928,7 +945,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_size is not null"
+                        "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_size is not null\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1004,7 +1021,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_capacity is not null"
+                                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_capacity is not null\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             }
                                         },
                                         "7e270713-8742-46ee-b5c7-466e49a9d8ff": {
@@ -1049,7 +1066,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_capacity is not null"
+                                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_capacity is not null\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1059,7 +1076,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_capacity is not null"
+                                "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_capacity is not null\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1133,7 +1150,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_capacity is not null"
+                        "esql": "TS metrics* | \nWHERE otelcol_exporter_queue_capacity is not null\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1205,7 +1222,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_log_records  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_accepted_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_log_records)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_log_records  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_accepted_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_log_records)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1215,7 +1232,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_log_records  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_accepted_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_log_records)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_log_records  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_accepted_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_log_records)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1289,7 +1306,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_receiver_accepted_log_records  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_accepted_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_log_records)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_receiver_accepted_log_records  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_accepted_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_log_records)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1362,7 +1379,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_receiver_refused_log_records  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_refused_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_log_records)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_receiver_refused_log_records  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_refused_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_log_records)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1372,7 +1389,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_receiver_refused_log_records  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_refused_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_log_records)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_receiver_refused_log_records  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_refused_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_log_records)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1446,7 +1463,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_receiver_refused_log_records  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_refused_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_log_records)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_receiver_refused_log_records  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_refused_log_records\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_log_records)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1519,7 +1536,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_exporter_sent_log_records IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_sent_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_log_records)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_exporter_sent_log_records IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_sent_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_log_records)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1529,7 +1546,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_exporter_sent_log_records IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_sent_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_log_records)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_exporter_sent_log_records IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_sent_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_log_records)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1603,7 +1620,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_exporter_sent_log_records IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_sent_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_log_records)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_exporter_sent_log_records IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_sent_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_log_records)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1676,7 +1693,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_log_records IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_send_failed_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_log_records)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_log_records IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_send_failed_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_log_records)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1686,7 +1703,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_log_records IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_send_failed_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_log_records)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_log_records IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_send_failed_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_log_records)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1760,7 +1777,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_exporter_send_failed_log_records IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_send_failed_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_log_records)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_exporter_send_failed_log_records IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_send_failed_log_records\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_log_records)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1833,7 +1850,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_spans IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_accepted_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_spans)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_accepted_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_spans)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1843,7 +1860,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_spans IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_accepted_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_spans)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_accepted_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_spans)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1917,7 +1934,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_receiver_accepted_spans IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_accepted_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_spans)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_receiver_accepted_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_accepted_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_spans)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1991,7 +2008,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_exporter_sent_spans IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_sent_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_spans)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_exporter_sent_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_sent_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_spans)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2001,7 +2018,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_exporter_sent_spans IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_sent_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_spans)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_exporter_sent_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_sent_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_spans)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2075,7 +2092,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_exporter_sent_spans IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_sent_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_spans)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_exporter_sent_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_sent_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_spans)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -2149,7 +2166,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_receiver_refused_spans IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_refused_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_spans)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_receiver_refused_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_refused_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_spans)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2159,7 +2176,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_receiver_refused_spans IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_refused_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_spans)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_receiver_refused_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_refused_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_spans)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2233,7 +2250,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_receiver_refused_spans IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_refused_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_spans)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_receiver_refused_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_refused_spans\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_spans)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -2307,7 +2324,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_spans IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_send_failed_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_spans)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_send_failed_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_spans)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2317,7 +2334,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_spans IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_send_failed_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_spans)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_send_failed_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_spans)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2391,7 +2408,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_exporter_send_failed_spans IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_send_failed_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_spans)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_exporter_send_failed_spans IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_send_failed_spans\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_spans)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -2465,7 +2482,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_exporter_sent_metric_points IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_sent_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_exporter_sent_metric_points IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_sent_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_metric_points)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2475,7 +2492,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_exporter_sent_metric_points IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_sent_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_exporter_sent_metric_points IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_sent_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_metric_points)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2549,7 +2566,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_exporter_sent_metric_points IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_sent_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_exporter_sent_metric_points IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_sent_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_sent_metric_points)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -2623,7 +2640,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_metric_points IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_send_failed_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_metric_points IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_send_failed_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_metric_points)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2633,7 +2650,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_metric_points IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_send_failed_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_exporter_send_failed_metric_points IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_send_failed_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_metric_points)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2707,7 +2724,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_exporter_send_failed_metric_points IS NOT NULL\n| KEEP @timestamp, otelcol_exporter_send_failed_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_exporter_send_failed_metric_points IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_exporter_send_failed_metric_points\n| STATS max_rate=MAX(RATE(otelcol_exporter_send_failed_metric_points)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -2781,7 +2798,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_metric_points  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_accepted_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_metric_points  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_accepted_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_metric_points)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2791,7 +2808,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_metric_points  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_accepted_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_receiver_accepted_metric_points  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_accepted_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_metric_points)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2865,7 +2882,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_receiver_accepted_metric_points  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_accepted_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_receiver_accepted_metric_points  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_accepted_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_accepted_metric_points)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -2939,7 +2956,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_receiver_refused_metric_points  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_refused_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_receiver_refused_metric_points  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_refused_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_metric_points)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2949,7 +2966,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_receiver_refused_metric_points  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_refused_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_receiver_refused_metric_points  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_refused_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_metric_points)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3023,7 +3040,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_receiver_refused_metric_points  IS NOT NULL\n| KEEP @timestamp, otelcol_receiver_refused_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_metric_points)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_receiver_refused_metric_points  IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_receiver_refused_metric_points\n| STATS max_rate=MAX(RATE(otelcol_receiver_refused_metric_points)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -3097,7 +3114,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_processor_incoming_items IS NOT NULL\n| KEEP @timestamp, otelcol_processor_incoming_items\n| STATS max_rate=MAX(RATE(otelcol_processor_incoming_items)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_processor_incoming_items IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_processor_incoming_items\n| STATS max_rate=MAX(RATE(otelcol_processor_incoming_items)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3107,7 +3124,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_processor_incoming_items IS NOT NULL\n| KEEP @timestamp, otelcol_processor_incoming_items\n| STATS max_rate=MAX(RATE(otelcol_processor_incoming_items)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_processor_incoming_items IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_processor_incoming_items\n| STATS max_rate=MAX(RATE(otelcol_processor_incoming_items)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3181,7 +3198,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_processor_incoming_items IS NOT NULL\n| KEEP @timestamp, otelcol_processor_incoming_items\n| STATS max_rate=MAX(RATE(otelcol_processor_incoming_items)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_processor_incoming_items IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_processor_incoming_items\n| STATS max_rate=MAX(RATE(otelcol_processor_incoming_items)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -3255,7 +3272,7 @@
                                             ],
                                             "index": "d9559da77e8e2f2b7a896817b1d8f98d2db8a49b52144bea511cc1332055ff39",
                                             "query": {
-                                                "esql": "TS metrics*\n| where otelcol_processor_outgoing_items IS NOT NULL\n| KEEP @timestamp, otelcol_processor_outgoing_items\n| STATS max_rate=MAX(RATE(otelcol_processor_outgoing_items)) BY time_bucket = TBUCKET(5minute)"
+                                                "esql": "TS metrics*\n| where otelcol_processor_outgoing_items IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_processor_outgoing_items\n| STATS max_rate=MAX(RATE(otelcol_processor_outgoing_items)) BY time_bucket = TBUCKET(5minute)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3265,7 +3282,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics*\n| where otelcol_processor_outgoing_items IS NOT NULL\n| KEEP @timestamp, otelcol_processor_outgoing_items\n| STATS max_rate=MAX(RATE(otelcol_processor_outgoing_items)) BY time_bucket = TBUCKET(5minute)"
+                                "esql": "TS metrics*\n| where otelcol_processor_outgoing_items IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_processor_outgoing_items\n| STATS max_rate=MAX(RATE(otelcol_processor_outgoing_items)) BY time_bucket = TBUCKET(5minute)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3339,7 +3356,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics*\n| where otelcol_processor_outgoing_items IS NOT NULL\n| KEEP @timestamp, otelcol_processor_outgoing_items\n| STATS max_rate=MAX(RATE(otelcol_processor_outgoing_items)) BY time_bucket = TBUCKET(5minute)"
+                        "esql": "TS metrics*\n| where otelcol_processor_outgoing_items IS NOT NULL\nand resource.attributes.service.instance.id IS NOT NULL AND service.instance.id IS NOT NULL AND MV_CONTAINS(?instanceId, service.instance.id)\n| KEEP @timestamp, otelcol_processor_outgoing_items\n| STATS max_rate=MAX(RATE(otelcol_processor_outgoing_items)) BY time_bucket = TBUCKET(5minute)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
