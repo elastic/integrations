@@ -170,7 +170,7 @@ This input collects logs over a UDP socket. Configure the following variables:
 | Custom UDP Options      | Specify custom configuration options for the UDP input.                                        |
 | Processors              | Add custom processors to reduce or enhance event fields.                                       |
 
-#### Collecting logs from Cisco IOS via file
+#### Collecting logs from file
 
 This input collects logs directly from log files on the host where the Elastic Agent is running. Configure the following variables:
 
