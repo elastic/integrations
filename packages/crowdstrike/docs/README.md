@@ -608,6 +608,11 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.location_longitude_as_int |  | long |
 | crowdstrike.alert.logon_domain |  | keyword |
 | crowdstrike.alert.md5 |  | keyword |
+| crowdstrike.alert.mitre_attack.pattern_id |  | keyword |
+| crowdstrike.alert.mitre_attack.tactic |  | keyword |
+| crowdstrike.alert.mitre_attack.tactic_id |  | keyword |
+| crowdstrike.alert.mitre_attack.technique |  | keyword |
+| crowdstrike.alert.mitre_attack.technique_id |  | keyword |
 | crowdstrike.alert.model_anomaly_indicators |  | keyword |
 | crowdstrike.alert.name |  | keyword |
 | crowdstrike.alert.network_accesses.access_timestamp |  | date |
