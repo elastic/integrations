@@ -8,7 +8,7 @@ The Arista NG Firewall integration for Elastic enables you to collect and analyz
 
 ### Compatibility
 
-This integration is compatible with all current standard releases of Arista NG Firewall (formerly Untangle NG Firewall) that support remote syslog forwarding via the Events configuration menu.
+This integration is compatible with all current standard releases of Arista NG Firewall (formerly Untangle NG Firewall) that support remote syslog forwarding using the Events configuration menu.
 
 This integration requires:
 - Elastic Stack version `8.11.0` or later for full ingestion, dashboard and field mapping support.
@@ -16,11 +16,11 @@ This integration requires:
 
 ### How it works
 
-This integration collects several categories of logs from Arista NG Firewall via the syslog protocol. You configure your Arista appliance to forward its events to the host running Elastic Agent. The agent listens for incoming data over `TCP` or `UDP`, processes the messages into the Elastic Common Schema (ECS), and maps them to the `log` data stream. This data stream captures firewall policy actions, security events, session information, web activity, and system metrics.
+This integration collects several categories of logs from Arista NG Firewall using the syslog protocol. You configure your Arista appliance to forward its events to the host running Elastic Agent. The agent listens for incoming data over `TCP` or `UDP`, processes the messages into the Elastic Common Schema (ECS), and maps them to the `log` data stream. This data stream captures firewall policy actions, security events, session information, web activity, and system metrics.
 
 ## What data does this integration collect?
 
-The Arista NG Firewall integration collects several categories of logs from Arista NG Firewall (formerly Untangle) via the syslog protocol. These events are processed and mapped to the Elastic Common Schema (ECS) within the `log` data stream.
+The Arista NG Firewall integration collects several categories of logs from Arista NG Firewall (formerly Untangle) using the syslog protocol. These events are processed and mapped to the Elastic Common Schema (ECS) within the `log` data stream.
 
 This integration collects log messages of the following types:
 * Firewall events: Records of firewall policy actions such as allow or block decisions, including source and destination IP addresses, ports, and rule IDs.
@@ -58,7 +58,7 @@ You'll also need the following Elastic prerequisites:
 
 Elastic Agent must be installed on a host that'll receive the syslog data from your Arista NG Firewall. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the syslog receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in Arista NG Firewall
 
@@ -71,7 +71,7 @@ You need to configure your Arista NG Firewall to forward events to the Elastic A
    - **Host**: Enter the IP address or hostname of the machine running the Elastic Agent.
    - **Port**: Enter the port number configured in the integration settings (default is `9010`).
    - **Protocol**: Select either `UDP` or `TCP` to match your intended Elastic Agent input type.
-5. Critical performance step: By default, a rule to "Send all events" may exist. It's strongly recommended to disable or delete this rule to prevent system instability due to high log volume.
+5. Critical performance step: By default, a rule to "Send all events" might exist. It's strongly recommended to deactivate or delete this rule to prevent system instability due to high log volume.
 6. Click **Add** to create specific rules for the data streams required for this integration.
 7. For each rule, provide a **Description** (for example, "Elastic Firewall Logs") and select the **Class** from the dropdown menu. This integration supports the following classes:
    - `AdminLoginEvent`
@@ -143,7 +143,7 @@ After the configuration is complete, follow these steps to verify data is flowin
    - In the search bar, enter the filter: `data_stream.dataset: "arista_ngfw.log"`.
    - Verify that logs appear. Expand a log entry and confirm these fields:
      - `event.dataset` (should be `arista_ngfw.log`)
-     - `source.ip` and/or `destination.ip`
+     - `source.ip` or `destination.ip`
      - `message` (the raw log payload)
    - Navigate to **Analytics > Dashboards** and search for "Arista NG Firewall" to view pre-built visualizations.
 
@@ -585,7 +585,7 @@ An example event for `log` looks as following:
 
 ### Vendor documentation links
 
-For more information about Arista NG Firewall configuration and event management, see these vendor resources:
+For more information about Arista NG Firewall configuration and event management, refer to these vendor resources:
 * [Arista Events Configuration Wiki](https://wiki.edge.arista.com/index.php/Events)
 * [Arista Edge Threat Management - Official Product Page](https://edge.arista.com/ng-firewall/)
 * [How to create syslog event rules - Arista Networks](https://support.edge.arista.com/hc/en-us/articles/115012950828-How-to-create-syslog-event-rules)
