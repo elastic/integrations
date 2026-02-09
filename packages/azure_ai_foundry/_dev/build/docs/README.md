@@ -95,3 +95,6 @@ The Azure AI Foundry metrics provide insights into the performance and usage of 
 For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
 
 {{fields "metrics"}}
+
+## Alerting Rule Template
+{{alertRuleTemplates}}

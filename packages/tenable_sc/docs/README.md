@@ -696,7 +696,7 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.plugin.mod_date | The date on which the vulnerability was modified. | date |
 | tenable_sc.vulnerability.plugin.name | The name of the plugin. | keyword |
 | tenable_sc.vulnerability.plugin.pub_date | The date on which the vulnerability was published. | date |
-| tenable_sc.vulnerability.plugin.text | Text provided by plugin. (Usually plugin output text). | keyword |
+| tenable_sc.vulnerability.plugin.text | Text provided by plugin. (Usually plugin output text). | match_only_text |
 | tenable_sc.vulnerability.port | The port the scanner used to communicate with the asset. | keyword |
 | tenable_sc.vulnerability.protocol | The protocol the scanner used to communicate with the asset. | keyword |
 | tenable_sc.vulnerability.recast_risk | Modified the severity risk measure of vulnerabilities using recast rules. | keyword |

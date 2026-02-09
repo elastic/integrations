@@ -45,12 +45,6 @@ retry() {
   return 0
 }
 
-cleanup() {
-  echo "Deleting temporary files..."
-  rm -rf ${WORKSPACE}/${TMP_FOLDER_TEMPLATE_BASE}.*
-  echo "Done."
-}
-
 unset_secrets () {
   for var in $(printenv | sed 's;=.*;;' | sort); do
     if [[ "$var" == *_SECRET || "$var" == *_TOKEN ]]; then
@@ -261,7 +255,7 @@ check_git_diff() {
 use_elastic_package() {
     echo "--- Installing elastic-package"
     mkdir -p build
-    go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
+    retry 5 go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
 }
 
 elastic_package_verbosity() {
@@ -763,7 +757,7 @@ is_pr_affected() {
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
     # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|CODE_OF_CONDUCT\.md|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml|scripts/packages/.+\.sh))' > /dev/null; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|CODE_OF_CONDUCT\.md|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml|scripts/packages/.+\.sh|scripts/backport_branch\.sh))' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi

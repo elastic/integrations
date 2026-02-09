@@ -1,25 +1,20 @@
 ---
 description: Entrypoint pipeline for system integration auth data stream
 processors:
-  - rename:
-      tag: rename_message
-      if: ctx.event?.original == null
-      field: message
-      target_field: event.original
-      ignore_missing: true
+  - set:
+      if: ctx.event?.original == null && ctx.message != null
+      field: event.original
+      copy_from: message
   - pipeline:
       if: ctx.input?.type == "journald"
       name: '{{ IngestPipeline "journald" }}'
   - pipeline:
       if: ctx.input?.type == "log"
       name: '{{ IngestPipeline "log" }}'
-  - remove:
-      tag: remove_event-original
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - set:
       field: error.message
       value: >-

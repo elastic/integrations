@@ -102,37 +102,37 @@ processors:
       field: crowdstrike.event.SHA256Hashes
       separator: ","
       target_field: related.hash
-      tag: split_domain_names
+      tag: split_sha256_hashes
       if: ctx.crowdstrike?.event?.SHA256Hashes != null && ctx.crowdstrike?.event?.SHA256Hashes.contains(",")
   - append:
       field: related.hash
       value: "{{{crowdstrike.event.SHA256Hashes}}}"
       allow_duplicates: false
-      tag: append_domain_names
+      tag: append_sha256_hashes
       if: ctx.crowdstrike?.event?.SHA256Hashes != null && !ctx.crowdstrike?.event?.SHA256Hashes.contains(",")
   - split:
       field: crowdstrike.event.MD5Hashes
       separator: ","
       target_field: related.hash
-      tag: split_domain_names
+      tag: split_md5_hashes
       if: ctx.crowdstrike?.event?.MD5Hashes != null && ctx.crowdstrike?.event?.MD5Hashes.contains(",")
   - append:
       field: related.hash
       value: "{{{crowdstrike.event.MD5Hashes}}}"
       allow_duplicates: false
-      tag: append_domain_names
+      tag: append_md5_hashes
       if: ctx.crowdstrike?.event?.MD5Hashes != null && !ctx.crowdstrike?.event?.MD5Hashes.contains(",")
   - split:
       field: crowdstrike.event.Users
       separator: ","
       target_field: related.user
-      tag: split_domain_names
+      tag: split_users
       if: ctx.crowdstrike?.event?.Users != null && ctx.crowdstrike?.event?.Users.contains(",")
   - append:
       field: related.user
       value: "{{{crowdstrike.event.Users}}}"
       allow_duplicates: false
-      tag: append_domain_names
+      tag: append_users
       if: ctx.crowdstrike?.event?.Users != null && !ctx.crowdstrike?.event?.Users.contains(",")
   - set: 
       field: rule.description
@@ -157,7 +157,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_start_time_epoch
+      tag: date_event_start_time_epoch_ms
       if: "ctx.crowdstrike?.event?.StartTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.StartTimeEpoch).length() >= 12"
   - date:
       field: crowdstrike.event.StartTimeEpoch
@@ -190,11 +190,11 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_end_time_epoch
+      tag: date_event_end_time_epoch_ms
       if: "ctx.crowdstrike?.event?.EndTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.EndTimeEpoch).length() >= 12"
   - date:
       field: crowdstrike.event.EndTimeEpoch
-      target_field: process.end
+      target_field: event.end
       timezone: UTC
       formats:
         - UNIX

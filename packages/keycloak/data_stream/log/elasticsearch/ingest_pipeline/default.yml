@@ -28,6 +28,12 @@ processors:
       if: ctx.json != null
   - grok:
       field: event.original
+      tag: grok_event_original_to_remove_braces
+      patterns:
+        - "^\\[%{GREEDYDATA:event.original}\\]$"
+      if: ctx.event?.original != null && ctx.event?.original.startsWith('[')
+  - grok:
+      field: event.original
       patterns:
         - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) (?<message>(.|\r|\n)*)"
       tag: grok_event_original

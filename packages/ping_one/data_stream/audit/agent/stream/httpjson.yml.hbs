@@ -32,8 +32,9 @@ request.transforms:
 response.pagination:
   - set:
       target: url.value
-      value: '[[if index .last_response.body._links "next"]][[.last_response.body._links.next.href]][[else]][[.last_response.terminate_pagination]][[end]]'
+      value: '[[if index .last_response.body._links "next"]][[.last_response.body._links.next.href]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   last_recorded_at:
     value: '[[if (eq .last_response.page 1)]][[.first_event.recordedAt]][[end]]'

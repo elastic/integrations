@@ -224,11 +224,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| actor.entity.id | ID or multiple IDs of the entity performing the action described by the event. | keyword |
+| actor.entity.id | [Deprecated] This field is maintained for backward compatibility. Use type-specific fields instead: user.entity.id for user accounts, service.entity.id for service accounts and GCP services, host.entity.id for compute instances, or entity.id for other types. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| entity.id | Generic entity identifier for principals that don't fit into specific categories (user, service, host). Used as a fallback for unknown or miscellaneous entity types like GitHub repo references. | keyword |
+| entity.target.id | Generic entity identifier for targets that don't fit into specific categories. Used for projects, zones, and other miscellaneous GCP resources. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | gcp.audit.access.caller_ip_geo.region_code |  | keyword |
@@ -302,12 +304,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.source.vpc.subnetwork_name | Subnetwork on which the VM is operating. | keyword |
 | gcp.source.vpc.vpc_name | VPC on which the VM is operating. | keyword |
 | host.containerized | If the host is a container. | boolean |
+| host.entity.id | Unique identifier for Compute Engine instances acting as principals in GCP audit events. Contains instance resource paths. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| host.target.entity.id | Unique identifier for compute resources targeted by GCP audit events. Includes Compute Engine instance IDs and resource paths. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | related.entity | A collection of all entity identifiers associated with the document. If the document  contains multiple entities, identifiers for each will be included. Example identifiers include (but not limited to) cloud resource IDs, email addresses, and hostnames. | keyword |
-| target.entity.id | ID or multiple IDs of the entity targeted by the action described by the event. | keyword |
+| service.entity.id | Unique identifier for service accounts and GCP services acting as principals. Contains serviceAccount: prefixed values, \*.iam.gserviceaccount.com addresses, and \*.googleapis.com services. | keyword |
+| service.target.entity.id | Unique identifier for GCP service resources targeted by audit events. Includes Cloud Storage buckets, Cloud Functions, BigQuery datasets, Compute Engine resources, networking components, and other GCP services. | keyword |
+| target.entity.id | [Deprecated] This field is maintained for backward compatibility. Use type-specific fields instead: user.target.entity.id for IAM principals, service.target.entity.id for GCP service resources, host.target.entity.id for compute instances, or entity.target.id for other types. | keyword |
+| user.entity.id | Unique identifier for user accounts acting as principals in GCP audit events. Contains email addresses and user: prefixed identifiers. | keyword |
+| user.target.entity.id | Unique identifier for IAM principals targeted by GCP audit events. Includes service accounts, users, and groups. | keyword |
 
 
 An example event for `audit` looks as following:
@@ -1187,6 +1195,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.cost_type | Cost types include regular, tax, adjustment, and rounding_error. | keyword |
 | gcp.billing.effective_price | The charged price for usage of the Google Cloud SKUs and SKU tiers. Reflects contract pricing if applicable, otherwise, it's the list price. | float |
 | gcp.billing.invoice_month | Billing report month. | keyword |
+| gcp.billing.labels | Resource labels as key-value pairs. Labels are user-defined metadata that can be attached to GCP resources. | object |
+| gcp.billing.location.country | The country code for the resource location (e.g., US, GB). | keyword |
+| gcp.billing.location.region | The geographic region where the resource was used (e.g., us-central1, europe-west1). | keyword |
+| gcp.billing.location.zone | The specific zone within the region (e.g., us-central1-a). | keyword |
 | gcp.billing.project_id | Project ID of the billing report belongs to. | keyword |
 | gcp.billing.project_name | Project Name of the billing report belongs to. | keyword |
 | gcp.billing.service_description | The Google Cloud service that reported the Cloud Billing data. | keyword |
@@ -1197,6 +1209,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.tags.key |  | keyword |
 | gcp.billing.tags.value |  | keyword |
 | gcp.billing.total | Total billing amount. | float |
+| gcp.billing.usage_end_time | The end time of the usage period for this billing record. | date |
+| gcp.billing.usage_start_time | The start time of the usage period for this billing record. | date |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -1244,7 +1258,16 @@ An example event for `billing` looks as following:
                     "key": "size",
                     "value": "standard"
                 }
-            ]
+            ],
+            "labels": {
+                "test_label": "value"
+            },
+            "location": {
+                "region": "us-central1",
+                "country": "US"
+            },
+            "usage_start_time": "2023-10-22T22:00:00.000Z",
+            "usage_end_time": "2023-10-22T23:00:00.000Z"
         }
     },
     "metricset": {
@@ -1656,8 +1679,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.gke.node.memory.allocatable_utilization.pct | The fraction of the allocatable memory that is currently in use on the instance. This value cannot exceed 1 as usage cannot exceed allocatable memory bytes. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double | gauge |
 | gcp.gke.node.memory.total.bytes | Number of bytes of memory allocatable on the node. Sampled every 60 seconds. | long | gauge |
 | gcp.gke.node.memory.used.bytes | Cumulative memory bytes used by the node. Sampled every 60 seconds. | long | gauge |
-| gcp.gke.node.network.received_bytes.count | Cumulative number of bytes received by the node over the network. Sampled every 60 seconds. | long | counter |
-| gcp.gke.node.network.sent_bytes.count | Cumulative number of bytes transmitted by the node over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.node.network.received.bytes | Cumulative number of bytes received by the node over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.node.network.sent.bytes | Cumulative number of bytes transmitted by the node over the network. Sampled every 60 seconds. | long | counter |
 | gcp.gke.node.pid_limit.value | The max PID of OS on the node. Sampled every 60 seconds. | long | gauge |
 | gcp.gke.node.pid_used.value | The number of running process in the OS on the node. Sampled every 60 seconds. | long | gauge |
 | gcp.gke.node_daemon.cpu.core_usage_time.sec | Cumulative CPU usage on all cores used by the node level system daemon in seconds. Sampled every 60 seconds. | double | counter |
