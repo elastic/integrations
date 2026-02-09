@@ -118,6 +118,6 @@ After configuration is complete, verify that data is flowing correctly.
 - **UDP Packet Drops**: If the **read_buffer** or **queue_size** is too small, the operating system may drop UDP packets during traffic spikes. Monitor the agent host's network statistics for dropped packets.
 - **Sequence Resets**: If **detect_sequence_reset** is enabled, logs may indicate resets if the network device reboots or the flow engine restarts, which is normal behavior but helpful for diagnosing gaps in data.
 
-## Vendor Resources
+## Documentation sites
 - [Cisco Systems NetFlow Services Export Version 9 (RFC 3954)](https://www.ietf.org/rfc/rfc3954.txt)
 - [IPFIX Protocol Specification (RFC 7011)](https://www.ietf.org/rfc/rfc7011.txt)
