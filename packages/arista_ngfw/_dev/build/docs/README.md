@@ -6,12 +6,6 @@
 
 The Arista NG Firewall integration for Elastic enables you to collect and analyze logs and metrics from Arista NG Firewall (formerly Untangle). By ingesting event-driven logs and statistics into the Elastic Stack, you'll gain deep visibility into network security, traffic patterns, and system performance in real-time.
 
-This integration facilitates:
-- Network security monitoring to detect and investigate security threats by analyzing events from the Firewall, Intrusion Prevention (IPS), and Web Filter modules.
-- Traffic analysis and auditing of session events and HTTP request/response logs to understand internal network usage and audit user web activity.
-- System health and performance tracking using periodic statistics events for network interfaces and system resource utilization.
-- Administrative audit logging of logins and configuration changes to ensure accountability and detect unauthorized access attempts.
-
 ### Compatibility
 
 This integration is compatible with all current standard releases of Arista NG Firewall (formerly Untangle NG Firewall) that support remote syslog forwarding via the Events configuration menu.
