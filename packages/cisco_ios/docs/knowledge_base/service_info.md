@@ -182,5 +182,4 @@ After configuration is complete, verify that data is flowing correctly.
 - [Cisco System Message Logging Guide](https://www.cisco.com/c/en/us/td/docs/routers/access/wireless/software/guide/SysMsgLogging.html)
 
 # Documentation sites
-- [Cisco IOS Integration Reference](https://www.elastic.co/docs/reference/integrations/cisco_ios)
 - [Cisco System Message Logging Documentation](https://www.cisco.com/c/en/us/td/docs/routers/access/wireless/software/guide/SysMsgLogging.html)

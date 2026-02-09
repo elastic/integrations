@@ -84,6 +84,8 @@ To set up **UDP** or **TCP** syslog collection, follow these steps:
     ```
     For higher precision, you can use `service timestamps log datetime msec show-timezone`.
 
+    > **Important**: When using `show-timezone`, Cisco IOS includes a timezone abbreviation (such as `AEST` or `CST`) in the log message. These abbreviations often don't match standard IANA timezone formats. You must configure the `Timezone Map` setting in the Kibana integration to map these abbreviations to valid IANA timezones (for example, `AEST` to `Australia/Sydney`). Without this mapping, timestamps may be parsed with an incorrect offset. Refer to the [Timezone configuration](#common-configuration-issues) section for more details.
+
 4.  Direct the device to the IP address of the Elastic Agent. Replace `<ELASTIC_AGENT_IP>` (replace with your actual value) with your Agent's IP and use the default port `9002`:
     ```bash
     logging <ELASTIC_AGENT_IP>
