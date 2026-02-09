@@ -41,10 +41,10 @@ processors:
   - script:
       lang: painless
       tag: script-default-expired_at
-      description: Add default expires_at field based on archived status.
+      description: Set expires_at to now when indicator is archived (archive == 1), otherwise 90 days from ingestion.
       source: |
         ZonedDateTime now = ZonedDateTime.parse(ctx['@timestamp']);
-        if (ctx.archive == 1) {
+        if (ctx.archive != null && ctx.archive == 1) {
           ctx['ti_strider']['indicator']['expires_at'] = now;
         } else {
           ctx['ti_strider']['indicator']['expires_at'] = now.plusDays(90);
