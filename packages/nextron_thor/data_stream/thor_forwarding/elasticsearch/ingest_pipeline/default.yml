@@ -270,6 +270,76 @@ processors:
       field: thor.file.modified
       if: ctx.file?.mtime != null
       tag: remove_thor_file_modified_if_file_mtime_set
+  - date:
+      formats:
+      - ISO8601
+      field: thor.image.accessed
+      target_field: thor.image.accessed
+      if: ctx.thor?.image?.accessed != null
+      tag: parse_thor_image_accessed
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.image.created
+      target_field: thor.image.created
+      if: ctx.thor?.image?.created != null
+      tag: parse_thor_image_created
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.image.modified
+      target_field: thor.image.modified
+      if: ctx.thor?.image?.modified != null
+      tag: parse_thor_image_modified
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: thor.files
+      if: ctx.thor?.files instanceof List
+      ignore_missing: true
+      tag: foreach_parse_thor_files_created
+      processor:
+        date:
+          field: _ingest._value.created
+          target_field: _ingest._value.created
+          formats:
+          - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.file.created
+      target_field: thor.file.created
+      if: ctx.thor?.file?.created != null
+      tag: parse_thor_file_created
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.created
+      target_field: thor.created
+      if: ctx.thor?.created != null
+      tag: parse_thor_created
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.category
       value: malware
