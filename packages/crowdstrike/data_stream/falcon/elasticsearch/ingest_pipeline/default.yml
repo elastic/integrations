@@ -415,6 +415,70 @@ processors:
       ignore_empty_value: true
       tag: rename_event_deviceid
       if: ctx.device?.id == null
+
+# Threat Fields.
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_tactic_name
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        append:
+            field: threat.tactic.name
+            tag: append_crowdstrike_event_MitreAttack_Tactic_into_threat_tactic_name
+            value: '{{{_ingest._value.Tactic}}}'
+            allow_duplicates: false
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_tactic_id
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        append:
+            field: threat.tactic.id
+            tag: append_crowdstrike_event_MitreAttack_TacticID_into_threat_tactic_id
+            value: '{{{_ingest._value.TacticID}}}'
+            allow_duplicates: false
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_technique_name
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        append:
+            field: threat.technique.name
+            tag: append_crowdstrike_event_MitreAttack_Technique_into_threat_technique_name
+            value: '{{{_ingest._value.Technique}}}'
+            allow_duplicates: false
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_technique_id
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        append:
+            field: threat.technique.id
+            tag: append_crowdstrike_event_MitreAttack_TechniqueID_into_threat_technique_id
+            value: '{{{_ingest._value.TechniqueID}}}'
+            allow_duplicates: false
+  - foreach:
+      field: crowdstrike.event.MitreAttack
+      tag: foreach_event_MitreAttack_pattern_id
+      if: ctx.crowdstrike?.event?.MitreAttack instanceof List
+      processor:
+        convert:
+          field: _ingest._value.PatternId
+          tag: convert_mitre_attack_pattern_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_ingest_value_pattern_id
+                field: _ingest._value.PatternId
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.framework
+      tag: set_threat_framework
+      value: MITRE ATT&CK
+      if: ctx.crowdstrike?.event?.MitreAttack != null
   # This removes any fields that are mapped to ECS, but have not been renamed.
   # This is to prevent the fields from being duplicated in the event.
   - remove:
