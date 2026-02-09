@@ -11,7 +11,7 @@ The Arista NG Firewall integration (formerly Untangle) provides deep visibility 
 
 ## Data types collected
 
-This integration collects several categories of logs from Arista NG Firewall (formerly Untangle) via the syslog protocol, mapping them to the **Arista NG Firewall logs** data stream.
+This integration collects several categories of logs from Arista NG Firewall (formerly Untangle) using the syslog protocol, mapping them to the **Arista NG Firewall logs** data stream.
 
 - **Firewall Events:** Collects details on firewall policy actions (Allow/Block), including source and destination IP addresses, ports, and rule IDs.
 - **Security Events:** Captures Intrusion Prevention System (IPS) logs, threat signatures, and severity levels.
@@ -21,23 +21,23 @@ This integration collects several categories of logs from Arista NG Firewall (fo
 - **System Metrics:** Ingests statistics for network interfaces and general system resource utilization.
 
 According to the data stream definitions, this integration collects:
-- **Arista NG Firewall logs (`arista_ngfw.log`):** A logs-type data stream that processes events sent via either TCP or UDP, mapping them to the Elastic Common Schema (ECS).
+- **Arista NG Firewall logs (`arista_ngfw.log`):** A logs-type data stream that processes events sent using either TCP or UDP, mapping them to the Elastic Common Schema (ECS).
 
 ## Compatibility
 
 ### Vendor Requirements
 The **Arista NG Firewall** integration is compatible with the following third-party vendor versions:
-- **Arista NG Firewall (formerly Untangle NG Firewall):** Supports all current standard releases of the NG Firewall software capable of remote syslog forwarding via the Events configuration menu.
+- **Arista NG Firewall (formerly Untangle NG Firewall):** Supports all current standard releases of the NG Firewall software capable of remote syslog forwarding using the Events configuration menu.
 
 ### Elastic Prerequisites
-- **Elastic Agent:** An active Elastic Agent must be installed and enrolled in a policy via Fleet.
+- **Elastic Agent:** An active Elastic Agent must be installed and enrolled in a policy using Fleet.
 - **Elastic Stack:** Recommended version 8.11.0 or later for full dashboard and field mapping support.
 
 ## Scaling and Performance
 
 To ensure optimal performance in high-volume environments, consider the following:
 - **Transport/Collection Considerations:** The integration supports both TCP and UDP for syslog ingestion. For high-reliability environments where log loss is unacceptable, TCP is recommended despite slightly higher overhead. UDP provides higher throughput with lower latency but does not guarantee delivery in congested networks.
-- **Data Volume Management:** To prevent performance degradation on both the Arista device and the Elastic Agent, users should avoid the "Send all events" rule. Instead, configure specific syslog rules for only the necessary event classes (e.g., Firewall, Session, IPS). Filtering at the source significantly reduces the ingestion load and storage requirements.
+- **Data Volume Management:** To prevent performance degradation on both the Arista device and the Elastic Agent, users should avoid the "Send all events" rule. Instead, configure specific syslog rules for only the necessary event classes (for example, Firewall, Session, IPS). Filtering at the source significantly reduces the ingestion load and storage requirements.
 - **Elastic Agent Scaling:** For high-throughput environments with multiple firewall clusters, deploy multiple Elastic Agents behind a network load balancer to distribute traffic evenly. Place Agents close to the data source to minimize latency and ensure dedicated Agent nodes have sufficient CPU and memory allocations to handle peak traffic.
 
 # Set Up Instructions
@@ -45,7 +45,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 ## Vendor prerequisites
 - **Administrative Access:** High-level administrative credentials for the Arista NG Firewall (Edge Threat Management) web interface are required to configure event forwarding.
 - **Network Connectivity:** The firewall must have a clear network path to the Elastic Agent host. Ensure that any intermediate firewalls allow traffic on the selected syslog port (default **9010**).
-- **Log Generation:** Specific modules (e.g., **Web Filter**, **Intrusion Prevention**, **Firewall**) must be enabled and active on the Arista appliance to generate the relevant event data.
+- **Log Generation:** Specific modules (for example, **Web Filter**, **Intrusion Prevention**, **Firewall**) must be enabled and active on the Arista appliance to generate the relevant event data.
 - **Appliance IP/Hostname:** You must know the IP address or hostname of the machine running the Elastic Agent to configure the remote syslog target.
 
 ## Elastic prerequisites
@@ -68,7 +68,7 @@ To ensure optimal performance in high-volume environments, consider the followin
     - **Protocol**: Select either `UDP` or `TCP` to match your intended Elastic Agent input type.
 5. **Critical Performance Step**: By default, a rule to "Send all events" may exist. It is strongly recommended to **disable or delete** this rule to prevent system instability due to high log volume.
 6. Click **Add** to create specific rules for the data streams required for this integration.
-7. For each rule, provide a **Description** (e.g., "Elastic Firewall Logs") and select the **Class** from the dropdown menu. Recommended classes include:
+7. For each rule, provide a **Description** (for example, "Elastic Firewall Logs") and select the **Class** from the dropdown menu. Recommended classes include:
     - `AdminLoginEvent`
     - `FirewallEvent`
     - `HttpRequestEvent`
@@ -89,36 +89,36 @@ To ensure optimal performance in high-volume environments, consider the followin
 
 ## Kibana set up steps
 
-### Collects logs from Arista NG Firewall via TCP
+### Collects logs from Arista NG Firewall using TCP
 1. In Kibana, navigate to **Integrations > Arista NG Firewall**.
 2. Click **Add Arista NG Firewall**.
-3. Under **Collects logs from Arista NG Firewall via TCP**, configure the following:
+3. Under **Collects logs from Arista NG Firewall using TCP**, configure the following:
     - **TCP host to listen on**: The interface address to bind the TCP listener. Set to `0.0.0.0` to listen on all interfaces. Default: `localhost`.
     - **TCP Port to listen on**: The port number to receive TCP syslog traffic. Default: `9010`.
     - **Preserve original event**: If enabled, preserves a raw copy of the original event in the `event.original` field. Default: `False`.
     - **Tags**: Custom tags for the event. Default: `['arista-ngfw', 'forwarded']`.
     - **Processors**: Optional Agent-side processors to filter or enhance data before ingestion.
-    - **Timezone**: IANA time zone (e.g., `America/New_York`) or offset (e.g., `-05:00`) for interpreting timestamps. Default: `UTC`.
-    - **Device name for interface ID 1**: The physical device name for interface 1 (e.g., `eth0`).
-    - **Alias for interface ID 1**: A friendly name for interface 1 (e.g., `External`).
-    - **Device name for interface ID 2**: The physical device name for interface 2 (e.g., `eth1`).
-    - **Alias for interface ID 2**: A friendly name for interface 2 (e.g., `Internal`).
+    - **Timezone**: IANA time zone (for example, `America/New_York`) or offset (for example, `-05:00`) for interpreting timestamps. Default: `UTC`.
+    - **Device name for interface ID 1**: The physical device name for interface 1 (for example, `eth0`).
+    - **Alias for interface ID 1**: A friendly name for interface 1 (for example, `External`).
+    - **Device name for interface ID 2**: The physical device name for interface 2 (for example, `eth1`).
+    - **Alias for interface ID 2**: A friendly name for interface 2 (for example, `Internal`).
 4. Save and deploy the integration to your Agent policy.
 
-### Collects logs from Arista NG Firewall via UDP
+### Collects logs from Arista NG Firewall using UDP
 1. In Kibana, navigate to **Integrations > Arista NG Firewall**.
 2. Click **Add Arista NG Firewall**.
-3. Under **Collects logs from Arista NG Firewall via UDP**, configure the following:
+3. Under **Collects logs from Arista NG Firewall using UDP**, configure the following:
     - **UDP host to listen on**: The interface address to bind the UDP listener. Set to `0.0.0.0` to listen on all interfaces. Default: `localhost`.
     - **UDP Port to listen on**: The port number to receive UDP syslog traffic. Default: `9010`.
     - **Preserve original event**: If enabled, preserves a raw copy of the original event in the `event.original` field. Default: `False`.
     - **Tags**: Custom tags for the event. Default: `['arista-ngfw', 'forwarded']`.
     - **Processors**: Optional Agent-side processors.
     - **Timezone**: IANA time zone or offset for timestamp interpretation. Default: `UTC`.
-    - **Device name for interface ID 1**: The physical device name for interface 1 (e.g., `eth0`).
-    - **Alias for interface ID 1**: A friendly name for interface 1 (e.g., `WAN`).
-    - **Device name for interface ID 2**: The physical device name for interface 2 (e.g., `eth1`).
-    - **Alias for interface ID 2**: A friendly name for interface 2 (e.g., `LAN`).
+    - **Device name for interface ID 1**: The physical device name for interface 1 (for example, `eth0`).
+    - **Alias for interface ID 1**: A friendly name for interface 1 (for example, `WAN`).
+    - **Device name for interface ID 2**: The physical device name for interface 2 (for example, `eth1`).
+    - **Alias for interface ID 2**: A friendly name for interface 2 (for example, `LAN`).
 4. Save and deploy the integration to your Agent policy.
 
 # Validation Steps
@@ -145,13 +145,13 @@ After configuration is complete, follow these steps to verify data is flowing co
 ## Common Configuration Issues
 - **Port Mismatch**: The Arista UI defaults to port 514 for syslog, while the integration defaults to **9010**. Ensure both the appliance and the Kibana input configuration use the same port number.
 - **Rules Not Enabled**: Even if the Syslog Server is configured and "Enabled" in Arista, no data will flow until specific **Syslog Rules** are added in the lower section of the Events tab and the "Remote Syslog" checkbox is checked for each rule.
-- **Binding Failures**: If the Elastic Agent cannot bind to the configured host (e.g., `localhost`), it may fail to start the listener. Ensure the `tcp_host` or `udp_host` is set to `0.0.0.0` if you want to listen on all available network interfaces.
+- **Binding Failures**: If the Elastic Agent cannot bind to the configured host (for example, `localhost`), it may fail to start the listener. Ensure the `tcp_host` or `udp_host` is set to `0.0.0.0` if you want to listen on all available network interfaces.
 - **Network Firewalls**: If the Agent host has a local firewall (like `ufw` or `firewalld`), you must explicitly allow incoming traffic on port 9010.
 
 ## Ingestion Errors
 - **Parsing Failures**: If logs appear in Kibana but contain the `_grokparsefailure` or `_jsonparsefailure` tags, verify that the Arista appliance is sending logs in the expected syslog format and that no custom log prefixes have been added that might break the parser.
 - **Timestamp Mismatches**: If logs appear to be missing, check for a timezone offset issue. Ensure the **Timezone** variable in the Kibana integration settings matches the timezone configured on the Arista NG Firewall appliance.
-- **Missing Fields**: If specific fields like `source.ip` are missing, ensure that the relevant Arista module (e.g., Firewall or Web Filter) is properly logging those details and that the event class is included in your Syslog Rules.
+- **Missing Fields**: If specific fields like `source.ip` are missing, ensure that the relevant Arista module (for example, Firewall or Web Filter) is properly logging those details and that the event class is included in your Syslog Rules.
 
 ## Vendor Resources
 
