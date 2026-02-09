@@ -1,5 +1,5 @@
 // Minimal HTTP server instrumented with Elastic APM Go agent for system tests.
-// Sends APM Intake v2 data to the collector (elastic-agent:8200).
+// Sends APM Intake v2 data (traces, metrics, and logs) to the collector (elastic-agent:8200).
 package main
 
 import (
@@ -9,11 +9,20 @@ import (
 	"time"
 
 	"go.elastic.co/apm/module/apmhttp"
+	"go.elastic.co/apm/module/apmzap"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func main() {
+	// Zap logger with apmzap core so that Error-level logs are sent to APM and captured as the logs signal.
+	zapLogger := zap.New(&apmzap.Core{}, zap.IncreaseLevel(zapcore.ErrorLevel))
+	defer func() { _ = zapLogger.Sync() }()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// Log via APM (with trace context from apmhttp) so the logs signal is captured.
+		zapLogger.Error("request received", apmzap.TraceContext(r.Context())...)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 	})
@@ -33,7 +42,7 @@ func main() {
 	log.Printf("waiting %v for agent to be listening...", agentReadyDelay)
 	time.Sleep(agentReadyDelay)
 
-	// Generate a few transactions so the agent sends data to the collector.
+	// Generate a few transactions so the agent sends data to the collector (traces, metrics, and logs).
 	client := &http.Client{Timeout: 5 * time.Second}
 	for i := 0; i < 5; i++ {
 		resp, err := client.Get("http://localhost:8080/")
@@ -43,6 +52,9 @@ func main() {
 		}
 		_ = resp.Body.Close()
 	}
+
+	// Send an additional log via APM outside a request so logs signal is present even if no transaction is sampled.
+	zapLogger.Error("apm-app system test log", zap.String("source", "elasticapm_input_otel"))
 
 	// Keep running so the agent can receive and flush; system test will stop the container.
 	time.Sleep(15 * time.Second)
