@@ -17,7 +17,7 @@ request.timeout: {{http_client_timeout}}
 {{/if}}
 request.transforms:
   - set:
-      target: "header.Content-Type"
+      target: "header.Accept"
       value: "application/json"
   - set:
       target: "header.User-Agent"
@@ -28,6 +28,14 @@ request.transforms:
   - set:
       target: "url.params.limit"
       value: '{{limit}}'
+  - set:
+      target: "url.params.last_updated__gte"
+      value: '[[formatDate (parseDate .cursor.last_updated) "2006-01-02T15:04:05Z"]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05Z"]]'
+cursor:
+  last_updated:
+    value: '[[.last_event.last_updated]]'
+    ignore_empty_value: true
 response.decode_as: application/json
 response.split:
   target: body.results
@@ -37,6 +45,7 @@ response.pagination:
       target: url.value
       value: '[[if index .last_response.body "next"]][[.last_response.body.next]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 
 tags:
 {{#if preserve_original_event}}
