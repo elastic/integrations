@@ -56,9 +56,9 @@ An example event for `antibot` looks as following:
 {
     "@timestamp": "2024-09-02T08:53:44.000Z",
     "agent": {
-        "ephemeral_id": "f96c672e-e52f-49f4-a098-fb8e47463002",
-        "id": "a17315c6-08c5-498c-a743-f2125ce9bf1b",
-        "name": "elastic-agent-77268",
+        "ephemeral_id": "395d0bda-166c-4800-9c38-ec1455f30548",
+        "id": "9e02b661-1ee6-4686-9926-edc63a7f4b02",
+        "name": "elastic-agent-27616",
         "type": "filebeat",
         "version": "8.14.0"
     },
@@ -97,7 +97,7 @@ An example event for `antibot` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.antibot",
-        "namespace": "67908",
+        "namespace": "18419",
         "type": "logs"
     },
     "destination": {
@@ -110,7 +110,7 @@ An example event for `antibot` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a17315c6-08c5-498c-a743-f2125ce9bf1b",
+        "id": "9e02b661-1ee6-4686-9926-edc63a7f4b02",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -122,7 +122,7 @@ An example event for `antibot` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.antibot",
         "id": "a4640108-91b1-0f19-66d5-7d9d00000003",
-        "ingested": "2025-06-05T09:35:27Z",
+        "ingested": "2025-12-16T11:56:39Z",
         "kind": "event",
         "module": "checkpoint_harmony_endpoint",
         "type": [
@@ -243,11 +243,11 @@ An example event for `antimalware` looks as following:
 {
     "@timestamp": "2024-09-02T09:09:07.000Z",
     "agent": {
-        "ephemeral_id": "972620ca-77a9-4305-991a-5bd475860580",
-        "id": "4cdb965a-db2a-4ec3-9abf-6e20dbb120c9",
-        "name": "elastic-agent-21918",
+        "ephemeral_id": "ce69a1cc-2624-4c1b-abea-4c65c408b88c",
+        "id": "59648861-728d-4e8a-9109-5d16c682af18",
+        "name": "elastic-agent-75194",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "checkpoint_harmony_endpoint": {
         "antimalware": {
@@ -287,16 +287,16 @@ An example event for `antimalware` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.antimalware",
-        "namespace": "85578",
+        "namespace": "52446",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "4cdb965a-db2a-4ec3-9abf-6e20dbb120c9",
+        "id": "59648861-728d-4e8a-9109-5d16c682af18",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "event": {
         "action": "Detect",
@@ -306,7 +306,7 @@ An example event for `antimalware` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.antimalware",
         "id": "a4640108-91b1-0f19-66d5-815d0000000f",
-        "ingested": "2024-10-24T05:32:25Z",
+        "ingested": "2025-12-16T11:57:31Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
         "type": [
@@ -423,13 +423,13 @@ An example event for `forensics` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-03T08:53:12.000Z",
+    "@timestamp": "2024-09-02T08:58:05.000Z",
     "agent": {
-        "ephemeral_id": "76820ab1-9086-4fc7-975c-2e7cda1f601c",
-        "id": "3df1f948-9917-4dc4-a724-f2b5934a6652",
-        "name": "elastic-agent-71957",
+        "ephemeral_id": "4d32ca32-d2fd-4e13-84dc-5c69ba84bd1e",
+        "id": "10e7cd33-c414-404f-800a-5878962095d8",
+        "name": "elastic-agent-75832",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "checkpoint_harmony_endpoint": {
         "forensics": {
@@ -438,14 +438,16 @@ An example event for `forensics` looks as following:
                 "name": "Check Point Endpoint Security Client",
                 "version": "88.50.0213"
             },
-            "confidence_level": "High",
-            "description": "To exclude the file: On the Harmony Endpoint Management add this sha1 exclusion: 62f0bd56-b0e1235b-99940b34-916c19ec-fac8e80c Attack status: Dormant.",
-            "detected_by": "Endpoint File Reputation",
+            "confidence_level": "Medium",
+            "description": "Endpoint Anti-Bot has detected :http://www.threat-cloud.com/test/files/MediumConfidenceBot.html. Attack status: Dormant.",
+            "detected_by": "Endpoint Anti-Bot",
             "event_type": "Forensics Case Analysis",
             "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation",
-            "malware": {},
+            "malware": {
+                "action": "Communication with C&C"
+            },
             "packet_capture": "Packet Capture",
-            "packet_capture_unique_id": "0acd55a9-f241-4097-a699-6b7e41cd26af",
+            "packet_capture_unique_id": "ef93cc38-215a-4fba-b571-d71ccdace123",
             "policy": {
                 "date": "2024-09-02T06:23:25.0000000Z",
                 "name": "Default Forensics settings",
@@ -455,29 +457,27 @@ An example event for `forensics` looks as following:
                 "family": "Endpoint",
                 "name": "Forensics"
             },
-            "protection_type": "File Reputation",
-            "remediated_files": "malz5.zip(Remediation disabled in policy)",
+            "protection_type": "URL Reputation",
             "sequencenum": 1,
             "service_domain": "ep-demo",
             "severity": "Critical",
             "src": "10.35.38.102",
-            "suspicious_events": "System Shutdown / Reboot: ; ",
             "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48",
             "type": "Log"
         }
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.forensics",
-        "namespace": "38429",
+        "namespace": "79277",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "3df1f948-9917-4dc4-a724-f2b5934a6652",
+        "id": "10e7cd33-c414-404f-800a-5878962095d8",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "event": {
         "action": "Detect",
@@ -486,8 +486,8 @@ An example event for `forensics` looks as following:
             "malware"
         ],
         "dataset": "checkpoint_harmony_endpoint.forensics",
-        "id": "a4640108-91b1-0f19-66d6-ceb500000000",
-        "ingested": "2024-10-24T05:33:21Z",
+        "id": "a4640108-91b1-0f19-66d5-7e5100000001",
+        "ingested": "2025-12-16T11:59:48Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
         "type": [
@@ -495,14 +495,9 @@ An example event for `forensics` looks as following:
         ]
     },
     "file": {
-        "hash": {
-            "md5": "1468c1908845ef238f7f196809946288",
-            "sha1": "62f0bd56b0e1235b99940b34916c19ecfac8e80c"
-        },
-        "name": "malz5.zip",
-        "path": "c:\\users\\admin\\downloads\\malz5.zip",
-        "size": 12707198,
-        "type": "zip"
+        "name": "chrome.exe",
+        "size": 0,
+        "type": "exe"
     },
     "host": {
         "hostname": "DESKTOP-E2P4OL0",
@@ -522,10 +517,6 @@ An example event for `forensics` looks as following:
         "type": "cel"
     },
     "related": {
-        "hash": [
-            "1468c1908845ef238f7f196809946288",
-            "62f0bd56b0e1235b99940b34916c19ecfac8e80c"
-        ],
         "hosts": [
             "DESKTOP-E2P4OL0"
         ],
@@ -537,11 +528,14 @@ An example event for `forensics` looks as following:
         ]
     },
     "rule": {
-        "name": "Gen.Rep.zip"
+        "name": "Anti-Bot test.TC.e"
     },
     "tags": [
         "forwarded"
     ],
+    "url": {
+        "original": "http://www.threat-cloud.com/test/files/MediumConfidenceBot.html"
+    },
     "user": {
         "domain": "SMC User",
         "id": "S-1-5-21-3766288932-3295778425-2939962592-1001",
@@ -599,11 +593,11 @@ An example event for `threatemulation` looks as following:
 {
     "@timestamp": "2024-09-02T09:04:54.000Z",
     "agent": {
-        "ephemeral_id": "8723e6bf-0b1a-4a95-95b6-d5e11a0380a7",
-        "id": "9f7d3384-0b1f-462c-9d71-0e0580545765",
-        "name": "elastic-agent-95748",
+        "ephemeral_id": "11d05133-3249-4c3d-99c4-e8b1453536ce",
+        "id": "dfd3982d-22a8-4682-99f7-a8c6820fcccd",
+        "name": "elastic-agent-46934",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "checkpoint_harmony_endpoint": {
         "threatemulation": {
@@ -643,16 +637,16 @@ An example event for `threatemulation` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.threatemulation",
-        "namespace": "43839",
+        "namespace": "20772",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9f7d3384-0b1f-462c-9d71-0e0580545765",
+        "id": "dfd3982d-22a8-4682-99f7-a8c6820fcccd",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "event": {
         "action": "Detect",
@@ -662,7 +656,7 @@ An example event for `threatemulation` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.threatemulation",
         "id": "a4640108-91b1-0f19-66d5-803100000012",
-        "ingested": "2024-10-24T05:34:17Z",
+        "ingested": "2025-12-16T12:00:39Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
         "type": [
@@ -774,13 +768,13 @@ An example event for `threatextraction` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-02T09:21:42.000Z",
+    "@timestamp": "2024-09-04T09:08:30.000Z",
     "agent": {
-        "ephemeral_id": "b2ca27d2-5544-4cc2-9491-f91097060c1c",
-        "id": "82b03ad0-7025-436d-9e81-8a39705e0152",
-        "name": "elastic-agent-30042",
+        "ephemeral_id": "6d89d8b4-3779-422b-855b-1d4d67b59ea9",
+        "id": "3c976c78-8b22-4eec-88ff-353c39411304",
+        "name": "elastic-agent-22411",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "checkpoint_harmony_endpoint": {
         "threatextraction": {
@@ -797,16 +791,16 @@ An example event for `threatextraction` looks as following:
                 "action": "Not Supported"
             },
             "policy": {
-                "date": "2024-08-29T13:12:50.0000000Z",
+                "date": "2024-09-03T10:46:13.0000000Z",
                 "name": "Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization",
-                "number": 3
+                "number": 4
             },
             "product": {
                 "family": "Endpoint",
                 "name": "Threat Extraction"
             },
             "protection_type": "Content Removal",
-            "sequencenum": 1,
+            "sequencenum": 16777215,
             "severity": "Informational",
             "src": "10.35.38.102",
             "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48",
@@ -816,16 +810,16 @@ An example event for `threatextraction` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.threatextraction",
-        "namespace": "81720",
+        "namespace": "12108",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "82b03ad0-7025-436d-9e81-8a39705e0152",
+        "id": "3c976c78-8b22-4eec-88ff-353c39411304",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "event": {
         "action": "Extract",
@@ -834,8 +828,8 @@ An example event for `threatextraction` looks as following:
             "malware"
         ],
         "dataset": "checkpoint_harmony_endpoint.threatextraction",
-        "id": "a4640108-91b1-0f19-66d5-83f100000019",
-        "ingested": "2024-10-24T05:35:11Z",
+        "id": "a4640108-91b1-0f19-66d8-247c00000100",
+        "ingested": "2025-12-16T12:02:59Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
         "type": [
@@ -846,10 +840,10 @@ An example event for `threatextraction` looks as following:
         "hash": {
             "sha1": "no-sha1"
         },
-        "name": "mirai.sh4",
-        "path": "blob:https://github.com/6bd30ea7-29a8-4dd2-9056-f5077632e110",
+        "name": "ransomware.go",
+        "path": "blob:https://github.com/9d747e42-c19c-43d8-b77d-7258ab12a233",
         "size": 0,
-        "type": "sh4"
+        "type": "go"
     },
     "host": {
         "hostname": "DESKTOP-E2P4OL0",
@@ -944,11 +938,11 @@ An example event for `urlfiltering` looks as following:
 {
     "@timestamp": "2024-09-06T10:07:43.000Z",
     "agent": {
-        "ephemeral_id": "95fc55ec-9d54-4116-87cc-a4fe3767eba0",
-        "id": "3c23eeec-fde0-4811-91a1-6bc5b403c95e",
-        "name": "elastic-agent-18777",
+        "ephemeral_id": "a6d1e92c-d3fd-44f3-a3fb-a54f236373a4",
+        "id": "f24c437b-50f2-4092-9b39-e2fb95287852",
+        "name": "elastic-agent-96253",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "checkpoint_harmony_endpoint": {
         "urlfiltering": {
@@ -988,16 +982,16 @@ An example event for `urlfiltering` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.urlfiltering",
-        "namespace": "69408",
+        "namespace": "85769",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "3c23eeec-fde0-4811-91a1-6bc5b403c95e",
+        "id": "f24c437b-50f2-4092-9b39-e2fb95287852",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "event": {
         "action": "Detect",
@@ -1007,7 +1001,7 @@ An example event for `urlfiltering` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.urlfiltering",
         "id": "a4640108-91b1-0f19-66da-d62100000013",
-        "ingested": "2024-10-24T05:36:11Z",
+        "ingested": "2025-12-16T12:03:49Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
         "type": [
@@ -1117,11 +1111,11 @@ An example event for `zerophishing` looks as following:
 {
     "@timestamp": "2024-09-02T08:51:08.000Z",
     "agent": {
-        "ephemeral_id": "9fc6c363-e390-492c-bfdf-684e4d20aff8",
-        "id": "64f03e47-f005-4ecd-8d91-e63af37617a3",
-        "name": "elastic-agent-34074",
+        "ephemeral_id": "0e399915-3c5d-46f4-8be7-8e28468123ca",
+        "id": "aa0b9c7f-94f4-4a81-95cc-acb7f805d24f",
+        "name": "elastic-agent-30654",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "checkpoint_harmony_endpoint": {
         "zerophishing": {
@@ -1135,7 +1129,6 @@ An example event for `zerophishing` looks as following:
             "event_type": "Phishing Event",
             "extension_version": "Check Point Endpoint Security Client",
             "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation",
-            "malware": {},
             "policy": {
                 "date": "2024-08-29T13:12:50.0000000Z",
                 "name": "Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization",
@@ -1156,16 +1149,16 @@ An example event for `zerophishing` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.zerophishing",
-        "namespace": "39288",
+        "namespace": "93890",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "64f03e47-f005-4ecd-8d91-e63af37617a3",
+        "id": "aa0b9c7f-94f4-4a81-95cc-acb7f805d24f",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "event": {
         "action": "Detect",
@@ -1174,8 +1167,8 @@ An example event for `zerophishing` looks as following:
             "malware"
         ],
         "dataset": "checkpoint_harmony_endpoint.zerophishing",
-        "id": "a4640108-91b1-0f19-66d5-7d6100000004",
-        "ingested": "2024-10-24T05:37:11Z",
+        "id": "a4640108-91b1-0f19-66d5-7d6100000114",
+        "ingested": "2025-12-16T12:04:39Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
         "type": [

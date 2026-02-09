@@ -12,10 +12,34 @@
             "panelsJSON": {},
             "showApplySelections": false
         },
-        "description": "Generate metrics from OTel profiles data.",
+        "description": "Generate metrics from OTel profiling data.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "meta": {
+                            "index": "metrics-*",
+                            "type": "custom",
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "key": "query",
+                            "value": "{\"bool\":{\"must\":[{\"match_all\":{}}]}}"
+                        },
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {
+                                        "match_all": {}
+                                    }
+                                ]
+                            }
+                        },
+                        "$state": {
+                            "store": "appState"
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -44,6 +68,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "e9536a92-e25e-40d1-90c1-e6b83e532a0f": {
                                             "columnOrder": [
@@ -58,7 +83,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "kernel",
+                                                    "label": "Kernel",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "formula": "-1 * sum(metrics.samples.kernel.count)",
@@ -108,7 +133,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "user",
+                                                    "label": "User",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -129,6 +154,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -188,12 +214,21 @@
                                         "position": "top",
                                         "seriesType": "bar_stacked",
                                         "showGridlines": false,
-                                        "xAccessor": "edb215ee-f464-4e39-b171-49419ee25266"
+                                        "xAccessor": "edb215ee-f464-4e39-b171-49419ee25266",
+                                        "yConfig": [
+                                            {
+                                                "color": "#61a2ff",
+                                                "forAccessor": "a01a1bc5-1200-421f-a982-4ade1b3f2efe"
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": false,
                                     "isVisible": true,
-                                    "position": "right"
+                                    "legendStats": [],
+                                    "position": "top",
+                                    "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "tickLabelsVisibilitySettings": {
@@ -209,6 +244,7 @@
                         "version": 1,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "This panel shows CPU consumption split into two exclusive categories: user (code executing in userspace) and kernel (code executing in kernelspace).",
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -221,7 +257,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "User / Kernel CPU (exclusive)"
                 },
                 "gridData": {
                     "h": 15,
@@ -510,6 +547,7 @@
                         "version": 1,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "This panel shows CPU consumption for code executing in userspace (exclusively) split into categories, according to the frame type.\n\nDifferent higher-level runtimes (e.g.Python, JVM) have different frame types. The Native frame type corresponds to natively compiled code (e.g. Rust, C, C++) excluding Golang which has its own frame type.",
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -522,7 +560,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "User CPU by frame type (exclusive)"
                 },
                 "gridData": {
                     "h": 15,
@@ -548,27 +587,49 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "5af7ab62-f587-457b-bae3-b6ba55c556de": {
                                             "columnOrder": [
                                                 "e0a93dd8-d40d-4679-9d96-c28558877e10",
-                                                "f8924c38-c4bd-469e-b434-4de0db340655"
+                                                "d9862f8f-a4db-47c1-9e64-0adbabb6347a"
                                             ],
                                             "columns": {
+                                                "d9862f8f-a4db-47c1-9e64-0adbabb6347a": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of metrics.samples.native.count",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "metrics.samples.native.count"
+                                                },
                                                 "e0a93dd8-d40d-4679-9d96-c28558877e10": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of attributes.shlib_name",
+                                                    "label": "CPU by shared library",
                                                     "operationType": "terms",
                                                     "params": {
+                                                        "accuracyMode": false,
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
-                                                        "missingBucket": false,
+                                                        "missingBucket": true,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Sum of metrics.samples.native.count",
+                                                            "operationType": "sum",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "sourceField": "metrics.samples.native.count"
+                                                        },
                                                         "orderBy": {
-                                                            "columnId": "f8924c38-c4bd-469e-b434-4de0db340655",
-                                                            "type": "column"
+                                                            "type": "custom"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": true,
@@ -579,27 +640,26 @@
                                                         "size": 10
                                                     },
                                                     "sourceField": "attributes.shlib_name"
-                                                },
-                                                "f8924c38-c4bd-469e-b434-4de0db340655": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -613,11 +673,14 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
+                                        "collapseFns": {
+                                            "e0a93dd8-d40d-4679-9d96-c28558877e10": ""
+                                        },
                                         "layerId": "5af7ab62-f587-457b-bae3-b6ba55c556de",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "metrics": [
-                                            "f8924c38-c4bd-469e-b434-4de0db340655"
+                                            "d9862f8f-a4db-47c1-9e64-0adbabb6347a"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
@@ -634,6 +697,7 @@
                         "version": 1,
                         "visualizationType": "lnsPie"
                     },
+                    "description": "This panel shows CPU consumption for native (e.g Rust, C, C++) code executing in userspace (exclusively) split into categories according to shared library.",
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -646,7 +710,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "User CPU by shared library (exclusive)"
                 },
                 "gridData": {
                     "h": 15,
@@ -672,6 +737,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "5af7ab62-f587-457b-bae3-b6ba55c556de": {
                                             "columnOrder": [
@@ -682,14 +748,14 @@
                                                 "e0a93dd8-d40d-4679-9d96-c28558877e10": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of attributes.syscall_name",
+                                                    "label": "Top 25 values of attributes.syscall_name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
-                                                        "missingBucket": false,
+                                                        "missingBucket": true,
                                                         "orderBy": {
                                                             "columnId": "f8924c38-c4bd-469e-b434-4de0db340655",
                                                             "type": "column"
@@ -700,22 +766,23 @@
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 10
+                                                        "size": 25
                                                     },
                                                     "sourceField": "attributes.syscall_name"
                                                 },
                                                 "f8924c38-c4bd-469e-b434-4de0db340655": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
+                                                    "label": "Sum of metrics.samples.kernel.count",
+                                                    "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "metrics.samples.kernel.count"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -752,6 +819,7 @@
                         "version": 1,
                         "visualizationType": "lnsPie"
                     },
+                    "description": "This panel shows CPU consumption for code executing in kernelspace split into categories according to identified system call.",
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -765,7 +833,7 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": ""
+                    "title": "Kernel CPU by system call"
                 },
                 "gridData": {
                     "h": 15,
@@ -776,15 +844,1014 @@
                 },
                 "panelIndex": "2b52b3d4-3021-4613-a4f1-eeb42adda6db",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-ac2b3e18-0caf-4575-ba57-8def0c55f059",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "ac2b3e18-0caf-4575-ba57-8def0c55f059": {
+                                            "columnOrder": [
+                                                "d51db5a2-2ed9-4a24-995e-c0600a925d4e",
+                                                "c31d1ed9-486f-46dc-b0e5-f0daae8a2c80",
+                                                "3719986c-6f03-4a1e-8e2e-5c9c8e7a2896"
+                                            ],
+                                            "columns": {
+                                                "3719986c-6f03-4a1e-8e2e-5c9c8e7a2896": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of metrics.samples.kernel.count",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "metrics.samples.kernel.count"
+                                                },
+                                                "c31d1ed9-486f-46dc-b0e5-f0daae8a2c80": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d51db5a2-2ed9-4a24-995e-c0600a925d4e": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"synchronization\" "
+                                                                },
+                                                                "label": "Synchronization"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"disk\" "
+                                                                },
+                                                                "label": "Disk"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"network\" "
+                                                                },
+                                                                "label": "Network"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"memory\" "
+                                                                },
+                                                                "label": "Memory"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area :\"ipc\""
+                                                                },
+                                                                "label": "IPC"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "NOT kernel_area : *"
+                                                                },
+                                                                "label": "Other"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "3719986c-6f03-4a1e-8e2e-5c9c8e7a2896"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "ac2b3e18-0caf-4575-ba57-8def0c55f059",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "d51db5a2-2ed9-4a24-995e-c0600a925d4e",
+                                        "xAccessor": "c31d1ed9-486f-46dc-b0e5-f0daae8a2c80"
+                                    }
+                                ],
+                                "legend": {
+                                    "floatingColumns": 5,
+                                    "horizontalAlignment": "right",
+                                    "isInside": true,
+                                    "isVisible": true,
+                                    "position": "bottom",
+                                    "showSingleSeries": true,
+                                    "verticalAlignment": "top"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "This panel shows CPU consumption for code executing in kernelspace split into different categories.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Kernel CPU by category over time"
+                },
+                "gridData": {
+                    "h": 18,
+                    "i": "6246c1e0-b36d-4f0b-8c01-d64d83474c33",
+                    "w": 48,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "6246c1e0-b36d-4f0b-8c01-d64d83474c33",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-4b4aede1-ec4b-4cdc-b92e-333b1bc37a6c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "4b4aede1-ec4b-4cdc-b92e-333b1bc37a6c": {
+                                            "columnOrder": [
+                                                "e3e5684f-0a3a-44be-9df1-a7c9d357fa26",
+                                                "0646877c-be31-4eb2-9247-66a5a62c9cf2",
+                                                "8f40c9bf-fbc9-4858-a1c2-2c989169e92b"
+                                            ],
+                                            "columns": {
+                                                "0646877c-be31-4eb2-9247-66a5a62c9cf2": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_proto : \"tcp\" and \"kernel_io\" : \"read\""
+                                                                },
+                                                                "label": "TCP-\u003eRead"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_proto : \"tcp\" and kernel_io : \"write\""
+                                                                },
+                                                                "label": "TCP-\u003eWrite"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_proto : \"udp\" and kernel_io : \"read\""
+                                                                },
+                                                                "label": "UDP-\u003eRead"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_proto : \"udp\" and kernel_io : \"write\""
+                                                                },
+                                                                "label": "UDP-\u003eWrite"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_proto : \"other\" and kernel_io : \"read\""
+                                                                },
+                                                                "label": "Other-\u003eRead"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_proto : \"other\" and kernel_io : \"write\""
+                                                                },
+                                                                "label": "Other-\u003eWrite"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "8f40c9bf-fbc9-4858-a1c2-2c989169e92b": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of metrics.samples.kernel.count",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "metrics.samples.kernel.count"
+                                                },
+                                                "e3e5684f-0a3a-44be-9df1-a7c9d357fa26": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"network\""
+                                                                },
+                                                                "label": "Network I/O"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "allowMultipleMetrics": false,
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 2,
+                                                        "paletteId": "default",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rules": [],
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0,
+                                        "layerId": "4b4aede1-ec4b-4cdc-b92e-333b1bc37a6c",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendSize": "large",
+                                        "metrics": [
+                                            "8f40c9bf-fbc9-4858-a1c2-2c989169e92b"
+                                        ],
+                                        "nestedLegend": true,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "e3e5684f-0a3a-44be-9df1-a7c9d357fa26",
+                                            "0646877c-be31-4eb2-9247-66a5a62c9cf2"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "This panel shows CPU consumption for code executing in kernelspace performing network I/O.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Kernel CPU by network I/O"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "71a5b665-36a3-490e-944c-814b7719da54",
+                    "w": 24,
+                    "x": 24,
+                    "y": 48
+                },
+                "panelIndex": "71a5b665-36a3-490e-944c-814b7719da54",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-ac2b3e18-0caf-4575-ba57-8def0c55f059",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "ac2b3e18-0caf-4575-ba57-8def0c55f059": {
+                                            "columnOrder": [
+                                                "d51db5a2-2ed9-4a24-995e-c0600a925d4e",
+                                                "3719986c-6f03-4a1e-8e2e-5c9c8e7a2896"
+                                            ],
+                                            "columns": {
+                                                "3719986c-6f03-4a1e-8e2e-5c9c8e7a2896": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of metrics.samples.kernel.count",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "metrics.samples.kernel.count"
+                                                },
+                                                "d51db5a2-2ed9-4a24-995e-c0600a925d4e": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"synchronization\" "
+                                                                },
+                                                                "label": "Synchronization"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"disk\" "
+                                                                },
+                                                                "label": "Disk"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"network\" "
+                                                                },
+                                                                "label": "Network"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"memory\" "
+                                                                },
+                                                                "label": "Memory"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area :\"ipc\""
+                                                                },
+                                                                "label": "IPC"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "NOT kernel_area : *"
+                                                                },
+                                                                "label": "Other"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "ac2b3e18-0caf-4575-ba57-8def0c55f059",
+                                        "layerType": "data",
+                                        "legendDisplay": "hide",
+                                        "metrics": [
+                                            "3719986c-6f03-4a1e-8e2e-5c9c8e7a2896"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "d51db5a2-2ed9-4a24-995e-c0600a925d4e"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "This panel shows CPU consumption for code executing in kernelspace split into different categories.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Kernel CPU by category"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "94b5855f-6abf-4c3c-8107-990aec279cc7",
+                    "w": 24,
+                    "x": 0,
+                    "y": 48
+                },
+                "panelIndex": "94b5855f-6abf-4c3c-8107-990aec279cc7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-087812b8-9224-4f07-83d5-f00e20e0d401",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "087812b8-9224-4f07-83d5-f00e20e0d401": {
+                                            "columnOrder": [
+                                                "49420698-2c1d-496c-808f-ddfad58bd2c0",
+                                                "7bc2c2f7-817b-43d7-ab0a-86846bf2d0c9",
+                                                "0b44d2ab-7708-4248-a7e4-75fad65d6efe"
+                                            ],
+                                            "columns": {
+                                                "0b44d2ab-7708-4248-a7e4-75fad65d6efe": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of metrics.samples.kernel.count",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "metrics.samples.kernel.count"
+                                                },
+                                                "49420698-2c1d-496c-808f-ddfad58bd2c0": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"ipc\" "
+                                                                },
+                                                                "label": "IPC I/O"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "7bc2c2f7-817b-43d7-ab0a-86846bf2d0c9": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "\"kernel_proto\" : \"read\""
+                                                                },
+                                                                "label": "Read"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_proto : \"write\""
+                                                                },
+                                                                "label": "Write"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 4,
+                                                        "paletteId": "default",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rules": [],
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "087812b8-9224-4f07-83d5-f00e20e0d401",
+                                        "layerType": "data",
+                                        "legendDisplay": "hide",
+                                        "metrics": [
+                                            "0b44d2ab-7708-4248-a7e4-75fad65d6efe"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "49420698-2c1d-496c-808f-ddfad58bd2c0",
+                                            "7bc2c2f7-817b-43d7-ab0a-86846bf2d0c9"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "This panels shows CPU consumption for code executing in kernelspace performing IPC I/O.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Kernel CPU by IPC I/O"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "a415efec-5f84-493e-a797-4faad5cee31f",
+                    "w": 24,
+                    "x": 24,
+                    "y": 63
+                },
+                "panelIndex": "a415efec-5f84-493e-a797-4faad5cee31f",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-4b4aede1-ec4b-4cdc-b92e-333b1bc37a6c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "4b4aede1-ec4b-4cdc-b92e-333b1bc37a6c": {
+                                            "columnOrder": [
+                                                "e3e5684f-0a3a-44be-9df1-a7c9d357fa26",
+                                                "2f3b296b-f74b-460d-8d49-daffe79696d8",
+                                                "8f40c9bf-fbc9-4858-a1c2-2c989169e92b"
+                                            ],
+                                            "columns": {
+                                                "2f3b296b-f74b-460d-8d49-daffe79696d8": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"disk\" and kernel_proto : \"read\""
+                                                                },
+                                                                "label": "Read"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"disk\" and kernel_proto : \"write\" "
+                                                                },
+                                                                "label": "Write"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "8f40c9bf-fbc9-4858-a1c2-2c989169e92b": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of metrics.samples.kernel.count",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "metrics.samples.kernel.count"
+                                                },
+                                                "e3e5684f-0a3a-44be-9df1-a7c9d357fa26": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "kernel_area : \"disk\""
+                                                                },
+                                                                "label": "Disk I/O"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 1,
+                                                        "paletteId": "default",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Disk-\u003eRead"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 0,
+                                                        "paletteId": "default",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Disk-\u003eWrite"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0,
+                                        "layerId": "4b4aede1-ec4b-4cdc-b92e-333b1bc37a6c",
+                                        "layerType": "data",
+                                        "legendDisplay": "hide",
+                                        "metrics": [
+                                            "8f40c9bf-fbc9-4858-a1c2-2c989169e92b"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "e3e5684f-0a3a-44be-9df1-a7c9d357fa26",
+                                            "2f3b296b-f74b-460d-8d49-daffe79696d8"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "This panel shows CPU consumption for code executing in kernelspace performing disk I/O.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Kernel CPU by disk I/O"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "03667d54-042a-4065-8e6e-4f65ef7e2a02",
+                    "w": 24,
+                    "x": 0,
+                    "y": 63
+                },
+                "panelIndex": "03667d54-042a-4065-8e6e-4f65ef7e2a02",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "Profilingmetrics",
-        "version": 1
+        "title": "Profilingmetrics"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-10-16T11:12:35.109Z",
-    "created_by": "u_3443209735_cloud",
+    "created_at": "2025-12-16T11:10:35.556Z",
+    "created_by": "u_2436634581_cloud",
     "id": "profilingmetrics_otel-cf4d74ec-b406-4314-9519-2569d24002fe",
     "references": [
         {
@@ -805,6 +1872,31 @@
         {
             "id": "metrics-*",
             "name": "2b52b3d4-3021-4613-a4f1-eeb42adda6db:indexpattern-datasource-layer-5af7ab62-f587-457b-bae3-b6ba55c556de",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "6246c1e0-b36d-4f0b-8c01-d64d83474c33:indexpattern-datasource-layer-ac2b3e18-0caf-4575-ba57-8def0c55f059",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "71a5b665-36a3-490e-944c-814b7719da54:indexpattern-datasource-layer-4b4aede1-ec4b-4cdc-b92e-333b1bc37a6c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "94b5855f-6abf-4c3c-8107-990aec279cc7:indexpattern-datasource-layer-ac2b3e18-0caf-4575-ba57-8def0c55f059",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "a415efec-5f84-493e-a797-4faad5cee31f:indexpattern-datasource-layer-087812b8-9224-4f07-83d5-f00e20e0d401",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "03667d54-042a-4065-8e6e-4f65ef7e2a02:indexpattern-datasource-layer-4b4aede1-ec4b-4cdc-b92e-333b1bc37a6c",
             "type": "index-pattern"
         }
     ],

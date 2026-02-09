@@ -80,19 +80,24 @@ streams:
         type: bool
         multi: false
         default: false
+      #
+      # Processor v2 only settings
+      #
       - name: processor_version
         type: select
         title: Processor version
         multi: false
         required: false
         show_user: false
-        default: v1
+        default: v2
         options:
-          - text: v1
+          - text: v1 (legacy)
             value: v1
           - text: v2
             value: v2
-        description: "The processor version that the integration should use. Possible values are `v1` and `v2` (preview). \nThe v2 event hub processor is in preview, so using the v1 processor is recommended for typical use cases.\nDefault is `v1`."
+        description: >
+          The processor version that the integration should use. Possible values are v1 (legacy) and v2 (recommended).
+          The v2 event hub processor is recommended for typical use cases. Defaults to v2.
       - name: processor_update_interval
         type: text
         title: Processor update interval
@@ -158,13 +163,17 @@ streams:
         multi: false
         required: false
         show_user: false
-        default: false
+        default: true
         description: >-
-          (Processor v2 only) Flag to control if the processor should perform  the checkpoint information migration from processor v1 to v2 at startup.
+          (Processor v2 only) Controls processor behavior upon the initial transition from v1 to v2. If you are
+          starting directly with v2, you can disregard this setting.
 
-          The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+          Defaults to `true`, which means the processor will automatically migrate checkpoint information from the
+          v1 format to v2.
 
-          Default is `false`, which means the processor will not perform the checkpoint migration.
+          If set to `false`, the processor will bypass existing v1 checkpoints and replay all events in the
+          Event Hub from the start of the retention window. For example, if set to `false` on an Event Hub with
+          a 1-hour retention period, the processor will replay the last hour's worth of data.
       - name: endpoint_suffix
         type: text
         default: core.windows.net
@@ -173,6 +182,7 @@ streams:
         show_user: false
         description: >-
           (Processor v2 only) Override the default storage account endpoint suffix.
+
 # Ensures agents have permissions to write data to `logs-*-*`
 elasticsearch:
   dynamic_dataset: true
