@@ -78,11 +78,13 @@ processors:
       ignore_missing: true
       ignore_failure: true
       patterns:
+        - 'Successfully\sspooled\smail\s%{DATA:email.local_id}\s\(msg\sID:\s<%{DATA:email.message_id}>.*?(from:\s)%{DATA:email.from.address}\sfor:\s\[%{DATA:email.to.address}\]\ssubject:\s%{GREEDYDATA:email.subject}'
         - '^Connection\sfrom\s%{HOSTNAME:client.domain}\s+\(%{IP:client.ip}\)'
         - '(Ending|Starting)\s+connection\s+on\s+%{IP:server.ip}:%{INT:server.port}\s+from\s+%{IP:client.ip}:%{INT:client.port}'
         - '%{DATA:event.action}:\s+%{INT:event.code}\s+%{HOSTNAME:server.domain}%{DATA}\(%{HOSTNAME:client.domain}\s+\[%{IP:client.ip}\]\)'
         - '%{DATA:event.action}:\s+%{INT:event.code}\s+%{HOSTNAME:server.domain}%{DATA}\s%{GREEDYDATA:message}'
         - '%{DATA:email.local_id}\:\s+%{DATA:event.action}:\s+%{GREEDYDATA:message}'
+
   - set:
       field: "client.address"
       copy_from: client.domain
