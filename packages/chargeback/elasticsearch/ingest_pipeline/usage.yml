@@ -1,0 +1,40 @@
+---
+description: 'Chargeback: Set correlation keys and blended calculation weights.'
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx.cluster_name != null) {
+          ctx.deployment_id = ctx.cluster_name;
+        } else if (ctx.elasticsearch?.cluster?.name != null) {
+          ctx.deployment_id = ctx.elasticsearch.cluster.name;
+        }
+        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
+          def date = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.deployment_id;
+
+          if (ctx.tier != null) {
+            ctx.composite_tier_key = ctx.composite_key + '_' + ctx.tier.replace('/', '_');
+          }
+
+          if (ctx.datastream != null) {
+            ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
+          }
+        }
+  - pipeline:
+      description: '[Fleet] Global pipeline for all data streams'
+      ignore_missing_pipeline: true
+      name: global@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      ignore_missing_pipeline: true
+      name: metrics@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback` integration'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback.integration@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for the `chargeback.usage` dataset'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback.usage@custom
