@@ -14,7 +14,7 @@ This integration facilitates:
 
 ### Compatibility
 
-This integration is compatible with Cisco IOS and Cisco IOS-XE network devices that support standard syslog output over TCP, UDP, or local file logging. It's generally applicable to all modern Cisco IOS versions that support the `logging host` command and `service timestamps` configuration. Note that older versions of IOS might not support TCP transport for syslog; UDP is the most universally compatible method.
+This integration is compatible with Cisco IOS and Cisco IOS-XE network devices that support standard syslog output over TCP, UDP, or local file logging. It's generally applicable to all modern Cisco IOS versions that support the `logging host` command and `service timestamps` configuration. Earlier versions of IOS might not support TCP transport for syslog; UDP is the most universally compatible method.
 
 ### How it works
 
@@ -58,7 +58,7 @@ To configure your Cisco hardware, you must meet these prerequisites:
 To prepare your Elastic Stack environment, you'll need the following:
 - You'll need an active Elastic Agent installed and enrolled in Fleet.
 - It's recommended that you use Elastic Stack version `8.11.0` or later for full support of this integration's data streams.
-- Ensure the Cisco devices can reach the Elastic Agent over the network via the specified TCP or UDP ports.
+- Ensure the Cisco devices can reach the Elastic Agent over the network using the specified TCP or UDP ports.
 - You'll need the necessary roles and permissions in Kibana to manage integrations and Fleet policies.
 
 ## How do I deploy this integration?
@@ -73,7 +73,7 @@ You'll need Elastic Agent to stream data from the syslog or log file receiver an
 
 To set up **UDP** or **TCP** syslog collection, follow these steps:
 
-1.  Log in to your Cisco IOS device via SSH, Telnet, or a Console cable and enter privileged EXEC mode using the `enable` command.
+1.  Log in to your Cisco IOS device using SSH, Telnet, or a Console cable and enter privileged EXEC mode using the `enable` command.
 
 2.  Access global configuration mode by typing `configure terminal`.
 
@@ -121,7 +121,7 @@ To set up **log file** collection, follow these steps:
     logging buffered 16384
     ```
 
-3.  If the Elastic Agent is running on a host that mounts a filesystem from the Cisco device or receives files via SCP/FTP, ensure the Agent service has read permissions for the target log file path. The default path is `/var/log/cisco-ios.log`.
+3.  If the Elastic Agent is running on a host that mounts a filesystem from the Cisco device or receives files using SCP/FTP, ensure the Agent service has read permissions for the target log file path. The default path is `/var/log/cisco-ios.log`.
 
 #### Vendor resources
 
@@ -145,11 +145,11 @@ This input collects logs over a TCP socket. Configure the following variables:
 
 | Setting                 | Description                                                                                    |
 | ----------------------- | ---------------------------------------------------------------------------------------------- |
-| Host to listen on       | The interface address the agent should bind to (e.g., `0.0.0.0`).                              |
-| Syslog Port             | The TCP port to listen for Cisco logs (e.g., `9002`).                                          |
+| Host to listen on       | The interface address the agent should bind to (for example, `0.0.0.0`).                              |
+| Syslog Port             | The TCP port to listen for Cisco logs (for example, `9002`).                                          |
 | Preserve original event | If you check this, a raw copy of the original event is added to the `event.original` field.    |
-| Tags                    | List of tags to add to the events (e.g., `cisco-ios`, `forwarded`).                            |
-| Timezone                | IANA time zone or offset (e.g., `+0200`) to use when syslog timestamps don't have a time zone. |
+| Tags                    | List of tags to add to the events (for example, `cisco-ios`, `forwarded`).                            |
+| Timezone                | IANA time zone or offset (for example, `+0200`) to use when syslog timestamps don't have a time zone. |
 | Timezone Map            | A mapping of timezones as they appear in Cisco IOS logs to standard IANA formats.              |
 | Processors              | Add custom processors to reduce or enhance event fields.                                       |
 | SSL Configuration       | Configure SSL options for encrypted communication.                                             |
@@ -161,11 +161,11 @@ This input collects logs over a UDP socket. Configure the following variables:
 
 | Setting                 | Description                                                                                    |
 | ----------------------- | ---------------------------------------------------------------------------------------------- |
-| Host to listen on       | The interface address the agent should bind to (e.g., `0.0.0.0`).                              |
-| Syslog Port             | The UDP port to listen for Cisco logs (e.g., `9002`).                                          |
+| Host to listen on       | The interface address the agent should bind to (for example, `0.0.0.0`).                              |
+| Syslog Port             | The UDP port to listen for Cisco logs (for example, `9002`).                                          |
 | Preserve original event | If you check this, a raw copy of the original event is added to the `event.original` field.    |
-| Tags                    | List of tags to add to the events (e.g., `cisco-ios`, `forwarded`).                            |
-| Timezone                | IANA time zone or offset (e.g., `+0200`) to use when syslog timestamps don't have a time zone. |
+| Tags                    | List of tags to add to the events (for example, `cisco-ios`, `forwarded`).                            |
+| Timezone                | IANA time zone or offset (for example, `+0200`) to use when syslog timestamps don't have a time zone. |
 | Timezone Map            | A mapping of timezones as they appear in Cisco IOS logs to standard IANA formats.              |
 | Custom UDP Options      | Specify custom configuration options for the UDP input.                                        |
 | Processors              | Add custom processors to reduce or enhance event fields.                                       |
@@ -176,10 +176,10 @@ This input collects logs directly from log files on the host where the Elastic A
 
 | Setting                 | Description                                                                                    |
 | ----------------------- | ---------------------------------------------------------------------------------------------- |
-| Paths                   | List of file paths to monitor (e.g., `/var/log/cisco-ios.log`).                                |
+| Paths                   | List of file paths to monitor (for example, `/var/log/cisco-ios.log`).                                |
 | Preserve original event | If you check this, a raw copy of the original event is added to the `event.original` field.    |
-| Tags                    | List of tags to add to the events (e.g., `cisco-ios`, `forwarded`).                            |
-| Timezone                | IANA time zone or offset (e.g., `+0200`) to use when syslog timestamps don't have a time zone. |
+| Tags                    | List of tags to add to the events (for example, `cisco-ios`, `forwarded`).                            |
+| Timezone                | IANA time zone or offset (for example, `+0200`) to use when syslog timestamps don't have a time zone. |
 | Timezone Map            | A mapping of timezones as they appear in Cisco IOS logs to standard IANA formats.              |
 | Processors              | Add custom processors to reduce or enhance event fields.                                       |
 
