@@ -1,0 +1,17 @@
+---
+description: Post-process chargeback configuration to extract currency unit from terms aggregation
+processors:
+  - script:
+      description: Extract currency unit key from terms aggregation bucket
+      lang: painless
+      source: |
+        if (ctx.conf_ecu_rate_unit instanceof Map) {
+          def keys = new ArrayList(ctx.conf_ecu_rate_unit.keySet());
+          if (keys.size() > 0) {
+            ctx.conf_ecu_rate_unit = keys[0];
+          }
+        }
+on_failure:
+  - set:
+      field: error.message
+      value: "Failed to process chargeback config: {{ _ingest.on_failure_message }}"
