@@ -29,7 +29,7 @@ The Cisco IOS integration collects log messages of the following types:
 * Protocol events: Log entries from routing protocols and network services like DHCP, VPN, and Spanning Tree.
 
 This integration uses the `log` data stream to organize the collected information. This stream supports standard Cisco syslog formats and includes fields for sequencing and millisecond timestamps. You can collect these logs using the following methods:
-* Network inputs: Collect logs directly via `UDP` or `TCP` inputs.
+* Network inputs: Collect logs directly using `UDP` or `TCP` inputs.
 * File inputs: Collect logs from files for environments where logs are written to a local disk or an intermediate log aggregator.
 
 ### Supported use cases
@@ -65,7 +65,7 @@ To prepare your Elastic Stack environment, you'll need the following:
 
 ### Agent-based deployment
 
-You must install Elastic Agent on a host that can receive syslog data or access the log files from your Cisco IOS devices. For detailed instructions, see the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You only need one Elastic Agent per host.
+You must install Elastic Agent on a host that can receive syslog data or access the log files from your Cisco IOS devices. For detailed instructions, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You only need one Elastic Agent per host.
 
 You'll need Elastic Agent to stream data from the syslog or log file receiver and ship it to Elastic, where the integration's ingest pipelines process the events.
 
@@ -139,7 +139,7 @@ For more information, refer to the following Cisco documentation:
 
 Choose the configuration steps below that match your environment.
 
-#### Collecting logs from Cisco IOS via TCP
+#### Collecting logs from TCP input
 
 This input collects logs over a TCP socket. Configure the following variables:
 
@@ -155,7 +155,7 @@ This input collects logs over a TCP socket. Configure the following variables:
 | SSL Configuration       | Configure SSL options for encrypted communication.                                             |
 | Custom TCP Options      | Specify custom configuration options for the TCP input.                                        |
 
-#### Collecting logs from Cisco IOS via UDP
+#### Collecting logs from UDP input
 
 This input collects logs over a UDP socket. Configure the following variables:
 
