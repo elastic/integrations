@@ -10,7 +10,7 @@ This module has been tested against `SentinelOne Management Console API version 
 
 ### How it works
 
-This integration periodically queries the SentinelOne REST API to retrieve Activity, Agent, Alert, Application, Application Risk, Group, Threat and Threat Event logs.
+This integration periodically queries the SentinelOne REST API to retrieve Activity, Agent, Alert, Application, Application Risk, Group, Threat, Threat Event and Unified Alert logs.
 
 ## What data does this integration collect?
 
@@ -24,9 +24,10 @@ This integration collects log messages of the following types:
 - `Group`: Contains configuration and status information for endpoint groups within a site or tenant.
 - `Threat`: Logs confirmed malicious detections, such as malware, exploits, or ransomware identified by SentinelOne.
 - `Threat Event`: Provides detailed event-level information related to a specific threat, including process, file, and network indicators.
+- `Unified Alert`: Collect Unified Alert logs from the Singularity™ Operations Center.
 
 ### Supported use cases
-Integrating SentinelOne Activity, Agent, Alert, Application, Application Risk, Group, Threat, and Threat Event logs with Elastic SIEM provides centralized visibility across endpoint operations and security events. Dashboards deliver insights into agent status, detections, application behavior, and threat lifecycle, helping SOC teams quickly identify malicious activity, enforce policy compliance, and accelerate investigation and response efforts.
+Integrating SentinelOne Activity, Agent, Alert, Application, Application Risk, Group, Threat, Threat Event, and Unified Alert logs with Elastic SIEM provides centralized visibility across endpoint operations and security events. Dashboards deliver insights into agent status, detections, application behavior, and threat lifecycle, helping SOC teams quickly identify malicious activity, enforce policy compliance, and accelerate investigation and response efforts.
 
 ## What do I need to use this integration?
 
@@ -56,6 +57,7 @@ To collect data from SentinelOne APIs, you must have an API token. To create an 
 | Group             | Groups -> view                  |
 | Threat            | Threats -> view                 |
 | Threat Event      | Threats -> view                 |
+| Unified Alert     | Unified Alerts -> view          |
 
 ## Note
 
@@ -176,3 +178,11 @@ This is the `threat event` dataset.
 {{event "threat_event"}}
 
 {{fields "threat_event"}}
+
+### unified alert
+
+This is the `unified alert` dataset.
+
+{{event "unified_alert"}}
+
+{{fields "unified_alert"}}
