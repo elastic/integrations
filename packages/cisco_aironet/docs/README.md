@@ -35,7 +35,7 @@ The integration provides the `log` data stream to capture these events. Dependin
 * UDP or TCP input: Collects Cisco Aironet logs sent over the network.
 * Logfile input: Collects logs from a file when they're written to a local disk or a shared mount point.
 
-All collected logs are mapped to the Elastic Common Schema (ECS), supporting standard Cisco system message formats received via Syslog (RFC 3164/5424) or read directly from local log files.
+All collected logs are mapped to the Elastic Common Schema (ECS), supporting standard Cisco system message formats received using Syslog (RFC 3164/5424) or read directly from local log files.
 
 ### Supported use cases
 
@@ -49,7 +49,7 @@ Integrating Cisco Aironet logs with Elastic provides visibility into your wirele
 
 To use this integration, you need the following from your Cisco Wireless LAN Controller (WLC) environment:
 - High-level administrative credentials (GUI) or Enable-level access (CLI) on the Cisco WLC.
-- Network connectivity that permits traffic from the WLC IP addresses to the Elastic Agent host on the configured port (default is `9009`) via TCP or UDP.
+- Network connectivity that permits traffic from the WLC IP addresses to the Elastic Agent host on the configured port (default is `9009`) using TCP or UDP.
 - Software licenses on the WLC that support remote syslog forwarding.
 - NTP configured on the Cisco WLC to ensure timestamps in logs are accurate and align with your Elastic Stack environment.
 
@@ -57,7 +57,7 @@ You also need the following Elastic Stack components:
 - Elastic Stack version 8.11.0 or later for full compatibility.
 - An Elastic Agent installed on a host reachable by the Cisco WLC and successfully enrolled in Fleet.
 - An Elastic Agent policy that includes the Cisco Aironet integration.
-- The target port (e.g., `9009`) open on the host running the Elastic Agent and not currently bound by another service.
+- The target port (for example, `9009`) open on the host running the Elastic Agent and not currently bound by another service.
 
 ## How do I deploy this integration?
 
@@ -65,13 +65,13 @@ You also need the following Elastic Stack components:
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in Cisco Aironet
 
 You can configure your Cisco Aironet Wireless LAN Controller (WLC) to send logs to the Elastic Agent host using either the web interface or the command line.
 
-#### For AireOS (Traditional WLC) via Web GUI
+#### For AireOS (Traditional WLC) using Web GUI
 
 Follow these steps to configure syslog using the Cisco WLC web administration interface:
 
@@ -85,11 +85,11 @@ Follow these steps to configure syslog using the Cisco WLC web administration in
 8.  Click **Apply** in the top right corner to save the active configuration.
 9.  To ensure the settings persist after a reboot, click **Save Configuration** at the top of the page.
 
-#### For AireOS (Traditional WLC) via CLI
+#### For AireOS (Traditional WLC) using CLI
 
 Follow these steps to configure syslog using the command line interface:
 
-1.  Connect to the WLC via SSH or Console.
+1.  Connect to the WLC using SSH or Console.
 2.  Enter the command to add the Elastic Agent as a syslog host (up to 3 servers can be configured):
 `config logging syslog host <Elastic_Agent_IP>` (replace with your actual value)
 
@@ -128,11 +128,11 @@ Use this input if you configured your WLC to send logs over a TCP socket. You ca
 
 | Setting                     | Description                                                                                                                                                                      |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Listen Address**          | The bind address to listen for TCP connections (e.g., `0.0.0.0`).                                                                                                                |
-| **Listen Port**             | The TCP port number to listen on (e.g., `9009`).                                                                                                                                 |
+| **Listen Address**          | The bind address to listen for TCP connections (for example, `0.0.0.0`).                                                                                                                |
+| **Listen Port**             | The TCP port number to listen on (for example, `9009`).                                                                                                                                 |
 | **Preserve original event** | If checked, a raw copy of the original event is stored in the `event.original` field.                                                                                            |
-| **Tags**                    | Custom tags to append to the events (e.g., `cisco-aironet`, `forwarded`).                                                                                                        |
-| **Timezone**                | IANA time zone or time offset (e.g., `+0200`) to use when interpreting syslog timestamps without a time zone.                                                                    |
+| **Tags**                    | Custom tags to append to the events (for example, `cisco-aironet`, `forwarded`).                                                                                                        |
+| **Timezone**                | IANA time zone or time offset (for example, `+0200`) to use when interpreting syslog timestamps without a time zone.                                                                    |
 | **SSL Configuration**       | Configure SSL options for encrypted communication.                                                                                                                               |
 | **Custom TCP Options**      | Specify custom configuration options like `max_connections` or `framing`.                                                                                                        |
 | **Processors**              | Add custom processors to enhance or reduce event fields. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details. |
@@ -143,10 +143,10 @@ Use this input if you configured your WLC to send logs over a UDP socket. You ca
 
 | Setting                     | Description                                                                                                                                                                      |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Listen Address**          | The bind address to listen for UDP connections (e.g., `0.0.0.0`).                                                                                                                |
-| **Listen Port**             | The UDP port number to listen on (e.g., `9009`).                                                                                                                                 |
+| **Listen Address**          | The bind address to listen for UDP connections (for example, `0.0.0.0`).                                                                                                                |
+| **Listen Port**             | The UDP port number to listen on (for example, `9009`).                                                                                                                                 |
 | **Preserve original event** | If checked, a raw copy of the original event is stored in the `event.original` field.                                                                                            |
-| **Tags**                    | Custom tags for event categorization (e.g., `cisco-aironet`, `forwarded`).                                                                                                       |
+| **Tags**                    | Custom tags for event categorization (for example, `cisco-aironet`, `forwarded`).                                                                                                       |
 | **Timezone**                | IANA time zone or time offset used to interpret timestamps.                                                                                                                      |
 | **Custom UDP Options**      | Specify custom configuration options for the UDP input such as `read_buffer` or `max_message_size`.                                                                              |
 | **Processors**              | Add custom processors to enhance or reduce event fields. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details. |
@@ -157,9 +157,9 @@ Use this input to collect logs directly from log files on the host where the Ela
 
 | Setting                     | Description                                                                                                                                                                      |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Paths**                   | The list of file paths to monitor for log data (e.g., `/var/log/cisco-aironet.log`).                                                                                             |
+| **Paths**                   | The list of file paths to monitor for log data (for example, `/var/log/cisco-aironet.log`).                                                                                             |
 | **Preserve original event** | If checked, a raw copy of the original event is stored in the `event.original` field.                                                                                            |
-| **Tags**                    | Custom tags for the file input (e.g., `cisco-aironet`, `forwarded`).                                                                                                             |
+| **Tags**                    | Custom tags for the file input (for example, `cisco-aironet`, `forwarded`).                                                                                                             |
 | **Timezone**                | IANA time zone or time offset used to interpret timestamps.                                                                                                                      |
 | **Processors**              | Add custom processors to enhance or reduce event fields. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details. |
 
