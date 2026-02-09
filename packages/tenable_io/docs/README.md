@@ -18,7 +18,7 @@ The Tenable Vulnerability Management integration collects logs for five types of
 
 **Vulnerability** is used to retrieve all vulnerabilities on each asset, including the vulnerability state. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-vulns-request-export).
 
-**Scan** is used to retrieve details about existing scans, including scan statuses, assigned targets, and more. See more details in the API documentation [here](https://developer.tenable.com/reference/scans-list).
+**Scan** is used to retrieve details about existing scans and scan details, including scan statuses, assigned targets, and more. See more details in the API documentation for [Scan](https://developer.tenable.com/reference/scans-list) and [Scan Details](https://developer.tenable.com/reference/was-v2-scans-details).
 
 ## Compatibility
 
@@ -334,6 +334,8 @@ An example event for `asset` looks as following:
 | tenable_io.asset.operating_systems | The operating systems that scans have associated with the asset record. | keyword |
 | tenable_io.asset.qualys.asset_ids | The Asset ID of the asset in Qualys. | keyword |
 | tenable_io.asset.qualys.host_ids | The Host ID of the asset in Qualys. | keyword |
+| tenable_io.asset.ratings.acr.score | The Asset Criticality Rating (ACR) value. | long |
+| tenable_io.asset.ratings.aes.score | The Asset Exposure Score (AES) value. | long |
 | tenable_io.asset.serial_number | The serial number of the Asset. | keyword |
 | tenable_io.asset.servicenow_sysid | The unique record identifier of the asset in ServiceNow. | keyword |
 | tenable_io.asset.sources.first_seen | The ISO timestamp when the source first reported the asset. | date |
@@ -1082,8 +1084,25 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.plugin.cvss3.vector.raw | The complete cvss3_vector metrics and result values for the vulnerability the plugin covers in a condensed and coded format. For example, AV:N/AC:M/Au:N/C:C/I:C/A:C. | keyword |
 | tenable_io.vulnerability.plugin.cvss3.vector.scope |  | keyword |
 | tenable_io.vulnerability.plugin.cvss3.vector.user_interaction |  | keyword |
+| tenable_io.vulnerability.plugin.cvss4.base_score | The CVSS version 4 (CVSSv4) base score, representing the intrinsic and fundamental characteristics of a vulnerability that remain constant over time and across different user environments. The score ranges from 0 to 10, with higher values indicating greater severity. | double |
+| tenable_io.vulnerability.plugin.cvss4.threat_vector.exploit_maturity | The CVSS v4.0 Exploit Maturity (E) metric, indicating the current development status of exploit techniques or code for the vulnerability. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.threat_vector.raw | The complete cvss4_threat_vector metrics and their result values for the vulnerability, expressed as a concise, coded string. This threat vector is typically appended to the CVSSv4 Base vector. For example, CVSS:4.0/E:U. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.threat_vector.threat_score |  | double |
+| tenable_io.vulnerability.plugin.cvss4.vector.attack_complexity | The CVSSv4 Attack Complexity (AC) metric, which indicates the conditions beyond the attacker's control that must exist to exploit the vulnerability. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.attack_requirements | The CVSSv4 Attack Requirements (AR) metric specifies prerequisite conditions of the vulnerable component that must be met for an attack to succeed. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.attack_vector | The CVSSv4 Attack Vector (AV) metric, which describes the context by which the vulnerability can be exploited. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.privileges_required | The CVSSv4 Privileges Required (PR) metric indicates the level of privileges an attacker must have to successfully exploit the vulnerability. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.raw | The complete CVSSv4 Base vector string representing all metric values in a compact, standardized format. This includes metrics such as Attack Vector, Attack Complexity, Privileges Required, and others. For example, AV:N/AC:L/AT:P/PR:H/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:H. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.subsequent_system_availability | The CVSSv4 Subsequent System Availability (SA) metric measures the impact on the availability of systems subsequent to the vulnerable component. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.subsequent_system_confidentiality | The CVSSv4 Subsequent System Confidentiality (SC) metric measures the impact on the confidentiality of information on systems subsequent to the vulnerable component. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.subsequent_system_integrity | The CVSSv4 Subsequent System Integrity (SI) metric measures the impact on the integrity of information on systems subsequent to the vulnerable component. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.user_interaction | The CVSSv4 User Interaction (UI) metric describes the level of user interaction required for an attack to succeed. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.vulnerable_system_availability | The CVSSv4 Vulnerable System Availability (VA) metric measures the impact on the availability of the vulnerable system. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.vulnerable_system_confidentiality | The CVSSv4 Vulnerable System Confidentiality (VC) metric measures the impact on the confidentiality of information on the vulnerable system. | keyword |
+| tenable_io.vulnerability.plugin.cvss4.vector.vulnerable_system_integrity | The CVSSv4 Vulnerable System Integrity (VI) metric measures the impact on the integrity of information on the vulnerable system. | keyword |
 | tenable_io.vulnerability.plugin.d2_elliot_name | The name of the exploit in the D2 Elliot Web Exploitation framework. | keyword |
 | tenable_io.vulnerability.plugin.description | Full text description of the vulnerability plugin. | text |
+| tenable_io.vulnerability.plugin.epss_score | The Exploit Prediction Scoring System (EPSS) score estimates the likelihood (as a percentage) that a software vulnerability will be exploited in the wild within the next 30 days. The score ranges from 0 to 100, with higher values indicating a greater probability of exploitation. | double |
 | tenable_io.vulnerability.plugin.exploit_available | A value specifying whether a public exploit exists for the vulnerability. | boolean |
 | tenable_io.vulnerability.plugin.exploit_framework.canvas | A value specifying whether an exploit exists in the Immunity CANVAS framework. | boolean |
 | tenable_io.vulnerability.plugin.exploit_framework.core | A value specifying whether an exploit exists in the CORE Impact framework. | boolean |
@@ -1130,6 +1149,23 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.plugin.vpr.drivers.threat_sources_last28 | A list of all sources (for example, social media channels, the dark web, etc.) where threat events related to this vulnerability occurred. Item type: string. | keyword |
 | tenable_io.vulnerability.plugin.vpr.score | The Vulnerability Priority Rating (VPR) for the vulnerability. If a plugin is designed to detect multiple vulnerabilities, the VPR represents the highest value calculated for a vulnerability associated with the plugin. | double |
 | tenable_io.vulnerability.plugin.vpr.updated | The ISO timestamp when Tenable Vulnerability Management last imported the VPR for this vulnerability. Tenable Vulnerability Management imports updated VPR values every time you run a scan. | date |
+| tenable_io.vulnerability.plugin.vpr_v2.cve_id | The Common Vulnerability and Exposure (CVE) identifier associated with the vulnerability that the Vulnerability Priority Rating (VPR) V2 score is based on. This standardized identifier allows for consistent reference across security tools and databases. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.exploit_chain | A list of Common Vulnerability and Exposure (CVE) identifiers representing vulnerabilities that are part of an exploit chain involving this vulnerability. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.exploit_code_maturity | The maturity level of publicly available exploit code for the vulnerability, as factored into the Vulnerability Priority Rating (VPR) V2. This metric helps assess how likely it is for the vulnerability to be actively exploited. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.exploit_probability | The likelihood (as a decimal value between 0 and 1) that this vulnerability will be exploited in the wild, as determined by the VPR v2 model. This value contributes to the overall VPR score and reflects real-world exploit potential based on threat intelligence and predictive analytics. | double |
+| tenable_io.vulnerability.plugin.vpr_v2.in_the_news_intensity_last30 | Indicates the frequency and prominence of news coverage related to this vulnerability over the past 30 days. This metric reflects the level of public and media attention, which can correlate with increased exploitability and urgency for remediation. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.in_the_news_recency | Indicates how recently this vulnerability has appeared in news coverage or public discussions. A more recent mention suggests increased current attention and potential exploitation risk. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.in_the_news_sources_last30 | A list of source categories from trending vulnerability data where this CVE has been mentioned in the past 30 days. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.malware_observations_intensity_last30 | The intensity level of malware observations related to this vulnerability in the past 30 days. This metric reflects how actively malware exploiting this vulnerability has been detected during that period. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.malware_observations_recency | Indicates how recently malware exploiting this vulnerability has been observed. This value reflects the freshness of malware activity related to the vulnerability. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.on_cisa_kev | Indicates whether the vulnerability is listed in the Cybersecurity and Infrastructure Security Agency's (CISA) Known Exploited Vulnerabilities (KEV) catalog. Presence on the KEV list highlights critical vulnerabilities that are actively exploited and prioritized for remediation. | boolean |
+| tenable_io.vulnerability.plugin.vpr_v2.remediation | Information and recommended actions for mitigating or resolving the vulnerability. This may include patches, configuration changes, or other remediation guidance. | flattened |
+| tenable_io.vulnerability.plugin.vpr_v2.score | The Vulnerability Priority Rating (VPR) version 2 score assigned to the vulnerability. This enhanced version is labeled VPR (Beta) in the user interface. If a plugin detects multiple vulnerabilities, this score reflects the highest VPR among them. | double |
+| tenable_io.vulnerability.plugin.vpr_v2.targeted_industries | A list of industries that have been targeted for exploitation via this CVE. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.targeted_regions | A list of geographic regions where this CVE has been targeted for exploitation. | keyword |
+| tenable_io.vulnerability.plugin.vpr_v2.threat_summary | Summary information about the threat posed by the vulnerability, including relevant details that contribute to its Vulnerability Priority Rating (VPR) v2 score. | flattened |
+| tenable_io.vulnerability.plugin.vpr_v2.vpr_percentile | The percentile ranking of the Vulnerability Priority Rating (VPR) v2 score, indicating how the vulnerability compares in severity to all other scored vulnerabilities. | double |
+| tenable_io.vulnerability.plugin.vpr_v2.vpr_severity | The severity level associated with the Vulnerability Priority Rating (VPR) v2 score. This label reflects the relative risk of the vulnerability based on its VPR score. | keyword |
 | tenable_io.vulnerability.plugin.vuln_publication_date | The publication date of the plugin. | date |
 | tenable_io.vulnerability.plugin.xref.id |  | keyword |
 | tenable_io.vulnerability.plugin.xref.type |  | keyword |
@@ -1167,26 +1203,26 @@ An example event for `scan` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-02T09:14:42.329Z",
+    "@timestamp": "2025-12-03T09:35:39.290Z",
     "agent": {
-        "ephemeral_id": "f945f2c2-fbaf-4b93-b6ca-7d51e6a0706d",
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "6c6451c2-8450-4887-a9dc-d0a16453249c",
+        "id": "db19321f-465d-4a59-869c-1b771084aa41",
+        "name": "elastic-agent-46431",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "9.1.3"
     },
     "data_stream": {
         "dataset": "tenable_io.scan",
-        "namespace": "ep",
+        "namespace": "47734",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
+        "id": "db19321f-465d-4a59-869c-1b771084aa41",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "9.1.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1194,9 +1230,10 @@ An example event for `scan` looks as following:
             "configuration"
         ],
         "dataset": "tenable_io.scan",
-        "ingested": "2024-04-02T09:14:52Z",
+        "ingested": "2025-12-03T09:35:42Z",
         "kind": "state",
-        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
+        "module": "tenable_io",
+        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"scan_details\":{\"config_id\":\"a772daba-3d6d-412c-8ee0-3279b19650b2\",\"created_at\":\"2020-02-05T23:11:49.342Z\",\"metadata\":{\"audited_pages\":1,\"crawled_urls\":1,\"queued_pages\":0,\"queued_urls\":0,\"request_count\":74,\"response_time\":0,\"scan_status\":\"stopping\"},\"requested_action\":\"start\",\"scan_id\":\"195\",\"status\":\"completed\",\"target\":\"http://192.0.2.119\",\"updated_at\":\"2020-02-05T23:22:15.510Z\",\"user_id\":\"53e1d711-f18f-4a75-a86e-1c47bccff1b7\"},\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
         "type": [
             "info"
         ]
@@ -1225,6 +1262,25 @@ An example event for `scan` looks as following:
             "progress": 100,
             "read": false,
             "rrules": "FREQ=WEEKLY;INTERVAL=1;BYDAY=FR",
+            "scan_details": {
+                "config_id": "a772daba-3d6d-412c-8ee0-3279b19650b2",
+                "created_at": "2020-02-05T23:11:49.342Z",
+                "metadata": {
+                    "audited_pages": 1,
+                    "crawled_urls": 1,
+                    "queued_pages": 0,
+                    "queued_urls": 0,
+                    "request_count": 74,
+                    "response_time": 0,
+                    "scan_status": "stopping"
+                },
+                "requested_action": "start",
+                "scan_id": "195",
+                "status": "completed",
+                "target": "http://192.0.2.119",
+                "updated_at": "2020-02-05T23:22:15.510Z",
+                "user_id": "53e1d711-f18f-4a75-a86e-1c47bccff1b7"
+            },
             "schedule_uuid": "11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871",
             "shared": true,
             "starttime": "2022-07-08T03:30:00.000Z",
@@ -1278,6 +1334,21 @@ An example event for `scan` looks as following:
 | tenable_io.scan.progress | The progress of the scan ranging from 0 to 100. | long |
 | tenable_io.scan.read | A value indicating whether the user account associated with the request message has viewed the scan in the Tenable Vulnerability Management user interface. If 1, the user account has viewed the scan results. | boolean |
 | tenable_io.scan.rrules | The interval at which the scan repeats. The interval is formatted as a string of three values delimited by semi-colons. These values are the frequency (FREQ=ONETIME or DAILY or WEEKLY or MONTHLY or YEARLY), the interval (INTERVAL=1 or 2 or 3 ... x), and the days of the week (BYDAY=SU,MO,TU,WE,TH,FR,SA). For a scan that runs every three weeks on Monday Wednesday and Friday, the string would be FREQ=WEEKLY;INTERVAL=3;BYDAY=MO,WE,FR. If the scan is not scheduled to recur, this attribute is null. For more information, see rrules Format. | keyword |
+| tenable_io.scan.scan_details.config_id | The unique identifier of the scan configuration. | keyword |
+| tenable_io.scan.scan_details.created_at | The date and time when the scan was created. | date |
+| tenable_io.scan.scan_details.metadata.audited_pages | The number of pages that have been audited. | long |
+| tenable_io.scan.scan_details.metadata.crawled_urls | The number of URLs that have been crawled. | long |
+| tenable_io.scan.scan_details.metadata.queued_pages | The number of pages queued for auditing. | long |
+| tenable_io.scan.scan_details.metadata.queued_urls | The number of URLs queued for scanning. | long |
+| tenable_io.scan.scan_details.metadata.request_count | The total number of requests made during the scan. | long |
+| tenable_io.scan.scan_details.metadata.response_time | The average response time in milliseconds. | long |
+| tenable_io.scan.scan_details.metadata.scan_status | The detailed scan status. | keyword |
+| tenable_io.scan.scan_details.requested_action | The action requested for the scan (e.g., start, stop). | keyword |
+| tenable_io.scan.scan_details.scan_id | The unique identifier for the scan. | keyword |
+| tenable_io.scan.scan_details.status | The current status of the scan. | keyword |
+| tenable_io.scan.scan_details.target | The target URL of the scan. | keyword |
+| tenable_io.scan.scan_details.updated_at | The date and time when the scan was last updated. | date |
+| tenable_io.scan.scan_details.user_id | The unique identifier of the user who created the scan. | keyword |
 | tenable_io.scan.schedule_uuid | The UUID for a specific instance in the scan schedule. | keyword |
 | tenable_io.scan.shared | If true, the scan is shared with users other than the scan owner. The level of sharing is specified in the acls attribute of the scan details. | boolean |
 | tenable_io.scan.starttime | For one-time scans, the starting time and date for the scan. For recurrent scans, the first date on which the scan schedule is active and the time that recurring scans launch based on the rrules attribute. | date |

@@ -133,12 +133,12 @@ processors:
   - rename:
       field: json.siteId
       tag: rename_siteId
-      target_field: sentinel_one.threat_event.site.id
+      target_field: sentinel_one.site.id
       ignore_missing: true
   - rename:
       field: json.siteName
       tag: rename_siteName
-      target_field: sentinel_one.threat_event.site.name
+      target_field: sentinel_one.site.name
       ignore_missing: true
   - rename:
       field: json.pid
@@ -773,6 +773,11 @@ processors:
       tag: set_user_name
       copy_from: sentinel_one.threat_event.user
       ignore_empty_value: true
+  - dissect:
+      field: user.name
+      pattern: '%{user.domain}\%{user.name}'
+      if: ctx.user?.name?.contains('\\') == true
+      description: "Split user and domain"
   - append:
       field: related.user
       tag: append_user_name_into_related_user

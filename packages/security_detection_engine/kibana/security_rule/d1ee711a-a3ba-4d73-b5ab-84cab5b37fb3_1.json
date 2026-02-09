@@ -1,0 +1,175 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the execution of curl or wget binaries through a GTFOBin (living-off-the-land) technique in Linux environments. Attackers may exploit these utilities to download and execute malicious files from the internet while attempting to evade detection. The rule specifically targets binaries that are capable of executing shell commands directly from the proxied binary, rather than just spawning a shell.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*",
+            "logs-endpoint.events.network*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Curl or Wget Egress Network Connection via LoLBin",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Curl or Wget Egress Network Connection via LoLBin\n\nThis detects outbound connections from curl or wget when they are launched via living-off-the-land binaries that can execute shell commands, signaling proxy execution to mask activity. It matters because attackers abuse trusted utilities to fetch payloads, stage command-and-control, or exfiltrate while evading simple controls. Example: an attacker uses awk or busybox to run curl to an external host, downloads a script into /tmp, pipes it to sh, or saves a binary and runs it under the proxy\u2019s context.\n\n### Possible investigation steps\n\n- Pull the full process tree around the event and review the parent LoLBin\u2019s command line for signs of proxy execution such as pipelines to a shell, write-to-file flags (-o/-O), exfil options (--data/--upload-file), or TLS bypass (-k), noting working directory and effective user for context.\n- Identify any paths or filenames used by the transfer and inspect the filesystem for newly created or modified artifacts in temp locations, recording hashes, timestamps, permission changes (e.g., chmod +x), and any immediate execution or persistence actions.\n- Correlate the outbound destination with threat intelligence and internal allowlists, examine DNS/SNI/certificate details, and flag unusual ports or use of proxies/TOR that suggest evasion.\n- Validate whether the parent LoLBin and its execution path align with legitimate software or maintenance workflows on the host, and broaden the search for similar executions across hosts within the same timeframe.\n- Hunt for follow-on activity including new listeners, reverse shells, additional outbound beacons, or other GTFOBins invoking curl/wget, and tie findings back to the same domains/IPs or dropped filesystem artifacts.\n\n### False positive analysis\n\n- During legitimate dependency installation or build workflows, pip/npm/gem/bundler/yarn may run post-install hooks that invoke curl/wget to fetch supplemental files from public mirrors, with the package manager as the parent process.\n- Operations or maintenance tasks may use watch/busybox/run-parts/awk to proxy execution of curl/wget for external availability checks or bootstrap downloads in init scripts, producing short-lived egress that matches the LoLBin-parent pattern.\n\n### Response and remediation\n\n- Immediately isolate the affected Linux host or apply an outbound block, terminate active curl/wget and their invoking LoLBins (e.g., awk, busybox, run-parts), and add temporary firewall/DNS rules to deny the contacted domain/IP and port.\n- Enumerate and delete files fetched via curl/wget (-o/-O) in /tmp, /var/tmp, /dev/shm, and user home (including scripts piped to sh), remove any persistence added (new cron entries, systemd units, rc.local edits), and record hashes/paths for evidence.\n- Rotate credentials or tokens exposed via -u/--header or ~/.netrc, purge malicious proxy settings and config files (http_proxy/https_proxy environment, ~/.wgetrc, ~/.curlrc), and revoke SSH keys or cookies discovered alongside the downloads.\n- Restore the system by reimaging or reinstalling if tampering is suspected, re-enable egress only after validation, verify application functionality, and re-enroll the endpoint with EDR while limiting curl/wget usage to approved service accounts.\n- Escalate to incident response if curl/wget is piped to a shell (e.g., curl https://... | sh), a downloaded binary is made executable and run (chmod +x followed by execution), the destination matches known malicious infrastructure, or torify/torsocks/proxy chaining is used.\n- Harden by mounting /tmp, /var/tmp, and /dev/shm with noexec/nosuid/nodev, enforcing AppArmor/SELinux to restrict curl/wget network access and file writes, constraining GTFOBins from spawning shells, and requiring egress via a proxy allowlist with TLS validation (disallow --insecure/-k).\n",
+        "query": "sequence with maxspan=3s\n  [process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and process.name in (\n     \"aa-exec\", \"aoss\", \"awk\", \"run-parts\", \"bundle\", \"bundler\", \"busctl\", \"busybox\", \"byebug\", \"c89\", \"c99\", \"cabal\",\n     \"capsh\", \"cdist\", \"certbot\", \"check_by_ssh\", \"choom\", \"cobc\", \"cowsay\", \"cowthink\", \"cpio\", \"cpulimit\", \"csvtool\",\n     \"dc\", \"distcc\", \"easy_install\", \"emacs\", \"enscript\", \"expect\", \"find\", \"flock\", \"gawk\", \"gcc\", \"gdb\", \"gem\",\n     \"genie\", \"ghc\", \"ghci\", \"gimp\", \"grc\", \"gtester\", \"ionice\", \"irb\", \"jjs\", \"jrunscript\", \"knife\", \"latex\",\n     \"latexmk\", \"lftp\", \"logsave\", \"ltrace\", \"mail\", \"mawk\", \"msgfilter\", \"multitime\", \"mysql\", \"nawk\", \"neofetch\",\n     \"nice\", \"nohup\", \"npm\", \"nroff\", \"nsenter\", \"octave\", \"openvpn\", \"pandoc\", \"pdb\", \"pdflatex\", \"pdftex\", \"perf\",\n     \"pexec\", \"pip\", \"rake\", \"rc\", \"rlwrap\", \"rpmdb\", \"rpmquery\", \"rpmverify\", \"rsync\", \"rtorrent\", \"runscript\",\n     \"rview\", \"rvim\", \"script\", \"scrot\", \"sed\", \"service\", \"setarch\", \"setlock\", \"sg\", \"socat\", \"softlimit\", \"split\",\n     \"sqlite3\", \"sqlmap\", \"sshpass\", \"start-stop-daemon\", \"stdbuf\", \"tar\", \"taskset\",\n     \"tasksh\", \"tex\", \"time\", \"tmate\", \"torify\", \"torsocks\", \"tshark\", \"valgrind\", \"vi\", \"view\",\n     \"vim\", \"vimdiff\", \"watch\", \"xdg-user-dir\", \"xdotool\", \"xelatex\", \"xetex\", \"yarn\", \"zip\", \"zypper\"\n   ) and not (\n     process.executable == \"/tmp/newroot/unshare\" or\n     process.parent.args in (\n       \"/etc/.agent/server_agent.sh\", \"/nessus/update2.sh\", \"/etc/cron.daily/spamassassin\", \"/etc/cron.daily/rkhunter\",\n       \"buildkit-runc\", \"/usr/sbin/spamassassin-maint\"\n     ) or\n     process.parent.executable like (\n       \"/usr/local/bin/fail2ban_cluster.sh\", \"/script/downloadArtifacts.sh\", \"/etc/cron.daily/rkhunter\",\n       \"/usr/bin/bbb-conf\", \"/usr/sbin/sos\", \"/usr/bin/make\", \"/var/lib/amagent/*\", \"/etc/cron.daily/spamassassin\",\n       \"/usr/lib/cron/run-crons\", \"/usr/sbin/spamassassin-maint\", \"/usr/sbin/oracle-libs-update\"\n     ) or\n     process.parent.name in (\"rkhunter\", \"vivaldi-stable.postinst\", \"runc\") or\n     process.parent.command_line == \"runc init\" or\n     process.parent.command_line like \"/home/*/bin/DownloadExchangeFiles_mcx*\" or\n     process.command_line in (\n       \"nice -10 /opt/aws/discovery/update\", \"xargs -n 1 curl -o lpsc -L\", \"/usr/bin/ruby /usr/bin/rake run:server_hooks\",\n       \"nohup ./update2.sh\"\n     ) or\n     process.parent.command_line in (\"/bin/sh -c nice -n 15 $HOME/bin/cron.pl > /dev/null 2>&1\", \"/bin/sh /etc/cron.daily/rkhunter\") or\n     process.command_line like (\"*/home/linuxbrew/.linuxbrew/*\", \"*Homebrew*\", \"*webhook*\") or\n     process.args like (\"/usr/lib/jvm/*\", \"/root/.forge/provision-*.sh\", \"/usr/src/ucrm/scripts/update-certificates.sh\", \"/etc/periodic/weekly/update_mmdb.sh\") or\n     (process.name == \"nohup\" and process.command_line like \"nohup /usr/*/*.sh\") or\n     (process.name == \"julia\" and process.parent.name == \"julia\")\n   )\n  ] by process.entity_id\n  [network where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"connection_attempted\" and\n   process.name in (\"wget\", \"curl\") and not (\n     destination.ip == null or destination.ip == \"0.0.0.0\" or cidrmatch(\n       destination.ip, \"10.0.0.0/8\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.0.0/24\", \"192.0.0.0/29\",\n       \"192.0.0.8/32\", \"192.0.0.9/32\", \"192.0.0.10/32\", \"192.0.0.170/32\", \"192.0.0.171/32\", \"192.0.2.0/24\",\n       \"192.31.196.0/24\", \"192.52.193.0/24\", \"192.168.0.0/16\", \"192.88.99.0/24\", \"224.0.0.0/4\", \"100.64.0.0/10\",\n       \"192.175.48.0/24\",\"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\", \"240.0.0.0/4\", \"::1\", \"FE80::/10\",\n       \"FF00::/8\"\n     )\n   )\n  ] by process.parent.entity_id\n",
+        "references": [
+            "https://gtfobins.github.io/#+shell"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d1ee711a-a3ba-4d73-b5ab-84cab5b37fb3",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Tactic: Command and Control",
+            "Tactic: Exfiltration",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": []
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": []
+            }
+        ],
+        "type": "eql",
+        "version": 1
+    },
+    "id": "d1ee711a-a3ba-4d73-b5ab-84cab5b37fb3_1",
+    "type": "security-rule"
+}

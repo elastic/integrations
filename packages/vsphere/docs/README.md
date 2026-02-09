@@ -294,6 +294,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.cluster.name | Cluster name. | keyword |  |
 | vsphere.cluster.network.count | Number of networks associated with the cluster. | long | gauge |
 | vsphere.cluster.network.names | List of all the network names associated with the cluster. | keyword |  |
+| vsphere.cluster.resourcepool.id | ID of resource pool associated with the cluster. | keyword |  |
 | vsphere.cluster.triggered_alarms.description | Description of the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |

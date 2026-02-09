@@ -1,0 +1,28 @@
+{
+  "id": "azure_openai-quota-error-rates",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Azure OpenAI] Quota Error Rates above threshold",
+    "tags": ["Azure OpenAI"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the quota_error count is greater than recommended threshold value {5} within the look back time window.\n// The alert is grouped by Model Deployment Name.\n// You can adjust the threshold value by modifying the quota_error count in the WHERE clause.\nFROM logs-azure_openai.logs-default\n| KEEP http.response.status_code, azure.dimensions.model_deployment_name, @timestamp\n| WHERE azure.dimensions.model_deployment_name IS NOT NULL\n| WHERE http.response.status_code == 429\n| STATS quota_error = COUNT(*) BY azure.dimensions.model_deployment_name\n| WHERE quota_error > 5\n| SORT quota_error DESC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

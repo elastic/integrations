@@ -1,0 +1,91 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule correlate any Elastic Defend alert with a set of suspicious events from Network security devices like Palo Alto Networks (PANW) and Fortinet Fortigate by host.ip and source.ip. This may indicate that this host is compromised and triggering multi-datasource alerts.",
+        "from": "now-60m",
+        "interval": "10m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Elastic Defend and Network Security Alerts Correlation",
+        "note": "## Triage and analysis\n\n### Investigating Elastic Defend and Network Security Alerts Correlation\n\nThis rule correlate any Elastic Defend alert with suspicious events from Network Security datasources like Palo Alto Networks (PANW), Fortinet Fortigate and Suricata by host.ip and source.ip.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific host and users involved.\n- Investiguate the network alerts by destination.ip and message.\n- Examine the timeline of the alerts to understand the sequence of events and determine if there is a pattern or progression in the tactics used.\n- Correlate the alert data with other logs and telemetry from the host, such as process creation, network connections, and file modifications, to gather additional context.\n- Check for any indicators of compromise (IOCs) associated with the alerts, such as suspicious IP addresses, domains, or file hashes, and search for these across the network.\n- Assess the impact and scope of the potential compromise by determining if other hosts or systems have similar alerts or related activity.\n\n### False positive analysis\n\n- IP address ranges overlap where the host.ip value from the Elastic Defend alert is unrelated to the source.ip value from the Network Security alert.\n- Alerts from routine administrative tasks may trigger multiple alerts. Review and exclude known benign activities such as scheduled software updates or system maintenance.\n- Security tools running on the host might generate alerts across different tactics. Identify and exclude alerts from trusted security applications to reduce noise.\n- Automated scripts or batch processes can mimic adversarial behavior. Analyze and whitelist these processes if they are verified as non-threatening.\n- Frequent alerts from development or testing environments can be misleading. Consider excluding these environments from the rule or applying a different risk score.\n- User behavior anomalies, such as accessing multiple systems or applications, might trigger alerts. Implement user behavior baselines to differentiate between normal and suspicious activities.\n\n### Response and remediation\n\n- Isolate the affected host from the network immediately to prevent further lateral movement by the adversary.\n- Conduct a thorough forensic analysis of the host to identify the specific vulnerabilities exploited and gather evidence of the attack phases involved.\n- Remove any identified malicious software or unauthorized access tools from the host, ensuring all persistence mechanisms are eradicated.\n- Apply security patches and updates to the host to address any exploited vulnerabilities and prevent similar attacks.\n- Restore the host from a known good backup if necessary, ensuring that the backup is free from compromise.\n- Monitor the host and network for any signs of re-infection or further suspicious activity, using enhanced logging and alerting based on the identified attack patterns.\n- Escalate the incident to the appropriate internal or external cybersecurity teams for further investigation and potential legal action if the attack is part of a larger campaign.",
+        "query": "FROM logs-* metadata _id\n| WHERE\n        // Elastic Defend Alerts\n        (event.module == \"endpoint\" and event.dataset == \"endpoint.alerts\") or\n\n        // PANW suspicious events\n        (event.dataset == \"panw.panos\" and\n         event.action in (\"virus_detected\", \"wildfire_virus_detected\", \"c2_communication\", \"spyware_detected\", \"large_upload\", \"denied\", \"exploit_detected\")) or\n\n        // Fortigate suspicious events\n        (event.dataset == \"fortinet_fortigate.log\" and\n         (event.action in (\"outbreak-prevention\", \"deny\", \"infected\", \"blocked\") or message like \"backdoor*\" or message like \"Proxy*\" or message like \"anomaly*\" or message like \"P2P*\" or message like \"misc*\" or message like \"DNS.Over.HTTPS\" or message like \"Remote.Access\")) or\n\n        // Suricata\n        (event.dataset == \"suricata.eve\" and message in (\"Command and Control Traffic\", \"Potentially Bad Traffic\", \"A Network Trojan was detected\", \"Detection of a Network Scan\", \"Domain Observed Used for C2 Detected\", \"Malware Command and Control Activity Detected\"))\n\n// extract source.ip from PANW or Fortigate events and host.ip from Elastic Defend alert\n|eval fw_alert_source_ip = CASE(event.dataset in (\"panw.panos\", \"fortinet_fortigate.log\"), source.ip, null),\n      elastic_defend_alert_host_ip = CASE(event.module == \"endpoint\" and event.dataset == \"endpoint.alerts\", host.ip, null)\n| eval Esql.source_ip = COALESCE(fw_alert_source_ip, elastic_defend_alert_host_ip)\n| where Esql.source_ip is not null\n\n// group by host_source_ip shared between FG/PANW and Elastic Defend\n| stats Esql.alerts_count = COUNT(*),\n        Esql.event_module_distinct_count = COUNT_DISTINCT(event.module),\n        Esql.event_module_values = VALUES(event.module),\n        Esql.message_values = VALUES(message),\n        Esql.event_action_values = VALUES(event.action),\n        Esql.process_executable_values = VALUES(process.executable),\n        Esql.host_id_values = VALUES(host.id),\n        Esql.user_name_values = VALUES(user.name),\n        Esql.destination_ip_values = VALUES(destination.ip)\n        by Esql.source_ip\n| where Esql.event_module_distinct_count >= 2\n| keep Esql.alerts_count, Esql.source_ip, Esql.destination_ip_values, Esql.host_id_values, Esql.user_name_values, Esql.event_module_values, Esql.message_values, Esql.process_executable_values\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "panw",
+                "version": "^5.2.0"
+            },
+            {
+                "package": "fortinet_fortigate",
+                "version": "^1.31.0"
+            },
+            {
+                "package": "suricata",
+                "version": "^2.24.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.alerts_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.destination_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_module_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.message_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_executable_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_name_values",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "0bca7e73-e1b5-4fb2-801b-9b5f5be20dfe",
+        "severity": "high",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Fortinet",
+            "Data Source: PAN-OS"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "0bca7e73-e1b5-4fb2-801b-9b5f5be20dfe_1",
+    "type": "security-rule"
+}

@@ -325,53 +325,61 @@ processors:
       tag: rename_severity
       target_field: wiz.issue.severity
       ignore_missing: true
-  - rename:
-      field: json.sourceRule.__typename
-      tag: rename_source_rule_typename
-      target_field: wiz.issue.source_rule.__typename
-      ignore_missing: true
-  - rename:
-      field: json.sourceRule.id
-      tag: rename_source_rule_id
-      target_field: wiz.issue.source_rule.id
-      ignore_missing: true
-  - rename:
-      field: json.sourceRule.controlDescription
-      tag: rename_control_description
-      target_field: wiz.issue.source_rule.control_description
-      ignore_missing: true
-  - set:
-      field: message
-      tag: set_message
-      copy_from: wiz.issue.source_rule.control_description
-      ignore_empty_value: true
-      if: ctx.message == null
-  - rename:
-      field: json.sourceRule.cloudConfigurationRuleDescription
-      tag: rename_source_rule_cloud_configuration_rule_description
-      target_field: wiz.issue.source_rule.cloud_configuration_rule_description
-      ignore_missing: true
-  - set:
-      field: message
-      tag: set_message
-      copy_from: wiz.issue.source_rule.cloud_configuration_rule_description
-      ignore_empty_value: true
-      if: ctx.message == null
-  - rename:
-      field: json.sourceRule.name
-      tag: rename_source_rule_name
-      target_field: wiz.issue.source_rule.name
-      ignore_missing: true
-  - rename:
-      field: json.sourceRule.resolutionRecommendation
-      tag: rename_source_rule_resolution_recommendation
-      target_field: wiz.issue.source_rule.resolution_recommendation
-      ignore_missing: true
-  - rename:
-      field: json.sourceRule.securitySubCategories
-      tag: rename_framework_name
-      target_field: wiz.issue.source_rule.security_sub_categories
-      ignore_missing: true
+  - script:
+      tag: map_source_rules_array
+      description: 'Loop over sourceRules array and create mapped objects for source_rules nested field'
+      if: ctx.json?.sourceRules != null && ctx.json.sourceRules instanceof List && ctx.json.sourceRules.size() > 0
+      lang: painless
+      source: |
+        def sourceRulesList = new ArrayList();
+        for (def rule : ctx.json.sourceRules) {
+          def mappedRule = new HashMap();
+          if (rule.__typename != null) {
+            mappedRule.put('__typename', rule.__typename);
+          }
+          if (rule.id != null) {
+            mappedRule.put('id', rule.id);
+          }
+          if (rule.name != null) {
+            mappedRule.put('name', rule.name);
+          }
+          if (rule.description != null) {
+            mappedRule.put('description', rule.description);
+            if (ctx.message == null) {
+              ctx.message = rule.description;
+            }
+          }
+          if (rule.resolutionRecommendation != null) {
+            mappedRule.put('resolution_recommendation', rule.resolutionRecommendation);
+          }
+          if (rule.remediationInstructions != null) {
+            mappedRule.put('remediation_instructions', rule.remediationInstructions);
+          }
+          if (rule.risks != null && rule.risks.size() > 0) {
+            def risksList = new ArrayList();
+            risksList.addAll(rule.risks);
+            mappedRule.put('risks', risksList);
+          }
+          if (rule.securitySubCategories != null) {
+            mappedRule.put('security_sub_categories', rule.securitySubCategories);
+          }
+          if (rule.type != null) {
+            mappedRule.put('type', rule.type);
+          }
+          if (rule.serviceType != null) {
+            mappedRule.put('service_type', rule.serviceType);
+          }
+          if (rule.sourceType != null) {
+            mappedRule.put('source_type', rule.sourceType);
+          }
+          sourceRulesList.add(mappedRule);
+        }
+
+        ctx.wiz.issue.source_rules = sourceRulesList;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.statusChangedAt
       tag: date_set_timestamp
@@ -408,7 +416,6 @@ processors:
         - wiz.issue.entity_snapshot.region
         - wiz.issue.created_at
         - wiz.issue.id
-        - wiz.issue.source_rule.control_description
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

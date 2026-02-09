@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule uses alert data to determine when multiple alerts in different phases of an attack involving the same host are triggered and where the accumulated risk score is higher than a defined threshold. Analysts can use this to prioritize triage and response, as these hosts are more likely to be compromised.",
+        "from": "now-8h",
+        "interval": "1h",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Alerts in Different ATT&CK Tactics by Host",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Alerts in Different ATT&CK Tactics by Host\n\nThe detection rule identifies hosts with alerts across various attack phases, indicating potential compromise. Adversaries exploit system vulnerabilities, moving through different tactics like execution, persistence, and exfiltration. This rule prioritizes hosts with diverse tactic alerts, aiding analysts in focusing on high-risk threats by correlating alert data to detect complex attack patterns.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific host involved and the different ATT&CK tactics that triggered the alerts.\n- Examine the timeline of the alerts to understand the sequence of events and determine if there is a pattern or progression in the tactics used.\n- Correlate the alert data with other logs and telemetry from the host, such as process creation, network connections, and file modifications, to gather additional context.\n- Investigate any known vulnerabilities or misconfigurations on the host that could have been exploited by the adversary.\n- Check for any indicators of compromise (IOCs) associated with the alerts, such as suspicious IP addresses, domains, or file hashes, and search for these across the network.\n- Assess the impact and scope of the potential compromise by determining if other hosts or systems have similar alerts or related activity.\n\n### False positive analysis\n\n- Alerts from routine administrative tasks may trigger multiple tactics. Review and exclude known benign activities such as scheduled software updates or system maintenance.\n- Security tools running on the host might generate alerts across different tactics. Identify and exclude alerts from trusted security applications to reduce noise.\n- Automated scripts or batch processes can mimic adversarial behavior. Analyze and whitelist these processes if they are verified as non-threatening.\n- Frequent alerts from development or testing environments can be misleading. Consider excluding these environments from the rule or applying a different risk score.\n- User behavior anomalies, such as accessing multiple systems or applications, might trigger alerts. Implement user behavior baselines to differentiate between normal and suspicious activities.\n\n### Response and remediation\n\n- Isolate the affected host from the network immediately to prevent further lateral movement by the adversary.\n- Conduct a thorough forensic analysis of the host to identify the specific vulnerabilities exploited and gather evidence of the attack phases involved.\n- Remove any identified malicious software or unauthorized access tools from the host, ensuring all persistence mechanisms are eradicated.\n- Apply security patches and updates to the host to address any exploited vulnerabilities and prevent similar attacks.\n- Restore the host from a known good backup if necessary, ensuring that the backup is free from compromise.\n- Monitor the host and network for any signs of re-infection or further suspicious activity, using enhanced logging and alerting based on the identified attack patterns.\n- Escalate the incident to the appropriate internal or external cybersecurity teams for further investigation and potential legal action if the attack is part of a larger campaign.",
+        "query": "from .alerts-security.*  metadata _id\n\n// filter for alerts with populated risk score, excluding threat_match rules, deprecated and some other noisy ones.\n| where kibana.alert.risk_score > 0 and\n        kibana.alert.rule.name IS NOT NULL and\n        host.id is not null and event.dataset is not null and\n        kibana.alert.rule.type != \"threat_match\" and\n        not kibana.alert.rule.name in (\"Agent Spoofing - Mismatched Agent ID\") and\n        not kibana.alert.rule.name like \"Deprecated - *\"\n\n// extract unique counts and values by host.id\n| stats Esql.alerts_count = COUNT(*),\n        Esql.kibana_alert_rule_name_distinct_count = COUNT_DISTINCT(kibana.alert.rule.name),\n        Esql.event_module_distinct_count = COUNT_DISTINCT(event.module),\n        Esql.event_module_values = VALUES(event.module),\n        Esql.kibana_alert_rule_name_values = VALUES(kibana.alert.rule.name),\n        Esql.threat_tactic_id_distinct_count = COUNT_DISTINCT(kibana.alert.rule.threat.tactic.id),\n        Esql.threat_tactic_name_values = VALUES(kibana.alert.rule.threat.tactic.name),\n        Esql.kibana_alert_risk_score_sum = sum(kibana.alert.risk_score),\n        Esql.process_executable_values = VALUES(process.executable),\n        Esql.process_parent_executable_values = VALUES(process.parent.executable),\n        Esql.process_command_line_values = VALUES(process.command_line),\n        Esql.process_entity_id_distinct_count = COUNT_DISTINCT(process.entity_id) by host.id\n\n// divide the sum of risk scores by the total number of alerts\n| eval Esql.risk_alerts_count_ratio = Esql.kibana_alert_risk_score_sum/Esql.alerts_count\n\n// filter for risky hosts by risk score and unique count of rules and tactics\n| where Esql.kibana_alert_rule_name_distinct_count >= 5 and Esql.threat_tactic_id_distinct_count >= 3 and Esql.threat_tactic_id_distinct_count >= 3 and Esql.alerts_count <= 500 and Esql.risk_alerts_count_ratio >= 50\n\n// fiels populated in the resulting alert\n| keep host.id,\n       Esql.alerts_count,\n       Esql.kibana_alert_risk_score_sum,\n       Esql.risk_alerts_count_ratio,\n       Esql.kibana_alert_rule_name_distinct_count,\n       Esql.event_module_values,\n       Esql.kibana_alert_rule_name_values,\n       Esql.threat_tactic_name_values,\n       Esql.process_executable_values,\n       Esql.process_parent_executable_values,\n       Esql.process_command_line_values\n",
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.alerts_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_module_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.kibana_alert_risk_score_sum",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.kibana_alert_rule_name_distinct_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.kibana_alert_rule_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_command_line_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_executable_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_parent_executable_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_alerts_count_ratio",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.threat_tactic_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "29531d20-0e80-41d4-9ec6-d6b58e4a475c",
+        "severity": "high",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "29531d20-0e80-41d4-9ec6-d6b58e4a475c_1",
+    "type": "security-rule"
+}

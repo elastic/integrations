@@ -1,0 +1,76 @@
+{
+    "attributes": {
+        "created_at": "2026-01-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "UserAssist Registry: Track applications executed via Windows Explorer. Shows execution count and last execution time per user. Useful for forensic investigation of user-initiated program execution. MITRE ATT&CK: T1204 (User Execution).",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.userassist"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "user_sid"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "last_execution"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "userassist", "forensics", "execution", "windows"]
+                }
+            }
+        ],
+        "id": "userassist_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- UserAssist: Track applications executed via Windows Explorer\n-- Forensic value: Shows user-initiated program executions with timestamps\nSELECT\n  ua.path AS path,\n  REPLACE(ua.path, RTRIM(ua.path, REPLACE(ua.path, '\\', '')), '') AS name,\n  ua.sid AS user_sid,\n  u.username AS username,\n  datetime(ua.last_execution_time, 'unixepoch') AS last_execution,\n  ua.count AS execution_count\nFROM userassist ua\nLEFT JOIN users u ON ua.sid = u.uuid\nWHERE ua.path != ''\n  AND ua.last_execution_time > 0",
+        "updated_at": "2026-01-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-e9e51a33-b2a2-47b4-a00e-7de8a205d55b",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

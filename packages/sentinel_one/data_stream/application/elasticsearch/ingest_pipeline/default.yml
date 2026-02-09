@@ -55,7 +55,7 @@ processors:
   - rename:
       field: json.accountName
       tag: rename_accountName
-      target_field: sentinel_one.application.account_name
+      target_field: sentinel_one.account.name
       ignore_missing: true
   - date:
       field: json.applicationInstallationDate
@@ -144,6 +144,11 @@ processors:
       tag: rename_endpointId
       target_field: sentinel_one.application.endpoint_id
       ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_name_from_application_endpoint_id
+      copy_from: sentinel_one.application.endpoint_id
+      ignore_empty_value: true
   - rename:
       field: json.endpointName
       tag: rename_endpointName
@@ -215,16 +220,30 @@ processors:
       tag: rename_groupName
       target_field: sentinel_one.application.group_name
       ignore_missing: true
+  - set:
+      field: group.name
+      tag: set_group_name
+      copy_from: sentinel_one.application.group_name
+      ignore_empty_value: true
   - rename:
       field: json.id
       tag: rename_id
       target_field: sentinel_one.application.id
       ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: sentinel_one.application.id
+      ignore_empty_value: true
   - rename:
       field: json.osArch
       tag: rename_osArch
       target_field: sentinel_one.application.os_arch
       ignore_missing: true
+  - set:
+      field: host.architecture
+      tag: set_host_architecture
+      copy_from: sentinel_one.application.os_arch
+      ignore_empty_value: true
   - rename:
       field: json.osName
       tag: rename_osName
@@ -258,7 +277,7 @@ processors:
   - rename:
       field: json.siteName
       tag: rename_siteName
-      target_field: sentinel_one.application.site_name
+      target_field: sentinel_one.site.name
       ignore_missing: true
   - rename:
       field: json.version

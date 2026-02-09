@@ -11,13 +11,13 @@ processors:
       value: "{{{_ingest._value.name}}}"
 
   # append object
-  - append:
-      field: threat.indicator.as
-      value: []
   - script:
       description: Append to the destination
       lang: painless
       source: |
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
+        ctx.threat.indicator.as = ctx.threat.indicator.as ?: [];
         ctx.threat.indicator.as.add(ctx._tmp_as);
 
   - remove:

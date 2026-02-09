@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies when an AWS Route 53 domain is transferred to another AWS account. Transferring a domain changes administrative control of the DNS namespace, enabling the receiving account to modify DNS records, route traffic, request certificates, and potentially hijack operational workloads. Adversaries who gain access to privileged IAM users or long-lived credentials may leverage domain transfers to establish persistence, redirect traffic, conduct phishing, or stage infrastructure for broader attacks. This rule detects successful domain transfer requests.",
+        "false_positives": [
+            "Internal account restructuring, mergers and acquisitions, or legitimate ownership transfers between business units may involve transferring DNS domains to other AWS accounts. Confirm the transfer is approved and documented in change management processes before taking action. Transfers performed by unfamiliar identities, originating from atypical locations, or outside expected maintenance windows should be investigated."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Route 53 Domain Transferred to Another Account",
+        "note": "## Triage and analysis\n\n### Investigating AWS Route 53 Domain Transferred to Another Account\n\nTransferring a Route 53 domain to another AWS account is a high-impact administrative action. A successful transfer enables the\nrecipient account to fully manage the domain and all associated DNS resources. Unauthorized transfers can result in loss of\nvisibility and control, traffic redirection, service outages, or domain hijacking for phishing, credential harvesting, or command-and-control.\n\nThis rule detects successful calls to `TransferDomainToAnotherAwsAccount`. These events are rare and should be considered\nhigh-risk unless explicitly documented and approved.\n\n### Possible investigation steps\n\n- **Identify the actor and authentication context**\n  - Review `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id` to determine who initiated the transfer. Determine whether the actor typically performs Route 53 administrative actions or if this represents anomalous behavior.\n\n- **Review request details and target account**\n  - Inspect `aws.cloudtrail.request_parameters` for: `DomainName`, `AccountId` receiving the transfer, Request tokens or validation parameters. Validate whether the destination AWS account is recognized, trusted, or documented in ownership transfer procedures.\n\n- **Assess environment and timing**\n  - Compare `@timestamp` against maintenance windows, deployment pipelines, or approved domain operations. Review the region and endpoint used; domain transfers occurring from unexpected regions may indicate unauthorized access.\n\n- **Analyze source and execution context**\n  - Review `source.ip`, `source.geo.country_iso_code`, and `user_agent.original` to determine:\n    - If the request originated from known networks, Whether it matches typical administrator access patterns or if suspicious automation tools, outdated SDK versions, or unknown agents were used.\n\n- **Correlate with broader activity**\n  - Pivot on the same IAM principal or access key ID to identify:\n    - Recent IAM policy changes or privilege escalation\n    - `DisableDomainTransferLock`, which normally precedes domain transfers\n    - AWS console sign-ins from new geolocations or ASNs\n    - API calls involving certificate requests, hosted zone changes, or DNS record edits\n  - Look for evidence of lateral movement or credential theft preceding the transfer.\n\n- **Validate with business owners**\n  - Confirm with domain owners, development teams, or asset managers whether The transfer was intentional.\n\n### False positive analysis\n\n- **Expected domain migrations**\n  - Organizations with multi-account strategies may transfer domains between operational, security, or sandbox accounts.\n- **Business events**\n  - Mergers, acquisitions, or contractual transitions between managed service providers often involve bulk domain transfers.\n- **Automated administrative tooling**\n  - Domain lifecycle automation or infrastructure-as-code pipelines may trigger transfers if misconfigured.\n  \n### Response and remediation\n\n- **Contain and revoke access**\n  - If unauthorized, immediately invalidate the IAM session or access keys used in the transfer.\n  - Rotate credentials for the implicated IAM user or role and require MFA for privileged operations.\n\n- **Reverse or halt the transfer**\n  - Contact AWS Support as soon as possible to request assistance reversing or blocking the transfer if it was not approved.\n  - Re-enable transfer lock (`DisableDomainTransferLock=false`) to prevent further modifications.\n\n- **Investigate the extent of compromise**\n  - Review CloudTrail to identify all actions performed by the actor before and after the transfer.\n  - Check for additional changes to hosted zones, DNS records, certificates, or registrar contact details.\n\n- **Restore operational integrity**\n  - Validate DNS routing, certificate issuance, and application endpoints for signs of redirection or tampering.\n  - Communicate with impacted teams and external stakeholders if customer-facing domains were affected.\n\n- **Hardening and long-term improvements**\n  - Restrict domain transfer permissions to a minimal set of roles using IAM Conditions such as `aws:PrincipalArn` and `aws:MultiFactorAuthPresent`\n  - Consider SCPs to block domain-transfer APIs in production accounts.\n  - Add change-management tracking for domain ownership modifications.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **[AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/)**\n",
+        "query": "event.dataset: aws.cloudtrail \n    and event.provider: route53domains.amazonaws.com \n    and event.action: TransferDomainToAnotherAwsAccount \n    and event.outcome: success\n",
+        "references": [
+            "https://docs.aws.amazon.com/Route53/latest/APIReference/API_Operations_Amazon_Route_53.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2045567e-b0af-444a-8c0b-0b6e2dae9e13",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Route 53",
+            "Use Case: Asset Visibility",
+            "Tactic: Persistence",
+            "Tactic: Resource Development",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0042",
+                    "name": "Resource Development",
+                    "reference": "https://attack.mitre.org/tactics/TA0042/"
+                },
+                "technique": [
+                    {
+                        "id": "T1584",
+                        "name": "Compromise Infrastructure",
+                        "reference": "https://attack.mitre.org/techniques/T1584/",
+                        "subtechnique": [
+                            {
+                                "id": "T1584.001",
+                                "name": "Domains",
+                                "reference": "https://attack.mitre.org/techniques/T1584/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 211
+    },
+    "id": "2045567e-b0af-444a-8c0b-0b6e2dae9e13_211",
+    "type": "security-rule"
+}

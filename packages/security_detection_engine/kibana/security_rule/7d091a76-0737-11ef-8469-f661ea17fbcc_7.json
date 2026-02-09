@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a Lambda layer is added to an existing AWS Lambda function. Lambda layers allow shared code, dependencies, or runtime modifications to be injected into a function\u2019s execution environment. Adversaries with the ability to update function configurations may add a malicious layer to establish persistence, run unauthorized code, or intercept data handled by the function. This activity should be reviewed to ensure the modification is expected and authorized.",
+        "false_positives": [
+            "Lambda function owners or deployment pipelines may legitimately add or update layers as part of normal development and maintenance workflows. Confirm that the layer addition aligns with approved changes, expected CI/CD behavior, or routine dependency updates. Known automation roles or build systems can be excluded if they consistently perform authorized modifications."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Lambda Layer Added to Existing Function",
+        "note": "## Triage and analysis\n\n### Investigating AWS Lambda Layer Added to Existing Function\n\nLambda layers introduce external code artifacts into a function\u2019s runtime. Adding a layer to an existing Lambda function\nmodifies its execution environment and may allow an adversary to run arbitrary code, intercept data, or maintain\npersistence without altering the function source itself. This detection highlights successful configuration updates using\n`PublishLayerVersion*` or `UpdateFunctionConfiguration*`.\n\n### Possible investigation steps\n\n**Identify the actor**\n- Review `aws.cloudtrail.user_identity.arn` and the `access_key_id`. Determine whether the actor normally administers Lambda or has recently exhibited unusual behavior.\n\n**Review what was modified**\n- Inspect `aws.cloudtrail.request_parameters` to identify which layer ARN was added, the function name and region, whether multiple layers were applied at once or in rapid succession.\n- Compare the added layer version against known and approved layer catalogs.\n\n**Validate the operational context**\n- Check the time of the update (`@timestamp`) to see if it aligns with known release pipelines or deployment windows and Normal working hours for the responsible team.\n- Determine whether a CI/CD pipeline or IaC tool was expected to update this function.\n\n**Assess where the change came from**\n- Review `source.ip` and `user_agent.original` for signs of console access from unusual locations, access via previously unused automation tools, suspicious programmatic access consistent with compromised keys.\n\n**Correlate with additional activity**\n- Look for preceding or subsequent events such as:\n  - Creation of new Lambda layers (`PublishLayerVersion`).\n  - IAM role modifications affecting the Lambda function.\n  - Increased invocation volume or unusual invocation patterns after the layer addition.\n- Search for other functions modified by the same actor or from the same IP.\n\n### False positive analysis\n\n- Confirm whether the change aligns with a planned deployment, application update, or dependency upgrade.\n- Determine whether the user or automation role commonly modifies Lambda function configurations.\n- Validate the legitimacy of the added layer by checking internal documentation or release notes.\n\n### Response and remediation\n\n- Remove or roll back the added layer if the modification appears unauthorized or suspicious.\n- Review the layer contents, especially for newly published layers, to verify integrity and legitimacy.\n- Investigate the IAM role or user responsible for the change and rotate compromised credentials if necessary.\n- Tighten permissions by ensuring only approved roles can modify Lambda configurations or publish new layers.\n- Implement monitoring for subsequent Lambda configuration changes, invocation anomalies caused by the injected layer, additional persistence techniques targeting serverless infrastructure.\n\n### Additional information\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **[AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/)**\n",
+        "query": "event.dataset: aws.cloudtrail\n    and event.provider: lambda.amazonaws.com\n    and event.outcome: success\n    and event.action: (PublishLayerVersion* or UpdateFunctionConfiguration*)\n",
+        "references": [
+            "https://cloud.hacktricks.xyz/pentesting-cloud/aws-security/aws-persistence/aws-lambda-persistence/aws-lambda-layers-persistence",
+            "https://docs.aws.amazon.com/lambda/latest/api/API_PublishLayerVersion.html",
+            "https://docs.aws.amazon.com/lambda/latest/api/API_UpdateFunctionConfiguration.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "7d091a76-0737-11ef-8469-f661ea17fbcc",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Lambda",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1648",
+                        "name": "Serverless Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1648/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 7
+    },
+    "id": "7d091a76-0737-11ef-8469-f661ea17fbcc_7",
+    "type": "security-rule"
+}

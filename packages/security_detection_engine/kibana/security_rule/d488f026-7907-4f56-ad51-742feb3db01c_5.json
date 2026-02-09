@@ -1,0 +1,108 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation or modification of an S3 bucket replication configuration that sends data to a bucket in a different AWS account. Cross-account replication can be used legitimately for backup, disaster recovery, and multi-account architectures, but adversaries with write access to an S3 bucket may abuse replication rules to silently exfiltrate large volumes of data to attacker-controlled accounts. This rule detects \"PutBucketReplication\" events where the configured destination account differs from the source bucket's account, indicating potential unauthorized cross-account data movement.",
+        "event_category_override": "event.type",
+        "false_positives": [
+            "Cross-account S3 replication is common in multi-account AWS Organizations, centralized logging architectures, and disaster-recovery designs. Confirm whether the destination account is an approved replication target. Unexpected replication configuration changes should be treated as suspicious."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "aws.cloudtrail.resources.arn",
+                "aws.cloudtrail.resources.type",
+                "target.entity.id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS S3 Bucket Replicated to Another Account",
+        "note": "## Triage and analysis\n\n### Investigating AWS S3 Bucket Replicated to Another Account\n\nCross-account S3 replication enables automated copying of S3 objects into a different AWS bucket. While useful for backup and organizational data flows, adversaries may exploit it as a covert exfiltration channel. Once replication is configured, any future writes to the bucket are silently copied to the destination bucket\u2014even if object-level access controls block the attacker\u2019s direct downloads. For this reason, unauthorized replication configuration should be considered high-risk.\n\nThis rule detects successful `PutBucketReplication` events and flags cases where the replication configuration specifies a destination AWS account different from the source.\n\n#### Possible investigation steps\n\n**Understand who initiated the replication change**\n- Inspect `aws.cloudtrail.user_identity.arn` and `aws.cloudtrail.user_identity.access_key_id` to identify the actor.\n- Review authentication patterns such as federated session names, role chaining via STS, or unfamiliar IAM roles.\n- Examine `source.ip`, `source.geo` fields, and `user_agent.original` for unusual locations, automation tools, or anomalous access paths.\n\n**Examine the replication rule details**\n- Inspect `aws.cloudtrail.request_parameters` for:\n  - The **destination account ID** (`Account=`).\n  - The **IAM role ARN** used for replication. (`Role=`)\n  - Any filtering rules (prefixes, tags) that narrow or broaden what will be replicated.\n\n**Determine whether the destination account is authorized**\n- Validate whether the destination AWS account belongs to your AWS Organization.\n- Check internal documentation, IaC templates, or tagging standards to confirm whether replication to this account is expected.\n- Look for prior legitimate infrastructure workflows such as:\n  - Centralized logging\n  - Backup/DR accounts\n  - Cross-region compliance replicas\n\nUnrecognized accounts should be treated as a strong exfiltration signal.\n\n**Assess the scope of potential data exposure**\n- Determine whether the bucket contains sensitive or regulated data (PII, financial records, secrets, logs, etc.).\n- Identify whether object versioning, lifecycle rules, or access logging were modified recently.\n- Check for preceding or subsequent actions such as:\n  - `PutBucketPolicy` updates granting new principals access\n  - Creation or modification of IAM roles tied to replication\n  - `DeleteObject` or `PutObjectRetention` attempts that might pair with exfiltration\n\n**Correlate with other suspicious activity**\nPivot in CloudTrail on the same principal or same bucket:\n- Prior reconnaissance such as `ListBuckets`, `GetBucketReplication`, or `GetBucketPolicy`\n- Modification of KMS policies or unexpected encryption key usage\n- New access patterns from external IP addresses or unusual automation\n\n### False positive analysis\n\n**Legitimate cross-account replication**\nValidate:\n- The destination account belongs to a known OU or business unit\n- The replication role ARN matches expected automation\n- The change aligns with documented deployment or maintenance schedules\n\n**Temporary migrations or transitions**\nDuring account restructuring or workload migration, administrators may temporarily redirect replication to new accounts.\n\nTuning options:\n- Exception lists based on IAM role ARNs\n- Tag-based environment scoping\n- Change-window-based suppression\n\n### Response and remediation\n\n**Contain potential exfiltration**\n- Remove or update replication rules to eliminate unauthorized destinations.\n- Disable or restrict the replication IAM role until the investigation is complete.\n- Review S3 object access logs to determine whether data has begun replicating to the external account.\n\n**Investigate scope and impact**\n- Identify the volume and types of data at risk of replication.\n- Determine whether the external bucket shows successful replication traffic (if logs or access are available).\n- Assess whether the actor also modified bucket policies, encryption settings, or KMS keys.\n\n**Credential and role hygiene**\n- Rotate credentials for the initiating user or role if compromise is suspected.\n- Review IAM role trust policies, especially if STS sessions or EC2 role assumptions were involved.\n- Enable MFA and tighten conditions for administrative roles capable of modifying replication.\n\n**Hardening and preventive controls**\n- Enforce SCPs that restrict cross-account replication except for explicitly approved destinations.\n- Require approval workflows before modifying replication or retention settings.\n- Use AWS Config and Security Hub controls to detect:\n  - Buckets with unexpected replication rules\n  - Newly added cross-account permissions\n  - Changes to bucket policies, block-public-access settings, or KMS key policies\n\n### Additional information\n\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/blob/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks/)** \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs)** \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).\n",
+        "query": "info where event.dataset == \"aws.cloudtrail\"\n   and event.action == \"PutBucketReplication\"\n   and event.outcome == \"success\"\n   and stringContains(aws.cloudtrail.request_parameters, \"Account=\")\n",
+        "references": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication-walkthrough-2.html/",
+            "https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d488f026-7907-4f56-ad51-742feb3db01c",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS S3",
+            "Resources: Investigation Guide",
+            "Use Case: Threat Detection",
+            "Tactic: Exfiltration"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1537",
+                        "name": "Transfer Data to Cloud Account",
+                        "reference": "https://attack.mitre.org/techniques/T1537/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "d488f026-7907-4f56-ad51-742feb3db01c_5",
+    "type": "security-rule"
+}

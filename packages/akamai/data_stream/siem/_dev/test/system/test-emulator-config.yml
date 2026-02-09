@@ -1,4 +1,4 @@
-input: httpjson
+input: cel
 service: akamai-siem-emulator
 vars: ~
 data_stream:
@@ -12,10 +12,9 @@ data_stream:
     access_token: at-6b8c7217-8748-490d-b0f5-bfeb72b2e7cd
     config_ids: 123456
     event_limit: 20
+    # The akamai-siem emulator does not limit the number of events or pages returned, so we set a large number of max_executions.
+    max_executions: 50000
     enable_request_tracer: true
 assert:
   # 12 hours at 5 minutes between events.
   hit_count: 144 #  = 12 * 60/5
-skip:
-  reason: "The fleet health status changes to degraded when the HTTPJSON template's value evaluation comes up empty, which leads to system test failures but does not interrupt the data flow."
-  link: https://github.com/elastic/beats/issues/45664

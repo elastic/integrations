@@ -5,6 +5,8 @@ This package is licensed under Elastic License 2.0.
 
 This package leverages event logs on Linux, macOS, and Windows. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
 
+**Note**: This package filters out data from cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
+
 For more detailed information refer to the following blog:
 - [Identifying beaconing malware using Elastic](https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic)
 
@@ -37,6 +39,21 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 When querying the destination index to enquire about beaconing activities, we advise using the alias for the destination index (`ml_beaconing.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings.
 
 **Note**: If you want to modify any of the package components, you can install the package manually by following [these steps](https://github.com/elastic/detection-rules/blob/main/docs/experimental-machine-learning/beaconing.md).
+
+## Customize Network Beaconing Identification Transform
+
+To customize filters in the Network Beaconing Identification transform, follow the below steps. You can use these instructions to update basic settings or to update filters for fields such as `process.name`, `source.ip`, `destination.ip`, and others.
+1. To update settings such as retention policy, frequency, or destination configuration, stop the transform, click **Edit** from the **Actions** bar, make the required changes, and start the transform again.
+![Network Beaconing Identification transform](../img/beaconing_transform_update.png)
+1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-beaconing.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`**.
+1. Click on the **Actions** bar at the far right of the transform and select the **Clone** option.
+![Network Beaconing Identification transform](../img/beaconing_transform_1.png)
+1. In the new **Clone transform** window, go to the **Search filter** and update any field values you want to add or remove. Click on the **Apply changes** button on the right side to save these changes. **Note:** The image below shows an example of filtering a new `process.name` as `explorer.exe`. You can follow a similar example and update the field value list based on your environment to help reduce noise and potential false positives.
+![Network Beaconing Identification transform](../img/beaconing_transform_2.png)
+1. Scroll down and select the **Next** button at the bottom right. Under the **Transform details** section, enter a new **Transform ID** and **Destination index** of your choice, then click on the **Next** button.
+![Network Beaconing Identification transform](../img/beaconing_transform_3.png)
+1. Lastly, select the **Create and Start** option. Your updated transform will now start collecting data. **Note:** Do not forget to update your data view based on the new **Destination index** you have just created.
+![Network Beaconing Identification transform](../img/beaconing_transform_4.png)
 
 ## Dashboards
 
