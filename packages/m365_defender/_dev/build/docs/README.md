@@ -56,7 +56,7 @@ The Microsoft Defender XDR integration collects logs for four types of events: A
 
 **Vulnerabilities:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)'s [`/api/machines/SoftwareVulnerabilitiesExport`](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint to collect vulnerability assessments.
 
-**Note:** **Alerts** data stream ingests individual detection events surfaced by Microsoft and partner security providers, while **Incidents and Alerts** data stream ingests correlated collections of alerts that represent a broader attack.
+**Note:** The **Alerts** data stream ingests individual detection events surfaced by Microsoft and partner security providers, while **Incidents and Alerts** data stream ingests correlated collections of alerts that represent a broader attack.
 
 ### Supported Use Cases
 
@@ -66,7 +66,7 @@ Use the data from this integration to consolidate and correlate security alerts 
 
 ### From Elastic
 
-Version `4.0.0` of the Microsoft Defender XDR integration adds [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+Version `4.0.0` of the Microsoft Defender XDR integration adds [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, refer to the Transform setup and requirements [documentation](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup).
 
 ### From Microsoft Defender XDR
 Follow the steps below to configure data collection from Microsoft sources.
@@ -79,7 +79,7 @@ Follow the steps below to configure data collection from Microsoft sources.
 #### 2. Collecting Data using Microsoft Graph Security REST API (for Incidents & Alerts)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
-- Assign the required permission: **SecurityIncident.Read.All**. Refer to [documentation](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0&tabs=http#step-1-configure-permissions-for-microsoft-graph) on how to configure permissions. Refer to [documentation](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http#permissions) on required permissions for incidents and alerts.
+- Assign the required permission: **SecurityIncident.Read.All**. Refer to [this documentation](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0&tabs=http#step-1-configure-permissions-for-microsoft-graph) on how to configure permissions. Refer to [documentation](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http#permissions) on required permissions for incidents and alerts.
 - Once the application is registered, note the following values for use during configuration:
   - Client ID
   - Client Secret
@@ -88,7 +88,7 @@ Follow the steps below to configure data collection from Microsoft sources.
 #### 3. Collecting Data using Microsoft Defender for Endpoint API (for Vulnerabilities)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
-- Assign the required permissions: **Vulnerability.Read.All**. Refer to [documentation](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0&tabs=http#step-1-configure-permissions-for-microsoft-graph) on how to configure permissions. Refer to [documentation](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#22-permissions) on required permissions for vulnerability.
+- Assign the required permissions: **Vulnerability.Read.All**. Refer to [this documentation](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0&tabs=http#step-1-configure-permissions-for-microsoft-graph) on how to configure permissions. Refer to [this documentation](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#22-permissions) on required permissions for vulnerability.
 - After registration, retrieve the following credentials needed for configuration:
   - Client ID
   - Client Secret
