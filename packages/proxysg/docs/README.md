@@ -8,7 +8,7 @@ The Broadcom ProxySG integration for Elastic allows you to ingest and analyze we
 
 ### Compatibility
 
-This integration is compatible with Broadcom ProxySG and Edge SWG appliances. It has been specifically tested and documented for ProxySG / Edge SWG version 7.3 and higher.
+This integration is compatible with Broadcom ProxySG and Edge SWG appliances. It has been specifically tested and documented for ProxySG / Edge SWG version 7.3 and later.
 
 The integration currently supports the following log formats as defined in the appliance configuration:
 - `main`
@@ -16,7 +16,7 @@ The integration currently supports the following log formats as defined in the a
 - `bcreporterssl_v1`
 - `ssl`
 
-This integration is compatible with Elastic Stack version 8.11.0 or newer.
+This integration is compatible with Elastic Stack version 8.11.0 or later.
 
 ### How it works
 
