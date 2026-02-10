@@ -410,6 +410,22 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: thor.reasons
+      if: ctx.thor?.reasons instanceof List
+      ignore_missing: true
+      tag: foreach_parse_thor_reasons_signature_ruledate
+      processor:
+        date:
+          field: _ingest._value.signature.ruledate
+          target_field: _ingest._value.signature.ruledate
+          ignore_failure: true
+          formats:
+          - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       tag: script_compute_duration_string_to_secons
       lang: painless
