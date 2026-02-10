@@ -80,7 +80,7 @@ processors:
     tag: date_captchaResponse_solveTimestamp
     formats:
     - UNIX_MS
-    if: ctx.json?.captchaResponse?.solveTimestamp != null && ctx.json?.captchaResponse?.solveTimestamp != ''
+    if: ctx.json?.captchaResponse?.solveTimestamp != null && ctx.json.captchaResponse.solveTimestamp != ''
     on_failure:
       - append:
           field: error.message
@@ -106,7 +106,7 @@ processors:
     tag: date_challengeResponse_solveTimestamp
     formats:
     - UNIX_MS
-    if: ctx.json?.challengeResponse?.solveTimestamp != null && ctx.json?.challengeResponse?.solveTimestamp != ''
+    if: ctx.json?.challengeResponse?.solveTimestamp != null && ctx.json.challengeResponse.solveTimestamp != ''
     on_failure:
       - append:
           field: error.message
@@ -245,7 +245,7 @@ processors:
     lang: painless
     tag: script_request_headers_inserted
     description: Script to map requestHeadersInserted name to requestHeadersInserted value.
-    if: ctx.json?.requestHeadersInserted != null && ctx.aws?.waf != null
+    if: ctx.json?.requestHeadersInserted != null && ctx.aws?.waf != null && ctx.json.requestHeadersInserted instanceof list
     source: >-
       ctx.aws.waf.request_headers_inserted = new HashMap();
       for (def i = 0; i < ctx.json.requestHeadersInserted.length; i++) {
