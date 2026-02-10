@@ -1,9 +1,16 @@
-version: '2.3'
 services:
   mysql_otel_input:
-    build: .
-    environment:
-      - MYSQL_ROOT_PASSWORD=secret
-      - MYSQL_DATABASE=testdb
+    image: mysql:${SERVICE_VERSION:-9.6.0}
     ports:
       - 3306
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+  mysql_otel_input_is_ready:
+    image: tianon/true:multiarch
+    depends_on:
+      - mysql_otel_input
