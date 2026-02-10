@@ -1,0 +1,42 @@
+# Vale Lint Workflow
+#
+# This workflow runs Vale linting on documentation changes.
+#
+# IMPORTANT: This workflow works with report.yml to post PR comments.
+# Both files must be present for full functionality.
+#
+# For fork PRs: Linting runs but comments require the separate report workflow.
+
+name: Vale Lint
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.md'
+      - '**.mdx'
+      - 'packages/**/docs/**'
+
+permissions:
+  contents: read
+
+jobs:
+  vale-lint:
+    name: Lint Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Elastic Vale Linter
+        uses: elastic/vale-rules/lint@main
+        with:
+          # Fail the workflow if Vale finds error-level issues
+          # Set to 'true' to enforce style as a required check
+          fail_on_error: false
+
+          # Optional: Enable debug output for troubleshooting
+          # debug: true

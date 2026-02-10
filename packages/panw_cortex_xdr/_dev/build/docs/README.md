@@ -107,6 +107,8 @@ This is the `Event` dataset.
 
 {{fields "event"}}
 
+{{event "event"}}
+
 ### Incidents
 
 This is the `Incidents` dataset.
