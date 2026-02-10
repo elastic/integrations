@@ -8,9 +8,9 @@ The Snort integration for Elastic enables you to collect logs from Snort, a lead
 
 ### Compatibility
 
-This integration has been developed and tested against Snort versions 2.9 and 3.0. It's expected to work with other versions that utilize the supported output formats.
+This integration has been developed and tested against Snort versions 2.9 and 3.0. It's expected to work with other versions that use the supported output formats.
 
-This integration is compatible with Elastic Stack version 8.11.0 or higher.
+This integration is compatible with Elastic Stack version 8.11.0 or later.
 
 ### How it works
 
@@ -44,7 +44,7 @@ Integrating Snort logs with the Elastic Stack provides visibility into your netw
 ## What do I need to use this integration?
 
 To use this integration, you'll need the following:
-- An active installation of Snort `v2.9`, `v3.0`, or newer.
+- An active installation of Snort `v2.9`, `v3.0`, or later.
 - Root or `sudo` privileges on the Snort host to modify configuration files and restart the service.
 - Read permissions for the Elastic Agent to access the Snort log directory, for example, `/var/log/snort/`.
 - Network connectivity that allows the Snort host to reach the Elastic Agent over the configured UDP port (the default is `9514`) if you're using the UDP/Syslog method.
@@ -129,7 +129,7 @@ Follow these steps to set up the integration in Kibana:
 3. Click **Add Snort**.
 4. Configure the integration by selecting an input type and providing the necessary settings.
 
-#### Collect Snort logs (input: logfile)
+#### Collect Snort logs (input: Logfile)
 
 This input collects logs directly from file paths on your host. Configure the following settings:
 - `paths`: The list of paths to Snort log files (for example, `['/var/log/snort/alert.log']`).
@@ -140,7 +140,7 @@ This input collects logs directly from file paths on your host. Configure the fo
 - `tags`: Custom tags to add to the events. Default is `['forwarded', 'snort.log']`.
 - `processors`: Add optional processors to filter or enhance data before it leaves the agent.
 
-#### Collect Snort logs (input: udp)
+#### Collect Snort logs (input: UDP)
 
 This input collects logs sent over the network using UDP. Configure the following settings:
 - `syslog_host`: The interface address to listen on for UDP traffic (for example, `localhost`).
@@ -203,7 +203,7 @@ The following issues are commonly encountered when configuring or running the Sn
       # Check for services listening on port 9514
       netstat -tulpn | grep 9514
       ```
-- Snort output is disabled:
+- Snort output is not enabled:
     * Confirm that the `output` directive in `snort.conf` or the `alert_` module in `snort.lua` is correctly configured and not commented out, as some installations do not enable disk logging by default.
 - Logs appear in Kibana but are not parsed correctly:
     * Check for the `tags: _grokparsefailure` tag in Discover.
