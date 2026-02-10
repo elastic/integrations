@@ -1,25 +1,49 @@
-# SonicWall Firewall Integration
+# SonicWall Firewall Integration for Elastic
 
-This integration collects syslog messages from SonicWall firewalls. It has been tested with Enhanced
-Syslog logs from SonicOS 6.5 and 7.0 as described in the [Log Events reference guide.](https://www.sonicwall.com/techdocs/pdf/sonicos-6-5-4-log-events-reference-guide.pdf)
+> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
 
-## Configuration
+## Overview
 
-Configure a Syslog Server in your firewall using the following options:
- - **Name or IP Address:** The address where your Elastic Agent running this integration is reachable.
- - **Port:** The Syslog port (UDP) configured in this integration.
- - **Server Type:** Syslog Server.
- - **Syslog Format:** Enhanced Syslog.
- - **Syslog ID:** Change this default (`firewall`) if you need to differentiate between multiple firewalls.
-                  This value will be stored in the `observer.name` field. 
+The SonicWall Firewall integration for Elastic enables you to collect logs from SonicWall firewall devices. This integration provides essential visibility into network security events and device activities, helping you monitor threats and troubleshoot network issues within the Elastic Stack.
 
-It's recommended to enable the **Display UTC in logs (instead of local time)** setting under the
-_Device > Settings > Time_ configuration menu. Otherwise you'll have to configure the **Timezone Offset**
-setting of this integration to match the timezone configured in your firewall.
+This integration facilitates:
+- Security monitoring: Tracks firewall access rules, application firewall events, flood protection, and security services like intrusion prevention (IPS), anti-spyware, and anti-virus.
+- Network operations: Provides insights into network events such as ARP, DNS, IP, and TCP activities to help you troubleshoot connectivity and performance.
+- User activity auditing: Tracks user authentication access, RADIUS authentication, and SSO Agent events to maintain an audit trail.
+- Configuration change tracking: Logs system administration and configuration auditing events to monitor changes made to the firewall.
 
-Ensure proper connectivity between your firewall and Elastic Agent.
+### Compatibility
 
-## Supported messages
+This integration is compatible with SonicWall Firewall devices running SonicOS 6.5 and 7.0. It supports the Enhanced Syslog format provided by these versions.
+
+### How it works
+
+The integration collects data from SonicWall firewalls through two primary methods:
+- Network syslog: You can configure your SonicWall device to send Enhanced Syslog messages to the Elastic Agent over UDP. The agent acts as a listener, receiving and processing the incoming data.
+- Log files: You can configure the integration to read logs directly from specified file paths on the host where the agent's running.
+
+Regardless of the collection method, the Elastic Agent sends the processed logs to your Elastic deployment, where they're stored in the `log` data stream and normalized for analysis.
+
+## What data does this integration collect?
+
+The SonicWall Firewall integration collects various security and network event logs. This data is normalized into the `sonicwall_firewall.log` dataset within the Elastic Stack, so you'll have comprehensive visibility into network activity and potential threats.
+
+The SonicWall Firewall integration collects log messages of the following types:
+* Syslog messages sent using UDP, including firewall access rules and application firewall data.
+* Flood protection and network events such as ARP, DNS, IP, and TCP.
+* Security services logs including anti-spyware, anti-virus, Intrusion Prevention System (IPS), and content filtering events.
+* System administration and user authentication logs.
+* Enhanced Syslog messages captured from specified file paths on your agent's host.
+
+### Supported use cases
+
+Integrating your SonicWall logs with the Elastic Stack helps you monitor your network security and gain visibility into firewall operations. Key use cases include:
+* Real-time threat detection where you use Elastic SIEM to identify and respond to threats identified in your firewall logs.
+* Network traffic analysis to visualize patterns and identify anomalies using Kibana dashboards.
+* Compliance and auditing to maintain searchable, long-term archives of firewall logs for regulatory requirements.
+* Incident response to correlate firewall events with other observability data for faster investigations.
+
+### Supported messages
 
 This integration features generic support for enhanced syslog messages produced by SonicOS and features
 more detailed ECS enrichment for the following messages:
@@ -72,8 +96,202 @@ more detailed ECS enrichment for the following messages:
 | Wireless | WLAN | 1363 |
 | Wireless | WLAN IDS | 546, 548 |
 
-## Logs
 
-{{event "log"}}
+## What do I need to use this integration?
 
-{{fields "log"}}
+To use the SonicWall Firewall integration, you'll need to meet the following vendor and Elastic requirements:
+
+### Vendor requirements
+
+You must configure your SonicWall device with these settings:
+- Administrative access to the SonicWall firewall web interface is required to configure syslog settings.
+- The Elastic Agent must be reachable from the SonicWall firewall over the network using the `UDP` protocol on the configured syslog port (the default is `9514`). Ensure no firewalls or security groups are blocking this communication.
+- The SonicWall firewall must be configured to send logs in `Enhanced Syslog` format.
+- You'll need to enable `Display UTC in logs (instead of local time)` under the firewall's `Device > Settings > Time` menu to ensure correct timestamp parsing and avoid timezone-related issues.
+- You must know the IP address of the Elastic Agent where the syslog listener is running.
+
+### Elastic requirements
+
+Ensure your Elastic environment meets these specifications:
+- You have an Elastic Agent installed and enrolled in Fleet.
+- Your Elastic Stack version is compatible with Elastic Stack `7.17.0` or higher, including `8.x` versions.
+- The Elastic Agent has network connectivity to the SonicWall firewall to receive syslog messages on the configured `UDP` port.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
+
+### Set up steps in SonicWall Firewall
+
+Depending on your firewall version, follow these steps to configure your SonicWall device to send logs to the Elastic Agent:
+
+**For SonicOS 7.x:**
+
+1.  Log in to your SonicWall firewall's administration interface.
+2.  Navigate to `Device > Log > Syslog`.
+3.  Under `Syslog Servers`, click the `Add` button.
+4.  In the `Add Syslog Server` window, enter the IP address of your Elastic Agent in the `Name or IP Address` field.
+5.  From the `Syslog Format` dropdown menu, select `Enhanced Syslog`.
+6.  (Optional) Enter a `Syslog ID`. The default is `firewall`. This ID is used to differentiate logs from multiple firewalls and is mapped to the `observer.name` field in Elastic.
+7.  Click `OK` to save the syslog server configuration.
+8.  Navigate to `Device > Log > Settings`.
+9.  For each category of events you wish to forward (for example, System, Firewall, Network), enable the Syslog checkbox (often represented by a small paper airplane icon).
+10. Set the desired logging level for each category. It's recommended to set the level to `Informational` to capture sufficient detail.
+11. Click `Accept` or `Save` at the bottom of the page to apply the changes.
+12. Navigate to `Device > Settings > Time`.
+13. Under `Display Time Zone`, select the option `Display UTC in logs (instead of local time)`.
+14. Click `Accept` to save the time setting.
+
+**For SonicOS 6.5:**
+
+1.  Log in to your SonicWall firewall's administration interface.
+2.  Navigate to `Manage > Log Settings > SYSLOG`.
+3.  Click the `Add` button.
+4.  In the `Add Syslog Server` window, enter the name or IP address of your Elastic Agent in the `Name or IP Address` field. The port will default to `514 (UDP)`.
+5.  From the `Syslog Format` dropdown menu, select `Enhanced Syslog`.
+6.  (Optional) Set the `Syslog ID`. The default is `firewall`. This ID is used to differentiate logs from multiple firewalls and is mapped to the `observer.name` field in Elastic.
+7.  Click `OK` to save the syslog server configuration.
+8.  Navigate to `Manage > Log Settings > Base Setup`.
+9.  For each category of events you wish to forward (for example, System, Firewall, Network), enable the Syslog checkbox (often represented by a small paper airplane icon).
+10. Set the desired logging level for each category. It's recommended to set the level to `Informational` to capture sufficient detail.
+11. Click `Accept` or `Save` at the bottom of the page to apply the changes.
+12. Navigate to `Manage > System Setup > Time`.
+13. Under `Display Time Zone`, select the option `Display UTC in logs (instead of local time)`.
+14. Click `Accept` to save the time setting.
+
+#### Vendor resources
+
+You can find more detailed information about SonicWall log events in the following vendor documentation:
+- [SonicOS 6.5.4 Log Events Reference Guide](https://www.sonicwall.com/techdocs/pdf/sonicos-6-5-4-log-events-reference-guide.pdf)
+
+### Set up steps in Kibana
+
+To set up the SonicWall Firewall integration in Kibana:
+
+1.  In Kibana, navigate to `Management > Integrations`.
+2.  Search for `SonicWall Firewall` and select the integration.
+3.  Click `Add SonicWall Firewall`.
+4.  Configure the integration settings based on your preferred collection method.
+
+Choose one of the following input types:
+
+#### Collecting logs using syslog
+
+This input receives real-time syslog messages directly from your SonicWall firewall over UDP.
+
+| Setting | Description |
+|---|---|
+| **Listen address** | The address where the Elastic Agent will accept syslog messages (for example, `0.0.0.0` to receive on all interfaces). |
+| **Listen Port** | The UDP port where the Elastic Agent will receive syslog messages (for example, `9514`). |
+| **Timezone Offset** | Specify the timezone offset (for example, `Europe/Amsterdam`, `EST`, or `-05:00`) if your firewall isn't sending logs in UTC. Defaults to `local`. |
+| **Preserve original event** | If enabled, the raw log is stored in the `event.original` field. |
+
+Under **Advanced options**, you can configure:
+
+| Setting | Description |
+|---|---|
+| **Custom UDP Options** | Specify advanced tuning for the UDP listener, such as buffer sizes or timeouts. |
+| **Processors** | Add custom processors to filter or enhance the data before it's sent to Elastic. |
+
+Example for **Custom UDP Options**:
+```yaml
+read_buffer: 100MiB
+max_message_size: 50KiB
+timeout: 300s
+```
+
+#### Collecting logs from file
+
+This input collects logs directly from file paths on the host where the Elastic Agent is running.
+
+| Setting | Description |
+|---|---|
+| **Paths** | A list of file paths to monitor for new log entries (for example, `/var/log/sonicwall-firewall.log`). |
+| **Timezone Offset** | Specify the timezone offset if the logs aren't recorded in UTC. |
+| **Preserve original event** | If enabled, the raw log is stored in the `event.original` field. |
+
+After configuring the input, assign the integration to an agent policy and click `Save and continue`.
+
+### Validation
+
+To verify that your integration is working correctly, follow these steps:
+
+1.  **Verify Elastic Agent status**: Navigate to `Management > Fleet > Agents` in Kibana and ensure your agent's status is `Healthy`.
+2.  **Trigger data flow on the firewall**: Generate some activity that the firewall will log:
+    *   Browse several websites from a client behind the firewall to generate access logs.
+    *   Attempt to access a blocked service to generate denial events.
+    *   Log out and back into the SonicWall administration interface to generate authentication logs.
+    *   Modify a minor setting (like time display) and click `Accept` to trigger a configuration audit log.
+3.  **Check data in Discover**:
+    *   In Kibana, navigate to `Analytics > Discover`.
+    *   Filter for `data_stream.dataset : "sonicwall_firewall.log"`.
+    *   Confirm that logs are appearing with recent timestamps and that fields like `source.ip`, `destination.ip`, and `observer.name` are correctly populated.
+4.  **Check dashboards**: Navigate to `Analytics > Dashboards` and search for `SonicWall Firewall` to view the pre-built visualizations. Confirm they are populated with data from your device.
+
+## Troubleshooting
+
+For help with Elastic ingest tools, check the [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems) documentation.
+
+### Common configuration issues
+
+You might encounter the following issues when configuring the SonicWall Firewall integration:
+- Incorrect syslog format: Ensure the SonicWall firewall is configured to send logs in `Enhanced Syslog` format. This integration is designed for the enhanced format and will not correctly parse logs sent in `Legacy` or other formats.
+- Timezone mismatch: Check if the SonicWall firewall is sending logs in UTC. If the firewall is using local time, you must configure the `Timezone Offset` setting in the integration settings to ensure timestamps are parsed correctly. Enabling `Display UTC in logs` on the firewall is the recommended approach.
+- Network connectivity problems: Verify that the SonicWall device can reach the Elastic Agent host on the configured UDP port (default is `9514`). Check for any intermediate firewalls or host-based security software that might be blocking the traffic.
+- Missing log categories: Confirm that the desired log categories (such as Firewall, Network, or System) have the syslog forwarding option enabled in the SonicWall administration interface under the log settings menu.
+- Syslog listener not starting: Ensure no other process on the Elastic Agent host is already using the configured UDP port. You can use tools like `netstat` or `ss` to check for port conflicts.
+
+### Vendor resources
+
+For more detailed information on SonicWall log events and troubleshooting, refer to the following resources:
+- [SonicOS 6.5.4 Log Events Reference Guide](https://www.sonicwall.com/techdocs/pdf/sonicos-6-5-4-log-events-reference-guide.pdf)
+- [SonicWall Technical Documentation](https://www.sonicwall.com/support/technical-documentation/)
+- [SonicWall Support Portal](https://www.sonicwall.com/support/)
+
+## Performance and scaling
+
+To ensure optimal performance and reliable data ingestion in high-volume environments, consider the following factors:
+- Transport and collection: The SonicWall Firewall integration primarily uses UDP Syslog for log collection. UDP offers high speed and low overhead, which makes it suitable for high-volume log streams. However, UDP is an unreliable protocol. For environments where log loss is unacceptable, ensure network reliability between the firewall and the Elastic Agent by implementing network quality-of-service (QoS) or ensuring sufficient buffer sizes.
+- Data volume management: To manage data volume and reduce the load on both the SonicWall firewall and the Elastic Agent, filter or limit the data at the source. Configure your SonicWall firewall to only send relevant log categories and severity levels to the Syslog server. Excessive logging of low-priority events can consume significant network bandwidth and processing resources on both ends.
+- Elastic Agent scaling: While a single Elastic Agent can handle a significant volume of syslog data, for extremely high-throughput environments or to ensure redundancy, deploy multiple Elastic Agents. Place Elastic Agents strategically in the same network segment as the firewall to minimize network latency.
+- Resource monitoring: Monitor agent resource utilization, such as CPU, memory, and disk I/O. This helps you size resources appropriately and scale out by adding more agents as your data volume increases.
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+The following reference material provides details about the SonicWall Firewall integration.
+
+### Inputs used
+
+{{ inputDocs }}
+
+### Data streams
+
+The SonicWall Firewall integration includes the following data stream.
+
+#### log
+
+The `log` data stream provides events from SonicWall Firewall devices of the following types:
+* Traffic logs
+* Unified Threat Management (UTM) logs
+* System event logs
+* Authentication logs
+* Security service logs
+
+##### log fields
+
+{{ fields "log" }}
+
+##### log sample event
+
+{{ event "log" }}
+
+### Vendor documentation links
+
+For more information about the logs generated by your device, you can refer to the following documentation:
+* [SonicOS 6.5.4 Log Events Reference Guide](https://www.sonicwall.com/techdocs/pdf/sonicos-6-5-4-log-events-reference-guide.pdf)
