@@ -16,7 +16,7 @@ The dashboards rely on field names defined in above documentation.
 
 You need to follow [the documentation](https://opentelemetry.io/docs/collector/internal-telemetry/) of the OpenTelemetry collector to setup and send internal telemetry to your cluster.
 
-An most important prerequisite is to define the `telemetry` section under `service`:
+The most important prerequisite is to define the `telemetry` section under `service`:
 
 ```
 service:
@@ -31,5 +31,7 @@ service:
 ```
 
 With this, you'll have internal telemetry on `normal` verbosity level.
+
+The above configuration defines an OTLP endpoint that sends internal telemetry to a target collector over an OTLP connection. This target collector then exports the internal telemetry data to Elasticsearch using the `elasticsearch` exporter. The integration subsequently reads this internal telemetry data from Elasticsearch.
 
 For all the other config, refer to the upstream documentation.
