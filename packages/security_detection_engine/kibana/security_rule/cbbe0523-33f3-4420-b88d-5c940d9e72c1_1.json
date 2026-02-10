@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the creation of an administrator account on a FortiGate device. Administrator account creation on these devices should be infrequent and tightly controlled. In the FG-IR-26-060 campaign, threat actors created super_admin accounts immediately after gaining initial access via FortiCloud SSO bypass to establish persistence.",
+        "from": "now-9m",
+        "index": [
+            "logs-fortinet_fortigate.*"
+        ],
+        "interval": "5m",
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "FortiGate Super Admin Account Creation",
+        "note": "## Triage and analysis\n\n### Investigating FortiGate Super Admin Account Creation\n\nThis alert indicates that an administrator account was created on a FortiGate device. Administrator creation events on these devices are generally rare and should be closely scrutinized, as they are a key persistence mechanism used in the FG-IR-26-060 campaign.\n\nIn the observed campaign, threat actors created multiple super_admin accounts (audit, backup, support, itadmin, secadmin, remoteadmin) within seconds of initial access to ensure persistent control even if individual accounts are discovered and removed.\n\n### Possible investigation steps\n\n- Review `fortinet.firewall.cfgobj` for the name of the newly created account and examine `fortinet.firewall.cfgattr` to determine the access profile assigned to the account (especially super_admin).\n- Review `source.user.name` to determine which account performed the creation and `fortinet.firewall.ui` for the source interface and IP address. Verify whether this administrator is authorized to provision accounts.\n- Check whether a login event (especially via SSO) occurred shortly before the account creation. Analyze the timing between events.\n- Check `observer.name` to identify the FortiGate device and run `get system admin` to get the current administrator list. Check other FortiGate devices in the fleet for the same account name.\n\n### False positive analysis\n\n- Authorized provisioning of a new administrator account through an approved change management process.\n- Initial device setup where administrator accounts are created as part of deployment.\n- Migration or device replacement scenarios where accounts are replicated from another device.\n\n### Response and remediation\n\n- If unauthorized, delete the administrator account immediately and audit the creating account for compromise.\n- Treat the device configuration as compromised and restore from a known-clean backup.\n- Check all FortiGate devices for similar account creation and upgrade FortiOS to a patched version.\n- If the activity is expected, document the provisioning activity and the business justification.",
+        "query": "any where event.dataset == \"fortinet_fortigate.log\" and\n    event.code == \"0100044547\" and\n    fortinet.firewall.cfgpath == \"system.admin\" and\n    fortinet.firewall.action == \"Add\" and\n    fortinet.firewall.cfgattr like~ \"*accprofile[super_admin]*\"\n",
+        "references": [
+            "https://www.fortiguard.com/psirt/FG-IR-26-060",
+            "https://www.fortinet.com/blog/psirt-blogs/analysis-of-sso-abuse-on-fortios",
+            "https://www.elastic.co/docs/reference/integrations/fortinet_fortigate",
+            "https://www.cisa.gov/news-events/alerts/2026/01/28/fortinet-releases-guidance-address-ongoing-exploitation-authentication-bypass-vulnerability-cve-2026"
+        ],
+        "related_integrations": [
+            {
+                "package": "fortinet_fortigate",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "fortinet.firewall.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "fortinet.firewall.cfgattr",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "fortinet.firewall.cfgpath",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "cbbe0523-33f3-4420-b88d-5c940d9e72c1",
+        "severity": "medium",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide",
+            "Domain: Network",
+            "Domain: Identity",
+            "Data Source: Fortinet",
+            "Data Source: Fortinet FortiGate"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1136",
+                        "name": "Create Account",
+                        "reference": "https://attack.mitre.org/techniques/T1136/",
+                        "subtechnique": [
+                            {
+                                "id": "T1136.001",
+                                "name": "Local Account",
+                                "reference": "https://attack.mitre.org/techniques/T1136/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "cbbe0523-33f3-4420-b88d-5c940d9e72c1_1",
+    "type": "security-rule"
+}

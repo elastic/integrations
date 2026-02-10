@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the manual loading of a Chromium-based browser extension via command line arguments. This activity is suspicious and could indicate a threat actor loading a malicious extension to persist or collect browsing secrets such as cookies and authentication tokens.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Manual Loading of a Suspicious Chromium Extension",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Manual Loading of a Suspicious Chromium Extension\n\nChromium-based browsers support loading extensions from local directories using the --load-extension command line flag, bypassing the normal extension store installation process. Threat actors abuse this capability to load malicious extensions that can steal cookies, capture session tokens, intercept form submissions, or inject content into web pages. Unlike store-installed extensions, manually loaded extensions don't undergo security review and can request arbitrary permissions. This detection rule identifies browsers launched with the --load-extension flag from suspicious parent processes.\n\n### Possible investigation steps\n\n- Examine the process.args containing --load-extension to identify the full path of the extension being loaded.\n- Navigate to the extension directory and review the manifest.json to understand the permissions requested, including access to cookies, tabs, or web requests.\n- Analyze the extension's JavaScript files for malicious functionality such as cookie exfiltration, form interception, or communication with external servers.\n- Review the process.parent.executable to understand how the browser was launched with the malicious extension and trace back to the initial execution vector.\n- Check for network connections made by the browser process to identify potential data exfiltration endpoints.\n- Review browser profile data for evidence of credential theft or session hijacking.\n- Search for the same extension path across other systems to identify potential lateral movement or widespread deployment.\n\n### False positive analysis\n\n- Cypress and other automated testing frameworks load extensions for browser automation. These are already excluded in the query.\n- ChromeDriver used for Selenium testing loads extensions programmatically. These paths are excluded in the query.\n- Developer debugging may require manual extension loading during active development. Verify with development teams if such activities are expected.\n- Enterprise browser customization may deploy internal extensions via command line. Review with IT operations to document approved extensions.\n\n### Response and remediation\n\n- Immediately terminate the browser process to stop any ongoing malicious activity such as cookie theft or session hijacking.\n- Remove the malicious extension directory from the filesystem to prevent future loading.\n- Clear browser session data including cookies, cached credentials, and saved passwords for the affected browser profile.\n- Review and revoke any sessions for sensitive web applications that were accessed while the extension was loaded.\n- Investigate how the malicious extension was deployed and remediate the initial access vector.\n- Block the malicious extension path or hash in endpoint security policies to prevent reloading.\n- Reset passwords for web accounts that may have been compromised through the malicious extension.\n- Check browser sync settings to ensure the malicious extension doesn't propagate to other devices.\n",
+        "query": "process where host.os.type == \"macos\" and event.action == \"exec\" and\n  process.name in (\"Google Chrome\", \"Brave Browser\", \"Microsoft Edge\") and\n  process.args like \"--load-extension=/*\" and\n  not (process.args like \"--load-extension=/Users/*/Library/Application Support/Cypress/*\" and\n       process.parent.executable like (\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\",\n                                        \"/Users/*/Library/Caches/Cypress/*/Cypress.app/Contents/MacOS/Cypress\")) and\n  not process.parent.executable like (\"/opt/homebrew/Caskroom/chromedriver/*/chromedriver\",\n                                    \"/Applications/Cypress.app/Contents/MacOS/Cypress\",\n                                    \"/usr/local/bin/chromedriver\")\n",
+        "references": [
+            "https://cedowens.medium.com/remotely-dumping-chrome-cookies-revisited-b25343257209",
+            "https://github.com/cedowens/Dump-Chrome-Cookies"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f1f3070e-045c-4e03-ae58-d11d43d2ee51",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1176",
+                        "name": "Software Extensions",
+                        "reference": "https://attack.mitre.org/techniques/T1176/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1539",
+                        "name": "Steal Web Session Cookie",
+                        "reference": "https://attack.mitre.org/techniques/T1539/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "f1f3070e-045c-4e03-ae58-d11d43d2ee51_1",
+    "type": "security-rule"
+}

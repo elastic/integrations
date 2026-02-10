@@ -1,0 +1,74 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects attempts to create, update, or patch pods by an anonymous user. An anonymous user is a user that is not authenticated or authorized to access the Kubernetes API server. Creating, updating, or patching pods is a common activity for attackers to gain access to the cluster and execute commands.",
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Anonymous User Create/Update/Patch Pods Request",
+        "query": "any where event.dataset == \"kubernetes.audit_logs\" and (\n    kubernetes.audit.user.username in (\"system:anonymous\", \"system:unauthenticated\") or\n    kubernetes.audit.user.username == null or\n    kubernetes.audit.user.username == \"\"\n  ) and kubernetes.audit.level in (\"RequestResponse\", \"ResponseComplete\", \"Request\") and kubernetes.audit.verb in (\"create\", \"update\", \"patch\") and\nkubernetes.audit.objectRef.resource == \"pods\"\n\n",
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.4.1"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.level",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.user.username",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "3a01e5c6-ce01-46d7-ac9f-52dc349695fb",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "3a01e5c6-ce01-46d7-ac9f-52dc349695fb_1",
+    "type": "security-rule"
+}
