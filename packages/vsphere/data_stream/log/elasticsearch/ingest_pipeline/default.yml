@@ -12,6 +12,7 @@ processors:
     description: Parse syslog header
     field: event.original
     patterns:
+    - "^%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{WORD:log.severity}%{SPACE}%{WORD:log.app_name}%{SPACE}%{POSINT:process.identifier}%{SPACE}\\[%{WORD:log.component}@%{POSINT:log.component_id}%{SPACE}%{GREEDYDATA:log.structured_data.keypairs}\\]%{SPACE}%{GREEDYDATA:message}$"
     - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name}
       (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}"
     - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{DATA:process.name}(?:\\[%{POSINT:process.pid:long}\\])?\\:
@@ -23,6 +24,17 @@ processors:
     pattern_definitions:
       ECS_SYSLOG_PRIORITY: "<%{NONNEGINT:log.syslog.priority:long}>(\\d )?"
       HOST: "(?:%{IP:host.ip}|%{HOSTNAME:host.name})"
+- kv:
+    field: "log.structured_data.keypairs"
+    target_field: "labels"
+    field_split: " "
+    value_split: "="
+    if: "ctx.log?.structured_data?.keypairs != null"
+- remove:
+    field:
+    - log.structured_data.keypairs
+    if: "ctx.log?.structured_data?.keypairs != null"
+    ignore_failure: true
 - script:
     description: Translate log.syslog.priority to log.syslog.severity.code and log.syslog.facility.code
     lang: painless
@@ -35,6 +47,7 @@ processors:
         facility['code'] = ctx.log.syslog.priority>>3;
         ctx.log.syslog['facility'] = facility;
       }
+    if: "ctx.log?.keypairs == null"
 - script:
     description: Translate log.syslog.facility.code to log.syslog.facility.name
     lang: painless
@@ -68,6 +81,7 @@ processors:
         return;
       }
       ctx.log.syslog.facility.name = params[(ctx.log.syslog.facility.code).toString()];
+    if: "ctx.log?.keypairs == null"
 - script:
     description: Translate log.syslog.severity.code to log.syslog.severity.name
     lang: painless
@@ -85,6 +99,7 @@ processors:
         return;
       }
       ctx.log.syslog.severity.name = params[(ctx.log.syslog.severity.code).toString()];
+    if: "ctx.log?.keypairs == null"
 - grok:
     field: message
     patterns:
@@ -96,6 +111,7 @@ processors:
         %{GREEDYDATA:message}"
       EVENT2: Event \[%{POSINT:event.id}\] %{NOTSPACE} \[%{TIMESTAMP_ISO8601}\] \[%{JAVACLASS:log.logger}\]
         \[%{LOGLEVEL:log.level}\] %{GREEDYDATA:message}
+    if: "ctx.log?.keypairs == null"
 - date:
     field: _tmp.timestamp
     target_field: "@timestamp"
@@ -104,16 +120,17 @@ processors:
     - "MMM dd HH:mm:ss"
 - pipeline:
     name: '{{ IngestPipeline "dns" }}'
-    if: "ctx.process?.name == 'dnsmasq'"
+    if: "ctx.process?.name == 'dnsmasq' && ctx.log?.keypairs == null"
 - pipeline:
     name: '{{ IngestPipeline "login" }}'
-    if: "(ctx.message != null && (ctx.message.contains('logged') || ctx.message.toLowerCase().contains('login'))) || (ctx.log?.logger != null && ['vim.event.UserLogoutSessionEvent', 'vim.event.UserLogoutSessionEvent'].contains(ctx.log.logger)) || ctx.process?.name == 'sshd'"
+    if: "((ctx.message != null && (ctx.message.contains('logged') || ctx.message.toLowerCase().contains('login'))) || (ctx.log?.logger != null && ['vim.event.UserLogoutSessionEvent', 'vim.event.UserLogoutSessionEvent'].contains(ctx.log.logger)) || ctx.process?.name == 'sshd')&&ctx.log?.keypairs == null"
 - pipeline:
     name: '{{ IngestPipeline "file" }}'
-    if: "ctx.message?.contains(\"'Upload' for path\") ?: false"
+    if: "ctx.message?.contains(\"'Upload' for path\") ?: false && ctx.log?.keypairs == null"
 - set:
     field: event.kind
     value: event
+    if: "ctx.log?.keypairs == null"
 - remove:
     field:
     - _tmp
@@ -131,6 +148,7 @@ processors:
       {\n                    handleMap(x);\n                  } else if (x instanceof
       List) {\n                    handleList(x);\n                  }\n                }\n
       \             }\n              handleMap(ctx);\n              "
+    if: "ctx.log?.keypairs == null"
 on_failure:
 - remove:
     field:
