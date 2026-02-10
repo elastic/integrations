@@ -7,7 +7,7 @@ The Kubelet Stats OpenTelemetry Input Package for Elastic enables collection of 
 
 ### How it works
 
-This package configures the Kubelet Stats receiver in the EDOT (Elastic Distribution of OpenTelemetry) collector to scrape metrics from the Kubelet API. The Elastic Agent processes and enriches the data before sending it to Elasticsearch for indexing and analysis. Once the data arrives into Elasticsearch, its corresponding [Kubernetes OpenTelemetry Assets Package](https://www.elastic.co/docs/reference/integrations/kubernetes_otel) gets auto installed and the dashboards light up. Note that for full dashboard functionality, data from additional inputs such as the Kubernetes cluster, events and objects packages may be required.
+This package configures the Kubelet Stats receiver in the EDOT (Elastic Distribution of OpenTelemetry) collector to scrape metrics from the Kubelet API. The Elastic Agent processes and enriches the data before sending it to Elasticsearch for indexing and analysis. Once the data arrives into Elasticsearch, its corresponding [Kubernetes OpenTelemetry Assets Package](https://www.elastic.co/docs/reference/integrations/kubernetes_otel) gets auto installed and the dashboards light up. Data from additional inputs such as the Kubernetes cluster, events and objects packages might be required for full dashboard functionality.
 
 ## Configuration
 
