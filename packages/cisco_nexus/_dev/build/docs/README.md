@@ -213,7 +213,7 @@ You can resolve common connectivity and parsing issues by following these troubl
     * On Cisco Nexus switches, logging often occurs over a specific VRF instance, such as the `management` VRF. If the switch can't reach the agent, ensure you've specified the correct VRF in the logging command.
     * Update the logging command on the switch to include the VRF, for example: `logging server <ELASTIC_AGENT_IP> 6 use-vrf management`.
 - TCP connection failures:
-    * Note that NX-OS doesn't support standard unencrypted TCP syslog. The `secure` keyword is required on the switch to enable TLS-encrypted syslog, which typically uses port `6514`. 
+    * NX-OS doesn't support standard unencrypted TCP syslog. The `secure` keyword is required on the switch to enable TLS-encrypted syslog, which typically uses port `6514`. 
     * If you're using TCP, ensure you have configured SSL/TLS settings in the integration and that the switch is configured with the `secure` parameter: `logging server <ELASTIC_AGENT_IP> 6 port 6514 secure use-vrf <vrf_name>`.
 - Timestamp and timezone parsing errors:
     * If events appear with the wrong time or fail to parse, verify that the switch is configured for millisecond precision using the command `logging timestamp milliseconds`.

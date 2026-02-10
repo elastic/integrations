@@ -97,7 +97,7 @@ switch(config)# logging logfile <FILENAME> <SEVERITY_LEVEL>
 4. Follow the prompts to add the integration to an Elastic Agent policy.
 5. Configure the inputs as required by your environment:
 
-### Collecting logs from Cisco Nexus using TCP.
+### Collecting logs from Cisco Nexus using TCP
 This input collects Cisco Nexus logs using TCP input.
 - **Listen Address** (`listen_address`): The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
 - **Listen Port** (`listen_port`): The TCP port number to listen on. Default: `9506`.
@@ -110,7 +110,7 @@ This input collects Cisco Nexus logs using TCP input.
 - **Preserve duplicate custom fields** (`preserve_duplicate_custom_fields`): Preserve `cisco_nexus.log` fields that were copied to Elastic Common Schema (ECS) fields. Default: `False`.
 - **Processors** (`processors`): Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. Refer to [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-### Collecting logs from Cisco Nexus using UDP.
+### Collecting logs from Cisco Nexus using UDP
 This input collects Cisco Nexus logs using UDP input.
 - **Listen Address** (`listen_address`): The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
 - **Listen Port** (`listen_port`): The UDP port number to listen on. Default: `9506`.
@@ -122,7 +122,7 @@ This input collects Cisco Nexus logs using UDP input.
 - **Preserve duplicate custom fields** (`preserve_duplicate_custom_fields`): Preserve `cisco_nexus.log` fields that were copied to Elastic Common Schema (ECS) fields. Default: `False`.
 - **Processors** (`processors`): Processors used for agent-side filtering and metadata enhancement. Refer to [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-### Collecting logs from Cisco Nexus using file.
+### Collecting logs from Cisco Nexus using file
 This input collects Cisco Nexus logs using Filestream input from local or shared file paths.
 - **Paths** (`paths`): A list of glob-based paths that will be crawled and fetched.
 - **Timezone Map** (`tz_map`): A collection of timezones found in Cisco Nexus logs (as defined in each `tz_short`), and the replacement value (as defined in each `tz_long`) which should be the full proper IANA Timezone format. This is used to override vendor provided timezone formats that is not supported by Elasticsearch [Date Processors](https://www.elastic.co/docs/reference/enrich-processor/date-processor#date-processor-timezones).

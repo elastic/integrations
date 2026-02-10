@@ -21,7 +21,7 @@ This integration is compatible with the following Cisco Nexus products and opera
 
 ### How it works
 
-This integration collects data from your switches by receiving syslog messages over the network via UDP or TCP, or by reading from local log files. You'll deploy an Elastic Agent on a host that's configured as a syslog receiver or has access to the log files. The agent ingests the raw data, parses it into Elastic Common Schema (ECS) fields, and forwards it to your Elastic deployment where you can monitor, search, and visualize it.
+This integration collects data from your switches by receiving syslog messages over the network using UDP or TCP, or by reading from local log files. You'll deploy an Elastic Agent on a host that's configured as a syslog receiver or has access to the log files. The agent ingests the raw data, parses it into Elastic Common Schema (ECS) fields, and forwards it to your Elastic deployment where you can monitor, search, and visualize it.
 
 ## What data does this integration collect?
 
@@ -66,7 +66,7 @@ On the Elastic side, you'll need the following:
 
 Elastic Agent must be installed on a host that can receive syslog data or has access to the log files from the Cisco Nexus switch. For details on installation, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events are processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events are processed using the integration's ingest pipelines.
 
 ### Set up steps in Cisco Nexus
 
