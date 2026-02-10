@@ -418,7 +418,8 @@ processors:
           }
           for (String mac: trimmedMacArray) {
             if (mac.length() > 0) {
-              if (ctx.host.mac == null) {
+              if (ctx.host?.mac == null) {
+                ctx.host = ctx.host ?: [:];
                 ctx.host.mac = [mac];
               } else if (!ctx.host.mac.contains(mac)) {
                 ctx.host.mac.add(mac);
@@ -572,6 +573,33 @@ processors:
       tag: set_host_os_platform_from_device_os_platform
       copy_from: island_browser.device.os_platform
       ignore_empty_value: true
+  - script:
+      description: Map host.os.type field.
+      tag: script_map_host_os_type
+      lang: painless
+      if: ctx.island_browser?.device?.os_platform != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        def os_platform = ctx.island_browser.device.os_platform.toLowerCase();
+        for (String os: params.os_type) {
+          if (os_platform.contains(os)) {
+            ctx.host.os.put('type', os);
+            return;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.osScreenLockEnabled
       tag: convert_osScreenLockEnabled_to_boolean
@@ -587,11 +615,6 @@ processors:
       tag: rename_osUserName
       target_field: island_browser.device.os_user_name
       ignore_missing: true
-  - set:
-      field: host.os.name
-      tag: set_host_os_name_from_device_os_user_name
-      copy_from: island_browser.device.os_user_name
-      ignore_empty_value: true
   - append:
       field: related.user
       tag: append_device_os_user_name_into_related_user
@@ -766,7 +789,6 @@ processors:
         - island_browser.device.machine_name
         - island_browser.device.manufacturer
         - island_browser.device.os_platform
-        - island_browser.device.os_user_name
         - island_browser.device.os_version
         - island_browser.device.serial_number
         - island_browser.device.tenant_id
