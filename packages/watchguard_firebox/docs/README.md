@@ -16,13 +16,13 @@ This integration facilitates:
 
 This integration is compatible with the following versions:
 - WatchGuard Fireware OS: This integration is tested and verified against Fireware OS v12.10.3. It's generally compatible with Fireware v12.x versions that support standard syslog output.
-- Elastic Stack: This integration requires Kibana and Elasticsearch version 8.13.0 or higher (8.x and 9.x stacks are supported).
+- Elastic Stack: This integration requires Kibana and Elasticsearch version 8.13.0 or later (8.x and 9.x stacks are supported).
 
 ### How it works
 
-This integration collects data by receiving syslog messages from your WatchGuard Firebox appliances. You configure the Firebox to send its logs via syslog over UDP to the host where the Elastic Agent is running. By default, the integration listens on port `9528`. 
+This integration collects data by receiving syslog messages from your WatchGuard Firebox appliances. You configure the Firebox to send its logs using syslog over UDP to the host where the Elastic Agent is running. By default, the integration listens on port `9528`. 
 
-Once the logs reach the Elastic Agent, they are processed and parsed into a structured format. The integration handles various log types, including firewall traffic logs (permitted and denied connections), security service events (IPS, Gateway AntiVirus, etc.), authentication logs for VPN and UI access, and system event logs. The structured data is then sent to Elasticsearch, where you can visualize it using the included dashboards.
+Once the logs reach the Elastic Agent, they are processed and parsed into a structured format. The integration handles various log types, including firewall traffic logs (permitted and denied connections), security service events (IPS, Gateway AntiVirus, and so on), authentication logs for VPN and UI access, and system event logs. The structured data is then sent to Elasticsearch, where you can visualize it using the included dashboards.
 
 ## What data does this integration collect?
 
@@ -49,7 +49,7 @@ To use the WatchGuard Firebox integration, you'll need to meet the following ven
 - Standard logging enabled on individual firewall policies. Specifically, the Send a log message checkbox must be selected in the policy's logging settings. For more information, refer to [Set Logging and Notification Preferences](https://www.watchguard.com/help/docs/help-center/en-US/Content/en-US/Fireware/logging/set_logging_notif_pref_pm_c.html) in the WatchGuard documentation.
 - A static IP address or DNS name for the Elastic Agent host to prevent connectivity issues if the IP changes.
 - Elastic Agent installed on a host and managed through Fleet.
-- Kibana version `8.13.0` or higher (8.x and 9.x stacks are supported).
+- Kibana version `8.13.0` or later (8.x and 9.x stacks are supported).
 - Elastic Agent successfully enrolled in a Fleet policy.
 - The UDP port specified in the integration (default `9528`) open on the host's firewall to allow incoming traffic from the Firebox.
 
@@ -59,7 +59,7 @@ To use the WatchGuard Firebox integration, you'll need to meet the following ven
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the syslog receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in WatchGuard Firebox
 
@@ -136,7 +136,7 @@ To confirm the data is in Elasticsearch, follow these steps:
 3. Enter the KQL filter: `data_stream.dataset : "watchguard_firebox.log"`
 4. Verify logs appear. Expand a log entry and confirm these fields:
     - `event.dataset` (should be `watchguard_firebox.log`)
-    - `source.ip` and/or `destination.ip`
+    - `source.ip` or `destination.ip`
     - `event.action` or `event.outcome`
     - `message` (the raw log payload)
 5. Navigate to **Analytics > Dashboards** and search for "WatchGuard Firebox" to see if the visualizations are populated with data.
@@ -151,10 +151,10 @@ You might encounter the following issues when setting up or running the integrat
 - No data is being collected: Verify that the `Listen Port` in your integration policy (default `9528`) exactly matches the port configured in the **Syslog Server** settings on your WatchGuard Firebox.
 - Elastic Agent is rejecting packets: Ensure the `Listen Address` is set to `0.0.0.0` or the specific IP of the host interface receiving the logs. If it's set to `localhost` or `127.0.0.1`, the agent won't accept traffic from external devices.
 - Network traffic is blocked: Check that the local firewall on the Elastic Agent host (for example, `iptables`, `ufw`, or Windows Firewall) allows incoming UDP traffic on the configured port.
-- Specific traffic logs are missing: Ensure that individual **Firewall Policies** on your Firebox have the **Send a log message** setting enabled. Only logs from policies with this setting will be forwarded via syslog.
+- Specific traffic logs are missing: Ensure that individual **Firewall Policies** on your Firebox have the **Send a log message** setting enabled. Only logs from policies with this setting will be forwarded using syslog.
 - Logs appear with parsing errors: If you see the `_grokparsefailure` tag in your events, verify that the Firebox is using the standard **Syslog** format rather than a legacy or proprietary format.
 - Timestamps are incorrect: Adjust the `Timezone Offset` in the integration settings to match the timezone configured on your appliance.
-- Missing custom fields: If you need to see non-ECS fields that are usually dropped, ensure the `Preserve duplicate custom fields` option is enabled in the integration configuration.
+- Missing custom fields: If you need to view non-ECS fields that are usually dropped, ensure the `Preserve duplicate custom fields` option is enabled in the integration configuration.
 - General ingestion errors: You can filter for the `error.message` field in Discover to identify specific issues encountered during processing.
 
 ### Vendor resources
