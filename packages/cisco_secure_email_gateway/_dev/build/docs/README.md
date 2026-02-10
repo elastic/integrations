@@ -24,13 +24,13 @@ This integration is compatible with:
 This integration collects data from Cisco Secure Email Gateway using three primary methods:
 - TCP: Streams logs in real-time for reliable delivery from the appliance to the Elastic Agent.
 - UDP: Provides high-throughput, low-overhead collection, which is ideal for high-volume mail environments.
-- Logfile: Reads logs that you've pushed via FTP to a directory monitored by the Elastic Agent.
+- Logfile: Reads logs that you've pushed using FTP to a directory monitored by the Elastic Agent.
 
 Once the logs are received, the Elastic Agent parses the data into the Elastic Common Schema (ECS). This allows you to correlate email security events with other data sources in your environment for comprehensive analysis. The integration covers various log types including security engine results, mail flow envelopes, administrative activity, and operational performance metrics.
 
 ## What data does this integration collect?
 
-The Cisco Secure Email Gateway integration collects various log messages from your appliance and maps them to the Elastic Common Schema (ECS). You can collect this data using the `log` data stream via log file monitoring, TCP, or UDP.
+The Cisco Secure Email Gateway integration collects various log messages from your appliance and maps them to the Elastic Common Schema (ECS). You can collect this data using the `log` data stream using log file monitoring, TCP, or UDP.
 
 The integration collects the following functional log types:
 *   Security logs: Events from security engines including Advanced Malware Protection (AMP) file reputation and analysis, anti-spam, and antivirus results.
@@ -42,7 +42,7 @@ The integration collects the following functional log types:
 ### Supported use cases
 
 Integrating your Cisco Secure Email Gateway logs with the Elastic Stack helps you achieve several security and operational goals:
-- Security monitoring and threat detection: You'll use security and mail flow logs to identify malicious email campaigns, monitor for malware attachments via AMP, and analyze spam trends.
+- Security monitoring and threat detection: You'll use security and mail flow logs to identify malicious email campaigns, monitor for malware attachments using AMP, and analyze spam trends.
 - Mail flow visibility: You can track the delivery status of emails, investigate delivery failures using bounce logs, and monitor recipient activity.
 - Compliance and auditing: You'll maintain a searchable record of administrative actions and configuration changes to help you meet regulatory requirements and conduct security audits.
 - Operational health monitoring: You use system and status logs to monitor the performance of your gateway, ensuring resource usage remains within healthy thresholds and identifying potential hardware or software issues.
@@ -76,17 +76,17 @@ Cisco Secure Email Gateway (formerly ESA) supports multiple methods to retrieve 
 
 #### For syslog push (TCP/UDP)
 
-To configure the gateway to push logs via syslog, follow these steps:
+To configure the gateway to push logs using syslog, follow these steps:
 
 1. Log in to the Cisco Secure Email Gateway Administrator Portal.
 2. Navigate to **System Administration** > **Log Subscriptions**.
 3. Click **Add Log Subscription**.
-4. In the **Log Type** dropdown, select a category (e.g., *Text Mail Logs*).
+4. In the **Log Type** dropdown, select a category (for example, *Text Mail Logs*).
 5. **CRITICAL:** Set the **Log Name** to exactly match the required identifier for that category. Use the mapping table below to find the correct string.
 6. Set the **Log Level** to **Information**.
 7. For **Retrieval Method**, select **Syslog Push**.
-8. Enter the **Hostname** (the IP address of your Elastic Agent) and the **Port** you'll configure in Kibana (e.g., `514`).
-9. Choose the **Protocol** (**TCP** or **UDP**) and select a **Facility** (e.g., `Local7`).
+8. Enter the **Hostname** (the IP address of your Elastic Agent) and the **Port** you'll configure in Kibana (for example, `514`).
+9. Choose the **Protocol** (**TCP** or **UDP**) and select a **Facility** (for example, `Local7`).
 10. Click **Submit**. Repeat these steps for all necessary categories, then click **Commit Changes**.
 
 #### For FTP push (logfile)
@@ -139,20 +139,20 @@ To set up the integration in Kibana, follow these steps:
 
 #### Log file input configuration
 
-Use this section if you're collecting logs from local files or files received via FTP:
+Use this section if you're collecting logs from local files or files received using FTP:
 
-- **Paths**: Specify the list of file paths to monitor for new log data (e.g., `/var/log/cisco-esa/*.log`).
+- **Paths**: Specify the list of file paths to monitor for new log data (for example, `/var/log/cisco-esa/*.log`).
 - **Preserve original event**: If you enable this, the integration adds a raw copy of the original event to the `event.original` field.
 - **Tags**: Add custom tags to your exported events. The default is `['forwarded', 'cisco_secure_email_gateway-log']`.
 - **Processors**: Add custom processors to reduce fields or enhance metadata before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-- **Timezone**: Set the IANA time zone or time offset (e.g., `+0200`) to interpret syslog timestamps that don't have a time zone.
+- **Timezone**: Set the IANA time zone or time offset (for example, `+0200`) to interpret syslog timestamps that don't have a time zone.
 
 #### TCP input configuration
 
 Use this section to configure the Agent to listen for real-time TCP syslog streams:
 
 - **Listen Address**: The bind address the Agent uses to listen for TCP connections. Use `0.0.0.0` to listen on all interfaces.
-- **Listen Port**: The TCP port number the Agent listens on (e.g., `514`).
+- **Listen Port**: The TCP port number the Agent listens on (for example, `514`).
 - **Preserve original event**: If you enable this, the integration adds a raw copy of the original event to the `event.original` field.
 - **SSL Configuration**: Configure SSL options for encrypted transport. You'll need to provide the certificate and key paths in YAML format.
 - **Tags**: Add custom tags to your exported events.
@@ -203,9 +203,9 @@ For help with Elastic ingest tools, check the [Common problems](https://www.elas
 Use the following tips to resolve common issues you might encounter while using this integration:
 
 - **Log name mismatch**: The most common issue is entering a custom string in the Log Name field on the Cisco appliance. The integration parser specifically looks for the identifiers such as `mail_logs`, `amp`, or `antispam`. If these do not match the expected strings exactly, logs will not be parsed into ECS fields.
-- **Missing authentication or bounce logs**: If you are using Syslog Push and notice that Authentication and Bounce logs are missing, this is expected behavior. The Cisco appliance does not support streaming these specific categories via Syslog. You must configure an FTP Push subscription for these log types and use the logfile input.
+- **Missing authentication or bounce logs**: If you are using Syslog Push and notice that Authentication and Bounce logs are missing, this is expected behavior. The Cisco appliance does not support streaming these specific categories using Syslog. You must configure an FTP Push subscription for these log types and use the logfile input.
 - **Incorrect log level**: If logs are reaching Elastic but essential details are missing, verify that the Log Level on the gateway is set to `Information`. Lower levels like Warning or Error do not provide enough data for the integration to function correctly. Avoid using the `Debug` level unless you are actively troubleshooting, as it can significantly increase ingest volume.
-- **Port conflicts or connectivity issues**: Ensure that the port configured in the integration settings (e.g., `514`) is not being used by another service or another Elastic Agent integration. Verify that the listen address is set to `0.0.0.0` if the Agent needs to listen on all interfaces, and check that no firewalls are blocking the traffic.
+- **Port conflicts or connectivity issues**: Ensure that the port configured in the integration settings (for example, `514`) is not being used by another service or another Elastic Agent integration. Verify that the listen address is set to `0.0.0.0` if the Agent needs to listen on all interfaces, and check that no firewalls are blocking the traffic.
 - **Parsing failures**: If logs appear in Kibana but are not parsed into specific fields, check the `error.message` field in the event. This often happens if the log format has been customized on the Cisco appliance. The integration expects the standard default logging format at the `Information` level.
 - **Timezone offsets**: If logs appear with the wrong timestamp, verify the Timezone (`tz_offset`) setting in the integration configuration to ensure it matches the timezone configured on the Cisco Secure Email Gateway appliance.
 
@@ -215,7 +215,7 @@ For more information on architectures that can be used for scaling this integrat
 
 To ensure optimal performance in high-volume email environments, consider the following strategies:
 - Use TCP instead of UDP for log transmission if you require delivery guarantees for auditing or threat detection. While UDP has lower overhead, TCP ensures you don't lose log messages during network congestion.
-- Use the FTP Push (logfile) method for bounce logs if your gateway version doesn't support sending them via syslog.
+- Use the FTP Push (logfile) method for bounce logs if your gateway version doesn't support sending them using syslog.
 - Set the log level to `Information`. You should avoid using the `Debug` level unless you're actively troubleshooting, as it significantly increases CPU load and ingest volume.
 - Apply log subscription filters on the gateway to exclude verbose categories like status logs if you're already monitoring those metrics with other tools.
 - Scale your deployment by placing multiple Elastic Agents behind a network load balancer to distribute syslog traffic. You should place agents geographically close to your gateway appliances to minimize latency and potential packet loss for UDP traffic.
