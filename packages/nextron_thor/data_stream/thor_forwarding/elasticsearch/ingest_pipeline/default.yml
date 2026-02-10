@@ -133,7 +133,9 @@ processors:
       field: file.path
       pattern_definitions:
         FILENAME: "[^/]+$"
+        WINFILENAME: "[^\\\\]+$"
       patterns:
+      - "^([A-Z]|\\\\).*\\\\%{WINFILENAME:file.name}"
       - ".+/%{FILENAME:file.name}"
       tag: extract_file_name_from_path
   - rename:
@@ -327,6 +329,7 @@ processors:
         date:
           field: _ingest._value.created
           target_field: _ingest._value.created
+          ignore_failure: true
           formats:
           - ISO8601
       on_failure:
