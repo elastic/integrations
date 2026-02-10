@@ -204,7 +204,7 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.name | Name of a scheduled task, service, or other system object. | keyword |  |
 | thor.next_run | Next scheduled execution time of a scheduled task. | date |  |
 | thor.notices | Number of notices generated during the THOR scan. | float |  |
-| thor.owner | Owner of a process, file, or other system object. | keyword |  |
+| thor.owner | Owner of a process, file, THOR license or other system object. | keyword |  |
 | thor.parent | Path to the parent process executable. | keyword |  |
 | thor.path | Path to a file, scheduled task, or other system object. | keyword |  |
 | thor.pid | Process ID (PID) of a running process. | long |  |
@@ -219,12 +219,12 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.reasons.sigclass | Signature class or type (e.g., YARA Rule, Filename IOC, Sigma Rule). | keyword |  |
 | thor.reasons.signature.author | Author of a signature rule. | keyword |  |
 | thor.reasons.signature.ref | Reference or source of a signature rule (e.g., threat intelligence feed, research). | keyword |  |
-| thor.reasons.signature.ruledate | Date when a signature rule was created or last updated. | keyword |  |
+| thor.reasons.signature.ruledate | Date when a signature rule was created or last updated. | date |  |
 | thor.reasons.signature.rulename | Name of a signature rule (e.g., YARA rule name). | keyword |  |
 | thor.reasons.signature.tags | Tags associated with a signature rule (e.g., MITRE ATT&CK techniques, threat categories). | keyword |  |
 | thor.reasons.sigtype | Signature type classification (e.g., internal, custom). | keyword |  |
-| thor.run_as_group | Group under which a scheduled task or service runs (Linux/Unix systems). | keyword |  |
-| thor.run_as_user | User account under which a scheduled task or service runs. | keyword |  |
+| thor.run_as_group | Group under which a systemd service runs. | keyword |  |
+| thor.run_as_user | User account under which a systemd service runs. | keyword |  |
 | thor.runlevel | Run level or privilege level for a scheduled task (e.g., LeastPrivilege). | keyword |  |
 | thor.scan_id | Unique identifier for a THOR scan. | keyword |  |
 | thor.scanned_elements | Number of elements scanned with a module. | long | counter |
@@ -251,22 +251,22 @@ An example event for `thor_forwarding` looks as following:
 {
     "@timestamp": "2025-11-10T17:52:49.000Z",
     "agent": {
-        "ephemeral_id": "bfa9aec6-379b-424d-a9eb-6d82a111d0e2",
-        "id": "1311aaf4-a4c5-4173-97d6-44a8ec5d83eb",
-        "name": "elastic-agent-61879",
+        "ephemeral_id": "e54573c2-f5e4-4e78-b614-ad0d11b51769",
+        "id": "23617f49-e7ce-42ae-ba5b-26fbb5ae1a06",
+        "name": "elastic-agent-37213",
         "type": "filebeat",
         "version": "9.2.3"
     },
     "data_stream": {
         "dataset": "nextron_thor_apt_scanner.thor_forwarding",
-        "namespace": "57788",
+        "namespace": "20381",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "1311aaf4-a4c5-4173-97d6-44a8ec5d83eb",
+        "id": "23617f49-e7ce-42ae-ba5b-26fbb5ae1a06",
         "snapshot": false,
         "version": "9.2.3"
     },
@@ -275,7 +275,7 @@ An example event for `thor_forwarding` looks as following:
             "file"
         ],
         "dataset": "nextron_thor_apt_scanner.thor_forwarding",
-        "ingested": "2026-02-10T08:03:23Z",
+        "ingested": "2026-02-10T08:51:53Z",
         "kind": "event",
         "module": "AtJobs",
         "type": [
