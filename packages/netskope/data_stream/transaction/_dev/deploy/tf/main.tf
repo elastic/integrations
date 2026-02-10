@@ -51,7 +51,7 @@ resource "aws_s3_object" "aws_object" {
   content_encoding = "gzip"
   content_type     = "text/csv"
 
-  depends_on = [aws_sqs_queue.aws_queue]
+  depends_on = [aws_s3_bucket_notification.bucket_notification]
 }
 
 output "aws_queue_url" {
