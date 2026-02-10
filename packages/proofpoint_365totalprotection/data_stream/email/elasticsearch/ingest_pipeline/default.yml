@@ -43,12 +43,12 @@ processors:
                     }
                 }
     - drop:
-            if: ctx.proofpoint?.email?.message_id == null
+            if: ctx.proofpoint?.email?.msg_id == null
     - script:
             lang: painless
-            if: ctx.proofpoint?.email?.message_id != null
+            if: ctx.proofpoint?.email?.msg_id != null
             source: |
-                ctx._id = ctx.proofpoint.email.message_id
+                ctx._id = ctx.proofpoint.email.msg_id
     - date:
             field: proofpoint.email.date
             target_field: '@timestamp'
@@ -228,5 +228,16 @@ processors:
         ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

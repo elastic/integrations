@@ -31,6 +31,12 @@
 - name: destination.ip
   type: ip
   description: Destination IP address.
+- name: related.ip
+  type: ip
+  description: All IPs related to this email (source and destination).
+- name: related.user
+  type: keyword
+  description: All users/email addresses related to this email.
 - name: proofpoint
   type: group
   fields:
@@ -49,6 +55,9 @@
         - name: direction
           type: keyword
           description: Email direction (Inbound/Outbound)
+        - name: direction_text
+          type: keyword
+          description: Human-readable email direction text
         - name: comm_partner
           type: keyword
           description: Communication partner email address (sender for inbound, recipient for outbound)
@@ -109,6 +118,9 @@
         - name: destination_ip
           type: ip
           description: Destination IP address
+        - name: owner_domain
+          type: keyword
+          description: Owner's email domain
         - name: crypt_type_in
           type: object
           object_type: keyword
@@ -135,6 +147,36 @@
         - name: smtp_status_code
           type: keyword
           description: SMTP status code
+        - name: last_remediation_actions
+          type: keyword
+          description: Last remediation actions taken
+        - name: last_remediation_type
+          type: keyword
+          description: Type of last remediation
+        - name: last_remediation_folder
+          type: keyword
+          description: Folder for last remediation
+        - name: last_remediation_effectiveness
+          type: keyword
+          description: Effectiveness of last remediation
+        - name: last_report_type
+          type: keyword
+          description: Type of last report
+        - name: history
+          type: text
+          description: Email history
+        - name: ttl
+          type: date
+          description: Time to live
+        - name: ttl_reason
+          type: keyword
+          description: Reasons for TTL
+        - name: fix_ids
+          type: keyword
+          description: Fix IDs
+        - name: es_mail_id
+          type: keyword
+          description: Elasticsearch mail ID
         - name: has_url_rewritten
           type: boolean
           description: Whether URLs have been rewritten
@@ -144,3 +186,15 @@
         - name: size
           type: keyword
           description: Email size with unit
+        - name: last_remediation
+          type: object
+          enabled: false
+          description: Last remediation object with details about remediation actions
+        - name: classification
+          type: object
+          object_type: keyword
+          description: Classification object containing id and text
+        - name: status
+          type: object
+          object_type: keyword
+          description: Status object containing id and text
