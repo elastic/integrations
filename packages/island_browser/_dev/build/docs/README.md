@@ -93,7 +93,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 #### Dashboards populated
 
 1. In the top search bar in Kibana, search for **Dashboards**.
-2. In the search bar, type **island_browser**.
+2. In the search bar, type **Island Browser**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
 #### Transforms healthy
@@ -115,14 +115,6 @@ For more information on architectures that can be used for scaling this integrat
 
 {{fields "admin_actions"}}
 
-#### User
-
-{{fields "user"}}
-
-#### Device
-
-{{fields "device"}}
-
 #### Audit
 
 {{fields "audit"}}
@@ -131,19 +123,19 @@ For more information on architectures that can be used for scaling this integrat
 
 {{fields "compromised_credential"}}
 
+#### Device
+
+{{fields "device"}}
+
+#### User
+
+{{fields "user"}}
+
 ### Example event
 
 #### Admin Actions
 
 {{event "admin_actions"}}
-
-#### User
-
-{{event "user"}}
-
-#### Device
-
-{{event "device"}}
 
 #### Audit
 
@@ -153,9 +145,17 @@ For more information on architectures that can be used for scaling this integrat
 
 {{event "compromised_credential"}}
 
+#### Device
+
+{{event "device"}}
+
+#### User
+
+{{event "user"}}
+
 ### Inputs used
 
-These inputs can be used in this integration:
+This input is used in this integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
@@ -164,10 +164,10 @@ These inputs can be used in this integration:
 This integration dataset uses the following APIs:
 
 - `Admin Actions`: [Island Browser API](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
-- `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
-- `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `Audit`: [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
 - `Compromised Credential`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
+- `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
+- `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 
 #### ILM Policy
 
