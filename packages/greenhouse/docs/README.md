@@ -36,7 +36,7 @@ The OAuth 2.0 Client Credentials flow requires a `user_id` to identify the autho
 To find a user's ID:
 1. In Greenhouse, navigate to **Configure > Users**
 2. Click on the Site Admin user you want to use for authorization
-3. Look at the URL in your browser - it will contain the numeric user ID (e.g., `https://app.greenhouse.io/configure/users/12345`)
+3. Look at the URL in your browser - it will contain the numeric user ID (for example, `https://app.greenhouse.io/configure/users/12345`)
 4. Use this numeric ID in the integration configuration
 
 ### Configuration
@@ -66,7 +66,7 @@ Audit logs capture the following types of events:
 | `data_change_create` | New data created |
 | `data_change_update` | Existing data modified |
 | `data_change_destroy` | Data deleted |
-| `harvest_access` | Data accessed via Harvest API |
+| `harvest_access` | Data accessed using Harvest API |
 
 #### Exported Fields
 
@@ -151,7 +151,7 @@ Greenhouse retains audit log data for 30 days only. To maintain a longer history
 
 ### Authentication Errors
 
-If you see "Failed to obtain OAuth access token" errors:
+If you receive "Failed to obtain OAuth access token" errors:
 1. Verify your Client ID and Client Secret are correct
 2. Ensure the OAuth credentials have audit log permissions enabled
 3. Check that the authorizing user ID is a valid Site Admin user
