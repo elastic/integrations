@@ -1,0 +1,232 @@
+---
+description: Pipeline for Greenhouse Audit Logs
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: json
+  - fail:
+      if: ctx.json == null || !(ctx.json instanceof Map)
+      message: Missing JSON object in input document
+  - fingerprint:
+      fields:
+        - json.organization_id
+        - json.request.id
+        - json.event_time
+        - json.event.type
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json
+      target_field: greenhouse.audit
+      ignore_missing: true
+
+  # Timestamp
+  - date:
+      field: greenhouse.audit.event_time
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+        - ISO8601
+
+  # Event fields
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.id
+      copy_from: greenhouse.audit.request.id
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      copy_from: greenhouse.audit.event.type
+      ignore_empty_value: true
+
+  # Event type categorization based on Greenhouse event types
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'data_change_create'
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: change
+      if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'data_change_update'
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'data_change_destroy'
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: access
+      if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'harvest_access'
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: info
+      if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type == 'action'
+      allow_duplicates: false
+  - set:
+      field: event.type
+      value: [info]
+      if: ctx.event?.type == null
+
+  # Event category
+  - append:
+      field: event.category
+      value: configuration
+      if: ctx.greenhouse?.audit?.event?.type != null && ctx.greenhouse.audit.event.type.startsWith('data_change')
+      allow_duplicates: false
+  - append:
+      field: event.category
+      value: iam
+      if: ctx.greenhouse?.audit?.performer?.type != null && ctx.greenhouse.audit.performer.type == 'user'
+      allow_duplicates: false
+  - set:
+      field: event.category
+      value: [configuration]
+      if: ctx.event?.category == null
+
+  # User fields from performer
+  - convert:
+      field: greenhouse.audit.performer.id
+      type: string
+      target_field: user.id
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: greenhouse.audit.performer.meta.username
+      ignore_empty_value: true
+  - set:
+      field: user.full_name
+      copy_from: greenhouse.audit.performer.meta.name
+      ignore_empty_value: true
+
+  # Source IP from performer
+  - convert:
+      field: greenhouse.audit.performer.ip_address
+      type: ip
+      target_field: source.ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Failed to convert performer.ip_address to IP: {{{ _ingest.on_failure_message }}}'
+
+  # GeoIP enrichment
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  # Organization ID
+  - convert:
+      field: greenhouse.audit.organization_id
+      type: string
+      target_field: organization.id
+      ignore_missing: true
+
+  # Convert target_id to string (it comes as integer from API)
+  - convert:
+      field: greenhouse.audit.event.target_id
+      type: string
+      ignore_missing: true
+
+  # Related fields
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+
+  # Cleanup null/empty values
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
+
+  # Remove temporary fields
+  - remove:
+      field:
+        - greenhouse.audit.event_time
+        - greenhouse.audit.performer.id
+        - greenhouse.audit.performer.ip_address
+        - greenhouse.audit.performer.meta.username
+        - greenhouse.audit.performer.meta.name
+        - greenhouse.audit.organization_id
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
