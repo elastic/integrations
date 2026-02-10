@@ -17,7 +17,9 @@ resource.url: {{url}}
 state:
   initial_interval: {{initial_interval}}
   token_url: {{token_url}}
-  harvest_api_key: {{harvest_api_key}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+  user_id: "{{user_id}}"
   batch_size: {{batch_size}}
 {{#if performer_ids}}
   performer_ids: "{{performer_ids}}"
@@ -28,7 +30,7 @@ state:
   want_more: false
 redact:
   fields:
-    - harvest_api_key
+    - client_secret
     - token
 program: |
   // Check if token needs refresh (expired or not present)
@@ -37,24 +39,25 @@ program: |
     !has(state.token_expires) || timestamp(state.token_expires) < now
   ).as(need_token,
     need_token ?
-      // Step 1: Get JWT access token using Basic Auth with Harvest API key
+      // Step 1: Get OAuth access token using Client Credentials flow (Harvest API V3)
       request("POST", state.token_url).with({
         "Header": {
-          "Content-Type": ["application/json"],
-          "Authorization": ["Basic " + state.harvest_api_key],
-        }
+          "Content-Type": ["application/x-www-form-urlencoded"],
+          "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
+        },
+        "Body": bytes("grant_type=client_credentials&sub=" + state.user_id)
       }).do_request().as(token_resp,
         token_resp.StatusCode == 200 ?
           bytes(token_resp.Body).decode_json().as(token_body, {
             "token": token_body.access_token,
-            "token_expires": token_body.expires,
+            "token_expires": token_body.expires_at,
           })
         :
           {
             "events": [{
               "error": {
                 "code": string(token_resp.StatusCode),
-                "message": "Failed to obtain JWT access token: " + (
+                "message": "Failed to obtain OAuth access token: " + (
                   size(token_resp.Body) != 0 ?
                     string(token_resp.Body)
                   :
@@ -148,7 +151,7 @@ program: |
                       "events": [{
                         "error": {
                           "code": "401",
-                          "message": "JWT token expired or invalid. Will refresh on next interval.",
+                          "message": "OAuth access token expired or invalid. Will refresh on next interval.",
                         }
                       }],
                       "want_more": false,
