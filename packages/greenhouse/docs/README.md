@@ -11,43 +11,42 @@ This integration collects the following data:
 ## Requirements
 
 - Greenhouse Expert subscription tier with the Audit Log add-on
-- A Harvest API key with audit log permissions
+- Harvest V3 (OAuth) API credentials with audit log permissions
+- A Site Admin user ID for API authorization
 
 ### Compatibility
 
-This integration is compatible with Greenhouse Audit Log API v2.
-
-> **Note**: Greenhouse Audit Log V2 will be deprecated in August 2026. This integration will be updated to use Harvest API V3 before that date.
+This integration uses the Greenhouse Harvest API V3 with OAuth 2.0 Client Credentials authentication.
 
 ## Setup
 
-### Obtaining a Harvest API Key
+### Creating Harvest V3 OAuth Credentials
 
 1. Log in to Greenhouse as a user with Developer permissions
 2. Navigate to **Configure > Dev Center > API Credentials**
-3. Create a new API key with **Harvest** type
-4. Ensure the key has **Audit Log** permissions enabled
-5. Copy the API key - you will need to Base64 encode it for use with this integration
+3. Click **Create new API credentials**
+4. Select **Harvest V3 (OAuth)** as the credential type
+5. Save the credential and configure the scopes your integration needs (ensure Audit Log access is enabled)
+6. Copy the **Client ID** and **Client Secret** - you will need these for the integration
 
-### Base64 Encoding the API Key
+### Finding the Authorizing User ID
 
-The Harvest API key must be Base64 encoded before entering it in the integration settings. The format should be `api_key:` (note the colon at the end).
+The OAuth 2.0 Client Credentials flow requires a `user_id` to identify the authorizing user. This user must be a **Site Admin** to access audit log endpoints.
 
-**Linux/macOS:**
-```bash
-echo -n "your_api_key:" | base64
-```
-
-**Windows PowerShell:**
-```powershell
-[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("your_api_key:"))
-```
+To find a user's ID:
+1. In Greenhouse, navigate to **Configure > Users**
+2. Click on the Site Admin user you want to use for authorization
+3. Look at the URL in your browser - it will contain the numeric user ID (e.g., `https://app.greenhouse.io/configure/users/12345`)
+4. Use this numeric ID in the integration configuration
 
 ### Configuration
 
 1. In Kibana, navigate to **Integrations** and search for "Greenhouse"
 2. Click **Add Greenhouse**
-3. Enter the Base64-encoded Harvest API key
+3. Enter your OAuth credentials:
+   - **OAuth Client ID**: The Client ID from your Harvest V3 credentials
+   - **OAuth Client Secret**: The Client Secret from your Harvest V3 credentials
+   - **Authorizing User ID**: The numeric user ID of a Site Admin
 4. Configure optional settings:
    - **Initial Interval**: How far back to collect logs on first run (default: 24h, maximum: 30d)
    - **Interval**: How often to poll for new events (default: 5m)
@@ -152,10 +151,16 @@ Greenhouse retains audit log data for 30 days only. To maintain a longer history
 
 ### Authentication Errors
 
-If you see "Failed to obtain JWT access token" errors:
-1. Verify your Harvest API key is correct
-2. Ensure the API key is properly Base64 encoded with a trailing colon
-3. Check that the API key has audit log permissions enabled
+If you see "Failed to obtain OAuth access token" errors:
+1. Verify your Client ID and Client Secret are correct
+2. Ensure the OAuth credentials have audit log permissions enabled
+3. Check that the authorizing user ID is a valid Site Admin user
+
+### 403 Forbidden Errors
+
+If you receive 403 errors:
+1. Verify the authorizing user (specified by user_id) is a Site Admin
+2. Check that your OAuth credentials have the necessary scopes for audit log access
 
 ### No Data Collected
 
