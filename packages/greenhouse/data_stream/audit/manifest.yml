@@ -1,0 +1,71 @@
+title: "Collect Greenhouse Audit Logs"
+type: logs
+streams:
+  - input: cel
+    title: "Collect Greenhouse Audit Logs"
+    description: "Collect Greenhouse Audit Logs via the Greenhouse Audit Log API"
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to look for events on the first run. Valid time units are h (hours), d (days). Maximum is 30d due to Greenhouse data retention limits.
+        multi: false
+        show_user: true
+        required: true
+        default: 24h
+      - name: interval
+        type: text
+        title: Interval
+        description: Interval to poll the Greenhouse Audit Log API. Valid time units are s, m, h.
+        multi: false
+        show_user: false
+        required: true
+        default: 5m
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of events to request per API call. Must be between 100 and 500.
+        multi: false
+        required: false
+        show_user: false
+        default: 500
+      - name: performer_ids
+        type: text
+        title: Performer IDs Filter
+        description: Filter events by performer IDs (Greenhouse user IDs). Separate multiple IDs with commas.
+        multi: false
+        show_user: true
+        required: false
+      - name: event_types
+        type: text
+        title: Event Types Filter
+        description: "Filter events by type: data_change_update, data_change_create, data_change_destroy, harvest_access, or action. Separate multiple types with commas."
+        multi: false
+        show_user: true
+        required: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - greenhouse-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
