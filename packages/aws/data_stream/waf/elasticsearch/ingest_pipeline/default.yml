@@ -129,8 +129,8 @@ processors:
     ignore_missing: true
 - rename:
     field: json.httpRequest.host
-    tag: rename_httpRequest_host_to_host_domain
-    target_field: host.domain
+    tag: rename_httpRequest_host_to_url_registered_domain
+    target_field: url.registered_domain
     ignore_missing: true
 - rename:
     field: json.httpRequest.requestId
@@ -245,7 +245,7 @@ processors:
     lang: painless
     tag: script_request_headers_inserted
     description: Script to map requestHeadersInserted name to requestHeadersInserted value.
-    if: ctx.json?.requestHeadersInserted != null && ctx.aws?.waf != null && ctx.json.requestHeadersInserted instanceof list
+    if: ctx.json?.requestHeadersInserted != null && ctx.aws?.waf != null && ctx.json.requestHeadersInserted instanceof List
     source: >-
       ctx.aws.waf.request_headers_inserted = new HashMap();
       for (def i = 0; i < ctx.json.requestHeadersInserted.length; i++) {
