@@ -1,6 +1,6 @@
 # NetBox Integration
 
-This integration is for [NetBox](). It currently supports retrieving devices and ip addresses from the NetBox API.
+This integration is for [NetBox](https://netboxlabs.com/). It currently supports retrieving devices and ip addresses from the NetBox API.
 
 ## Setup
 
