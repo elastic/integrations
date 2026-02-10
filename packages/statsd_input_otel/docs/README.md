@@ -57,5 +57,10 @@ The StatsD receiver supports the following tag formats:
 :   When enabled, sets all counter metrics as monotonic.
 
 
+## Configuration
+
+For the full list of settings exposed for the receiver and examples, refer to the [configuration](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/statsdreceiver#configuration) section.
+
+
 ## Metrics reference
 For a complete list of all available metrics and their detailed descriptions, refer to the [StatsD Receiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/statsdreceiver) in the upstream OpenTelemetry Collector repository.
