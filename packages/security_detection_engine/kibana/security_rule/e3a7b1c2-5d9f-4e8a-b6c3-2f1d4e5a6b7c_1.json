@@ -1,0 +1,118 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects a FortiCloud SSO login followed by administrator account creation on the same FortiGate device within 15 minutes. This sequence is a high-confidence indicator of the FG-IR-26-060 attack pattern, where threat actors authenticate via SAML-based SSO bypass and immediately create local administrator accounts for persistence.",
+        "from": "now-30m",
+        "index": [
+            "logs-fortinet_fortigate.*"
+        ],
+        "interval": "10m",
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "FortiGate SSO Login Followed by Administrator Account Creation",
+        "note": "## Triage and analysis\n\n### Investigating FortiGate SSO Login Followed by Administrator Account Creation\n\nThis alert indicates that a FortiCloud SSO login was followed by an administrator account creation event on the same FortiGate device within 15 minutes. This two-event sequence is the core attack pattern observed in the FG-IR-26-060 campaign.\n\nThe attack flow is: authenticate via FortiCloud SSO using a crafted SAML assertion, then immediately create local administrator accounts to maintain access even after the SSO vulnerability is patched.\n\n### Possible investigation steps\n\n- Review the SSO login event for the FortiCloud account used and the source IP. Determine whether the SSO account belongs to the organization.\n- Check the admin creation event for the names of accounts created and the access profiles assigned (especially super_admin).\n- Assess the timing between events. In the observed campaign, admin creation occurs within seconds of SSO login. A tight time correlation is a strong indicator of compromise.\n- Review `observer.name` to identify the targeted device and verify whether FortiCloud SSO is intentionally enabled. Run `get system admin` to list all current administrator accounts.\n- Check whether the same SSO account or source IP targeted other devices. Look for configuration exports, firewall policy changes, or VPN modifications following the admin creation.\n\n### False positive analysis\n\n- An authorized administrator logging in via FortiCloud SSO and creating a new admin account as part of normal operations.\n- Initial device onboarding where SSO login and account setup occur in the same session.\n\n### Response and remediation\n\n- If unauthorized, delete all administrator accounts created during the session and disable FortiCloud SSO immediately.\n- Restore configuration from a known-clean backup and rotate all credentials including LDAP/AD accounts connected to the device.\n- Upgrade FortiOS to a patched version and engage incident response for the affected device and any downstream systems.\n- If the activity is expected, document the administrative session and verify it was authorized. Consider creating accounts through a separate session to avoid triggering this correlation.",
+        "query": "sequence by observer.name with maxspan=15m\n  [authentication where event.dataset == \"fortinet_fortigate.log\" and\n    event.action == \"login\" and event.outcome == \"success\" and\n    (fortinet.firewall.method == \"sso\" or fortinet.firewall.ui like~ \"sso*\")]\n  [any where event.dataset == \"fortinet_fortigate.log\" and\n    event.code == \"0100044547\" and\n    fortinet.firewall.cfgpath == \"system.admin\" and\n    fortinet.firewall.action == \"Add\"]\n",
+        "references": [
+            "https://www.fortiguard.com/psirt/FG-IR-26-060",
+            "https://www.fortinet.com/blog/psirt-blogs/analysis-of-sso-abuse-on-fortios",
+            "https://www.elastic.co/docs/reference/integrations/fortinet_fortigate",
+            "https://www.cisa.gov/news-events/alerts/2026/01/28/fortinet-releases-guidance-address-ongoing-exploitation-authentication-bypass-vulnerability-cve-2026"
+        ],
+        "related_integrations": [
+            {
+                "package": "fortinet_fortigate",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "fortinet.firewall.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "fortinet.firewall.cfgpath",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "fortinet.firewall.method",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "fortinet.firewall.ui",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "observer.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e3a7b1c2-5d9f-4e8a-b6c3-2f1d4e5a6b7c",
+        "severity": "high",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide",
+            "Domain: Network",
+            "Domain: Identity",
+            "Data Source: Fortinet",
+            "Data Source: Fortinet FortiGate"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1136",
+                        "name": "Create Account",
+                        "reference": "https://attack.mitre.org/techniques/T1136/",
+                        "subtechnique": [
+                            {
+                                "id": "T1136.001",
+                                "name": "Local Account",
+                                "reference": "https://attack.mitre.org/techniques/T1136/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "e3a7b1c2-5d9f-4e8a-b6c3-2f1d4e5a6b7c_1",
+    "type": "security-rule"
+}
