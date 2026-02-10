@@ -16,8 +16,8 @@
   type: keyword
   description: Description text for a service, file, or other system object.
 - name: thor.duration
-  type: keyword
-  description: Duration of a THOR scan module execution (e.g., "0 hours 44 mins 8 secs").
+  type: long
+  description: Duration of a THOR scan module execution in seconds.
 - name: thor.enabled
   type: boolean
   description: Whether a scheduled task or service is enabled.
@@ -41,7 +41,7 @@
   description: Group owner of an executable file (Linux/Unix systems).
 - name: thor.exe_magic
   type: keyword
-  description: File magic bytes or file type signature of an executable.
+  description: Detected file type based on magic bytes.
 - name: thor.exe_mode
   type: keyword
   description: File permissions mode of an executable (Linux/Unix systems).
@@ -51,93 +51,101 @@
 - name: thor.executable
   type: keyword
   description: Path to an executable file.
-- name: thor.file.company
-  type: keyword
-  description: Company name from PE file metadata.
-- name: thor.file.created
-  type: date
-  description: creation time of the file
-- name: thor.file.description
-  type: keyword
-  description: File description from PE file metadata.
-- name: thor.file.first_bytes
-  type: keyword
-  description: First bytes of a file in hexadecimal format, often with ASCII representation.
-- name: thor.file.imphash
-  type: keyword
-  description: Import hash (imphash) of a PE file, used for malware classification.
-- name: thor.file.internal_name
-  type: keyword
-  description: Internal name from PE file metadata.
-- name: thor.file.legal_copyright
-  type: keyword
-  description: Legal copyright information from PE file metadata.
-- name: thor.file.original_name
-  type: keyword
-  description: Original filename from PE file metadata.
-- name: thor.file.permissions
-  type: keyword
-  description: File permissions or access control list (ACL) information.
-- name: thor.file.product
-  type: keyword
-  description: Product name from PE file metadata.
-- name: thor.file.type
-  type: keyword
-  description: File type classification (e.g., EXE, DLL, UNKNOWN, Import).
-- name: thor.files.company
-  type: keyword
-  description: Company name from PE file metadata in a files array.
-- name: thor.files.created
-  type: date
-  description: creation time of the file
-- name: thor.files.description
-  type: keyword
-  description: File description from PE file metadata in a files array.
-- name: thor.files.exists
-  type: keyword
-  description: Whether a file exists on the filesystem (e.g., "yes", "no").
-- name: thor.files.first_bytes
-  type: keyword
-  description: First bytes of a file in hexadecimal format in a files array.
-- name: thor.files.imphash
-  type: keyword
-  description: Import hash (imphash) of a PE file in a files array.
-- name: thor.files.internal_name
-  type: keyword
-  description: Internal name from PE file metadata in a files array.
-- name: thor.files.legal_copyright
-  type: keyword
-  description: Legal copyright information from PE file metadata in a files array.
-- name: thor.files.md5
-  type: keyword
-  description: MD5 hash of a file in a files array.
-- name: thor.files.original_name
-  type: keyword
-  description: Original filename from PE file metadata in a files array.
-- name: thor.files.owner
-  type: keyword
-  description: Owner of a file in a files array.
-- name: thor.files.path
-  type: keyword
-  description: Full path to a file in a files array.
-- name: thor.files.product
-  type: keyword
-  description: Product name from PE file metadata in a files array.
-- name: thor.files.sha1
-  type: keyword
-  description: SHA1 hash of a file in a files array.
-- name: thor.files.sha256
-  type: keyword
-  description: SHA256 hash of a file in a files array.
-- name: thor.files.size
-  type: float
-  description: Size of a file in bytes in a files array.
-- name: thor.files.type
-  type: keyword
-  description: File type classification in a files array (e.g., EXE, Windows At Job).
+- name: thor.file
+  type: group
+  description: Group of file objects associated with a detection or system object.
+  fields:
+    - name: company
+      type: keyword
+      description: Company name from PE file metadata.
+    - name: created
+      type: date
+      description: creation time of the file
+    - name: description
+      type: keyword
+      description: File description from PE file metadata.
+    - name: ext
+      type: keyword
+      description: File extension of a detected file.
+    - name: first_bytes
+      type: keyword
+      description: First bytes of a file in hexadecimal format, often with ASCII representation.
+    - name: imphash
+      type: keyword
+      description: Import hash (imphash) of a PE file, used for malware classification.
+    - name: internal_name
+      type: keyword
+      description: Internal name from PE file metadata.
+    - name: legal_copyright
+      type: keyword
+      description: Legal copyright information from PE file metadata.
+    - name: original_name
+      type: keyword
+      description: Original filename from PE file metadata.
+    - name: permissions
+      type: keyword
+      description: File permissions or access control list (ACL) information.
+    - name: product
+      type: keyword
+      description: Product name from PE file metadata.
+    - name: type
+      type: keyword
+      description: File type classification (e.g., EXE, DLL, UNKNOWN, Import).
 - name: thor.files
-  type: nested
+  type: group
   description: Nested array of file objects associated with a detection or system object.
+  fields:
+    - name: company
+      type: keyword
+      description: Company name from PE file metadata in a files array.
+    - name: created
+      type: date
+      description: creation time of the file
+    - name: description
+      type: keyword
+      description: File description from PE file metadata in a files array.
+    - name: exists
+      type: keyword
+      description: Whether a file exists on the filesystem (e.g., "yes", "no").
+    - name: first_bytes
+      type: keyword
+      description: First bytes of a file in hexadecimal format in a files array.
+    - name: imphash
+      type: keyword
+      description: Import hash (imphash) of a PE file in a files array.
+    - name: internal_name
+      type: keyword
+      description: Internal name from PE file metadata in a files array.
+    - name: legal_copyright
+      type: keyword
+      description: Legal copyright information from PE file metadata in a files array.
+    - name: md5
+      type: keyword
+      description: MD5 hash of a file in a files array.
+    - name: original_name
+      type: keyword
+      description: Original filename from PE file metadata in a files array.
+    - name: owner
+      type: keyword
+      description: Owner of a file in a files array.
+    - name: path
+      type: keyword
+      description: Full path to a file in a files array.
+    - name: product
+      type: keyword
+      description: Product name from PE file metadata in a files array.
+    - name: sha1
+      type: keyword
+      description: SHA1 hash of a file in a files array.
+    - name: sha256
+      type: keyword
+      description: SHA256 hash of a file in a files array.
+    - name: size
+      type: long
+      description: Size of a file in bytes in a files array.
+    - name: type
+      type: keyword
+      description: File type classification in a files array (e.g., EXE, Windows At Job).
 - name: thor.filter_type
   type: keyword
   description: Type of WMI event filter (e.g., NTEventLogEventConsumer).
@@ -199,7 +207,7 @@
   type: keyword
   description: SHA256 hash of an image/executable file.
 - name: thor.image.size
-  type: float
+  type: long
   description: Size of an image/executable file in bytes.
 - name: thor.image.type
   type: keyword
@@ -214,7 +222,7 @@
   type: keyword
   description: Full path to a registry key or WMI binding key.
 - name: thor.last_run
-  type: keyword
+  type: date
   description: Last execution time of a scheduled task.
 - name: thor.listen_ports
   type: keyword
@@ -226,13 +234,13 @@
   type: keyword
   description: Memory usage information for a process or system.
 - name: thor.modified
-  type: keyword
+  type: date
   description: Modification time of a file, registry key, or other object.
 - name: thor.name
   type: keyword
   description: Name of a scheduled task, service, or other system object.
 - name: thor.next_run
-  type: keyword
+  type: date
   description: Next scheduled execution time of a scheduled task.
 - name: thor.notices
   type: float
@@ -269,11 +277,11 @@
   description: Run level or privilege level for a scheduled task (e.g., LeastPrivilege).
 - name: thor.scan_id
   type: keyword
-  description: Unique identifier for a THOR scan session.
+  description: Unique identifier for a THOR scan.
 - name: thor.scanned_elements
   type: long
   metric_type: counter
-  description: Total number of elements scanned by THOR.
+  description: Number of elements scanned with a module.
 - name: thor.service_name
   type: keyword
   description: Name or display name of a Windows service.
@@ -282,12 +290,12 @@
   description: Session identifier for a process (e.g., Console, Services)
 - name: thor.sha1
   type: keyword
-  description: SHA1 hash of a file or object.
+  description: SHA1 hash of a file.
 - name: thor.start_type
   type: keyword
   description: Startup type of a Windows service (e.g., AUTO_START, MANUAL, DISABLED).
 - name: thor.start
-  type: keyword
+  type: date
   description: Start time or start condition for a scheduled task.
 - name: thor.unit_group
   type: keyword
@@ -310,10 +318,7 @@
 - name: thor.entry
   type: keyword
   description: Registry entry value or cache entry (e.g., URL in MS Office connection cache).
-- name: thor.file.ext
-  type: keyword
-  description: File extension of a detected file.
-- name: thor.files.group
+- name: group
   type: keyword
   description: Group owner of a file in a files array (Linux/Unix systems).
 - name: thor.full_name
@@ -326,7 +331,7 @@
   type: keyword
   description: Home directory path of a user account.
 - name: thor.image.changed
-  type: keyword
+  type: date
   description: Change time (ctime) of an image/executable file (Linux/Unix systems).
 - name: thor.image.group
   type: keyword

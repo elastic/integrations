@@ -8,7 +8,7 @@ processors:
   - append:
       field: event.category
       value: file
-      tag: append_ecs_version
+      tag: append_ecs_category
   - set:
       field: event.kind
       value: event
@@ -37,6 +37,7 @@ processors:
       field: thor.file
       target_field: file.name
       if: ctx.thor?.file != null && ctx.thor?.file instanceof String
+      ignore_missing: true
       tag: rename_thor_file_to_file_name
   - date:
       formats:
@@ -83,6 +84,13 @@ processors:
       field: thor.user
       target_field: user.name
       tag: rename_thor_user_to_user_name
+  - append:
+      field: related.user
+      tag: append_user_name_to_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      ignore_empty_values: true
+      if: ctx.user?.name != null
   - rename:
       ignore_missing: true
       field: thor.userid
@@ -93,6 +101,13 @@ processors:
       field: thor.hostname
       target_field: host.name
       tag: rename_thor_hostname_to_host_name
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      ignore_empty_values: true
+      if: ctx.host?.name != null
   - rename:
       ignore_missing: true
       field: thor.file.group
@@ -340,6 +355,96 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.last_run
+      target_field: thor.last_run
+      if: ctx.thor?.last_run != null
+      tag: parse_thor_last_run
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.modified
+      target_field: thor.modified
+      if: ctx.thor?.modified != null
+      tag: parse_thor_modified
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.next_run
+      target_field: thor.next_run
+      if: ctx.thor?.next_run != null
+      tag: parse_thor_next_run
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.start
+      target_field: thor.start
+      if: ctx.thor?.start != null && ctx.thor?.start != ""
+      tag: parse_thor_start
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.image.changed
+      target_field: thor.image.changed
+      if: ctx.thor?.image?.changed != null
+      tag: parse_thor_image_changed
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_compute_duration_string_to_secons
+      lang: painless
+      description: Computes duration string into seconds
+      if: ctx.thor?.duration != null
+      source: |-
+          String s = ctx.thor.duration.toString().trim();
+          if (s.length() == 0) return;
+
+          long hours = 0L;
+          long mins  = 0L;
+          long secs  = 0L;
+
+          String[] parts = s.splitOnToken(" ");
+          for (int i = 0; i < parts.length - 1; i++) {
+            String v = parts[i];
+            String u = parts[i + 1].toLowerCase(Locale.ROOT);
+
+            long n;
+            try {
+              n = Long.parseLong(v);
+            } catch (Exception e) {
+              continue;  // skip non-numeric tokens safely
+            }
+
+            if (u.startsWith("hour")) {
+              hours = n;
+            } else if (u.startsWith("min")) {
+              mins = n;
+            } else if (u.startsWith("sec")) {
+              secs = n;
+            }
+          }
+
+          ctx.thor.duration = hours * 3600L + mins * 60L + secs;
   - append:
       field: event.category
       value: malware
@@ -370,11 +475,6 @@ processors:
       value: "{{{thor.run_as_user}}}"
       ignore_empty_values: true
       tag: append_related_user_run_as_user
-  - append:
-      field: related.user
-      value: "{{{thor.run_as_user}}}"
-      ignore_empty_values: true
-      tag: append_related_user_run_as_user_duplicate
   - append:
       field: related.user
       value: "{{{thor.exe_owner}}}"

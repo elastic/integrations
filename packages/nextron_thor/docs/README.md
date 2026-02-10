@@ -114,16 +114,17 @@ To completely set up the Nextron Thor APT Scanner integration:
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |  |
 | file.path.text | Multi-field of `file.path`. | match_only_text |  |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |  |
+| group | Group owner of a file in a files array (Linux/Unix systems). | keyword |  |
 | input.type | Input type | keyword |  |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |  |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |  |
 | tags | List of keywords used to tag each event. | keyword |  |
 | thor.alerts | Number of alerts generated during the THOR scan. | long | counter |
 | thor.command | Command line or executable path associated with a scheduled task, service, or process. | keyword |  |
-| thor.connection_count | Total number of network connections detected. | long | gauge |
+| thor.connection_count | Total number of network connections associated with a process. | long | gauge |
 | thor.created | creation time | date |  |
 | thor.description | Description text for a service, file, or other system object. | keyword |  |
-| thor.duration | Duration of a THOR scan module execution (e.g., "0 hours 44 mins 8 secs"). | keyword |  |
+| thor.duration | Duration of a THOR scan module execution in seconds. | long |  |
 | thor.enabled | Whether a scheduled task or service is enabled. | boolean |  |
 | thor.entry | Registry entry value or cache entry (e.g., URL in MS Office connection cache). | keyword |  |
 | thor.errors | Number of errors encountered during the THOR scan. | float |  |
@@ -132,7 +133,7 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.event_filter | WMI event filter query (e.g., WQL SELECT statement). | keyword |  |
 | thor.event_filter_name | Name of a WMI event filter used for persistence. | keyword |  |
 | thor.exe_group | Group owner of an executable file (Linux/Unix systems). | keyword |  |
-| thor.exe_magic | File magic bytes or file type signature of an executable. | keyword |  |
+| thor.exe_magic | Detected file type based on magic bytes. | keyword |  |
 | thor.exe_mode | File permissions mode of an executable (Linux/Unix systems). | keyword |  |
 | thor.exe_owner | Owner of an executable file. | keyword |  |
 | thor.executable | Path to an executable file. | keyword |  |
@@ -148,13 +149,11 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.file.permissions | File permissions or access control list (ACL) information. | keyword |  |
 | thor.file.product | Product name from PE file metadata. | keyword |  |
 | thor.file.type | File type classification (e.g., EXE, DLL, UNKNOWN, Import). | keyword |  |
-| thor.files | Nested array of file objects associated with a detection or system object. | nested |  |
 | thor.files.company | Company name from PE file metadata in a files array. | keyword |  |
 | thor.files.created | creation time of the file | date |  |
 | thor.files.description | File description from PE file metadata in a files array. | keyword |  |
 | thor.files.exists | Whether a file exists on the filesystem (e.g., "yes", "no"). | keyword |  |
 | thor.files.first_bytes | First bytes of a file in hexadecimal format in a files array. | keyword |  |
-| thor.files.group | Group owner of a file in a files array (Linux/Unix systems). | keyword |  |
 | thor.files.imphash | Import hash (imphash) of a PE file in a files array. | keyword |  |
 | thor.files.internal_name | Internal name from PE file metadata in a files array. | keyword |  |
 | thor.files.legal_copyright | Legal copyright information from PE file metadata in a files array. | keyword |  |
@@ -165,7 +164,7 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.files.product | Product name from PE file metadata in a files array. | keyword |  |
 | thor.files.sha1 | SHA1 hash of a file in a files array. | keyword |  |
 | thor.files.sha256 | SHA256 hash of a file in a files array. | keyword |  |
-| thor.files.size | Size of a file in bytes in a files array. | float |  |
+| thor.files.size | Size of a file in bytes in a files array. | long |  |
 | thor.files.type | File type classification in a files array (e.g., EXE, Windows At Job). | keyword |  |
 | thor.filter_type | Type of WMI event filter (e.g., NTEventLogEventConsumer). | keyword |  |
 | thor.full_name | Full name or display name of a user account. | keyword |  |
@@ -173,7 +172,7 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.hive | Path to a Windows registry hive file being analyzed. | keyword |  |
 | thor.home | Home directory path of a user account. | keyword |  |
 | thor.image.accessed | access time of the image | date |  |
-| thor.image.changed | Change time (ctime) of an image/executable file (Linux/Unix systems). | keyword |  |
+| thor.image.changed | Change time (ctime) of an image/executable file (Linux/Unix systems). | date |  |
 | thor.image.company | Company name from PE file metadata of an image/executable. | keyword |  |
 | thor.image.created | creation time of the image | date |  |
 | thor.image.description | File description from PE file metadata of an image/executable. | keyword |  |
@@ -191,19 +190,19 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.image.product | Product name from PE file metadata of an image/executable. | keyword |  |
 | thor.image.sha1 | SHA1 hash of an image/executable file. | keyword |  |
 | thor.image.sha256 | SHA256 hash of an image/executable file. | keyword |  |
-| thor.image.size | Size of an image/executable file in bytes. | float |  |
+| thor.image.size | Size of an image/executable file in bytes. | long |  |
 | thor.image.type | File type classification of an image/executable (e.g., EXE, DLL). | keyword |  |
 | thor.image_path | Image path or executable path for a Windows service. | keyword |  |
 | thor.job | Path to a Windows At Job (scheduled task) file. | keyword |  |
 | thor.key | Full path to a registry key or WMI binding key. | keyword |  |
 | thor.key_name | Name of a registry key or service name. | keyword |  |
-| thor.last_run | Last execution time of a scheduled task. | keyword |  |
+| thor.last_run | Last execution time of a scheduled task. | date |  |
 | thor.listen_ports | Network ports on which a process is listening. | keyword |  |
 | thor.logontype | Logon type for a scheduled task or service. | keyword |  |
 | thor.memory_usage | Memory usage information for a process or system. | keyword |  |
-| thor.modified | Modification time of a file, registry key, or other object. | keyword |  |
+| thor.modified | Modification time of a file, registry key, or other object. | date |  |
 | thor.name | Name of a scheduled task, service, or other system object. | keyword |  |
-| thor.next_run | Next scheduled execution time of a scheduled task. | keyword |  |
+| thor.next_run | Next scheduled execution time of a scheduled task. | date |  |
 | thor.notices | Number of notices generated during the THOR scan. | float |  |
 | thor.owner | Owner of a process, file, or other system object. | keyword |  |
 | thor.parent | Path to the parent process executable. | keyword |  |
@@ -227,14 +226,14 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.run_as_group | Group under which a scheduled task or service runs (Linux/Unix systems). | keyword |  |
 | thor.run_as_user | User account under which a scheduled task or service runs. | keyword |  |
 | thor.runlevel | Run level or privilege level for a scheduled task (e.g., LeastPrivilege). | keyword |  |
-| thor.scan_id | Unique identifier for a THOR scan session. | keyword |  |
-| thor.scanned_elements | Total number of elements scanned by THOR. | long | counter |
+| thor.scan_id | Unique identifier for a THOR scan. | keyword |  |
+| thor.scanned_elements | Number of elements scanned with a module. | long | counter |
 | thor.score | Threat score assigned to a detection (higher scores indicate higher severity). | long |  |
 | thor.service_name | Name or display name of a Windows service. | keyword |  |
-| thor.session | Session identifier for a process (e.g., RDP session, console session). | keyword |  |
-| thor.sha1 | SHA1 hash of a file or object. | keyword |  |
+| thor.session | Session identifier for a process (e.g., Console, Services) | keyword |  |
+| thor.sha1 | SHA1 hash of a file. | keyword |  |
 | thor.shell | Login shell path for a user account (Linux/Unix systems). | keyword |  |
-| thor.start | Start time or start condition for a scheduled task. | keyword |  |
+| thor.start | Start time or start condition for a scheduled task. | date |  |
 | thor.start_type | Startup type of a Windows service (e.g., AUTO_START, MANUAL, DISABLED). | keyword |  |
 | thor.unit | Name of a systemd unit (Linux systems). | keyword |  |
 | thor.unit_group | Group owner of a systemd unit file (Linux systems). | keyword |  |
@@ -252,22 +251,22 @@ An example event for `thor_forwarding` looks as following:
 {
     "@timestamp": "2025-11-10T17:52:49.000Z",
     "agent": {
-        "ephemeral_id": "7a3ad964-46ba-4564-9d54-b0db5764d578",
-        "id": "ee6e717e-35c2-4991-9078-7c1c19ca69fb",
-        "name": "elastic-agent-17205",
+        "ephemeral_id": "bfa9aec6-379b-424d-a9eb-6d82a111d0e2",
+        "id": "1311aaf4-a4c5-4173-97d6-44a8ec5d83eb",
+        "name": "elastic-agent-61879",
         "type": "filebeat",
         "version": "9.2.3"
     },
     "data_stream": {
         "dataset": "nextron_thor_apt_scanner.thor_forwarding",
-        "namespace": "88825",
+        "namespace": "57788",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "ee6e717e-35c2-4991-9078-7c1c19ca69fb",
+        "id": "1311aaf4-a4c5-4173-97d6-44a8ec5d83eb",
         "snapshot": false,
         "version": "9.2.3"
     },
@@ -276,7 +275,7 @@ An example event for `thor_forwarding` looks as following:
             "file"
         ],
         "dataset": "nextron_thor_apt_scanner.thor_forwarding",
-        "ingested": "2026-02-09T10:19:47Z",
+        "ingested": "2026-02-10T08:03:23Z",
         "kind": "event",
         "module": "AtJobs",
         "type": [
@@ -294,6 +293,11 @@ An example event for `thor_forwarding` looks as following:
         "level": "Info"
     },
     "message": "At Job detected",
+    "related": {
+        "hosts": [
+            "myhostname"
+        ]
+    },
     "tags": [
         "forwarded"
     ],
@@ -302,8 +306,7 @@ An example event for `thor_forwarding` looks as following:
         "job": "C:\\Windows\\System32\\Tasks\\Microsoft\\Windows\\Task Manager\\Interactive",
         "logontype": "",
         "runlevel": "",
-        "scan_id": "S-VavZi0stuDo",
-        "start": ""
+        "scan_id": "S-VavZi0stuDo"
     },
     "user": {
         "name": ""

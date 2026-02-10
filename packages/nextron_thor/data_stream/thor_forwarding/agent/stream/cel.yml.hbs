@@ -54,7 +54,10 @@ program: |
                           page.filter(s, s.logs_encrypted == false && s.available_logs.exists(l, l == "thor.json")).as(new_items,
                             new_items.map(s,
                               get_request(state.url + "/v1/scan/log?scan=" + s.id + "&log=thor.json").with(auth_header).do_request().as(lr,
-                                string(lr.Body).split("\n").filter(line, line != "").map(line, {"message": line})
+                                (lr.StatusCode == 200) ?
+                                  string(lr.Body).split("\n").filter(line, line != "").map(line, {"message": line})
+                                :
+                                  []
                               )
                             ).flatten().as(events,
                               page.filter(s,
@@ -92,7 +95,7 @@ program: |
                         "error": {
                           "code": string(sr.StatusCode),
                           "id": string(sr.Status),
-                          "message": "POST " + state.url.trim_right("/") + "/v1/scan/search " + (
+                          "message": "GET " + state.url.trim_right("/") + "/v1/scan/search " + (
                             (size(sr.Body) != 0) ?
                               string(sr.Body)
                             :
