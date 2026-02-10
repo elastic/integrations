@@ -22,48 +22,6 @@
                     "order": 0,
                     "type": "optionsListControl",
                     "width": "medium"
-                },
-                "c7bb8bdb-e2d2-4399-90d4-234aeb314788": {
-                    "explicitInput": {
-                        "dataViewRefName": "c7bb8bdb-e2d2-4399-90d4-234aeb314788:optionsListDataView",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "db.namespace",
-                        "ignoreValidations": false,
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "DB namespace",
-                        "useGlobalFilters": true
-                    },
-                    "grow": true,
-                    "order": 2,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "d21ed82f-9eed-4f7c-a78f-86636536bf48": {
-                    "explicitInput": {
-                        "dataViewRefName": "d21ed82f-9eed-4f7c-a78f-86636536bf48:optionsListDataView",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "schema",
-                        "ignoreValidations": false,
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Schema",
-                        "useGlobalFilters": true
-                    },
-                    "grow": true,
-                    "order": 1,
-                    "type": "optionsListControl",
-                    "width": "medium"
                 }
             }
         },
@@ -111,7 +69,7 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "hidePanelTitles": true,
+                    "hide_title": true,
                     "layout": "horizontal",
                     "links": [
                         {
@@ -328,11 +286,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "lucene",
@@ -521,11 +474,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -723,11 +671,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "lucene",
@@ -924,11 +867,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "lucene",
@@ -1110,11 +1048,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Row operations show the actual database workload. Read operations typically dominate OLTP workloads. High insert/update rates may indicate batch jobs or data loading.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS ops_per_sec = SUM(RATE(mysql.row_operations)) \n    BY ts = TBUCKET(15 minutes), operation\n| SORT ts ASC\n| KEEP ts, operation, ops_per_sec"
@@ -1130,7 +1063,7 @@
                     "sectionId": "7146ec3d-f685-461a-bc4d-7c6c77cf1cc8",
                     "w": 48,
                     "x": 0,
-                    "y": 8
+                    "y": 25
                 },
                 "panelIndex": "6fb5d2a1-a16e-4e54-ac8d-e14db2e0da4a",
                 "type": "lens"
@@ -1296,11 +1229,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Handler stats show internal storage engine operations. High `read_rnd_next` indicates full table scans — consider adding indexes. High `read_key` is good — using indexes efficiently.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS ops_per_sec = SUM(RATE(mysql.handlers)) \n    BY ts = TBUCKET(15 minutes), kind\n| SORT ts ASC\n| KEEP ts, kind, ops_per_sec"
@@ -1316,7 +1244,7 @@
                     "sectionId": "7146ec3d-f685-461a-bc4d-7c6c77cf1cc8",
                     "w": 48,
                     "x": 0,
-                    "y": 24
+                    "y": 41
                 },
                 "panelIndex": "a76939b3-ec0b-4034-8fa0-48384d5f337b",
                 "type": "lens"
@@ -1488,11 +1416,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Network throughput shows client communication volume. High bytes out typically indicates large result sets — consider pagination or limiting returned columns. Bytes in spikes may indicate bulk inserts or large queries.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS bytes_per_sec = SUM(RATE(mysql.client.network.io)) \n    BY ts = TBUCKET(15 minutes), kind\n| SORT ts ASC\n| KEEP ts, kind, bytes_per_sec"
@@ -1508,9 +1431,220 @@
                     "sectionId": "7146ec3d-f685-461a-bc4d-7c6c77cf1cc8",
                     "w": 48,
                     "x": 0,
-                    "y": 40
+                    "y": 57
                 },
                 "panelIndex": "f9817df5-2a5f-4694-9b2e-2109e9ec2653",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d3b7e528216ce7ef65e68e07a803b7ab53e440cafdb52d9d7ee1ef4bbf5d8afa": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d3b7e528216ce7ef65e68e07a803b7ab53e440cafdb52d9d7ee1ef4bbf5d8afa",
+                                    "managed": false,
+                                    "name": "metrics-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "52eed169-76e2-49bd-89a6-193c82ff1822": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "ts",
+                                                    "customLabel": false,
+                                                    "fieldName": "ts",
+                                                    "label": "ts",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total_qps",
+                                                    "customLabel": false,
+                                                    "fieldName": "total_qps",
+                                                    "inMetricDimension": true,
+                                                    "label": "total_qps",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "client_qps",
+                                                    "customLabel": false,
+                                                    "fieldName": "client_qps",
+                                                    "inMetricDimension": true,
+                                                    "label": "client_qps",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "slow_qps",
+                                                    "customLabel": false,
+                                                    "fieldName": "slow_qps",
+                                                    "inMetricDimension": true,
+                                                    "label": "slow_qps",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d3b7e528216ce7ef65e68e07a803b7ab53e440cafdb52d9d7ee1ef4bbf5d8afa",
+                                            "query": {
+                                                "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS \n    total_qps = SUM(RATE(mysql.query.count)),\n    client_qps = SUM(RATE(mysql.query.client.count)),\n    slow_qps = SUM(RATE(mysql.query.slow.count))\n  BY ts = TBUCKET(15 seconds)\n| SORT ts ASC\n| KEEP ts, total_qps, client_qps, slow_qps"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "d3b7e528216ce7ef65e68e07a803b7ab53e440cafdb52d9d7ee1ef4bbf5d8afa",
+                                    "name": "textBasedLanguages-datasource-layer-52eed169-76e2-49bd-89a6-193c82ff1822",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS \n    total_qps = SUM(RATE(mysql.query.count)),\n    client_qps = SUM(RATE(mysql.query.client.count)),\n    slow_qps = SUM(RATE(mysql.query.slow.count))\n  BY ts = TBUCKET(15 seconds)\n| SORT ts ASC\n| KEEP ts, total_qps, client_qps, slow_qps"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "CURVE_MONOTONE_X",
+                                "emphasizeFitting": true,
+                                "endValue": "None",
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total_qps",
+                                            "client_qps",
+                                            "slow_qps"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "52eed169-76e2-49bd-89a6-193c82ff1822",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "ts"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "pointVisibility": "always",
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Queries"
+                            }
+                        },
+                        "title": "total_qps \u0026 client_qps \u0026 slow_qps over ts",
+                        "type": "lens",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "QPS is the primary throughput signal for MySQL:\n - **Total QPS** (`mysql.query.count`) = All statements including stored procedures, triggers, and events\n - **Client QPS** (`mysql.query.client.count`) = Only statements sent by clients (your application workload)\n - **Slow QPS** (`mysql.query.slow.count`) = Queries exceeding `long_query_time`\n\n If Total QPS \u003e\u003e Client QPS, stored procedures or triggers are generating significant internal load. Sudden drops indicate availability issues; sustained spikes may indicate traffic changes or runaway batch jobs. Any sustained slow query rate suggests query optimization is needed.\"",
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS \n    total_qps = SUM(RATE(mysql.query.count)),\n    client_qps = SUM(RATE(mysql.query.client.count)),\n    slow_qps = SUM(RATE(mysql.query.slow.count))\n  BY ts = TBUCKET(15 seconds)\n| SORT ts ASC\n| KEEP ts, total_qps, client_qps, slow_qps"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Queries Per Second"
+                },
+                "gridData": {
+                    "h": 17,
+                    "i": "82164312-bde2-434a-9ddc-f30315255d0d",
+                    "sectionId": "7146ec3d-f685-461a-bc4d-7c6c77cf1cc8",
+                    "w": 48,
+                    "x": 0,
+                    "y": 8
+                },
+                "panelIndex": "82164312-bde2-434a-9ddc-f30315255d0d",
                 "type": "lens"
             },
             {
@@ -1795,11 +1929,6 @@
                         "version": 2,
                         "visualizationType": "lnsGauge"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "kuery",
@@ -1987,11 +2116,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -2189,11 +2313,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "lucene",
@@ -2386,11 +2505,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "lucene",
@@ -2567,11 +2681,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Buffer pool should be mostly data pages with minimal free space (indicates good utilization). If free pages remain high, the buffer pool may be oversized. Track misc pages for overhead.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "FROM metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND mysql.buffer_pool.pages IS NOT NULL\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS pages = MAX(mysql.buffer_pool.pages) \n    BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend), kind\n| SORT ts ASC\n| KEEP ts, kind, pages"
@@ -2745,11 +2854,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Buffer pool hit ratio should stay above 99%. Drops indicate either insufficient buffer pool size or working set exceeds available memory. Consider increasing `innodb_buffer_pool_size`.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS \n    read_requests = SUM(RATE(mysql.buffer_pool.operations)) WHERE operation == \"read_requests\",\n    disk_reads = SUM(RATE(mysql.buffer_pool.operations)) WHERE operation == \"reads\"\n  BY ts = TBUCKET(15 minutes)\n| EVAL hit_ratio = CASE(read_requests \u003e 0, 1 - (disk_reads / read_requests), 1.0)\n| SORT ts ASC\n| KEEP ts, hit_ratio"
@@ -2868,11 +2972,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -2993,11 +3092,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -3121,11 +3215,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -3370,11 +3459,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "kuery",
@@ -3556,11 +3640,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "High lock waits indicate contention. Table locks waited should be near zero for InnoDB tables. Row lock waits indicate transaction conflicts — review long-running transactions and query patterns.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS locks_per_sec = SUM(RATE(mysql.locks)) \n    BY ts = TBUCKET(15 minutes), kind\n| SORT ts ASC\n| KEEP ts, kind, locks_per_sec"
@@ -3680,11 +3759,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -3807,11 +3881,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "kuery",
@@ -3933,11 +4002,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "kuery",
@@ -4058,11 +4122,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -4241,11 +4300,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Page reads from disk indicate cache misses. High page reads with low buffer pool hit ratio suggests buffer pool is undersized. Page writes correlate with checkpoint frequency.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS ops_per_sec = SUM(RATE(mysql.page_operations)) \n    BY ts = TBUCKET(15 minutes), operation\n| SORT ts ASC\n| KEEP ts, operation, ops_per_sec"
@@ -4504,11 +4558,6 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "Tables with high I/O wait times are candidates for optimization. Consider adding indexes, partitioning large tables, or moving to faster storage.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "language": "lucene",
@@ -4609,11 +4658,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -4729,11 +4773,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "FROM metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= NOW() - 15 MINUTES\n| EVAL \n    data_sz = CASE(kind == \"data\", mysql.table.size, 0),\n    index_sz = CASE(kind == \"index\", mysql.table.size, 0)\n| STATS \n    data_size = MAX(data_sz),\n    index_size = MAX(index_sz),\n    rows = MAX(mysql.table.rows)\n  BY attributes.table\n| STATS \n    total_data = SUM(data_size),\n    total_index = SUM(index_size),\n    total_rows = SUM(rows)\n| EVAL total_size = total_data + total_index\n| KEEP total_data, total_index, total_size, total_rows"
@@ -4847,11 +4886,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -4967,11 +5001,6 @@
                         "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -5171,11 +5200,6 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "Track largest tables for capacity planning. Tables with high index-to-data ratio may have redundant indexes. Monitor growth rate for capacity forecasting.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "FROM metrics-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n    AND (mysql.table.size IS NOT NULL OR mysql.table.rows IS NOT NULL)\n| EVAL \n    data_sz = CASE(kind == \"data\", mysql.table.size, 0),\n    index_sz = CASE(kind == \"index\", mysql.table.size, 0)\n| STATS \n    data_size = MAX(data_sz),\n    index_size = MAX(index_sz),\n    rows = MAX(mysql.table.rows)\n  BY schema, table\n| EVAL total_size = COALESCE(data_size, 0) + COALESCE(index_size, 0)\n| WHERE total_size \u003e 0\n| SORT total_size DESC\n| LIMIT 10\n| KEEP schema, table, data_size, index_size, total_size, rows"
@@ -5245,7 +5269,7 @@
         "title": "[MySQL OTel] Performance"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-02-02T20:23:33.530Z",
+    "created_at": "2026-02-10T21:35:46.986Z",
     "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
     "id": "mysql_otel-71977e60-f126-4c18-8769-639e686585a3",
     "references": [
@@ -5397,16 +5421,6 @@
         {
             "id": "metrics-*",
             "name": "9ef1a29d-a000-42b2-8ff1-eda9ac0fa31b:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "d21ed82f-9eed-4f7c-a78f-86636536bf48:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c7bb8bdb-e2d2-4399-90d4-234aeb314788:optionsListDataView",
             "type": "index-pattern"
         },
         {

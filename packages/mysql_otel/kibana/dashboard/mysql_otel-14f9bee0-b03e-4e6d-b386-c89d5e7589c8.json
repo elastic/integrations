@@ -22,48 +22,6 @@
                     "order": 0,
                     "type": "optionsListControl",
                     "width": "medium"
-                },
-                "711a7ddb-6dcc-48ed-9748-c121a48cd583": {
-                    "explicitInput": {
-                        "dataViewRefName": "711a7ddb-6dcc-48ed-9748-c121a48cd583:optionsListDataView",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "attributes.schema",
-                        "ignoreValidations": false,
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Schema",
-                        "useGlobalFilters": true
-                    },
-                    "grow": true,
-                    "order": 1,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "9b848a2e-652f-4e0f-92d4-ed7bdb83a958": {
-                    "explicitInput": {
-                        "dataViewRefName": "9b848a2e-652f-4e0f-92d4-ed7bdb83a958:optionsListDataView",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "attributes.db.namespace",
-                        "ignoreValidations": false,
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "DB namespace",
-                        "useGlobalFilters": true
-                    },
-                    "grow": true,
-                    "order": 2,
-                    "type": "optionsListControl",
-                    "width": "medium"
                 }
             }
         },
@@ -111,7 +69,7 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "hidePanelTitles": true,
+                    "hide_title": true,
                     "layout": "horizontal",
                     "links": [
                         {
@@ -247,11 +205,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND event_name == \"db.server.top_query\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS \n    unique_queries = COUNT_DISTINCT(mysql.events_statements_summary_by_digest.digest),\n    total_calls = SUM(mysql.events_statements_summary_by_digest.count_star),\n    total_time_sec = SUM(mysql.events_statements_summary_by_digest.sum_timer_wait)\n| EVAL avg_time_ms = CASE(total_calls \u003e 0, total_time_sec / total_calls * 1000, 0.0)\n| KEEP unique_queries, total_calls, total_time_sec, avg_time_ms"
@@ -355,11 +308,6 @@
                         "title": "unique_queries",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -465,11 +413,6 @@
                         "title": "unique_queries",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -619,11 +562,6 @@
                         "title": "unique_queries",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -923,11 +861,6 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "These queries consume the most total database time. Optimizing them will have the biggest impact. Look for missing indexes, inefficient JOINs, or queries examining many rows.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND event_name == \"db.server.top_query\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS \n    calls = SUM(mysql.events_statements_summary_by_digest.count_star),\n    total_time_sec = SUM(mysql.events_statements_summary_by_digest.sum_timer_wait)\n  BY db.query.text, mysql.events_statements_summary_by_digest.digest\n| EVAL avg_time_ms = CASE(calls \u003e 0, total_time_sec / calls * 1000, 0.0)\n| SORT total_time_sec DESC\n| LIMIT 20\n| KEEP db.query.text, mysql.events_statements_summary_by_digest.digest, calls, total_time_sec, avg_time_ms"
@@ -1204,11 +1137,6 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "High-frequency queries are candidates for caching or query optimization. Even small improvements multiply across many executions.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND event_name == \"db.server.top_query\"\n    AND @timestamp \u003e= ?_tstart \n    AND @timestamp \u003c ?_tend\n| STATS \n    calls = SUM(mysql.events_statements_summary_by_digest.count_star),\n    total_time_sec = SUM(mysql.events_statements_summary_by_digest.sum_timer_wait)\n  BY db.query.text, mysql.events_statements_summary_by_digest.digest\n| EVAL avg_time_ms = CASE(calls \u003e 0, total_time_sec / calls * 1000, 0.0)\n| SORT total_time_sec DESC\n| LIMIT 20\n| KEEP db.query.text, mysql.events_statements_summary_by_digest.digest, calls, total_time_sec, avg_time_ms"
@@ -1303,11 +1231,6 @@
                         "title": "active_queries \u0026 max_wait_time \u0026 waiting_on_lock of (empty)",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -1456,11 +1379,6 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND event_name == \"db.server.query_sample\"\n    AND @timestamp \u003e= NOW() - 1 minute\n| EVAL is_lock_wait = CASE(mysql.wait_type LIKE \"%lock%\", 1, 0)\n| STATS \n    active_queries = COUNT(*),\n    max_wait_time = MAX(mysql.events_waits_current.timer_wait),\n    waiting_on_lock = SUM(is_lock_wait)\n| KEEP active_queries, max_wait_time, waiting_on_lock"
@@ -1597,11 +1515,6 @@
                         "title": "active_queries \u0026 max_wait_time \u0026 waiting_on_lock of (empty)",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
                     },
                     "filters": [],
                     "query": {
@@ -1809,11 +1722,6 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "Monitor long-running queries and those waiting on locks. Queries with high wait times may be blocking other transactions. Consider killing queries running longer than expected.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
                     "filters": [],
                     "query": {
                         "esql": "FROM logs-*\n| WHERE data_stream.dataset == \"mysqlreceiver.otel\"\n    AND event_name == \"db.server.query_sample\"\n    AND @timestamp \u003e= NOW() - 1 minute\n| SORT mysql.events_waits_current.timer_wait DESC\n| LIMIT 50\n| KEEP mysql.threads.thread_id, user.name, db.namespace, mysql.threads.processlist_command, mysql.threads.processlist_state, mysql.wait_type, mysql.events_waits_current.timer_wait, db.query.text"
@@ -1840,7 +1748,7 @@
         "title": "[MySQL OTel] Queries"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-02-02T20:23:33.530Z",
+    "created_at": "2026-02-10T21:35:46.986Z",
     "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
     "id": "mysql_otel-14f9bee0-b03e-4e6d-b386-c89d5e7589c8",
     "references": [
@@ -1867,16 +1775,6 @@
         {
             "id": "metrics-*",
             "name": "5d252bc6-ed41-487f-9ab8-6fe3b675ecba:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "711a7ddb-6dcc-48ed-9748-c121a48cd583:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "9b848a2e-652f-4e0f-92d4-ed7bdb83a958:optionsListDataView",
             "type": "index-pattern"
         },
         {
