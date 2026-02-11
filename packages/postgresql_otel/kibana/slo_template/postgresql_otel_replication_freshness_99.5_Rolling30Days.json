@@ -1,0 +1,46 @@
+{
+  "attributes": {
+    "name": "[PostgreSQL OTel] Replication freshness 99.5% rolling 30 days",
+    "description": "This SLO tracks PostgreSQL WAL replication lag, ensuring that 99.5% of time intervals have replication lag below 5 seconds over a rolling period of 30 days to maintain data consistency and freshness for read replicas.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"postgresqlreceiver.otel\" and metrics.postgresql.wal.delay : * ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "last_value",
+              "field": "metrics.postgresql.wal.delay",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 5
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "Postgresql",
+      "OTel"
+    ],
+    "groupBy": [
+      "resource.attributes.service.instance.id"
+    ]
+  },
+  "id": "postgresql_otel_replication_freshness_99.5_Rolling30Days",
+  "type": "slo_template"
+}
