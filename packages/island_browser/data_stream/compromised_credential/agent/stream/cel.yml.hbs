@@ -23,6 +23,7 @@ state:
 redact:
   fields:
     - api_key
+
 program: |
   (
     state.?want_more.orValue(false) ?
@@ -34,18 +35,18 @@ program: |
       })
   ).as(state,
     state.url.trim_right("/").as(base_url, state.with(
-    post_request(
-      base_url + "/api/external/v1/compromised-credentials",
-      "application/json",
-      {
-        "limit": state.batch_size,
-        "offset": state.offset,
-        "start": state.start_time,
-        "end": state.end_time,
-        "sortBy": "CompromisedDate",
-        "sortDirection": "Asc"
-      }.encode_json()
-    ).with({
+      post_request(
+        base_url + "/api/external/v1/compromised-credentials",
+        "application/json",
+        {
+          "limit": state.batch_size,
+          "offset": state.offset,
+          "start": state.start_time,
+          "end": state.end_time,
+          "sortBy": "CompromisedDate",
+          "sortDirection": "Asc"
+        }.encode_json()
+      ).with({
         "Header":{
           "Content-Type": ["application/json"],
           "api-key": [state.api_key],
