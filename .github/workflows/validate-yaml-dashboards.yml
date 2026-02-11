@@ -27,11 +27,6 @@ jobs:
         with:
           enable-cache: true
 
-      # Note: Tool versions are pinned to @latest for now. Consider pinning to specific versions
-      # for better reproducibility. Check available versions at:
-      # - https://pypi.org/project/kb-dashboard-lint/
-      # - https://pypi.org/project/kb-dashboard-cli/
-
       - name: Find changed YAML dashboard files
         id: find-changed
         run: |
@@ -82,14 +77,13 @@ jobs:
             echo ""
             
             # First, show all linting results (warnings, info, errors)
-            # Using @latest - consider pinning to a specific version for reproducibility
             echo "Linting results:"
-            uvx --from kb-dashboard-lint@latest kb-dashboard-lint check \
+            uvx --from kb-dashboard-lint@0.2.7 kb-dashboard-lint check \
                 --input-file "$yaml_file" || true
             echo ""
             
             # Then check specifically for warnings/errors (this will exit non-zero on warnings or errors)
-            if ! uvx --from kb-dashboard-lint@latest kb-dashboard-lint check \
+            if ! uvx --from kb-dashboard-lint@0.2.7 kb-dashboard-lint check \
                 --input-file "$yaml_file" \
                 --severity-threshold warning > /dev/null 2>&1; then
               echo "❌ ERROR: Linting found warnings or errors in $yaml_file"
@@ -115,109 +109,54 @@ jobs:
             echo "=========================================="
           fi
 
-      - name: Compile changed YAML dashboards
-        id: compile
+      - name: Validate YAML dashboards match committed JSON
+        id: validate
         if: steps.find-changed.outputs.unique_dirs != ''
         run: |
           set -e
           
           UNIQUE_DIRS="${{ steps.find-changed.outputs.unique_dirs }}"
+          VALIDATION_FAILED=0
           
-          # Track compilation results
-          COMPILATION_FAILED=0
-          COMPILED_DIRS=""
-          
-          # Create temporary directory for compiled outputs
-          TEMP_DIR=$(mktemp -d)
-          echo "Temporary compilation directory: $TEMP_DIR"
-          
-          # Process each unique input directory (avoids redundant compilation)
+          # Process each unique input directory
           for input_dir in $UNIQUE_DIRS; do
             echo "=========================================="
-            echo "Compiling directory: $input_dir"
+            echo "Validating: $input_dir"
             echo "=========================================="
             
             # Extract package name from path (e.g., packages/aws_vpcflow_otel/_dev/...)
             package_name=$(echo "$input_dir" | sed 's|packages/\([^/]*\)/.*|\1|')
-            temp_output_dir="$TEMP_DIR/${package_name}/kibana/dashboard"
-            
-            # Create temp output directory
-            mkdir -p "$temp_output_dir"
+            output_dir="packages/${package_name}/kibana/dashboard"
             
             echo "Input directory: $input_dir"
-            echo "Temp output directory: $temp_output_dir"
+            echo "Output directory: $output_dir"
             echo ""
             
-            # Compile entire directory to JSON format (compiles all YAML files in the directory)
-            # Using @latest - consider pinning to a specific version for reproducibility
-            if uvx --from kb-dashboard-cli@latest kb-dashboard compile \
+            # Compile directly to the output directory with --exit-non-zero-on-change.
+            # This flag makes the exit code equal to the number of files that changed
+            # (capped at 125). It only checks files produced by the compiler, so
+            # non-compiled (pre-existing) JSON dashboards are ignored.
+            set +e
+            uvx --from kb-dashboard-cli@0.2.7 kb-dashboard compile \
                 --input-dir "$input_dir" \
-                --output-dir "$temp_output_dir" \
-                --format json; then
-              echo "✅ Compiled directory: $input_dir"
-              COMPILED_DIRS="$COMPILED_DIRS $input_dir"
-            else
-              echo "❌ ERROR: Failed to compile directory $input_dir"
-              COMPILATION_FAILED=1
-            fi
+                --output-dir "$output_dir" \
+                --format json \
+                --exit-non-zero-on-change
+            exit_code=$?
+            set -e
             
-            echo ""
-          done
-          
-          # Store temp directory and compiled directories for comparison step
-          echo "temp_dir=$TEMP_DIR" >> $GITHUB_OUTPUT
-          if [ -n "$COMPILED_DIRS" ]; then
-            COMPILED_DIRS_ESCAPED=$(echo "$COMPILED_DIRS" | tr '\n' ' ' | sed 's/^ *//;s/ *$//')
-            echo "compiled_dirs=$COMPILED_DIRS_ESCAPED" >> $GITHUB_OUTPUT
-          fi
-          
-          if [ $COMPILATION_FAILED -eq 1 ]; then
-            echo "❌ Compilation failed for one or more directories"
-            rm -rf "$TEMP_DIR"
-            exit 1
-          fi
-
-      - name: Compare compiled vs existing dashboards
-        id: compare
-        if: steps.compile.outputs.compiled_dirs != ''
-        run: |
-          set -e
-          
-          COMPILED_DIRS="${{ steps.compile.outputs.compiled_dirs }}"
-          TEMP_DIR="${{ steps.compile.outputs.temp_dir }}"
-          VALIDATION_FAILED=0
-          
-          # Process each compiled directory
-          for input_dir in $COMPILED_DIRS; do
-            echo "=========================================="
-            echo "Comparing compiled output for: $input_dir"
-            echo "=========================================="
-            
-            # Extract package name from path
-            package_name=$(echo "$input_dir" | sed 's|packages/\([^/]*\)/.*|\1|')
-            existing_output_dir="packages/${package_name}/kibana/dashboard"
-            compiled_output_dir="$TEMP_DIR/${package_name}/kibana/dashboard"
-            
-            # Check if dashboard output directory exists
-            if [ ! -d "$existing_output_dir" ]; then
-              echo "❌ ERROR: Dashboard output directory does not exist: $existing_output_dir"
-              VALIDATION_FAILED=1
-              continue
-            fi
-            
-            # Compare compiled files with existing files
-            if diff -r "$compiled_output_dir" "$existing_output_dir" > /dev/null 2>&1; then
-              echo "✅ PASSED: YAML dashboards in $input_dir compile correctly and match existing JSON files"
+            if [ $exit_code -eq 0 ]; then
+              echo "✅ PASSED: YAML dashboards in $input_dir match committed JSON"
             else
               echo ""
-              echo "❌ ERROR: Compiled output does not match existing JSON files in $existing_output_dir"
+              echo "❌ ERROR: $exit_code compiled dashboard(s) differ from committed JSON in $output_dir"
               echo ""
-              echo "Differences found:"
-              diff -r "$compiled_output_dir" "$existing_output_dir" || true
+              echo "Differences:"
+              git diff -- "$output_dir" || true
               echo ""
-              echo "The YAML dashboard(s) were modified but the JSON was not updated."
-              echo "Please run the following command to update the JSON files:"
-              echo "  cd $input_dir && uvx --from kb-dashboard-cli@latest kb-dashboard compile --input-dir . --output-dir ../../kibana/dashboard --format json"
+              echo "The YAML source and committed JSON are out of sync."
+              echo "Please recompile with:"
+              echo "  uvx --from kb-dashboard-cli@0.2.7 kb-dashboard compile --input-dir $input_dir --output-dir $output_dir --format json"
               echo ""
               VALIDATION_FAILED=1
             fi
@@ -225,10 +164,9 @@ jobs:
             echo ""
           done
           
-          # Clean up temp directory
-          rm -rf "$TEMP_DIR"
+          # Restore any files modified during validation
+          git checkout -- . 2>/dev/null || true
           
-          # Exit with error if any validation failed
           if [ $VALIDATION_FAILED -eq 1 ]; then
             echo ""
             echo "=========================================="
