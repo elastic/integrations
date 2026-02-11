@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Pleasant Password Server logs.
+description: Pipeline for processing Totemo Securemail logs.
 processors:
   - rename:
       field: message
@@ -120,6 +120,18 @@ processors:
         - _tmp
       ignore_failure: true
       ignore_missing: true
+  - script:
+      lang: painless
+      source: |
+        if (ctx.email?.from?.address != null && ctx.email?.from?.address instanceof String) {
+          ctx.email.from.address = [ctx.email.from.address];
+        }
+  - script:
+      lang: painless
+      source: |
+        if (ctx.email?.to?.address != null && ctx.email?.to?.address instanceof String) {
+          ctx.email.to.address = [ctx.email.to.address];
+        }
 on_failure:
   - append:
       field: error.message
