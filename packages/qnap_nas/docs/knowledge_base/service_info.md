@@ -30,14 +30,14 @@ This integration has been tested against **QNAP NAS** QTS 4.5.4 and is expected 
 
 -   **Administrative Access:** Full administrator access to the QNAP QTS web administration interface is required to configure log forwarding using the QuLog Center.
 -   **QuLog Center Application:** The QuLog Center application must be installed on your QNAP NAS. If not present, it can be installed from the App Center.
--   **Network Connectivity:** The QNAP NAS must have network connectivity to the Elastic Agent host on the chosen protocol (TCP, UDP, or TLS) and port (for example, `9301`). Ensure no firewalls are blocking communication between the NAS and the Agent.
+-   **Network Connectivity:** The QNAP NAS must have network connectivity to the Elastic Agent host on the chosen protocol (TCP, UDP) and port (for example, `9301`). Ensure no firewalls are blocking communication between the NAS and the Agent.
 -   **Elastic Agent Host IP Address:** You will need the IP address of the server where the Elastic Agent is running to configure it as the syslog server destination on the QNAP NAS.
 -   **Protocol and Port Selection:** Decide whether to use TCP, UDP, or TLS for syslog communication and the specific port number the Elastic Agent will listen on. This choice must match the configuration on both the QNAP NAS and the Elastic Agent.
 
 ## Elastic prerequisites
 
 -   **Elastic Agent Installation and Enrollment:** An Elastic Agent must be installed and successfully enrolled in Fleet, connected to your Elastic Stack instance.
--   **Network Connectivity:** The Elastic Agent host must be reachable from the QNAP NAS on the configured syslog port (for example, `9301`) and protocol (TCP, UDP, or TLS). Ensure that any host-based firewalls on the Elastic Agent server or network firewalls allow inbound connections on the specified port.
+-   **Network Connectivity:** The Elastic Agent host must be reachable from the QNAP NAS on the configured syslog port (for example, `9301`) and protocol (TCP, UDP). Ensure that any host-based firewalls on the Elastic Agent server or network firewalls allow inbound connections on the specified port.
 -   **Elastic Stack Version:** Your Elastic Stack (Elasticsearch and Kibana) should be compatible with the version of the Elastic Agent you are using.
 
 ## Vendor set up steps
@@ -46,23 +46,21 @@ This integration has been tested against **QNAP NAS** QTS 4.5.4 and is expected 
 1.  Log in to your QNAP QTS web administration interface using an administrator account.
 2.  Open the **QuLog Center** application. If it's not installed, navigate to the **App Center** and install it.
 3.  In QuLog Center, navigate to **QuLog Service** using the left-hand menu.
-4.  Click on the **Log Sender** tab to manage log forwarding settings.
+4.  Click the **Log Sender** tab to manage log forwarding settings.
 5.  Select the checkbox next to **Send logs to a syslog server** to enable the log forwarding service.
-6.  Click **Add a log sending rule** to initiate the configuration of a new syslog destination for the Elastic Agent.
-7.  In the rule creation window, configure the following settings:
-    *   **Server**: Enter the IP address of the server where your Elastic Agent is running.
-    *   **Protocol**: Choose the protocol (`UDP`, `TCP`, or `TLS`) that precisely matches the syslog input configuration of your Elastic Agent.
-    *   **Port**: Specify the port number (for example, `9301`) that your Elastic Agent is configured to listen on for syslog messages.
-    *   **Log Format**: Select `RFC-3164` as the log format. This is critical for the integration to correctly parse the logs.
-8.  Under "Log Type", choose the types of logs you wish to send. It is recommended to select both **Event Log** and **Access Log** for comprehensive monitoring.
-9.  Click the **Test** button to send a test message from the QNAP NAS to the configured Elastic Agent. Verify that the connection is successful.
-10. If the test is successful, click **Apply** to save the log sending rule.
+6.  Click **Add Destination** and fill out the fields in the window that appears:
+   - **Hostname/IP Address**
+   - **Port**
+   - **Transfer protocol**
+   - **Log type**: choose the types of logs you wish to send. It's recommended to select both **Event Log** and **Access Log** for comprehensive monitoring.
+   - **Format**
+7. Click **Apply**
 
 Your QNAP NAS will now begin forwarding the selected Event and Access logs to the Elastic Agent.
 
 ### Vendor Set up Resources
 
--   [QNAP QTS 5.0.x User Manual](https://docs.qnap.com/operating-system/qts/5.0.x/en-us/configuring-samba-microsoft-networking-settings-7447174D.html) - Provides a general user manual for QNAP QTS 5.0.x, which includes information on system configuration.
+-   [QNAP QTS 5.0.x User Manual](https://docs.qnap.com/operating-system/qts/5.0.x/en-us/configuring-log-sender-settings-66DE0C94.html) - Provides a general user manual for QNAP QTS 5.0.x, which includes information on system configuration.
 
 ## Kibana set up steps
 
@@ -131,7 +129,7 @@ To generate test events, perform a few common administrative or user actions on 
     -   **Solution**:
         1.  Verify the **Server IP address** configured in the QNAP QuLog Center's "Send to Syslog Server" tab matches the IP address of the Elastic Agent host.
         2.  Ensure the **Port** number in the QNAP configuration matches the `syslog_port` configured in your Elastic Agent's QNAP NAS integration input (default is 9301).
-        3.  Confirm the **Protocol** (UDP, TCP, or TLS) configured on the QNAP NAS matches the input type (TCP or UDP) selected in the Elastic Agent integration.
+        3.  Confirm the **Protocol** (UDP, TCP) configured on the QNAP NAS matches the input type (TCP or UDP) selected in the Elastic Agent integration.
         4.  Check firewall rules on both the QNAP NAS and the Elastic Agent host to ensure the configured port is open for inbound traffic to the Agent.
         5.  Use a network utility like `netcat` or `tcpdump` on the Elastic Agent host to verify it is receiving traffic on the specified port. For example, `tcpdump -i any port 9301` to check for incoming packets.
 

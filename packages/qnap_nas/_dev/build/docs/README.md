@@ -45,7 +45,7 @@ You'll need to satisfy several vendor and Elastic prerequisites before you can u
 You'll need administrative access and specific applications configured on your QNAP NAS:
 - You'll need full administrator access to the QNAP QTS web administration interface to configure log forwarding using the `QuLog Center`.
 - You must install the `QuLog Center` application on your QNAP NAS. If it's not present, you can install it from the App Center.
-- Ensure you have network connectivity between the QNAP NAS and the Elastic Agent host using your chosen protocol (`TCP`, `UDP`, or `TLS`) and port (for example, `9301`). Check that no firewalls are blocking communication between the NAS and the agent.
+- Ensure you have network connectivity between the QNAP NAS and the Elastic Agent host using your chosen protocol (`TCP`, `UDP`) and port (for example, `9301`). Check that no firewalls are blocking communication between the NAS and the agent.
 - You'll need the IP address of the server where the Elastic Agent is running so you can configure it as the syslog server destination.
 - Decide on the protocol and port number the Elastic Agent will listen on; your choice must match the configuration on both the QNAP NAS and the Elastic Agent.
 
@@ -53,7 +53,7 @@ You'll need administrative access and specific applications configured on your Q
 
 You'll need to have your Elastic environment prepared:
 - You must have an Elastic Agent installed and successfully enrolled in Fleet, connected to your Elastic Stack instance.
-- Ensure the Elastic Agent host is reachable from the QNAP NAS on the configured syslog port (for example, `9301`) and protocol (`TCP`, `UDP`, or `TLS`). You should verify that any host-based firewalls on the Elastic Agent server or network firewalls allow inbound connections on the specified port.
+- Ensure the Elastic Agent host is reachable from the QNAP NAS on the configured syslog port (for example, `9301`) and protocol (`TCP`, `UDP`). You should verify that any host-based firewalls on the Elastic Agent server or network firewalls allow inbound connections on the specified port.
 - Use an Elastic Stack (Elasticsearch and Kibana) version that is compatible with the version of the Elastic Agent you're using.
 
 ## How do I deploy this integration?
@@ -73,21 +73,19 @@ Follow these steps to configure your QNAP NAS device to send logs to the Elastic
 3.  In QuLog Center, navigate to **QuLog Service** using the left-hand menu.
 4.  Click the **Log Sender** tab to manage log forwarding settings.
 5.  Select the checkbox next to **Send logs to a syslog server** to enable the log forwarding service.
-6.  Click **Add a log sending rule** to initiate the configuration of a new syslog destination for the Elastic Agent.
-7.  In the rule creation window, configure the following settings:
-    *   Server: Enter the IP address of the server where your Elastic Agent is running.
-    *   Protocol: Choose the protocol (`UDP`, `TCP`, or `TLS`) that precisely matches the syslog input configuration of your Elastic Agent.
-    *   Port: Specify the port number (for example, `9301`) that your Elastic Agent is configured to listen on for syslog messages.
-    *   Log Format: Select `RFC-3164` as the log format. This is critical for the integration to correctly parse the logs.
-8.  Under Log Type, choose the types of logs you wish to send. It's recommended to select both **Event Log** and **Access Log** for comprehensive monitoring.
-9.  Click the **Test** button to send a test message from the QNAP NAS to the configured Elastic Agent and verify that the connection is successful.
-10. If the test is successful, click **Apply** to save the log sending rule.
+6.  Click **Add Destination** and fill out the fields in the window that appears:
+   - **Hostname/IP Address**
+   - **Port**
+   - **Transfer protocol**
+   - **Log type**: choose the types of logs you wish to send. It's recommended to select both **Event Log** and **Access Log** for comprehensive monitoring.
+   - **Format**
+7. Click **Apply**
 
 #### Vendor resources
 
 For more information about configuring your device, you can refer to the following documentation:
 
-- [QNAP QTS 5.0.x User Manual](https://docs.qnap.com/operating-system/qts/5.0.x/en-us/configuring-samba-microsoft-networking-settings-7447174D.html)
+- [QNAP QTS 5.0.x User Manual](https://docs.qnap.com/operating-system/qts/5.0.x/en-us/configuring-log-sender-settings-66DE0C94.html)
 
 ### Set up steps in Kibana
 
@@ -153,14 +151,14 @@ For help with Elastic ingest tools, check the [Common problems](https://www.elas
 ### Common configuration issues
 
 If you encounter problems with the integration, check these common issues:
-- No logs appearing in Kibana: Verify that the server IP address you configured in the QNAP QuLog Center's Send to Syslog Server tab matches the IP address of the Elastic Agent host. Make sure the port number matches the `syslog_port` you configured in your integration (the default is `9301`). You'll also want to confirm that the protocol (UDP, TCP, or TLS) on the QNAP NAS matches the input type you selected in the integration. Also, check firewall rules on both the NAS and the Agent host to ensure traffic can pass through. You can use a utility like `tcpdump` on the Agent host to verify reception: `tcpdump -i any port 9301`.
+- No logs appearing in Kibana: Verify that the server IP address you configured in the QNAP QuLog Center's Send to Syslog Server tab matches the IP address of the Elastic Agent host. Make sure the port number matches the `syslog_port` you configured in your integration (the default is `9301`). You'll also want to confirm that the protocol (UDP, TCP) on the QNAP NAS matches the input type you selected in the integration. Also, check firewall rules on both the NAS and the Agent host to ensure traffic can pass through. You can use a utility like `tcpdump` on the Agent host to verify reception: `tcpdump -i any port 9301`.
 - Logs are present but unparsed or missing fields: In the QNAP QuLog Center, confirm that you've set the log format to `RFC-3164`, as other formats aren't supported. Check the `error.message` field in Kibana Discover for specific parsing error details. If you've enabled the `preserve_original_event` setting, check the `event.original` field to view the raw log payload. Additionally, verify that you've correctly configured the `Timezone Offset` if the NAS is in a different timezone than the Elastic Agent host.
 - Parsing failures for specific log types: If you receive certain logs but they aren't processed correctly, inspect the `error.message` field for clues. This often happens if the log content deviates from the expected `RFC-3164` standard. You can compare the raw log in `event.original` with the standard format to identify discrepancies.
 
 ### Vendor resources
 
 For more information about QNAP NAS logging and configuration, you can refer to these resources:
-- [QNAP QTS 5.0.x User Manual](https://docs.qnap.com/operating-system/qts/5.0.x/en-us/configuring-samba-microsoft-networking-settings-7447174D.html)
+- [QNAP QTS 5.0.x User Manual](https://docs.qnap.com/operating-system/qts/5.0.x/en-us/configuring-log-sender-settings-66DE0C94.html)
 - [QNAP NAS Official Website](https://qnap.com)
 
 ## Performance and scaling
@@ -171,8 +169,7 @@ For more information on architectures that can be used for scaling this integrat
 
 When you're configuring syslog collection from QNAP NAS devices, consider these trade-offs between `UDP` and `TCP`:
 - `UDP` offers faster, connectionless transmission. It's suitable for high-volume logs where occasional packet loss is acceptable.
-- `TCP` provides reliable, ordered delivery. It ensures all logs are received and is preferred for critical security and audit events, though it has more overhead.
-- `TLS` can be used with `TCP` for encrypted transport. It adds security but increases the processing load on both the NAS and the Elastic Agent.
+- `TCP` provides reliable, ordered delivery. It ensures all logs are received and is preferred for critical security and audit events, though it has more overhead. `TLS` can be used with `TCP` for encrypted transport. It adds security but increases the processing load on both the NAS and the Elastic Agent.
 
 ### Data volume management
 
@@ -211,4 +208,4 @@ The `log` data stream provides events from QNAP NAS of the following types: syst
 ### Vendor documentation links
 
 This resource provides additional information about QNAP NAS:
-- [QNAP NAS Official Website](https://qnap.com)
+- [QNAP QTS 5.0.x User Manual](https://docs.qnap.com/operating-system/qts/5.0.x/en-us/configuring-log-sender-settings-66DE0C94.html)
