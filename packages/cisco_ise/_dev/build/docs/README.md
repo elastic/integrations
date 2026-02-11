@@ -114,8 +114,8 @@ If direct syslog forwarding is not feasible, you can collect logs from local fil
 
 The following resources provide more information about Cisco ISE logging:
 
--   [Configure External Syslog Server On Ise.Html](https://www.cisco.com/c/en/us/support/docs/security/identity-services-engine/222223-configure-external-syslog-server-on-ise.html)
--   [B Ise Admin 31 Deployment.Html](https://www.cisco.com/c/en/us/td/docs/security/ise/3-1/admin_guide/b_ise_admin_3_1/b_ISE_admin_31_deployment.html)
+-   [Configure External Syslog Server On ISE](https://www.cisco.com/c/en/us/support/docs/security/identity-services-engine/222223-configure-external-syslog-server-on-ise.html)
+-   [Cisco Identity Services Engine Administrator Guide, Release 3.1](https://www.cisco.com/c/en/us/td/docs/security/ise/3-1/admin_guide/b_ise_admin_3_1/b_ISE_admin_31_deployment.html)
 
 ### Set up steps in Kibana
 
@@ -290,12 +290,6 @@ It's an example of what a sample event looks like for this data stream:
 
 {{ event "log" }}
 
-### Performance and scaling
-
-To ensure the integration performs reliably as your environment grows, you should follow these recommendations:
-- You must set the Maximum Length to `8192` bytes in your Cisco ISE configuration. This prevents the Elastic Agent from having to process fragmented syslog messages, which can significantly increase CPU usage and cause parsing failures.
-- You should monitor the Elastic Agent's resource consumption during peak hours to ensure it can keep up with the volume of authentication and accounting logs.
-- You should ensure that any firewalls or load balancers in the data path are configured to handle the expected syslog throughput.
 
 ### Vendor documentation links
 
