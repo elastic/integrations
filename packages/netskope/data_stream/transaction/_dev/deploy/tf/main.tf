@@ -35,7 +35,7 @@ resource "aws_sqs_queue" "aws_queue" {
 POLICY
 }
 
-resource "aws_s3_bucket_notification" "aws_bucket_notification" {
+resource "aws_s3_bucket_notification" "bucket_notification" {
   bucket = aws_s3_bucket.aws_bucket.id
 
   queue {
