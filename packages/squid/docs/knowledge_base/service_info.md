@@ -10,7 +10,7 @@ The Squid Proxy integration allows for the comprehensive monitoring of Squid acc
 
 ## Data types collected
 
-This integration collects log data via a single data stream with multiple input options:
+This integration collects log data using a single data stream with multiple input options:
 
 - **Squid logs (logs):** Collect Squid logs using the **UDP** input. This is designed for high-speed network transmission where low-latency delivery is prioritized.
 - **Squid logs (logs):** Collect Squid logs using the **TCP** input. This ensures reliable, connection-oriented network transmission of proxy events.
@@ -112,8 +112,8 @@ To ensure optimal performance in high-volume environments, consider the followin
 After configuration is complete, verify that data is flowing correctly.
 
 ### 1. Trigger Data Flow on Squid:
-- **Generate web traffic:** From a client machine configured to use the Squid proxy, browse to several different websites (e.g., `http://example.com`) to generate access log entries.
-- **Test via command line:** Use `curl` on a client to make a request through the proxy: `curl -x http://<SQUID_IP>:<SQUID_PORT> http://www.elastic.co`.
+- **Generate web traffic:** From a client machine configured to use the Squid proxy, browse to several different websites to generate access log entries.
+- **Test using command line:** Use `curl` on a client to make a request through the proxy: `curl -x http://<SQUID_IP>:<SQUID_PORT> http://www.elastic.co`.
 - **Authentication event:** If proxy authentication is enabled, attempt to log in with both valid and invalid credentials to generate authentication-related log entries.
 
 ### 2. Check Data in Kibana:
@@ -133,13 +133,13 @@ After configuration is complete, verify that data is flowing correctly.
 
 - **Incorrect Log Format**: If logs are appearing in Kibana but are not being parsed correctly, ensure the `access_log` directive in `squid.conf` includes the `squid` keyword at the end. This integration specifically expects the Native log format.
 - **Port Conflicts**: If using TCP or UDP collection, ensure no other service is using port `9537` on the Agent host. Use `sudo lsof -i :9537` to check for existing listeners.
-- **File Permissions**: When using the filestream input, ensure the Elastic Agent user has read permissions for the Squid log directory and the `access.log` file itself (e.g., `chmod 644 /var/log/squid/access.log`).
-- **Firewall Obstructions**: If logs are sent via network but not appearing, check the firewall settings on both the Squid server (egress) and the Agent host (ingress) to allow traffic on the configured port.
+- **File Permissions**: When using the filestream input, ensure the Elastic Agent user has read permissions for the Squid log directory and the `access.log` file itself, such as `chmod 644 /var/log/squid/access.log`.
+- **Firewall Obstructions**: If logs are sent over the network but not appearing, check the firewall settings on both the Squid server (egress) and the Agent host (ingress) to allow traffic on the configured port.
 
 ## Ingestion Errors
 
 - **Parsing Failures**: Look for the `error.message` or `tags` field in Discover containing `_grokparsefailure`. This usually indicates that the log format in Squid has been customized away from the standard Native format.
-- **Timestamp Mismatches**: Squid logs use Unix timestamps with milliseconds. Ensure the system clock on both the Squid server and the Elastic Agent host are synchronized via NTP to avoid "event in the future" or "late arrival" issues.
+- **Timestamp Mismatches**: Squid logs use Unix timestamps with milliseconds. Ensure the system clock on both the Squid server and the Elastic Agent host are synchronized using NTP to avoid "event in the future" or "late arrival" issues.
 - **Field Mapping Issues**: If specific fields like `source.ip` are missing, verify that the `logformat` directive has not been modified to remove those specific tokens.
 
 ## Vendor Resources

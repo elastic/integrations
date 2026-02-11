@@ -156,7 +156,7 @@ To verify the integration is working and data is flowing:
 
 ## Troubleshooting
 
-For help with Elastic ingest tools, see the [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems) documentation.
+For help with Elastic ingest tools, refer to the [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems) documentation.
 
 ### Common configuration issues
 
