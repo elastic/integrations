@@ -5,6 +5,7 @@ processors:
       tag: grok_message_efb70afb
       field: message
       patterns:
+        - '%{DATA:_tmp.action}\(%{DATA:observer.ingress.interface.name}\)(?: %{IP:client.ip})? %{MAC:client.mac}(?: %{HOSTNAME:pfsense.dhcp.hostname})?'
         - '%{DATA:_tmp.action}/%{INTERFACE:observer.ingress.interface.name}/%{MAC_ADDRESS:server.mac}/%{NOTSPACE:pfsense.dhcp.subnet}'
         - '%{DATA:_tmp.action} %{IPV6:client.address}(/%{NUMBER})? on %{INTERFACE:observer.ingress.interface.name}'
         - '%{DATA:_tmp.action} (from|to) %{IPV6:client.address} port %{POSINT:client.port:long}(, transaction ID %{NOTSPACE:pfsense.dhcp.transaction_id})?'
@@ -97,6 +98,10 @@ processors:
       field: destination
       copy_from: server
       ignore_empty_value: true
+  - gsub:
+      field: event.provider
+      pattern: 'dnsmasq-dhcp'
+      replacement: 'dhcpd'
   - append:
       tag: append_related_hosts_8bba1f0b
       field: related.hosts
