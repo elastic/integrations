@@ -122,16 +122,13 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      source: |
-        if (ctx.email?.from?.address != null && ctx.email?.from?.address instanceof String) {
-          ctx.email.from.address = [ctx.email.from.address];
-        }
+      source: ctx.email.from.address = [ctx.email.from.address];
+
+      if: (ctx.email?.from?.address != null && ctx.email?.from?.address instanceof String)
   - script:
       lang: painless
-      source: |
-        if (ctx.email?.to?.address != null && ctx.email?.to?.address instanceof String) {
-          ctx.email.to.address = [ctx.email.to.address];
-        }
+      source: ctx.email.to.address = [ctx.email.to.address];
+      if: (ctx.email?.to?.address != null && ctx.email?.to?.address instanceof String)
 on_failure:
   - append:
       field: error.message
