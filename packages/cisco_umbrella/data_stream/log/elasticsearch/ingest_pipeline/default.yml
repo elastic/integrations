@@ -34,6 +34,9 @@ processors:
         - cisco.umbrella.policy_identity_type
         - cisco.umbrella.identity_types
         - cisco.umbrella.blocked_categories
+        - rule.id
+        - destination.geo.country_iso_code
+        - organization.id
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('dnslogs')
   - gsub:
       description: Strip tailing dot from DNS names.
@@ -131,7 +134,53 @@ processors:
         - cisco.umbrella.action
         - cisco.umbrella.fqdns
         - cisco.umbrella.destination_lists_id
+        - cisco.umbrella.first_packet_timestamp
+        - cisco.umbrella.last_packet_timestamp
+        - source.packets
+        - destination.packets
+        - source.bytes
+        - destination.bytes
+        - event.id
+        - destination.geo.country_iso_code
+        - cloud.availability_zone
+        - network.application
+        - cisco.umbrella.private_app_id
+        - cisco.umbrella.private_flow
+        - cisco.umbrella.posture_id
+        - cisco.umbrella.casi_category_ids
+        - cisco.umbrella.traffic_source
+        - cisco.umbrella.content_category_ids
+        - cisco.umbrella.content_category_list_ids
+        - organization.id
+        - source.nat.ip
+        - cisco.umbrella.egress
       if: ctx.log?.file?.path != null && (ctx.log.file.path.contains('cloudfirewalllogs') || ctx.log.file.path.contains('firewalllogs'))
+  - date:
+      field: cisco.umbrella.first_packet_timestamp
+      tag: date_cisco_umbrella_first_packet_timestamp
+      target_field: cisco.umbrella.first_packet_timestamp
+      formats:
+        - UNIX
+      if: ctx.cisco?.umbrella?.first_packet_timestamp != null && ctx.cisco.umbrella.first_packet_timestamp != ''
+      on_failure:
+        - remove:
+            field: cisco.umbrella.first_packet_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: cisco.umbrella.last_packet_timestamp
+      tag: date_cisco_umbrella_last_packet_timestamp
+      target_field: cisco.umbrella.last_packet_timestamp
+      formats:
+        - UNIX
+      if: ctx.cisco?.umbrella?.last_packet_timestamp != null && ctx.cisco.umbrella.last_packet_timestamp != ''
+      on_failure:
+        - remove:
+            field: cisco.umbrella.last_packet_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.type
       value: firewall
@@ -159,6 +208,21 @@ processors:
         - destination.address
         - destination.port
         - cisco.umbrella.action
+        - cisco.umbrella.operation_mode
+        - cisco.umbrella.policy_resource_id
+        - network.direction
+        - rule.id
+        - cisco.umbrella.ips_config_id
+        - cloud.availability_zone
+        - network.application
+        - cisco.umbrella.casi_category_ids
+        - cisco.umbrella.datacenter
+        - organization.id
+        - source.nat.ip
+        - cisco.umbrella.egress
+        - cisco.umbrella.enforced_by
+        - cisco.umbrella.ftd_enforcement_id
+        - cisco.umbrella.ftd_enforcement_name
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('intrusionlogs')
   - set:
       field: observer.type
@@ -187,6 +251,14 @@ processors:
         - file.size
         - file.hash.sha256
         - cisco.umbrella.file_label
+        - cisco.umbrella.application_category_name
+        - network.direction
+        - cisco.umbrella.private_resource_name
+        - cisco.umbrella.private_resource_group_name
+        - network.protocol
+        - destination.ip
+        - destination.port
+        - organization.id
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('dlplogs')
   - set:
       field: observer.type
@@ -374,6 +446,7 @@ processors:
       field: user.name
       ignore_failure: true
       patterns:
+        - ^%{GREEDYDATA:user.full_name} (\(\[%{GREEDYDATA}\]\(mailto:(?<user.email>%{DATA:user.name}@%{DATA:user.domain})\)\))?$
         - ^%{GREEDYDATA:user.full_name} (\((?<user.email>%{DATA:user.name}@%{DATA:user.domain})\))?$
       if: ctx.user?.name != null && ctx.user?.name.contains('@') == true
   - set:
@@ -429,6 +502,22 @@ processors:
   ######################
   # Network ECS Fields #
   ######################
+  - set:
+      field: network.direction
+      value: inbound
+      if: ctx.network?.direction == 'S2C'
+  - set:
+      field: network.direction
+      value: outbound
+      if: ctx.network?.direction == 'C2S'
+  - set:
+      field: network.direction
+      value: unknown
+      if: ctx.network?.direction == 'UNKNOWN'
+  - lowercase:
+      field: network.application
+      target_field: network.application
+      if: ctx.network?.application != null
   - lowercase:
       field: cisco.umbrella.direction
       target_field: network.direction
@@ -437,6 +526,63 @@ processors:
       field: source.bytes
       type: long
       if: ctx.source?.bytes != null
+  - convert:
+      field: source.packets
+      tag: convert_source_packets_to_long
+      type: long
+      if: ctx.source?.packets != null
+      on_failure:
+        - remove:
+            field: source.packets
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: destination.bytes
+      tag: convert_destination_bytes_to_long
+      type: long
+      if: ctx.destination?.bytes != null
+      on_failure:
+        - remove:
+            field: destination.bytes
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: destination.packets
+      tag: convert_destination_packets_to_long
+      type: long
+      if: ctx.destination?.packets != null
+      on_failure:
+        - remove:
+            field: destination.packets
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      if: ctx.destination?.packets != null && ctx.source?.packets != null
+      lang: painless
+      tag: set_network_packets
+      description: Populate network.packets by adding source.packets and destination.packets
+      source: |-
+        ctx.network = ctx.network ?: [:];
+        ctx.network.packets = ctx.source.packets + ctx.destination.packets;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      if: ctx.destination?.bytes != null && ctx.source?.bytes != null
+      lang: painless
+      tag: set_network_bytes
+      description: Populate network.bytes by adding source.bytes and destination.bytes
+      source: |-
+        ctx.network = ctx.network ?: [:];
+        ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: source.port
       type: long

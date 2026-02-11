@@ -16,6 +16,8 @@
           type: keyword
     - name: ActorContextId
       type: keyword
+    - name: ActorInfoString
+      type: keyword
     - name: ActorIpAddress
       type: keyword
     - name: ActorUserId
@@ -275,6 +277,52 @@
       # not expressible here; object_type_mapping_type cannot be 'boolean'.
       object_type: keyword
       object_type_mapping_type: '*'
+    - name: ExchangeAggregatedFolders
+      type: nested
+      description: List of folders
+      fields:
+        - name: Path
+          type: keyword
+          description: Path of the folder
+        - name: Id
+          type: keyword
+          description: Folder ID
+        - name: FolderItems
+          type: nested
+          description: Items in the folder
+          fields:
+            - name: SizeInBytes
+              type: long
+              description: Size of the item in bytes
+            - name: Id
+              type: keyword
+              description: Item ID
+            - name: ImmutableId
+              type: keyword
+              description: Immutable ID of the item
+            - name: InternetMessageId
+              type: keyword
+              description: Internet message ID
+    - name: ExchangeAggregatedMessages
+      type: nested
+      description: List of messages
+      fields:
+        - name: Path
+          type: keyword
+          description: Path of the message
+        - name: Id
+          type: keyword
+          description: Message ID
+        - name: MessageItems
+          type: nested
+          description: Items in the message
+          fields:
+            - name: SizeInBytes
+              type: long
+              description: Size of the message item in bytes
+            - name: Id
+              type: keyword
+              description: Message item ID
     - name: ExchangeMetaData
       type: group
       fields:
@@ -296,6 +344,10 @@
       type: keyword
     - name: ExtendedProperties.RequestType
       type: keyword
+    - name: ExtendedProperties.additionalDetails
+      type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
     - name: ExtendedProperties.*
       type: object
       object_type: keyword
@@ -415,6 +467,8 @@
       type: keyword
     - name: Operation
       type: keyword
+    - name: OperationCount
+      type: long
     - name: OperationId
       type: keyword
     - name: OperationProperties
@@ -603,6 +657,10 @@
     - name: TeamName
       type: keyword
     - name: ThreatDetectionMethods
+      type: keyword
+    - name: TokenObjectId
+      type: keyword
+    - name: TokenTenantId
       type: keyword
     - name: Timestamp
       type: keyword

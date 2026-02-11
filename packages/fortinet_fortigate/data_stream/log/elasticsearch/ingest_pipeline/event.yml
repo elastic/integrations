@@ -2,72 +2,88 @@
 description: Pipeline for parsing fortinet firewall logs (event pipeline)
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_outcome_102f0bb5
       field: event.outcome
       value: failure
       if: ctx.fortinet?.firewall?.result == 'ERROR' || ctx.fortinet?.firewall?.status == 'negotiate_error'
   - set:
+      tag: set_event_outcome_bac8ed90
       field: event.outcome
       value: success
       if: ctx.fortinet?.firewall?.result == 'OK' || ['FSSO-logon', 'auth-logon', 'FSSO-logoff', 'auth-logout'].contains(ctx.fortinet?.firewall?.action)
   - append:
+      tag: append_event_type_41eb50c6
       field: event.type
       value:
         - start
       if: "['FSSO-logon', 'auth-logon'].contains(ctx.fortinet?.firewall?.action)"
   - append:
+      tag: append_event_type_a0b70a82
       field: event.type
       value:
         - end
       if: "['FSSO-logoff', 'auth-logout'].contains(ctx.fortinet?.firewall?.action)"
   - append:
+      tag: append_event_type_7df30e03
       field: event.type
       value: connection
       if: ctx.fortinet?.firewall?.subtype == 'vpn'
   - append:
+      tag: append_event_category_75e66583
       field: event.category
       value: network
       if: ctx.fortinet?.firewall?.subtype == 'vpn'
   - append:
+      tag: append_event_type_d9e5777e
       field: event.type
       value: info
       if: ctx.fortinet?.firewall?.action == 'perf-stats'
   - append:
+      tag: append_event_category_c9e00984
       field: event.category
       value: host
       if: ctx.fortinet?.firewall?.action == 'perf-stats'
   - append:
+      tag: append_event_type_0b9b5f72
       field: event.type
       value: info
       if: ctx.fortinet?.firewall?.subtype == 'update'
   - append:
+      tag: append_event_category_61d5b2cf
       field: event.category
       value:
         - host
         - malware
       if: ctx.fortinet?.firewall?.subtype == 'update'
   - append:
+      tag: append_event_category_975470e4
       field: event.category
       value: authentication
       if: ctx.fortinet?.firewall?.subtype == 'user'
   - rename:
+      tag: rename_fortinet_firewall_dstip_to_destination_ip_72bf25a6
       field: fortinet.firewall.dstip
       target_field: destination.ip
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_remip_to_destination_ip_971a6fc2
       field: fortinet.firewall.remip
       target_field: destination.ip
       ignore_missing: true
       if: ctx.destination?.ip == null
   - convert:
+      tag: convert_fortinet_firewall_dstport_to_destination_port_37791676
       field: fortinet.firewall.dstport
       target_field: destination.port
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_remport_to_destination_port_763b849e
       field: fortinet.firewall.remport
       target_field: destination.port
       type: long
@@ -75,60 +91,72 @@ processors:
       ignore_missing: true
       if: ctx.destination?.port == null
   - convert:
+      tag: convert_fortinet_firewall_rcvdbyte_to_destination_bytes_65439a41
       field: fortinet.firewall.rcvdbyte
       target_field: destination.bytes
       type: long
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_daddr_to_destination_address_b6978056
       field: fortinet.firewall.daddr
       target_field: destination.address
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_dst_host_to_destination_address_8323a9e5
       field: fortinet.firewall.dst_host
       target_field: destination.address
       ignore_missing: true
       if: ctx.destination?.address == null
   - rename:
+      tag: rename_fortinet_firewall_dst_host_to_destination_domain_f63213f3
       field: fortinet.firewall.dst_host
       target_field: destination.domain
       ignore_missing: true
       if: ctx.destination?.address == null
   - rename:
+      tag: rename_fortinet_firewall_group_to_source_user_group_name_8ef934c4
       field: fortinet.firewall.group
       target_field: source.user.group.name
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_sentbyte_to_source_bytes_fe52ad03
       field: fortinet.firewall.sentbyte
       target_field: source.bytes
       type: long
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_srcip_to_source_ip_79344114
       field: fortinet.firewall.srcip
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_locip_to_source_ip_47ccd6f8
       field: fortinet.firewall.locip
       target_field: source.ip
       ignore_missing: true
       if: ctx.source?.ip == null
   - rename:
+      tag: rename_fortinet_firewall_srcmac_to_source_mac_bfde8f82
       field: fortinet.firewall.srcmac
       target_field: source.mac
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_source_mac_to_source_mac_e364b602
       field: fortinet.firewall.source_mac
       target_field: source.mac
       ignore_missing: true
       if: ctx.source?.mac == null
   - convert:
+      tag: convert_fortinet_firewall_srcport_to_source_port_dbc962e4
       field: fortinet.firewall.srcport
       target_field: source.port
       type: long
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_locport_to_source_port_ecd8b392
       field: fortinet.firewall.locport
       target_field: source.port
       type: long
@@ -136,72 +164,89 @@ processors:
       ignore_missing: true
       if: ctx.source?.port == null
   - rename:
+      tag: rename_fortinet_firewall_user_to_source_user_name_ba3b5509
       field: fortinet.firewall.user
       target_field: source.user.name
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_saddr_to_source_address_036ff596
       field: fortinet.firewall.saddr
       target_field: source.address
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_agent_to_user_agent_original_c612b9cc
       field: fortinet.firewall.agent
       target_field: user_agent.original
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_file_to_file_name_a8d30898
       field: fortinet.firewall.file
       target_field: file.name
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_filesize_to_file_size_2e69dd69
       field: fortinet.firewall.filesize
       target_field: file.size
       type: long
       ignore_failure: true
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_level_to_log_level_0e7843bb
       field: fortinet.firewall.level
       target_field: log.level
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_logid_to_event_code_d1ce9848
       field: fortinet.firewall.logid
       target_field: event.code
       ignore_missing: true
       if: ctx.event?.code == null
   - rename:
+      tag: rename_fortinet_firewall_msg_to_message_18251f47
       field: fortinet.firewall.msg
       target_field: message
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_policyid_to_rule_id_b85da627
       field: fortinet.firewall.policyid
       target_field: rule.id
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_proto_to_network_iana_number_930125ae
       field: fortinet.firewall.proto
       target_field: network.iana_number
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_service_to_network_protocol_c028ec88
       field: fortinet.firewall.service
       target_field: network.protocol
       ignore_missing: true
   - lowercase:
+      tag: lowercase_network_protocol_49872259
       field: network.protocol
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_error_num_to_error_code_8e7c3151
       field: fortinet.firewall.error_num
       target_field: error.code
       ignore_missing: true
   - rename:
+      tag: rename_fortinet_firewall_logdesc_to_rule_description_4783eec6
       field: fortinet.firewall.logdesc
       target_field: rule.description
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_addr_e65b2bfc
       field: fortinet.firewall.addr
       type: ip
       if: ctx.fortinet?.firewall?.addr != null && ctx.fortinet.firewall.addrgrp == null
       on_failure:
         - rename:
+            tag: rename_fortinet_firewall_addr_to_fortinet_firewall_addrgrp_5588fbc3
             field: fortinet.firewall.addr
             target_field: fortinet.firewall.addrgrp
   - uri_parts:
+      tag: uri_parts_fortinet_firewall_url_to_url_3a7b2d2e
       field: fortinet.firewall.url
       target_field: url
       keep_original: false
@@ -214,17 +259,21 @@ processors:
   # Need to do a set, then remove since rename w/ override
   # is not supported in 8.3.0
   - set:
+      tag: set_url_domain_e4ace8d8
       field: url.domain
       copy_from: fortinet.firewall.hostname
       ignore_empty_value: true
       override: true
   - remove:
+      tag: remove_fortinet_firewall_hostname_161ef624
       field: fortinet.firewall.hostname
       ignore_missing: true
   - remove:
+      tag: remove_fortinet_firewall_url_5d47c5fc
       field: fortinet.firewall.url
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_sess_duration_to_event_duration_022af8e6
       field: fortinet.firewall.sess_duration
       type: long
       target_field: event.duration
@@ -232,19 +281,23 @@ processors:
       ignore_missing: true
       if: ctx.event?.duration == null
   - convert:
+      tag: convert_fortinet_firewall_mem_4afb50de
       field: fortinet.firewall.mem
       type: integer
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_jitter_6cb67bbc
       field: fortinet.firewall.jitter
       type: float
       ignore_missing: true
   - convert:
+      tag: convert_fortinet_firewall_latency_a02f5b8a
       field: fortinet.firewall.latency
       type: float
       ignore_missing: true
   - set:
+      tag: set_source_user_name_d0ef01fd
       field: source.user.name
       copy_from: fortinet.firewall.xauthuser
       if: ctx.fortinet?.firewall?.subtype == 'vpn' && ctx.fortinet.firewall.xauthuser != null
@@ -256,6 +309,7 @@ processors:
           ctx.fortinet.firewall.advpnsc = ctx.fortinet.firewall.advpnsc != '0';
         }
   - remove:
+      tag: remove_79b94f58
       field:
         - fortinet.firewall.dstport
         - fortinet.firewall.remport
@@ -269,6 +323,7 @@ processors:
   # For vpn subtype, remip(the client), is source, and locip(the firewall) is destination
   # https://docs.fortinet.com/document/fortigate/7.6.0/administration-guide/834425/understanding-vpn-related-logs
   - script:
+      tag: script_345a587b
       lang: painless
       if: ctx.fortinet?.firewall?.subtype == 'vpn'
       source: |
@@ -285,4 +340,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

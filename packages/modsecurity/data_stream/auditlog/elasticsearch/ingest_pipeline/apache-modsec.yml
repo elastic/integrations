@@ -2,10 +2,12 @@
 description: Pipeline for apache modsecurity audit log.
 processors:
   - rename:
+      tag: rename_json_transaction_time_to__temps_date_3f87beb3
       field: json.transaction.time
       target_field: _temps.date
       ignore_missing: true
   - grok:
+      tag: grok__temps_date_46a5f44c
       field: _temps.date
       patterns:
         - "%{DATE}"
@@ -15,6 +17,7 @@ processors:
         TZ: "(?:[APMCE][SD]T|UTC|[-+]\\d{2}:?\\d{2})"
       ignore_failure: true
   - gsub:
+      tag: gsub__temps_tz_8e2cb4b7
       field: _temps.tz
       pattern: "^([-+]\\d{2})(\\d{2})$"
       replacement: "$1:$2"
@@ -22,24 +25,29 @@ processors:
 
   # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
   - set:
+      tag: set__temps_tz_5d08e94e
       field: _temps.tz
       copy_from: _conf.tz_offset
       override: false
       if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
   - set:
+      tag: set__temps_tz_421d98a4
       field: _temps.tz
       copy_from: event.timezone
       override: false
       if: ctx.event?.timezone != null
   - set:
+      tag: set__temps_tz_56876443
       field: _temps.tz
       value: UTC
       override: false
   - set:
+      tag: set_event_timezone_8476ef7a
       field: event.timezone
       copy_from: _temps.tz
 
   - date:
+      tag: date__temps_date_7135cc5a
       field: _temps.date
       timezone: "{{{ event.timezone }}}"
       formats:
@@ -52,6 +60,7 @@ processors:
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
+            tag: remove_event_timezone_907d6fea
             field: event.timezone
             ignore_missing: true
         - date:
@@ -66,98 +75,122 @@ processors:
               - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
             on_failure:
               - append:
+                  tag: append_error_message_4cacfde8
                   field: error.message
                   value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
               - fail:
+                  tag: fail_1b60673b
                   message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
   # rename ecs
   - rename:
+      tag: rename_json_transaction_remote_address_to_source_ip_88854519
       field: json.transaction.remote_address
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_json_transaction_local_address_to_destination_ip_f86eeb8f
       field: json.transaction.local_address
       target_field: destination.ip
       ignore_missing: true
   - rename:
+      tag: rename_json_transaction_remote_port_to_source_port_fac313c8
       field: json.transaction.remote_port
       target_field: source.port
       ignore_missing: true
   - grok:
+      tag: grok_json_request_request_line_e2746bce
       field: json.request.request_line
       patterns:
         - "%{NOTSPACE:http.request.method} %{URIPATHPARAM:url.original}(?: HTTP/%{NUMBER:http.version})"
   - rename:
+      tag: rename_json_transaction_request_headers_host_to_json_transaction_request_headers_Host_50a00924
       field: json.transaction.request.headers.host
       target_field: json.transaction.request.headers.Host
       ignore_missing: true
   - set:
+      tag: set__temps_url_68a0b8bb
       field: _temps.url
       if: ctx.json.transaction.local_port == 443
       value: "https://{{{json.request.headers.Host}}}:{{json.transaction.#local_port}}{{{url.original}}}"
   - set:
+      tag: set__temps_url_70f6c2f5
       field: _temps.url
       if: ctx.json.transaction.local_port == 80
       value: "http://{{{json.request.headers.Host}}}:{{json.transaction.#local_port}}{{{url.original}}}"
   - uri_parts:
+      tag: uri_parts__temps_url_1e26796c
       field: _temps.url
       ignore_failure: true
       keep_original: true
       remove_if_successful: true
   - rename:
+      tag: rename_json_response_status_to_http_response_status_code_6bcbe6ae
       field: json.response.status
       target_field: http.response.status_code
       ignore_missing: true
   - rename:
+      tag: rename_json_transaction_transaction_id_to_transaction_id_e2288765
       field: json.transaction.transaction_id
       target_field: transaction.id
       ignore_missing: true
   - rename:
+      tag: rename_json_response_headers_Content-Type_to_http_response_mime_type_02c1b535
       field: json.response.headers.Content-Type
       target_field: http.response.mime_type
       ignore_missing: true
   - rename:
+      tag: rename_json_request_headers_Content-Type_to_http_request_mime_type_7000f4e5
       field: json.request.headers.Content-Type
       target_field: http.request.mime_type
       ignore_missing: true
   - rename:
+      tag: rename_json_response_headers_Content-Length_to_http_response_bytes_832f1a93
       field: json.response.headers.Content-Length
       target_field: http.response.bytes
       ignore_missing: true
   - convert:
+      tag: convert_http_response_bytes_4e4d07d3
       field: http.response.bytes
       ignore_missing: true
       type: long
   - rename:
+      tag: rename_json_request_headers_Content-Length_to_http_request_bytes_8dea5ba3
       field: json.request.headers.Content-Length
       target_field: http.request.bytes
       ignore_missing: true
   - convert:
+      tag: convert_http_request_bytes_74307b8d
       field: http.request.bytes
       ignore_missing: true
       type: long
   - rename:
+      tag: rename_json_request_body_to_http_request_body_content_04999987
       field: json.request.body
       target_field: http.request.body.content
       ignore_missing: true
   - rename:
+      tag: rename_json_response_body_to_http_response_body_content_7ee417e7
       field: json.response.body
       target_field: http.response.body.content
       ignore_missing: true
   - rename:
+      tag: rename_json_request_headers_REMOTE_USER_to_user_name_1fae39b7
       field: json.request.headers.REMOTE_USER
       target_field: user.name
       ignore_missing: true
   - rename:
+      tag: rename_json_request_headers_Referer_to_http_request_referrer_f0fa4826
       field: json.request.headers.Referer
       target_field: http.request.referrer
       ignore_missing: true
   - rename:
+      tag: rename_json_audit_data_messages_to_modsec_audit_details_91d47bde
       field: json.audit_data.messages
       target_field: modsec.audit.details
       ignore_missing: true
   - script:
+      tag: script_7497121c
       lang: painless
       ignore_failure: true
       source: |
@@ -185,13 +218,16 @@ processors:
 
   # user agent and geoip enrich
   - user_agent:
+      tag: user_agent_json_request_headers_User-Agent_977fb883
       field: json.request.headers.User-Agent
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -200,10 +236,12 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -212,31 +250,39 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_4595ee28
       field: event.category
       value: web
   - append:
+      tag: append_event_type_f8289914
       field: event.type
       value: access
   - remove:
+      tag: remove_d7845b70
       field:
         - json
         - _conf
@@ -249,4 +295,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

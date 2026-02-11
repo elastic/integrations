@@ -1,0 +1,84 @@
+format_version: 3.5.0
+name: neon_cyber
+title: 'Neon Cyber'
+version: 0.1.0
+source:
+    license: 'Elastic-2.0'
+description: 'The Neon Cyber integration for the Elastic Stack'
+type: integration
+categories:
+    - security
+    - edr_xdr
+conditions:
+    kibana:
+        version: '^8.17.0 || ^9.0.0'
+    elastic:
+        subscription: 'basic'
+screenshots:
+    - src: /img/neoncyber-screenshot.png
+      title: Neon events screenshot
+      size: 600x600
+      type: image/png
+icons:
+    - src: /img/neoncyber-logo.svg
+      title: Neon Cyber logo
+      size: 32x32
+      type: image/svg+xml
+policy_templates:
+    - name: neon_cyber
+      title: Neon Cyber
+      description: Collect workforce logs from the Neon Cyber API
+      deployment_modes:
+          default:
+              enabled: true
+          agentless:
+              enabled: true
+              organization: security
+              division: engineering
+              team: security-service-integrations
+      inputs:
+          - type: cel
+            title: Collect Neon Cyber Data
+            description: Collecting Neon Cyber events and detections via API
+            vars:
+                - name: url
+                  type: text
+                  title: Neon Cyber API URL
+                  description: Neon Cyber developer API URL
+                  multi: false
+                  required: true
+                  show_user: true
+                  default: 'https://api.neoncyber.io'
+                - name: api_token
+                  type: password
+                  title: API Token
+                  description: Neon Cyber developer API token
+                  multi: false
+                  required: true
+                  show_user: true
+                  secret: true
+                - name: http_client_timeout
+                  type: text
+                  title: HTTP Client Timeout
+                  description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+                  multi: false
+                  required: false
+                  show_user: true
+                  default: 30s
+                - name: proxy_url
+                  type: text
+                  title: Proxy URL
+                  description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+                  multi: false
+                  required: false
+                  show_user: false
+                - name: ssl
+                  type: yaml
+                  title: SSL Configuration
+                  description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+                  multi: false
+                  required: false
+                  show_user: false
+owner:
+    github: elastic/security-service-integrations
+    type: partner

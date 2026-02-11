@@ -3,6 +3,7 @@ description: Pipeline for PanOS HIP Match Logs.
 # API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/hip-match-log-fields
 processors:
   - csv:
+      tag: csv_message_f56ad798
       field: message
       target_fields:
         - _temp_.srcuser
@@ -31,45 +32,55 @@ processors:
         - _temp_.high_res_timestamp
 
   - set:
+      tag: set_source_ip_c1b0f423
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
   - set:
+      tag: set_source_ip_3f615578
       field: source.ip
       value: '{{{_temp_.source_ipv6}}}'
       if: ctx._temp_?.source_ipv6 != null && ctx._temp_.source_ipv6 != '' && ctx._temp_.source_ipv6 != '0.0.0.0'
 
-# Set event.category.
+  # Set event.category.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_38e4ac56
       field: event.category
       value:
         - network
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
+      tag: set_host_id_bb582a1b
       field: host.id
       copy_from: panw.panos.host.id
       ignore_failure: true
   - set:
+      tag: set_host_mac_6e32d329
       field: host.mac
       copy_from: panw.panos.machine.mac_address
       ignore_failure: true
   - lowercase:
+      tag: lowercase_panw_panos_machine_name_to_host_name_e063c1d9
       target_field: host.name
       field: panw.panos.machine.name
       if: ctx.panw?.panos?.machine?.name != null
   - set:
+      tag: set_host_os_full_60843177
       field: host.os.full
       copy_from: panw.panos.machine.os
       ignore_failure: true
   - set:
+      tag: set_observer_hostname_5bc96c94
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
   - set:
+      tag: set_panw_panos_source_ipv6_1e339d44
       field: panw.panos.source.ipv6
       copy_from: _temp_.source_ipv6
       ignore_failure: true
@@ -81,7 +92,11 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in HIP Match pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{ _ingest.on_failure_message }}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

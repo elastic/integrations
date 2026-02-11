@@ -1,0 +1,54 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: m365_defender
+      name: test-all-m365_defender
+      streams:
+        - connection_string: ${SECRET_0}
+          consumer_group: $Default
+          data_stream:
+            dataset: m365_defender.event
+          eventhub: example
+          processors:
+            - add_fields:
+                fields:
+                    id: "574734885120952459"
+                    name: myproject
+                target: project
+            - add_tags:
+                tags:
+                    - web
+                    - production
+                target: environment
+          publisher_pipeline.disable_host: true
+          resource_manager_endpoint: https://example.com
+          storage_account: default
+          storage_account_container: container
+          storage_account_key: ${SECRET_1}
+          tags:
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+            - m365_defender-event
+            - test-policy
+      type: azure-eventhub
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-m365_defender.event-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}

@@ -47,3 +47,18 @@ processors:
         - proxysg.remote_to_server.certificate_hostname_threat_risk
         - proxysg.x_bluecoat.access_security_policy_action
         - proxysg.x_bluecoat.access_security_policy_reason
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

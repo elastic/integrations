@@ -1,12 +1,15 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_e43d8992
       field: event.category
       value: [authentication]
   - grok:
+      tag: grok_cisco_secure_email_gateway_log_message_1cb51085
       field: cisco_secure_email_gateway.log.message
       patterns:
         - '^GUI: User %{USERNAME:user.name} %{GREEDYDATA:cisco_secure_email_gateway.log.action} from session %{GREEDYDATA:cisco_secure_email_gateway.log.session} because of inactivity timeout$'
@@ -19,31 +22,38 @@ processors:
         - '^User %{USERNAME:user.name} %{WORD:cisco_secure_email_gateway.log.outcome} %{WORD:cisco_secure_email_gateway.log.action}$'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
   - lowercase:
+      tag: lowercase_network_protocol_d249a697
       field: network.protocol
       ignore_failure: true
   - set:
+      tag: set_event_outcome_13a82488
       field: event.outcome
       if: ctx.cisco_secure_email_gateway?.log?.outcome == 'failed'
       value: failure
   - set:
+      tag: set_event_outcome_030e8543
       field: event.outcome
       if: ctx.cisco_secure_email_gateway?.log?.outcome == 'successfully'
       value: success
   - set:
+      tag: set_event_type_53390e65
       field: event.type
       if: ctx.cisco_secure_email_gateway?.log?.action == 'logged on' || ctx.cisco_secure_email_gateway?.log?.action == 'authenticated'
       value: [start]
   - set:
+      tag: set_event_type_6729c164
       field: event.type
       if: ctx.cisco_secure_email_gateway?.log?.action == 'logged out' || ctx.cisco_secure_email_gateway?.log?.action == 'logout'
       value: [end]
   - append:
+      tag: append_related_user_3b423052
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_3c5161f0
       field: related.ip
       value: '{{{host.ip}}}'
       if: ctx.host?.ip != null
@@ -55,4 +65,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

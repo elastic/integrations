@@ -1,12 +1,12 @@
-# Azure AI Foundry Integration
+# Microsoft Foundry Integration
 
-Azure AI Foundry provides a comprehensive suite of AI services that enable developers to build, deploy, and manage AI solutions efficiently. The Azure AI Foundry integration collects metrics through Azure Monitor, facilitating robust monitoring and operational insights.
+Microsoft Foundry provides a comprehensive suite of AI services that enable developers to build, deploy, and manage AI solutions efficiently. The Microsoft Foundry integration collects metrics through Azure Monitor, facilitating robust monitoring and operational insights.
 
 ## Data streams
 
 ### Logs
 
-The Azure AI Foundry logs data stream captures the gateway log events. These are the supported Azure log categories:
+The Microsoft Foundry logs data stream captures the gateway log events. These are the supported Azure log categories:
 
 | Data Stream |       Log Category       |
 |:-----------:|:------------------------:|
@@ -20,13 +20,13 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 #### Native logging
 
-The Azure AI Foundry provides native logging and monitoring to track the telemetry of the service. The `Audit` and `RequestResponse` log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
+The Microsoft Foundry provides native logging and monitoring to track the telemetry of the service. The `Audit` and `RequestResponse` log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
 
 #### API Gateway logs
 
-The API Management services provide the advanced logging capabilities. The `ApiManagementGatewayLogs` category comes under the advanced logging. This is not directly available in the Azure AI Foundry service itself. You have to set up the API Management services in Azure to access the Azure AI Foundry models. When the setup is complete, add the diagnostic setting for the API Management service.
+The API Management services provide the advanced logging capabilities. The `ApiManagementGatewayLogs` category comes under the advanced logging. This is not directly available in the Microsoft Foundry service itself. You have to set up the API Management services in Azure to access the Microsoft Foundry models. When the setup is complete, add the diagnostic setting for the API Management service.
 
-For more information on how to implement the comprehensive solution using API Management services to monitor the Azure AI Foundry services, check the [AI Foundry API](https://learn.microsoft.com/en-us/azure/api-management/azure-ai-foundry-api) page.
+For more information on how to implement the comprehensive solution using API Management services to monitor the Microsoft Foundry services, check the [Microsoft Foundry API](https://learn.microsoft.com/en-us/azure/api-management/azure-ai-foundry-api) page.
 
 **Diagnostic settings**
 
@@ -41,7 +41,7 @@ Enable the category `Logs related to ApiManagement Gateway` to stream the logs t
 
 ### Metrics
 
-The metrics data stream collects the cognitive service metrics that is specific to the Azure AI Foundry service.
+The metrics data stream collects the cognitive service metrics that is specific to the Microsoft Foundry service.
 
 #### Key metrics
 
@@ -68,9 +68,9 @@ Follow these [step-by-step instructions](https://docs.elastic.co/integrations/az
 
 `Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`. Should return a list of resources.
 
-`Resource Groups`:: (_[]string_) This option will return all Azure AI Foundry services inside the resource group.
+`Resource Groups`:: (_[]string_) This option will return all Microsoft Foundry services inside the resource group.
 
-If no resource filter is specified, then all Azure AI Foundry services inside the entire subscription will be considered.
+If no resource filter is specified, then all Microsoft Foundry services inside the entire subscription will be considered.
 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
 
@@ -273,7 +273,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.ai_foundry.properties.backend_response_body.error.param | Parameter passed to the API. | keyword |
 | azure.ai_foundry.properties.backend_response_body.error.status | The response status code. | long |
 | azure.ai_foundry.properties.backend_response_body.id | A unique identifier for the request. | keyword |
-| azure.ai_foundry.properties.backend_response_body.model | The ID of the Azure AI Foundry model used to generate the response. | keyword |
+| azure.ai_foundry.properties.backend_response_body.model | The ID of the Microsoft Foundry model used to generate the response. | keyword |
 | azure.ai_foundry.properties.backend_response_body.object | The operation type. | keyword |
 | azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.hate.filtered | True if the content filtered based on severity level. | boolean |
 | azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.hate.severity | The severity levels (safe, low, medium, and high) for hate category. | keyword |
@@ -294,14 +294,14 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.ai_foundry.properties.backend_response_body.usage.total_tokens | The sum of input and output tokens. | long |
 | azure.ai_foundry.properties.backend_response_code | The backend HTTP response code. | long |
 | azure.ai_foundry.properties.backend_time | The backend response time. | long |
-| azure.ai_foundry.properties.backend_url | The backend URL connects to the Azure AI Foundry model. | keyword |
+| azure.ai_foundry.properties.backend_url | The backend URL connects to the Microsoft Foundry model. | keyword |
 | azure.ai_foundry.properties.cache | The request cache. | keyword |
 | azure.ai_foundry.properties.client_protocol | The client HTTP protocol. | keyword |
 | azure.ai_foundry.properties.client_tls_cipher_suite | The client TLS Cipher Suite. | keyword |
 | azure.ai_foundry.properties.client_tls_version | The client TLS version. | keyword |
 | azure.ai_foundry.properties.model_deployment_name | The deployed model name. | keyword |
-| azure.ai_foundry.properties.model_name | The Azure AI Foundry model. | keyword |
-| azure.ai_foundry.properties.model_version | The Azure AI Foundry model version. | keyword |
+| azure.ai_foundry.properties.model_name | The Microsoft Foundry model. | keyword |
+| azure.ai_foundry.properties.model_version | The Microsoft Foundry model version. | keyword |
 | azure.ai_foundry.properties.object_id | The object id of the request. | keyword |
 | azure.ai_foundry.properties.operation_id | The operation performed. | keyword |
 | azure.ai_foundry.properties.request_length | Length of the request. | double |
@@ -329,7 +329,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 
 ### Metrics reference
 
-The Azure AI Foundry metrics provide insights into the performance and usage of your AI resources. These metrics help in monitoring and optimizing your deployments.
+The Microsoft Foundry metrics provide insights into the performance and usage of your AI resources. These metrics help in monitoring and optimizing your deployments.
 
 An example event for `metrics` looks as following:
 
@@ -463,4 +463,26 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | dataset.name | Dataset name. | constant_keyword |  |  |
 | dataset.namespace | Dataset namespace. | constant_keyword |  |  |
 | dataset.type | Dataset type. | constant_keyword |  |  |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[Microsoft Foundry] Latency high**
+
+
+
+**[Microsoft Foundry] Model Availability above threshold**
+
+
+
+**[Microsoft Foundry] Provisioned Utilization above threshold**
+
+
 

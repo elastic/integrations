@@ -1,0 +1,101 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects potential SSH password grabbing via the use of strace on sshd processes. Attackers may use strace to capture sensitive information, such as passwords, by tracing system calls made by the sshd process. This rule looks for a sequence of events where an sshd process ends followed closely by the start of a strace process. This may be indicative of an attacker attempting to capture SSH credentials.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential SSH Password Grabbing via strace",
+        "query": "sequence by host.id with maxspan=3s\n  [process where host.os.type == \"linux\" and event.type == \"end\" and process.name == \"sshd\"]\n  [process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and process.name == \"strace\"]\n",
+        "references": [
+            "https://github.com/braindead-sec/ssh-grabber",
+            "https://dfir.ch/posts/strace/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9eaa3fb1-3f70-48ed-bb0e-d7ae4d3c8f28",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1554",
+                        "name": "Compromise Host Software Binary",
+                        "reference": "https://attack.mitre.org/techniques/T1554/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "9eaa3fb1-3f70-48ed-bb0e-d7ae4d3c8f28_1",
+    "type": "security-rule"
+}

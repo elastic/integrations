@@ -4432,7 +4432,12 @@ processors:
         ctx.winlog?.event_data?.OldTargetUserName != null &&
         ctx.winlog.event_data.OldTargetUserName != "-"
 
-
+  - gsub:
+      description: Normalize separators in the SidList value.
+      field: winlog.event_data.SidList
+      pattern: '\s+'
+      replacement: ' '
+      ignore_missing: true
   - script:
       lang: painless
       ignore_failure: false

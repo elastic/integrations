@@ -2,23 +2,29 @@
 description: Pipeline for parsing QNAP NAS logs
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - set:
+      tag: set_observer_vendor_cad5939e
       field: observer.vendor
       value: QNAP
   - set:
+      tag: set_observer_product_dc526a3f
       field: observer.product
       value: NAS
   - set:
+      tag: set_observer_type_6bada260
       field: observer.type
       value: nas
   - grok:
+      tag: grok_event_original_cad2ef7a
       field: event.original
       patterns:
         - '^(%{ECS_SYSLOG_PRI})?%{SYSLOGTIMESTAMP:_tmp.timestamp} %{NAS} %{SYSLOGPROG}: %{LOG_TYPE:event.provider}: %{GREEDYDATA:_tmp.message}'
@@ -28,10 +34,12 @@ processors:
         SYSLOGPROG: '%{PROG:process.name}(?:\[%{POSINT:process.pid:int}\])?'
         LOG_TYPE: '(event log|conn log)'
   - set:
+      tag: set_event_timezone_4ca44cac
       field: event.timezone
       value: "{{{_tmp.tz_offset}}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
   - date:
+      tag: date__tmp_timestamp_to_@timestamp_e440143c
       field: _tmp.timestamp
       target_field: '@timestamp'
       timezone: "{{{ event.timezone }}}"
@@ -40,6 +48,7 @@ processors:
         - MMM dd HH:mm:ss
       if: ctx.event?.timezone != null
   - date:
+      tag: date__tmp_timestamp_to_@timestamp_baf3310e
       field: _tmp.timestamp
       target_field: '@timestamp'
       formats:
@@ -47,9 +56,11 @@ processors:
         - MMM dd HH:mm:ss
       if: ctx.event?.timezone == null
   - set:
+      tag: set_event_created_e3f09e3b
       field: event.created
       copy_from: '@timestamp'
   - grok:
+      tag: grok__tmp_message_c75b80dc
       field: _tmp.message
       patterns:
         - '^%{SHARED}, Application: %{DATA:qnap.nas.application}, Category: %{DATA:qnap.nas.category}, Content: %{DATA:message}$'
@@ -59,6 +70,7 @@ processors:
         RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{FILE_PATH:qnap.nas.file.path}|%{DATA:qnap.nas.application})'
         FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
   - grok:
+      tag: grok_message_5c258068
       field: message
       patterns:
         - '^\[Shared Folders\] %{ACTION:event.action} "%{DATA:qnap.nas.file.path}"\.$'
@@ -70,17 +82,20 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - convert:
+      tag: convert_source_address_to_source_ip_48c76f83
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -89,14 +104,17 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - grok:
+      tag: grok_qnap_nas_file_path_d435d72e
       field: qnap.nas.file.path
       patterns:
         - '%{FILE_PATH:file.path} -> %{FILE_PATH:qnap.nas.file.new_path}'
@@ -106,30 +124,36 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - grok:
+      tag: grok_file_path_e8a1e292
       field: file.path
       patterns:
         - '\.%{DATA:file.extension}$'
       ignore_failure: true
       ignore_missing: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - gsub:
+      tag: gsub_event_action_bed81fc6
       field: event.action
       pattern: 'the '
       replacement: ''
       ignore_missing: true
   - gsub:
+      tag: gsub_event_action_29f7c6e5
       field: event.action
       pattern: \s
       replacement: '-'
       ignore_missing: true
   - gsub:
+      tag: gsub_event_provider_8f8d0634
       field: event.provider
       pattern: \s
       replacement: '-'
       ignore_missing: true
   - script:
+      tag: script_1d15b5b0
       lang: painless
       description: Add ECS categorization
       params:
@@ -242,25 +266,30 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - append:
+      tag: append_related_ip_8121c591
       if: ctx.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_b0d2e007
       if: ctx.source?.domain != null
       field: related.hosts
       value: '{{{source.domain}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_user_837e080f
       if: ctx.user?.name != null
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
   - remove:
+      tag: remove_3f4f84fc
       field:
         - _tmp
       ignore_missing: true
   - script:
+      tag: script_84e8ec8e
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -284,10 +313,24 @@ processors:
           }
         }
         handleMap(ctx);
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,12 @@
+- source_dataset: netskope.alerts_events_v2
+  rules:
+    - target_dataset: netskope.alerts_v2
+      if: ctx.netskope?.alert_v2?.alert == "yes"
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: netskope.events_v2
+      if: ctx.netskope?.events_v2?.alert == null || ctx.netskope.events_v2.alert == "no"
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default

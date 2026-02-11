@@ -3,38 +3,47 @@ description: Pipeline for Cisco IOS logs.
 
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_provider_4a3b5b7b
       field: event.provider
       value: firewall
   - set:
+      tag: set_observer_vendor_e0ee74d1
       field: observer.vendor
       value: Cisco
   - set:
+      tag: set_observer_product_b4ddab2e
       field: observer.product
       value: IOS
   - set:
+      tag: set_observer_type_5dddf3ba
       field: observer.type
       value: firewall
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
 
   - set:
+      tag: set_event_original_49bb683a
       field: event.original
       copy_from: message
       override: false
   - remove:
+      tag: remove_message_884e8cdd
       field: message
       ignore_missing: true
   - grok:
       field: event.original
       tag: grok_kiwi_header
-      description: |- 
+      description: |-
         The Kiwi syslog header is expected to be in the following format:
         <PRI>Original Address=IP [RFC 5424 header] [Cisco IOS log]
         
@@ -51,6 +60,7 @@ processors:
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP} (?:%{CISCO_HOSTNAME:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{CISCO_TIMESTAMP:_temp_.timestamp}: %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:%{SYSLOGTIMESTAMP} )?(%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{DATA}:%{CISCO_TIMESTAMP}%{GREEDYDATA}%%{GREEDYDATA:message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname})(?:: \*%{DATA}:|:?)? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP:_temp_.timestamp}): %{GREEDYDATA:_temp_.message}$'
         - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )(?:(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): )?%{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{GREEDYDATA:_temp_.message}$'
@@ -72,28 +82,34 @@ processors:
         - '^%{GREEDYDATA:_temp_.generic_message}$'
   # Handle all-digit hostnames as sequence numbers
   - grok:
+      tag: grok_log_syslog_hostname_54433610
       field: log.syslog.hostname
       patterns:
         - '^%{NUMBER:_temp_.sequence}$'
       ignore_missing: true
-      ignore_failure: true 
+      ignore_failure: true
   - set:
+      tag: set_cisco_ios_sequence_c92644b4
       field: cisco.ios.sequence
       copy_from: _temp_.sequence
       if: ctx._temp_?.sequence != null
   - remove:
+      tag: remove_log_syslog_hostname_c2980acf
       field: log.syslog.hostname
       if: ctx._temp_?.sequence != null
       ignore_missing: true
   - remove:
+      tag: remove__temp__sequence_0d8feeaa
       field: _temp_.sequence
       if: ctx._temp_?.sequence != null
       ignore_missing: true
   - remove:
+      tag: remove_log_syslog_e1fd9ebc
       field: log.syslog
       if: "ctx.log?.syslog != null && ctx.log.syslog.isEmpty()"
       ignore_missing: true
   - set:
+      tag: set_event_sequence_87d344b3
       field: event.sequence
       copy_from: cisco.ios.sequence
       if: ctx.cisco?.ios?.sequence != null
@@ -103,6 +119,7 @@ processors:
       type: long
       if: ctx.cisco?.ios?.message_count != null
   - set:
+      tag: set_event_sequence_f800e4a1
       field: event.sequence
       copy_from: cisco.ios.message_count
       if: ctx.cisco?.ios?.message_count != null && ctx.event?.sequence == null
@@ -268,10 +285,11 @@ processors:
       tag: dissect_gnp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx.event?.code)"
-  - dissect:
+  - grok:
       field: message
-      tag: dissect_login
-      pattern: "%{cisco.ios.action} %{_temp_.event.action} [user: %{source.user.name}] [Source: %{source.address}] [localport: %{destination.port}] at %{}"
+      tag: grok_login
+      patterns: 
+        - "%{DATA:cisco.ios.action} %{WORD:_temp_.event.action} \\[user: %{DATA:source.user.name}\\] \\[Source: %{DATA:source.address}\\]\\s*\\[localport: %{INT:destination.port}\\]"
       if: "ctx.event?.code == 'LOGIN_SUCCESS'"
   - dissect:
       field: message
@@ -299,14 +317,17 @@ processors:
         PIM_SOURCE: (%{IP:cisco.ios.pim.source.ip}|%{DATA})
       if: "ctx.event?.code == 'INVALID_RP_JOIN'"
   - set:
+       tag: set_event_action_1270922c
        field: event.action
        value: "multicast-join"
        if: ctx.event?.code == "INVALID_RP_JOIN"
   - set:
+       tag: set_event_outcome_030de70b
        field: event.outcome
        value: "failure"
        if: ctx.event?.code == "INVALID_RP_JOIN"
   - set:
+       tag: set_event_reason_64638ad4
        field: event.reason
        value: "Invalid RP"
        if: ctx.event?.code == "INVALID_RP_JOIN"
@@ -318,6 +339,7 @@ processors:
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_destination_domain_1a39ddcb
             field: destination.domain
             copy_from: destination.address
   - convert:
@@ -328,6 +350,7 @@ processors:
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_source_domain_5044c678
             field: source.domain
             copy_from: source.address
   - convert:
@@ -351,6 +374,7 @@ processors:
       tag: convert_destination_port
       ignore_missing: true
   - script:
+      tag: script_a90fa837
       lang: painless
       source: |
         long n = 0;
@@ -367,62 +391,77 @@ processors:
       if: ctx.source?.bytes != null || ctx.destination?.bytes != null
       ignore_failure: true
   - set:
+      tag: set_network_packets_4ee14814
       field: network.packets
       copy_from: source.packets
       if: ctx.source?.packets != null
   - set:
+      tag: set_network_type_d0af2f05
       field: network.type
       value: ipv4
       if: "ctx.source?.ip != null && ctx.source?.ip.contains('.')"
   - set:
+      tag: set_network_type_ff656ae2
       field: network.type
       value: ipv6
       if: "ctx.source?.ip != null && ctx.network?.type == null"
   - set:
+      tag: set_event_action_71eb8b93
       field: event.action
       value: deny
       if: "ctx._temp_?.event?.action == 'denied'"
   - append:
+      tag: append_event_type_afe34446
       field: event.type
       value: denied
       if: "ctx.event?.action == 'deny'"
   - set:
+      tag: set_event_action_6a3a5c5f
       field: event.action
       value: allow
       if: "ctx._temp_?.event?.action == 'permitted'"
   - append:
+      tag: append_event_type_75dc8690
       field: event.type
       value: allowed
       if: "ctx.event?.action == 'allow'"
   - set:
+      tag: set_log_level_e81fb788
       field: "log.level"
       if: "ctx.event.severity == 0"
       value: emergencies
   - set:
+      tag: set_log_level_e663c8d8
       field: "log.level"
       if: "ctx.event.severity == 1"
       value: alert
   - set:
+      tag: set_log_level_0f36429c
       field: "log.level"
       if: "ctx.event.severity == 2"
       value: critical
   - set:
+      tag: set_log_level_201bba1e
       field: "log.level"
       if: "ctx.event.severity == 3"
       value: error
   - set:
+      tag: set_log_level_4f08a3cf
       field: "log.level"
       if: "ctx.event.severity == 4"
       value: warning
   - set:
+      tag: set_log_level_1f2f675b
       field: "log.level"
       if: "ctx.event.severity == 5"
       value: notification
   - set:
+      tag: set_log_level_f5ee75b0
       field: "log.level"
       if: "ctx.event.severity == 6"
       value: informational
   - set:
+      tag: set_log_level_da9bfdc1
       field: "log.level"
       if: "ctx.event.severity == 7"
       value: debug
@@ -459,64 +498,83 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
 
   - gsub:
+      tag: gsub_source_mac_328298a4
       field: source.mac
       pattern: ':'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_source_mac_5b4e7be2
       field: source.mac
       ignore_missing: true
 
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
+      tag: append_related_ip_c1a6356b
       field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
+      tag: append_related_hosts_b0d2e007
       field: related.hosts
       value: "{{{source.domain}}}"
       allow_duplicates: false
       if: ctx.source?.domain != null
   - append:
+      tag: append_related_hosts_b0d7ba0b
       field: related.hosts
       value: "{{{destination.domain}}}"
       allow_duplicates: false
       if: ctx.destination?.domain != null
   - append:
+      tag: append_related_user_f745a124
       field: related.user
       value: "{{{source.user.name}}}"
       allow_duplicates: false
       if: ctx.source?.user?.name != null
   - community_id:
+      tag: community_id_99f56bc8
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_75b58725
       field:
        - _temp_
        - _conf
       ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - remove:
       field:
@@ -525,8 +583,15 @@ on_failure:
       ignore_missing: true
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

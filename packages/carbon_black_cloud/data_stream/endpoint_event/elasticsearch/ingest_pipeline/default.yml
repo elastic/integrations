@@ -256,52 +256,6 @@ processors:
       target_field: host.os.family
       ignore_missing: true
   - rename:
-      field: json.process_cmdline
-      target_field: process.command_line
-      ignore_missing: true
-  - rename:
-      field: json.process_guid
-      target_field: process.entity_id
-      ignore_missing: true
-  - rename:
-      field: json.process_path
-      target_field: process.executable
-      ignore_missing: true
-  - convert:
-      field: json.process_pid
-      target_field: process.pid
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.process_pid
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.parent_cmdline
-      target_field: process.parent.command_line
-      ignore_missing: true
-  - rename:
-      field: json.parent_guid
-      target_field: process.parent.entity_id
-      ignore_missing: true
-  - rename:
-      field: json.parent_path
-      target_field: process.parent.executable
-      ignore_missing: true
-  - convert:
-      field: json.parent_pid
-      target_field: process.parent.pid
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.parent_pid
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
       field: json.regmod_name
       target_field: registry.path
       ignore_missing: true
@@ -311,8 +265,8 @@ processors:
       source: |
         void mapHashField(def ctx, def hashes, def key) {
             for (hash in hashes) {
-                if (hash.length() == 32) {ctx['json'][key + '_md5'] = hash;}
-                if (hash.length() == 64) {ctx['json'][key + '_sha256'] = hash;}
+                if (hash.length() == 32) {ctx.json[key + '_md5'] = hash;}
+                if (hash.length() == 64) {ctx.json[key + '_sha256'] = hash;}
             }
         }
         if (ctx.json?.process_hash instanceof List) {
@@ -333,40 +287,36 @@ processors:
         if (ctx.json?.scriptload_hash instanceof List) {
             mapHashField(ctx, ctx.json?.scriptload_hash, 'scriptload_hash');
         }
-  - rename:
-      field: json.process_hash_md5
-      target_field: process.hash.md5
-      ignore_missing: true
+
+  - pipeline:
+      tag: pipeline_process_non_procstart
+      name: '{{ IngestPipeline "process_other" }}'
+      if: ctx.json?.type != null && ctx.json.type != 'endpoint.event.procstart'
+      ignore_missing_pipeline: true
+  - pipeline:
+      tag: pipeline_process_procstart
+      name: '{{ IngestPipeline "process_procstart" }}'
+      if: ctx.json?.type == 'endpoint.event.procstart'
+      ignore_missing_pipeline: true
+
   - append:
       field: related.hash
       value: '{{{process.hash.md5}}}'
       if: ctx.process?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
-      field: json.process_hash_sha256
-      target_field: process.hash.sha256
-      ignore_missing: true
   - append:
       field: related.hash
       value: '{{{process.hash.sha256}}}'
       if: ctx.process?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
-      field: json.parent_hash_md5
-      target_field: process.parent.hash.md5
-      ignore_missing: true
   - append:
       field: related.hash
       value: '{{{process.parent.hash.md5}}}'
       if: ctx.process?.parent?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
-      field: json.parent_hash_sha256
-      target_field: process.parent.hash.sha256
-      ignore_missing: true
   - append:
       field: related.hash
       value: '{{{process.parent.hash.sha256}}}'
@@ -396,66 +346,27 @@ processors:
       target_field: carbon_black_cloud.endpoint_event.device.os
       ignore_missing: true
   - rename:
-      field: json.childproc_name
-      target_field: carbon_black_cloud.endpoint_event.childproc.name
-      ignore_missing: true
-  - rename:
       field: json.org_key
       target_field: carbon_black_cloud.endpoint_event.organization_key
       ignore_missing: true
-  - convert:
-      field: json.process_duration
-      target_field: carbon_black_cloud.endpoint_event.process.duration
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.process_duration
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.process_publisher
-      processor:
-        split:
-          field: _ingest._value.state
-          separator: " \\| "
-          ignore_missing: true
-      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{process.user.name}}}'
+      if: ctx.process?.user?.name != null
+      allow_duplicates: false
       ignore_failure: true
-  - rename:
-      field: json.process_publisher
-      target_field: carbon_black_cloud.endpoint_event.process.publisher
-      ignore_missing: true
-  - rename:
-      field: json.process_reputation
-      target_field: carbon_black_cloud.endpoint_event.process.reputation
-      ignore_missing: true
-  - convert:
-      field: json.process_terminated
-      target_field: carbon_black_cloud.endpoint_event.process.terminated
-      type: boolean
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.process_terminated
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.process_username
-      target_field: carbon_black_cloud.endpoint_event.process.username
-      ignore_missing: true
   - append:
       field: related.user
       value: '{{{carbon_black_cloud.endpoint_event.process.username}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.process?.username != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
-      field: json.parent_reputation
-      target_field: carbon_black_cloud.endpoint_event.process.parent.reputation
-      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{carbon_black_cloud.endpoint_event.process.parent.username}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.process?.parent?.username != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.target_cmdline
       target_field: carbon_black_cloud.endpoint_event.target_cmdline
@@ -652,73 +563,6 @@ processors:
       field: related.ip
       value: '{{{carbon_black_cloud.endpoint_event.netconn.proxy.ip}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.netconn?.proxy?.ip != null
-      allow_duplicates: false
-      ignore_failure: true
-      # Mapping for endpoint.event.procstart event type
-  - rename:
-      field: json.childproc_guid
-      target_field: carbon_black_cloud.endpoint_event.childproc.guid
-      ignore_missing: true
-  - rename:
-      field: json.childproc_name
-      target_field: carbon_black_cloud.endpoint_event.childproc.name
-      ignore_missing: true
-  - convert:
-      field: json.childproc_pid
-      target_field: carbon_black_cloud.endpoint_event.childproc.pid
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.childproc_pid
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.childproc_publisher
-      processor:
-        split:
-          field: _ingest._value.state
-          separator: " \\| "
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.childproc_publisher
-      target_field: carbon_black_cloud.endpoint_event.childproc.publisher
-      ignore_missing: true
-  - rename:
-      field: json.childproc_reputation
-      target_field: carbon_black_cloud.endpoint_event.childproc.reputation
-      ignore_missing: true
-  - rename:
-      field: json.childproc_username
-      target_field: carbon_black_cloud.endpoint_event.childproc.username
-      ignore_missing: true
-  - append:
-      field: related.user
-      value: '{{{carbon_black_cloud.endpoint_event.childproc.username}}}'
-      if: ctx.carbon_black_cloud?.endpoint_event?.childproc?.username != null
-      allow_duplicates: false
-      ignore_failure: true
-  - rename:
-      field: json.childproc_hash_md5
-      target_field: carbon_black_cloud.endpoint_event.childproc.hash.md5
-      ignore_missing: true
-  - append:
-      field: related.hash
-      value: '{{{carbon_black_cloud.endpoint_event.childproc.hash.md5}}}'
-      if: ctx.carbon_black_cloud?.endpoint_event?.childproc?.hash?.md5 != null
-      allow_duplicates: false
-      ignore_failure: true
-  - rename:
-      field: json.childproc_hash_sha256
-      target_field: carbon_black_cloud.endpoint_event.childproc.hash.sha256
-      ignore_missing: true
-  - append:
-      field: related.hash
-      value: '{{{carbon_black_cloud.endpoint_event.childproc.hash.sha256}}}'
-      if: ctx.carbon_black_cloud?.endpoint_event?.childproc?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:

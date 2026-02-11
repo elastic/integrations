@@ -3,6 +3,7 @@ description: Pipeline for PanOS Decryption Logs.
 # API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/decryption-log-fields
 processors:
   - csv:
+      tag: csv_message_39b9f344
       field: message
       ignore_failure: true
       target_fields:
@@ -108,10 +109,12 @@ processors:
         - panw.panos.application.is_sanctioned
 
   - rename:
+      tag: rename__temp__config_version_to_panw_panos_config_version_23cb8323
       field: _temp_.config_version
       target_field: panw.panos.config_version
       ignore_missing: true
   - date:
+      tag: date_panw_panos_certificate_not_after_to_panw_panos_certificate_not_after_02479cef
       if: ctx.event?.timezone == null && ctx.panw?.panos?.certificate?.not_after != null
       field: panw.panos.certificate.not_after
       target_field: panw.panos.certificate.not_after
@@ -120,11 +123,14 @@ processors:
         - 'strict_date_optional_time_nanos'
       on_failure:
         - remove:
+            tag: remove_panw_panos_certificate_not_after_1ea5cc3f
             field: panw.panos.certificate.not_after
         - append:
+            tag: append_error_message_68215b56
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_panw_panos_certificate_not_after_to_panw_panos_certificate_not_after_cfa3d515
       if: ctx.event?.timezone != null && ctx.panw?.panos?.certificate?.not_after != null
       field: panw.panos.certificate.not_after
       target_field: panw.panos.certificate.not_after
@@ -134,11 +140,14 @@ processors:
       timezone: '{{{ event.timezone }}}'
       on_failure:
         - remove:
+            tag: remove_panw_panos_certificate_not_after_a3ec5565
             field: panw.panos.certificate.not_after
         - append:
+            tag: append_error_message_0617910c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_panw_panos_certificate_not_before_to_panw_panos_certificate_not_before_fe9abb71
       if: ctx.event?.timezone == null && ctx.panw?.panos?.certificate?.not_before != null
       field: panw.panos.certificate.not_before
       target_field: panw.panos.certificate.not_before
@@ -147,11 +156,14 @@ processors:
         - 'strict_date_optional_time_nanos'
       on_failure:
         - remove:
+            tag: remove_panw_panos_certificate_not_before_64aca56c
             field: panw.panos.certificate.not_before
         - append:
+            tag: append_error_message_9c3c8250
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_panw_panos_certificate_not_before_to_panw_panos_certificate_not_before_a788166b
       if: ctx.event?.timezone != null && ctx.panw?.panos?.certificate?.not_before != null
       field: panw.panos.certificate.not_before
       target_field: panw.panos.certificate.not_before
@@ -161,153 +173,190 @@ processors:
       timezone: '{{{ event.timezone }}}'
       on_failure:
         - remove:
+            tag: remove_panw_panos_certificate_not_before_8596f2d6
             field: panw.panos.certificate.not_before
         - append:
+            tag: append_error_message_b4761112
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 
-# Set event.kind & event.category field.
+  # Set event.kind & event.category field.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_38e4ac56
       field: event.category
       value:
         - network
 
-# Set event.outcome from panw.panos.error_message: a non-empty error would indicate a failure.
+  # Set event.outcome from panw.panos.error_message: a non-empty error would indicate a failure.
   - set:
+      tag: set_event_outcome_8eee89cb
       if: ctx.panw?.panos?.error_message == null || ctx.panw.panos.error_message == ""
       field: event.outcome
       value: success
   - set:
+      tag: set_event_outcome_d2e0bcc3
       if: ctx.panw?.panos?.error_message != ""
       field: event.outcome
       value: failure
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
+      tag: set_panw_panos_hash_a199d1d9
       field: panw.panos.hash
       copy_from: _temp_.hash
       ignore_failure: true
   - set:
+      tag: set_panw_panos_tls_version_0bccfe0b
       field: panw.panos.tls.version
       copy_from: _temp_.tls
       ignore_failure: true
   - set:
+      tag: set_destination_ip_07b53525
       field: destination.ip
       copy_from: panw.panos.destination.ip
       ignore_failure: true
   - set:
+      tag: set_destination_nat_ip_3718bfe7
       field: destination.nat.ip
       copy_from: panw.panos.destination.nat.ip
       ignore_failure: true
   - set:
+      tag: set_destination_nat_port_ed3fbecb
       field: destination.nat.port
       copy_from: panw.panos.destination.nat.port
       ignore_failure: true
   - set:
+      tag: set_destination_port_f95b8fc9
       field: destination.port
       copy_from: panw.panos.destination.port
       ignore_failure: true
   - set:
+      tag: set_network_application_5ae7266b
       field: network.application
       copy_from: panw.panos.network.application
       ignore_failure: true
   - set:
+      tag: set_network_transport_860fbbd0
       field: network.transport
       copy_from: panw.panos.protocol
       ignore_failure: true
   - set:
+      tag: set_observer_egress_interface_name_a7cd428a
       field: observer.egress.interface.name
       copy_from: panw.panos.outbound_interface
       ignore_failure: true
   - set:
+      tag: set_observer_egress_zone_1c62484c
       field: observer.egress.zone
       copy_from: panw.panos.destination.zone
       ignore_failure: true
   - set:
+      tag: set_observer_hostname_5bc96c94
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
   - set:
+      tag: set_observer_ingress_interface_name_0cf960b9
       field: observer.ingress.interface.name
       copy_from: panw.panos.inbound_interface
       ignore_failure: true
   - set:
+      tag: set_observer_ingress_zone_99ce4399
       field: observer.ingress.zone
       copy_from: panw.panos.source.zone
       ignore_failure: true
   - set:
+      tag: set_tls_client_x509_subject_common_name_d2113c87
       field: tls.client.x509.subject.common_name
       copy_from: panw.panos.subject_common_name.value
       ignore_failure: true
   - set:
+      tag: set_tls_client_x509_subject_common_name_5761536a
       field: tls.client.x509.subject.common_name
       value: ['{{{tls.client.x509.subject.common_name}}}']
       if: ctx.tls?.client?.x509?.subject?.common_name instanceof String
   - set:
+      tag: set_tls_client_x509_issuer_common_name_26fce2c3
       field: tls.client.x509.issuer.common_name
       copy_from: panw.panos.issuer_common_name.value
       ignore_failure: true
   - set:
+      tag: set_tls_client_x509_issuer_common_name_b5f126f3
       field: tls.client.x509.issuer.common_name
-      value: [ '{{{tls.client.x509.issuer.common_name}}}' ]
+      value: ['{{{tls.client.x509.issuer.common_name}}}']
       if: ctx.tls?.client?.x509?.issuer?.common_name instanceof String
   - set:
+      tag: set_rule_uuid_5478ecb2
       field: rule.uuid
       copy_from: panw.panos.rule_uuid
       ignore_failure: true
   - set:
+      tag: set_source_ip_c1b0f423
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
   - set:
+      tag: set_source_nat_ip_c6ea5d2f
       field: source.nat.ip
       copy_from: panw.panos.source.nat.ip
       ignore_failure: true
   - set:
+      tag: set_source_port_ed14489b
       field: source.port
       copy_from: panw.panos.source.port
       ignore_failure: true
   - set:
+      tag: set_source_nat_port_dcfd151f
       field: source.nat.port
       copy_from: panw.panos.source.nat.port
       ignore_failure: true
   - set:
+      tag: set_tls_cipher_d8813965
       field: tls.cipher
       copy_from: panw.panos.tls.encryption
       ignore_failure: true
   - set:
+      tag: set_tls_client_not_after_73ee8dc2
       field: tls.client.not_after
       copy_from: panw.panos.certificate.not_after
       ignore_failure: true
   - set:
+      tag: set_tls_client_not_before_3a53dc16
       field: tls.client.not_before
       copy_from: panw.panos.certificate.not_before
       ignore_failure: true
   - set:
+      tag: set_tls_client_server_name_565f1cbb
       field: tls.client.server_name
       copy_from: panw.panos.server_name_indication.value
       ignore_failure: true
   - set:
+      tag: set_tls_client_x509_public_key_size_e6add0aa
       field: tls.client.x509.public_key_size
       copy_from: panw.panos.certificate.size
       ignore_failure: true
   - set:
+      tag: set_tls_client_x509_serial_number_7f5810b2
       field: tls.client.x509.serial_number
       copy_from: panw.panos.certificate.serial_number
       ignore_failure: true
   - set:
+      tag: set_tls_client_x509_version_number_5f1c733c
       field: tls.client.x509.version_number
       copy_from: panw.panos.certificate.version
       ignore_failure: true
   - set:
+      tag: set_tls_curve_2c29f9d5
       field: tls.curve
       copy_from: panw.panos.elliptic_curve
       ignore_failure: true
 
   - script:
+      tag: script_74fab875
       description: Dynamically map fingerprint hash to MD5, SHA1 and SHA256 hash.
       lang: painless
       if: ctx._temp_?.hash != null
@@ -318,6 +367,7 @@ processors:
         else if (ctx._temp_.hash.length() == 64) {ctx.tls.client.hash.sha256 = ctx._temp_.hash}
 
   - script:
+      tag: script_3573982d
       description: Dynamically map fingerprint hash to MD5, SHA1 and SHA256 hash.
       lang: painless
       if: ctx._temp_?.tls != null
@@ -332,7 +382,11 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in Decryption pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

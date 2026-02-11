@@ -1,0 +1,42 @@
+receivers:
+  docker_stats:
+    collection_interval: {{period}}
+    metrics:
+      container.cpu.usage.percpu:
+        enabled: {{provide_per_core_cpu_metrics}}
+{{#if endpoint}}
+    endpoint: {{endpoint}}
+{{/if}}
+{{#if excluded_images}}
+    excluded_images:
+{{#each excluded_images as |image|}}
+      - {{image}}
+{{/each}}
+{{/if}}
+{{#if timeout}}
+    timeout: {{timeout}}
+{{/if}}
+{{#if api_version}}
+    api_version: "{{api_version}}"
+{{/if}}
+{{#if container_labels_to_metric_labels}}
+    container_labels_to_metric_labels: {{container_labels_to_metric_labels}}
+{{/if}}
+{{#if env_vars_to_metric_labels}}
+    env_vars_to_metric_labels: {{env_vars_to_metric_labels}}
+{{/if}}
+
+processors:
+  resourcedetection:
+    # Modify the list of detectors to match the cloud environment
+    detectors: [env, system, gcp, ec2, azure]
+    timeout: 2s
+    override: false
+
+service:
+  pipelines:
+    metrics:
+      receivers:
+        - docker_stats
+      processors:
+        - resourcedetection

@@ -2,21 +2,25 @@
 description: Pipeline for iptables logs.
 processors:
   - set:
+      tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
 
   # These two fields are treated as immutable in the case reindexing.
   - set:
+      tag: set_event_original_49bb683a
       field: event.original
       copy_from: message
       override: false
   - set:
+      tag: set_event_created_bf7a2064
       field: event.created
       copy_from: '@timestamp'
       override: false
 
   # Journald input field cleanup.
   - remove:
+      tag: remove_342ed3bb
       field:
         - syslog.priority
         - syslog.facility
@@ -24,20 +28,24 @@ processors:
         - journald.custom.seqnum_id
       ignore_missing: true
   - rename:
+      tag: rename_syslog_pid_to_log_syslog_procid_da944eb2
       field: syslog.pid
       target_field: log.syslog.procid
       ignore_missing: true
   - rename:
+      tag: rename_syslog_identifier_to_log_syslog_appname_5995bf31
       field: syslog.identifier
       target_field: log.syslog.appname
       ignore_missing: true
   - remove:
+      tag: remove_syslog_8212f7d5
       description: Cleanup an empty syslog object.
       if: ctx?.syslog != null && ctx.syslog instanceof Map && ctx.syslog.isEmpty()
       field: syslog
 
   # Parse the header if it is syslog, otherwise treat the whole value as 'message'.
   - grok:
+      tag: grok_event_original_037fcb4e
       description: Parse syslog header.
       field: event.original
       patterns:
@@ -48,10 +56,12 @@ processors:
         SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})'
       on_failure:
         - set:
+            tag: set_message_70b77574
             field: message
             copy_from: event.original
 
   - grok:
+      tag: grok_message_44b8bbb5
       field: message
       patterns:
       - '%{IPTABLES_HOSTNAME}%{GREEDYDATA}\[%{UBIQUITI_LABEL}\]%{IPTABLES}'
@@ -67,33 +77,26 @@ processors:
         ETHTYPE: (?:[A-Fa-f0-9]{2}):(?:[A-Fa-f0-9]{2})
         ETHTYPE_DISCARD: (?::[A-Fa-f0-9]{2})*
         NETFILTERMAC: (?:%{MAC:destination.mac}:%{MAC:source.mac}:%{ETHTYPE:iptables.ether_type}?%{ETHTYPE_DISCARD}|%{MAC:destination.mac}%{ETHTYPE_DISCARD}:%{ETHTYPE:iptables.ether_type}?)
-        IPTABLES_ETHERNET: 'IN=%{DATA:iptables.input_device} OUT=%{DATA:iptables.output_device}?(?:
-          MAC=%{NETFILTERMAC})?'
+        IPTABLES_ETHERNET: 'IN=%{DATA:iptables.input_device} OUT=%{DATA:iptables.output_device}?(?: MAC=%{NETFILTERMAC})?'
+
         IPTABLES_PORT_PAIR: SPT=%{UNSIGNED_INT:source.port:int} DPT=%{UNSIGNED_INT:destination.port:int}
         IPTABLES_TCP_FLAGS: (CWR |ECE |URG |ACK |PSH |RST |SYN |FIN )*
         IPTABLES_TCP_SEQ: SEQ=%{UNSIGNED_INT:iptables.tcp.seq:int} ACK=%{UNSIGNED_INT:iptables.tcp.ack:int}
-        IPTABLES_TCP_DETAILS: (?:%{IPTABLES_TCP_SEQ} )?WINDOW=%{UNSIGNED_INT:iptables.tcp.window:int}
-          RES=0x%{BASE16NUM:iptables.tcp_reserved_bits} %{IPTABLES_TCP_FLAGS:iptables.tcp.flags}
-        IPTABLES_INCOMPLETE_PACKET: INCOMPLETE \[%{UNSIGNED_INT:iptables.incomplete_bytes:int}
-          bytes\]
+        IPTABLES_TCP_DETAILS: (?:%{IPTABLES_TCP_SEQ} )?WINDOW=%{UNSIGNED_INT:iptables.tcp.window:int} RES=0x%{BASE16NUM:iptables.tcp_reserved_bits} %{IPTABLES_TCP_FLAGS:iptables.tcp.flags}
+        IPTABLES_INCOMPLETE_PACKET: INCOMPLETE \[%{UNSIGNED_INT:iptables.incomplete_bytes:int} bytes\]
         IPTABLES_UDP_DETAILS: LEN=%{UNSIGNED_INT:iptables.udp.length:int}
         IPTABLES_ICMP_EXTRA_ECHO: ID=%{UNSIGNED_INT:iptables.icmp.id:int} SEQ=%{UNSIGNED_INT:iptables.icmp.seq:int}
         IPTABLES_ICMP_EXTRA_PARAM: PARAMETER=%{UNSIGNED_INT:iptables.icmp.parameter:int}
         IPTABLES_ICMP_EXTRA_REDIRECT: GATEWAY=%{IP:iptables.icmp.redirect}
         IPTABLES_ICMP_EXTRA: ( (?:%{IPTABLES_ICMP_EXTRA_ECHO}|%{IPTABLES_ICMP_EXTRA_PARAM}|%{IPTABLES_ICMP_EXTRA_REDIRECT}))*
-        IPTABLES_ICMP_DETAILS: TYPE=%{UNSIGNED_INT:iptables.icmp.type:int} CODE=%{UNSIGNED_INT:iptables.icmp.code:int}((
-          %{IPTABLES_INCOMPLETE_PACKET})|%{IPTABLES_ICMP_EXTRA})
+        IPTABLES_ICMP_DETAILS: TYPE=%{UNSIGNED_INT:iptables.icmp.type:int} CODE=%{UNSIGNED_INT:iptables.icmp.code:int}(( %{IPTABLES_INCOMPLETE_PACKET})|%{IPTABLES_ICMP_EXTRA})
         IPTABLES_PROTOCOL: PROTO=(?<network.transport>[a-zA-Z0-9]+)
         IPTABLES_IP_PAYLOAD: '%{IPTABLES_PROTOCOL}( %{IPTABLES_PORT_PAIR})?( (%{IPTABLES_TCP_DETAILS}|%{IPTABLES_UDP_DETAILS}|%{IPTABLES_ICMP_DETAILS}|%{IPTABLES_INCOMPLETE_PACKET}))?'
         IPTABLES_IP_FRAGFLAG: ((?<= )(CE|DF|MF))*
-        IPTABLES_IP_START: 'SRC=%{IPV4:source.ip} DST=%{IPV4:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int}
-          TOS=(?:0x)?%{BASE16NUM:iptables.tos} PREC=0x%{BASE16NUM:iptables.precedence_bits}
-          TTL=%{UNSIGNED_INT:iptables.ttl:int} ID=%{UNSIGNED_INT:iptables.id:int}(?:
-          %{IPTABLES_IP_FRAGFLAG:iptables.fragment_flags})?(?: FRAG: %{UNSIGNED_INT:iptables.fragment_offset:int})?'
+        IPTABLES_IP_START: 'SRC=%{IPV4:source.ip} DST=%{IPV4:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int} TOS=(?:0x)?%{BASE16NUM:iptables.tos} PREC=0x%{BASE16NUM:iptables.precedence_bits} TTL=%{UNSIGNED_INT:iptables.ttl:int} ID=%{UNSIGNED_INT:iptables.id:int}(?: %{IPTABLES_IP_FRAGFLAG:iptables.fragment_flags})?(?: FRAG: %{UNSIGNED_INT:iptables.fragment_offset:int})?'
+
         IPTABLES_IP: '%{IPTABLES_IP_START} %{IPTABLES_IP_PAYLOAD}'
-        IPTABLES_IPV6_START: SRC=%{IPV6:source.ip} DST=%{IPV6:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int}
-          TC=%{UNSIGNED_INT:iptables.tos} HOPLIMIT=%{UNSIGNED_INT:iptables.ttl:int}
-          FLOWLBL=%{UNSIGNED_INT:iptables.flow_label:int}
+        IPTABLES_IPV6_START: SRC=%{IPV6:source.ip} DST=%{IPV6:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int} TC=%{UNSIGNED_INT:iptables.tos} HOPLIMIT=%{UNSIGNED_INT:iptables.ttl:int} FLOWLBL=%{UNSIGNED_INT:iptables.flow_label:int}
         IPTABLES_IPV6: '%{IPTABLES_IPV6_START} %{IPTABLES_IP_PAYLOAD}'
         IPTABLES: '%{IPTABLES_ETHERNET} (:?%{IPTABLES_IP}|%{IPTABLES_IPV6})'
         UBIQUITI_FIELD: '[^-\]]*'
@@ -101,6 +104,7 @@ processors:
         UBIQUITI_LABEL: '%{UBIQUITI_RULESET_NAME:iptables.ubiquiti.rule_set}-%{UBIQUITI_FIELD:iptables.ubiquiti.rule_number}-%{UBIQUITI_FIELD:event.action}'
         UDM_LOGS: '(%{UNSIGNED_INT}%{SPACE})?(TTL|TL|L)=(%{UNSIGNED_INT:iptables.ttl:int})%{SPACE}(ID=(%{UNSIGNED_INT:iptables.id:int})%{SPACE})?(DF%{SPACE})?'
   - grok:
+      tag: grok_iptables_ubiquiti_rule_set_bdd576eb
       field: iptables.ubiquiti.rule_set
       ignore_missing: true
       ignore_failure: true
@@ -109,11 +113,13 @@ processors:
       pattern_definitions:
         UBIQUITI_FIELD: '[^-]*'
   - date:
+      tag: date__tmp_timestamp8601_c38c0806
       if: ctx?._tmp?.timestamp8601 != null
       field: _tmp.timestamp8601
       formats:
         - ISO8601
   - date:
+      tag: date__tmp_timestamp_8a0fd800
       if: ctx?.event?.timezone == null && ctx?._tmp?.timestamp != null
       field: _tmp.timestamp
       formats:
@@ -121,9 +127,11 @@ processors:
       - MMM dd HH:mm:ss
       on_failure:
       - append:
+          tag: append_error_message_82e5a98f
           field: error.message
           value: 'date processor error: {{{ _ingest.on_failure_message }}}'
   - date:
+      tag: date__tmp_timestamp_245edf42
       if: ctx?.event?.timezone != null && ctx?._tmp?.timestamp != null
       field: _tmp.timestamp
       formats:
@@ -132,39 +140,48 @@ processors:
       timezone: '{{{ event.timezone }}}'
       on_failure:
       - append:
+          tag: append_error_message_9c24ef9d
           field: error.message
           value: 'date processor error: {{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_observer_name_84b93363
       field: observer.name
       copy_from: hostname
       if: ctx?.observer?.name == null && ctx?.hostname != null
   - set:
+      tag: set_observer_hostname_d71358b1
       field: observer.hostname
       copy_from: hostname
       if: ctx?.observer?.name == null && ctx?.hostname != null
   - rename:
+      tag: rename_network_transport_to_network_iana_number_8354ffc7
       description: Rename network.transport to network.iana_number if it is a number.
       if: ctx.network?.iana_number == null && ctx.network?.transport != null && ctx.network.transport.chars().allMatch(Character::isDigit)
       field: network.transport
       target_field: network.iana_number
       ignore_missing: true
   - lowercase:
+      tag: lowercase_network_transport_bc8c1c12
       field: network.transport
       ignore_missing: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
 
   # GeoIP and Autonomous System Enrichment
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -173,6 +190,7 @@ processors:
       - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -181,22 +199,27 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - script:
+      tag: script_5bfc0049
       description: Enrich event with ECS fields.
       lang: painless
       params:
@@ -256,11 +279,13 @@ processors:
           }
         }
   - community_id:
+      tag: community_id_599d51a0
       ignore_missing: true
       ignore_failure: true
       icmp_type: iptables.icmp.type
       icmp_code: iptables.icmp.code
   - script:
+      tag: script_79f58598
       description: Convert bit fields to numbers.
       lang: painless
       params:
@@ -289,88 +314,113 @@ processors:
           }
         }
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_7afdca3c
       field: event.category
       value: network
   - append:
+      tag: append_event_type_e0ea7708
       field: event.type
       value: connection
       if: ctx?.source?.ip != null && ctx?.destination?.ip != null
   - append:
+      tag: append_related_ip_549fa858
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_da872846
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx?.destination?.ip != null
       allow_duplicates: false
   - rename:
+      tag: rename_iptables_tcp_reserved_bits_to_iptables_tcp_reserved_bits_e463845f
       field: iptables.tcp_reserved_bits
       target_field: iptables.tcp.reserved_bits
       ignore_missing: true
   - split:
+      tag: split_iptables_tcp_flags_5321af29
       field: iptables.tcp.flags
       separator: "\\s+"
       ignore_missing: true
   - split:
+      tag: split_iptables_fragment_flags_8aa979f5
       field: iptables.fragment_flags
       separator: "\\s+"
       ignore_missing: true
   - set:
+      tag: set_observer_egress_zone_22bfd566
       if: ctx?.iptables?.ubiquiti?.output_zone != null
       field: observer.egress.zone
       copy_from: iptables.ubiquiti.output_zone
   - set:
+      tag: set_observer_ingress_zone_eff0b072
       if: ctx?.iptables?.ubiquiti?.input_zone != null
       field: observer.ingress.zone
       copy_from: iptables.ubiquiti.input_zone
   - set:
+      tag: set_rule_id_aa2709b8
       if: ctx?.iptables?.ubiquiti?.rule_number != null
       field: rule.id
       copy_from: iptables.ubiquiti.rule_number
   - set:
+      tag: set_rule_name_c442e0f0
       if: ctx?.iptables?.ubiquiti?.rule_set != null
       field: rule.name
       copy_from: iptables.ubiquiti.rule_set
 
   # Format source.mac address.
   - gsub:
+      tag: gsub_source_mac_061bf27a
       field: source.mac
       pattern: '[-:.]'
       replacement: ''
       ignore_missing: true
   - gsub:
+      tag: gsub_source_mac_a230b90b
       field: source.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_source_mac_5b4e7be2
       field: source.mac
       ignore_missing: true
 
   # Format destination.mac address.
   - gsub:
+      tag: gsub_destination_mac_80c7dedb
       field: destination.mac
       pattern: '[-:.]'
       replacement: ''
       ignore_missing: true
   - gsub:
+      tag: gsub_destination_mac_1aa8a244
       field: destination.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_destination_mac_04de3657
       field: destination.mac
       ignore_missing: true
 
   - remove:
+      tag: remove_a82e20f2
       field:
         - _tmp
       ignore_failure: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - remove:
       field:
@@ -382,6 +432,11 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}' in pipeline {{{_ingest.pipeline}}}
-        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'{{{/_ingest.on_failure_processor_tag}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

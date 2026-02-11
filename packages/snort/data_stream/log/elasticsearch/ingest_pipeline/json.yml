@@ -2,174 +2,206 @@
 description: Pipeline for parsing Snort JSON logs
 processors:
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - remove:
+      tag: remove_json_b64_data_7e792bb7
       field: json.b64_data
       ignore_missing: true
   - rename:
-      field: json.timestamp
-      target_field: _tmp.timestamp
-      ignore_missing: true
-  - rename:
+      tag: rename_json_timestamp_to__tmp_timestamp_18c690bc
       field: json.timestamp
       target_field: _tmp.timestamp
       ignore_missing: true
   - convert:
+      tag: convert_json_src_port_to_source_port_efdc0a43
       field: json.src_port
       target_field: source.port
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_json_dst_port_to_destination_port_f9b6c7c5
       field: json.dst_port
       target_field: destination.port
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_json_dst_addr_to_destination_address_37a32717
       field: json.dst_addr
       target_field: destination.address
       ignore_missing: true
   - rename:
+      tag: rename_json_src_addr_to_source_address_a9f9f0b3
       field: json.src_addr
       target_field: source.address
       ignore_missing: true
   - rename:
+      tag: rename_json_eth_dst_to_destination_mac_6d003604
       field: json.eth_dst
       target_field: destination.mac
       ignore_missing: true
   - rename:
+      tag: rename_json_eth_src_to_source_mac_09bf4d56
       field: json.eth_src
       target_field: source.mac
       ignore_missing: true
   - convert:
+      tag: convert_json_eth_len_to_snort_eth_length_a293f0fd
       field: json.eth_len
       target_field: snort.eth.length
       type: long
       ignore_missing: true
-## Rule
+  ## Rule
   - rename:
+      tag: rename_json_class_to_rule_category_8404d310
       field: json.class
       target_field: rule.category
       ignore_missing: true
   - rename:
+      tag: rename_json_msg_to_rule_description_102b1a1d
       field: json.msg
       target_field: rule.description
       ignore_missing: true
   - convert:
+      tag: convert_json_rev_to_rule_version_52a702c5
       field: json.rev
       target_field: rule.version
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_json_sid_to_rule_id_102bd6c3
       field: json.sid
       target_field: rule.id
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_json_gid_to_snort_gid_7dd63be3
       field: json.gid
       target_field: snort.gid
       type: long
       ignore_missing: true
-## ICMP
+  ## ICMP
   - convert:
+      tag: convert_json_icmp_type_to_snort_icmp_type_34629aae
       field: json.icmp_type
       target_field: snort.icmp.type
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_json_icmp_code_to_snort_icmp_code_6baefa08
       field: json.icmp_code
       target_field: snort.icmp.code
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_json_icmp_id_to_snort_icmp_id_7cacbd24
       field: json.icmp_id
       target_field: snort.icmp.id
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_json_icmp_seq_to_snort_icmp_seq_2f6b6a22
       field: json.icmp_seq
       target_field: snort.icmp.seq
       type: long
       ignore_missing: true
-## TCP
+  ## TCP
   - rename:
+      tag: rename_json_tcp_flags_to_snort_tcp_flags_d269ee87
       field: json.tcp_flags
       target_field: snort.tcp.flags
       ignore_missing: true
   - rename:
+      tag: rename_json_tcp_len_to_snort_tcp_length_58c55032
       field: json.tcp_len
       target_field: snort.tcp.length
       ignore_missing: true
   - rename:
+      tag: rename_json_tcp_seq_to_snort_tcp_seq_2c83446b
       field: json.tcp_seq
       target_field: snort.tcp.seq
       ignore_missing: true
   - rename:
+      tag: rename_json_tcp_ack_to_snort_tcp_ack_b97ed153
       field: json.tcp_ack
       target_field: snort.tcp.ack
       ignore_missing: true
   - rename:
+      tag: rename_json_tcp_win_to_snort_tcp_window_2ca5ee9d
       field: json.tcp_win
       target_field: snort.tcp.window
       ignore_missing: true
-## UDP
+  ## UDP
   - rename:
+      tag: rename_json_udp_len_to_snort_udp_length_967caad6
       field: json.udp_len
       target_field: snort.udp.length
       ignore_missing: true
-## IP
+  ## IP
   - convert:
+      tag: convert_json_ip_id_to_snort_ip_id_5f602294
       field: json.ip_id
       target_field: snort.ip.id
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_json_tos_to_snort_ip_tos_7f7eeff4
       field: json.tos
       target_field: snort.ip.tos
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_json_ttl_to_snort_ip_ttl_922bd868
       field: json.ttl
       target_field: snort.ip.ttl
       type: long
       ignore_missing: true
-## Network
+  ## Network
   - convert:
+      tag: convert_json_pkt_num_to_network_packets_acd7e99e
       field: json.pkt_num
       target_field: network.packets
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_json_pkt_len_to_network_bytes_2adbfb53
       field: json.pkt_len
       target_field: network.bytes
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_json_proto_to_network_transport_78181b45
       field: json.proto
       target_field: network.transport
       ignore_missing: true
   - rename:
+      tag: rename_json_service_to_network_protocol_f00476bd
       field: json.service
       target_field: network.protocol
       ignore_missing: true
       if: ctx.json?.service != 'unknown'
   - convert:
+      tag: convert_json_vlan_to_network_vlan_id_cd0ebb29
       field: json.vlan
       target_field: network.vlan.id
       type: string
       ignore_missing: true
       if: ctx.json?.vlan != 0
-## Other
+  ## Other
   - convert:
+      tag: convert_json_priority_to_event_severity_54f88bf8
       field: json.priority
       target_field: event.severity
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_json_action_to__tmp_action_17ba238e
       field: json.action
       target_field: _tmp.action
       ignore_missing: true
   - rename:
+      tag: rename_json_iface_to_observer_ingress_interface_name_a91e4a53
       field: json.iface
       target_field: observer.ingress.interface.name
       ignore_missing: true
@@ -180,4 +212,12 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

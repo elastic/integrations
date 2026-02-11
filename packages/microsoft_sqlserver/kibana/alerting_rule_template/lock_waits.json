@@ -1,0 +1,28 @@
+{
+  "id": "lock_waits",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MicrosoftSQL Server] Lock Waits above threshold",
+    "tags": ["MicrosoftSQL Server"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the lock_waits_per_sec exceeds the recommended threshold value {100} within the look back time window.\n// The alert is grouped by Server Name.\n// You can adjust the threshold value by modifying the lock_waits_per_sec in the WHERE clause.\nFROM metrics-microsoft_sqlserver.performance-default\n| KEEP mssql.metrics.lock_waits_per_sec, mssql.metrics.server_name, @timestamp\n| WHERE mssql.metrics.lock_waits_per_sec IS NOT NULL\n| STATS lock_waits_per_sec = MAX(mssql.metrics.lock_waits_per_sec) BY mssql.metrics.server_name\n| WHERE lock_waits_per_sec > 100\n| SORT lock_waits_per_sec DESC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
