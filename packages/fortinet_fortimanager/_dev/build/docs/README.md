@@ -14,7 +14,7 @@ This integration facilitates:
 
 ### Compatibility
 
-This integration is compatible with Fortinet FortiManager and FortiAnalyzer versions 7.2.2 and above. It has been specifically tested against version 7.2.2.
+This integration is compatible with Fortinet FortiManager and FortiAnalyzer versions 7.2.2 and expected to work in versions above. It has been specifically tested against version 7.2.2.
 
 ### How it works
 
