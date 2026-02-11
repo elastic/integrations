@@ -6,12 +6,6 @@
 
 The StormShield SNS integration for Elastic enables you to collect and analyze security events and system logs from Stormshield Network Security (SNS) firewalls. By ingesting these logs into the Elastic Stack, you can monitor network activity, detect threats in real-time, and maintain detailed audit trails for compliance.
 
-This integration facilitates the following:
-- Threat detection and response: Monitor firewall filter and alarm logs to identify and mitigate malicious traffic patterns or intrusion attempts in real-time.
-- Compliance and auditing: Maintain comprehensive audit trails of administrative changes and system events to satisfy regulatory requirements like GDPR, PCI-DSS, or HIPAA.
-- Network traffic monitoring: Gain visibility into network behavior by analyzing traffic logs and NAT events to optimize bandwidth and identify unauthorized application usage.
-- System health and performance: Track system-level events and alarms to proactively manage firewall performance and ensure high availability across the security infrastructure.
-
 ### Compatibility
 
 This integration is compatible with the following third-party vendor systems:
