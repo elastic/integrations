@@ -837,6 +837,7 @@ list_all_directories() {
 # but we want to store YAML source files in _dev for development purposes.
 # The YAML files are compiled to JSON and stored alongside the YAML.
 # This function removes _dev before validation so CI passes.
+# TODO: Remove this workaround when https://github.com/elastic/package-spec/issues/1068 is implemented.
 remove_dev_folder_for_content_packages() {
     local pkg_type
     pkg_type=$(cat manifest.yml | yq -r '.type // "integration"')
