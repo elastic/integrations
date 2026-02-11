@@ -37,7 +37,7 @@ This package receives telemetry data from MySQL servers by configuring the MySQL
 | TLS Certificate File | No | - | Path to client certificate file for mTLS authentication |
 | TLS Key File | No | - | Path to client key file for mTLS authentication |
 
-Note: TLS is disabled by default. To enable TLS, configure at least one TLS setting (e.g., TLS CA File or Skip TLS Verification).
+Note: TLS is disabled by default. To enable TLS, set the "Enable TLS Configuration" option to true and configure the desired TLS settings (e.g., TLS CA File or Skip TLS Verification).
 
 ### Collection Settings
 
