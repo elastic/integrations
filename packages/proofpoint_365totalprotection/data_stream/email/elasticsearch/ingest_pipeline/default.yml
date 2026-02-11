@@ -1,5 +1,11 @@
 ---
 processors:
+    - set:
+            field: ecs.version
+            value: "8.11.0"
+    - set:
+            field: input.type
+            value: "httpjson"
     - json:
             field: message
             target_field: parsed_email
@@ -11,6 +17,29 @@ processors:
                     ctx.proofpoint = ['email': ctx.parsed_email];
                     ctx.remove('parsed_email');
                     ctx.remove('message');
+                    
+                    // Convert IDs to strings for keyword fields
+                    if (ctx.proofpoint.email.containsKey('classification') && ctx.proofpoint.email.classification instanceof Map) {
+                        if (ctx.proofpoint.email.classification.containsKey('id')) {
+                            ctx.proofpoint.email.classification.id = String.valueOf(ctx.proofpoint.email.classification.id);
+                        }
+                    }
+                    if (ctx.proofpoint.email.containsKey('status') && ctx.proofpoint.email.status instanceof Map) {
+                        if (ctx.proofpoint.email.status.containsKey('id')) {
+                            ctx.proofpoint.email.status.id = String.valueOf(ctx.proofpoint.email.status.id);
+                        }
+                    }
+                    if (ctx.proofpoint.email.containsKey('crypt_type_in') && ctx.proofpoint.email.crypt_type_in instanceof Map) {
+                        if (ctx.proofpoint.email.crypt_type_in.containsKey('id')) {
+                            ctx.proofpoint.email.crypt_type_in.id = String.valueOf(ctx.proofpoint.email.crypt_type_in.id);
+                        }
+                    }
+                    if (ctx.proofpoint.email.containsKey('crypt_type_out') && ctx.proofpoint.email.crypt_type_out instanceof Map) {
+                        if (ctx.proofpoint.email.crypt_type_out.containsKey('id')) {
+                            ctx.proofpoint.email.crypt_type_out.id = String.valueOf(ctx.proofpoint.email.crypt_type_out.id);
+                        }
+                    }
+                    
                     // Convert size object to string
                     if (ctx.proofpoint.email.containsKey('size') && ctx.proofpoint.email.size instanceof Map) {
                         ctx.proofpoint.email.size = ctx.proofpoint.email.size.value + ' ' + ctx.proofpoint.email.size.unit;

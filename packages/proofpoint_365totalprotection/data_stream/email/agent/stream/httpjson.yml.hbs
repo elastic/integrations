@@ -1,7 +1,7 @@
 type: httpjson
 interval: {{interval}}
 config_version: 2
-request.url: "https://cp.proofpoint.com/api/v0/object/?name={{domain_or_email}}"
+request.url: "{{url}}/api/v0/object/?name={{domain_or_email}}"
 request.method: GET
 request.transforms:
 - set:
@@ -13,7 +13,7 @@ request.transforms:
 chain:
 - step:
     request.method: POST
-    request.url: "https://cp.proofpoint.com/api/v0/emails/_search/"
+    request.url: "{{url}}/api/v0/emails/_search/"
     request.encode_as: application/json
     replace: object_id
     request.body:
@@ -29,7 +29,7 @@ chain:
         value: '[[ formatDate ((now.Add (parseDuration "-{{interval}}")).Add (parseDuration "-30m")) "2006-01-02T15:04:05Z" ]]'
     - set:
         target: url.params.object_id
-        value: '[[ sprintf "%.0f" .last_response.body.object_id ]]'
+        value: '[[ toInt .last_response.body.object_id ]]'
     - set:
         target: header.Authorization
         value: 'Token {{apikey}}'
