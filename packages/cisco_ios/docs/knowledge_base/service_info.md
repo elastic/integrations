@@ -180,6 +180,3 @@ After configuration is complete, verify that data is flowing correctly.
 
 ## Vendor Resources
 - [Cisco System Message Logging Guide](https://www.cisco.com/c/en/us/td/docs/routers/access/wireless/software/guide/SysMsgLogging.html)
-
-# Documentation sites
-- [Cisco System Message Logging Documentation](https://www.cisco.com/c/en/us/td/docs/routers/access/wireless/software/guide/SysMsgLogging.html)
