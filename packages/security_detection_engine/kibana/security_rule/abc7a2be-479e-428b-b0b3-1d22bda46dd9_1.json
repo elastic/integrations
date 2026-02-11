@@ -1,0 +1,131 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a two-stage Google Calendar C2 pattern where a scripting runtime (Node.js, Python, osascript) first connects to calendar.app.google to retrieve a hidden C2 address, then initiates a secondary connection to the decoded C2 host. This sequence is characteristic of packages using Unicode steganography in Google Calendar events to stage dynamic command-and-control endpoints.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Google Calendar C2 via Script Interpreter",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Google Calendar C2 via Script Interpreter\n\nThreat actors increasingly abuse legitimate cloud services to establish covert command and control channels that blend with normal traffic and bypass traditional network security controls. Google Calendar has been weaponized as a C2 mechanism where attackers store encoded commands in calendar event descriptions, which malware then polls and executes. This detection rule identifies script interpreters connecting to Google Calendar API endpoints, which may indicate this living-off-the-land technique.\n\n### Possible investigation steps\n\n- Review the process.name and process.executable fields to identify which script interpreter is making the Google Calendar API connection and assess whether it is expected for the user or application context.\n- Examine the process.command_line and process.args fields to understand what script or code is being executed that initiated the calendar connection.\n- Check the process.parent.executable and process.parent.command_line to trace the process lineage and identify how the script interpreter was launched.\n- Investigate the Google Workspace audit logs for the associated user account to review calendar events that may contain encoded commands or suspicious content.\n- Review network connection details including dns.question.name and destination.ip to understand the specific Google API endpoints being accessed.\n- Correlate with authentication events to identify which user account or service account OAuth tokens are being used for the calendar access.\n- Search for similar activity across other endpoints to determine if this is an isolated incident or part of a broader campaign.\n\n### False positive analysis\n\n- Legitimate productivity applications may integrate with Google Calendar for scheduling and automation purposes. Verify the application's purpose and whether it is approved by IT.\n- Custom automation scripts built by employees may access Google Calendar API for workflow automation. Review with the script owner to confirm legitimacy.\n- Development and testing environments may trigger this detection when building calendar integrations. Document known development activities and create targeted exceptions.\n- Third-party calendar sync applications may use script interpreters to interface with Google Calendar. Verify these are sanctioned applications.\n\n### Response and remediation\n\n- Immediately terminate the suspicious script interpreter process to stop any ongoing C2 communication.\n- Revoke OAuth tokens and API credentials associated with the compromised Google account to prevent further unauthorized access.\n- Review Google Workspace admin console for any unauthorized calendar events or modifications that may contain malicious content.\n- Isolate the affected macOS system from the network while conducting forensic analysis.\n- Perform a comprehensive scan for additional malware, persistence mechanisms, or lateral movement indicators.\n- Reset the affected user's credentials and enable multi-factor authentication if not already in place.\n- Implement application allowlisting to prevent unauthorized script interpreters from executing.\n- Escalate to the security operations team for further investigation into potential data exfiltration or broader compromise.\n",
+        "query": "sequence by process.entity_id with maxspan=20s\n  [network where host.os.type == \"macos\" and event.type == \"start\" and\n    (process.name in (\"node\", \"osascript\") or process.name like \"python*\" or\n     process.code_signature.trusted == false or process.code_signature.exists == false) and\n    destination.domain like \"calendar.app.google*\"]\n  [network where host.os.type == \"macos\" and event.type == \"start\" and destination.domain == null]\n",
+        "references": [
+            "https://www.veracode.com/resources/sophisticated-npm-attack-leveraging-unicode-steganography-and-google-calendar-c2",
+            "https://www.koi.ai/blog/glassworm-first-self-propagating-worm-using-invisible-code-hits-openvsx-marketplace"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "abc7a2be-479e-428b-b0b3-1d22bda46dd9",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1102",
+                        "name": "Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1102/",
+                        "subtechnique": [
+                            {
+                                "id": "T1102.002",
+                                "name": "Bidirectional Communication",
+                                "reference": "https://attack.mitre.org/techniques/T1102/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.006",
+                                "name": "Python",
+                                "reference": "https://attack.mitre.org/techniques/T1059/006/"
+                            },
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 1
+    },
+    "id": "abc7a2be-479e-428b-b0b3-1d22bda46dd9_1",
+    "type": "security-rule"
+}
