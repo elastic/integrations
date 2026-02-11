@@ -15,10 +15,8 @@ request.proxy_url: {{proxy_url}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
+
 request.transforms:
-  - set:
-      target: header.X-Amz-Date
-      value: '[[formatDate (now) "20060102T150405Z"]]'
   - set:
       target: body.maxResults
       value: 50
@@ -34,20 +32,12 @@ request.transforms:
   - set:
       target: body.findingCriteria.criterion.updatedAt.lessThan
       value: '[[((now)).UnixMilli]]'
-  - set:
-      target: header.Authorization
-      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/guardduty/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "guardduty")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/guardduty/aws4_request") (hash "sha256" "POST\n" "/detector/{{detector_id}}/findings\n" "\n" "host:guardduty.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
 response.pagination:
   - set:
       target: body.nextToken
       value: '[[if (ne .last_response.body.nextToken "")]][[.last_response.body.nextToken]][[end]]'
       fail_on_template_error: true
       do_not_log_failure: true
-  - delete:
-      target: header.Authorization
-  - set:
-      target: header.Authorization
-      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/guardduty/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "guardduty")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/guardduty/aws4_request") (hash "sha256" "POST\n" "/detector/{{detector_id}}/findings\n" "\n" "host:guardduty.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
 chain:
   - step:
       request.url: https://guardduty.{{aws_region}}.{{tld}}/detector/{{detector_id}}/findings/get
@@ -64,9 +54,6 @@ chain:
       request.method: POST
       request.transforms:
         - set:
-            target: header.X-Amz-Date
-            value: '[[formatDate (now) "20060102T150405Z"]]'
-        - set:
             target: body.findingIds
             value: '[[toJSON .parent_last_response.body.findingIds]]'
             value_type: json
@@ -74,9 +61,6 @@ chain:
             target: body.sortCriteria
             value: '{"attributeName":"updatedAt","orderBy":"ASC"}'
             value_type: json
-        - set:
-            target: header.Authorization
-            value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/guardduty/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "guardduty")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/guardduty/aws4_request") (hash "sha256" "POST\n" "/detector/{{detector_id}}/findings/get\n" "\n" "host:guardduty.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
       response.split:
         target: body.findings
 cursor:
@@ -99,4 +83,35 @@ publisher_pipeline.disable_host: true
 {{#if processors}}
 processors:
 {{processors}}
+{{/if}}
+auth.aws:
+{{#if access_key_id}}
+  access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+  secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+  session_token: {{session_token}}
+{{/if}}
+{{#if shared_credential_file}}
+  shared_credential_file: {{shared_credential_file}}
+{{/if}}
+{{#if credential_profile_name}}
+  credential_profile_name: {{credential_profile_name}}
+{{/if}}
+{{#if role_arn}}
+  role_arn: {{role_arn}}
+{{/if}}
+{{#if external_id}}
+  external_id: {{external_id}}
+{{/if}}
+{{#if assume_role_duration}}
+  assume_role.duration: {{assume_role_duration}}
+{{/if}}
+{{#if assume_role_expiry_window}}
+  assume_role.expiry_window: {{assume_role_expiry_window}}
+{{/if}}
+{{#if supports_cloud_connectors}}
+  supports_cloud_connectors: {{supports_cloud_connectors}}
 {{/if}}

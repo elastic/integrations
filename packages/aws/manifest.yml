@@ -1,7 +1,7 @@
-format_version: 3.4.0
+format_version: 3.6.0
 name: aws
 title: AWS
-version: 6.1.0
+version: 6.2.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -95,6 +95,43 @@ vars:
     required: false
     show_user: false
     description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+  - name: supports_cloud_connectors
+    type: bool
+    title: Supports Cloud Connectors
+    multi: false
+    required: false
+    show_user: false
+var_groups:
+  - name: credential_type
+    required: true
+    title: Setup Access
+    selector_title: Preferred method
+    options:
+      - name: cloud_connectors
+        title: Cloud Connector
+        vars: [role_arn, external_id, supports_cloud_connectors]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-cloud-connectors-ACCOUNT_TYPE-9.2.0.yml&param_ElasticResourceId=RESOURCE_ID
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+        hide_in_deployment_modes: [agentless]
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+        hide_in_deployment_modes: [agentless]
+      - name: assume_role_external_id
+        title: Assume Role with External ID
+        vars: [role_arn, external_id]
+        hide_in_deployment_modes: [agentless]
+      - name: shared_credentials
+        title: Shared Credentials
+        vars: [shared_credential_file, credential_profile_name]
+        hide_in_deployment_modes: [agentless]
 policy_templates:
   - name: awshealth
     title: AWS Health
@@ -210,6 +247,8 @@ policy_templates:
       - type: cel
         title: Collect AWS Config logs via API
         description: Collecting AWS Config logs via API.
+        hide_in_var_group_options:
+          credential_type: [cloud_connectors]
     icons:
       - src: /img/logo-aws-config.svg
         title: AWS Config logo
@@ -794,6 +833,8 @@ policy_templates:
       - type: httpjson
         title: Collect AWS Security Hub CSPM logs via API
         description: Collecting AWS Security Hub CSPM logs via API.
+        hide_in_var_group_options:
+          credential_type: [cloud_connectors]
     screenshots:
       - src: /img/securityhub_cspm_findings_insights_dashboard.png
         title: Security Hub CSPM Findings and Insights dashboard screenshot
@@ -829,6 +870,8 @@ policy_templates:
       - type: httpjson
         title: Collect Amazon Inspector logs via API
         description: Collecting Amazon Inspector logs via API.
+        hide_in_var_group_options:
+          credential_type: [cloud_connectors]
     screenshots:
       - src: /img/inspector-findings-overview-dashboard.png
         title: Inspector Findings Overview dashboard
@@ -873,6 +916,8 @@ policy_templates:
       - type: aws-s3
         title: Collect Amazon GuardDuty logs via AWS S3 or SQS
         description: Collecting Amazon GuardDuty logs via AWS S3 or SQS input.
+        hide_in_var_group_options:
+          credential_type: [cloud_connectors]
     screenshots:
       - src: /img/guardduty-findings-overview.png
         title: GuardDuty Findings Overview dashboard screenshot
