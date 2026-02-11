@@ -11,7 +11,7 @@ This package receives telemetry data from MySQL servers by configuring the MySQL
 ## Requirements
 
 - MySQL 8.0+ or MariaDB 10.11+
-- A MySQL user with permissions to execute `SHOW GLOBAL STATUS`
+- A MySQL user with permissions to run `SHOW GLOBAL STATUS`
 - For query sample collection, the `performance_schema` must be enabled
 
 ## Configuration Options
@@ -37,7 +37,7 @@ This package receives telemetry data from MySQL servers by configuring the MySQL
 | TLS Certificate File | No | - | Path to client certificate file for mTLS authentication |
 | TLS Key File | No | - | Path to client key file for mTLS authentication |
 
-Note: TLS is disabled by default. To enable TLS, set the "Enable TLS Configuration" option to true and configure the desired TLS settings (e.g., TLS CA File or Skip TLS Verification).
+Note: TLS is turned off by default. To enable TLS, set the "Enable TLS Configuration" option to true and configure the desired TLS settings (for example, TLS CA File or Skip TLS Verification).
 
 ### Collection Settings
 
@@ -51,7 +51,7 @@ Note: TLS is disabled by default. To enable TLS, set the "Enable TLS Configurati
 | Setting | Required | Default | Description |
 | --------- | ---------- | --------- | ------------- |
 | Digest Text Limit | No | `120` | Maximum length of digest text |
-| Time Limit | No | `24h` | Maximum time since statements were observed |
+| Time Limit | No | `24h` | Maximum time after statements were observed |
 | Limit | No | `250` | Maximum number of statement event records |
 
 ### Query Sample Collection Settings
