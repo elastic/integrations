@@ -16,7 +16,7 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - '^%{DATA:log.level}\s+<%{TIMESTAMP_ISO8601:event.created}>\s\[.*?\]\s+\[%{DATA:log.origin.function}\]\s+%{GREEDYDATA:message}'
+        - '^%{DATA:log.level}\s+<%{TIMESTAMP_ISO8601:event.created}>\s\[.*?\]\s+\[%{DATA:log.origin.function}\s+\]\s+%{GREEDYDATA:message}'
         - '^%{GREEDYDATA:message}$'
   - lowercase:
       field: log.level
@@ -83,8 +83,16 @@ processors:
         - '(Ending|Starting)\s+connection\s+on\s+%{IP:server.ip}:%{INT:server.port}\s+from\s+%{IP:client.ip}:%{INT:client.port}'
         - '%{DATA:event.action}:\s+%{INT:event.code}\s+%{HOSTNAME:server.domain}%{DATA}\(%{HOSTNAME:client.domain}\s+\[%{IP:client.ip}\]\)'
         - '%{DATA:event.action}:\s+%{INT:event.code}\s+%{HOSTNAME:server.domain}%{DATA}\s%{GREEDYDATA:message}'
+        - '(?<event.action>Command\sreceived)'
         - '%{DATA:email.local_id}\:\s+%{DATA:event.action}:\s+%{GREEDYDATA:message}'
-
+        - '%{DATA:email.local_id}\:\s+%{GREEDYDATA:message}'
+  - grok:
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - 'sender:\s%{DATA:email.from.address}\s-\srecipient\(s\):\s%{GREEDYDATA:email.to.address}'
+        - 'process\smail\s<<%{DATA:email.message_id}>>'
   - set:
       field: "client.address"
       copy_from: client.domain
