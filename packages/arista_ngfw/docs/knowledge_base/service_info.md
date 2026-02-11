@@ -31,7 +31,6 @@ The **Arista NG Firewall** integration is compatible with the following third-pa
 
 ### Elastic Prerequisites
 - **Elastic Agent:** An active Elastic Agent must be installed and enrolled in a policy using Fleet.
-- **Elastic Stack:** Recommended version 8.11.0 or later for full dashboard and field mapping support.
 
 ## Scaling and Performance
 
@@ -50,7 +49,6 @@ To ensure optimal performance in high-volume environments, consider the followin
 
 ## Elastic prerequisites
 
-- **Elastic Stack Version:** Ensure your Elastic Stack (Elasticsearch and Kibana) is on version 8.11.0 or later for full compatibility.
 - **Elastic Agent:** An active Elastic Agent must be installed and enrolled in Fleet.
 - **Integration Policy:** The Arista NG Firewall integration must be added to an Elastic Agent policy.
 - **Connectivity:** Port **9010** (or your custom-configured port) must be open on the Elastic Agent host to accept incoming TCP/UDP syslog traffic.
