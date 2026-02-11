@@ -93,6 +93,7 @@ processors:
       patterns:
         - 'sender:\s%{DATA:email.from.address}\s-\srecipient\(s\):\s%{GREEDYDATA:email.to.address}'
         - 'process\smail\s<<%{DATA:email.message_id}>>'
+        - 'Certificate\s<%{DATA:x509.serial_number}>\sissued\sby\s<%{DATA:x509.subject.common_name}>'
   - set:
       field: "client.address"
       copy_from: client.domain
@@ -136,6 +137,10 @@ processors:
       lang: painless
       source: ctx.email.to.address = [ctx.email.to.address];
       if: (ctx.email?.to?.address != null && ctx.email?.to?.address instanceof String)
+  - script:
+      lang: painless
+      source: ctx.x509.subject.common_name = [ctx.x509.subject.common_name];
+      if: (ctx.x509?.subject?.common_name != null && ctx.x509?.subject?.common_name instanceof String)
 on_failure:
   - append:
       field: error.message
