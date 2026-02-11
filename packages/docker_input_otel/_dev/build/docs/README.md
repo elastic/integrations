@@ -17,7 +17,7 @@ This integration uses the OpenTelemetry dockerstats receiver which is currently 
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the {{ url "getting-started-observability" "Getting started" }} guide.
 
 ## Metrics
 
