@@ -1,0 +1,921 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "gcp.auditlog.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "gcp.auditlog.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "content": "## GCP Audit Logs Overview\n\nUse this dashboard to visualize Audit Logs (OpenTelemetry):\n- Shows successful and failed audit events over time\n- Highlights most common actions performed across GCP services\n- Identifies most active users based on audit activity\n- Breaks down activity by user agent and affected resources\n- Surfaces error events for troubleshooting and security review"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "6ed8e855-7ecf-4bbf-96d1-51c7387bcfbd",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "6ed8e855-7ecf-4bbf-96d1-51c7387bcfbd",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "b6cdc1a4-2adb-407a-85a3-db1204861778": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Success",
+                                                    "customLabel": false,
+                                                    "fieldName": "Success",
+                                                    "inMetricDimension": true,
+                                                    "label": "Success",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Errors",
+                                                    "customLabel": false,
+                                                    "fieldName": "Errors",
+                                                    "inMetricDimension": true,
+                                                    "label": "Errors",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": false,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "time_bucket",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS\nSuccess = COUNT(log.level != \"ERROR\") WHERE log.level != \"ERROR\",\nErrors = COUNT() WHERE log.level == \"ERROR\"\nBY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| STATS\nSuccess = COUNT(log.level != \"ERROR\") WHERE log.level != \"ERROR\",\nErrors = COUNT() WHERE log.level == \"ERROR\"\nBY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "Success",
+                                            "Errors"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "b6cdc1a4-2adb-407a-85a3-db1204861778",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xTitle": "@timestamp",
+                                "yTitle": "Outcome"
+                            }
+                        },
+                        "title": "Success \u0026 Errors over time_bucket",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS\nSuccess = COUNT(log.level != \"ERROR\") WHERE log.level != \"ERROR\",\nErrors = COUNT() WHERE log.level == \"ERROR\"\nBY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Event outcome over time"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "fdcff42d-b9fa-4b8b-9fdd-02ddf0d93380",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "fdcff42d-b9fa-4b8b-9fdd-02ddf0d93380",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "0a065b57-a2c2-456c-ac55-747666ae64bf": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "gcp.audit.method.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "gcp.audit.method.name",
+                                                    "label": "gcp.audit.method.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS total = COUNT() BY gcp.audit.method.name\n| SORT total DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "name": "textBasedLanguages-datasource-layer-0a065b57-a2c2-456c-ac55-747666ae64bf",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs*\n| STATS total = COUNT() BY gcp.audit.method.name\n| SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.54,
+                                        "layerId": "0a065b57-a2c2-456c-ac55-747666ae64bf",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "gcp.audit.method.name"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Treemap",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS total = COUNT() BY gcp.audit.method.name\n| SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Methods/Operations"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "ff72b2bf-d01b-4756-8030-76c01117131c",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "ff72b2bf-d01b-4756-8030-76c01117131c",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "bedc5ae0-f62a-4a67-a32a-dbcee97aceb8": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "user.email",
+                                                    "customLabel": true,
+                                                    "fieldName": "user.email",
+                                                    "label": "User Email",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "d2321032-6885-45dd-890e-4e1b920b58e3",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "label": "Events",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "params": {
+                                                            "id": "number"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "total"
+                                                        },
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS total = COUNT() BY user.email\n| SORT total DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| STATS total = COUNT() BY user.email\n| SORT total DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "user.email",
+                                        "width": 545
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "d2321032-6885-45dd-890e-4e1b920b58e3",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "bedc5ae0-f62a-4a67-a32a-dbcee97aceb8",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS total = COUNT() BY user.email\n| SORT total DESC\n| LIMIT 10"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top 10 User Emails"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "4c6f0f88-61c8-41a9-b9a3-ad555b51a299",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "4c6f0f88-61c8-41a9-b9a3-ad555b51a299",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e5f0acb2-edee-4d26-92f0-3a285e8b02d4": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "user_agent.original",
+                                                    "customLabel": false,
+                                                    "fieldName": "user_agent.original",
+                                                    "label": "user_agent.original",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS total = COUNT() BY user_agent.original\n| SORT total DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "name": "textBasedLanguages-datasource-layer-e5f0acb2-edee-4d26-92f0-3a285e8b02d4",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs*\n| STATS total = COUNT() BY user_agent.original\n| SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.54,
+                                        "layerId": "e5f0acb2-edee-4d26-92f0-3a285e8b02d4",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "user_agent.original"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Treemap",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS total = COUNT() BY user_agent.original\n| SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "User Agents"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "92badd1d-db92-48c3-a984-38b8e8e0f074",
+                    "w": 24,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "92badd1d-db92-48c3-a984-38b8e8e0f074",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "b1a39a37-16d3-4d2f-b5aa-9c13799655a4": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "gcp.audit.resource.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "gcp.audit.resource.name",
+                                                    "label": "gcp.audit.resource.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| STATS total = COUNT() BY gcp.audit.resource.name\n| SORT total DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| STATS total = COUNT() BY gcp.audit.resource.name\n| SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.54,
+                                        "layerId": "b1a39a37-16d3-4d2f-b5aa-9c13799655a4",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "gcp.audit.resource.name"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Treemap",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| STATS total = COUNT() BY gcp.audit.resource.name\n| SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Resource Name"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "756e3785-3964-41f5-8840-0b36acdd3f73",
+                    "w": 24,
+                    "x": 24,
+                    "y": 30
+                },
+                "panelIndex": "756e3785-3964-41f5-8840-0b36acdd3f73",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "e775d0a8-0e0a-49c7-a29a-49fc457f1b67": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "@timestamp",
+                                                    "customLabel": false,
+                                                    "fieldName": "@timestamp",
+                                                    "inMetricDimension": true,
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "user.email",
+                                                    "customLabel": true,
+                                                    "fieldName": "user.email",
+                                                    "inMetricDimension": true,
+                                                    "label": "User Email",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "gcp.audit.service.name",
+                                                    "customLabel": true,
+                                                    "fieldName": "gcp.audit.service.name",
+                                                    "inMetricDimension": true,
+                                                    "label": "Service Name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "gcp.audit.method.name",
+                                                    "customLabel": true,
+                                                    "fieldName": "gcp.audit.method.name",
+                                                    "inMetricDimension": true,
+                                                    "label": "Method Name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "b17824f0-7d06-433c-8f27-57251b1d7b9d",
+                                                    "customLabel": true,
+                                                    "fieldName": "rpc.jsonrpc.error_code",
+                                                    "label": "Status Code",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "params": {
+                                                            "id": "number"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "rpc.jsonrpc.error_code"
+                                                        },
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "692005f0-fe00-4d84-9889-24d0f8ab2a25",
+                                                    "customLabel": true,
+                                                    "fieldName": "rpc.jsonrpc.error_message",
+                                                    "label": "Status Message",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "rpc.jsonrpc.error_message"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| WHERE log.level == \"ERROR\"\n| SORT @timestamp DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| WHERE log.level == \"ERROR\"\n| SORT @timestamp DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "@timestamp",
+                                        "width": 221
+                                    },
+                                    {
+                                        "columnId": "user.email",
+                                        "width": 283.75
+                                    },
+                                    {
+                                        "columnId": "gcp.audit.service.name",
+                                        "width": 182.75
+                                    },
+                                    {
+                                        "columnId": "gcp.audit.method.name",
+                                        "width": 254.83333333333334
+                                    },
+                                    {
+                                        "columnId": "b17824f0-7d06-433c-8f27-57251b1d7b9d",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "692005f0-fe00-4d84-9889-24d0f8ab2a25",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "density": "normal",
+                                "layerId": "e775d0a8-0e0a-49c7-a29a-49fc457f1b67",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        },
+                        "title": "Table @timestamp \u0026 user.email \u0026 gcp.audit.service.name \u0026 gcp.audit.method.name \u0026 log.level",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| WHERE log.level == \"ERROR\"\n| SORT @timestamp DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Error Logs"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "072a85e7-650a-48fa-b919-9361fe0c0cfc",
+                    "w": 48,
+                    "x": 0,
+                    "y": 45
+                },
+                "panelIndex": "072a85e7-650a-48fa-b919-9361fe0c0cfc",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[GCP Audit OTEL] Audit Logs Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-12-17T14:22:12.628Z",
+    "created_by": "u_ZYj7dGTEOgapsGLTf8GS1lTKCU-wzK795nZmlm714so_0",
+    "id": "gcp_audit_otel-fe3e0426-5814-4a58-bf19-20c5d8ec387a",
+    "references": [
+        {
+            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_ZYj7dGTEOgapsGLTf8GS1lTKCU-wzK795nZmlm714so_0"
+}

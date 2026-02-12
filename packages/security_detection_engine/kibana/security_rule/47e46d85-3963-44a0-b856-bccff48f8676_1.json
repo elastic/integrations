@@ -1,0 +1,95 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a DNS request is made for an IP lookup service to determine the external IP address of the system via an unsigned or untrusted binary. This is commonly used by malware for reconnaissance before establishing C2 connections.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "DNS Request for IP Lookup Service via Unsigned Binary",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating DNS Request for IP Lookup Service via Unsigned Binary\n\nThis detects an unsigned or untrusted process on macOS performing DNS lookups for common \u201cwhat is my public IP\u201d and geolocation services, a frequent reconnaissance step before external communications. It matters because malware uses the host\u2019s external IP and region to choose C2 infrastructure, gate payload delivery, or evade sandboxing. A typical pattern is a dropped, unsigned Mach-O or script resolving api.ipify.org or ipinfo.io immediately after execution, then initiating outbound beacons.\n\n### Possible investigation steps\n\n- Identify the initiating process and parent chain, then validate whether the binary is expected for the host/user and whether it is actually unsigned versus a transient signature collection issue.  \n- Review the same process\u2019s near-term network activity for follow-on HTTP(S) requests to the resolved service and any subsequent connections to rare/new domains or IPs that could indicate C2 staging.  \n- Pivot from the resolved domain to other endpoints to determine prevalence and timing, then prioritize isolated single-host hits with recent first-seen binaries.  \n- Examine how the binary was introduced by correlating with recent downloads, archive mounts, installer executions, or quarantine/Gatekeeper events around the process start time.  \n- Acquire and analyze the binary (hash reputation, static strings, entitlements, persistence mechanisms, and launch agents/daemons) to confirm intent and scope of compromise.\n\n### False positive analysis\n\n- A developer-built or locally compiled macOS utility/script (run from a user directory) performs a \u201cwhat is my public IP\u201d DNS lookup for telemetry, diagnostics, or environment detection, and is flagged because it lacks a trusted code signature.  \n- An unsigned helper binary dropped by a legitimate installer/updater workflow briefly runs during setup to validate external connectivity or geolocation by resolving an IP-lookup domain, and is detected before the binary is signed or placed in its final trusted location.\n\n### Response and remediation\n\n- Isolate the affected macOS host from the network if the unsigned process continues to resolve IP-lookup domains (e.g., api.ipify.org, ipinfo.io) or initiates new outbound connections immediately after the lookup.  \n- Quarantine the unsigned executable and any associated scripts from disk (preserving path, hashes, and a copy for analysis) and remove its persistence artifacts such as newly created LaunchAgents/LaunchDaemons, login items, or cron entries tied to the same binary.  \n- Block the observed IP-lookup domains used by the unsigned process at DNS/web egress and add temporary deny rules for any follow-on suspicious destinations the process contacted after resolution.  \n- Reset compromised credentials and invalidate active sessions for the logged-in user if the process originated from user-writable locations (Downloads, Desktop, /tmp) or if additional discovery/collection behavior is found on the host.  \n- Reimage or restore the endpoint from a known-good state when persistence or tampering is confirmed, then verify Gatekeeper/XProtect status, re-enable security tooling, and monitor for recurrence of the same binary hash or domain pattern.  \n- Escalate to the incident response team if the unsigned binary is newly seen in the environment, appears on multiple hosts, or is followed by connections to rare domains/IPs indicative of staging or command-and-control.\n",
+        "query": "dns where host.os.type == \"macos\" and event.action == \"lookup_result\" and \n  (process.code_signature.trusted == false or process.code_signature.exists == false) and\n  dns.question.name like~ (\"*ip-api.com*\", \"*ipwho.is*\", \"*checkip.dyndns.org*\", \"*api.ipify.org*\",\n                           \"*api.npoint.io*\", \"*whatismyip.akamai.com*\", \"*bot.whatismyipaddress.com*\",\n                           \"*ifcfg.me*\", \"*ifconfig.me*\", \"*ident.me*\", \"*ipof.in*\", \"*ip.tyk.nu*\",\n                           \"*ipwhois.app*\", \"*freeipapi.com*\", \"*icanhazip.com*\", \"*curlmyip.com*\",\n                           \"*wgetip.com*\", \"*eth0.me*\", \"*ipecho.net*\", \"*ip.appspot.com*\",\n                           \"*api.myip.com*\", \"*geoiptool.com*\", \"*api.2ip.ua*\", \"*api.ip.sb*\",\n                           \"*ipinfo.io*\", \"*checkip.amazonaws.com*\", \"*wtfismyip.com*\", \"*iplogger.*\",\n                           \"*freegeoip.net*\", \"*freegeoip.app*\", \"*myip.ipip.net*\", \"*geoplugin.net*\",\n                           \"*myip.dnsomatic.com*\", \"*www.geoplugin.net*\", \"*api64.ipify.org*\",\n                           \"*ip4.seeip.org*\", \"*.geojs.io*\", \"*portmap.io*\", \"*api.db-ip.com*\",\n                           \"*geolocation-db.com*\", \"*inet-ip.info*\", \"*httpbin.org*\", \"*myip.opendns.com*\") and\n  not process.executable like \"/Users/*/Library/Developer/CoreSimulator/*\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dns.question.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "47e46d85-3963-44a0-b856-bccff48f8676",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1016",
+                        "name": "System Network Configuration Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1016/",
+                        "subtechnique": [
+                            {
+                                "id": "T1016.001",
+                                "name": "Internet Connection Discovery",
+                                "reference": "https://attack.mitre.org/techniques/T1016/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "47e46d85-3963-44a0-b856-bccff48f8676_1",
+    "type": "security-rule"
+}

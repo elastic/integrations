@@ -1,0 +1,503 @@
+---
+description: Pipeline for processing Cloud Security Posture's IOM and CloudSecurityIOMEvaluation events.
+processors:
+  # Event categorization
+  - set:
+      tag: set_event_kind_alert_39295792
+      field: event.kind
+      value: alert
+  # Handle passed CloudSecurityIOMEvaluation events.
+  - set:
+      tag: set_event_kind_event_74f065e1
+      if: ctx.crowdstrike?.status != null && ctx.crowdstrike.status.equalsIgnoreCase('Passed')
+      field: event.kind
+      value: event
+  - append:
+      tag: append_event_category_configuration_1c667e2c
+      field: event.category
+      value: configuration
+  - append:
+      tag: append_info_type_8b66b73a
+      field: event.type
+      value:
+        - info
+
+  # Converts
+  - convert:
+      tag: convert_crowdstrike_Severity_to_integer_0f32343f
+      field: crowdstrike.Severity
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_Severity_ab19708e
+            field:
+              - crowdstrike.Severity
+            ignore_failure: true
+        - append:
+            tag: append_error_message_596243fd
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_cloud_asset_type_to_long_e947ff85
+      field: crowdstrike.cloud_asset_type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_cloud_asset_type_f9e88af0
+            field:
+              - crowdstrike.cloud_asset_type
+            ignore_failure: true
+        - append:
+            tag: append_error_message_dbb2b2ab
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_legacyPolicyId_to_long_aa105144
+      field: crowdstrike.legacyPolicyId
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_legacyPolicyId_f79e89e6
+            field:
+              - crowdstrike.legacyPolicyId
+            ignore_failure: true
+        - append:
+            tag: append_error_message_6322de94
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_resource_legacyPolicyId_to_long_4b2a6514
+      field: crowdstrike.resource.legacyPolicyId
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_resource_legacyPolicyId_e1ede384
+            field:
+              - crowdstrike.resource.legacyPolicyId
+            ignore_failure: true
+        - append:
+            tag: append_error_message_c4c4d2a4
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_revision_to_long_9713160b
+      field: crowdstrike.revision
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_revision_6f267a18
+            field:
+              - crowdstrike.revision
+            ignore_failure: true
+        - append:
+            tag: append_error_message_bfacb109
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_policy_severity_to_long_c007532a
+      field: crowdstrike.policy_severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_policy_severity_b8fb8d80
+            field:
+              - crowdstrike.policy_severity
+            ignore_failure: true
+        - append:
+            tag: append_error_message_d47a6b0a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_internal_only_to_boolean_05f17f60
+      field: crowdstrike.internal_only
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_internal_only_89b06d42
+            field:
+              - crowdstrike.internal_only
+            ignore_failure: true
+        - append:
+            tag: append_error_message_0484dad0
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_policy_id_to_string_eae04ac3
+      field: crowdstrike.policy_id
+      type: string
+      ignore_missing: true
+  - date:
+      tag: date_crowdstrike_ResourceCreateTime_into_crowdstrike_ResourceCreateTime_f8d87a86
+      if: ctx.crowdstrike?.ResourceCreateTime != null && ctx.crowdstrike.ResourceCreateTime != ''
+      field: crowdstrike.ResourceCreateTime
+      target_field: crowdstrike.ResourceCreateTime
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_ba53e1c6
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_crowdstrike_created_into_crowdstrike_created_22cd53c6
+      if: ctx.crowdstrike?.created != null && ctx.crowdstrike.created != ''
+      field: crowdstrike.created
+      target_field: crowdstrike.created
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_87abd606
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_crowdstrike_firstDetected_into_crowdstrike_firstDetected_7207d30a
+      if: ctx.crowdstrike?.firstDetected != null && ctx.crowdstrike.firstDetected != ''
+      field: crowdstrike.firstDetected
+      target_field: crowdstrike.firstDetected
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_99375bea
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_crowdstrike_lastDetected_into_crowdstrike_lastDetected_2aa302dc
+      if: ctx.crowdstrike?.lastDetected != null && ctx.crowdstrike.lastDetected != ''
+      field: crowdstrike.lastDetected
+      target_field: crowdstrike.lastDetected
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_0de4d3fc
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_crowdstrike_resource_captured_into_crowdstrike_resource_captured_b21aec1b
+      if: ctx.crowdstrike?.resource?.captured != null && ctx.crowdstrike.resource.captured != ''
+      field: crowdstrike.resource.captured
+      target_field: crowdstrike.resource.captured
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_9bb738d9
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      tag: decode_crowdstrike_ResourceAttributes_74e90745
+      if: ctx.crowdstrike?.ResourceAttributes instanceof String
+      field: crowdstrike.ResourceAttributes
+      target_field: crowdstrike.ResourceAttributes
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_ResourceAttributes_17af0578
+            field:
+              - crowdstrike.ResourceAttributes
+            ignore_missing: true
+
+  # ECS mappings
+  - set:
+      tag: set_@timestamp_from_crowdstrike_created_6941d144
+      field: '@timestamp'
+      copy_from: crowdstrike.created
+      ignore_empty_value: true
+  - set:
+      tag: set_rule_name_from_crowdstrike_policy_statement_2e4da4b5
+      field: rule.name
+      copy_from: crowdstrike.policy_statement
+      ignore_empty_value: true
+
+  # Renames
+  - rename:
+      tag: rename_crowdstrike_severity_to_crowdstrike_SeverityName_cc000891
+      field: crowdstrike.severity
+      target_field: crowdstrike.SeverityName
+      ignore_missing: true
+  - rename:
+      tag: rename_crowdstrike_policy_statement_to_message_6cbc5326
+      field: crowdstrike.policy_statement
+      target_field: message
+      ignore_missing: true
+  # CloudSecurityIOMEvaluation events use `ruleName`
+  - set:
+      tag: set_message_from_crowdstrike_ruleName_0729c3fe
+      field: message
+      copy_from: crowdstrike.ruleName
+      ignore_empty_value: true
+  - append:
+      tag: append_threat_tactic_name_from_crowdstrike_mitre_attack_tactics_name_0ca972fe
+      if: ctx.crowdstrike?.mitre_attack_tactics_name != null
+      field: threat.tactic.name
+      value: '{{{crowdstrike.mitre_attack_tactics_name}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_tactic_reference_from_crowdstrike_mitre_attack_tactics_url_11772a14
+      if: ctx.crowdstrike?.mitre_attack_tactics_url != null
+      field: threat.tactic.reference
+      value: '{{{crowdstrike.mitre_attack_tactics_url}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_tactic_name_from_crowdstrike_threat_tactic_name_4524338e
+      if: ctx.crowdstrike?.threat?.tactic?.name != null
+      field: threat.tactic.name
+      value: '{{{crowdstrike.threat.tactic.name}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_tactic_id_from_crowdstrike_threat_tactic_id_4e03d860
+      if: ctx.crowdstrike?.threat?.tactic?.id != null
+      field: threat.tactic.id
+      value: '{{{crowdstrike.threat.tactic.id}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_tactic_reference_from_crowdstrike_threat_tactic_reference_0caca4fa
+      if: ctx.crowdstrike?.threat?.tactic?.reference != null
+      field: threat.tactic.reference
+      value: '{{{crowdstrike.threat.tactic.reference}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_technique_name_from_crowdstrike_threat_technique_name_1669c200
+      if: ctx.crowdstrike?.threat?.technique?.name != null
+      field: threat.technique.name
+      value: '{{{crowdstrike.threat.technique.name}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_technique_id_from_crowdstrike_threat_technique_id_4aa63bbe
+      if: ctx.crowdstrike?.threat?.technique?.id != null
+      field: threat.technique.id
+      value: '{{{crowdstrike.threat.technique.id}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_threat_technique_reference_from_crowdstrike_threat_technique_reference_5d99d5d4
+      if: ctx.crowdstrike?.threat?.technique?.reference != null
+      field: threat.technique.reference
+      value: '{{{crowdstrike.threat.technique.reference}}}'
+      allow_duplicates: false
+  # CloudSecurityIOMEvaluation events use `resource.cloudProvider`, IOM events use `cloudplatform`
+  - rename:
+      tag: rename_crowdstrike_cloudplatform_to_cloud_provider_e4cd5dc3
+      field: crowdstrike.cloudplatform
+      target_field: cloud.provider
+      ignore_missing: true
+  - append:
+      tag: append_cloud_provider_from_crowdstrike_cloudplatform_fbe812c3
+      if: ctx.crowdstrike?.cloudplatform != null
+      field: cloud.provider
+      value: '{{{crowdstrike.cloudplatform}}}'
+      allow_duplicates: false
+  - rename:
+      tag: rename_crowdstrike_resource_cloudProvider_to_cloud_provider_e78d6077
+      if: ctx.cloud?.provider == null
+      field: crowdstrike.resource.cloudProvider
+      target_field: cloud.provider
+      ignore_missing: true
+  - append:
+      tag: append_cloud_provider_from_crowdstrike_resource_cloudProvider_70f564de
+      if: ctx.crowdstrike?.resource?.cloudProvider != null
+      field: cloud.provider
+      value: '{{{crowdstrike.resource.cloudProvider}}}'
+      allow_duplicates: false
+  # CloudSecurityIOMEvaluation events use `ruleId`, IOM events use `policy_id`
+  - rename:
+      tag: rename_crowdstrike_policy_id_to_rule_id_6a562b4e
+      field: crowdstrike.policy_id
+      target_field: rule.id
+      ignore_missing: true
+  - append:
+      tag: append_rule_id_from_crowdstrike_policy_id_5527ec40
+      if: ctx.crowdstrike?.policy_id != null
+      field: rule.id
+      value: '{{{crowdstrike.policy_id}}}'
+      allow_duplicates: false
+  - rename:
+      tag: rename_crowdstrike_ruleId_to_rule_id_7392c4e8
+      if: ctx.rule?.id == null
+      field: crowdstrike.ruleId
+      target_field: rule.id
+      ignore_missing: true
+  - append:
+      tag: append_rule_id_from_crowdstrike_ruleId_39fca7b0
+      if: ctx.crowdstrike?.ruleId != null
+      field: rule.id
+      value: '{{{crowdstrike.ruleId}}}'
+      allow_duplicates: false
+  - rename:
+      tag: rename_crowdstrike_ruleName_to_rule_name_09ff9f3a
+      if: ctx.rule?.name == null
+      field: crowdstrike.ruleName
+      target_field: rule.name
+      ignore_missing: true
+  - append:
+      tag: append_rule_name_from_crowdstrike_ruleName_9f105302
+      if: ctx.crowdstrike?.ruleName != null
+      field: rule.name
+      value: '{{{crowdstrike.ruleName}}}'
+      allow_duplicates: false
+  - rename:
+      tag: rename_crowdstrike_CloudService_to_cloud_service_name_cad180a2
+      field: crowdstrike.CloudService
+      target_field: cloud.service.name
+      ignore_missing: true
+  - append:
+      tag: append_cloud_service_name_from_crowdstrike_CloudService_502b8518
+      if: ctx.crowdstrike?.CloudService != null
+      field: cloud.service.name
+      value: '{{{crowdstrike.CloudService}}}'
+      allow_duplicates: false
+  # CloudSecurityIOMEvaluation events use `resource.accountId`, IOM events use `AccountId`
+  - rename:
+      tag: rename_crowdstrike_AccountId_to_cloud_account_id_7a667ede
+      field: crowdstrike.AccountId
+      target_field: cloud.account.id
+      ignore_missing: true
+  - append:
+      tag: append_cloud_account_id_from_crowdstrike_AccountId_e0946632
+      if: ctx.crowdstrike?.AccountId != null
+      field: cloud.account.id
+      value: '{{{crowdstrike.AccountId}}}'
+      allow_duplicates: false
+  - rename:
+      tag: rename_crowdstrike_resource_accountId_to_cloud_account_id_ed136ada
+      if: ctx.cloud?.account?.id == null
+      field: crowdstrike.resource.accountId
+      target_field: cloud.account.id
+      ignore_missing: true
+  - append:
+      tag: append_cloud_account_id_from_crowdstrike_resource_accountId_8c8510ad
+      if: ctx.crowdstrike?.resource?.accountId != null
+      field: cloud.account.id
+      value: '{{{crowdstrike.resource.accountId}}}'
+      allow_duplicates: false
+  # CloudSecurityIOMEvaluation events use `resource.region`, IOM events use `region`
+  - rename:
+      tag: rename_crowdstrike_region_to_cloud_region_a2be859e
+      field: crowdstrike.region
+      target_field: cloud.region
+      ignore_missing: true
+  - append:
+      tag: append_cloud_region_from_crowdstrike_region_e4a0d590
+      if: ctx.crowdstrike?.region != null
+      field: cloud.region
+      value: '{{{crowdstrike.region}}}'
+      allow_duplicates: false
+  - rename:
+      tag: rename_crowdstrike_resource_region_to_cloud_region_54502abf
+      if: ctx.cloud?.region == null
+      field: crowdstrike.resource.region
+      target_field: cloud.region
+      ignore_missing: true
+  - append:
+      tag: append_cloud_region_from_crowdstrike_resource_region_747cc2eb
+      if: ctx.crowdstrike?.resource?.region != null
+      field: cloud.region
+      value: '{{{crowdstrike.resource.region}}}'
+      allow_duplicates: false
+  # Override severity set in default.yml as Cloud Security has a different range.
+  - script:
+      tag: set_severity_name_from_crowdstrike_Severity_a1e4ce46
+      if: ctx.crowdstrike?.Severity instanceof int
+      source: |-
+        int severity = ctx.crowdstrike.Severity;
+        if (severity == 0) {
+          ctx.crowdstrike.SeverityName = 'critical';
+        } else if (severity == 1) {
+          ctx.crowdstrike.SeverityName = 'high';
+        } else if (severity == 2) {
+          ctx.crowdstrike.SeverityName = 'medium';
+        } else if (severity == 3) {
+          ctx.crowdstrike.SeverityName = 'informational';
+        }
+  - script:
+      tag: set_event_severity_from_severity_name_e55a1868
+      if: ctx.crowdstrike?.SeverityName instanceof String && ctx.crowdstrike.SeverityName != ''
+      params:
+        critical: 99
+        high: 73
+        info: 21
+        informational: 21
+        low: 21
+        medium: 47
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        Integer score = params[ctx.crowdstrike.SeverityName.toLowerCase()];
+        if (score != null) {
+          ctx.event.severity = score;
+        }
+
+  - script:
+      description: Parse all benchmark IDs and create a list.
+      tag: parse_all_benchmark_ids_to_list_c4f20ce2
+      source: |-
+        for (entry in ctx.crowdstrike.entrySet()) {
+          def key = entry.getKey().toString();
+          if (key.endsWith("benchmark_ids")) {
+            def val = entry.getValue();
+            if (val instanceof String) {
+              def result = [];
+              String cleaned = /[\\{\\}\\s]/.matcher(val).replaceAll('');
+              def parts = cleaned.splitOnToken(",");
+              for (def part : parts) {
+                result.add(part);
+              }
+              ctx.crowdstrike[key] = result;
+            }
+          }
+        }
+
+  # Cleanup.
+  - remove:
+      tag: remove_deaa67b5
+      field:
+        - crowdstrike.Disposition
+        - crowdstrike.Finding
+        - crowdstrike.CloudPlatform
+        - crowdstrike.PolicyId
+        - crowdstrike.PolicyStatement
+        - crowdstrike.Region
+        - crowdstrike.ResourceUrl
+        - crowdstrike.mitre_attack_tactics_name
+        - crowdstrike.mitre_attack_tactics_url
+        - crowdstrike.threat.framework
+        - crowdstrike.threat.technique.id
+        - crowdstrike.threat.technique.name
+        - crowdstrike.threat.technique.reference
+        - crowdstrike.threat.tactic.id
+        - crowdstrike.threat.tactic.name
+        - crowdstrike.threat.tactic.reference
+      ignore_missing: true
+
+  # error handling
+  - set:
+      tag: set_pipeline_error_into_event_kind_92954dfa
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_into_tags_9fe66b2c
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - set:
+      tag: set_event_kind_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      tag: append_error_message_e0c9bd63
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
