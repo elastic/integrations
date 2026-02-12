@@ -9,15 +9,7 @@ OTel Input Packages are **input-type packages** (`type: input`) that configure O
 
 ## When to Create an OTel Input Package [when-to-create]
 
-Create an OTel Input Package when:
-- You want to use an existing [OpenTelemetry Collector receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver)
-- No data transformation or field mapping is required (data flows directly to Elasticsearch)
-- Users need configurable options exposed through the Fleet UI
-
-Use a traditional [integration](./what-is-an-integration.md) instead when:
-- Custom ingest pipelines or field mappings are required
-- You need to define Kibana assets (dashboards, visualizations)
-- The data source doesn't have an OTel receiver
+Use **OTel Input Packages** for [OpenTelemetry Collector receivers](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver). Use **traditional [integrations](./what-is-an-integration.md)** for Beats-based data collection.
 
 ## Package Structure [package-structure]
 
@@ -280,6 +272,10 @@ cd packages/<your-package>
 elastic-package test system --generate
 ```
 
+::::{note}
+There is currently a known bug where Datasets in generated sample files do not match with the expected files in test policies. This mismatch is expected behavior for now.
+::::
+
 For more details, see [System Testing](./system-testing.md).
 
 ## Documentation [documentation]
@@ -332,10 +328,11 @@ Before submitting your OTel Input Package:
 - [ ] `changelog.yml` has an entry for the initial version
 - [ ] Package icon exists in `img/`
 - [ ] `CODEOWNERS` file includes your team for the package path
+- [ ] Run `elastic-package format` to ensure all YAML files are formatted as expected
 
 ## Examples [examples]
 
-Reference these existing packages as examples:
+Reference these existing packages as examples, or search for packages containing `_input_otel` in the [packages directory](https://github.com/elastic/integrations/tree/main/packages):
 
 | Package | Complexity | Notable Features |
 |---------|------------|------------------|
