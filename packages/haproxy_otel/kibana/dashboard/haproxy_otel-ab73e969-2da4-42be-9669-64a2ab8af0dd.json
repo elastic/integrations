@@ -1,0 +1,2650 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
+        "description": "HAProxy overview Otel",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "haproxyreceiver.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "haproxyreceiver.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-67837cc1-07cf-4fb9-b179-39c5269652a3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "67837cc1-07cf-4fb9-b179-39c5269652a3": {
+                                            "columnOrder": [
+                                                "147e3dc5-3def-4258-9010-1559f77eac7d",
+                                                "4ab3e6fd-993b-435c-b768-7d01c359bb9e",
+                                                "4ab3e6fd-993b-435c-b768-7d01c359bb9eX0"
+                                            ],
+                                            "columns": {
+                                                "147e3dc5-3def-4258-9010-1559f77eac7d": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 20 values of haproxy.proxy_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": true,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "filter": {
+                                                                "language": "kuery",
+                                                                "query": "\"haproxy.connections.total\": *"
+                                                            },
+                                                            "isBucketed": false,
+                                                            "label": "Last value of haproxy.connections.total",
+                                                            "operationType": "last_value",
+                                                            "params": {
+                                                                "sortField": "@timestamp"
+                                                            },
+                                                            "sourceField": "haproxy.connections.total"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "haproxy.proxy_name"
+                                                },
+                                                "4ab3e6fd-993b-435c-b768-7d01c359bb9e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Connections",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "max(haproxy.connections.total)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "4ab3e6fd-993b-435c-b768-7d01c359bb9eX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "4ab3e6fd-993b-435c-b768-7d01c359bb9eX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Connections",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "haproxy.connections.total"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "resource.attributes.haproxy.service_name",
+                                        "index": "metrics-*",
+                                        "key": "resource.attributes.haproxy.service_name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "FRONTEND"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "resource.attributes.haproxy.service_name": "FRONTEND"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-*",
+                                    "name": "indexpattern-datasource-layer-67837cc1-07cf-4fb9-b179-39c5269652a3",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "fillOpacity": 0.5,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "4ab3e6fd-993b-435c-b768-7d01c359bb9e"
+                                        ],
+                                        "layerId": "67837cc1-07cf-4fb9-b179-39c5269652a3",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "147e3dc5-3def-4258-9010-1559f77eac7d",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "4ab3e6fd-993b-435c-b768-7d01c359bb9e"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "valueLabels": "show",
+                                "xTitle": "Proxy names"
+                            }
+                        },
+                        "title": "Frontends",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "resource.attributes.haproxy.service_name",
+                                "index": "metrics-*",
+                                "key": "resource.attributes.haproxy.service_name",
+                                "negate": false,
+                                "params": {
+                                    "query": "FRONTEND"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "resource.attributes.haproxy.service_name": "FRONTEND"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Frontend connections"
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "45bac5fc-f9ca-4386-81af-a93d637a4a70",
+                    "w": 24,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "45bac5fc-f9ca-4386-81af-a93d637a4a70",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-484ac849-4ddb-4ff2-891c-5a7be55e5a5b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "484ac849-4ddb-4ff2-891c-5a7be55e5a5b": {
+                                            "columnOrder": [
+                                                "a5b1b9d2-0ec5-4434-b961-8f227844be70",
+                                                "eb907689-6b1a-4a0d-a9c4-db45bf4977b0",
+                                                "a703f1a7-ffef-4887-be18-9ff0db14ce2f",
+                                                "a703f1a7-ffef-4887-be18-9ff0db14ce2fX0",
+                                                "a703f1a7-ffef-4887-be18-9ff0db14ce2fX1",
+                                                "a703f1a7-ffef-4887-be18-9ff0db14ce2fX2"
+                                            ],
+                                            "columns": {
+                                                "a5b1b9d2-0ec5-4434-b961-8f227844be70": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "a703f1a7-ffef-4887-be18-9ff0db14ce2f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "query": "resource.attributes.haproxy.service_name:(0 OR 1)"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Connections",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(differences(max(haproxy.connections.total)), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "a703f1a7-ffef-4887-be18-9ff0db14ce2fX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a703f1a7-ffef-4887-be18-9ff0db14ce2fX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Connections",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "haproxy.connections.total"
+                                                },
+                                                "a703f1a7-ffef-4887-be18-9ff0db14ce2fX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Connections",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "a703f1a7-ffef-4887-be18-9ff0db14ce2fX0"
+                                                    ]
+                                                },
+                                                "a703f1a7-ffef-4887-be18-9ff0db14ce2fX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Connections",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "a703f1a7-ffef-4887-be18-9ff0db14ce2fX1",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 56,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(differences(max(haproxy.connections.total)), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "a703f1a7-ffef-4887-be18-9ff0db14ce2fX1"
+                                                    ]
+                                                },
+                                                "eb907689-6b1a-4a0d-a9c4-db45bf4977b0": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of haproxy.proxy_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Count of records",
+                                                            "operationType": "count",
+                                                            "params": {},
+                                                            "scale": "ratio",
+                                                            "sourceField": "___records___"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "haproxy.proxy_name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "resource.attributes.haproxy.service_name",
+                                        "index": "metrics-*",
+                                        "key": "resource.attributes.haproxy.service_name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "FRONTEND"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "resource.attributes.haproxy.service_name": "FRONTEND"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-*",
+                                    "name": "indexpattern-datasource-layer-484ac849-4ddb-4ff2-891c-5a7be55e5a5b",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.5,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a703f1a7-ffef-4887-be18-9ff0db14ce2f"
+                                        ],
+                                        "layerId": "484ac849-4ddb-4ff2-891c-5a7be55e5a5b",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "splitAccessor": "eb907689-6b1a-4a0d-a9c4-db45bf4977b0",
+                                        "xAccessor": "a5b1b9d2-0ec5-4434-b961-8f227844be70",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "a703f1a7-ffef-4887-be18-9ff0db14ce2f"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "Connections [Metrics HAProxy]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "resource.attributes.haproxy.service_name",
+                                "index": "metrics-*",
+                                "key": "resource.attributes.haproxy.service_name",
+                                "negate": false,
+                                "params": {
+                                    "query": "FRONTEND"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "resource.attributes.haproxy.service_name": "FRONTEND"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Frontend connections over time"
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "2073341a-0704-46eb-bc20-dbf7a855b793",
+                    "w": 24,
+                    "x": 24,
+                    "y": 30
+                },
+                "panelIndex": "2073341a-0704-46eb-bc20-dbf7a855b793",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-dbd66631-77e1-42c2-a45e-b5aee2124e6f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "dbd66631-77e1-42c2-a45e-b5aee2124e6f": {
+                                            "columnOrder": [
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4"
+                                            ],
+                                            "columns": {
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": " ",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "defaults(\n  last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'),\n  0\n)\n/\npick_max(\n  (\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  ),\n  1\n)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X4"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"frontend\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"frontend\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"backend\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                                        0
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 87,
+                                                                        "min": 0
+                                                                    },
+                                                                    "name": "defaults",
+                                                                    "text": "defaults(\n  last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'),\n  0\n)\n",
+                                                                    "type": "function"
+                                                                },
+                                                                {
+                                                                    "args": [
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                                                                0
+                                                                                            ],
+                                                                                            "location": {
+                                                                                                "max": 192,
+                                                                                                "min": 107
+                                                                                            },
+                                                                                            "name": "defaults",
+                                                                                            "text": "defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    ",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        {
+                                                                                            "args": [
+                                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                                                                0
+                                                                                            ],
+                                                                                            "location": {
+                                                                                                "max": 282,
+                                                                                                "min": 193
+                                                                                            },
+                                                                                            "name": "defaults",
+                                                                                            "text": "\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    ",
+                                                                                            "type": "function"
+                                                                                        }
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                {
+                                                                                    "args": [
+                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                                                        0
+                                                                                    ],
+                                                                                    "location": {
+                                                                                        "max": 413,
+                                                                                        "min": 283
+                                                                                    },
+                                                                                    "name": "defaults",
+                                                                                    "text": "\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  ",
+                                                                                    "type": "function"
+                                                                                }
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 414,
+                                                                                "min": 101
+                                                                            },
+                                                                            "name": "add",
+                                                                            "text": "(\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  )",
+                                                                            "type": "function"
+                                                                        },
+                                                                        1
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 421,
+                                                                        "min": 88
+                                                                    },
+                                                                    "name": "pick_max",
+                                                                    "text": "\npick_max(\n  (\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  ),\n  1\n)",
+                                                                    "type": "function"
+                                                                }
+                                                            ],
+                                                            "location": {
+                                                                "max": 421,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "defaults(\n  last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'),\n  0\n)\n/\npick_max(\n  (\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  ),\n  1\n)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3"
+                                                    ]
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "dbd66631-77e1-42c2-a45e-b5aee2124e6f",
+                                "layerType": "data",
+                                "metricAccessor": "8b56f02f-04a0-4f62-94ce-b1b894831e31"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Frontend sessions"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "69a16a5a-ef0e-488c-8653-c8cc5e15844c",
+                    "w": 10,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "69a16a5a-ef0e-488c-8653-c8cc5e15844c",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "93f9026a-b7e6-4055-98c1-5c5a4462e13f": {
+                                            "columnOrder": [
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
+                                            ],
+                                            "columns": {
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Sessions",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "last_value(haproxy.sessions.total, kql='\"haproxy.sessions.total\": *')",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"haproxy.sessions.total\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Sessions",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Proxy Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "haproxy.proxy_name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "resource.attributes.haproxy.service_name",
+                                        "index": "c8eb44c1-70db-4071-a0fb-78f1ce81d963",
+                                        "key": "resource.attributes.haproxy.service_name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "FRONTEND"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "resource.attributes.haproxy.service_name": "FRONTEND"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "resource.attributes.haproxy.service_name",
+                                "index": "c8eb44c1-70db-4071-a0fb-78f1ce81d963",
+                                "key": "resource.attributes.haproxy.service_name",
+                                "negate": false,
+                                "params": {
+                                    "query": "FRONTEND"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "resource.attributes.haproxy.service_name": "FRONTEND"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Total frontend sessions"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "12a6530b-5da9-4868-9470-cbbabbe316c6",
+                    "w": 38,
+                    "x": 10,
+                    "y": 0
+                },
+                "panelIndex": "12a6530b-5da9-4868-9470-cbbabbe316c6",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-dbd66631-77e1-42c2-a45e-b5aee2124e6f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "dbd66631-77e1-42c2-a45e-b5aee2124e6f": {
+                                            "columnOrder": [
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4"
+                                            ],
+                                            "columns": {
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": " ",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "defaults(\n  last_value(haproxy.sessions.total, kql='service.name : \"backend\"'),\n  0\n)\n/\npick_max(\n  (\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  ),\n  1\n)\n",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X4"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"backend\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"frontend\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"backend\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                                        0
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 86,
+                                                                        "min": 0
+                                                                    },
+                                                                    "name": "defaults",
+                                                                    "text": "defaults(\n  last_value(haproxy.sessions.total, kql='service.name : \"backend\"'),\n  0\n)\n",
+                                                                    "type": "function"
+                                                                },
+                                                                {
+                                                                    "args": [
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                                                                0
+                                                                                            ],
+                                                                                            "location": {
+                                                                                                "max": 191,
+                                                                                                "min": 106
+                                                                                            },
+                                                                                            "name": "defaults",
+                                                                                            "text": "defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    ",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        {
+                                                                                            "args": [
+                                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                                                                0
+                                                                                            ],
+                                                                                            "location": {
+                                                                                                "max": 281,
+                                                                                                "min": 192
+                                                                                            },
+                                                                                            "name": "defaults",
+                                                                                            "text": "\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    ",
+                                                                                            "type": "function"
+                                                                                        }
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                {
+                                                                                    "args": [
+                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                                                        0
+                                                                                    ],
+                                                                                    "location": {
+                                                                                        "max": 412,
+                                                                                        "min": 282
+                                                                                    },
+                                                                                    "name": "defaults",
+                                                                                    "text": "\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  ",
+                                                                                    "type": "function"
+                                                                                }
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 413,
+                                                                                "min": 100
+                                                                            },
+                                                                            "name": "add",
+                                                                            "text": "(\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  )",
+                                                                            "type": "function"
+                                                                        },
+                                                                        1
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 421,
+                                                                        "min": 87
+                                                                    },
+                                                                    "name": "pick_max",
+                                                                    "text": "\npick_max(\n  (\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  ),\n  1\n)\n",
+                                                                    "type": "function"
+                                                                }
+                                                            ],
+                                                            "location": {
+                                                                "max": 421,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "defaults(\n  last_value(haproxy.sessions.total, kql='service.name : \"backend\"'),\n  0\n)\n/\npick_max(\n  (\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'), 0)\n  ),\n  1\n)\n",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3"
+                                                    ]
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "dbd66631-77e1-42c2-a45e-b5aee2124e6f",
+                                "layerType": "data",
+                                "metricAccessor": "8b56f02f-04a0-4f62-94ce-b1b894831e31"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Backend sessions"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "319f757d-cff1-4379-8f26-400a82055a84",
+                    "w": 10,
+                    "x": 0,
+                    "y": 7
+                },
+                "panelIndex": "319f757d-cff1-4379-8f26-400a82055a84",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "93f9026a-b7e6-4055-98c1-5c5a4462e13f": {
+                                            "columnOrder": [
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
+                                            ],
+                                            "columns": {
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Sessions",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "last_value(haproxy.sessions.total, kql='\"haproxy.sessions.total\": *')",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"haproxy.sessions.total\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Sessions",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Proxy Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "haproxy.proxy_name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "resource.attributes.haproxy.service_name",
+                                        "index": "56252758-15fc-4e82-9394-915dff0cc97a",
+                                        "key": "resource.attributes.haproxy.service_name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "BACKEND"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "resource.attributes.haproxy.service_name": "BACKEND"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "resource.attributes.haproxy.service_name",
+                                "index": "56252758-15fc-4e82-9394-915dff0cc97a",
+                                "key": "resource.attributes.haproxy.service_name",
+                                "negate": false,
+                                "params": {
+                                    "query": "BACKEND"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "resource.attributes.haproxy.service_name": "BACKEND"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Total backend sessions "
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "98ec194d-af13-4b01-beb4-5655f39f78e4",
+                    "w": 38,
+                    "x": 10,
+                    "y": 7
+                },
+                "panelIndex": "98ec194d-af13-4b01-beb4-5655f39f78e4",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-dbd66631-77e1-42c2-a45e-b5aee2124e6f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "dbd66631-77e1-42c2-a45e-b5aee2124e6f": {
+                                            "columnOrder": [
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4"
+                                            ],
+                                            "columns": {
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": " ",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "(\n  defaults(\n    last_value(\n      haproxy.sessions.total,\n      kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'\n    ),\n    0\n  )\n)\n/\npick_max(\n  (\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(\n      last_value(\n        haproxy.sessions.total,\n        kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'\n      ),\n      0\n    )\n  ),\n  1\n)\n",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X4"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"frontend\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"backend\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                                        0
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 157,
+                                                                        "min": 4
+                                                                    },
+                                                                    "name": "defaults",
+                                                                    "text": "defaults(\n    last_value(\n      haproxy.sessions.total,\n      kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'\n    ),\n    0\n  )\n",
+                                                                    "type": "function"
+                                                                },
+                                                                {
+                                                                    "args": [
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                                                                0
+                                                                                            ],
+                                                                                            "location": {
+                                                                                                "max": 264,
+                                                                                                "min": 179
+                                                                                            },
+                                                                                            "name": "defaults",
+                                                                                            "text": "defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    ",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        {
+                                                                                            "args": [
+                                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                                                                0
+                                                                                            ],
+                                                                                            "location": {
+                                                                                                "max": 354,
+                                                                                                "min": 265
+                                                                                            },
+                                                                                            "name": "defaults",
+                                                                                            "text": "\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    ",
+                                                                                            "type": "function"
+                                                                                        }
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                {
+                                                                                    "args": [
+                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                                                        0
+                                                                                    ],
+                                                                                    "location": {
+                                                                                        "max": 527,
+                                                                                        "min": 355
+                                                                                    },
+                                                                                    "name": "defaults",
+                                                                                    "text": "\n    defaults(\n      last_value(\n        haproxy.sessions.total,\n        kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'\n      ),\n      0\n    )\n  ",
+                                                                                    "type": "function"
+                                                                                }
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 528,
+                                                                                "min": 173
+                                                                            },
+                                                                            "name": "add",
+                                                                            "text": "(\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(\n      last_value(\n        haproxy.sessions.total,\n        kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'\n      ),\n      0\n    )\n  )",
+                                                                            "type": "function"
+                                                                        },
+                                                                        1
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 536,
+                                                                        "min": 160
+                                                                    },
+                                                                    "name": "pick_max",
+                                                                    "text": "\npick_max(\n  (\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(\n      last_value(\n        haproxy.sessions.total,\n        kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'\n      ),\n      0\n    )\n  ),\n  1\n)\n",
+                                                                    "type": "function"
+                                                                }
+                                                            ],
+                                                            "location": {
+                                                                "max": 536,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "(\n  defaults(\n    last_value(\n      haproxy.sessions.total,\n      kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'\n    ),\n    0\n  )\n)\n/\npick_max(\n  (\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"frontend\"'), 0)\n    +\n    defaults(last_value(haproxy.sessions.total, kql='service.name : \"backend\"'), 0)\n    +\n    defaults(\n      last_value(\n        haproxy.sessions.total,\n        kql='service.name : \"*\" and not service.name : (\"frontend\" or \"backend\")'\n      ),\n      0\n    )\n  ),\n  1\n)\n",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3"
+                                                    ]
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "dbd66631-77e1-42c2-a45e-b5aee2124e6f",
+                                "layerType": "data",
+                                "metricAccessor": "8b56f02f-04a0-4f62-94ce-b1b894831e31"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Server sessions"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "129444a5-2c35-4454-98f0-9b162d53afed",
+                    "w": 10,
+                    "x": 0,
+                    "y": 14
+                },
+                "panelIndex": "129444a5-2c35-4454-98f0-9b162d53afed",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "6afc1dea-11ec-4526-b81c-9f29d4848343",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "93f9026a-b7e6-4055-98c1-5c5a4462e13f": {
+                                            "columnOrder": [
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
+                                            ],
+                                            "columns": {
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Sessions",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "last_value(haproxy.sessions.total, kql='\"haproxy.sessions.total\": *')",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"haproxy.sessions.total\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Sessions",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.total"
+                                                },
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Proxy Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "haproxy.proxy_name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "haproxy.service_name",
+                                        "index": "6afc1dea-11ec-4526-b81c-9f29d4848343",
+                                        "key": "haproxy.service_name",
+                                        "negate": true,
+                                        "params": [
+                                            "BACKEND",
+                                            "FRONTEND"
+                                        ],
+                                        "type": "phrases",
+                                        "value": [
+                                            "BACKEND",
+                                            "FRONTEND"
+                                        ]
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "haproxy.service_name": "BACKEND"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "haproxy.service_name": "FRONTEND"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "haproxy.service_name",
+                                "index": "6afc1dea-11ec-4526-b81c-9f29d4848343",
+                                "key": "haproxy.service_name",
+                                "negate": true,
+                                "params": [
+                                    "BACKEND",
+                                    "FRONTEND"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "BACKEND",
+                                    "FRONTEND"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "haproxy.service_name": "BACKEND"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "haproxy.service_name": "FRONTEND"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Total server sessions "
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "65eb6f80-778f-48bc-a772-5e7acb0ecc72",
+                    "w": 38,
+                    "x": 10,
+                    "y": 14
+                },
+                "panelIndex": "65eb6f80-778f-48bc-a772-5e7acb0ecc72",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "90387c3b-e223-4e31-96f0-1e1d82ebccc3": {
+                                            "columnOrder": [
+                                                "db386114-db80-4bfe-a8fb-405ae524ba91",
+                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99",
+                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf",
+                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                            ],
+                                            "columns": {
+                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sessions",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": ""
+                                                            }
+                                                        },
+                                                        "formula": "last_value(haproxy.sessions.rate, kql='\"haproxy.sessions.total\": *')",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"haproxy.sessions.total\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Sessions",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.rate"
+                                                },
+                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "db386114-db80-4bfe-a8fb-405ae524ba91": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of haproxy.proxy_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "haproxy.proxy_name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "resource.attributes.haproxy.service_name",
+                                        "index": "2f796a22-4db8-4070-98cc-0e6dd56cd2b6",
+                                        "key": "resource.attributes.haproxy.service_name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "FRONTEND"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "resource.attributes.haproxy.service_name": "FRONTEND"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "2d0e78c6-a236-4de1-bda4-051cea39afcf"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "db386114-db80-4bfe-a8fb-405ae524ba91",
+                                        "xAccessor": "9f0c7a11-267f-4a75-b227-aefba75d1c99"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "resource.attributes.haproxy.service_name",
+                                "index": "2f796a22-4db8-4070-98cc-0e6dd56cd2b6",
+                                "key": "resource.attributes.haproxy.service_name",
+                                "negate": false,
+                                "params": {
+                                    "query": "FRONTEND"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "resource.attributes.haproxy.service_name": "FRONTEND"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Frontend sessions rate over time"
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "0bec9de0-4e7f-4b2c-88f3-1dd2a7d5276b",
+                    "w": 24,
+                    "x": 0,
+                    "y": 21
+                },
+                "panelIndex": "0bec9de0-4e7f-4b2c-88f3-1dd2a7d5276b",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "90387c3b-e223-4e31-96f0-1e1d82ebccc3": {
+                                            "columnOrder": [
+                                                "db386114-db80-4bfe-a8fb-405ae524ba91",
+                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99",
+                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf",
+                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                            ],
+                                            "columns": {
+                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sessions",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": ""
+                                                            }
+                                                        },
+                                                        "formula": "last_value(haproxy.sessions.rate, kql='\"haproxy.sessions.total\": *')",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"haproxy.sessions.total\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Sessions",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "haproxy.sessions.rate"
+                                                },
+                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "db386114-db80-4bfe-a8fb-405ae524ba91": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of haproxy.proxy_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "haproxy.proxy_name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-*",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "resource.attributes.haproxy.service_name",
+                                        "index": "38946585-ad3e-43e5-9555-17817ce4ca86",
+                                        "key": "resource.attributes.haproxy.service_name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "BACKEND"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "resource.attributes.haproxy.service_name": "BACKEND"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "2d0e78c6-a236-4de1-bda4-051cea39afcf"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "db386114-db80-4bfe-a8fb-405ae524ba91",
+                                        "xAccessor": "9f0c7a11-267f-4a75-b227-aefba75d1c99"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "resource.attributes.haproxy.service_name",
+                                "index": "38946585-ad3e-43e5-9555-17817ce4ca86",
+                                "key": "resource.attributes.haproxy.service_name",
+                                "negate": false,
+                                "params": {
+                                    "query": "BACKEND"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "resource.attributes.haproxy.service_name": "BACKEND"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Backend sessions rate over time"
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "fccee031-bef2-4070-acf1-f889e1ce265e",
+                    "w": 24,
+                    "x": 24,
+                    "y": 21
+                },
+                "panelIndex": "fccee031-bef2-4070-acf1-f889e1ce265e",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Metrics HAProxy Otel] Overview",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-02-11T06:34:25.155Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "haproxy_otel-ab73e969-2da4-42be-9669-64a2ab8af0dd",
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "45bac5fc-f9ca-4386-81af-a93d637a4a70:indexpattern-datasource-layer-67837cc1-07cf-4fb9-b179-39c5269652a3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "2073341a-0704-46eb-bc20-dbf7a855b793:indexpattern-datasource-layer-484ac849-4ddb-4ff2-891c-5a7be55e5a5b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "69a16a5a-ef0e-488c-8653-c8cc5e15844c:indexpattern-datasource-layer-dbd66631-77e1-42c2-a45e-b5aee2124e6f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "12a6530b-5da9-4868-9470-cbbabbe316c6:indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "319f757d-cff1-4379-8f26-400a82055a84:indexpattern-datasource-layer-dbd66631-77e1-42c2-a45e-b5aee2124e6f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "98ec194d-af13-4b01-beb4-5655f39f78e4:indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "129444a5-2c35-4454-98f0-9b162d53afed:indexpattern-datasource-layer-dbd66631-77e1-42c2-a45e-b5aee2124e6f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d1256daa-4b44-4b53-a3ec-1c7a51d775df:indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "0bec9de0-4e7f-4b2c-88f3-1dd2a7d5276b:indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "fccee031-bef2-4070-acf1-f889e1ce265e:indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
