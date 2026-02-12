@@ -38,6 +38,16 @@ Use `breaking-change` type in changelog and clearly describe impact on existing 
    - **Transform destination changes**: Modifying transform destination indices (requires updating `fleet_transform_version`)
    - **Default behavior changes**: Changing defaults that alter data collection (e.g., deduplication settings, data stream datasets)
 
+   **Minimizing risk from breaking changes:**
+
+   Breaking changes can affect content inside and outside this repository. Before introducing a breaking change:
+
+   - **Search for dependent content in this repository**: Use `grep` or search tools to find dashboards, transforms, and other assets that reference the fields you're changing.
+   - **Check the `security_detection_engine` package**: Security detection rules may depend on your integration's fields. Search in `packages/security_detection_engine/` for references to affected fields.
+   - **Coordinate with other teams**: Other Elastic repositories (e.g., `detection-rules`, `kibana`) may contain content that depends on your integration's fields. Reach out to relevant teams before merging breaking changes.
+   - **Consider deprecation first**: Instead of immediately removing or renaming fields, consider a deprecation period where both old and new fields are populated, giving users time to migrate.
+   - **Update dependent assets**: If dashboards or other assets in this repository reference changed fields, update them in the same PR or coordinate the changes.
+
 7. **Add error handling to ingest pipelines**
 Include `tag` fields on processors and use `on_failure` handlers. Follow the standard error message format with `_ingest.on_failure_*` fields.
 
