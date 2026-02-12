@@ -33,6 +33,10 @@ processors:
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - json:
       field: event.original
       tag: json_event_original
@@ -157,11 +161,6 @@ processors:
       field: json.child_process_ids
       tag: rename_child_process_ids
       target_field: crowdstrike.alert.child_process_ids
-      ignore_missing: true
-  - rename:
-      field: json.aggregate_id
-      tag: rename_aggregate_id
-      target_field: crowdstrike.alert.aggregate_id
       ignore_missing: true
   - rename:
       field: json.cid
@@ -844,9 +843,9 @@ processors:
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{crowdstrike.alert.parent_details.sha256}}}'
+      value: '{{{crowdstrike.alert.grandparent_details.sha256}}}'
       allow_duplicates: false
-      if: ctx.crowdstrike?.alert?.parent_details?.sha256 != null
+      if: ctx.crowdstrike?.alert?.grandparent_details?.sha256 != null
   - date:
       field: json.grandparent_details.timestamp
       tag: date_grandparent_details_timestamp
@@ -1147,7 +1146,7 @@ processors:
       ignore_missing: true
   - append:
       field: crowdstrike.alert.ioc_values
-      tag: append_ioc_context_ioc_value_to_ioc_values
+      tag: append_ioc_value_to_ioc_values
       value: '{{{crowdstrike.alert.ioc_value}}}'
       if: ctx.crowdstrike?.alert?.ioc_value != null
       allow_duplicates: false
@@ -2117,19 +2116,19 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_from_severity
       if: ctx.crowdstrike?.alert?.severity instanceof long && ctx.crowdstrike.alert.severity_name == null
       source: |-
         long severity = ctx.crowdstrike.alert.severity;
         if (0 <= severity && severity < 20) {
           ctx.crowdstrike.alert.severity_name = "info";
-        } if (20 <= severity && severity < 40) {
+        } else if (20 <= severity && severity < 40) {
           ctx.crowdstrike.alert.severity_name = "low";
-        } if (40 <= severity && severity < 60) {
+        } else if (40 <= severity && severity < 60) {
           ctx.crowdstrike.alert.severity_name = "medium";
-        } if (60 <= severity && severity < 80) {
+        } else if (60 <= severity && severity < 80) {
           ctx.crowdstrike.alert.severity_name = "high";
-        } if (80 <= severity && severity <= 100) {
+        } else if (80 <= severity && severity <= 100) {
           ctx.crowdstrike.alert.severity_name = "critical";
         }
       on_failure:
@@ -2139,7 +2138,7 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_from_severity_name
       if: ctx.crowdstrike?.alert?.severity_name instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -2808,7 +2807,7 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_processor
       value: pipeline_error
       if: ctx.error?.message != null
   - append:

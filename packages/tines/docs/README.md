@@ -155,24 +155,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2023-01-22T11:33:22.000Z",
     "agent": {
-        "ephemeral_id": "57ba8d15-e40b-414f-96f1-0888b4338376",
-        "id": "60148b00-b65c-4b4d-be3f-bcd7a22079ad",
-        "name": "elastic-agent-30900",
+        "ephemeral_id": "8a749c88-27ed-46c4-ab75-a44c014fb306",
+        "id": "af1cd2d8-7b92-43ef-9ba7-0138ff3f3630",
+        "name": "elastic-agent-40278",
         "type": "filebeat",
-        "version": "8.14.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "tines.audit_logs",
-        "namespace": "97861",
+        "namespace": "41598",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "60148b00-b65c-4b4d-be3f-bcd7a22079ad",
+        "id": "af1cd2d8-7b92-43ef-9ba7-0138ff3f3630",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "StoryItemsCreation",
@@ -180,10 +180,10 @@ An example event for `audit` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2024-12-11T07:58:27.819Z",
+        "created": "2025-12-03T05:43:17.665Z",
         "dataset": "tines.audit_logs",
         "id": "3706009",
-        "ingested": "2024-12-11T07:58:28Z",
+        "ingested": "2025-12-03T05:43:18Z",
         "original": "{\"created_at\":\"2023-01-22T11:33:22Z\",\"id\":3706009,\"inputs\":{\"inputs\":{\"agents\":[{\"form\":null,\"name\":\"HTTP Request Action\",\"position\":{\"x\":786,\"y\":331},\"timeSavedUnit\":\"minutes\",\"timeSavedValue\":0,\"type\":\"httpRequest\"}],\"diagramNotes\":[],\"links\":[],\"options\":[\"Option 1\",\"Option 2\"],\"storyId\":146411},\"liveEvents\":null},\"operation_name\":\"StoryItemsCreation\",\"request_ip\":\"216.160.83.56\",\"request_user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36\",\"tenant_id\":1234,\"updated_at\":\"2023-01-22T11:33:22Z\",\"user_email\":\"example.user@your.domain.tld\",\"user_id\":1234,\"user_name\":\"Example User\"}",
         "type": [
             "info"
@@ -306,30 +306,30 @@ An example event for `time_saved` looks as following:
 {
     "@timestamp": "2022-06-01T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "da7a5bbc-6809-4d23-8733-e47afd05ca88",
-        "id": "681e4da0-a57a-4818-b61e-2bb4a9557356",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b0071421-fc01-439e-8635-18c67c09fe9b",
+        "id": "a635f64c-6469-4624-8291-8d16476d7e6a",
+        "name": "elastic-agent-55622",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "tines.time_saved",
-        "namespace": "ep",
+        "namespace": "47319",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "681e4da0-a57a-4818-b61e-2bb4a9557356",
+        "id": "a635f64c-6469-4624-8291-8d16476d7e6a",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-01-27T15:49:53.023Z",
+        "created": "2025-12-03T05:45:07.961Z",
         "dataset": "tines.time_saved",
-        "ingested": "2023-01-27T15:49:54Z",
+        "ingested": "2025-12-03T05:45:09Z",
         "original": "{\"date\":\"2022-06-01T00:00:00Z\",\"value\":35910}"
     },
     "input": {
@@ -341,7 +341,7 @@ An example event for `time_saved` looks as following:
         "forwarded"
     ],
     "tines": {
-        "tenant_url": "http://elastic-package-service-tines_api_mock-1:8080",
+        "tenant_url": "http://svc-tines_api_mock:8080",
         "time_saved": {
             "date": "2022-06-01T00:00:00Z",
             "value": 35910

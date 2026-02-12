@@ -1,0 +1,169 @@
+---
+description: Pipeline for processing Finding object.
+# Finding object docs: https://schema.ocsf.io/1.5.0/objects/finding_info
+processors:
+  - convert:
+      field: aws_securityhub.finding.finding_info.analytic.type_id
+      tag: convert_finding_info_analytic_type_id_to_string
+      type: string
+      ignore_missing: true
+  - date:
+      field: aws_securityhub.finding.finding_info.created_time_dt
+      tag: date_finding_info_created_time_dt
+      target_field: aws_securityhub.finding.finding_info.created_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.finding_info?.created_time_dt != null && ctx.aws_securityhub.finding.finding_info.created_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.finding_info.created_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.finding_info.created_time
+      tag: date_finding_info_created_time
+      target_field: aws_securityhub.finding.finding_info.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.finding_info?.created_time != null && ctx.aws_securityhub.finding.finding_info.created_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.finding_info.created_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.finding_info.first_seen_time_dt
+      tag: date_finding_info_first_seen_time_dt
+      target_field: aws_securityhub.finding.finding_info.first_seen_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.finding_info?.first_seen_time_dt != null && ctx.aws_securityhub.finding.finding_info.first_seen_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.finding_info.first_seen_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.finding_info.first_seen_time
+      tag: date_finding_info_first_seen_time
+      target_field: aws_securityhub.finding.finding_info.first_seen_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.finding_info?.first_seen_time != null && ctx.aws_securityhub.finding.finding_info.first_seen_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.finding_info.first_seen_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws_securityhub.finding.finding_info.kill_chain.phase_id
+      tag: convert_finding_info_kill_chain_phase_id_to_string
+      type: string
+      ignore_missing: true
+  - date:
+      field: aws_securityhub.finding.finding_info.last_seen_time_dt
+      tag: date_finding_info_last_seen_time_dt
+      target_field: aws_securityhub.finding.finding_info.last_seen_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.finding_info?.last_seen_time_dt != null && ctx.aws_securityhub.finding.finding_info.last_seen_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.finding_info.last_seen_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.finding_info.last_seen_time
+      tag: date_finding_info_last_seen_time
+      target_field: aws_securityhub.finding.finding_info.last_seen_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.finding_info?.last_seen_time != null && ctx.aws_securityhub.finding.finding_info.last_seen_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.finding_info.last_seen_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.finding_info.modified_time_dt
+      tag: date_finding_info_modified_time_dt
+      target_field: aws_securityhub.finding.finding_info.modified_time_dt
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
+      if: ctx.aws_securityhub?.finding?.finding_info?.modified_time_dt != null && ctx.aws_securityhub.finding.finding_info.modified_time_dt != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.finding_info.modified_time_dt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: aws_securityhub.finding.finding_info.modified_time
+      tag: date_finding_info_modified_time
+      target_field: aws_securityhub.finding.finding_info.modified_time
+      formats:
+        - UNIX_MS
+      if: ctx.aws_securityhub?.finding?.finding_info?.modified_time != null && ctx.aws_securityhub.finding.finding_info.modified_time != ''
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.finding_info.modified_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: aws_securityhub.finding.finding_info.related_analytics
+      if: ctx.aws_securityhub?.finding?.finding_info?.related_analytics instanceof List
+      processor:
+        convert:
+          field: _ingest._value.type_id
+          tag: convert_finding_info.related_analytics_type_id_to_string
+          type: string
+          ignore_missing: true
+  - convert:
+      field: aws_securityhub.finding.finding_info.related_events_count
+      tag: convert_finding_info_related_events_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: aws_securityhub.finding.finding_info.related_events_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,9 +1,6 @@
 ---
 description: Pipeline for Office 365 Audit logs
 processors:
-  - drop:
-      if: ctx.retry == true
-      tag: drop_retry_events
   - remove:
       field:
         - organization
@@ -454,6 +451,37 @@ processors:
         }
   - script:
       lang: painless
+      tag: script_to_set_host_os_type
+      description: Script to set host_os_type.
+      if: ctx.o365audit?.Platform != null
+      source: |
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        String lcPlatform = ctx.o365audit.Platform.toLowerCase();
+        if (lcPlatform.contains('windows')) {
+            ctx.host.os.type = 'windows';
+        } else if (lcPlatform.contains('linux')) {
+            ctx.host.os.type = 'linux';
+        } else if (lcPlatform.contains('mac')) {
+            ctx.host.os.type = 'macos';
+        } else if (lcPlatform.contains('unix')) {
+            ctx.host.os.type = 'unix';
+        } else if (lcPlatform.contains('ios')) {
+            ctx.host.os.type = 'ios';
+        } else if (lcPlatform.contains('android')) {
+            ctx.host.os.type = 'android';
+        }
+  - lowercase:
+      field: host.os.type
+      tag: lowercase_host_os_type
+      ignore_missing: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_frin_platform
+      copy_from: o365audit.Platform
+      ignore_empty_value: true
+  - script:
+      lang: painless
       if: 'ctx.o365audit?.ExtendedProperties != null && ctx.o365audit?.ExtendedProperties instanceof List'
       source: >
         def newparams = new HashMap(); 
@@ -545,6 +573,10 @@ processors:
       ignore_missing: true
       if: ctx.event?.code == "ExchangeAdmin"
   # ExchangeItem Schema
+  - append:
+      field: event.category
+      value: email
+      if: ctx.event?.code == "ExchangeItem"
   - rename:
       field: o365audit.MailboxOwnerUPN
       target_field: user.email
@@ -1438,6 +1470,12 @@ processors:
       if: ctx.o365audit?.P1Sender != null && ctx.o365audit.P1Sender != ''
       tag: append_email_sender_address_1
       allow_duplicates: false
+  - append:
+      field: email.sender.address
+      value: "{{{source.user.email}}}"
+      if: ctx.source?.user?.email != null && ctx.source.user.email != ''
+      tag: append_email_sender_address_from_source
+      allow_duplicates: false
   - foreach:
       field: o365audit.Recipients
       if: ctx.o365audit?.Recipients instanceof List && ctx.o365audit.Recipients.length > 0
@@ -1447,6 +1485,16 @@ processors:
           field: email.to.address
           value: "{{{_ingest._value}}}"
           tag: append_recipient_to_email_to_address
+          allow_duplicates: false
+  - foreach:
+      field: destination.user.email
+      if: ctx.destination?.user?.email instanceof List
+      tag: foreach_destination_user_email
+      processor:
+        append:
+          field: email.to.address
+          value: "{{{_ingest._value}}}"
+          tag: append_destination_user_email_to_to_address
           allow_duplicates: false
   - append:
       field: related.ip
@@ -1921,6 +1969,98 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+
+# Populate related.user
+  - append:
+      field: related.user
+      value: "{{{user.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      value: "{{{user.target.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.target?.id != null
+  - append:
+      field: related.user
+      value: "{{{user.target.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.target?.email != null
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.email != null
+
+# Populate related.hosts
+  - append:
+      field: related.hosts
+      value: "{{{host.name}}}"
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.hosts
+      value: "{{{host.hostname}}}"
+      allow_duplicates: false
+      if: ctx.host?.hostname != null && ctx.host.hostname != ctx.host?.name
+  - append:
+      field: related.hosts
+      value: "{{{user.domain}}}"
+      allow_duplicates: false
+      if: ctx.user?.domain != null
+  - append:
+      field: related.hosts
+      value: "{{{user.target.domain}}}"
+      allow_duplicates: false
+      if: ctx.user?.target?.domain != null && ctx.user.target.domain != ctx.user?.domain
+  - append:
+      field: related.hosts
+      value: "{{{source.domain}}}"
+      allow_duplicates: false
+      if: ctx.source?.domain != null
+  - append:
+      field: related.hosts
+      value: "{{{destination.domain}}}"
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
+  - append:
+      field: related.hosts
+      value: "{{{url.domain}}}"
+      allow_duplicates: false
+      if: ctx.url?.domain != null
+  - append:
+      field: related.hosts
+      value: "{{{server.domain}}}"
+      allow_duplicates: false
+      if: ctx.server?.domain != null
+  - append:
+      field: related.hosts
+      value: "{{{client.domain}}}"
+      allow_duplicates: false
+      if: ctx.client?.domain != null
+
+# Populate related.hash
+  - append:
+      field: related.hash
+      value: "{{{file.hash.md5}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - append:
+      field: related.hash
+      value: "{{{file.hash.sha1}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha1 != null
+  - append:
+      field: related.hash
+      value: "{{{file.hash.sha256}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - append:
+      field: related.hash
+      value: "{{{file.hash.sha512}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha512 != null
+
   - remove:
       field:
         - _conf

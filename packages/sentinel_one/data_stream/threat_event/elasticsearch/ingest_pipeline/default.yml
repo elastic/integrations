@@ -773,6 +773,11 @@ processors:
       tag: set_user_name
       copy_from: sentinel_one.threat_event.user
       ignore_empty_value: true
+  - dissect:
+      field: user.name
+      pattern: '%{user.domain}\%{user.name}'
+      if: ctx.user?.name?.contains('\\') == true
+      description: "Split user and domain"
   - append:
       field: related.user
       tag: append_user_name_into_related_user

@@ -54,64 +54,58 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "httpjson"
-    },
+    "@timestamp": "2024-11-12T09:39:58.489Z",
     "agent": {
-        "name": "example-agent",
-        "id": "example-agent-id-12345",
+        "ephemeral_id": "6f67dab1-a41b-450f-a155-a71e23a90def",
+        "id": "078a56bf-68d7-4243-a5de-83dfb7e00e88",
+        "name": "elastic-agent-18047",
         "type": "filebeat",
-        "ephemeral_id": "ephemeral-id-12345",
-        "version": "8.15.2"
-    },
-    "@timestamp": "2024-11-07T08:09:22.094Z",
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "blacklens.alerts"
-    },
-    "elastic_agent": {
-        "id": "example-agent-id-12345",
-        "version": "8.15.2",
-        "snapshot": false
-    },
-    "host": {
-        "name": "example-host"
+        "version": "8.19.4"
     },
     "blacklens": {
         "alert": {
-            "severity": "info",
-            "type_id": 1001,
-            "details": [],
-            "updated_date": "2024-08-14T15:06:13.151Z",
-            "id": 12345,
-            "type": "Example Threat System (ETS)",
-            "title": "Example Threat Scan Notification",
-            "outcome": "undefined",
-            "status": "resolved"
+            "id": 1001,
+            "outcome": "affected",
+            "severity": "medium",
+            "status": "resolved",
+            "title": "New Open Port",
+            "type": "Port Scanner",
+            "type_id": 100,
+            "updated_date": "2024-11-12T09:39:58.489Z"
         }
     },
-    "message": "{\"affected_entities\":null,\"alert_outcome\":\"undefined\",\"alert_payload\":[],\"reference\":\"https://example.com/reference123\"}],\"alert_status\":\"resolved\",\"created_date\":\"2024-11-07T08:09:22.094028Z\",\"customer_state\":\"open\",\"details\":{\"engine\":\"Example Threat System (ETS)\",\"id\":1001,\"title\":\"Example Threat Scan Notification\"},\"id\":12345,\"severity\":\"info\",\"type_id\":1001,\"updated_date\":\"2024-08-14T15:06:13.151728Z\"}",
+    "data_stream": {
+        "dataset": "blacklens.alerts",
+        "namespace": "38546",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "078a56bf-68d7-4243-a5de-83dfb7e00e88",
+        "snapshot": false,
+        "version": "8.19.4"
+    },
     "event": {
-        "id": 12345,
         "agent_id_status": "verified",
-        "ingested": "2024-11-07T09:45:30Z",
-        "created": "2024-11-07T09:45:29.354Z",
-        "kind": "alert",
         "category": [
             "threat"
         ],
+        "created": "2026-01-19T05:27:59.414Z",
+        "dataset": "blacklens.alerts",
+        "id": "1001",
+        "ingested": "2026-01-19T05:28:02Z",
         "type": [
             "indicator"
-        ],
-        "dataset": "blacklens.alerts"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
     },
     "tags": [
         "forwarded",
-        "example-alert"
+        "blacklens-alert"
     ]
 }
 ```

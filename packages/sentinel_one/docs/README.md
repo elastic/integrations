@@ -279,6 +279,10 @@ An example event for `activity` looks as following:
 | sentinel_one.activity.description.secondary | Secondary description. | keyword |
 | sentinel_one.activity.description_value |  | keyword |
 | sentinel_one.activity.id | Activity ID. | keyword |
+| sentinel_one.activity.rule_description |  | keyword |
+| sentinel_one.activity.rule_id |  | keyword |
+| sentinel_one.activity.rule_name |  | keyword |
+| sentinel_one.activity.severity |  | keyword |
 | sentinel_one.activity.threat.id | Related threat ID (if applicable). | keyword |
 | sentinel_one.activity.type | Activity type. | long |
 | sentinel_one.activity.updated_at | Activity last updated time (UTC). | date |

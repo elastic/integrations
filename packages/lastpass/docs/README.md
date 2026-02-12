@@ -52,32 +52,32 @@ An example event for `detailed_shared_folder` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-24T11:28:38.242Z",
+    "@timestamp": "2025-12-12T08:59:20.423Z",
     "agent": {
-        "ephemeral_id": "4a4388c0-12ab-4c2c-910c-c912f6bd4730",
-        "id": "b0183e4b-ecd8-4ee9-8e73-bb43ce3ddcf2",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "d34469d9-73df-4f90-bc77-b13f8741e23d",
+        "id": "6d931462-347a-49af-922d-b3918041d003",
+        "name": "elastic-agent-53629",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "lastpass.detailed_shared_folder",
-        "namespace": "ep",
+        "namespace": "88569",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b0183e4b-ecd8-4ee9-8e73-bb43ce3ddcf2",
+        "id": "6d931462-347a-49af-922d-b3918041d003",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-05-24T11:28:38.242Z",
+        "created": "2025-12-12T08:59:20.423Z",
         "dataset": "lastpass.detailed_shared_folder",
-        "ingested": "2024-05-24T11:28:50Z",
+        "ingested": "2025-12-12T08:59:23Z",
         "kind": "state",
         "original": "{\"id\":\"101\",\"score\":99,\"sharedfoldername\":\"ThisSFName\",\"users\":{\"can_administer\":true,\"give\":false,\"readonly\":true,\"sites\":[\"aaa.com\",\"bbb.com\"],\"username\":\"joe.user@lastpass.com\"}}",
         "type": [
@@ -163,24 +163,24 @@ An example event for `event_report` looks as following:
 {
     "@timestamp": "2015-07-17T09:51:51.000Z",
     "agent": {
-        "ephemeral_id": "9ece9bbd-9d6c-4204-bd9f-3182e1a55f27",
-        "id": "02365282-f602-4b79-beec-adb210ac6467",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "cf014d99-eaa3-47af-b77d-5414873cbe35",
+        "id": "d0222733-fe19-4c03-8713-959506dfed5b",
+        "name": "elastic-agent-52217",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "lastpass.event_report",
-        "namespace": "ep",
+        "namespace": "96245",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "02365282-f602-4b79-beec-adb210ac6467",
+        "id": "d0222733-fe19-4c03-8713-959506dfed5b",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.19.4"
     },
     "event": {
         "action": "failed login attempt",
@@ -188,9 +188,9 @@ An example event for `event_report` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2023-08-14T22:51:42.186Z",
+        "created": "2025-12-12T09:00:10.654Z",
         "dataset": "lastpass.event_report",
-        "ingested": "2023-08-14T22:51:43Z",
+        "ingested": "2025-12-12T09:00:13Z",
         "kind": "event",
         "original": "{\"Action\":\"Failed Login Attempt\",\"Data\":\"\",\"IP_Address\":\"10.16.21.21\",\"Time\":\"2015-07-17 09:51:51\",\"Username\":\"j.user@example.com\",\"id\":\"Event1\"}",
         "outcome": "failure",
@@ -282,35 +282,35 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-24T13:40:43.764Z",
+    "@timestamp": "2025-12-12T09:01:00.598Z",
     "agent": {
-        "ephemeral_id": "7022fcec-d213-4320-8c7d-663b20b9d82c",
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "6352087b-6e4f-4918-9d95-5cc347bcfc31",
+        "id": "ddf3533d-dabe-4e5e-b4f5-6dbcb12e6959",
+        "name": "elastic-agent-91592",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "lastpass.user",
-        "namespace": "ep",
+        "namespace": "64234",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "id": "ddf3533d-dabe-4e5e-b4f5-6dbcb12e6959",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2023-07-24T13:40:43.764Z",
+        "created": "2025-12-12T09:01:00.598Z",
         "dataset": "lastpass.user",
-        "ingested": "2023-07-24T13:40:46Z",
+        "ingested": "2025-12-12T09:01:03Z",
         "kind": "state",
         "original": "{\"admin\":false,\"applications\":0,\"attachments\":1,\"created\":\"2014-03-12 10:02:56\",\"disabled\":false,\"formfills\":2,\"fullname\":\"Ned Flanders\",\"groups\":[\"Domain Admins\",\"Dev Team\",\"Support Team\"],\"id\":\"101\",\"last_login\":\"2015-05-29 11:45:05\",\"last_pw_change\":\"2015-05-19 10:58:33\",\"linked\":\"personal.account@mydomain.com\",\"mpstrength\":\"100\",\"neverloggedin\":false,\"notes\":19,\"password_reset_required\":false,\"sites\":72,\"username\":\"user1@lastpass.com\"}",
         "type": [

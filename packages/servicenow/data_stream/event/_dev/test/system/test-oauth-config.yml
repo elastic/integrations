@@ -1,0 +1,18 @@
+deployer: docker
+input: cel
+service: servicenow-oauth2
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    client_id: test-client-id
+    client_secret: test-client-secret
+    token_url: http://{{Hostname}}:{{Port}}/oauth2/token
+    token_scopes:
+      - useraccount
+    initial_interval: 24h
+    interval: 5m
+    table_name: incident
+    batch_size: 1
+    query: active=true
+assert:
+  hit_count: 3

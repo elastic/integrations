@@ -9,6 +9,12 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - set:
       field: event.kind
       value: event
@@ -611,11 +617,8 @@ processors:
             value: 'request string and requests array both present in same document'
   - uri_parts:
       field: trend_micro_vision_one.detection.request
-      if: ctx.trend_micro_vision_one?.detection?.request != null
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.productCode
       target_field: trend_micro_vision_one.detection.product.code

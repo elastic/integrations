@@ -353,11 +353,11 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2020-02-13T18:56:20.000Z",
     "agent": {
-        "ephemeral_id": "59577463-d70a-4e8d-b98a-f19259ea5754",
-        "id": "58df2bd8-08b5-427c-9e9f-5bd330eaff86",
-        "name": "elastic-agent-17284",
+        "ephemeral_id": "6a85c119-8d8c-4fe1-98c1-31193dc31397",
+        "id": "709821d5-6aaa-476f-9d38-6157a4e4efb6",
+        "name": "elastic-agent-85377",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "cisco_duo": {
         "auth": {
@@ -408,6 +408,7 @@ An example event for `auth` looks as following:
             "email": "narroway@example.com",
             "event_type": "authentication",
             "factor": "duo_push",
+            "isotimestamp": "2020-02-13T18:56:20.351Z",
             "reason": "user_approved",
             "result": "success",
             "trusted_endpoint_status": "not trusted",
@@ -416,16 +417,16 @@ An example event for `auth` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_duo.auth",
-        "namespace": "35756",
+        "namespace": "97558",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "58df2bd8-08b5-427c-9e9f-5bd330eaff86",
+        "id": "709821d5-6aaa-476f-9d38-6157a4e4efb6",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -433,7 +434,7 @@ An example event for `auth` looks as following:
             "authentication"
         ],
         "dataset": "cisco_duo.auth",
-        "ingested": "2024-10-10T16:29:11Z",
+        "ingested": "2025-12-10T07:09:25Z",
         "kind": "event",
         "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"67.0.3396.99\",\"flash_version\":\"uninstalled\",\"hostname\":null,\"ip\":\"89.160.20.156\",\"is_encryption_enabled\":true,\"is_firewall_enabled\":true,\"is_password_set\":true,\"java_version\":\"uninstalled\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.14.1\",\"security_agents\":null},\"alias\":\"\",\"application\":{\"key\":\"DIY231J8BR23QK4UKBY8\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":\"192.168.225.254\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"name\":\"My iPhone X (734-555-2342)\"},\"email\":\"narroway@example.com\",\"event_type\":\"authentication\",\"factor\":\"duo_push\",\"isotimestamp\":\"2020-02-13T18:56:20.351346+00:00\",\"ood_software\":null,\"reason\":\"user_approved\",\"result\":\"success\",\"timestamp\":1581620180,\"trusted_endpoint_status\":\"not trusted\",\"txid\":\"340a23e3-23f3-23c1-87dc-1491a23dfdbb\",\"user\":{\"groups\":[\"Duo Users\",\"CorpHQ Users\"],\"key\":\"DU3KC77WJ06Y5HIV7XKQ\",\"name\":\"narroway@example.com\"}}",
         "outcome": "success",
@@ -514,6 +515,7 @@ An example event for `auth` looks as following:
 | @timestamp | Event timestamp. | date |
 | cisco_duo.auth.access_device.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | cisco_duo.auth.access_device.as.organization.name | Organization name. | keyword |
+| cisco_duo.auth.access_device.epkey | The endpoint's unique identifier. Collected during authentication events. | keyword |
 | cisco_duo.auth.access_device.flash_version | The Flash plugin version used, if present. | keyword |
 | cisco_duo.auth.access_device.geo.city_name | City name (geo enrichment based on the IP address). | keyword |
 | cisco_duo.auth.access_device.geo.continent_name | Name of the continent (geo enrichment based on the IP address). | keyword |
@@ -533,7 +535,21 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.access_device.location.state | The state name of the access device provided by Cisco Duo. | keyword |
 | cisco_duo.auth.access_device.port | The access device's port number. | long |
 | cisco_duo.auth.access_device.security_agents | Reports the security agents present on the endpoint as detected by the Duo Device Health app. | flattened |
+| cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.detected_attack_detectors | List of the risk-based authentication detections found during or after an authentication attempt. | keyword |
+| cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.features_version | The feature version for the risk-based authentication trust assessment. | keyword |
+| cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.model_version | The model version for the risk-based authentication trust assessment. | keyword |
+| cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.policy_enabled | Denotes if risk-based authentication was enabled by the policy under which the trust assessment was evaluated. | boolean |
+| cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.preview_mode_enabled |  | boolean |
+| cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.reason | The reason behind the trust assessment level. | keyword |
+| cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.trust_level | The trust assessment level. One of: ERROR, LOW, NORMAL, UNKNOWN, or UNSET. | keyword |
+| cisco_duo.auth.adaptive_trust_assessments.remember_me.features_version | The feature version for the risk-based authentication trust assessment. | keyword |
+| cisco_duo.auth.adaptive_trust_assessments.remember_me.model_version | The model version for the risk-based authentication trust assessment. | keyword |
+| cisco_duo.auth.adaptive_trust_assessments.remember_me.policy_enabled | Denotes if risk-based authentication was enabled by the policy under which the trust assessment was evaluated. | boolean |
+| cisco_duo.auth.adaptive_trust_assessments.remember_me.preview_mode_enabled |  | boolean |
+| cisco_duo.auth.adaptive_trust_assessments.remember_me.reason | The reason behind the trust assessment level. | keyword |
+| cisco_duo.auth.adaptive_trust_assessments.remember_me.trust_level | The trust assessment level. One of: ERROR, LOW, NORMAL, UNKNOWN, or UNSET. | keyword |
 | cisco_duo.auth.alias | The username alias used to log in. | keyword |
+| cisco_duo.auth.application.destination_name | The dest_app_name value passed in by an OIDC Auth API application. | keyword |
 | cisco_duo.auth.application.key | The application's integration_key. | keyword |
 | cisco_duo.auth.application.name | The application's name. | keyword |
 | cisco_duo.auth.auth_device.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
@@ -546,6 +562,7 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.auth_device.geo.region_iso_code | Region ISO code (geo enrichment based on the IP address). | keyword |
 | cisco_duo.auth.auth_device.geo.region_name | Region name (geo enrichment based on the IP address). | keyword |
 | cisco_duo.auth.auth_device.ip | The IP address of the authentication device. | ip |
+| cisco_duo.auth.auth_device.key | The Duo identifier of the authentication device. | keyword |
 | cisco_duo.auth.auth_device.location.city | The city name of the authentication device provided by Cisco Duo. | keyword |
 | cisco_duo.auth.auth_device.location.country | The country of the authentication device provided by Cisco Duo. | keyword |
 | cisco_duo.auth.auth_device.location.state | The state name of the authentication device provided by Cisco Duo. | keyword |
@@ -554,10 +571,23 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.email | The email address of the user, if known to Duo, otherwise none. | keyword |
 | cisco_duo.auth.event_type | The type of activity logged. | keyword |
 | cisco_duo.auth.factor | The authentication factor. | keyword |
+| cisco_duo.auth.isotimestamp | ISO8601 timestamp of the event. | date |
 | cisco_duo.auth.ood_software | If authentication was denied due to out-of-date software, shows the name of the software. | keyword |
+| cisco_duo.auth.passport_assessment.is_supported | If true, the authentication supported Duo Passport. If false, the authentication did not support Duo Passport. | boolean |
+| cisco_duo.auth.passport_assessment.reason | Returns 'supported' if is_supported is true. Otherwise, returns a reason on why Duo Passport could not be used for that authentication. | keyword |
+| cisco_duo.auth.rbfs_triggered_attacks.country_code_access |  | keyword |
+| cisco_duo.auth.rbfs_triggered_attacks.country_code_auth |  | keyword |
+| cisco_duo.auth.rbfs_triggered_attacks.detected_occurrences |  | long |
+| cisco_duo.auth.rbfs_triggered_attacks.detector |  | keyword |
+| cisco_duo.auth.rbfs_triggered_attacks.shadow_mode |  | boolean |
+| cisco_duo.auth.rbfs_triggered_attacks.suppressed |  | keyword |
+| cisco_duo.auth.rbfs_triggered_attacks.threshold_occurrences |  | long |
+| cisco_duo.auth.rbfs_triggered_attacks.threshold_time_frame |  | long |
+| cisco_duo.auth.rbfs_triggered_attacks.unrealistic_travel_velocity |  | long |
 | cisco_duo.auth.reason | Provide the reason for the authentication attempt result. | keyword |
 | cisco_duo.auth.result | The result of the authentication attempt. | keyword |
 | cisco_duo.auth.trusted_endpoint_status | Status of Trusted Endpoint. | keyword |
+| cisco_duo.auth.trusted_session_info.trusted_session_uuid | Unique identifier for tracking a trusted session. | keyword |
 | cisco_duo.auth.txid | The transaction ID of the event. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |

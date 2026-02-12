@@ -82,10 +82,12 @@ the masters won't be visible. In these cases it won't be possible to use `schedu
 ### container-logs
 
 The container-logs dataset requires access to the log files in each Kubernetes node where the container logs are stored.
-This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
+This defaults to `/var/log/containers/*${kubernetes.container.id}.log`, which is the active log file. 
+To also ingest rotated log files, refer to the
+full [container logs documentation](https://www.elastic.co/docs/reference/integrations/kubernetes/container-logs#ingesting-rotated-container-logs).
 
 It uses the [Filestream input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html)
-and defines it's ID as: `id: kubernetes-container-logs-${kubernetes.pod.name}-${kubernetes.container.id}`. For every
+and defines it's ID as: `id: kubernetes-container-logs-${kubernetes.pod.name}-${kubernetes.container.id}` by default. For every
 container the Elastic-Agent will generate an instance of the Filestream input harvesting the `paths` defined in the
 configuration. So make sure the paths are unique per container.
 
