@@ -176,6 +176,20 @@ processors:
       field: email.subject
       copy_from: fortinet_fortimail.log.subject
       ignore_empty_value: true
+  - rename:
+      tag: rename_temp_url_to_fortinet_fortimail_log_url_c335cd17
+      field: temp.url
+      target_field: fortinet_fortimail.log.url
+      ignore_missing: true
+  - uri_parts:
+      tag: uri_parts_fortinet_fortimail_log_url_efc04027
+      field: fortinet_fortimail.log.url
+      ignore_missing: true
+      on_failure:
+        - set:
+            tag: set_url_original_3234a6fb
+            field: url.original
+            copy_from: fortinet_fortimail.log.url
   - script:
       description: Sets log.syslog.severity.code and calculates log.syslog.facility.code.
       tag: 'script_for_set_log.syslog.severity.code_log.syslog.facility.code'
@@ -263,6 +277,7 @@ processors:
         - fortinet_fortimail.log.source.ip
         - fortinet_fortimail.log.subject
         - fortinet_fortimail.log.to
+        - fortinet_fortimail.log.url
         - fortinet_fortimail.log.user
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
