@@ -3,12 +3,6 @@
 ## Overview
 The Iptables integration for Elastic enables you to collect and analyze logs from `iptables` and `ip6tables` running on Linux distributions and Ubiquiti networking equipment. It's designed to provide deep visibility into network traffic filtered by kernel firewalls, which helps you monitor allowed and denied connections across your infrastructure.
 
-This integration facilitates:
-- Security monitoring and auditing: You can track all dropped or rejected packets to identify potential scanning activities, brute-force attempts, or unauthorized access patterns within the network.
-- Network troubleshooting: You'll be able to analyze firewall logs to diagnose connectivity issues by verifying if specific traffic is being blocked by `iptables` rules or Ubiquiti firewall policies.
-- Compliance reporting: You can maintain a centralized audit trail of network traffic modifications and security events required for regulatory frameworks.
-- Ubiquiti environment visibility: You can leverage specialized parsing for EdgeOS-based devices to extract granular details such as rule set names, specific rule numbers, and the final action taken on the traffic.
-
 ### Compatibility
 The `iptables` integration is compatible with the following:
 - `iptables` and `ip6tables` logs from Linux distributions.
@@ -49,7 +43,6 @@ To use the Iptables integration, you must ensure your environment meets the foll
 
 Before you install the integration, ensure your environment is configured correctly:
 - Root or sudo permissions are required on the Linux host to modify `iptables` rules and `rsyslog` configurations.
-- Port `9001` (UDP) must be accessible on the Elastic Agent host to receive syslog traffic.
 - The `LOG` target must be added to `iptables` chains to enable logging.
 - SSH or console access to the Ubiquiti device is required to configure remote syslog destinations.
 - The `journalctl` binary must be available on the host if you're using the Journald input method.
