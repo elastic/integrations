@@ -8,24 +8,29 @@ mapped_pages:
 When your integration is done, it’s time to open a PR to include it in the integrations repository. 
 Before opening your PR, make sure you have:
 
-1. Pass all checks
-Run:
-```bash
-elastic-package check
-```
+1. **Run pre-submission checks**
+Run `elastic-package check` to validate formatting, build, and linting. Run `elastic-package format` if files need reformatting.
 
-This command validates that your package is built correctly, formatted properly, and aligned with the specification. Passing this `check` is required before submitting your integration.
+2. **Add a changelog entry**
+Include a `link:` field pointing to your PR. Use the correct type: `enhancement`, `bug-fix`, `breaking-change`, or `deprecation`.
 
-2. Added a new entry into `changelog.yml`
-Update the package’s `changelog.yml` with a clear description of your changes for the new version.
+3. **Update CODEOWNERS** (new integrations only)
+Add your package to `.github/CODEOWNERS` with the format: `packages/<package_name> @elastic/<team-name>`.
 
-3. Bumped the package version
-If you are releasing new changes, increment the version in your manifest.yml file. This is required for the package to be published.
+4. **Include test coverage**
+Run `elastic-package test` before submitting. Generate `sample_event.json` using `elastic-package test system --generate`.
 
-4. Wrote clear PR title and description
-- Use a concise, descriptive title (e.g., `[New Integration] Add Acme Logs integration`).
-- In the PR description, summarize what your integration or change does, list key features or fixes, reference related issues, and provide testing instructions.
-- Ensure your documentation, sample events, and tests are included and up to date.
+5. **Bump the package version appropriately**
+Use minor version bumps for documentation-only changes and patch bumps for small fixes.
+
+6. **Document breaking changes**
+Use `breaking-change` type in changelog and clearly describe impact on existing users. Field type changes (e.g., keyword to long) require a major version bump.
+
+7. **Add error handling to ingest pipelines**
+Include `tag` fields on processors and use `on_failure` handlers. Follow the standard error message format with `_ingest.on_failure_*` fields.
+
+8. **Write a clear PR title and description**
+Use a concise, descriptive title (e.g., `[New Integration] Add Acme Logs integration`). Summarize changes, reference related issues, and ensure documentation is up to date.
 
 ::::{tip}
 A well-written PR with clear documentation, versioning, and testing instructions will speed up the review and publishing process!
