@@ -84,7 +84,7 @@ For generic Linux/Unix log forwarding using rsyslog, you'll need to:
 
 For custom application loggers, you'll need to:
 
-1. Open your application's logging configuration file, such as `log4j2.xml`, `logback.xml`, or a Python logging dictionary.
+1. Open your application's logging configuration file.
 2. Configure a Socket Appender or TCP Handler.
 3. Set the remote host or destination to the IP address of the host running the Elastic Agent.
 4. Set the port to match the port you've configured in the Elastic integration (for example, `8080`).
@@ -116,7 +116,7 @@ You'll follow these steps to add and configure the integration in Kibana:
 
 After you've finished the configuration, you'll need to verify that data is flowing correctly from your source to the Elastic Stack.
 
-You can trigger a data flow on the source using one of these methods:
+Depending on you system, you may be able to trigger a data flow on the source using one of these methods:
 
 - To send a manual test message from the source machine (or any machine with network access to the Agent), run this command:
   ```bash
@@ -165,11 +165,6 @@ You might encounter the following common configuration issues when setting up or
 -   Message truncation:
     -   If logs are incomplete, check if they exceed the `Max Message Size`. You'll need to increase this value in the integration settings if your application sends large payloads like large JSON blobs.
 
-### Vendor resources
-
-For more information about configuring your data sources or underlying transport settings, refer to these resources:
-- [Filebeat SSL Configuration](https://www.elastic.co/docs/reference/beats/filebeat/configuration-ssl#ssl-common-config)
-
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -193,6 +188,7 @@ The following links provide additional information about the protocols and confi
 - [RFC 3164: The BSD Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc3164)
 - [RFC 5424: The Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc5424)
 - [RFC 6587: Transmission of Syslog Messages over TCP](https://datatracker.ietf.org/doc/html/rfc6587)
+- [Filebeat SSL Configuration](https://www.elastic.co/docs/reference/beats/filebeat/configuration-ssl#ssl-common-config)
 
 ### Data streams
 
