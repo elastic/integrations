@@ -170,20 +170,20 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 The following issues are common when setting up the Custom UDP Logs integration:
 - Permission denied for low ports:
-    * If you configure a port below 1024 (like UDP `514`), the Elastic Agent may fail to start because it doesn't have sufficient privileges.
+    * If you configure a port below 1024 (like UDP `514`), the Elastic Agent might fail to start because it doesn't have sufficient privileges.
     * You'll need to use a port above 1024 or run the Elastic Agent service as a privileged user like root or administrator.
 - Address already in use:
     * The Elastic Agent can't bind to the port if another service, such as a local `rsyslog` or `syslog-ng` daemon, is already using it.
     * You can check for conflicting services using a command like `netstat -tuln | grep <your-port>`.
 - Firewall blocking incoming traffic:
-    * If the agent is running but you don't see data in Kibana, the host's firewall might be blocking the UDP packets.
+    * If the agent is running but data doesn't appear in Kibana, the host's firewall might be blocking the UDP packets.
     * Check your firewall settings using `iptables -L` on Linux or `Get-NetFirewallRule` on Windows to ensure the configured port is open.
 - Listen address mismatch:
     * If you set the **Listen Address** to `localhost`, the agent only accepts traffic from its own host.
     * To receive logs from external network devices, ensure the **Listen Address** is set to `0.0.0.0`.
 - Parsing failures:
     * If logs appear in Kibana but fields aren't correctly extracted, verify that the **Syslog Parsing** toggle matches the format (RFC 3164 or RFC 5424) being sent by your source.
-    * If your device uses a non-standard format, you might need to disable automatic parsing and use a custom ingest pipeline with a Grok processor.
+    * If your device uses a non-standard format, you might need to turn off automatic parsing and use a custom ingest pipeline with a Grok processor.
 - Message truncation:
     * Long log messages or jumbo frames might be cut off if they exceed the **Max Message Size** limit.
     * You can increase this value in the integration settings (for example, to `64KiB`) to accommodate larger payloads.

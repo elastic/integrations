@@ -24,16 +24,16 @@ The **Custom UDP Logs** integration is a protocol-based listener and is compatib
 - **Standard Protocols:** Support for RFC 3164 (BSD Syslog) and RFC 5424 (IETF Syslog) message formats.
 
 ## Scaling and Performance
-- **Transport/Collection Considerations:** UDP is a connectionless protocol, which offers lower latency and less overhead than TCP, making it ideal for high-throughput logging. However, because it lacks delivery guarantees, packets may be dropped during periods of extreme network congestion or if the Elastic Agent's read buffer is overwhelmed. Users should consider increasing the **Read Buffer Size** in the integration settings to mitigate packet loss during traffic bursts.
-- **Data Volume Management:** To prevent overwhelming the Elastic Stack, it is recommended to filter logs at the source device whenever possible. Limit exports to specific severity levels (e.g., Warning and above) or specific facilities. If high volumes are unavoidable, use the **Processors** configuration within the integration to drop irrelevant events at the Agent level before they are transmitted to Elasticsearch.
-- **Elastic Agent Scaling:** For high-traffic environments (e.g., >10,000 events per second), a single Elastic Agent may become a bottleneck. In such cases, deploy multiple Elastic Agents across different hosts and use a network load balancer to distribute the incoming UDP traffic. Ensure the host machine has sufficient CPU resources to handle the context switching required for high-speed packet processing.
+- **Transport/Collection Considerations:** UDP is a connectionless protocol, which offers lower latency and less overhead than TCP, making it ideal for high-throughput logging. However, because it lacks delivery guarantees, packets can be dropped during periods of extreme network congestion or if the Elastic Agent's read buffer is overwhelmed. Users should consider increasing the **Read Buffer Size** in the integration settings to mitigate packet loss during traffic bursts.
+- **Data Volume Management:** To prevent overwhelming the Elastic Stack, it is recommended to filter logs at the source device whenever possible. Limit exports to specific severity levels (for example, Warning and above) or specific facilities. If high volumes are unavoidable, use the **Processors** configuration within the integration to drop irrelevant events at the Agent level before they are transmitted to Elasticsearch.
+- **Elastic Agent Scaling:** For high-traffic environments (for example, >10,000 events per second), a single Elastic Agent might become a bottleneck. In such cases, deploy multiple Elastic Agents across different hosts and use a network load balancer to distribute the incoming UDP traffic. Ensure the host machine has sufficient CPU resources to handle the context switching required for high-speed packet processing.
 
 # Set Up Instructions
 
 ## Vendor prerequisites
 Before configuring the integration, ensure the following requirements are met on the source device or application:
 - **Administrative Access:** You must have permission to modify the logging or telemetry export configuration on the device sending the logs.
-- **Network Connectivity:** Unrestricted UDP traffic flow must be allowed from the source device's IP address to the Elastic Agent's IP address on the chosen port (e.g., 8080 or 514).
+- **Network Connectivity:** Unrestricted UDP traffic flow must be allowed from the source device's IP address to the Elastic Agent's IP address on the chosen port (for example, 8080 or 514).
 - **Protocol Knowledge:** Determine if the source device sends data in a specific format like RFC 5424, as this will impact whether you enable the Syslog Parsing toggle.
 - **Firewall Rules:** Any intermediate firewalls or host-based firewalls (like iptables or Windows Firewall) must be configured to allow inbound UDP traffic on the listener port.
 
@@ -52,7 +52,7 @@ To begin ingesting data, you must configure your external devices to target the 
 5. Set the **Destination Port** to the port you plan to configure in Kibana (default is `8080`).
 6. Set the **Protocol** to **UDP**.
 7. If the device allows, select the log format. **RFC 5424** is preferred for better structured data, though **RFC 3164** is widely supported.
-8. Specify the facility and severity levels you wish to export (e.g., `Local0`, `Notice`).
+8. Specify the facility and severity levels you wish to export (for example, `Local0`, `Notice`).
 9. Save the configuration and, if necessary, restart the logging service on the device to initiate the stream.
 
 ### For Custom Applications:
@@ -99,7 +99,7 @@ To verify the integration is working, generate test traffic from a source device
 4. Verify logs appear in the results table. Expand a recent log entry and confirm the following fields are populated:
    - `event.dataset`: This should be exactly `udp.generic`.
    - `source.ip`: This should contain the IP address of the device that sent the test message.
-   - `message`: This should contain the raw text of your test log (e.g., "This is a test message").
+   - `message`: This should contain the raw text of your test log (for example, "This is a test message").
    - `log.syslog.priority`: (If Syslog Parsing is enabled) Should show the numerical priority extracted from the header.
    - `event.original`: (If enabled) Should contain the full raw packet including syslog headers.
 5. Navigate to **Analytics > Dashboards** and search for **UDP** to see any available generic dashboards or visualizations.
@@ -107,14 +107,14 @@ To verify the integration is working, generate test traffic from a source device
 # Troubleshooting
 
 ## Common Configuration Issues
-- **Permission Denied for Low Ports**: If you configure the integration to listen on a port below 1024 (e.g., 514) and the Agent fails to start, it is likely due to insufficient privileges. Resolve this by using a port above 1024 or running the Elastic Agent as a privileged user (root/administrator).
+- **Permission Denied for Low Ports**: If you configure the integration to listen on a port below 1024 (for example, 514) and the Agent fails to start, it is likely due to insufficient privileges. Resolve this by using a port above 1024 or running the Elastic Agent as a privileged user (root/administrator).
 - **Address Already in Use**: If another service (like an existing rsyslog daemon) is already listening on the configured port, the Elastic Agent will fail to bind to the socket. Use `netstat -tuln | grep <PORT>` to identify conflicting services and stop them or change the port in the integration settings.
 - **Firewall Blocking Traffic**: If the Agent is running but no data appears in Kibana, check the host firewall. Ensure that inbound UDP traffic is allowed on the listener port using `iptables -L` or `Get-NetFirewallRule`.
 - **Listen Address Mismatch**: If **Listen Address** is set to `localhost`, the Agent will only accept traffic from its own machine. Ensure this is set to `0.0.0.0` to receive logs from external network devices.
 
 ## Ingestion Errors
-- **Parsing Failures**: If logs appear in Kibana but are not correctly split into fields, ensure the **Syslog Parsing** toggle matches the format sent by the source. If the source uses a non-standard format, you may need to disable automatic parsing and use a custom **Ingest Pipeline** with a Grok processor.
-- **Message Truncation**: If long log messages are being cut off, check the **Max Message Size** setting. Increase this value (e.g., to `64KiB`) if your source sends large jumbo frames or high-entropy JSON blobs.
+- **Parsing Failures**: If logs appear in Kibana but are not correctly split into fields, ensure the **Syslog Parsing** toggle matches the format sent by the source. If the source uses a non-standard format, you might need to turn off automatic parsing and use a custom **Ingest Pipeline** with a Grok processor.
+- **Message Truncation**: If long log messages are being cut off, check the **Max Message Size** setting. Increase this value (for example, to `64KiB`) if your source sends large jumbo frames or high-entropy JSON blobs.
 - **Timestamp Mismatches**: If logs appear with the wrong time, check if the source device is using a different timezone than the Elastic Stack. Use an ingest pipeline to correct timezone offsets if the source does not provide UTC timestamps.
 
 ## Vendor Resources
