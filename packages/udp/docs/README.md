@@ -105,11 +105,6 @@ If you use a custom application, you can configure it with these steps:
 4. Point the appender to the Elastic Agent's host IP and the configured `UDP` port.
 5. Ensure you send the message payload as a single packet per log line to ensure correct indexing.
 
-#### Vendor resources
-
-For more details, refer to the following resources:
-- Refer to the official vendor documentation for detailed configuration guides.
-
 ### Set up steps in Kibana
 
 You can configure the integration in Kibana using these steps:
@@ -199,13 +194,6 @@ The following issues are common when setting up the Custom UDP Logs integration:
     * UDP doesn't guarantee delivery, so packets can be dropped if the network is congested or the agent's buffer is overwhelmed.
     * You can mitigate this by increasing the **Read Buffer Size** in the integration settings to allow the operating system to buffer more incoming packets.
 
-### Vendor resources
-
-You can find more information about configuring UDP logging and syslog standards in these resources:
-- [Elastic Agent troubleshooting guide](https://www.elastic.co/guide/en/fleet/current/fleet-troubleshooting.html)
-- [RFC 3164 - The BSD Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc3164)
-- [RFC 5424 - The Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc5424)
-
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -238,10 +226,6 @@ In high-traffic environments, such as those exceeding 10,000 events per second, 
 
 The Reference section for the Custom UDP Logs integration provides detailed information about the inputs and data streams used to collect and process your UDP data.
 
-### Inputs used
-
-
-
 ### Data streams
 
 The Custom UDP Logs integration produces a single data stream that handles the ingested data.
@@ -253,9 +237,12 @@ The `generic` data stream provides events from UDP listeners of the following ty
 - Syslog formatted data adhering to RFC3164 or RFC5424 standards.
 
 By default, the integration sends all collected data to the `udp.generic` dataset. You can customize the dataset name in the integration settings to categorize your logs differently.
-### Vendor documentation links
 
-For more information about configuring and optimizing your UDP data collection, refer to these resources:
-- Refer to the official vendor website for general documentation.
-- Refer to the [Elastic integration documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for specific package details and field mappings.
-- For details on index naming conventions and valid characters, see the [Elasticsearch index names documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+### Documentation links
+
+For more information about configuring UDP logging and optimizing your data collection, refer to these resources:
+- [Elastic Agent troubleshooting guide](https://www.elastic.co/guide/en/fleet/current/fleet-troubleshooting.html)
+- [Elastic integration documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for processors and field mappings
+- [Elasticsearch index names documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html) for index naming conventions
+- [RFC 3164 - The BSD Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc3164)
+- [RFC 5424 - The Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc5424)
