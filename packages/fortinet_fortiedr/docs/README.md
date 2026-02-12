@@ -17,7 +17,7 @@ This integration is compatible with the following vendor versions:
 
 ### How it works
 
-You collect telemetry from Fortinet FortiEDR instances using several transport methods. You can configure the integration to receive logs via a syslog listener using TCP or UDP, or you can set it up to monitor local log files where FortiEDR events are persisted. The data is processed in a semicolon-separated key-value format. For proper parsing, you'll need to set the FortiEDR export format to `Semicolon`.
+You collect telemetry from Fortinet FortiEDR instances using several transport methods. You can configure the integration to receive logs using a syslog listener using TCP or UDP, or you can set it up to monitor local log files where FortiEDR events are persisted. The data is processed in a semicolon-separated key-value format. For proper parsing, you'll need to set the FortiEDR export format to `Semicolon`.
 
 This integration processes several types of telemetry within the `log` data stream:
 - Security events: You'll receive detailed logs regarding detected threats, blocked processes, and suspicious behaviors identified by EDR agents.
@@ -56,7 +56,7 @@ Before you collect data, ensure you have the following Elastic Stack components 
 - Elastic Stack version `8.11.0` or later (version `9.0.0` is also supported).
 - An Elastic Agent installed on a host reachable by the FortiEDR Central Manager and enrolled in Fleet.
 - Port `9509` (or your custom configured port) open on the Elastic Agent host's firewall to accept incoming TCP or UDP traffic.
-- The Fortinet FortiEDR integration added to an Elastic Agent policy via Fleet.
+- The Fortinet FortiEDR integration added to an Elastic Agent policy using Fleet.
 
 ## How do I deploy this integration?
 
@@ -64,7 +64,7 @@ Before you collect data, ensure you have the following Elastic Stack components 
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in Fortinet FortiEDR Logs
 
@@ -72,7 +72,7 @@ To configure Fortinet FortiEDR to send data to Elastic, follow the instructions 
 
 #### Syslog (TCP/UDP) collection
 
-Configure the FortiEDR Central Manager to export logs via syslog using these steps:
+Configure the FortiEDR Central Manager to export logs using syslog using these steps:
 
 1. Log in to the **Fortinet FortiEDR Central Manager** console.
 2. Navigate to **Administration > Export Settings**.
@@ -189,7 +189,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 If you encounter issues while setting up or using the Fortinet FortiEDR Logs integration, check the following common scenarios:
 
 - No data is being collected:
-    Verify that you've enabled the **Send Syslog Notification** checkbox within the specific active Playbook in the FortiEDR console. Defining the Syslog Export server is a global setting, but alerts are triggered via Playbooks in **Security Settings > Playbooks**. You can verify this by checking the following:
+    Verify that you've enabled the **Send Syslog Notification** checkbox within the specific active Playbook in the FortiEDR console. Defining the Syslog Export server is a global setting, but alerts are triggered using Playbooks in **Security Settings > Playbooks**. You can verify this by checking the following:
     * Go to **Security Settings > Playbooks** and ensure the specific active Playbook has syslog notifications enabled.
     * Confirm that the FortiEDR Central Manager can reach the Elastic Agent host over the network.
 - Port conflicts:
@@ -206,7 +206,7 @@ If you encounter issues while setting up or using the Fortinet FortiEDR Logs int
 - Timezone misalignment:
     If logs appear in the past or future, verify the `Timezone offset` variable in the Kibana integration settings to ensure it matches the FortiEDR Central Manager's timezone.
 - Message truncation:
-    For large security events sent via UDP, logs might be truncated. Increase the `max_message_size` and `read_buffer` in the **Custom UDP Options** if you notice incomplete payloads.
+    For large security events sent using UDP, logs might be truncated. Increase the `max_message_size` and `read_buffer` in the **Custom UDP Options** if you notice incomplete payloads.
 
 For vendor documentation links, see the [Vendor documentation links](#vendor-documentation-links) section.
 
