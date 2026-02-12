@@ -347,6 +347,10 @@ Create a combined logo that represents both the product and OpenTelemetry:
 - Size: 32x32 pixels recommended
 - Location: `img/<name>_otellogo.svg`
 
+Refer to these existing icons as examples:
+- [hostmetrics_input_otel/img/system-otel.svg](https://github.com/elastic/integrations/blob/main/packages/hostmetrics_input_otel/img/system-otel.svg)
+- [iis_input_otel/img/iis_otellogo.svg](https://github.com/elastic/integrations/blob/main/packages/iis_input_otel/img/iis_otellogo.svg)
+
 ## Submission Checklist [submission-checklist]
 
 Before submitting your OTel Input Package:
@@ -357,6 +361,7 @@ Before submitting your OTel Input Package:
 - [ ] `input.yml.hbs` includes `resourcedetection` processor
 - [ ] Policy tests exist and pass (`_dev/test/policy/`)
 - [ ] System tests exist and pass (`_dev/test/system/`)
+- [ ] `sample_event.json` is generated from system tests (use `elastic-package test system --generate`)
 - [ ] `docs/README.md` documents the package
 - [ ] `changelog.yml` has an entry for the initial version
 - [ ] Package icon exists in `img/`
