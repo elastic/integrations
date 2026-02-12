@@ -19,6 +19,7 @@ Find more details in [Logs](#logs).
 
 * `performance`: Comprehensive performance counters and objects available on the server.
 * `transaction_log`: Usage statistics and space utilization metrics for transaction logs.
+* `availability_groups`: Health and synchronization metrics for Always On Availability Groups.
 
 Find more details in [Metrics](#metrics).
 
@@ -39,6 +40,9 @@ If you browse Microsoft Developer Network (MSDN) for the following tables, you w
     - [sys.dm_db_log_stats (DB_ID)](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-stats-transact-sql?view=sql-server-ver16) (Available on SQL Server (MSSQL) 2016 (13.x) SP 2 and later)
 2. `performance`:
     - [sys.dm_os_performance_counters](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16)
+3. `availability_groups`:
+    - [sys.availability_groups](https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-availability-groups-transact-sql?view=sql-server-ver16)
+    - [sys.dm_hadr_availability_group_states](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-hadr-availability-group-states-transact-sql)
 
 Please make sure the user has the permissions to system as well as user-defined databases. For the particular user used in the integration, the following requirements are met:
 
@@ -84,8 +88,6 @@ As part of the input configuration, you need to provide the user name, password 
 
 * `host/instance_name`          (e.g. `localhost/namedinstance_01`)
 * `host:named_instance_port`    (e.g. `localhost:60873`)
-
-
 
 ### Configuration
 
@@ -136,6 +138,22 @@ Keep in mind that this feature is disabled by default and needs to be manually e
 #### Password URL encoding
 
 When the password contains special characters, pass these special characters using URL encoding.
+
+### Availability Groups Metrics
+
+Collects metrics related to Always On Availability Groups, including replica status and synchronization health. This dataset queries the following SQL Server tables:
+
+- `sys.availability_groups`
+- `sys.dm_hadr_availability_group_states`
+
+**Note:** Always On Availability Groups must be enabled on your SQL Server instance for this dataset to collect metrics. This feature is available in SQL Server Enterprise and Standard editions (with limitations in Standard).
+
+**Prerequisites**: To collect Availability Groups metrics, ensure the following:
+
+1. Always On Availability Groups feature is enabled on the SQL Server instance.
+2. The user account configured for the integration has `VIEW SERVER STATE` and `VIEW ANY DEFINITION` permissions. *Additionally look at section [Microsoft SQL Server permissions](#microsoft-sql-server-permissions)*.
+
+Read more in [Monitor Availability Groups](https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/monitoring-of-availability-groups-sql-server?view=sql-server-ver16) and [Always On Availability Groups](https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/overview-of-always-on-availability-groups-sql-server?view=sql-server-ver16) overview.
 
 ## Logs
 
@@ -623,6 +641,119 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.used_log_space_pct | A percentage of the occupied size of the log as a percent of the total log size. | float | percent | gauge |
 | mssql.query | The SQL queries executed. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+
+
+### availability_groups
+
+The Microsoft SQL Server `availability_groups` dataset provides metrics from the Always On Availability Groups DMVs (Dynamic Management Views). All availability_groups metrics will be available in the `sqlserver.metrics` field group.
+
+An example event for `availability_groups` looks as following:
+
+```json
+{
+    "@timestamp": "2026-01-09T13:26:41.427Z",
+    "agent": {
+        "ephemeral_id": "9879229c-2cb1-4082-a6e7-289de62de193",
+        "id": "819a1c28-7fc6-4490-8456-c04d37abce3d",
+        "name": "elastic-agent-12312",
+        "type": "metricbeat",
+        "version": "8.19.8"
+    },
+    "data_stream": {
+        "dataset": "microsoft_sqlserver.availability_groups",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "819a1c28-7fc6-4490-8456-c04d37abce3d",
+        "snapshot": false,
+        "version": "8.19.8"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "microsoft_sqlserver.availability_groups",
+        "duration": 797064208,
+        "ingested": "2026-01-09T13:26:43Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "arm64",
+        "hostname": "localhost",
+        "id": "11111-8ABC-59B6-95BC-11111111",
+        "ip": [
+            "192.168.242.2",
+            "192.168.255.6"
+        ],
+        "mac": [
+            "02-42-C0-A8-F2-02",
+            "02-42-C0-A8-FF-06"
+        ],
+        "name": "elastic-agent-12312",
+        "os": {
+            "build": "24G84",
+            "family": "darwin",
+            "kernel": "24.6.0",
+            "name": "macOS",
+            "platform": "darwin",
+            "type": "macos",
+            "version": "15.6"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 300000
+    },
+    "mssql": {
+        "metrics": {
+            "group_id": "13495A5F-460C-4D93-BFA2-477E9F555A5A",
+            "name": "ag_test",
+            "primary_recovery_health": 1,
+            "primary_replica": "myVm-1",
+            "server_name": "myVm-1",
+            "synchronization_health": 2,
+            "synchronization_health_desc": "HEALTHY"
+        }
+    },
+    "service": {
+        "address": "microsoft_sqlserver",
+        "type": "sql"
+    }
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| mssql.metrics.group_id | Unique identifier (GUID) of the availability group. | keyword |  |
+| mssql.metrics.name | Availability group name. | keyword |  |
+| mssql.metrics.primary_recovery_health | Primary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on secondary replicas). | long | gauge |
+| mssql.metrics.primary_replica | Server name of the current primary replica. | keyword |  |
+| mssql.metrics.secondary_recovery_health | Secondary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on primary replicas). | long | gauge |
+| mssql.metrics.server_name | SQL Server instance name where metrics were collected. | keyword |  |
+| mssql.metrics.synchronization_health | AG synchronization health status (0 = NOT_HEALTHY, 1 = PARTIALLY_HEALTHY, 2 = HEALTHY). | long | gauge |
+| mssql.metrics.synchronization_health_desc | Text description of AG synchronization health. | keyword |  |
+| mssql.query | The SQL queries executed. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
 ## Alerting Rule Template

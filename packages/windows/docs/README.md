@@ -254,6 +254,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
 | file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
+| file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | file.x509.subject.country | List of country \(C) code | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |
@@ -2153,6 +2154,7 @@ An example event for `powershell_operational` looks as following:
 | powershell.engine.previous_state | Previous state of the PowerShell engine. | keyword |
 | powershell.engine.version | Version of the PowerShell engine version used to execute the command. | keyword |
 | powershell.file.script_block_entropy_bits | Randomness measure of the script using Shannon entropy over Unicode characters (0-20 bits). Entropy values outside the expected range may indicate random or obfuscated code. | float |
+| powershell.file.script_block_entropy_normalized | Normalized entropy in the range [0,1], computed as entropy_bits divided by log2(script_block_length). | float |
 | powershell.file.script_block_hash | A hash of the script to be used in rules. | keyword |
 | powershell.file.script_block_id | Id of the executed script block. | keyword |
 | powershell.file.script_block_length | Total number of characters in the script. | long |

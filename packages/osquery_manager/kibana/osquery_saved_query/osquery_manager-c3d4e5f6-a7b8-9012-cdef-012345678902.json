@@ -1,0 +1,193 @@
+{
+    "attributes": {
+        "created_at": "2026-01-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detects suspicious macOS Launch Agents and Launch Daemons using dual-detection approach: (1) Non-whitelisted launch agents/daemons not in known-good allowlist and (2) Living off the Land (LOTL) attack indicators. Identifies both non-standard persistence mechanisms AND abuse of legitimate macOS/Unix tools (curl, osascript, bash -c, base64 -d, etc.) for persistence, privilege escalation, and lateral movement. Uses path-based and code signature whitelist filtering to auto-exclude legitimate Apple system agents/daemons and known-good third-party software, while flagging suspicious patterns and unsigned binaries. Final filter focuses on LOTL indicators, unsigned binaries, or non-Apple signed code. Note: This query is macOS-only (launchd table). For Windows persistence, use scheduled_tasks queries. For Linux persistence, use crontab queries.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "configuration"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.launchd_darwin_elastic"
+                }
+            },
+            {
+                "key": "rule.description",
+                "value": {
+                    "field": "detection_reason"
+                }
+            },
+            {
+                "key": "rule.name",
+                "value": {
+                    "field": "detection_method"
+                }
+            },
+            {
+                "key": "rule.category",
+                "value": {
+                    "field": "launchd_type"
+                }
+            },
+            {
+                "key": "service.state",
+                "value": {
+                    "field": "status"
+                }
+            },
+            {
+                "key": "service.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "executable_path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "program_arguments"
+                }
+            },
+            {
+                "key": "event.provider",
+                "value": {
+                    "field": "plist_path"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "executable_path"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.ctime",
+                "value": {
+                    "field": "changed_time"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "created_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "file.directory",
+                "value": {
+                    "field": "directory"
+                }
+            },
+            {
+                "key": "file.code_signature.signed",
+                "value": {
+                    "field": "is_signed"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "file.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "service.id",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "persistence",
+                        "launchd",
+                        "macos"
+                    ]
+                }
+            }
+        ],
+        "id": "launchd_darwin_elastic",
+        "interval": "3600",
+        "platform": "darwin",
+        "timeout": 180,
+        "query": "-- Detects suspicious launch agents/daemons via whitelist and LOTL patterns\n-- Final filter: LOTL OR unsigned OR non-Apple signed\n\nWITH non_whitelisted AS (\n    SELECT \n        l.name,\n        l.path AS plist_path,\n        l.program,\n        l.program_arguments,\n        l.run_at_load,\n        l.keep_alive,\n        l.on_demand,\n        l.disabled,\n        l.username,\n        l.groupname,\n        l.stdout_path,\n        l.stderr_path,\n        l.start_interval,\n        CASE\n            WHEN l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 1 THEN 'enabled_run_at_load'\n            ELSE 'enabled'\n        END AS status,\n        1 AS is_non_whitelisted,\n        0 AS is_lotl\n    FROM launchd AS l\n    WHERE l.name IS NOT NULL\n        AND l.name != ''\n        AND (l.program IS NOT NULL AND l.program != '' OR l.program_arguments IS NOT NULL AND l.program_arguments != '')\n        -- Allowlist: All Apple system paths (regardless of naming)\n        AND NOT (\n            l.path LIKE '/System/Library/LaunchDaemons/%'\n            OR l.path LIKE '/System/Library/LaunchAgents/%'\n        )\n        -- Allowlist: Apple Library paths\n        AND NOT (\n            l.path LIKE '/Library/Apple/%'\n            AND l.name LIKE 'com.apple.%'\n        )\n        -- Allowlist: Known-good third-party vendors\n        AND NOT (\n            (l.path LIKE '/Library/LaunchAgents/com.google.%' OR l.path LIKE '/Library/LaunchDaemons/com.google.%')\n            AND l.name LIKE 'com.google.%'\n            AND (l.program LIKE '%Google%' OR l.program LIKE '%/Library/Application Support/Google/%')\n        )\n        AND NOT (\n            (l.path LIKE '/Library/LaunchAgents/com.microsoft.%' OR l.path LIKE '/Library/LaunchDaemons/com.microsoft.%')\n            AND l.name LIKE 'com.microsoft.%'\n            AND (l.program LIKE '%Microsoft%' OR l.program LIKE '%/Library/Application Support/Microsoft/%')\n        )\n        AND NOT (\n            (l.path LIKE '/Library/LaunchAgents/com.adobe.%' OR l.path LIKE '/Library/LaunchDaemons/com.adobe.%')\n            AND l.name LIKE 'com.adobe.%'\n            AND (l.program LIKE '%Adobe%' OR l.program LIKE '%/Library/Application Support/Adobe/%')\n        )\n        AND NOT (\n            (l.path LIKE '/Library/LaunchAgents/com.dropbox.%' OR l.path LIKE '/Library/LaunchDaemons/com.dropbox.%')\n            AND l.name LIKE 'com.dropbox.%'\n            AND l.program LIKE '%Dropbox%'\n        )\n        AND NOT (\n            (l.path LIKE '/Library/LaunchDaemons/com.docker.%' OR l.path LIKE '/Library/LaunchAgents/com.docker.%')\n            AND l.name LIKE 'com.docker.%'\n            AND l.program LIKE '%Docker%'\n        )\n        -- Allowlist: Elastic Agent\n        AND NOT (\n            l.name LIKE 'co.elastic.%'\n            AND (l.program LIKE '%elastic-agent%' OR l.program_arguments LIKE '%elastic-agent%')\n        )\n        -- Allowlist: Standard binary paths\n        AND NOT (\n            l.program LIKE '/usr/bin/%'\n            OR l.program LIKE '/usr/sbin/%'\n            OR l.program LIKE '/bin/%'\n            OR l.program LIKE '/sbin/%'\n        )\n),\nlotl_indicators AS (\n    SELECT \n        l.name,\n        l.path AS plist_path,\n        l.program,\n        l.program_arguments,\n        l.run_at_load,\n        l.keep_alive,\n        l.on_demand,\n        l.disabled,\n        l.username,\n        l.groupname,\n        l.stdout_path,\n        l.stderr_path,\n        l.start_interval,\n        CASE\n            WHEN l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 1 THEN 'enabled_run_at_load'\n            ELSE 'enabled'\n        END AS status,\n        0 AS is_non_whitelisted,\n        1 AS is_lotl,\n        CASE\n            WHEN l.program LIKE '%curl' OR l.program_arguments LIKE '%curl %' THEN 'Download utility (curl) abuse'\n            WHEN l.program LIKE '%wget' OR l.program_arguments LIKE '%wget %' THEN 'Download utility (wget) abuse'\n            WHEN l.program_arguments LIKE '%curl%|%bash%' OR l.program_arguments LIKE '%curl%|%sh%' THEN 'Download and pipe to shell (curl|bash)'\n            WHEN l.program_arguments LIKE '%wget%|%bash%' OR l.program_arguments LIKE '%wget%|%sh%' THEN 'Download and pipe to shell (wget|sh)'\n            WHEN l.program_arguments LIKE '%nc -e%' OR l.program_arguments LIKE '%ncat -e%' THEN 'Reverse shell via netcat'\n            WHEN l.program_arguments LIKE '%/dev/tcp/%' OR l.program_arguments LIKE '%/dev/udp/%' THEN 'Bash network redirection (reverse shell)'\n            WHEN l.program_arguments LIKE '%socat%TCP%' OR l.program_arguments LIKE '%socat%EXEC%' THEN 'Socat reverse shell'\n            WHEN l.program LIKE '/tmp/%' OR l.program LIKE '/var/tmp/%' OR l.program LIKE '/private/tmp/%' OR l.program LIKE '/private/var/tmp/%' THEN 'Execution from temporary directory'\n            WHEN l.program LIKE '/Users/%/.*' OR l.program LIKE '%/.%' OR l.program_arguments LIKE '%/.%' THEN 'Execution from hidden directory'\n            WHEN l.program LIKE '/Users/%/Downloads/%' THEN 'Execution from user Downloads folder'\n            WHEN l.program LIKE '/Users/%/Desktop/%' THEN 'Execution from user Desktop'\n            WHEN l.program_arguments LIKE '%base64 -d%' OR l.program_arguments LIKE '%base64 --decode%' OR l.program_arguments LIKE '%base64 -D%' THEN 'Base64 decode for obfuscation'\n            WHEN l.program_arguments LIKE '%echo%|%base64%' THEN 'Base64 encoded command execution'\n            WHEN l.program_arguments LIKE '%bash -c%' OR l.program_arguments LIKE '%sh -c%' OR l.program_arguments LIKE '%zsh -c%' THEN 'Shell command execution via -c flag'\n            WHEN l.program_arguments LIKE '%bash -i%' OR l.program_arguments LIKE '%sh -i%' OR l.program_arguments LIKE '%zsh -i%' THEN 'Interactive shell invocation'\n            WHEN l.program_arguments LIKE '%python -c%' OR l.program_arguments LIKE '%python3 -c%' THEN 'Python one-liner execution'\n            WHEN l.program_arguments LIKE '%perl -e%' THEN 'Perl one-liner execution'\n            WHEN l.program_arguments LIKE '%ruby -e%' THEN 'Ruby one-liner execution'\n            WHEN l.program_arguments LIKE '%php -r%' THEN 'PHP one-liner execution'\n            WHEN l.program LIKE '%osascript' AND l.program_arguments LIKE '%-e%' THEN 'AppleScript execution abuse (osascript -e)'\n            WHEN l.program_arguments LIKE '%osascript%-%e%' THEN 'AppleScript inline execution'\n            WHEN l.run_at_load = 1 AND l.keep_alive = 1 AND l.disabled = 0 AND l.path LIKE '%/Users/%/Library/LaunchAgents/%' THEN 'Persistent user-level agent with auto-restart'\n            WHEN l.run_at_load = 1 AND l.keep_alive = 1 AND l.disabled = 0 AND l.path LIKE '/Library/LaunchDaemons/%' THEN 'Persistent system-level daemon with auto-restart'\n            WHEN l.start_interval IS NOT NULL AND l.start_interval != '' AND l.path LIKE '%/Users/%/Library/LaunchAgents/%' THEN 'User-level periodic execution agent'\n            WHEN l.stdout_path LIKE '%/.%' OR l.stderr_path LIKE '%/.%' THEN 'Output redirection to hidden file'\n            WHEN l.program_arguments LIKE '%/.ssh/authorized_keys%' OR l.program_arguments LIKE '%/.ssh/id_rsa%' OR l.program_arguments LIKE '%/.ssh/id_ed25519%' THEN 'SSH key access detected'\n            WHEN l.program_arguments LIKE '%security%find-generic-password%' OR l.program_arguments LIKE '%security%dump-keychain%' THEN 'Keychain credential access'\n            WHEN l.program_arguments LIKE '%sudo -n%' OR l.program_arguments LIKE '%sudo --non-interactive%' THEN 'Sudo without password prompt'\n            WHEN l.program_arguments LIKE '%chmod +s%' OR l.program_arguments LIKE '%chmod 4755%' OR l.program_arguments LIKE '%chmod 4777%' THEN 'Setuid bit modification (privilege escalation)'\n            WHEN l.program LIKE '%/nc' OR l.program LIKE '%netcat' OR l.program LIKE '%ncat' OR l.program_arguments LIKE '%/nc %' OR l.program_arguments LIKE '% nc -%' OR l.program_arguments LIKE '%netcat%' THEN 'Netcat network utility abuse'\n            WHEN l.program LIKE '%socat' OR l.program_arguments LIKE '%socat%' THEN 'Socat network utility abuse'\n            WHEN (\n                l.program_arguments LIKE '% eval %'\n                OR l.program_arguments LIKE '% eval(%'\n                OR l.program_arguments LIKE '%|eval %'\n                OR l.program_arguments LIKE '%;eval %'\n                OR l.program_arguments LIKE '% exec %'\n                OR l.program_arguments LIKE '%|exec %'\n                OR l.program_arguments LIKE '%;exec %'\n                OR (l.program LIKE '%/bash' AND l.program_arguments LIKE '%eval%')\n                OR (l.program LIKE '%/sh' AND l.program_arguments LIKE '%eval%')\n                OR (l.program LIKE '%/zsh' AND l.program_arguments LIKE '%eval%')\n            ) AND l.program NOT LIKE '/usr/libexec/%' THEN 'Eval/exec command execution'\n            ELSE 'Unknown LOTL pattern'\n        END AS detection_reason\n    FROM launchd AS l\n    WHERE l.name IS NOT NULL\n        AND l.name != ''\n        AND (l.program IS NOT NULL AND l.program != '' OR l.program_arguments IS NOT NULL AND l.program_arguments != '')\n        -- Exclude Apple system paths from LOTL detection\n        AND NOT (\n            l.path LIKE '/System/Library/LaunchDaemons/%'\n            OR l.path LIKE '/System/Library/LaunchAgents/%'\n        )\n        -- Exclude Elastic Agent from LOTL detection\n        AND NOT (\n            l.name LIKE 'co.elastic.%'\n            AND (l.program LIKE '%elastic-agent%' OR l.program_arguments LIKE '%elastic-agent%')\n        )\n        AND (\n            l.program LIKE '%curl'\n            OR l.program LIKE '%wget'\n            OR l.program_arguments LIKE '%curl %'\n            OR l.program_arguments LIKE '%wget %'\n            OR l.program_arguments LIKE '%curl%|%bash%'\n            OR l.program_arguments LIKE '%curl%|%sh%'\n            OR l.program_arguments LIKE '%wget%|%bash%'\n            OR l.program_arguments LIKE '%wget%|%sh%'\n            OR l.program_arguments LIKE '%nc -e%'\n            OR l.program_arguments LIKE '%ncat -e%'\n            OR l.program_arguments LIKE '%/dev/tcp/%'\n            OR l.program_arguments LIKE '%/dev/udp/%'\n            OR l.program_arguments LIKE '%socat%TCP%'\n            OR l.program_arguments LIKE '%socat%EXEC%'\n            OR l.program LIKE '/tmp/%'\n            OR l.program LIKE '/var/tmp/%'\n            OR l.program LIKE '/private/tmp/%'\n            OR l.program LIKE '/private/var/tmp/%'\n            OR l.program LIKE '/Users/%/.*'\n            OR l.program LIKE '%/.%'\n            OR l.program LIKE '/Users/%/Downloads/%'\n            OR l.program LIKE '/Users/%/Desktop/%'\n            OR l.program_arguments LIKE '%/.%'\n            OR l.program_arguments LIKE '%base64 -d%'\n            OR l.program_arguments LIKE '%base64 --decode%'\n            OR l.program_arguments LIKE '%base64 -D%'\n            OR l.program_arguments LIKE '%echo%|%base64%'\n            OR l.program_arguments LIKE '%bash -c%'\n            OR l.program_arguments LIKE '%sh -c%'\n            OR l.program_arguments LIKE '%zsh -c%'\n            OR l.program_arguments LIKE '%bash -i%'\n            OR l.program_arguments LIKE '%sh -i%'\n            OR l.program_arguments LIKE '%zsh -i%'\n            OR l.program_arguments LIKE '%python -c%'\n            OR l.program_arguments LIKE '%python3 -c%'\n            OR l.program_arguments LIKE '%perl -e%'\n            OR l.program_arguments LIKE '%ruby -e%'\n            OR l.program_arguments LIKE '%php -r%'\n            OR (l.program LIKE '%osascript' AND l.program_arguments LIKE '%-e%')\n            OR l.program_arguments LIKE '%osascript%-%e%'\n            OR (l.run_at_load = 1 AND l.keep_alive = 1 AND l.disabled = 0 AND l.path LIKE '%/Users/%/Library/LaunchAgents/%')\n            OR (l.run_at_load = 1 AND l.keep_alive = 1 AND l.disabled = 0 AND l.path LIKE '/Library/LaunchDaemons/%')\n            OR (l.start_interval IS NOT NULL AND l.start_interval != '' AND l.path LIKE '%/Users/%/Library/LaunchAgents/%')\n            OR l.stdout_path LIKE '%/.%'\n            OR l.stderr_path LIKE '%/.%'\n            OR l.program_arguments LIKE '%/.ssh/authorized_keys%'\n            OR l.program_arguments LIKE '%/.ssh/id_rsa%'\n            OR l.program_arguments LIKE '%/.ssh/id_ed25519%'\n            OR l.program_arguments LIKE '%security%find-generic-password%'\n            OR l.program_arguments LIKE '%security%dump-keychain%'\n            OR l.program_arguments LIKE '%sudo -n%'\n            OR l.program_arguments LIKE '%sudo --non-interactive%'\n            OR l.program_arguments LIKE '%chmod +s%'\n            OR l.program_arguments LIKE '%chmod 4755%'\n            OR l.program_arguments LIKE '%chmod 4777%'\n            OR l.program LIKE '%/nc'\n            OR l.program LIKE '%netcat'\n            OR l.program LIKE '%ncat'\n            OR l.program_arguments LIKE '%/nc %'\n            OR l.program_arguments LIKE '% nc -%'\n            OR l.program_arguments LIKE '%netcat%'\n            OR l.program LIKE '%socat'\n            OR l.program_arguments LIKE '%socat%'\n            OR (\n                (\n                    l.program_arguments LIKE '% eval %'\n                    OR l.program_arguments LIKE '% eval(%'\n                    OR l.program_arguments LIKE '%|eval %'\n                    OR l.program_arguments LIKE '%;eval %'\n                    OR l.program_arguments LIKE '% exec %'\n                    OR l.program_arguments LIKE '%|exec %'\n                    OR l.program_arguments LIKE '%;exec %'\n                    OR (l.program LIKE '%/bash' AND l.program_arguments LIKE '%eval%')\n                    OR (l.program LIKE '%/sh' AND l.program_arguments LIKE '%eval%')\n                    OR (l.program LIKE '%/zsh' AND l.program_arguments LIKE '%eval%')\n                )\n                AND l.program NOT LIKE '/usr/libexec/%'\n            )\n        )\n),\ncombined AS (\n    SELECT \n        l.name,\n        l.path AS plist_path,\n        l.program,\n        l.program_arguments,\n        -- Derive executable_path: use program if exists, else extract from program_arguments\n        COALESCE(\n            l.program,\n            CASE\n                -- Handle quoted paths (strip leading quote)\n                WHEN l.program_arguments LIKE '\"%' THEN\n                    CASE\n                        WHEN INSTR(SUBSTR(l.program_arguments, 2), '\"') > 0\n                        THEN SUBSTR(l.program_arguments, 2, INSTR(SUBSTR(l.program_arguments, 2), '\"') - 1)\n                        ELSE SUBSTR(l.program_arguments, 2)\n                    END\n                -- Handle unquoted absolute paths\n                WHEN l.program_arguments LIKE '/%' THEN\n                    CASE\n                        WHEN INSTR(l.program_arguments, ' ') > 0\n                        THEN SUBSTR(l.program_arguments, 1, INSTR(l.program_arguments, ' ') - 1)\n                        ELSE l.program_arguments\n                    END\n                ELSE NULL\n            END\n        ) AS executable_path,\n        l.run_at_load,\n        l.keep_alive,\n        l.on_demand,\n        l.disabled,\n        l.username,\n        l.groupname,\n        l.stdout_path,\n        l.stderr_path,\n        l.start_interval,\n        COALESCE(\n            MAX(li.status),\n            MAX(nw.status)\n        ) AS status,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'Launch Agent/Daemon (LOTL)'\n            ELSE 'Launch Agent/Daemon'\n        END AS launchd_type,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN 'LOTL_INDICATOR + NON_WHITELISTED'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'LOTL_INDICATOR'\n            ELSE 'NON_WHITELISTED'\n        END AS detection_method,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN MAX(li.detection_reason) || ' + Not in known-good allowlist'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN MAX(li.detection_reason)\n            ELSE 'Launch agent/daemon not in known-good allowlist'\n        END AS detection_reason\n    FROM launchd AS l\n    LEFT JOIN non_whitelisted AS nw ON l.name = nw.name AND l.path = nw.plist_path AND (l.program = nw.program OR (l.program IS NULL AND nw.program IS NULL))\n    LEFT JOIN lotl_indicators AS li ON l.name = li.name AND l.path = li.plist_path AND (l.program = li.program OR (l.program IS NULL AND li.program IS NULL))\n    WHERE COALESCE(nw.is_non_whitelisted, 0) = 1 OR COALESCE(li.is_lotl, 0) = 1\n    GROUP BY l.name, l.path, l.program, l.program_arguments, l.run_at_load, l.keep_alive, l.on_demand, l.disabled, l.username, l.groupname, l.stdout_path, l.stderr_path, l.start_interval\n)\nSELECT \n    c.name,\n    c.plist_path,\n    c.program,\n    c.program_arguments,\n    c.executable_path,\n    c.launchd_type,\n    c.run_at_load,\n    c.keep_alive,\n    c.on_demand,\n    c.disabled,\n    c.status,\n    c.username,\n    c.groupname,\n    c.stdout_path,\n    c.stderr_path,\n    c.start_interval,\n    c.detection_method,\n    c.detection_reason,\n    s.signed AS is_signed,\n    s.authority AS signature_signer,\n    CASE WHEN s.signed = 1 THEN 'valid' ELSE 'unsigned' END AS signature_status,\n    h.sha256,\n    'https://www.virustotal.com/gui/file/' || h.sha256 AS vt_link,\n    h.sha1,\n    h.md5,\n    f.size AS size,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    f.directory\nFROM combined AS c\nLEFT JOIN signature AS s ON c.executable_path = s.path\nLEFT JOIN hash AS h ON c.executable_path = h.path\nLEFT JOIN file AS f ON c.executable_path = f.path\nWHERE (\n    c.detection_method LIKE 'LOTL_INDICATOR%'\n    OR s.signed IS NULL\n    OR s.signed = 0\n    OR (\n        s.identifier IS NOT NULL\n        AND s.identifier NOT LIKE 'com.apple.%'\n        AND s.identifier NOT LIKE 'Apple Inc.%'\n    )\n)\nGROUP BY c.name, c.plist_path, c.program, c.program_arguments, c.executable_path, c.launchd_type, c.run_at_load, c.keep_alive, c.on_demand, c.disabled, c.status, c.username, c.groupname, c.stdout_path, c.stderr_path, c.start_interval, c.detection_method, c.detection_reason, s.signed, s.authority, h.sha256, h.sha1, h.md5, f.size, f.mtime, f.ctime, f.btime, f.atime, f.directory\nORDER BY \n    CASE WHEN c.detection_method LIKE 'LOTL_INDICATOR%' THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.run_at_load DESC,\n    c.keep_alive DESC,\n    c.name",
+        "updated_at": "2026-01-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-c3d4e5f6-a7b8-9012-cdef-012345678902",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}
