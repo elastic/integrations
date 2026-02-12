@@ -39,7 +39,7 @@ Example:
 
 ### API Version
 The Docker API version to use. Default is `"1.44"`.
-Note that for Docker Engine v29, API version `"1.44"` or higher must be used.
+For Docker Engine v29, API version `"1.44"` or higher must be used.
 
 ### Initial Delay
 Defines how long this receiver waits before starting. Default is `1s`.
