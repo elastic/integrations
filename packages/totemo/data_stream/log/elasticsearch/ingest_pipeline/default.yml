@@ -79,21 +79,21 @@ processors:
       ignore_failure: true
       patterns:
         - 'Successfully\sspooled\smail\s%{DATA:email.local_id}\s\(msg\sID:\s<%{DATA:email.message_id}>.*?(from:\s)%{DATA:email.from.address}\sfor:\s\[%{DATA:email.to.address}\]\ssubject:\s%{GREEDYDATA:email.subject}'
+        - '(?<email.local_id>Mail.*?):\s+%{GREEDYDATA:message}'
         - '^Connection\sfrom\s%{HOSTNAME:client.domain}\s+\(%{IP:client.ip}\)'
         - '(Ending|Starting)\s+connection\s+on\s+%{IP:server.ip}:%{INT:server.port}\s+from\s+%{IP:client.ip}:%{INT:client.port}'
         - '%{DATA:event.action}:\s+%{INT:event.code}\s+%{HOSTNAME:server.domain}%{DATA}\(%{HOSTNAME:client.domain}\s+\[%{IP:client.ip}\]\)'
         - '%{DATA:event.action}:\s+%{INT:event.code}\s+%{HOSTNAME:server.domain}%{DATA}\s%{GREEDYDATA:message}'
         - '(?<event.action>Command\sreceived)'
-        - '%{DATA:email.local_id}\:\s+%{DATA:event.action}:\s+%{GREEDYDATA:message}'
-        - '%{DATA:email.local_id}\:\s+%{GREEDYDATA:message}'
   - grok:
       field: message
       ignore_missing: true
       ignore_failure: true
       patterns:
-        - 'sender:\s%{DATA:email.from.address}\s-\srecipient\(s\):\s%{GREEDYDATA:email.to.address}'
+        - 'sender:\s%{DATA:email.from.address}\s-\srecipient\(s\):\s\[%{GREEDYDATA:email.to.address}\]'
         - 'process\smail\s<<%{DATA:email.message_id}>>'
         - 'Certificate\s<%{DATA:x509.serial_number}>\sissued\sby\s<%{DATA:x509.subject.common_name}>'
+        - 'Certificate\s\[%{DATA:x509.serial_number}\]\sis\sfor\shostname\s\[%{DATA:client.domain}\]'
   - set:
       field: "client.address"
       copy_from: client.domain
@@ -102,10 +102,10 @@ processors:
       field: "client.address"
       copy_from: client.ip
       if: ctx.client?.ip != null && ctx.client?.domain == null
-  #  - set:
-  #      field: "user.email"
-  #      value: "{{{user.name}}}@{{{user.domain}}}"
-  #      if: ctx.user?.name != null && ctx.user?.domain != null
+  - split:
+      field: "email.to.address"
+      separator: ";"
+      if: ctx.email?.to?.address != null && ctx.email?.to?.address.contains(";")
   - script:
       description: Drops null/empty values recursively.
       lang: painless
