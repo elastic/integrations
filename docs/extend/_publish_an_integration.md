@@ -24,7 +24,19 @@ Run `elastic-package test` before submitting. Generate `sample_event.json` using
 Use minor version bumps for documentation-only changes and patch bumps for small fixes.
 
 6. **Document breaking changes**
-Use `breaking-change` type in changelog and clearly describe impact on existing users. Field type changes (e.g., keyword to long) require a major version bump.
+Use `breaking-change` type in changelog and clearly describe impact on existing users. Breaking changes require a major version bump.
+
+   The following changes are considered breaking:
+
+   - **Field type changes**: Changing a field's data type (e.g., `keyword` to `long`, `long` to `keyword`) causes mapping conflicts for existing users
+   - **Field removal**: Removing fields that users may depend on in dashboards, alerts, or queries
+   - **Field renaming**: Renaming fields breaks existing references (dashboards, saved queries, detection rules)
+   - **ECS field collisions**: Removing non-ECS fields from ECS namespaces or changing ECS field mappings
+   - **Event value changes**: Changing standardized values (e.g., `event.outcome` from `"Succeeded"` to `"success"`)
+   - **Configuration changes**: Requiring new credentials, changing authentication methods, or modifying required settings
+   - **Data stream changes**: Splitting, merging, or restructuring data streams
+   - **Transform destination changes**: Modifying transform destination indices (requires updating `fleet_transform_version`)
+   - **Default behavior changes**: Changing defaults that alter data collection (e.g., deduplication settings, data stream datasets)
 
 7. **Add error handling to ingest pipelines**
 Include `tag` fields on processors and use `on_failure` handlers. Follow the standard error message format with `_ingest.on_failure_*` fields.
