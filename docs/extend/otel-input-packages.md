@@ -13,113 +13,52 @@ Use **OTel Input Packages** for [OpenTelemetry Collector receivers](https://gith
 
 ## Development Workflow [development-workflow]
 
-Follow this step-by-step workflow when creating a new OTel Input Package. This ensures consistent, high-quality packages that align with existing patterns.
+Follow this workflow when creating a new OTel Input Package:
 
-### Step 1: Research the Upstream Receiver [step-1-research]
+### 1. Research the Upstream Receiver
 
-Before writing any code, thoroughly understand the OTel receiver you're wrapping:
+Find your receiver in the [opentelemetry-collector-contrib receivers](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver):
 
-1. **Find the receiver documentation**: Navigate to the [opentelemetry-collector-contrib receivers directory](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver) and locate your receiver (e.g., `statsdreceiver`, `prometheusreceiver`).
+- **README.md** — Configuration options, defaults, data types collected
+- **config.go** — Complete configuration structure and Go types
+- **metadata.yaml** — Available metrics (if applicable)
 
-2. **Read the README.md**: Review the receiver's README to understand:
-   - What data types it collects (metrics, logs, traces)
-   - Required vs optional configuration options
-   - Default values for all settings
-   - Any special behaviors or limitations
+### 2. Define Variables
 
-3. **Examine the config.go file**: Look at the receiver's `config.go` for the complete configuration structure. This reveals all possible options and their Go types.
+Map upstream configuration to [manifest variables](#variable-types):
 
-4. **Check for related documentation**: Some receivers have additional docs (e.g., metric documentation files listing all available metrics).
+| Upstream Go Type | Package Variable Type |
+|------------------|----------------------|
+| `string` | `text` |
+| `string` (secret) | `password` (with `secret: false`) |
+| `bool` | `bool` |
+| `time.Duration` | `duration` |
+| `[]string` | `text` with `multi: true` |
+| Complex structs | `yaml` |
+| Enum values | `select` |
 
-### Step 2: Identify Configurable Variables [step-2-variables]
+Set `show_user: true` for commonly configured options, `show_user: false` for advanced settings.
 
-From your research, determine which configuration options should be exposed to users:
+### 3. Build the Template
 
-1. **Always expose essential settings**: Options like `endpoint`, collection intervals, or authentication are typically required.
+Create `agent/input/input.yml.hbs` following the [Template Development](#template-dev) patterns:
 
-2. **Evaluate optional settings**: For each optional setting, ask:
-   - Does a typical user need to change this?
-   - Is the default appropriate for most use cases?
-   - Does exposing this add unnecessary complexity?
+- Mirror the upstream YAML structure
+- Use `{{#if var}}` for optional fields, but emit booleans directly
+- Include the `resourcedetection/system` processor
 
-3. **Group by user visibility**:
-   - `show_user: true` — Common settings users frequently configure
-   - `show_user: false` — Advanced settings most users can ignore
+### 4. Write Documentation
 
-4. **Map upstream types to package variable types**:
+Follow the [Documentation guidelines](./documentation-guidelines.md). For OTel packages, link to upstream receiver docs rather than duplicating configuration details.
 
-   | Upstream Go Type | Package Variable Type | Notes |
-   |------------------|----------------------|-------|
-   | `string` | `text` | For endpoints, paths, names |
-   | `string` (secret) | `password` | For credentials (use `secret: false` for now) |
-   | `bool` | `bool` | For feature toggles |
-   | `time.Duration` | `duration` | For intervals like `60s`, `5m` |
-   | `[]string` | `text` with `multi: true` | For lists of values |
-   | Complex structs | `yaml` | For advanced nested configuration |
-   | Enum/limited values | `select` | For protocol choices, modes |
+### 5. Add Tests
 
-### Step 3: Create the Input Template [step-3-template]
+- **Policy tests** — Refer to [Policy testing](./policy-testing.md). Cover default and non-default configurations.
+- **System tests** — Refer to [System Testing Guide](./system-testing.md). Set up Docker infrastructure for live data flow testing.
 
-Build your `input.yml.hbs` template based on the upstream receiver configuration:
+### 6. Finalize
 
-1. **Start with the receiver section**: Mirror the upstream YAML structure exactly.
-
-2. **Add conditional wrappers**: Use `{{#if variable}}` for optional fields that shouldn't appear when empty.
-
-3. **Handle booleans carefully**: Emit boolean values directly (not wrapped in `{{#if}}`) to ensure `false` values are included.
-
-4. **Match upstream defaults**: When a variable has a default in your manifest that matches the upstream default, consider whether you need to emit it.
-
-5. **Include resource detection**: Add the `resourcedetection` processor to enrich data with host information.
-
-6. **Define the service pipeline**: Connect receivers and processors in the appropriate pipeline (metrics, logs, or traces).
-
-### Step 4: Write the Documentation [step-4-docs]
-
-Create user-facing documentation that helps users understand and configure the package:
-
-1. **Overview section**: Explain what the package does and link to the upstream receiver.
-
-2. **How it works**: Describe the data flow from source through OTel to Elasticsearch.
-
-3. **Configuration reference**: Either document key settings inline or link directly to upstream documentation for the complete list.
-
-4. **Data reference**: Link to upstream docs for metrics/logs documentation rather than duplicating.
-
-5. **Troubleshooting**: Add common issues specific to the receiver (e.g., platform requirements, firewall considerations).
-
-### Step 5: Test the Package [step-5-test]
-
-Validate your package works correctly:
-
-1. **Create policy tests**: Add test cases in `_dev/test/policy/` covering:
-   - Default configuration
-   - Non-default values for key settings
-   - Edge cases (empty optional fields, multiple values)
-
-2. **Set up system tests**: Create `_dev/deploy/docker/` infrastructure to test live data flow. If the receiver only works on specific platforms (e.g., Windows), document this limitation.
-
-3. **Run tests locally**:
-   ```bash
-   elastic-package test policy -v
-   elastic-package test system -v
-   ```
-
-4. **Generate expected files**: Use `elastic-package test policy --generate` to create `.expected` files after verifying output is correct.
-
-### Step 6: Finalize and Submit [step-6-submit]
-
-Complete the package and prepare for submission:
-
-1. **Format all files**: Run `elastic-package format` to ensure consistent YAML formatting.
-
-2. **Add CODEOWNERS entry**: Add your team to `.github/CODEOWNERS` for the package path.
-
-3. **Create package icon**: Design an SVG that represents both the source technology and OpenTelemetry.
-
-4. **Review the submission checklist**: Verify all items in the [Submission Checklist](#submission-checklist) are complete.
-
-5. **Validate the package**: Run `elastic-package check` to catch any specification violations.
+Run `elastic-package format` and `elastic-package check`, then verify the [Submission Checklist](#submission-checklist).
 
 ## Package Structure [package-structure]
 
@@ -430,7 +369,7 @@ Reference these existing packages as examples, or search for packages containing
 
 | Package | Complexity | Notable Features |
 |---------|------------|------------------|
-| [statsd_input_otel](https://github.com/elastic/integrations/tree/main/packages/statsd_input_otel) | Simple | Minimal configuration, good starting point |
+| [statsd_input_otel](https://github.com/elastic/integrations/tree/main/packages/statsd_input_otel) | Basic | Minimal configuration, good starting point |
 | [prometheus_input_otel](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel) | Medium | TLS config, authentication, multi-value fields |
 | [hostmetrics_input_otel](https://github.com/elastic/integrations/tree/main/packages/hostmetrics_input_otel) | Complex | Conditional scrapers, YAML configuration |
 
