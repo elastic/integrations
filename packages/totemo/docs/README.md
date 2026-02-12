@@ -109,25 +109,25 @@ An example event for `log` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| client.domain |  | keyword |
-| client.ip |  | ip |
-| client.port |  | integer |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| email.from.address |  | keyword |
-| email.local_id |  | keyword |
-| email.message_id |  | keyword |
-| email.subject |  | keyword |
-| email.to.address |  | keyword |
+| @timestamp | Event timestamp, crucial for tracking when the email activity occurred. | date |
+| client.domain | Domain name of the client. | keyword |
+| client.ip | IP address of the client involved in the email transaction. | ip |
+| client.port | Port number used by the client during the email transaction. | integer |
+| data_stream.dataset | Data stream dataset, helping in categorizing the logs for easier management and analysis. | constant_keyword |
+| data_stream.namespace | Data stream namespace, useful for organizing and querying logs. | constant_keyword |
+| data_stream.type | Data stream type, indicating whether the log pertains to transport or mailbox activities. | constant_keyword |
+| email.from.address | Sender's email address. | keyword |
+| email.local_id | Unique identifier for the email within the local system. | keyword |
+| email.message_id | Unique message ID assigned to the email, useful for tracking and referencing specific emails. | keyword |
+| email.subject | Subject line of the email. | keyword |
+| email.to.address | Recipient's email address. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| log.origin.function |  | keyword |
-| log.source.address | Log source address | keyword |
-| server.domain |  | keyword |
-| server.ip |  | ip |
-| server.port |  | integer |
-| x509.serial_number |  | keyword |
-| x509.subject.common_name |  | keyword |
+| log.origin.function | Function or process that originated the log entry. | keyword |
+| log.source.address | Log source address, specifying the server or system generating the log. | keyword |
+| server.domain | Domain name of the server. | keyword |
+| server.ip | IP address of the server involved in the email transaction. | ip |
+| server.port | Port number used by the server during the email transaction. | integer |
+| x509.serial_number | Serial number of an X.509 certificate, used in secure email transactions. | keyword |
+| x509.subject.common_name | Common name of the subject in an X.509 certificate, often used to identify the entity associated with the certificate. | keyword |
 
