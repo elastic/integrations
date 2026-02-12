@@ -1,0 +1,42 @@
+receivers:
+  verifier:
+    # Cloud Connector Identification
+    cloud_connector_id: "test-cc-123"
+    cloud_connector_name: "Test Connector"
+    
+    # Verification Session
+    verification_id: "test-verify-456"
+    verification_type: "on_demand"
+    
+    # Provider Credentials
+    providers:
+      # AWS - Cloud Connector authentication
+      aws:
+        credentials:
+          role_arn: "arn:aws:iam::123456789012:role/TestRole"
+          external_id: "test-external-id"
+          default_region: "us-east-1"
+    
+    # Policies and Integrations
+    policies:
+      - policy_id: "test-policy-123"
+        policy_name: "Test Policy"
+        integrations:
+          - integration_type: "aws_cloudtrail"
+            integration_id: "test-int-789"
+            integration_name: "Test CloudTrail"
+
+exporters:
+  elasticsearch:
+    endpoints:
+      - "${ELASTICSEARCH_HOST}"
+    api_key: "${ELASTICSEARCH_API_KEY}"
+    logs_index: "logs-cloud_connector.permission_verification-default"
+    mapping:
+      mode: ecs
+
+service:
+  pipelines:
+    logs:
+      receivers: [verifier]
+      exporters: [elasticsearch]

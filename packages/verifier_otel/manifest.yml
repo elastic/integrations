@@ -1,0 +1,158 @@
+format_version: 3.5.0
+name: verifier_otel
+title: "Permission Verifier"
+version: 0.0.0
+source:
+  license: "Elastic-2.0"
+description: "Verify cloud connector based integration permissions and report results to Elasticsearch using the Verifier receiver of the OTel Collector."
+type: input
+categories:
+  - monitoring
+  - security
+  - opentelemetry
+  - cloud
+conditions:
+  kibana:
+    version: "^9.3.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/verifier-logo.svg
+    title: Verifier logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: verifier
+    type: logs
+    title: Permission Verifier
+    description: Verify cloud connector based integration permissions and report status.
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      # Cloud Connector Identification
+      - name: cloud_connector_id
+        type: text
+        title: Cloud Connector ID
+        description: Unique identifier for the Cloud Connector being verified.
+        multi: false
+        required: true
+        show_user: true
+      - name: cloud_connector_name
+        type: text
+        title: Cloud Connector Name
+        description: Human-readable name of the Cloud Connector.
+        multi: false
+        required: false
+        show_user: true
+      
+      # Verification Session
+      - name: verification_id
+        type: text
+        title: Verification ID
+        description: Unique identifier for this verification session.
+        multi: false
+        required: true
+        show_user: true
+      - name: verification_type
+        type: text
+        title: Verification Type
+        description: Type of verification (on_demand or scheduled).
+        multi: false
+        required: false
+        show_user: false
+        default: on_demand
+      
+      # AWS Provider Credentials
+      - name: providers.aws.credentials.role_arn
+        type: text
+        title: AWS Role ARN
+        description: The ARN of the IAM role to assume in the customer's AWS account.
+        multi: false
+        required: false
+        show_user: true
+      - name: providers.aws.credentials.external_id
+        type: password
+        title: AWS External ID
+        description: The external ID used to prevent confused deputy attacks.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: providers.aws.credentials.default_region
+        type: text
+        title: AWS Default Region
+        description: The default AWS region to use for API calls.
+        multi: false
+        required: false
+        show_user: true
+        default: us-east-1
+      
+      # Azure Provider Credentials (future)
+      # - name: providers.azure.credentials.tenant_id
+      #   type: text
+      #   title: Azure Tenant ID
+      #   description: The Azure AD tenant ID.
+      #   multi: false
+      #   required: false
+      #   show_user: true
+      
+      # GCP Provider Credentials (future)
+      # - name: providers.gcp.credentials.project_id
+      #   type: text
+      #   title: GCP Project ID
+      #   description: The GCP project ID.
+      #   multi: false
+      #   required: false
+      #   show_user: true
+      
+      # Okta Provider Credentials (future)
+      # - name: providers.okta.credentials.domain
+      #   type: text
+      #   title: Okta Domain
+      #   description: The Okta domain (e.g., dev-123456.okta.com).
+      #   multi: false
+      #   required: false
+      #   show_user: true
+      
+      # Policy Configuration
+      - name: policy_id
+        type: text
+        title: Policy ID
+        description: The agent policy ID for this set of integrations.
+        multi: false
+        required: true
+        show_user: true
+      - name: policy_name
+        type: text
+        title: Policy Name
+        description: Human-readable name of the policy.
+        multi: false
+        required: false
+        show_user: true
+      
+      # Integration Configuration
+      - name: integration_id
+        type: text
+        title: Integration ID
+        description: Unique identifier for the integration instance.
+        multi: false
+        required: false
+        show_user: true
+      - name: integration_type
+        type: text
+        title: Integration Type
+        description: Package/integration type (e.g., aws_cloudtrail, aws_guardduty, azure_activitylogs, gcp_audit, okta_system).
+        multi: false
+        required: true
+        show_user: true
+        default: aws_cloudtrail
+      - name: integration_name
+        type: text
+        title: Integration Name
+        description: Human-readable name of the integration.
+        multi: false
+        required: false
+        show_user: true
+owner:
+  github: elastic/security-team
+  type: elastic
