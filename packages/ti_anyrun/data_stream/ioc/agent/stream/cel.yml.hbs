@@ -15,40 +15,22 @@ state:
 redact:
   fields:
     - access_key
-
-# CEL program to follow TAXII 2.1 protocol. See https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html
+    
 program: |
     state.with({
         "modified_after": has(state.modified_after) && state.?want_more.orValue(false) ?
             state.modified_after
         :
-            state.?cursor.last_timestamp.orValue(
-                (now - duration(
-                    string(state.initial_interval).endsWith("d") ? 
-                        string(int(string(state.initial_interval).trim_right("d")) * 24) + "h" 
-                    : state.initial_interval
-                )).format(time_layout.RFC3339)
-            ),
+            state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
     }).as(state, state.with(
         request(
             "GET",
-            state.?want_more.orValue(false) ?
-                (
-                    state.url.trim_right("/") + "/?" + {
-                        "match[type]": ["indicator"],
-                        "modified_after": [state.modified_after],
-                        "limit": [string(state.limit)],
-                        "next": [state.next],
-                    }.format_query()
-                )
-            :
-                (
-                    state.url.trim_right("/") + "/?" + {
-                        "match[type]": ["indicator"],
-                        "modified_after": [state.modified_after],
-                        "limit": [string(state.limit)],
-                    }.format_query()
-                )
+            state.url.trim_right("/") + "/?" + {
+                "match[type]": ["indicator"],
+                "modified_after": [state.modified_after],
+                "limit": [string(state.limit)],
+                ?"next": state.?next.page.optMap(n, [n]),
+            }.format_query()
         ).with(
             {
                 "Header": {
@@ -62,7 +44,7 @@ program: |
                 },
             }
         ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
-            bytes(resp.Body).decode_json().as(body,
+            resp.Body.decode_json().as(body,
                 {
                     "events": body.objects.map(e,
                         {
@@ -73,16 +55,12 @@ program: |
                     "access_key": state.access_key,
                     "limit": state.limit,
                     "want_more": has(body.next) && body.next != null && body.next != "",
-                    "next": has(body.next) && body.next != null && body.next != "" ? body.next : null,
+                    "next": { ?"page": body.?next },
                     "cursor": {
-                        "last_timestamp": (
-                            (has(resp.Header) && "X-Taxii-Date-Modified-Last" in resp.Header &&
-                            timestamp(resp.Header["X-Taxii-Date-Modified-Last"][0]) >
-                            timestamp(state.?cursor.last_timestamp.orValue(state.modified_after))) ?
-                                resp.Header["X-Taxii-Date-Modified-Last"][0]
-                            :
-                                state.?cursor.last_timestamp.orValue(state.modified_after)
-                        ),
+                        "last_timestamp": max(
+                            timestamp(resp.?Header["X-TAXII-Date-Modified-Last"][0].orValue(state.?cursor.last_timestamp.orValue(state.modified_after))),
+                            timestamp(state.?cursor.last_timestamp.orValue(state.modified_after))
+                            ),
                     },
                 }
             )

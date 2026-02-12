@@ -1,50 +1,47 @@
 ---
-description: "Pipeline for processing ANY.RUN TI Feeds IOCs"
+description: Pipeline for processing ANY.RUN TI Feeds IOCs
 processors:
   # Fail if error during the CEL program evaluation
   - terminate:
-      tag: "data_collection_error"
-      if: "ctx.error?.message != null"
-      description: "error message set and no data to process."
+      tag: data_collection_error
+      if: ctx.error?.message != null
+      description: error message set and no data to process.
   ####################
   # Event ECS fields #
   ####################
-  #- set:
-   #   field: "ecs.version"
-    #  value: "8.17.0"
   - set:
-      field: "event.kind"
-      value: "enrichment"
+      field: event.kind
+      value: enrichment
   - append:
-      field: "event.category"
-      value: "threat"
+      field: event.category
+      value: threat
   - append:
-      field: "event.type"
-      value: "indicator"
+      field: event.type
+      value: indicator
   ######################
   # General ECS fields #
   ######################
   - rename:
-      field: "message"
-      target_field: "event.original"
+      field: message
+      target_field: event.original
       ignore_missing: true
-      if: "ctx.event?.original == null"
+      if: ctx.event?.original == null
   - remove:
-      field: "message"
-      tag: "remove_message"
-      if: "ctx.event?.original != null"
+      field: message
+      tag: remove_message
+      if: ctx.event?.original != null
       ignore_missing: true
 
   - json:
-      field: "event.original"
-      target_field: "stix"
-      tag: "stix_event_original"
+      field: event.original
+      target_field: stix
+      tag: stix_event_original
   - drop:
-      if: "ctx.stix.type != 'indicator'"
-      tag: "drop_no_indicator"
+      if: ctx.stix.type != 'indicator'
+      tag: drop_no_indicator
   - drop:
-      if: "ctx.stix.spec_version != '2.1'"
-      tag: "drop_no_stix_2_1"
+      if: ctx.stix.spec_version != '2.1'
+      tag: drop_no_stix_2_1
 
   - fingerprint:
       fields:
@@ -55,68 +52,68 @@ processors:
       ignore_missing: true
 
   - set:
-      field: "threat.feed.name"
-      value: "ANY.RUN TI Feeds"
+      field: threat.feed.name
+      value: ANY.RUN TI Feeds
   - set:
-      field: "threat.feed.description"
-      value: "Indicator from the ANY.RUN TI Feeds"
+      field: threat.feed.description
+      value: Indicator from the ANY.RUN TI Feeds
   - set:
-      field: "threat.feed.reference"
-      value: "https://intelligence.any.run/feeds"
+      field: threat.feed.reference
+      value: https://intelligence.any.run/feeds
   - set:
-      field: "threat.indicator.provider"
-      value: "ANY.RUN"
+      field: threat.indicator.provider
+      value: ANY.RUN
   ################
   # Dates Fields #
   ################
   - date:
-      field: "stix.modified"
+      field: stix.modified
       target_field: "@timestamp"
       formats:
         - "ISO8601"
-      if: "ctx.stix.modified != null"
-      tag: "date_created"
+      if: ctx.stix.modified != null
+      tag: date_created
   #####################
   # Threat ECS Fields #
   #####################
   - append:
-      field: "threat.indicator.id"
-      value: "{{{stix.id}}}"
+      field: threat.indicator.id
+      value: '{{{stix.id}}}'
       allow_duplicates: false
   - date:
-      field: "stix.modified"
-      target_field: "threat.indicator.last_seen"
+      field: stix.modified
+      target_field: threat.indicator.last_seen
       formats:
         - "ISO8601"
-      if: "ctx.stix.modified != null"
-      tag: "date_modified"
+      if: ctx.stix.modified != null
+      tag: date_modified
   - set:
-      field: "threat.indicator.modified_at"
-      copy_from: "threat.indicator.last_seen"
-      if: "ctx.threat?.indicator?.last_seen != null"
-      tag: "set_threat_indicator_last_seen"
+      field: threat.indicator.modified_at
+      copy_from: threat.indicator.last_seen
+      if: ctx.threat?.indicator?.last_seen != null
+      tag: set_threat_indicator_last_seen
   - date:
-      field: "stix.created"
-      target_field: "threat.indicator.first_seen"
+      field: stix.created
+      target_field: threat.indicator.first_seen
       formats:
         - "ISO8601"
-      if: "ctx.stix.created != null"
-      tag: "date_created"
+      if: ctx.stix.created != null
+      tag: date_created
   - rename:
-      field: "stix.name"
-      target_field: "threat.indicator.name"
+      field: stix.name
+      target_field: threat.indicator.name
       ignore_missing: true
-      tag: "rename_name"
+      tag: rename_name
   - rename:
-      field: "stix.description"
-      target_field: "threat.indicator.description"
+      field: stix.description
+      target_field: threat.indicator.description
       ignore_missing: true
-      tag: "rename_description"
+      tag: rename_description
   - script:
-      lang: "painless"
-      if: "ctx.stix.confidence != null"
-      description: "Normalize confidence level."
-      tag: "script_normalize_confidence"
+      lang: painless
+      if: ctx.stix.confidence != null
+      description: Normalize confidence level.
+      tag: script_normalize_confidence
       source: >
         def value = ctx.stix.confidence;
         if (value == 0) {
@@ -131,20 +128,20 @@ processors:
           ctx.threat.indicator.confidence = "Not Specified";
         }
   - foreach:
-      field: "stix.labels"
-      if: "ctx.stix.labels != null"
+      field: stix.labels
+      if: ctx.stix.labels != null
       processor:
         append:
-          field: "tags"
-          value: "{{{ _ingest._value }}}"
-          tag: "append_tags"
+          field: tags
+          value: '{{{ _ingest._value }}}'
+          tag: append_tags
       ignore_missing: true
       ignore_failure: true
   - remove:
-      field: "stix.labels"
+      field: stix.labels
       ignore_missing: true
   - gsub:
-      field: "tags"
+      field: tags
       pattern: '\\\"'
       replacement: '\"'
       ignore_missing: true
@@ -152,15 +149,15 @@ processors:
   # IOC expiration #
   ##################
   - date:
-      field: "stix.valid_until"
-      target_field: "stix.ioc_expiration_date"
+      field: stix.valid_until
+      target_field: stix.ioc_expiration_date
       formats:
         - "ISO8601"
-      if: "ctx.stix.valid_until != null"
-      tag: "date_ioc_expiration_valid_until"
+      if: ctx.stix.valid_until != null
+      tag: date_ioc_expiration_valid_until
   - set:
-      field: "stix.ioc_expiration_date"
-      copy_from: "threat.indicator.modified_at"
+      field: stix.ioc_expiration_date
+      copy_from: threat.indicator.modified_at
       if: >-
         ctx.stix.ioc_expiration_date == null &&
         ctx.stix.revoked != null &&
@@ -168,8 +165,8 @@ processors:
       tag: "set_ioc_expiration_revoked"
 
   - script:
-      lang: "painless"
-      tag: "script_conf_ioc_expiration"
+      lang: painless
+      tag: script_conf_ioc_expiration
       if: >-
         ctx.stix.ioc_expiration_date == null &&
         ctx._conf?.ioc_expiration_duration != null &&
@@ -212,13 +209,13 @@ processors:
         ctx.stix.ioc_expiration_date = ioc_expiration_date;
       on_failure:
         - append:
-            field: "error.message"
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'  
 
   - script:
-      lang: "painless"
-      tag: "script_set_ioc_expiration_reason"
-      if: "ctx.stix.ioc_expiration_date != null"
+      lang: painless
+      tag: script_set_ioc_expiration_reason
+      if: ctx.stix.ioc_expiration_date != null
       params:
         valid_until: "Expiration set from valid_until field"
         revoked: "Expiration set from revoked field"
@@ -233,74 +230,75 @@ processors:
         }
 
   - date:
-      field: "stix.ioc_expiration_date"
-      tag: "date_ioc_expiration_date"
-      target_field: "stix.ioc_expiration_date"
+      field: stix.ioc_expiration_date
+      tag: date_ioc_expiration_date
+      target_field: stix.ioc_expiration_date
       formats:
         - "ISO8601"
         - "UNIX"
       on_failure:
         - append:
-            field: "error.message"
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
         - fail:
-            description: "If this date processor fails, it leads to transform errors, hence failing the document for investigation."
-            message: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed"
+            description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
+            message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - rename:
-      field: "_conf.ioc_expiration_duration"
-      tag: "rename_conf_ioc_expiration_duration"
-      target_field: "stix.ioc_expiration_duration"
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: stix.ioc_expiration_duration
       ignore_missing: true
   ################
   # IOC patterns #
   ################
   - set:
-      field: "threat.indicator.type"
-      value: "domain-name"
-      if: "ctx.stix.pattern?.startsWith('[domain-name') == true"
+      field: threat.indicator.type
+      value: domain-name
+      if: ctx.stix.pattern?.startsWith('[domain-name') == true
   - set:
-      field: "threat.indicator.type"
-      value: "ipv4-addr"
-      if: "ctx.stix.pattern?.startsWith('[ipv4-addr') == true"
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: ctx.stix.pattern?.startsWith('[ipv4-addr') == true
   - set:
-      field: "threat.indicator.type"
-      value: "url"
-      if: "ctx.stix.pattern?.startsWith('[url') == true"
+      field: threat.indicator.type
+      value: url
+      if: ctx.stix.pattern?.startsWith('[url') == true
 
   - split:
-      field: "stix.pattern"
-      target_field: "stix._patterns"
+      field: stix.pattern
+      target_field: stix._patterns
       separator: '\s+AND\s+|\s+OR\s+'
-      if: "ctx.threat?.indicator?.type != null && ctx.stix.pattern != null"
-      tag: "split_pattern"
+      if: ctx.threat?.indicator?.type != null && ctx.stix.pattern != null
+      tag: split_pattern
 
   - foreach:
-      field: "stix._patterns"
-      if: "ctx.threat?.indicator?.type == 'domain-name'"
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'domain-name'
       ignore_missing: true
       processor:
         pipeline:
           name: '{{ IngestPipeline "indicator-domain-name" }}'
 
   - foreach:
-      field: "stix._patterns"
-      if: "ctx.threat?.indicator?.type == 'file'"
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'file'
       ignore_missing: true
       processor:
         pipeline:
           name: '{{ IngestPipeline "indicator-file" }}'
           
   - foreach:
-      field: "stix._patterns"
-      if: "ctx.threat?.indicator?.type?.startsWith('ip') == true"
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type?.startsWith('ip') == true
       ignore_missing: true
       processor:
         pipeline:
           name: '{{ IngestPipeline "indicator-ip" }}'
 
   - foreach:
-      field: "stix._patterns"
-      if: "ctx.threat?.indicator?.type == 'url'"
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'url'
       ignore_missing: true
       processor:
         pipeline:
@@ -313,9 +311,9 @@ processors:
       ignore_missing: true
 
   - script:
-      lang: "painless"
-      description: "Unscape values recursively."
-      tag: "script_unscape_values"
+      lang: painless
+      description: Unscape values recursively.
+      tag: script_unscape_values
       source: >
         void unescape(Object obj) {
           if (obj instanceof Map) {
@@ -356,15 +354,27 @@ processors:
           return false;
         }
         drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null      
 on_failure:
   - append:
-      field: "error.message"
+      field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
-      field: "event.kind"
-      value: "pipeline_error"
+      field: event.kind
+      value: pipeline_error
   - append:
-      field: "tags"
-      value: "preserve_original_event"
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false
+
+
