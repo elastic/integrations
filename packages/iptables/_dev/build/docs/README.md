@@ -9,7 +9,7 @@ The `iptables` integration is compatible with the following:
 - Ubiquiti firewalls that support remote syslog forwarding.
 - `systemd` `journald` for local log collection.
 
-This integration requires Kibana version 8.11.0 or higher.
+This integration requires Kibana version 8.11.0 or later.
 
 ### How it works
 This integration collects logs from your firewall using three primary methods:
@@ -23,7 +23,7 @@ Once you've deployed an Elastic Agent on a host with access to these log sources
 
 The Iptables integration collects log messages from:
 *   Local log files: Records read from the host filesystem using the `log` data stream.
-*   Syslog network logs: Firewall events forwarded over the network via UDP using the `udp` data stream.
+*   Syslog network logs: Firewall events forwarded over the network using the `udp` data stream.
 *   Systemd journal events: Log messages retrieved directly from the systemd journal using the `journald` data stream.
 
 ### Supported use cases
@@ -60,7 +60,7 @@ Your Elastic Stack environment must meet these requirements:
 
 You must install the Elastic Agent on a host that can receive the syslog data or has access to the log files from the `iptables` instance. You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in Iptables
 
@@ -89,7 +89,7 @@ To forward logs using `rsyslog`, follow these steps:
 
 To configure a Ubiquiti device, follow these steps:
 
-1. Access CLI: Connect to your Ubiquiti device via SSH.
+1. Access CLI: Connect to your Ubiquiti device using SSH.
 2. Enter config mode: Type `configure`.
 3. Set syslog host: Direct logs to the Elastic Agent host on port `9001` (replace `<ELASTIC_AGENT_IP>` with your actual IP address).
    ```bash
