@@ -80,11 +80,21 @@ The Docker API version to use. Default is mandated by the docker stats receiver.
 
 For Docker Engine v29, API version `"1.44"` or higher has to be used.
 
-### Per-Core CPU Metrics
+### Initial Delay
 
-When enabled, provides CPU metrics broken down by individual CPU cores. Default is `false`.
+Defines how long this receiver waits before starting. Default is `1s`.
 
-**Note:** Enabling this option can significantly increase the number of metrics collected.
+### Metrics Configuration
+
+The `metrics` configuration allows you to enable or disable specific metrics. This is useful for managing the volume of data collected and enabling optional metrics.
+
+For example, to enable per-CPU usage metrics (which are disabled by default):
+
+```yaml
+metrics:
+  container.cpu.usage.percpu:
+    enabled: true
+```
 
 ### Container Labels to Metric Labels
 

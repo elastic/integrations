@@ -29,13 +29,19 @@ policy_templates:
     type: metrics
     template_path: input.yml.hbs
     vars:
-      - name: period
+      - name: collection_interval
         type: duration
         title: Collection Interval
         description: How often to collect metrics (e.g., 10s, 1m). Default is 60s.
         default: 60s
         required: true
         show_user: true
+      - name: initial_delay
+        type: duration
+        description: Defines how long this receiver waits before starting.
+        default: 1s
+        required: false
+        show_user: false
       - name: endpoint
         type: text
         title: Docker Endpoint
@@ -62,11 +68,10 @@ policy_templates:
         required: false
         show_user: false
         default: "1.44"
-      - name: provide_per_core_cpu_metrics
-        type: bool
-        title: Provide Per-Core CPU Metrics
-        description: Enable per-core CPU metrics collection
-        default: false
+      - name: metrics
+        type: yaml
+        title: Metrics
+        description: Enable or disable specific metrics
         required: false
         show_user: false
       - name: container_labels_to_metric_labels
