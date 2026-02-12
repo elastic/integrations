@@ -110,14 +110,24 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.domain |  | keyword |
 | client.ip |  | ip |
 | client.port |  | integer |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.from.address |  | keyword |
+| email.local_id |  | keyword |
+| email.message_id |  | keyword |
+| email.subject |  | keyword |
+| email.to.address |  | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| log.origin.function |  | keyword |
 | log.source.address | Log source address | keyword |
+| server.domain |  | keyword |
 | server.ip |  | ip |
 | server.port |  | integer |
+| x509.serial_number |  | keyword |
+| x509.subject.common_name |  | keyword |
 
