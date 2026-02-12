@@ -48,6 +48,7 @@ This integration is designed for Cloud Connectors to proactively check that all 
 | Integration Type | Yes | Package type (e.g., `aws_cloudtrail`, `azure_activitylogs`, `gcp_audit`, `okta_system`) |
 | Integration ID | No | Unique identifier for the integration instance |
 | Integration Name | No | Human-readable name of the integration |
+| Integration Version | No | Semantic version of the integration package (e.g., `2.17.0`). Different versions may require different permissions. When empty, the latest permission set is used. |
 
 ## Supported Integration Types
 
@@ -112,6 +113,7 @@ The integration emits OTEL logs with the following structure:
 | `policy.name` | Policy name |
 | `integration.id` | Integration instance identifier |
 | `integration.type` | Integration type (e.g., `aws_cloudtrail`) |
+| `integration.version` | Integration package version (e.g., `2.17.0`) or `unspecified` |
 | `provider.type` | Provider type (`aws`, `azure`, `gcp`, `okta`) |
 | `permission.action` | Permission being checked (e.g., `cloudtrail:LookupEvents`) |
 | `permission.status` | Result: `granted`, `denied`, `error`, or `skipped` |
@@ -141,6 +143,7 @@ policy_name: "AWS Security Monitoring"
 # Integration
 integration_type: "aws_cloudtrail"
 integration_name: "AWS CloudTrail"
+integration_version: "2.17.0"
 ```
 
 ## Related
