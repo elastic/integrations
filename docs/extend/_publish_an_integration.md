@@ -12,7 +12,7 @@ Before opening your PR, make sure you have:
 Run `elastic-package check` to validate formatting, build, and linting. Run `elastic-package format` if files need reformatting.
 
 2. **Add a changelog entry**
-Include a `link:` field pointing to your PR. Use the correct type: `enhancement`, `bug-fix`, `breaking-change`, or `deprecation`.
+Include a `link:` field pointing to your PR. Use the correct type: `enhancement`, `bugfix`, or `breaking-change`.
 
 3. **Update CODEOWNERS** (new integrations only)
 Add your package to `.github/CODEOWNERS` with the format: `packages/<package_name> @elastic/<team-name>`.
@@ -21,7 +21,7 @@ Add your package to `.github/CODEOWNERS` with the format: `packages/<package_nam
 Run `elastic-package test` before submitting. Generate `sample_event.json` using `elastic-package test system --generate`.
 
 5. **Bump the package version appropriately**
-Use minor version bumps for documentation-only changes and patch bumps for small fixes.
+Use patch version bumps for backward-compatible bug fixes and documentation-only changes. Use minor version bumps for backward-compatible new features.
 
 6. **Document breaking changes**
 Use `breaking-change` type in changelog and clearly describe impact on existing users. Breaking changes require a major version bump.
