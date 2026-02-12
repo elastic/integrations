@@ -15,7 +15,7 @@ Run `elastic-package check` to validate formatting, build, and linting. Run `ela
 Include a `link:` field pointing to your PR. Use the correct type: `enhancement`, `bugfix`, or `breaking-change`.
 
 3. **Update CODEOWNERS** (new integrations only)
-Add your package to `.github/CODEOWNERS` with the format: `packages/<package_name> @elastic/<team-name>`.
+Add your package to `.github/CODEOWNERS` with the format: `/packages/<package_name> @elastic/<team-name>`.
 
 4. **Include test coverage**
 Run `elastic-package test` before submitting. Generate `sample_event.json` using `elastic-package test system --generate`.
