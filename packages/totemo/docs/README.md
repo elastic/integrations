@@ -49,65 +49,59 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-23T09:49:10.000+05:00",
+    "@timestamp": "2025-12-01T12:03:33.260Z",
     "agent": {
-        "ephemeral_id": "e3830e56-f9b7-4278-b2cc-6c0041b3204b",
-        "id": "92657501-44cd-4942-ab49-19404cc15d88",
-        "name": "elastic-agent-47754",
+        "ephemeral_id": "0208c96a-67dc-4667-af3b-8bd5205121f7",
+        "id": "e02472c2-5cc9-407f-a322-ab838af9fc7a",
+        "name": "elastic-agent-24138",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "9.0.0"
     },
     "client": {
-        "ip": "192.168.1.2"
+        "address": "client.contoso.com",
+        "domain": "client.contoso.com",
+        "ip": "1.128.0.1"
     },
     "data_stream": {
-        "dataset": "pps.log",
-        "namespace": "63231",
+        "dataset": "totemo.log",
+        "namespace": "83285",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "92657501-44cd-4942-ab49-19404cc15d88",
+        "id": "e02472c2-5cc9-407f-a322-ab838af9fc7a",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "9.0.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2025-01-23T09:49:10.000+05:00",
-        "dataset": "pps.log",
-        "ingested": "2025-05-30T11:05:38Z",
+        "created": "2025-12-01T12:03:33.260Z",
+        "dataset": "totemo.log",
+        "ingested": "2026-02-12T13:48:34Z",
         "kind": "event",
-        "original": "<134>Jan 23 09:49:10 SRV-PPS-001 Pleasant Password Server:192.168.1.2 - user@name.test -  - Success - Syslog Settings Changed - User <user@name.test> Syslogging setting updated  changing the host from <localhost> to <127.0.0.1> changing the port fr\t127.0.0.1\t23/01 09:49:10.894\t",
-        "outcome": "success",
+        "original": "INFO  <2025-12-01T17:03:33,260> [default Worker #9] [MailServer                    ]  Connection from client.contoso.com (1.128.0.1)",
         "timezone": "+0500"
-    },
-    "host": {
-        "hostname": "SRV-PPS-001"
     },
     "input": {
         "type": "udp"
     },
     "log": {
-        "source": {
-            "address": "192.168.255.3:58871"
+        "level": "info",
+        "origin": {
+            "function": "MailServer"
         },
-        "syslog": {
-            "priority": 134
+        "source": {
+            "address": "172.21.0.3:35704"
         }
     },
-    "message": "Syslog Settings Changed - User <user@name.test> Syslogging setting updated  changing the host from <localhost> to <127.0.0.1> changing the port fr\t127.0.0.1\t23/01 09:49:10.894\t",
+    "message": "Connection from client.contoso.com (1.128.0.1)",
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "pps-log"
-    ],
-    "user": {
-        "domain": "name.test",
-        "email": "user@name.test",
-        "name": "user"
-    }
+        "totemo-log"
+    ]
 }
 ```
 
@@ -117,7 +111,7 @@ An example event for `log` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.ip |  | ip |
-| client.port |  | long |
+| client.port |  | integer |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -125,5 +119,5 @@ An example event for `log` looks as following:
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
 | server.ip |  | ip |
-| server.port |  | long |
+| server.port |  | integer |
 
