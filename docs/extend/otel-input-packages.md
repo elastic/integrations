@@ -13,6 +13,8 @@ Use **OTel Input Packages** for [OpenTelemetry Collector receivers](https://gith
 
 ## Package Structure [package-structure]
 
+OTel Input Packages follow the standard [input package](./integration-definitions.md#_input_package) structure with specific naming and configuration requirements.
+
 ```
 packages/<name>_input_otel/
 ├── manifest.yml              # Package metadata and configuration
@@ -40,7 +42,7 @@ packages/<name>_input_otel/
 
 ## Manifest Configuration [manifest-config]
 
-The `manifest.yml` file defines your package metadata and configurable variables. Here's an annotated example based on the StatsD input package:
+The `manifest.yml` file defines your package metadata and configurable variables. For the complete manifest specification, refer to [manifest.yml](./manifest-spec.md). Here's an annotated example based on the StatsD input package:
 
 ```yaml
 format_version: 3.5.0
@@ -219,11 +221,11 @@ With a default value in the manifest:
 
 ## Testing [testing]
 
-OTel Input Packages require policy tests and should include system tests.
+OTel Input Packages require policy tests and should include system tests. For a complete overview of all test types, refer to [Test an integration](./testing.md).
 
 ### Policy Tests [policy-tests]
 
-Policy tests verify that the package configuration generates valid Elastic Agent policies.
+Policy tests verify that the package configuration generates valid Elastic Agent policies. For complete details on policy testing, refer to [Policy testing](./policy-testing.md).
 
 **Required files:**
 - `_dev/test/policy/test-default.yml` - Test input values
@@ -239,18 +241,9 @@ vars:
   is_monotonic_counter: false
 ```
 
-**Running policy tests:**
-```bash
-elastic-package stack up -d --services kibana,elasticsearch
-cd packages/<your-package>
-elastic-package test policy
-```
-
-For more details, see [Policy Testing](./policy-testing.md).
-
 ### System Tests [system-tests]
 
-System tests validate the complete data flow from your service to Elasticsearch.
+System tests validate the complete data flow from your service to Elasticsearch. For complete details on system testing, including deployment methods and troubleshooting, refer to [System Testing Guide](./system-testing.md).
 
 **Required files:**
 - `_dev/deploy/docker/docker-compose.yml` - Service deployment
@@ -265,22 +258,13 @@ assert:
   hit_count: 6                 # Expected number of documents
 ```
 
-**Running system tests and generating sample events:**
-```bash
-elastic-package stack up -d
-cd packages/<your-package>
-elastic-package test system --generate
-```
-
 ::::{note}
-There is currently a known bug where Datasets in generated sample files do not match with the expected files in test policies. This mismatch is expected behavior for now.
+There is currently a known [bug](https://github.com/elastic/elastic-package/issues/3275) where Datasets in generated sample files do not match with the expected files in test policies. This mismatch is expected behavior for now.
 ::::
-
-For more details, see [System Testing](./system-testing.md).
 
 ## Documentation [documentation]
 
-Create a `docs/README.md` that includes:
+Create a `docs/README.md` following the [Documentation guidelines](./documentation-guidelines.md). For OTel Input Packages, include:
 
 1. **Overview** - What the package does and which OTel receiver it uses
 2. **How it works** - Data flow explanation
@@ -342,7 +326,15 @@ Reference these existing packages as examples, or search for packages containing
 
 ## Additional Resources [resources]
 
+**Internal documentation:**
+- [Test an integration](./testing.md) - Overview of all test types
+- [Policy testing](./policy-testing.md) - Policy test details
+- [System Testing Guide](./system-testing.md) - System test details
+- [Documentation guidelines](./documentation-guidelines.md) - Writing integration docs
+- [manifest.yml](./manifest-spec.md) - Complete manifest specification
+- [Input Package Definition](./integration-definitions.md#_input_package) - Input package concepts
+
+**External resources:**
 - [OpenTelemetry Collector Receivers](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver)
-- [elastic-package Policy Testing Guide](https://github.com/elastic/elastic-package/blob/main/docs/howto/policy_testing.md)
-- [elastic-package System Testing Guide](https://github.com/elastic/elastic-package/blob/main/docs/howto/system_testing.md)
-- [Input Package Definition](./integration-definitions.md#_input_package)
+- [elastic-package Policy Testing HOWTO](https://github.com/elastic/elastic-package/blob/main/docs/howto/policy_testing.md)
+- [elastic-package System Testing HOWTO](https://github.com/elastic/elastic-package/blob/main/docs/howto/system_testing.md)
