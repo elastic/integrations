@@ -61,7 +61,7 @@ You'll also need the following Elastic components:
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the TCP receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the TCP receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in Custom TCP Logs
 
@@ -116,7 +116,7 @@ You'll follow these steps to add and configure the integration in Kibana:
 
 After you've finished the configuration, you'll need to verify that data is flowing correctly from your source to the Elastic Stack.
 
-Depending on you system, you may be able to trigger a data flow on the source using one of these methods:
+Depending on you system, you might be able to trigger a data flow on the source using one of these methods:
 
 - To send a manual test message from the source machine (or any machine with network access to the Agent), run this command:
   ```bash
