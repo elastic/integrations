@@ -1,4 +1,4 @@
-# MySQL integration for OpenTelemetry Collector
+# MySQL OpenTelemetry Assets
 
 This integration allows you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
 
