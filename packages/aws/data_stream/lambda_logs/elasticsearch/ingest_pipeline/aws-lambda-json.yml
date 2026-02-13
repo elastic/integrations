@@ -11,7 +11,7 @@ processors:
     if: "ctx.parsed?.timestamp != null"
     field: parsed.timestamp
     target_field: "@timestamp"
-    formats: ["yyyy-MM-dd HH:mm:ss,SSSZ"]
+    formats: ["yyyy-MM-dd HH:mm:ss,SSSZ", "ISO8601"]
     ignore_failure: true
 
 # 2. Platform report logs (time field)
@@ -33,7 +33,13 @@ processors:
 # Flatten important fields from each log type
 - set:
     field: aws.lambda.message
-    if: "ctx.parsed?.record != null"
+    if: "ctx.parsed?.record != null && ctx.parsed?.record instanceof Map"
+    copy_from: parsed.record
+    ignore_failure: true
+
+- set:
+    field: aws.lambda.message.log
+    if: "ctx.parsed?.record != null && ctx.parsed?.record instanceof String"
     copy_from: parsed.record
     ignore_failure: true
 
@@ -274,18 +280,6 @@ processors:
     ignore_failure: true
 
 - rename:
-    field: parsed.time
-    target_field: "@timestamp"
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
-    field: parsed.timestamp
-    target_field: "@timestamp"
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
     field: parsed.type
     target_field: aws.lambda.event_type
     ignore_missing: true
@@ -334,21 +328,26 @@ processors:
     ignore_missing: true
     ignore_failure: true
 
-- rename:
+- set:
+    field: aws.lambda.message.log
+    if: "ctx.parsed?.message != null && ctx.parsed?.message instanceof String"
+    copy_from: parsed.message
+    ignore_failure: true
+
+- set:
+    field: aws.lambda.message
+    if: "ctx.parsed?.message != null && ctx.parsed?.message instanceof Map"
+    copy_from: parsed.message
+    ignore_failure: true
+
+- remove:
     field: parsed.message
-    target_field: aws.lambda.message
     ignore_missing: true
     ignore_failure: true
 
 - rename:
     field: parsed.users
     target_field: aws.lambda.users
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
-    field: parsed.timestamp
-    target_field: "@timestamp"
     ignore_missing: true
     ignore_failure: true
 
@@ -414,9 +413,10 @@ processors:
     if: "ctx.parsed instanceof Map && !(ctx.parsed.containsKey('message') || ctx.parsed.containsKey('record') || ctx.parsed.containsKey('_aws') || ctx.parsed.containsKey('time') || ctx.parsed.containsKey('timestamp'))"
 
 - set:
-    field: aws.lambda.message
+    field: aws.lambda.message.log
     copy_from: event.original
     if: "ctx.parsed == null"
+    ignore_failure: true
 
 - remove:
     field: parsed
@@ -431,6 +431,7 @@ processors:
 - script:
     description: Drops null/empty values recursively
     lang: painless
+    ignore_failure: true
     source: |
         boolean drop(Object o) {
             if (o == null || o == "") {
