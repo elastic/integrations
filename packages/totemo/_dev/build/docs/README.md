@@ -16,8 +16,9 @@ It should however work with all versions if the logging is setup correctly
 
 Elastic Agent must be installed. For more details, check the Elastic
 Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
-Since Totemo has a very flexible logging output it is important to have the log4j forwarder setup like this:
+Because Totemo has a flexible logging output it is important to have the log4j forwarder setup in the same way on all systems, otherwise the log extraction will fail.
 
+log4j forwarder configuration
 ```
 %-5p <%d{ISO8601}> [%t] [%-30c{1}] %X{mailID} %m %n
 ```
