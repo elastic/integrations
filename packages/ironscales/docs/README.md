@@ -127,8 +127,8 @@ For more information on architectures that can be used for scaling this integrat
 | ironscales.incident.company_name |  | keyword |
 | ironscales.incident.created |  | date |
 | ironscales.incident.detailed_classification |  | keyword |
-| ironscales.incident.email_body_text |  | keyword |
-| ironscales.incident.email_subject |  | keyword |
+| ironscales.incident.email_body_text |  | text |
+| ironscales.incident.email_subject |  | text |
 | ironscales.incident.federation.companies_affected |  | long |
 | ironscales.incident.federation.companies_marked_fp |  | long |
 | ironscales.incident.federation.companies_marked_phishing |  | long |
@@ -147,7 +147,7 @@ For more information on architectures that can be used for scaling this integrat
 | ironscales.incident.links_count |  | long |
 | ironscales.incident.mail_server.host |  | keyword |
 | ironscales.incident.mail_server.ip |  | ip |
-| ironscales.incident.original_email_body |  | keyword |
+| ironscales.incident.original_email_body |  | text |
 | ironscales.incident.recipient_email |  | keyword |
 | ironscales.incident.recipient_name |  | keyword |
 | ironscales.incident.related_incidents |  | long |
