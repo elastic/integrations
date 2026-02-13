@@ -2,7 +2,7 @@
 
 This package allows you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
 
-The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics and logs collected using the [OpenTelemetry MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.129.0/receiver/mysqlreceiver), enabling you to monitor database performance and troubleshoot issues effectively in real time.
+The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics and logs collected using the [OpenTelemetry MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.145.0/receiver/mysqlreceiver), enabling you to monitor database performance and troubleshoot issues effectively in real time.
 
 ## Compatibility
 
@@ -21,22 +21,40 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ### Prerequisites
 
-The MySQL user configured for monitoring requires the following minimum permissions:
+The MySQL user configured for monitoring requires different permissions depending on which metrics you want to collect:
 
+**For basic metrics (connections, buffer pool, handlers, etc.):**
+- Ability to execute `SHOW GLOBAL STATUS` (available by default to database users)
+
+**For query samples and statement events:**
 ```sql
 GRANT SELECT ON performance_schema.* TO '<MYSQL_USER>'@'%';
 ```
 
-To collect replication metrics (`mysql.replica.sql_delay`, `mysql.replica.time_behind_source`), additional permissions are required:
+**For table statistics metrics (`mysql.table.size`, `mysql.table.rows`):**
+```sql
+GRANT SELECT ON information_schema.TABLES TO '<MYSQL_USER>'@'%';
+```
 
-**MySQL:**
+**For replication metrics (`mysql.replica.sql_delay`, `mysql.replica.time_behind_source`):**
+
+MySQL:
 ```sql
 GRANT REPLICATION CLIENT ON *.* TO '<MYSQL_USER>'@'%';
 ```
 
-**MariaDB:**
+MariaDB:
 ```sql
 GRANT REPLICA MONITOR ON *.* TO '<MYSQL_USER>'@'%';
+```
+
+**Recommended: Grant all permissions for complete monitoring:**
+```sql
+GRANT SELECT ON performance_schema.* TO '<MYSQL_USER>'@'%';
+GRANT SELECT ON information_schema.TABLES TO '<MYSQL_USER>'@'%';
+GRANT REPLICATION CLIENT ON *.* TO '<MYSQL_USER>'@'%';  -- MySQL only
+-- OR for MariaDB:
+-- GRANT REPLICA MONITOR ON *.* TO '<MYSQL_USER>'@'%';
 ```
 
 ### Configuration
@@ -75,55 +93,21 @@ receivers:
       db.server.top_query:
         enabled: true
     metrics:
-      mysql.connection.count:
+      mysql.client.network.io:
         enabled: true
       mysql.connection.errors:
         enabled: true
       mysql.max_used_connections:
         enabled: true
-      mysql.query.count:
-        enabled: true
       mysql.query.client.count:
+        enabled: true
+      mysql.query.count:
         enabled: true
       mysql.query.slow.count:
         enabled: true
-      mysql.commands:
-        enabled: true
-      mysql.client.network.io:
-        enabled: true
-      mysql.table.io.wait.count:
-        enabled: true
-      mysql.table.io.wait.time:
-        enabled: true
-      mysql.index.io.wait.count:
-        enabled: true
-      mysql.index.io.wait.time:
-        enabled: true
-      mysql.table.lock_wait.read.count:
-        enabled: true
-      mysql.table.lock_wait.read.time:
-        enabled: true
-      mysql.table.lock_wait.write.count:
-        enabled: true
-      mysql.table.lock_wait.write.time:
-        enabled: true
-      mysql.table.size:
-        enabled: true
       mysql.table.rows:
         enabled: true
-      mysql.table.average_row_length:
-        enabled: true
-      mysql.statement_event.count:
-        enabled: true
-      mysql.statement_event.wait.time:
-        enabled: true
-      mysql.table_open_cache:
-        enabled: true
-      mysql.joins:
-        enabled: true
-      mysql.page_size:
-        enabled: true
-      mysql.mysqlx_worker_threads:
+      mysql.table.size:
         enabled: true
 
   mysql/replica:
@@ -160,8 +144,8 @@ service:
 
 ### Metrics
 
-Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/metadata.yaml) of the OpenTelemetry MySQL receiver for details on available metrics.
+Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.145.0/receiver/mysqlreceiver/metadata.yaml) of the OpenTelemetry MySQL receiver for details on available metrics.
 
 ### Logs
 
-Refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/documentation.md) of the OpenTelemetry MySQL receiver for details on log collection.
+Refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.145.0/receiver/mysqlreceiver/documentation.md) of the OpenTelemetry MySQL receiver for details on log collection.
