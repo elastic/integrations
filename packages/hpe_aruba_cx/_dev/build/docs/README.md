@@ -183,12 +183,6 @@ This section addresses common issues you might encounter while setting up or run
 - Timestamp mismatches: If logs don't appear in the default time range, check the Network Time Protocol (NTP) status on the switch. Large time drifts can cause logs to be indexed into the past or future relative to the current Kibana view.
 - Field mapping mismatches: Review the `event.original` field against the parsed fields. If critical information is missing, verify that the switch is sending the full log header according to the AOS-CX specification.
 
-### Vendor resources
-
-You can find more information about HPE Aruba CX logging in the following resources:
-- [AOS-CX 10.15 Event Log Message Reference Guide](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/fir-int.htm)
-- [AOS-CX Switch Software Documentation Portal](https://arubanetworking.hpe.com/techdocs/AOS-CX/help_portal/Content/home.htm)
-
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
