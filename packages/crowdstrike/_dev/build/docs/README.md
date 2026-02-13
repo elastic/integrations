@@ -132,9 +132,8 @@ Current supported event types are:
 
 ### FDR
 
-The CrowdStrike Falcon Data Replicator (FDR) allows CrowdStrike users to replicate FDR data from CrowdStrike
-managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is
-available in S3.
+The CrowdStrike Falcon Data Replicator allows CrowdStrike users to replicate data from CrowdStrike
+managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is available in S3.
 
 This integration can be used in two ways. It can consume SQS notifications directly from the CrowdStrike managed
 SQS queue or it can be used in conjunction with the FDR tool that replicates the data to a self-managed S3 bucket
@@ -148,7 +147,6 @@ Agent with this integration if needed and not have duplicate events, but it mean
 This is the simplest way to setup the integration, and also the default.
 
 You need to set the integration up with the SQS queue URL provided by Crowdstrike FDR.
-Ensure the `Is FDR queue` option is enabled.
 
 #### Use with FDR tool and data replicated to a self-managed S3 bucket
 
@@ -161,7 +159,6 @@ You need to follow the steps below:
 - Configure your S3 bucket to send object created notifications to your SQS queue.
 - Follow the [FDR tool](https://github.com/CrowdStrike/FDR) instructions to replicate data to your own S3 bucket.
 - Configure the integration to read from your self-managed SQS topic.
-- Disable the `Is FDR queue` option in the integration.
 
 >  NOTE: While the FDR tool can replicate the files from S3 to your local file system, this integration cannot read those files because they are gzip compressed, and the log file input does not support reading compressed files.
 

@@ -1,4 +1,19 @@
 rules:
+  - path: /oauth2/token
+    methods: ["POST"]
+    request_headers:
+      content-type: application/x-www-form-urlencoded
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "access_token": "xxxxxx",
+            "token_type": "bearer",
+            "expires_in": 3600,
+            "scope": "read write"
+          }
+          `}}
   - path: /rest/orgs
     methods: ["GET"]
     request_headers:
