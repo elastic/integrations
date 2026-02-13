@@ -57,8 +57,8 @@ To ensure optimal performance in high-volume environments, consider the followin
 1. **Install GoFlow2 Binary:**
    Download the latest release and move it to your bin directory:
    ```bash
-   wget https://github.com/netsampler/goflow2/releases/download/v1.2.1/goflow2_1.2.1_linux_amd64.tar.gz
-   tar -xzvf goflow2_1.2.1_linux_amd64.tar.gz
+   wget https://github.com/netsampler/goflow2/releases/download/v2.2.6/goflow2-2.2.6-linux-amd64.tar.gz
+   tar -xzvf goflow2_2.2.6_linux_amd64.tar.gz
    sudo mv goflow2 /usr/local/bin/
    sudo chmod +x /usr/local/bin/goflow2
    ```

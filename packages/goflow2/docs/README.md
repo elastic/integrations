@@ -6,12 +6,6 @@
 
 The GoFlow2 logs integration for Elastic enables you to ingest and normalize network flow data, specifically focusing on the sFlow protocol. By using this integration, you can gain deep visibility into network traffic patterns, bandwidth usage, and potential security threats.
 
-This integration facilitates:
-- Network traffic monitoring: Gain real-time visibility into high-volume network traffic by collecting sFlow data from routers and switches, allowing for detailed analysis of source and destination patterns.
-- Security analysis: Identify anomalous traffic behavior or potential DDoS attacks by monitoring flow data and analyzing packet headers and protocol distributions.
-- Bandwidth management: Track bandwidth consumption across different interfaces and VLANs to identify top talkers and optimize network resource allocation.
-- Compliance and auditing: Maintain long-term records of network flows for regulatory compliance and forensic investigations following security incidents.
-
 ### Compatibility
 
 This integration is compatible with the following:
@@ -38,10 +32,11 @@ The integration collects the following types of data:
 ### Supported use cases
 
 Integrating GoFlow2 logs with Elastic provides visibility into network traffic patterns and performance. Key use cases include:
-*   **Network traffic analysis**: Analyze traffic flows to understand bandwidth usage, identify top talkers, and optimize network performance.
-*   **Security monitoring**: Detect anomalous traffic patterns, potential DDoS attacks, or unauthorized data transfers by monitoring source and destination IPs.
-*   **Capacity planning**: Use flow statistics to track long-term trends in network usage and plan for future infrastructure needs.
+*   **Network traffic analysis**: Analyze traffic flows to understand bandwidth usage, identify top talkers, and optimize network performance. Gain real-time visibility into high-volume network traffic by collecting sFlow data from routers and switches, allowing for detailed analysis of source and destination patterns.
+*   **Security analysis and monitoring**: Detect anomalous traffic patterns, potential DDoS attacks, or unauthorized data transfers by monitoring source and destination IPs.
+*   **Bandwidth management**: Track bandwidth consumption across different interfaces and VLANs to identify top talkers and optimize network resource allocation. Use flow statistics to track long-term trends in network usage and plan for future infrastructure needs.
 *   **Troubleshooting**: Investigate network connectivity issues by examining specific flow records and metadata.
+*   **Compliance and auditing**: Maintain long-term records of network flows for regulatory compliance and forensic investigations following security incidents.
 
 ## What do I need to use this integration?
 
@@ -72,8 +67,8 @@ Follow these steps to install and configure GoFlow2 to collect sFlow data and wr
 Download the latest release and move it to your bin directory:
 
 ```bash
-wget https://github.com/netsampler/goflow2/releases/download/v1.2.1/goflow2_1.2.1_linux_amd64.tar.gz
-tar -xzvf goflow2_1.2.1_linux_amd64.tar.gz
+wget https://github.com/netsampler/goflow2/releases/download/v2.2.6/goflow2_2.2.6_linux_amd64.tar.gz
+tar -xzvf goflow2_2.2.6_linux_amd64.tar.gz
 sudo mv goflow2 /usr/local/bin/
 sudo chmod +x /usr/local/bin/goflow2
 ```
@@ -223,11 +218,6 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
   * If the log file exists but is empty, verify that the network devices are successfully reaching the collector on port 6343/UDP using the command `tcpdump -i any udp port 6343`.
 - Unsupported protocols:
   * If you attempt to send NetFlow or IPFIX data, GoFlow2 may log errors or output data that the integration pipeline cannot process, as only sFlow is currently supported.
-
-### Vendor resources
-
-- [GoFlow2 GitHub Repository](https://github.com/netsampler/goflow2)
-- [GoFlow2 Configuration Guide - DeepWiki](https://deepwiki.com/netsampler/goflow2/2.2-configuration)
 
 ## Performance and scaling
 
