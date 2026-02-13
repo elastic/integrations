@@ -105,17 +105,9 @@ The Cisco Secure Email Gateway supports multiple log retrieval methods. Follow t
 1. In Kibana, navigate to **Management > Integrations**.
 2. Search for **Cisco Secure Email Gateway** and select it.
 3. Click **Add Cisco Secure Email Gateway**.
-4. Choose the appropriate input method (logfile, tcp, or udp) based on your vendor configuration.
+4. Choose the appropriate input method (tcp, udp, or logfile) based on your vendor configuration.
 5. Enter the configuration values as detailed in the subsections below.
 6. Click **Save and continue** to add the integration to your Agent policy.
-
-### Collecting Cisco Secure Email Gateway logs.
-Use this section to configure log collection from local files or files received using FTP.
-- **Paths** (name: `paths`): Specify the list of file paths to monitor for new log data. For example: `/var/log/cisco-esa/*.log`.
-- **Preserve original event** (name: `preserve_original_event`): If enabled, a raw copy of the original event is added to the field `event.original`. Default: `False`.
-- **Tags** (name: `tags`): A list of custom tags to add to the exported events. Default: `['forwarded', 'cisco_secure_email_gateway-log']`.
-- **Processors** (name: `processors`): Add custom processors to reduce fields or enhance metadata before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-- **Timezone** (name: `tz_offset`): The IANA time zone or time offset (for example, `+0200`) used to interpret syslog timestamps that lack a time zone. Default: `UTC`.
 
 ### Collecting Cisco Secure Email Gateway logs using TCP input.
 Use this section to configure the Elastic Agent to listen for real-time TCP syslog streams.
@@ -136,6 +128,14 @@ Use this section to configure the Elastic Agent to listen for UDP syslog datagra
 - **Custom UDP Options** (name: `udp_options`): Specify advanced configuration options for the UDP input, such as `read_buffer`, `max_message_size`, or `timeout`.
 - **Processors** (name: `processors`): Add custom processors to enhance or filter data at the Agent level. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 - **Timezone** (name: `tz_offset`): The IANA time zone or time offset used for timestamps without zone data. Default: `UTC`.
+
+### Collecting Cisco Secure Email Gateway logs.
+Use this section to configure log collection from local files or files received using FTP.
+- **Paths** (name: `paths`): Specify the list of file paths to monitor for new log data. For example: `/var/log/cisco-esa/*.log`.
+- **Preserve original event** (name: `preserve_original_event`): If enabled, a raw copy of the original event is added to the field `event.original`. Default: `False`.
+- **Tags** (name: `tags`): A list of custom tags to add to the exported events. Default: `['forwarded', 'cisco_secure_email_gateway-log']`.
+- **Processors** (name: `processors`): Add custom processors to reduce fields or enhance metadata before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+- **Timezone** (name: `tz_offset`): The IANA time zone or time offset (for example, `+0200`) used to interpret syslog timestamps that lack a time zone. Default: `UTC`.
 
 # Validation Steps
 

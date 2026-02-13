@@ -1,16 +1,12 @@
 # Cisco Secure Email Gateway Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
 The Cisco Secure Email Gateway (formerly known as Cisco Email Security Appliance or ESA) integration for Elastic enables you to collect and analyze mail flow, security events, and system performance data from your appliances. By centralizing these logs in the Elastic Stack, you'll gain visibility into your messaging environment's security posture and can monitor for email-borne threats in real-time.
 
-This integration facilitates:
-- Threat detection and response: Monitor Advanced Malware Protection (AMP), anti-spam, and anti-virus logs to identify and mitigate malicious email attachments, phishing attempts, and spam campaigns.
-- Mail flow auditing: Track message transitions, delivery status, and internal SMTP system events using Text Mail logs and Consolidated Event logs to ensure reliable communication.
-- Administrative compliance: Audit system access and configuration changes by collecting authentication and system logs to ensure only authorized users manage your security infrastructure.
-- System health monitoring: Analyze status logs to track resource utilization like CPU, RAM, disk I/O, and queue lengths to proactively manage appliance performance.
+
 
 ### Compatibility
 
@@ -133,19 +129,9 @@ To set up the integration in Kibana, follow these steps:
 1. In Kibana, navigate to **Management > Integrations**.
 2. Search for **Cisco Secure Email Gateway** and select it.
 3. Click **Add Cisco Secure Email Gateway**.
-4. Choose the appropriate input method (`logfile`, `tcp`, or `udp`) based on how you configured your Cisco gateway.
+4. Choose the appropriate input method (`tcp`, `udp`, or `logfile`) based on how you configured your Cisco gateway.
 5. Enter the configuration values as detailed in the subsections below.
 6. Click **Save and continue** to add the integration to your Agent policy.
-
-#### Log file input configuration
-
-Use this section if you're collecting logs from local files or files received using FTP:
-
-- **Paths**: Specify the list of file paths to monitor for new log data (for example, `/var/log/cisco-esa/*.log`).
-- **Preserve original event**: If you enable this, the integration adds a raw copy of the original event to the `event.original` field.
-- **Tags**: Add custom tags to your exported events. The default is `['forwarded', 'cisco_secure_email_gateway-log']`.
-- **Processors**: Add custom processors to reduce fields or enhance metadata before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-- **Timezone**: Set the IANA time zone or time offset (for example, `+0200`) to interpret syslog timestamps that don't have a time zone.
 
 #### TCP input configuration
 
@@ -170,6 +156,16 @@ Use this section to configure the Agent to listen for UDP syslog datagrams:
 - **Custom UDP Options**: Specify advanced options like `read_buffer`, `max_message_size`, or `timeout`.
 - **Processors**: Add custom processors to enhance or filter data at the Agent level. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 - **Timezone**: Set the IANA time zone or time offset for timestamps without zone data.
+
+#### Log file input configuration
+
+Use this section if you're collecting logs from local files or files received using FTP:
+
+- **Paths**: Specify the list of file paths to monitor for new log data (for example, `/var/log/cisco-esa/*.log`).
+- **Preserve original event**: If you enable this, the integration adds a raw copy of the original event to the `event.original` field.
+- **Tags**: Add custom tags to your exported events. The default is `['forwarded', 'cisco_secure_email_gateway-log']`.
+- **Processors**: Add custom processors to reduce fields or enhance metadata before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+- **Timezone**: Set the IANA time zone or time offset (for example, `+0200`) to interpret syslog timestamps that don't have a time zone.
 
 ### Validation
 
