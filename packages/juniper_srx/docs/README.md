@@ -1,16 +1,10 @@
 # Juniper SRX Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
 The Juniper SRX integration for Elastic enables you to collect and analyze logs from Juniper SRX Series Firewalls. By ingesting these logs into the Elastic Stack, you gain comprehensive visibility into your network's security posture and operational status. You can use this data to identify threats, monitor traffic patterns, and troubleshoot network issues effectively.
-
-This integration facilitates:
-- Security monitoring and threat detection: Ingests `RT_IDS` and `RT_IDP` logs to identify and respond to network-based attacks, including screen events or sophisticated intrusion attempts.
-- Traffic analysis and session tracking: Uses `RT_FLOW` and `AppTrack` logs to gain insights into network traffic patterns, session creations, closures, and denied attempts.
-- Web and content security: Tracks user activity and security efficacy using `RT_UTM` and `RT_AAMW` logs, which capture web filtering results, antivirus detections, and advanced anti-malware actions.
-- Security intelligence orchestration: Monitors `RT_SECINTEL` logs to verify the effectiveness of automated security intelligence feeds and specific actions taken against malicious IP addresses or domains.
 
 ### Compatibility
 
