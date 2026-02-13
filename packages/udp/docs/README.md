@@ -1,16 +1,10 @@
 # Custom UDP Logs Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
 The Custom UDP Logs integration for Elastic enables you to collect raw UDP data by listening on a specified UDP port using an Elastic Agent. This integration acts as a generic network data collector, allowing the Elastic Agent to serve as a high-performance UDP server. It's designed for environments where data sources don't support TCP or where the overhead of a connection-oriented protocol is undesirable.
-
-This integration facilitates:
-- Legacy network gear ingestion: Capture logs from older switches, routers, and firewalls that only support standard UDP syslog (RFC 3164) exports.
-- Custom application telemetry: Collect real-time metrics and event data from bespoke applications that broadcast performance statistics using UDP packets to minimize application latency.
-- High-volume log centralization: Efficiently aggregate large volumes of unstructured or semi-structured data across the network before routing them to Elasticsearch for analysis.
-- Security monitoring: Ingest CEF or JSON formatted security events from third-party appliances that use UDP for rapid data transmission.
 
 ### Compatibility
 
@@ -162,8 +156,6 @@ You can verify that data is flowing into Elasticsearch with these steps:
 
 ## Troubleshooting
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
-
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
 ### Common configuration issues
@@ -243,6 +235,5 @@ By default, the integration sends all collected data to the `udp.generic` datase
 For more information about configuring UDP logging and optimizing your data collection, refer to these resources:
 - [Elastic Agent troubleshooting guide](https://www.elastic.co/guide/en/fleet/current/fleet-troubleshooting.html)
 - [Elastic integration documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for processors and field mappings
-- [Elasticsearch index names documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html) for index naming conventions
 - [RFC 3164 - The BSD Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc3164)
 - [RFC 5424 - The Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc5424)
