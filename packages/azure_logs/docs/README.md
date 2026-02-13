@@ -418,11 +418,11 @@ _string_
 
 `client_id` :
 _string_
-(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application (client) ID. The app’s service principal must have **Azure Event Hubs Data Receiver** on the Event Hub and **Storage Blob Data Contributor** on the Storage Account.
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application (client) ID. The app's service principal must have **Azure Event Hubs Data Receiver** on the Event Hub and **Storage Blob Data Contributor** on the Storage Account.
 
 `client_secret` :
 _string_
-(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application client secret from the app’s Certificates & secrets.
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application client secret from the app's Certificates & secrets.
 
 `authority_host` :
 _string_

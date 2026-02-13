@@ -286,13 +286,13 @@ Instead of a connection string, you can authenticate using a Microsoft Entra ID 
 
 **Steps:**
 
-1. **Register an app in Microsoft Entra ID**  
+1. **Register an app in Microsoft Entra ID
    In the [Azure Portal](https://portal.azure.com/), go to **Microsoft Entra ID** > **App registrations** > **New registration**. Note the **Application (client) ID** and **Directory (tenant) ID**.
 
-2. **Create a client secret**  
+2. **Create a client secret**
    In the app, go to **Certificates & secrets** > **New client secret**. Copy the secret value; you will need it in the integration (e.g. `client_secret`). It is shown only once.
 
-3. **Assign required permissions to the app**  
+3. **Assign required permissions to the app**
    The service principal needs the following Azure RBAC permissions (see the [Filebeat azure-eventhub input reference](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) for the same requirements):
 
    **For Azure Event Hubs:**
@@ -305,7 +305,7 @@ Instead of a connection string, you can authenticate using a Microsoft Entra ID 
 
    For detailed setup, see the Microsoft documentation: [Create an Azure service principal with Azure CLI](https://learn.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli), [Create an Azure AD app registration using the Azure portal](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal), [Assign Azure roles using Azure CLI](https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-cli), [Azure Event Hubs authentication and authorization](https://learn.microsoft.com/en-us/azure/event-hubs/authorize-access-azure-active-directory), [Authorize access to blobs using Azure Active Directory](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
 
-4. **Configure the integration**  
+4. **Configure the integration**
    Set **Authentication type** to **Client Secret**. Provide **Tenant ID**, **Client ID**, **Client Secret**, and the fully qualified **Event Hub namespace** (e.g. `yournamespace.servicebus.windows.net`). Use the same Storage Account and container as for connection string authentication; the integration will use the client secret to access both Event Hubs and Storage.
 
 ### Create a Diagnostic Settings
@@ -516,11 +516,11 @@ _string_
 
 `client_id` :
 _string_
-(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application (client) ID. The app’s service principal must have **Azure Event Hubs Data Receiver** on the Event Hub and **Storage Blob Data Contributor** on the Storage Account.
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application (client) ID. The app's service principal must have **Azure Event Hubs Data Receiver** on the Event Hub and **Storage Blob Data Contributor** on the Storage Account.
 
 `client_secret` :
 _string_
-(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application client secret from the app’s Certificates & secrets.
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application client secret from the app's Certificates & secrets.
 
 `authority_host` :
 _string_
