@@ -6,12 +6,6 @@
 
 The HPE Aruba CX integration for Elastic enables you to collect logs from HPE Aruba Networking CX Switch series, providing visibility into network operations, security events, and hardware health. By ingesting these logs into the Elastic Stack, you can monitor network stability, audit configuration changes, and maintain security compliance across your infrastructure.
 
-This integration facilitates:
-- Security auditing and compliance: Monitor authentication, authorization, and accounting (AAA) events, ACL hits, and port security violations to maintain a secure network perimeter.
-- Network health and stability: Track routing protocol events for BGP, OSPF, and EVPN, alongside spanning tree (MSTP/RPVST) changes to ensure high availability.
-- Hardware performance monitoring: Gain visibility into physical switch health by collecting logs related to fan speeds, power supply status, temperature fluctuations, and ASIC resource utilization.
-- Configuration change tracking: Audit administrative actions performed via SSH, WebUI (REST), or Console to ensure configuration integrity.
-
 ### Compatibility
 
 This integration is compatible with the following:
@@ -110,10 +104,10 @@ To configure remote logging via the Web UI:
 
 #### Filestream (logfile) collection
 
-If you prefer to collect logs from a file, you must first configure the AOS-CX switch (or an intermediate log collector) to export logs to the host where the Elastic Agent is running. The Elastic Agent does not pull logs from the appliance directly; it monitors local files on disk.
+If you prefer to collect logs from a file:
 
-1. Configure the switch or an intermediate collector to write AOS-CX logs to a specific directory on the Elastic Agent host (e.g., `/var/log/audit/`).
-2. Ensure the Elastic Agent has read permissions for that directory.
+1. Ensure the Elastic Agent has read permissions for the directory containing the AOS-CX logs.
+2. Configure the switch or an intermediate collector to write AOS-CX logs to a specific directory (e.g., `/var/log/audit/`).
 3. Ensure your log rotation mechanism allows the Elastic Agent to monitor both active and rotated files if you require historical data.
 
 #### Vendor resources
@@ -188,12 +182,6 @@ This section addresses common issues you might encounter while setting up or run
 - Parsing failures: If logs appear in Discover but have a `tags: [_grokparsefailure]` entry, the log format might differ from the expected AOS-CX standard. You can check the `error.message` field for specific details.
 - Timestamp mismatches: If logs don't appear in the default time range, check the Network Time Protocol (NTP) status on the switch. Large time drifts can cause logs to be indexed into the past or future relative to the current Kibana view.
 - Field mapping mismatches: Review the `event.original` field against the parsed fields. If critical information is missing, verify that the switch is sending the full log header according to the AOS-CX specification.
-
-### Vendor resources
-
-You can find more information about HPE Aruba CX logging in the following resources:
-- [AOS-CX 10.15 Event Log Message Reference Guide](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/fir-int.htm)
-- [AOS-CX Switch Software Documentation Portal](https://arubanetworking.hpe.com/techdocs/AOS-CX/help_portal/Content/home.htm)
 
 ## Performance and scaling
 
