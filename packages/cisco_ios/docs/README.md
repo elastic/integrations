@@ -1,6 +1,6 @@
 # Cisco IOS Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -143,45 +143,45 @@ Choose the configuration steps below that match your environment.
 
 This input collects logs over a TCP socket. Configure the following variables:
 
-| Setting                 | Description                                                                                    |
-| ----------------------- | ---------------------------------------------------------------------------------------------- |
+| Setting                 | Description                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
 | Host to listen on       | The interface address the agent should bind to (for example, `0.0.0.0`).                              |
 | Syslog Port             | The TCP port to listen for Cisco logs (for example, `9002`).                                          |
-| Preserve original event | If you check this, a raw copy of the original event is added to the `event.original` field.    |
+| Preserve original event | If you check this, a raw copy of the original event is added to the `event.original` field.           |
 | Tags                    | List of tags to add to the events (for example, `cisco-ios`, `forwarded`).                            |
 | Timezone                | IANA time zone or offset (for example, `+0200`) to use when syslog timestamps don't have a time zone. |
-| Timezone Map            | A mapping of timezones as they appear in Cisco IOS logs to standard IANA formats.              |
-| Processors              | Add custom processors to reduce or enhance event fields.                                       |
-| SSL Configuration       | Configure SSL options for encrypted communication.                                             |
-| Custom TCP Options      | Specify custom configuration options for the TCP input.                                        |
+| Timezone Map            | A mapping of timezones as they appear in Cisco IOS logs to standard IANA formats.                     |
+| Processors              | Add custom processors to reduce or enhance event fields.                                              |
+| SSL Configuration       | Configure SSL options for encrypted communication.                                                    |
+| Custom TCP Options      | Specify custom configuration options for the TCP input.                                               |
 
 #### Collecting logs from UDP input
 
 This input collects logs over a UDP socket. Configure the following variables:
 
-| Setting                 | Description                                                                                    |
-| ----------------------- | ---------------------------------------------------------------------------------------------- |
+| Setting                 | Description                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
 | Host to listen on       | The interface address the agent should bind to (for example, `0.0.0.0`).                              |
 | Syslog Port             | The UDP port to listen for Cisco logs (for example, `9002`).                                          |
-| Preserve original event | If you check this, a raw copy of the original event is added to the `event.original` field.    |
+| Preserve original event | If you check this, a raw copy of the original event is added to the `event.original` field.           |
 | Tags                    | List of tags to add to the events (for example, `cisco-ios`, `forwarded`).                            |
 | Timezone                | IANA time zone or offset (for example, `+0200`) to use when syslog timestamps don't have a time zone. |
-| Timezone Map            | A mapping of timezones as they appear in Cisco IOS logs to standard IANA formats.              |
-| Custom UDP Options      | Specify custom configuration options for the UDP input.                                        |
-| Processors              | Add custom processors to reduce or enhance event fields.                                       |
+| Timezone Map            | A mapping of timezones as they appear in Cisco IOS logs to standard IANA formats.                     |
+| Custom UDP Options      | Specify custom configuration options for the UDP input.                                               |
+| Processors              | Add custom processors to reduce or enhance event fields.                                              |
 
 #### Collecting logs from file
 
 This input collects logs directly from log files on the host where the Elastic Agent is running. Configure the following variables:
 
-| Setting                 | Description                                                                                    |
-| ----------------------- | ---------------------------------------------------------------------------------------------- |
+| Setting                 | Description                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
 | Paths                   | List of file paths to monitor (for example, `/var/log/cisco-ios.log`).                                |
-| Preserve original event | If you check this, a raw copy of the original event is added to the `event.original` field.    |
+| Preserve original event | If you check this, a raw copy of the original event is added to the `event.original` field.           |
 | Tags                    | List of tags to add to the events (for example, `cisco-ios`, `forwarded`).                            |
 | Timezone                | IANA time zone or offset (for example, `+0200`) to use when syslog timestamps don't have a time zone. |
-| Timezone Map            | A mapping of timezones as they appear in Cisco IOS logs to standard IANA formats.              |
-| Processors              | Add custom processors to reduce or enhance event fields.                                       |
+| Timezone Map            | A mapping of timezones as they appear in Cisco IOS logs to standard IANA formats.                     |
+| Processors              | Add custom processors to reduce or enhance event fields.                                              |
 
 After you finish configuring the input, assign the integration to an agent policy and click **Save and continue**.
 
