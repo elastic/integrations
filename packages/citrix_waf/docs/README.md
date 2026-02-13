@@ -1,15 +1,11 @@
 # Citrix Web App Firewall Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 The Citrix Web App Firewall integration for Elastic enables you to collect and analyze logs from Citrix ADC and NetScaler appliances. This integration provides visibility into your web application security posture by capturing detailed event data, including security violations, signature matches, and network metadata.
 
-This integration facilitates:
-- Threat detection and mitigation: Identify and analyze malicious activity such as SQL injection, cross-site scripting (XSS), and buffer overflow attacks blocked by the WAF engine.
-- Compliance and auditing: Maintain a detailed audit trail of all web requests and security events to meet regulatory requirements like PCI-DSS and HIPAA using structured `Common Event Format` (CEF) logs.
-- Security posture monitoring: Track the effectiveness of WAF policies by monitoring event outcomes, block rates, and the distribution of attack types across different protected applications.
-- Operational troubleshooting: Correlate WAF security events with application performance data to distinguish between legitimate user issues and security-driven request blocks.
+
 
 ### Compatibility
 This integration has been tested and verified with the following third-party vendor versions:
