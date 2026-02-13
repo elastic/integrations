@@ -1,23 +1,16 @@
 # Fortinet FortiProxy Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
 The Fortinet FortiProxy integration for Elastic lets you collect logs from your secure web gateway to monitor performance and security. It's designed to help you centralize data within the Elastic Stack for advanced visibility and threat detection. By ingesting these logs, you'll be able to monitor user behavior, investigate security events, and audit compliance across your network.
 
-This integration facilitates:
-- Secure web gateway monitoring: You gain visibility into URL filtering and SSL inspection results to protect against online threats.
-- Web traffic analysis: You can monitor user behavior and bandwidth consumption to identify potential policy violations.
-- Data loss prevention (DLP): You'll track and alert on sensitive data leakage events to protect your property and meet regulatory requirements.
-- Security event detection: You'll investigate malware activity, intrusion attempts, and enforced web application policies.
-- System auditing: You can monitor administrative logins, configuration changes, and system performance through event logs.
-
 ### Compatibility
 
 You can use this integration with the following:
 - FortiProxy versions 7.x up to 7.4.3.
-- Newer versions of FortiProxy are expected to work correctly because they typically maintain backward compatibility with the default `syslog` format.
+- Later versions of FortiProxy are expected to work correctly because they typically maintain backward compatibility with the default `syslog` format, but have not been tested.
 
 ### How it works
 
@@ -55,7 +48,7 @@ To use this integration, you need the following vendor-specific prerequisites:
 
 You also need the following Elastic prerequisites:
 - Elastic Agent installed and enrolled in Fleet on a host that's network-accessible to the FortiProxy.
-- Kibana and Elasticsearch version 8.0 or higher for full compatibility with integration data streams.
+- Kibana and Elasticsearch version 8.0 or later for full compatibility with integration data streams.
 - The Elastic Agent must be assigned to a policy that includes the Fortinet FortiProxy integration.
 - The host running the Elastic Agent must listen on the specified port (for example, `514`) and can't have local firewall rules (like `iptables` or Windows Firewall) blocking incoming syslog traffic.
 
@@ -197,7 +190,7 @@ If you encounter issues while collecting logs from Fortinet FortiProxy, consider
 - Network port conflicts: If the Elastic Agent can't start the input, another service like a local syslog daemon might be using the configured port. You can check for port usage on Linux systems using the command `netstat -tulpn`.
 - Firewall or connectivity problems: If logs aren't appearing in Kibana, verify that the FortiProxy device can reach the Elastic Agent host. You can use a packet capture tool like `tcpdump port 514` on the Agent host to confirm that traffic is reaching the network interface.
 - Incorrect log format: Ensure that your FortiProxy device is configured to use the default log format with the CLI command `set format default`. If the device sends logs in CSV or a custom format, the integration's ingest pipeline won't be able to parse the data correctly.
-- Incomplete log messages or truncation: If very large log entries, such as those from SSL inspection, are appearing cut off, you may need to increase the `max_message_size` in the integration's advanced settings for the TCP or UDP input.
+- Incomplete log messages or truncation: If very large log entries, such as those from SSL inspection, are appearing cut off, you might need to increase the `max_message_size` in the integration's advanced settings for the TCP or UDP input.
 - Troubleshooting parsing failures: You can look for the `error.message` field in Kibana to identify why a specific log failed to parse. To help with this, you should enable the **Preserve original event** option in the integration settings so you can compare the raw log in `event.original` against the expected format.
 
 ## Performance and scaling

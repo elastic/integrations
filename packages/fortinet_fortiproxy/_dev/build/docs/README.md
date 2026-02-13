@@ -1,17 +1,10 @@
 # Fortinet FortiProxy Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
 The Fortinet FortiProxy integration for Elastic lets you collect logs from your secure web gateway to monitor performance and security. It's designed to help you centralize data within the Elastic Stack for advanced visibility and threat detection. By ingesting these logs, you'll be able to monitor user behavior, investigate security events, and audit compliance across your network.
-
-This integration facilitates:
-- Secure web gateway monitoring: You gain visibility into URL filtering and SSL inspection results to protect against online threats.
-- Web traffic analysis: You can monitor user behavior and bandwidth consumption to identify potential policy violations.
-- Data loss prevention (DLP): You'll track and alert on sensitive data leakage events to protect your property and meet regulatory requirements.
-- Security event detection: You'll investigate malware activity, intrusion attempts, and enforced web application policies.
-- System auditing: You can monitor administrative logins, configuration changes, and system performance through event logs.
 
 ### Compatibility
 
