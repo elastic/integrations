@@ -6,12 +6,6 @@
 
 The HPE Aruba CX integration for Elastic enables you to collect logs from HPE Aruba Networking CX Switch series, providing visibility into network operations, security events, and hardware health. By ingesting these logs into the Elastic Stack, you can monitor network stability, audit configuration changes, and maintain security compliance across your infrastructure.
 
-This integration facilitates:
-- Security auditing and compliance: Monitor authentication, authorization, and accounting (AAA) events, ACL hits, and port security violations to maintain a secure network perimeter.
-- Network health and stability: Track routing protocol events for BGP, OSPF, and EVPN, alongside spanning tree (MSTP/RPVST) changes to ensure high availability.
-- Hardware performance monitoring: Gain visibility into physical switch health by collecting logs related to fan speeds, power supply status, temperature fluctuations, and ASIC resource utilization.
-- Configuration change tracking: Audit administrative actions performed via SSH, WebUI (REST), or Console to ensure configuration integrity.
-
 ### Compatibility
 
 This integration is compatible with the following:
