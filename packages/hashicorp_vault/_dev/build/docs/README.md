@@ -6,12 +6,6 @@
 
 The Hashicorp Vault integration allows you to collect audit logs, operational logs, and performance metrics from your Vault environment into the Elastic Stack. This gives you comprehensive visibility into the security posture and operational health of your secrets management infrastructure.
 
-This integration helps you with the following use cases:
-- Security auditing and compliance: Monitor every request made to Vault to ensure compliance with your security policies. You can track who accessed what secret and when, providing a detailed audit trail.
-- Operational health monitoring: Track the health and performance of your Vault cluster by monitoring operational logs for system errors and performance issues. This allows you to proactively address problems before they impact availability.
-- Performance optimization and capacity planning: Use metrics to identify latency, track active clients, and monitor resource use. This data is essential for scaling your cluster effectively.
-- Threat detection and incident response: Identify suspicious patterns, such as repeated unauthorized access attempts or unusual API call volumes, using real-time audit log analysis in Kibana.
-
 ### Compatibility
 
 This integration has been tested with Hashicorp Vault version 1.11.
