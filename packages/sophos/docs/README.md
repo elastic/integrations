@@ -1,10 +1,8 @@
 # Sophos Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
-
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
 
 The Sophos integration for Elastic allows you to ingest, parse, and visualize logs from Sophos Unified Threat Management (UTM) and Sophos XG Firewall (SFOS) devices. This integration provides comprehensive security monitoring, threat detection, and network traffic analysis capabilities within the Elastic Stack.
 
@@ -244,16 +242,6 @@ The following are common configuration issues and their solutions:
 -   Incomplete UTM data:
     *   If specific UTM logs (like DNS) are missing, verify that those specific categories are checked in the **Remote Syslog Log Selection** menu on the UTM device.
 
-### Vendor resources
-
-For more information, refer to the following vendor resources:
-
--   [Sophos Firewall: Add a syslog server](https://docs.sophos.com/nsg/sophos-firewall/22.0/help/en-us/webhelp/onlinehelp/AdministratorHelp/SystemServices/LogSettings/SyslogServerAdd/)
--   [Sophos Firewall: Log settings](https://docs.sophos.com/nsg/sophos-firewall/20.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/SystemServices/LogSettings/)
--   [Sophos Community: XGS Firewall Syslog Communication](https://community.sophos.com/sophos-xg-firewall/f/discussions/149328/xgs-firewall-is-not-communicating-with-syslog-server)
--   [Sophos XG/SFOS Documentation](https://support.sophos.com/support/s/?language=en_US#t=AllTab&sort=relevancy)
--   [Sophos XG Syslog Guide (PDF)](https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/index.html)
-
 ## Performance and scaling
 
 To ensure optimal performance in high-volume environments, consider the following strategies:
@@ -274,12 +262,6 @@ For high-throughput environments processing logs from multiple large Sophos clus
 - Place Agents close to the data source to minimize latency and potential packet loss.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
-
-### Vendor resources
-- [Sophos Firewall: Log settings](https://docs.sophos.com/nsg/sophos-firewall/20.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/SystemServices/LogSettings/)
-- [Sophos Community: XGS Firewall Syslog Communication](https://community.sophos.com/sophos-xg-firewall/f/discussions/149328/xgs-firewall-is-not-communicating-with-syslog-server)
-- [Sophos XG Syslog Guide (PDF)](https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/index.html)
-- [Sophos XG/SFOS Documentation](https://support.sophos.com/support/s/?language=en_US#t=AllTab&sort=relevancy)
 
 ## Reference
 
