@@ -36,7 +36,10 @@ streams:
           - text: Client Secret
             value: client_secret
         description: >-
-          Authentication method to use for Event Hub and Storage Account. When set to 'connection_string' or left blank: connection_string and storage_account_key are required. When set to 'client_secret': OAuth2 authentication with Azure AD is used, requiring tenant_id, client_id, client_secret, and eventhub_namespace. Note: The same authentication type applies to both Event Hub and Storage Account for security consistency.
+          Authentication method to use for Event Hub and Storage Account.
+          When set to 'connection_string' or left blank: connection_string and storage_account_key are required.
+          When set to 'client_secret': Microsoft Entra ID client secret authentication is used, requiring tenant_id, client_id, client_secret, and eventhub_namespace.
+          Note: The same authentication type applies to both Event Hub and Storage Account for security consistency.
       - name: connection_string
         type: password
         secret: true
@@ -45,7 +48,8 @@ streams:
         required: false
         show_user: true
         description: >-
-          (Required when auth_type is 'connection_string' or left blank) The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) to learn more.
+          (Required when auth_type is 'connection_string' or left blank) The connection string required to communicate with Event Hubs.
+          See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) to learn more.
       - name: storage_account_key
         type: password
         secret: true
@@ -54,7 +58,8 @@ streams:
         required: false
         show_user: true
         description: >-
-          (Required when auth_type is 'connection_string' or left blank) The storage account key used to authorize access to data in your storage account. Not used when auth_type is 'client_secret'; OAuth2 is used for storage authentication instead.
+          (Required when auth_type is 'connection_string' or left blank) The storage account key used to authorize access to data in your storage account.
+          Not used when auth_type is 'client_secret'; client secret authentication is used for storage instead.
       - name: storage_account
         type: text
         title: Storage Account
@@ -70,7 +75,8 @@ streams:
         required: false
         show_user: true
         description: >-
-          (Required when auth_type is 'client_secret') Fully qualified Event Hub namespace (e.g., namespace.servicebus.windows.net). Do not use the short namespace name; use the complete FQDN.
+          (Required when auth_type is 'client_secret') Fully qualified Event Hub namespace (e.g., namespace.servicebus.windows.net).
+          Do not use the short namespace name; use the complete FQDN.
       - name: tenant_id
         type: text
         title: Tenant ID
@@ -78,7 +84,8 @@ streams:
         required: false
         show_user: true
         description: >-
-          (Required when auth_type is 'client_secret') Azure AD (Microsoft Entra ID) tenant ID. This is the directory/tenant where your Azure AD application is registered.
+          (Required when auth_type is 'client_secret') Microsoft Entra ID tenant ID.
+          This is the directory/tenant where your Microsoft Entra ID application is registered.
       - name: client_id
         type: text
         title: Client ID
@@ -86,7 +93,8 @@ streams:
         required: false
         show_user: true
         description: >-
-          (Required when auth_type is 'client_secret') Azure AD application (client) ID. The service principal must have 'Azure Event Hubs Data Receiver' role on the Event Hub and 'Storage Blob Data Contributor' role on the Storage Account.
+          (Required when auth_type is 'client_secret') Microsoft Entra ID application (client) ID.
+          The service principal must have 'Azure Event Hubs Data Receiver' role on the Event Hub and 'Storage Blob Data Contributor' role on the Storage Account.
       - name: client_secret
         type: password
         secret: true
@@ -95,7 +103,8 @@ streams:
         required: false
         show_user: true
         description: >-
-          (Required when auth_type is 'client_secret') Azure AD application client secret. Generate this secret in your Azure AD app registration.
+          (Required when auth_type is 'client_secret') Microsoft Entra ID application client secret.
+          Generate this secret in your Microsoft Entra ID app registration.
       - name: authority_host
         type: text
         title: Authority Host
@@ -104,7 +113,8 @@ streams:
         show_user: false
         default: https://login.microsoftonline.com
         description: >-
-          (Optional, for OAuth2) Azure AD authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud). Change for other Azure environments: Azure Government (https://login.microsoftonline.us), Azure China (https://login.chinacloudapi.cn), or Azure Germany (https://login.microsoftonline.de).
+          (Optional, for client secret authentication) Microsoft Entra ID authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud).
+          Change for other Azure environments: Azure Government (https://login.microsoftonline.us), Azure China (https://login.chinacloudapi.cn), or Azure Germany (https://login.microsoftonline.de).
       - name: storage_account_container
         type: text
         title: Storage Account Container
