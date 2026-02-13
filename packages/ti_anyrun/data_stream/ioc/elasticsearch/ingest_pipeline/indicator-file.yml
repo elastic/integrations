@@ -9,8 +9,6 @@ processors:
         - "(?i:^\\[?file:hashes\\.'?SHA-?1'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha1}'\\]?)"
         - "(?i:^\\[?file:hashes\\.'?SHA-?256'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha256}'\\]?)"
       ignore_failure: true
-
-  # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
   - append:
       field: "threat.indicator.file.hash.md5"
       value: "{{{ _tmp.md5 }}}"
@@ -27,7 +25,6 @@ processors:
       field: "threat.indicator.file.name"
       value: "{{{ _tmp.filename }}}"
       if: "ctx._tmp?.filename != null"
-
   - append:
       field: "related.hash"
       value: "{{{ _tmp.md5 }}}"
@@ -43,7 +40,6 @@ processors:
       value: "{{{ _tmp.sha256 }}}"
       if: "ctx._tmp?.sha256 != null"
       allow_duplicates: false
-
   - remove:
       field: "_tmp"
       ignore_missing: true

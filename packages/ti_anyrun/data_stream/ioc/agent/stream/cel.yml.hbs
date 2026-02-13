@@ -1,6 +1,11 @@
 config_version: "2"
 interval: {{interval}}
 resource.url: {{url}}/v1/feeds/taxii2/api1/collections/3dce855a-c044-5d49-9334-533c24678c5a/objects/
+resource.timeout: 5m
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
@@ -60,7 +65,7 @@ program: |
                         "last_timestamp": max(
                             timestamp(resp.?Header["X-TAXII-Date-Modified-Last"][0].orValue(state.?cursor.last_timestamp.orValue(state.modified_after))),
                             timestamp(state.?cursor.last_timestamp.orValue(state.modified_after))
-                            ),
+                        ),
                     },
                 }
             )
@@ -70,7 +75,7 @@ program: |
                     "error": {
                         "code": string(resp.StatusCode),
                         "id": string(resp.Status),
-                        "message": "GET:" +
+                        "message": "GET: " +
                         (
                             (size(resp.Body) != 0) ?
                                 string(resp.Body)
@@ -90,14 +95,7 @@ fields:
   _conf:
     ioc_expiration_duration: {{ioc_expiration_duration}}
 {{/if}}
-
-tags:
-{{#each tags as |tag|}}
-  - {{tag}}
-{{/each}}
-{{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
-{{/contains}}
 {{#if pipeline}}
 pipeline: {{pipeline}}
 {{/if}}
