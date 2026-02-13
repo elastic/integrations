@@ -158,7 +158,7 @@ After configuration is complete, verify that data is flowing correctly.
 
 **Issue**: Extremely large log lines cause truncation or parse failures
 
-- **Solution**: Exclude part `K` from `SecAuditLogParts`. Set to something like `ABFJZ`. Part K contains a full list of matched rules which can exceed the agent's buffer limits.
+- **Solution**: Exclude part `K` from `SecAuditLogParts`. Set to `ABFHJZ`. Part K contains a full list of matched rules which can exceed the agent's buffer limits.
 
 **Issue**: `error.message` shows `json: cannot unmarshal`
 

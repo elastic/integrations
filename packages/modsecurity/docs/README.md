@@ -162,7 +162,7 @@ If you encounter issues while setting up or running this integration, refer to t
 - ModSecurity fails to start with an unknown directive error:
     * If you get an error about `SecAuditLogFormat`, your version of ModSecurity might have been compiled without YAJL support. You'll need to reinstall or recompile ModSecurity with the YAJL library to enable JSON logging.
 - Extremely large log lines causing truncation or ingestion failures:
-    * You should exclude part `K` (the list of all rules matched) from your `SecAuditLogParts` directive. Including this part can create log entries that exceed the agent's buffer limits. Try using `SecAuditLogParts ABFJZ` instead.
+    * You should exclude part `K` (the list of all rules matched) from your `SecAuditLogParts` directive. Including this part can create log entries that exceed the agent's buffer limits. Try using `SecAuditLogParts ABFHJZ` instead.
 - Parsing errors like "cannot unmarshal":
     * This usually happens if the log file contains data that isn't valid JSON, possibly due to multiple logging formats writing to the same file. You can verify the file content by running the following command:
       ```bash
