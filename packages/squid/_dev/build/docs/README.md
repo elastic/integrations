@@ -6,12 +6,6 @@
 
 The Squid Proxy integration for Elastic enables you to collect and parse logs from Squid devices using Elastic Agent. This allows you to monitor web traffic, optimize cache performance, and perform security auditing within the Elastic Stack. By ingesting these logs, you'll gain visibility into bandwidth consumption, user behavior, and potential security threats.
 
-This integration facilitates:
-- Web traffic analysis: Monitor the volume and destination of web requests flowing through your proxy to understand user behavior and bandwidth consumption.
-- Cache performance optimization: Track cache hits and misses to tune Squid configuration for better response times and reduced outbound traffic.
-- Security auditing: Identify unauthorized access attempts, unusual request patterns, or connections to malicious domains by auditing detailed access logs.
-- Troubleshooting connectivity: Diagnose client connection issues by analyzing response codes and proxy-specific error messages in the `log` data stream.
-
 ### Compatibility
 
 This integration is compatible with the following:
@@ -100,7 +94,7 @@ To set up the integration in Kibana:
 
 Choose the configuration steps below that match your preferred input method:
 
-#### Collecting syslog from Squid via UDP
+#### Collecting syslog from Squid using UDP
 
 This input collects logs sent over the network using the UDP protocol.
 
@@ -111,7 +105,7 @@ This input collects logs sent over the network using the UDP protocol.
 - Custom UDP options (`udp_options`): Specify custom configuration options such as `read_buffer`, `max_message_size`, or `timeout`.
 - Processors (`processors`): Define processors to reduce fields or enhance events with metadata before parsing.
 
-#### Collecting syslog from Squid via TCP
+#### Collecting syslog from Squid using TCP
 
 This input collects logs sent over the network using the TCP protocol.
 
@@ -123,7 +117,7 @@ This input collects logs sent over the network using the TCP protocol.
 - Custom TCP options (`tcp_options`): Specify custom configuration options such as `max_message_size`.
 - Processors (`processors`): Define processors for data enhancement or filtering in the agent.
 
-#### Collecting syslog from Squid via filestream
+#### Collecting syslog from Squid using filestream
 
 This input collects logs directly from log files on the host where Elastic Agent is running.
 

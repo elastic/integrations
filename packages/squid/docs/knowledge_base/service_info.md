@@ -72,9 +72,9 @@ To ensure optimal performance in high-volume environments, consider the followin
 
 ## Kibana set up steps
 
-### Collecting syslog from Squid via UDP
+### Collecting syslog from Squid using UDP
 1. In Kibana, navigate to **Integrations** and search for **Squid**.
-2. Click **Add Squid** and select the **Collecting syslog from Squid via UDP** input.
+2. Click **Add Squid** and select the **Collecting syslog from Squid using UDP** input.
 3. Configure the following variables:
    - **UDP host to listen on** (`udp_host`): The interface the agent should listen on. Default: `localhost`.
    - **UDP port to listen on** (`udp_port`): The port to listen for incoming Squid logs. Default: `9537`.
@@ -84,9 +84,9 @@ To ensure optimal performance in high-volume environments, consider the followin
    - **Processors** (`processors`): Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.
 4. Save and deploy the integration.
 
-### Collecting syslog from Squid via TCP
+### Collecting syslog from Squid using TCP
 1. In Kibana, navigate to **Integrations** and search for **Squid**.
-2. Click **Add Squid** and select the **Collecting syslog from Squid via TCP** input.
+2. Click **Add Squid** and select the **Collecting syslog from Squid using TCP** input.
 3. Configure the following variables:
    - **TCP host to listen on** (`tcp_host`): The interface the agent should listen on. Default: `localhost`.
    - **TCP port to listen on** (`tcp_port`): The port to listen for incoming Squid logs. Default: `9537`.
@@ -97,9 +97,9 @@ To ensure optimal performance in high-volume environments, consider the followin
    - **Processors** (`processors`): Define processors to enhance or filter data in the agent before parsing.
 4. Save and deploy the integration.
 
-### Collecting syslog from Squid via filestream
+### Collecting syslog from Squid using filestream
 1. In Kibana, navigate to **Integrations** and search for **Squid**.
-2. Click **Add Squid** and select the **Collecting syslog from Squid via filestream** input.
+2. Click **Add Squid** and select the **Collecting syslog from Squid using filestream** input.
 3. Configure the following variables:
    - **Paths** (`paths`): The list of paths to look for Squid log files. Default: `['/var/log/squid-log.log']`.
    - **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event, added to the field `event.original`. Default: `False`.
