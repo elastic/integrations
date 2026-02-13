@@ -1,16 +1,10 @@
 # Cisco Nexus Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
 The Cisco Nexus integration for Elastic enables you to collect and parse system messages and error logs from Cisco Nexus series switches running NX-OS. These modular and fixed-port network switches are designed for data center environments, and this integration provides critical visibility into the operational health and security status of your networking infrastructure.
-
-This integration facilitates:
-- Infrastructure health monitoring: Monitor system-level events such as hardware failures, environmental alarms (temperature, power), and module status changes to ensure high availability.
-- Network troubleshooting: Analyze interface flaps, spanning tree (STP) changes, and routing protocol updates to identify and resolve connectivity issues quickly within the fabric.
-- Security auditing and compliance: Track user authentication attempts, configuration changes, and access control list (ACL) hits for security auditing.
-- Performance analysis: Review system resource warnings and buffer utilization logs to proactively address potential bottlenecks before they impact network performance.
 
 ### Compatibility
 
