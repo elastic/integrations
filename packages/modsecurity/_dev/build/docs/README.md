@@ -22,13 +22,13 @@ This integration collects data from ModSecurity by monitoring log files on the h
 The integration performs the following actions:
 
 *   Monitors log files matching the default pattern `/var/log/modsec-audit*`.
-*   Processes the data via the `auditlog` data stream.
+*   Processes the data using the `auditlog` data stream.
 *   Maps ModSecurity fields to ECS for consistent analysis across different log sources.
 
 ## What data does this integration collect?
 
 The ModSecurity Audit integration collects log messages of the following types:
-- `auditlog`: This data stream collects ModSecurity audit logs via the `logfile` input and parses the `JSON` structure into Elastic Common Schema (ECS) fields. This provides records of HTTP requests and responses, including headers and metadata, used for security auditing and forensic analysis. By default, the integration monitors files matching the pattern `/var/log/modsec-audit*`.
+- `auditlog`: This data stream collects ModSecurity audit logs using the `logfile` input and parses the `JSON` structure into Elastic Common Schema (ECS) fields. This provides records of HTTP requests and responses, including headers and metadata, used for security auditing and forensic analysis. By default, the integration monitors files matching the pattern `/var/log/modsec-audit*`.
 
 ### Supported use cases
 
@@ -45,14 +45,14 @@ Before you configure the integration, ensure the following requirements are met 
 - Administrative access: You must have `sudo` or root privileges to modify web server configurations (Nginx or Apache) and ModSecurity configuration files.
 - JSON support: Verify that your ModSecurity installation was compiled with YAJL support. Without this, the `SecAuditLogFormat JSON` directive will cause a configuration error.
 - Logging directory permissions: The Elastic Agent must have read permissions for the directory and file where ModSecurity writes its audit logs, such as `/var/log/`.
-- Disk space: Ensure adequate disk space is available for the serial audit log file. You'll want to implement log rotation (for example, via `logrotate`) to prevent disk exhaustion on high-traffic servers.
+- Disk space: Ensure adequate disk space is available for the serial audit log file. You'll want to implement log rotation (for example, using `logrotate`) to prevent disk exhaustion on high-traffic servers.
 
 ### Elastic prerequisites
 To use this integration, you need the following Elastic Stack components:
 - Elastic Agent: You must have an Elastic Agent installed on the host where ModSecurity is running and enrolled in a fleet policy.
 - Kibana and Elasticsearch: This integration requires Kibana version 8.11.0 or later (or 9.0.0+).
 - Network connectivity: The host must have outbound connectivity to the Elastic Stack (Elasticsearch and Fleet Server) on ports 443 or 9200/8220.
-- Integration asset installation: You must install the ModSecurity integration in Kibana via the Integrations app before data can be correctly parsed.
+- Integration asset installation: You must install the ModSecurity integration in Kibana through the Integrations app before data can be correctly parsed.
 
 ## How do I deploy this integration?
 
@@ -60,7 +60,7 @@ To use this integration, you need the following Elastic Stack components:
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in ModSecurity Audit
 
@@ -145,7 +145,7 @@ For help with Elastic ingest tools, check the [Common problems](https://www.elas
 If you encounter issues while setting up or running this integration, refer to these common problems and their solutions:
 - Logs aren't being parsed into fields: Make sure that `SecAuditLogFormat JSON` is enabled in your `modsecurity.conf` file. If logs are written in a different format, the integration won't be able to structure the data correctly.
 - Permission denied errors: Check that the Elastic Agent has read permissions for the log files and execution permissions for the parent directories. You can grant access by running a command like `chmod 644 /var/log/modsec-audit.json` as needed.
-- ModSecurity fails to start with an unknown directive error: If you see an error about `SecAuditLogFormat`, your version of ModSecurity might have been compiled without YAJL support. You'll need to reinstall or recompile ModSecurity with the YAJL library to enable JSON logging.
+- ModSecurity fails to start with an unknown directive error: If you get an error about `SecAuditLogFormat`, your version of ModSecurity might have been compiled without YAJL support. You'll need to reinstall or recompile ModSecurity with the YAJL library to enable JSON logging.
 - Extremely large log lines causing ingestion failures: You should exclude part `K` (the list of all rules matched) from your `SecAuditLogParts` directive. Including this part can create log entries that exceed the agent's buffer limits. Try using `SecAuditLogParts ABDEFHIJZ` instead.
 - Parsing errors like "cannot unmarshal": This usually happens if the log file contains data that isn't valid JSON. You can verify the file content by running the following command:
   ```bash
