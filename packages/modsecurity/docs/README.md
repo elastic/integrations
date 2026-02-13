@@ -19,7 +19,7 @@ This integration is compatible with the following third-party components:
 - ModSecurity v3 with Nginx connector
 - ModSecurity v3 with Apache connector
 
-Note that while ModSecurity v2 for Apache (v2.9.x) has been tested, only ModSecurity v3 is officially supported. To use this integration, you must compile ModSecurity with YAJL (Yet Another JSON Library) support to enable JSON output as described in the [ModSecurity Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-(v3.x)#secauditlogformat).
+While ModSecurity v2 for Apache (v2.9.x) has been tested, only ModSecurity v3 is officially supported. To use this integration, you must compile ModSecurity with YAJL (Yet Another JSON Library) support to enable JSON output as described in the [ModSecurity Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-(v3.x)#secauditlogformat).
 
 ### How it works
 
