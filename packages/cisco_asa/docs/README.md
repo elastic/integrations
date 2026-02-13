@@ -1,16 +1,10 @@
 # Cisco ASA Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
 The Cisco ASA integration for Elastic enables you to collect logs from Cisco Adaptive Security Appliance (ASA) hardware and virtual appliances. By ingesting these logs into the Elastic Stack, you can gain visibility into network traffic, monitor security events, and audit administrative actions.
-
-This integration facilitates:
-- Security monitoring and threat detection: You can monitor firewall logs to identify denied connection attempts, potential scanning activity, and known attack patterns.
-- Compliance auditing: You'll maintain a historical record of administrative access, configuration changes, and security policy enforcement for regulatory requirements.
-- Network troubleshooting: You can use detailed connection logs to diagnose connectivity issues, verify NAT translations, and analyze traffic flow patterns across different security zones.
-- Operational visibility: You'll track VPN session activity, including user logins and session durations, to monitor remote access usage and performance.
 
 ### Compatibility
 
