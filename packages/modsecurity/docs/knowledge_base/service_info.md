@@ -23,11 +23,8 @@ This integration can collect the following types of data:
 
 The ModSecurity integration is officially compatible with the following third-party components:
 
-- **ModSecurity v3** (LibModSecurity)
-- **ModSecurity v3 with Nginx connector**
-- **ModSecurity v3 with Apache Connector**
-
-The package also has tests for ModSecurity v2 for Apache (v2.9.x) but only ModSecurity v3 is officially supported.
+- **ModSecurity v3 (LibModSecurity) with Nginx connector**
+- **ModSecurity v2 for Apache** (v2.9.x)
 
 Support for JSON output [requires ModSecurity to be compiled with **YAJL** (Yet Another JSON Library) support](<https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-(v3.x)#secauditlogformat>).
 
@@ -176,3 +173,4 @@ After configuration is complete, verify that data is flowing correctly.
 # Documentation sites
 
 - [ModSecurity v3 Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-%28v3.x%29)
+- [ModSecurity v2 Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-%28v2.x%29)

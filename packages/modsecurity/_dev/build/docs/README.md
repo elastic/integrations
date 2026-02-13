@@ -15,11 +15,10 @@ You can use this integration to support several security operations:
 ### Compatibility
 
 This integration is compatible with the following third-party components:
-- ModSecurity v3 (LibModSecurity)
-- ModSecurity v3 with Nginx connector
-- ModSecurity v3 with Apache connector
+- ModSecurity v3 (LibModSecurity) with Nginx connector
+- ModSecurity v2 for Apache (v2.9.x)
 
-While ModSecurity v2 for Apache (v2.9.x) has been tested, only ModSecurity v3 is officially supported. To use this integration, you must compile ModSecurity with YAJL (Yet Another JSON Library) support to enable JSON output as described in the [ModSecurity Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-(v3.x)#secauditlogformat).
+Support for JSON output in ModSecurity v3 [requires ModSecurity to be compiled with YAJL (Yet Another JSON Library) support](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-(v3.x)#secauditlogformat).
 
 ### How it works
 
@@ -101,12 +100,6 @@ To configure ModSecurity for log collection, follow these steps to enable JSON-f
     *   For Nginx, run `sudo systemctl restart nginx`.
     *   For Apache, run `sudo systemctl restart apache2` or `sudo systemctl restart httpd`.
 
-#### Vendor resources
-
-For more information about ModSecurity configuration, refer to these resources:
-- [ModSecurity Integration | Elastic Docs](https://www.elastic.co/docs/reference/integrations/modsecurity)
-- [ModSecurity v3 Reference Manual - GitHub](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-(v3.x))
-
 ### Set up steps in Kibana
 
 To set up the integration in Kibana, follow these steps:
@@ -171,15 +164,6 @@ If you encounter issues while setting up or running this integration, refer to t
 - Logs appear in the wrong time range:
     * Check the timezone settings on your web server. You can adjust the `tz_offset` (Timezone Offset) variable in the integration settings to match your server's local time.
 
-### Vendor resources
-
-You can find more information about ModSecurity configuration and troubleshooting in the following resources:
-
-- [ModSecurity GitHub Repository](https://github.com/owasp-modsecurity/ModSecurity)
-- [OWASP Core Rule Set (CRS)](https://coreruleset.org/)
-- [ModSecurity v3 Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-(v3.x))
-- [ModSecurity Integration | Elastic Docs](https://www.elastic.co/docs/reference/integrations/modsecurity)
-
 ## Performance and scaling
 
 This integration uses the Elastic Agent `logfile` input to monitor local audit logs. To ensure optimal performance in high-volume environments, you can consider the following adjustments:
@@ -207,6 +191,7 @@ You can find more information about ModSecurity and its rulesets in these resour
 - [ModSecurity GitHub Repository](https://github.com/owasp-modsecurity/ModSecurity) - Source code and community issue tracker.
 - [OWASP Core Rule Set (CRS)](https://coreruleset.org/) - The standard rule set used with ModSecurity.
 - [ModSecurity v3 Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-%28v3.x%29)
+- [ModSecurity v2 Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-%28v2.x%29)
 
 ### Data streams
 
