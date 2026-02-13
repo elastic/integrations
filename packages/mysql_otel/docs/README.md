@@ -21,40 +21,42 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ### Prerequisites
 
-The MySQL user configured for monitoring requires different permissions depending on which metrics you want to collect:
+The MySQL user configured for monitoring requires the following permissions:
 
-**For basic metrics (connections, buffer pool, handlers, etc.):**
-- Ability to run `SHOW GLOBAL STATUS` (available by default to database users)
+**Primary instance:**
 
-**For query samples and statement events:**
 ```sql
+-- SHOW GLOBAL STATUS visibility and query sample access to information_schema.processlist
+GRANT PROCESS ON *.* TO '<MYSQL_USER>'@'%';
+
+-- Query samples, top queries, statement events (performance_schema access)
 GRANT SELECT ON performance_schema.* TO '<MYSQL_USER>'@'%';
+
+-- Table statistics (mysql.table.size, mysql.table.rows) and EXPLAIN for top query plans
+GRANT SELECT ON <your_database>.* TO '<MYSQL_USER>'@'%';
 ```
 
-**For table statistics metrics (`mysql.table.size`, `mysql.table.rows`):**
-```sql
-GRANT SELECT ON information_schema.TABLES TO '<MYSQL_USER>'@'%';
-```
+**Replica instance (for replication metrics):**
 
-**For replication metrics (`mysql.replica.sql_delay`, `mysql.replica.time_behind_source`):**
-
-MySQL:
 ```sql
+-- mysql.replica.time_behind_source, mysql.replica.sql_delay
+-- Works on both MySQL and MariaDB (MariaDB 10.5+ remaps this to BINLOG MONITOR)
 GRANT REPLICATION CLIENT ON *.* TO '<MYSQL_USER>'@'%';
 ```
 
-MariaDB:
-```sql
-GRANT REPLICA MONITOR ON *.* TO '<MYSQL_USER>'@'%';
-```
+**Performance Schema consumers:**
 
-**Recommended: Grant all permissions for complete monitoring:**
+The dashboards rely on the following Performance Schema consumers. Ensure they are enabled:
+
+- statements_digest (ON by default) — required for top queries and statement events
+- events_statements_current (ON by default) — required for query samples
+- events_waits_current (OFF by default) — required for wait event details in query samples
+
+Verify they are enabled:
+
 ```sql
-GRANT SELECT ON performance_schema.* TO '<MYSQL_USER>'@'%';
-GRANT SELECT ON information_schema.TABLES TO '<MYSQL_USER>'@'%';
-GRANT REPLICATION CLIENT ON *.* TO '<MYSQL_USER>'@'%';  -- MySQL only
--- OR for MariaDB:
--- GRANT REPLICA MONITOR ON *.* TO '<MYSQL_USER>'@'%';
+SELECT NAME, ENABLED FROM performance_schema.setup_consumers
+WHERE NAME IN ('statements_digest', 'events_statements_current', 'events_waits_current');
 ```
 
 ### Configuration
