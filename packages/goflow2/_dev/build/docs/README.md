@@ -1,6 +1,6 @@
 # GoFlow2 logs Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -42,7 +42,7 @@ Integrating GoFlow2 logs with Elastic provides visibility into network traffic p
 
 To use this integration, you need:
 
-*   **Elastic Stack version**: Ensure you are running an Elastic Stack version that supports Elastic Agent and Fleet (version 7.14.0 or higher is recommended).
+*   **Elastic Stack version**: Ensure you are running an Elastic Stack version that supports Elastic Agent and Fleet (version 8.11.0 or later is required).
 *   **Elastic Agent**: The agent must be installed and enrolled in a policy via Fleet. It requires network access to the Elasticsearch cluster to ship logs.
 *   **Administrative access**: You must have root or sudo privileges on the Linux server where GoFlow2 and the Elastic Agent will be installed.
 *   **GoFlow2 binary**: The GoFlow2 binary must be downloaded and placed in the system execution path (for example, `/usr/local/bin/`).
