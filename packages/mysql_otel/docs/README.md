@@ -24,7 +24,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 The MySQL user configured for monitoring requires different permissions depending on which metrics you want to collect:
 
 **For basic metrics (connections, buffer pool, handlers, etc.):**
-- Ability to execute `SHOW GLOBAL STATUS` (available by default to database users)
+- Ability to run `SHOW GLOBAL STATUS` (available by default to database users)
 
 **For query samples and statement events:**
 ```sql
@@ -62,11 +62,11 @@ GRANT REPLICATION CLIENT ON *.* TO '<MYSQL_USER>'@'%';  -- MySQL only
 Install and configure the upstream OpenTelemetry Collector or Elastic Distribution of OpenTelemetry (EDOT) Collector to export metrics to Elasticsearch. The configuration below uses separate receivers for primary and replica instances because replication metrics are only available on replicas.
 
 Replace the following placeholders in the configuration:
-- `<MYSQL_PRIMARY_ENDPOINT>`: MySQL primary instance endpoint (format: `host:port`, e.g., `localhost:3306` or `mysql-primary.example.com:3306`)
-- `<MYSQL_REPLICA_ENDPOINT>`: MySQL replica instance endpoint (format: `host:port`, e.g., `mysql-replica.example.com:3306`)
+- `<MYSQL_PRIMARY_ENDPOINT>`: MySQL primary instance endpoint (format: `host:port`, for example, `localhost:3306` or `mysql-primary.example.com:3306`)
+- `<MYSQL_REPLICA_ENDPOINT>`: MySQL replica instance endpoint (format: `host:port`, for example, `mysql-replica.example.com:3306`)
 - `<MYSQL_USER>`: MySQL username configured with required permissions
 - `<MYSQL_PASSWORD>`: MySQL user password
-- `<ES_ENDPOINT>`: Elasticsearch endpoint (e.g., `https://elasticsearch.example.com:9200`)
+- `<ES_ENDPOINT>`: Elasticsearch endpoint (for example, `https://elasticsearch.example.com:9200`)
 - `<ES_API_KEY>`: Elasticsearch API key for authentication
 
 ```yaml
