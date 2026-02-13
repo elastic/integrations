@@ -110,10 +110,10 @@ To configure remote logging via the Web UI:
 
 #### Filestream (logfile) collection
 
-If you prefer to collect logs from a file:
+If you prefer to collect logs from a file, you must first configure the AOS-CX switch (or an intermediate log collector) to export logs to the host where the Elastic Agent is running. The Elastic Agent does not pull logs from the appliance directly; it monitors local files on disk.
 
-1. Ensure the Elastic Agent has read permissions for the directory containing the AOS-CX logs.
-2. Configure the switch or an intermediate collector to write AOS-CX logs to a specific directory (e.g., `/var/log/audit/`).
+1. Configure the switch or an intermediate collector to write AOS-CX logs to a specific directory on the Elastic Agent host (e.g., `/var/log/audit/`).
+2. Ensure the Elastic Agent has read permissions for that directory.
 3. Ensure your log rotation mechanism allows the Elastic Agent to monitor both active and rotated files if you require historical data.
 
 #### Vendor resources
