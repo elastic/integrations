@@ -91,7 +91,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 4. Select **Add SentinelOne** to add the integration.
 5. Enable and configure only the collection methods which you will use.
 
-    * To **Collect SentinelOne logs via API**, you'll need to:
+    * To collect the logs from SentinelOne using API, you'll need to:
 
         - Configure **URL** and **API Token**.
         - Enable/Disable the required datasets.
