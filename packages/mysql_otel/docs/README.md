@@ -1,12 +1,12 @@
 # MySQL OpenTelemetry Assets
 
-This integration allows you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
+This package allows you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
 
-The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics and logs collected via the [OpenTelemetry MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.129.0/receiver/mysqlreceiver), enabling you to monitor database performance and troubleshoot issues effectively in real time.
+The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics and logs collected using the [OpenTelemetry MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.129.0/receiver/mysqlreceiver), enabling you to monitor database performance and troubleshoot issues effectively in real time.
 
 ## Compatibility
 
-The MySQL OpenTelemetry assets have been tested with [OpenTelemetry MySQL receiver v0.129.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/README.md).
+The MySQL OpenTelemetry assets have been tested with [OpenTelemetry MySQL receiver v0.145.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.145.0/receiver/mysqlreceiver/README.md).
 
 Databases tested against:
 - MySQL 8.0, 9.4
@@ -41,7 +41,15 @@ GRANT REPLICA MONITOR ON *.* TO '<MYSQL_USER>'@'%';
 
 ### Configuration
 
-Install and configure the upstream OpenTelemetry Collector to export metrics to Elasticsearch. The configuration below uses separate receivers for primary and replica instances since replication metrics are only available on replicas.
+Install and configure the upstream OpenTelemetry Collector or Elastic Distribution of OpenTelemetry (EDOT) Collector to export metrics to Elasticsearch. The configuration below uses separate receivers for primary and replica instances because replication metrics are only available on replicas.
+
+Replace the following placeholders in the configuration:
+- `<MYSQL_PRIMARY_ENDPOINT>`: MySQL primary instance endpoint (format: `host:port`, e.g., `localhost:3306` or `mysql-primary.example.com:3306`)
+- `<MYSQL_REPLICA_ENDPOINT>`: MySQL replica instance endpoint (format: `host:port`, e.g., `mysql-replica.example.com:3306`)
+- `<MYSQL_USER>`: MySQL username configured with required permissions
+- `<MYSQL_PASSWORD>`: MySQL user password
+- `<ES_ENDPOINT>`: Elasticsearch endpoint (e.g., `https://elasticsearch.example.com:9200`)
+- `<ES_API_KEY>`: Elasticsearch API key for authentication
 
 ```yaml
 receivers:
@@ -152,8 +160,8 @@ service:
 
 ### Metrics
 
-Please refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/metadata.yaml) of the OpenTelemetry MySQL receiver for details on available metrics.
+Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/metadata.yaml) of the OpenTelemetry MySQL receiver for details on available metrics.
 
 ### Logs
 
-Please refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/documentation.md) of the OpenTelemetry MySQL receiver for details on log collection.
+Refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/documentation.md) of the OpenTelemetry MySQL receiver for details on log collection.
