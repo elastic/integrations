@@ -1,7 +1,5 @@
 # ModSecurity Audit Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
-
 ## Overview
 
 The ModSecurity Audit integration for Elastic enables you to collect and analyze logs from ModSecurity, the open-source Web Application Firewall (WAF). This integration allows you to ingest detailed transaction logs into the Elastic Stack, providing visibility into HTTP requests and responses for real-time threat detection and forensic investigation.
@@ -33,7 +31,7 @@ The integration performs the following tasks:
 ## What data does this integration collect?
 
 The ModSecurity Audit integration collects log messages of the following types:
-- `auditlog`: This data stream collects ModSecurity audit logs via the `logfile` input and parses the `JSON` structure into Elastic Common Schema (ECS) fields. This provides records of HTTP requests and responses, including headers and metadata, used for security auditing and forensic analysis. By default, the integration monitors files matching the pattern `/var/log/modsec-audit*`.
+- `auditlog`: This data stream collects ModSecurity audit logs using the `logfile` input and parses the `JSON` structure into Elastic Common Schema (ECS) fields. This provides records of HTTP requests and responses, including headers and metadata, used for security auditing and forensic analysis. By default, the integration monitors files matching the pattern `/var/log/modsec-audit*`.
 
 ### Supported use cases
 
@@ -67,7 +65,7 @@ To use this integration, you need the following Elastic Stack components:
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ### Set up steps in ModSecurity Audit
 
@@ -148,7 +146,6 @@ To validate that the integration is working properly and data is flowing into El
 8. Verify that events appear with recent timestamps. Expand an entry to confirm that fields such as `event.dataset`, `source.ip`, and `event.original` (if enabled) are populated correctly.
 
 ## Troubleshooting
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
 
 For help with Elastic ingest tools, check the [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems) documentation. If you encounter issues specific to the ModSecurity Audit integration, refer to the sections below.
 
