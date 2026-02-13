@@ -1,19 +1,15 @@
 # Fortinet FortiEDR Logs Integration for Elastic
 
+> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
+
 ## Overview
 
 The Fortinet FortiEDR logs integration for Elastic enables you to collect and analyze endpoint security telemetry from your FortiEDR environment. By ingesting these logs into the Elastic Stack, you'll centralize monitoring, maintain long-term retention, and perform advanced threat hunting across your fleet.
 
-This integration facilitates:
-- Endpoint threat monitoring: You'll monitor real-time security events detected by FortiEDR to identify and respond to malware, ransomware, and unauthorized access attempts across your fleet.
-- Audit and compliance: You'll maintain a comprehensive audit trail of administrative actions and user activities within the FortiEDR console to satisfy regulatory compliance requirements.
-- Incident investigation: You'll leverage detailed process and network telemetry from FortiEDR logs to perform root cause analysis and reconstruct the timeline of security incidents.
-- Operational health oversight: You'll track system-level events and operational status changes within the FortiEDR environment to ensure your security infrastructure is functioning optimally.
-
 ### Compatibility
 
 This integration is compatible with the following vendor versions:
-- Fortinet FortiEDR version 5.0.0 and higher.
+- Fortinet FortiEDR version 5.0.0 and later.
 
 ### How it works
 
@@ -122,17 +118,6 @@ To configure the integration in Kibana, follow these steps:
 
 Choose the setup instructions below that match your configuration:
 
-#### Log file input configuration
-
-Select the **Collecting logs from Fortinet FortiEDR instances (input: logfile)** input type and configure these variables:
-
-* **Paths** (`paths`): The list of paths to the log files. Default: `['/var/log/fortinet-edr.log']`.
-* **Timezone offset (+HH:mm format)** (`tz_offset`): The timezone offset for the logs. Default: `local`.
-* **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event in `event.original`. Default: `false`.
-* **Tags** (`tags`): Custom tags to add to the events. Default: `['fortinet-fortiedr', 'forwarded']`.
-* **Enable debug logging** (`debug`): Enable debug logging for the input. Default: `false`.
-* **Processors** (`processors`): Add custom processors to reduce fields or enhance metadata.
-
 #### TCP input configuration
 
 Select the **Collecting logs from Fortinet FortiEDR instances (input: tcp)** input type and configure these variables:
@@ -160,6 +145,17 @@ Select the **Collecting logs from Fortinet FortiEDR instances (input: udp)** inp
 * **Keep raw parser fields** (`keep_raw_fields`): If `true`, the integration keeps the original fields from the parser. Default: `false`.
 * **Enable debug logging** (`debug`): Enable debug logging for the input. Default: `false`.
 * **Custom UDP Options** (`udp_options`): Specify custom configuration options such as `read_buffer` or `max_message_size`.
+* **Processors** (`processors`): Add custom processors to reduce fields or enhance metadata.
+
+#### Log file input configuration
+
+Select the **Collecting logs from Fortinet FortiEDR instances (input: logfile)** input type and configure these variables:
+
+* **Paths** (`paths`): The list of paths to the log files. Default: `['/var/log/fortinet-edr.log']`.
+* **Timezone offset (+HH:mm format)** (`tz_offset`): The timezone offset for the logs. Default: `local`.
+* **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event in `event.original`. Default: `false`.
+* **Tags** (`tags`): Custom tags to add to the events. Default: `['fortinet-fortiedr', 'forwarded']`.
+* **Enable debug logging** (`debug`): Enable debug logging for the input. Default: `false`.
 * **Processors** (`processors`): Add custom processors to reduce fields or enhance metadata.
 
 After configuring the input, assign the integration to an agent policy and click **Save and continue**.
@@ -208,8 +204,6 @@ If you encounter issues while setting up or using the Fortinet FortiEDR Logs int
 - Message truncation:
     For large security events sent using UDP, logs might be truncated. Increase the `max_message_size` and `read_buffer` in the **Custom UDP Options** if you notice incomplete payloads.
 
-For vendor documentation links, see the [Vendor documentation links](#vendor-documentation-links) section.
-
 ## Performance and scaling
 
 To ensure optimal performance in high-volume environments, consider these strategies:
@@ -250,4 +244,3 @@ You can find additional information about Fortinet FortiEDR logs in the followin
 - [FortiEDR Administration Guide: Automated Incident Response - Playbooks](https://docs.fortinet.com/document/fortiedr/7.2.0/administration-guide/419440/automated-incident-response-playbooks-page)
 - [Fortinet FortiEDR Administration Guide](https://docs.fortinet.com/document/fortiedr/7.2.0/administration-guide)
 - [Fortinet Documentation Library](https://docs.fortinet.com/)
-- [Elastic Fortinet FortiEDR Integration Reference](https://www.elastic.co/docs/reference/integrations/fortinet_fortiedr)
