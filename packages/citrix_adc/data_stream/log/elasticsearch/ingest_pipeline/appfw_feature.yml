@@ -29,6 +29,19 @@ processors:
         - '^gRPC%{SPACE}Validation%{SPACE}relaxation%{SPACE}rule%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.rule}%{SPACE}hit%{SPACE}at%{SPACE}url%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.url}$'
         - '%{GREEDYDATA:citrix_adc.log.message}'
       ignore_failure: true
+  - grok:
+      description: Parse transaction info to extract transaction ID and PPE identifier.
+      tag: grok_trans_info
+      field: _tmp.trans_info
+      patterns:
+        - '^%{NUMBER:citrix_adc.log.transaction_id}-%{GREEDYDATA:citrix_adc.log.ppe}$'
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      description: Remove temporary transaction info field.
+      tag: remove_tmp_trans_info
+      field: _tmp.trans_info
+      ignore_missing: true
   - append:
       field: related.ip
       tag: append_source_ip_to_related_ip
