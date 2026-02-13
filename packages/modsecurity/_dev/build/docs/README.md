@@ -206,9 +206,7 @@ You can find more information about ModSecurity and its rulesets in these resour
 
 - [ModSecurity GitHub Repository](https://github.com/owasp-modsecurity/ModSecurity) - Source code and community issue tracker.
 - [OWASP Core Rule Set (CRS)](https://coreruleset.org/) - The standard rule set used with ModSecurity.
-- [ModSecurity Integration Reference | Elastic Docs](https://www.elastic.co/docs/reference/integrations/modsecurity)
 - [ModSecurity v3 Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-%28v3.x%29)
-- [Elastic Agent Troubleshooting](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems)
 
 ### Data streams
 

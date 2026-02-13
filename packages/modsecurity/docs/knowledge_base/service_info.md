@@ -175,6 +175,4 @@ After configuration is complete, verify that data is flowing correctly.
 
 # Documentation sites
 
-- [ModSecurity Integration Reference | Elastic Docs](https://www.elastic.co/docs/reference/integrations/modsecurity)
 - [ModSecurity v3 Reference Manual](https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-%28v3.x%29)
-- [Elastic Agent Troubleshooting](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems)
