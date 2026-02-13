@@ -1,6 +1,6 @@
 # Arista NG Firewall Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -47,7 +47,7 @@ To use this integration, you'll need the following vendor prerequisites:
 - The IP address or hostname of the machine running the Elastic Agent to configure the remote syslog target.
 
 You'll also need the following Elastic prerequisites:
-- Elastic Stack (Elasticsearch and Kibana) version `8.11.0` or later for full compatibility.
+- Elastic Stack (Elasticsearch and Kibana) version `8.11.0` or later.
 - An active Elastic Agent installed and enrolled in Fleet.
 - The Arista NG Firewall integration added to an Elastic Agent policy.
 - Port `9010` (or your custom-configured port) open on the Elastic Agent host to accept incoming TCP/UDP syslog traffic.
