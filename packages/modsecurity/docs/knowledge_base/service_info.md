@@ -21,19 +21,22 @@ This integration can collect the following types of data:
 
 ## Compatibility
 
-The ModSecurity integration is compatible with the following third-party components:
+The ModSecurity integration is officially compatible with the following third-party components:
 
 - **ModSecurity v3** (LibModSecurity)
 - **ModSecurity v3 with Nginx connector**
 - **ModSecurity v3 with Apache Connector**
-- Support for JSON output [requires ModSecurity to be compiled with **YAJL** (Yet Another JSON Library) support](<https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-(v3.x)#secauditlogformat>).
+
+The package also has tests for ModSecurity v2 for Apache (v2.9.x) but only ModSecurity v3 is officially supported.
+
+Support for JSON output [requires ModSecurity to be compiled with **YAJL** (Yet Another JSON Library) support](<https://github.com/owasp-modsecurity/ModSecurity/wiki/Reference-Manual-(v3.x)#secauditlogformat>).
 
 ## Scaling and Performance
 
 To ensure optimal performance in high-volume environments, consider the following:
 
 - **Transport/Collection Considerations:** This integration utilizes the Elastic Agent `logfile` input to monitor local audit logs. Note that Setting `SecAuditLogType` to `Serial` helps the performance by ensuring that all audit events are written to a single file. The `Concurrent` logging method creates a file per transaction and increases the risk of I/O being the bottleneck.
-- **Data Volume Management:** To manage data volume and prevent ingestion failures, users must exclude **Part K** (the list of all rules matched) from the `SecAuditLogParts` directive. Including Part K can create excessively large log entries that exceed the maximum line size limits for parsing. One can significantly reducing storage overhead and ingestion noise by only logging relevant transactions: `SecAuditEngine RelevantOnly` ensures that only transactions that trigger a warning or error are logged, or `SecAuditLogRelevantStatus` can be used to filter for specific HTTP codes.
+- **Data Volume Management:** To manage data volume and prevent ingestion failures, users should exclude **Part K** (the list of all rules matched) from the `SecAuditLogParts` directive. Including Part K can create excessively large log entries that exceed the maximum line size limits for parsing. One can significantly reducing storage overhead and ingestion noise by only logging relevant transactions: `SecAuditEngine RelevantOnly` ensures that only transactions that trigger a warning or error are logged, or `SecAuditLogRelevantStatus` can be used to filter for specific HTTP codes.
 - **Elastic Agent Scaling:** In distributed environments with multiple web server nodes, deploy an Elastic Agent on each node to collect logs locally rather than forwarding over the network. For high-traffic servers, ensure the Agent host has sufficient CPU and memory for real-time JSON parsing.
 
 # Set Up Instructions
@@ -75,7 +78,7 @@ This includes suggested configuration, but can be modified for a specific use ca
     ```apache
     SecAuditLogType Serial
     ```
-5.  **Define Log Parts**: Specify which transaction parts to include. **CRITICAL**: Exclude part `K` to prevent ingestion issues. Can also include `C` for full request body.
+5.  **Define Log Parts**: Specify which transaction parts to include. Note it is recommended to exclude part `K` to prevent ingestion issues. Can also include `C` for full request body.
     ```apache
     SecAuditLogParts ABFHJZ
     ```
@@ -132,7 +135,7 @@ After configuration is complete, verify that data is flowing correctly.
 4. Verify logs appear. Expand a log entry and confirm fields of interest, such as:
    - `event.dataset` (should match `modsecurity.auditlog`)
    - `source.ip` (the client IP originating the request)
-   - `event.original` (the raw JSON log payload)
+   - `event.original` (the raw JSON log payload, if `preserve_original_event` is set to `true`)
    - `http` fields (request and response metadata)
 
 # Troubleshooting
@@ -155,7 +158,7 @@ After configuration is complete, verify that data is flowing correctly.
 
 **Issue**: Extremely large log lines cause truncation or parse failures
 
-- **Solution**: Exclude part `K` from `SecAuditLogParts`. Set to `ABDEFHIJZ`. Part K contains a full list of matched rules which can exceed the agent's buffer limits.
+- **Solution**: Exclude part `K` from `SecAuditLogParts`. Set to something like `ABFJZ`. Part K contains a full list of matched rules which can exceed the agent's buffer limits.
 
 **Issue**: `error.message` shows `json: cannot unmarshal`
 
