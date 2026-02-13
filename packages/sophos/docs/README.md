@@ -6,12 +6,6 @@
 
 The Sophos integration for Elastic Agent allows organizations to ingest, parse, and visualize logs from Sophos Unified Threat Management (UTM) and Sophos XG Firewall (SFOS) devices.
 
-This integration facilitates:
-- Threat detection and security monitoring: Monitor firewall logs, packet filter events, and intrusion prevention alerts to identify and respond to potential security threats in real-time.
-- Network visibility and traffic analysis: Analyze DNS, DHCP, and HTTP traffic logs to understand network usage patterns and identify shadow IT or unauthorized resource access.
-- Compliance and auditing: Maintain long-term storage of firewall activity and administrative changes to satisfy regulatory requirements and support forensic investigations.
-- Troubleshooting and performance optimization: Use detailed log data to diagnose connectivity issues, identify misconfigured firewall rules, and monitor system health across the security estate.
-
 ### Compatibility
 
 The Sophos integration is compatible with the following third-party vendor products:
@@ -26,9 +20,9 @@ All logs are expected in the Default Sophos syslog format, which is then parsed 
 
 ## What data does this integration collect?
 
-The Sophos integration collects the following types of data:
-*   Sophos XG logs: Comprehensive firewall telemetry including security heartbeats, system events, and traffic logs.
-*   Sophos UTM logs: Telemetry from Unified Threat Management (formerly Astaro) devices, covering specific log categories such as DNS, DHCP, HTTP, and Packet Filter logs.
+The Sophos integration collects the following types of log data:
+*   Sophos XG logs (`xg`): Comprehensive firewall telemetry including security heartbeats, system events, and traffic logs. These logs can be ingested via TCP, UDP, or by reading directly from a logfile.
+*   Sophos UTM logs (`utm`): Telemetry from Unified Threat Management (formerly Astaro) devices, covering specific log categories such as DNS, DHCP, HTTP, and Packet Filter logs.
 *   Security events: Captures Antivirus detections, Intrusion Prevention System (IPS) alerts, and Advanced Threat Protection (ATP) events.
 *   System activity: Tracks administrative logons, configuration changes, and system health notifications from the Sophos appliances.
 
@@ -41,6 +35,7 @@ Integrating Sophos logs with Elastic provides a powerful solution for enhancing 
 *   Network traffic analysis: Use Kibana dashboards to visualize and analyze network traffic patterns, helping to identify anomalies and optimize network performance.
 *   Compliance and auditing: Maintain a searchable, long-term archive of firewall logs, administrative actions, and configuration changes to meet compliance requirements.
 *   Incident response: Accelerate incident investigation by correlating firewall data with other security and observability data sources within Elastic.
+*   Troubleshooting and performance optimization: Use detailed log data to diagnose connectivity issues, identify misconfigured firewall rules, and monitor system health across the security estate.
 
 ## What do I need to use this integration?
 
@@ -50,7 +45,7 @@ Before you can use this integration, you need to ensure the following prerequisi
 
 You need the following from the Sophos environment:
 - Administrative credentials for the Sophos WebAdmin or XG Firewall web console to configure log export settings.
-- Network connectivity between the firewall and the Elastic Agent host on the configured ports (Default ports: UDP 9005/9549, TCP 9005/9549, or custom ports).
+- Network connectivity between the firewall and the Elastic Agent host on the configured ports (default ports are UDP 9005/9549 or TCP 9005/9549).
 - For Sophos XG, the syslog format set to `Device Standard Format` or `Default` for correct parsing.
 - Appropriate logging and reporting features enabled within your Sophos licensing tier.
 
@@ -64,8 +59,6 @@ You need the following for the Elastic deployment:
 
 ## How do I deploy this integration?
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
-
 ### Agent-based deployment
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
@@ -77,8 +70,6 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 Configure your Sophos device to send logs to the Elastic Agent using the following instructions.
 
 #### Sophos XG Firewall (SFOS)
-
-Follow these steps to configure syslog forwarding on Sophos XG:
 
 1. Log in to the Sophos XG Firewall web admin console.
 2. Navigate to **System services > Log settings**.
@@ -97,8 +88,6 @@ Follow these steps to configure syslog forwarding on Sophos XG:
 
 #### Sophos UTM
 
-Follow these steps to configure remote syslog on Sophos UTM:
-
 1. Log in to the Sophos UTM WebAdmin interface.
 2. Navigate to **Logging & Reporting > Log Settings**.
 3. Click on the **Remote Syslog Server** tab.
@@ -114,15 +103,11 @@ Follow these steps to configure remote syslog on Sophos UTM:
 
 #### Vendor resources
 
-Refer to the following resources for more information:
-
-- [Sophos Firewall: Add a syslog server](https://docs.sophos.com/nsg/sophos-firewall/22.0/help/en-us/webhelp/onlinehelp/AdministratorHelp/SystemServices/LogSettings/SyslogServerAdd/) - Guide on configuring remote syslog targets.
-- [Sophos Firewall: Log settings](https://docs.sophos.com/nsg/sophos-firewall/20.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/SystemServices/LogSettings/) - Instructions for managing log modules and severity.
-- [Sophos Community: XGS Firewall Syslog Communication](https://community.sophos.com/sophos-xg-firewall/f/discussions/149328/xgs-firewall-is-not-communicating-with-syslog-server) - Community discussion for troubleshooting connectivity.
+- [Sophos Firewall: Add a syslog server](https://docs.sophos.com/nsg/sophos-firewall/22.0/help/en-us/webhelp/onlinehelp/AdministratorHelp/SystemServices/LogSettings/SyslogServerAdd/)
+- [Sophos Firewall: Log settings](https://docs.sophos.com/nsg/sophos-firewall/20.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/SystemServices/LogSettings/)
+- [Sophos Community: XGS Firewall Syslog Communication](https://community.sophos.com/sophos-xg-firewall/f/discussions/149328/xgs-firewall-is-not-communicating-with-syslog-server)
 
 ### Set up steps in Kibana
-
-To configure the integration in Kibana, follow these steps:
 
 1. In Kibana, navigate to **Management > Integrations** and search for **Sophos**.
 2. Click **Add Sophos**.
@@ -202,25 +187,21 @@ Select **Collecting syslog from Sophos via file** and configure the following se
 
 After configuration is complete, follow these steps to verify data is flowing correctly from Sophos to the Elastic Stack.
 
-#### Trigger data flow on Sophos
-
-Perform the following actions on your Sophos device:
-- **Generate Traffic Event:** From a client machine behind the Sophos firewall, browse to several public websites to generate HTTP and Firewall log entries.
-- **Generate Admin Event:** Log out of the Sophos WebAdmin/Web Console and log back in to trigger authentication and system audit events.
-- **Generate Config Event:** Make a minor, non-disruptive change to a description field in a firewall rule and click **Save** or **Apply** to trigger a configuration log.
-
-#### Check data in Kibana
-
-Follow these steps to confirm data ingestion:
-1. Navigate to **Analytics > Discover**.
-2. Select the `logs-*` data view.
-3. Enter the following KQL filter: `data_stream.dataset : "sophos.xg" OR data_stream.dataset : "sophos.utm"`.
-4. Verify logs appear in the results. Expand a log entry and confirm these fields are populated:
-    - `event.dataset` (should match `sophos.xg` or `sophos.utm`)
-    - `source.ip` and/or `destination.ip`
-    - `event.action` or `event.outcome`
-    - `message` (containing the raw Sophos syslog payload)
-5. Navigate to **Analytics > Dashboards** and search for "Sophos" to view pre-built visualizations for traffic and security events.
+1.  **Verify Elastic Agent status**: Navigate to **Management > Fleet > Agents** in Kibana and ensure the Elastic Agent status is "Healthy" and "Active".
+2.  **Trigger data flow on Sophos**:
+    -   **Generate Traffic Event**: From a client machine behind the Sophos firewall, browse to several public websites to generate HTTP and Firewall log entries.
+    -   **Generate Admin Event**: Log out of the Sophos WebAdmin/Web Console and log back in to trigger authentication and system audit events.
+    -   **Generate Config Event**: Make a minor, non-disruptive change to a description field in a firewall rule and click **Save** or **Apply** to trigger a configuration log.
+3.  **Check data in Kibana**:
+    -   Navigate to **Analytics > Discover**.
+    -   Select the `logs-*` data view.
+    -   Enter the following KQL filter: `data_stream.dataset : "sophos.xg" OR data_stream.dataset : "sophos.utm"`.
+    -   Verify logs appear in the results. Expand a log entry and confirm these fields are populated:
+        -   `event.dataset` (should match `sophos.xg` or `sophos.utm`)
+        -   `source.ip` and/or `destination.ip`
+        -   `event.action` or `event.outcome`
+        -   `message` (containing the raw Sophos syslog payload)
+    -   Navigate to **Analytics > Dashboards** and search for "Sophos" to view pre-built visualizations for traffic and security events.
 
 ## Troubleshooting
 
@@ -319,7 +300,7 @@ To collect logs via TCP, select **Collect logs via TCP** and configure the follo
 To enable encrypted connections, configure the following SSL settings:
 
 **SSL Settings:**
-- Enable SSL* - Toggle to enable SSL/TLS encryption
+- Enable SSL - Toggle to enable SSL/TLS encryption
 - Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
 - Certificate Key - Path to the private key file (`.key`)
 - Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
