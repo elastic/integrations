@@ -1,6 +1,6 @@
 # Broadcom ProxySG Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -75,7 +75,7 @@ You'll need to configure your ProxySG appliance to send logs to the host where y
 
 #### Syslog (TCP/UDP) collection
 
-To send logs via syslog, follow these steps:
+To send logs using syslog, follow these steps:
 
 1. Log in to your **ProxySG Management Console**.
 2. Navigate to **Configuration > Access Logging > Logs > General**.
@@ -131,7 +131,7 @@ You'll need to add the integration to an Elastic Agent policy in Kibana.
 1. In Kibana, navigate to **Management > Integrations**.
 2. Search for **Broadcom ProxySG** and select it.
 3. Click **Add Broadcom ProxySG**.
-4. Configure the integration settings based on the input method you chose in the ProxySG setup.
+4. Configure the integration settings based on the input method that matches your ProxySG setup.
 
 #### Collecting access logs via logging server file
 
@@ -153,7 +153,7 @@ Under **Advanced options**, you'll find these settings:
 
 #### Collecting logs via UDP
 
-Use this input if you configured ProxySG to send logs via UDP syslog.
+Use this input if you configured ProxySG to send logs using UDP syslog.
 
 | Setting | Description |
 |---|---|
@@ -172,7 +172,7 @@ Under **Advanced options**, you'll find these settings:
 
 #### Collecting logs via TCP
 
-Use this input if you configured ProxySG to send logs via TCP syslog.
+Use this input if you configured ProxySG to send logs using TCP syslog.
 
 | Setting | Description |
 |---|---|
@@ -227,14 +227,14 @@ If you encounter issues with the Broadcom ProxySG integration, review these comm
 - Custom client port conflict: If you're using the syslog method, ensure no other service on the Elastic Agent host is using the configured TCP or UDP port. You can use `netstat -ano` or `ss -tuln` to verify port availability.
 - VPM policy not applied: If no logs are appearing, verify that the **Modify Access Logging** action is correctly applied to the relevant rules in the Visual Policy Manager and that the policy has been successfully installed.
 - Parsing failures: If logs appear in Kibana but contain a `_grokparsefailure` or `_jsonparseerror` tag, verify that the raw message in the `event.original` field matches the expected structure of the configured ProxySG format.
-- Timezone mismatch: If logs appear to be delayed or from the future, check that the ProxySG appliance and the Elastic Agent host are synchronized via NTP and that timezone offsets are correctly handled in the integration settings.
+- Timezone mismatch: If logs appear to be delayed or from the future, check that the ProxySG appliance and the Elastic Agent host are synchronized using NTP and that timezone offsets are correctly handled in the integration settings.
 
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 To ensure optimal performance in high-volume environments, consider the following:
-- Transport and collection: For real-time requirements, TCP is the recommended transport protocol to ensure delivery reliability via the `ProxySG logs (via TCP)` input. You can use UDP for high-velocity environments where occasional packet loss is acceptable for reduced overhead. When you use the `ProxySG Access logs` (`filestream`) method, make sure the disk I/O on the logging server can handle the write and read operations of the incoming log files.
+- Transport and collection: For real-time requirements, TCP is the recommended transport protocol to ensure delivery reliability using the `ProxySG logs (via TCP)` input. You can use UDP for high-velocity environments where occasional packet loss is acceptable for reduced overhead. When you use the `ProxySG Access logs` (`filestream`) method, make sure the disk I/O on the logging server can handle the write and read operations of the incoming log files.
 - Data volume management: In high-traffic environments, you should use the ProxySG's Web Access Policy to filter out unnecessary logs—such as specific health checks or trusted internal traffic—at the source before you send them to the Elastic Agent. This significantly reduces the processing load on both the appliance and the Elastic Stack ingest pipelines.
 - Elastic Agent scaling: If you're working in high-throughput environments exceeding 10,000 events per second, deploy multiple Elastic Agents behind a network load balancer to distribute the Syslog (TCP/UDP) ingestion load. Make sure the host machine for the Agent has enough CPU resources to handle the concurrent parsing of the ProxySG logs across multiple data streams.
 
