@@ -12,9 +12,17 @@ source:
       script:
         source: |
           if (params._source?.ess?.billing?.deployment_tags != null) {
-            for (tag in params._source.ess.billing.deployment_tags) {
-              if (tag.startsWith('chargeback_group:')) {
-                emit(tag.substring('chargeback_group:'.length()));
+            def tags = params._source.ess.billing.deployment_tags;
+            if (tags instanceof List) {
+              for (tag in tags) {
+                if (tag.startsWith('chargeback_group:')) {
+                  emit(tag.substring('chargeback_group:'.length()));
+                  return;
+                }
+              }
+            } else if (tags instanceof String) {
+              if (tags.startsWith('chargeback_group:')) {
+                emit(tags.substring('chargeback_group:'.length()));
                 return;
               }
             }
@@ -59,4 +67,4 @@ _meta:
   run_as_kibana_system: false
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.2.5
+  fleet_transform_version: 0.2.6
