@@ -13,7 +13,7 @@ The WatchGuard Firebox integration allows for the seamless ingestion and analysi
 
 This integration collects the following data streams from WatchGuard Firebox appliances:
 
-- **WatchGuard Firebox logs (`watchguard_firebox.log`):** This stream collects logs via syslog over UDP (default port `9528`). It captures a wide range of Fireware OS log messages, including:
+- **WatchGuard Firebox logs (`watchguard_firebox.log`):** This stream collects logs using syslog over UDP (default port `9528`). It captures a wide range of Fireware OS log messages, including:
     - **Firewall Traffic Logs:** Detailed information about permitted and denied connections, including source/destination IP addresses, ports, and protocols.
     - **Security Service Events:** Logs from security modules such as Gateway AntiVirus, Intrusion Prevention Service (IPS), WebBlocker, and Application Control.
     - **Authentication Logs:** Records of user login attempts to the firewall UI, VPN connections, and proxy authentication events.
@@ -41,14 +41,14 @@ To ensure optimal performance in high-volume environments, consider the followin
 
 ## Elastic prerequisites
 
-- **Elastic Agent:** Must be installed on a host and managed via Fleet.
+- **Elastic Agent:** Must be installed on a host and managed through Fleet.
 - **Kibana Version:** Requires version **8.13.0** or higher.
 - **Agent Enrollment:** The Elastic Agent must be successfully enrolled in a Fleet policy.
 - **Port Availability:** The UDP port specified in the integration (default `9528`) must be open on the host's firewall to allow incoming traffic from the Firebox.
 
 ## Vendor set up steps
 
-### For Configuration via Fireware Web UI:
+### For Configuration using Fireware Web UI:
 1. Log in to the **Fireware Web UI** using your administrative credentials.
 2. From the left navigation menu, navigate to **System > Logging**.
 3. Select the **Syslog Server** tab.
@@ -62,7 +62,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 11. Under **Syslog Settings**, confirm the facility codes for different log types (Alarm, Traffic, Event, etc.). It is recommended to keep the defaults (Local0 - Local4).
 12. Click **OK**, and then click **Save** on the Logging page to apply the changes to the Firebox.
 
-### For Configuration via Policy Manager:
+### For Configuration using Policy Manager:
 1. Open the **WatchGuard Policy Manager** and connect to your Firebox.
 2. Navigate to **Setup > Logging**.
 3. Select the **Send log messages to these syslog servers** check box.
@@ -84,7 +84,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 1. In Kibana, navigate to **Management > Integrations**.
 2. Search for and select **WatchGuard Firebox**.
 3. Click **Add WatchGuard Firebox**.
-4. Configure the integration with the following settings for the **Collect WatchGuard Firebox logs via UDP input** section:
+4. Configure the integration with the following settings for the **Collect WatchGuard Firebox logs using UDP input** section:
     * **Listen Address** (`listen_address`): The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces. Default: `localhost`.
     * **Listen Port** (`listen_port`): The UDP port number to listen on. Default: `9528`.
     * **Timezone Offset** (`tz_offset`): Use this to adjust the timezone offset when importing logs from a host in a different timezone (e.g., `Europe/Amsterdam` or `-05:00`). Default: `UTC`.
@@ -112,7 +112,7 @@ After configuration is complete, verify that data is flowing correctly.
 3. Enter the KQL filter: `data_stream.dataset : "watchguard_firebox.log"`
 4. Verify logs appear. Expand a log entry and confirm these fields:
    - `event.dataset` (should be `watchguard_firebox.log`)
-   - `source.ip` and/or `destination.ip`
+   - `source.ip` or `destination.ip`
    - `event.action` or `event.outcome`
    - `message` (the raw log payload)
 5. Navigate to **Analytics > Dashboards** and search for "WatchGuard Firebox".
@@ -131,7 +131,7 @@ After configuration is complete, verify that data is flowing correctly.
 - **Parsing Failures**: If logs appear in Kibana but contain a `tags: ["_grokparsefailure"]` or similar error, verify that the Firebox is using the standard "Syslog" format and not a legacy or proprietary format.
 - **Timezone Mismatch**: If logs appear with the wrong timestamp, adjust the **Timezone Offset** in the Kibana integration settings to match the timezone configured on the Firebox appliance.
 - **Field Mapping Issues**: If custom fields are missing, ensure that **Preserve duplicate custom fields** is enabled if you need the non-ECS raw fields for specific reporting requirements.
-- **Identify via Error Field**: In Discover, filter for `error.message : *` to find specific parsing or ingestion errors that occurred during processing.
+- **Identify using Error Field**: In Discover, filter for `error.message : *` to find specific parsing or ingestion errors that occurred during processing.
 
 ## Vendor Resources
 

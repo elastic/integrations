@@ -1,16 +1,10 @@
 # WatchGuard Firebox Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
 The WatchGuard Firebox integration for Elastic enables you to collect and analyze logs from your WatchGuard Firebox appliances. By ingesting these logs into the Elastic Stack, you gain centralized visibility into your network security posture, traffic patterns, and system health. This integration helps you monitor firewall activity, detect potential security threats, and maintain an audit trail for compliance requirements.
-
-This integration facilitates:
-- Network traffic monitoring: Analyze flow logs to identify high-bandwidth users, unusual traffic patterns, and connection trends across trusted, optional, and external interfaces.
-- Security incident detection: Monitor blocked connection attempts, intrusion prevention system (IPS) alerts, and malware detection events to identify and mitigate cyber threats.
-- Compliance and auditing: Maintain long-term records of administrative logins, configuration changes, and system events to meet regulatory requirements and internal audit standards.
-- Operational troubleshooting: Use detailed system logs to diagnose connectivity issues, VPN tunnel failures, and hardware performance bottlenecks within the Firebox environment.
 
 ### Compatibility
 
@@ -65,7 +59,7 @@ Elastic Agent is required to stream data from the syslog receiver and ship the d
 
 You can configure your WatchGuard Firebox to send logs to the Elastic Agent using either the Fireware Web UI or the WatchGuard Policy Manager.
 
-#### Configuration via Fireware Web UI
+#### Configuration using Fireware Web UI
 
 To configure your device using the web interface, follow these steps:
 
@@ -82,7 +76,7 @@ To configure your device using the web interface, follow these steps:
 11. Under **Syslog Settings**, confirm the facility codes for different log types such as Alarm, Traffic, or Event. It's recommended to keep the defaults (Local0 - Local4).
 12. Click **Save** on the Logging page to apply the changes to the Firebox Web UI.
 
-#### Configuration via Policy Manager
+#### Configuration using Policy Manager
 
 To configure your device using the WatchGuard Policy Manager, follow these steps:
 
