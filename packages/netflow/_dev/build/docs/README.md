@@ -1,6 +1,6 @@
 # NetFlow Records Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
+> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -87,26 +87,26 @@ To set up the integration in Kibana, follow these steps:
 
 This integration supports the following configuration options:
 
-| Setting                   | Description                                                                                                  |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Setting                   | Description                                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | **UDP host to listen on** | The IP address the agent should bind to (for example, `0.0.0.0` to listen on all interfaces). Default: `localhost`. |
-| **UDP port to listen on** | The UDP port used to receive NetFlow packets from your network devices. Default: `2055`.                     |
-| **Internal Networks**     | A list of CIDR ranges describing the IP addresses that are considered internal. Default: `[private]`.        |
+| **UDP port to listen on** | The UDP port used to receive NetFlow packets from your network devices. Default: `2055`.                            |
+| **Internal Networks**     | A list of CIDR ranges describing the IP addresses that are considered internal. Default: `[private]`.               |
 
 Under **Advanced Options**, you can configure the following optional parameters:
 
-| Setting                                           | Description                                                                                      |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Expiration timeout**                            | Time duration before an idle session or unused template is expired (for example, `30m`).                |
-| **Number of Workers**                             | The number of workers to read and decode NetFlow packets concurrently. Default: `1`.             |
-| **Queue size**                                    | Maximum number of packets that can be queued for processing. Default: `8192`.                    |
-| **Read Buffer Size**                              | The size of the OS read buffer on the UDP socket (for example, `10MiB`).                                |
-| **Custom definitions**                            | Optional user-defined field mappings for proprietary NetFlow implementations.                    |
-| **Whether to detect sequence reset**              | Identify if flow sequence numbers have reset (for example, after a device reboot). Default: `true`.     |
-| **Maximum size of the message received over UDP** | The maximum size allowed for a single packet. Default: `10KiB`.                                  |
-| **Tags**                                          | Custom tags to apply to the events for easier filtering. Default: `['netflow', 'forwarded']`.    |
-| **Read timeout**                                  | The specific time limit for socket read actions (for example, `30s`).                                   |
-| **Processors**                                    | Add custom Elastic Agent processors to filter or enhance data before it's sent to Elasticsearch. |
+| Setting                                           | Description                                                                                         |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **Expiration timeout**                            | Time duration before an idle session or unused template is expired (for example, `30m`).            |
+| **Number of Workers**                             | The number of workers to read and decode NetFlow packets concurrently. Default: `1`.                |
+| **Queue size**                                    | Maximum number of packets that can be queued for processing. Default: `8192`.                       |
+| **Read Buffer Size**                              | The size of the OS read buffer on the UDP socket (for example, `10MiB`).                            |
+| **Custom definitions**                            | Optional user-defined field mappings for proprietary NetFlow implementations.                       |
+| **Whether to detect sequence reset**              | Identify if flow sequence numbers have reset (for example, after a device reboot). Default: `true`. |
+| **Maximum size of the message received over UDP** | The maximum size allowed for a single packet. Default: `10KiB`.                                     |
+| **Tags**                                          | Custom tags to apply to the events for easier filtering. Default: `['netflow', 'forwarded']`.       |
+| **Read timeout**                                  | The specific time limit for socket read actions (for example, `30s`).                               |
+| **Processors**                                    | Add custom Elastic Agent processors to filter or enhance data before it's sent to Elasticsearch.    |
 
 4. Click **Save and continue** to save the integration and deploy it to your Elastic Agent policy.
 
