@@ -14,7 +14,7 @@ categories:
   - web
 conditions:
   kibana:
-    version: "~8.19.10 || ^9.2.4"
+    version: "^8.19.10 || ~9.1.10 || ~9.2.4 || ^9.3.0"
 screenshots:
   - src: /img/azure-frontdoor-overview.png
     title: Azure Frontdoor Overview
@@ -62,7 +62,7 @@ policy_templates:
             description: >-
               Authentication method to use for Event Hub and Storage Account.
               When set to 'connection_string' or left blank: connection_string and storage_account_key are required.
-              When set to 'client_secret': OAuth2 authentication with Microsoft Entra ID is used, requiring tenant_id, client_id, client_secret, and eventhub_namespace.
+              When set to 'client_secret': the system authenticates with Microsoft Entra ID using the provided credentials, requiring tenant_id, client_id, client_secret, and eventhub_namespace.
               Note: The same authentication type applies to both Event Hub and Storage Account for security consistency.
           - name: connection_string
             type: password
@@ -83,7 +83,7 @@ policy_templates:
             show_user: true
             description: >-
               (Required when auth_type is 'connection_string' or left blank) The storage account key used to authorize access to data in your storage account.
-              Not used when auth_type is 'client_secret'; OAuth2 is used for storage authentication instead.
+              Not used when auth_type is 'client_secret'; client secret is used for storage authentication instead.
           - name: storage_account
             type: text
             title: Storage Account
@@ -137,7 +137,7 @@ policy_templates:
             show_user: false
             default: https://login.microsoftonline.com
             description: >-
-              (Optional, for OAuth2) Microsoft Entra ID authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud).
+              (Optional, for client secret) Microsoft Entra ID authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud).
               Change for other Azure environments: Azure Government (https://login.microsoftonline.us), Azure China (https://login.chinacloudapi.cn), or Azure Germany (https://login.microsoftonline.de).
           - name: resource_manager_endpoint
             type: text
