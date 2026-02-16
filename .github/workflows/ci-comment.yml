@@ -4,7 +4,7 @@ on:
     types: [opened]
 
 permissions:
-  contents: read
+  contents: none
 
 jobs:
   triage:
@@ -41,14 +41,15 @@ jobs:
       uses: edumserrano/find-create-or-update-comment@fb101dd7a690f32dc65d250bf2997d7d5c9544e9
       with:
         token: ${{ steps.fetch-token.outputs.token }}
-        issue-number: ${{ github.event.issue.number }}
+        issue-number: ${{ github.event.pull_request.number }}
         body-includes: "<!-- buildkite-comments -->"
         comment-author: "elastic-vault-github-plugin-prod[bot]"
+        edit-mode: replace
         body: |
           <!-- buildkite-comments -->
           ### Reviewers
 
-          Buildkite won't run for external contributors automatically, you need to add a comment:
-          - \`/test\` : will kick off a build in Buildkite.
+          Buildkite won't run for external contributors automatically; you need to add a comment:
+          - `/test` : will kick off a build in Buildkite.
 
           **NOTE**: https://github.com/elastic/integrations/blob/main/.buildkite/pull-requests.json contains all those details.
