@@ -60,6 +60,26 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: threat.indicator.ip
+      target_field: threat.indicator.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: threat.indicator.ip
+      target_field: threat.indicator.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: threat.indicator.as.asn
+      target_field: threat.indicator.as.number
+      ignore_missing: true
+  - rename:
+      field: threat.indicator.as.organization_name
+      target_field: threat.indicator.as.organization.name
+      ignore_missing: true
   - set:
       field: process.parent.entity_id
       tag: set_process_parent_entity_id_from_event_ParentProcessId
@@ -133,7 +153,25 @@ processors:
       value: '{{{threat.indicator.ip}}}'
       allow_duplicates: false
       tag: append_related_ip
-      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.ip != ""
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip != ""
+  - append:
+      field: related.hash
+      value: '{{{crowdstrike.event.SHA256String}}}'
+      allow_duplicates: false
+      tag: append_related_hash
+      if: ctx.crowdstrike?.event?.SHA256String != null && ctx.crowdstrike.event.SHA256String != ""
+  - append:
+      field: related.hash
+      value: '{{{crowdstrike.event.MD5String}}}'
+      allow_duplicates: false
+      tag: append_related_hash
+      if: ctx.crowdstrike?.event?.MD5String != null && ctx.crowdstrike.event.MD5String != ""
+  - append:
+      field: related.hosts
+      value: '{{{crowdstrike.event.DomainName}}}'
+      allow_duplicates: false
+      tag: append_related_hosts
+      if: ctx.crowdstrike?.event?.DomainName != null && ctx.crowdstrike.event.DomainName != ""
   - remove:
       field:
         - crowdstrike.event.ComputerName
