@@ -122,6 +122,9 @@ program: |-
               // Canonicalise header keys to match rate_limit conventions.
               resp.Header.as(headers,
                 // Calculate and apply rate limits.
+                // Threading rate-limit results obtained here through to the final
+                // result is not tenable, so we do not do any work to allow them
+                // to be interpreted by the input and just drop them.
                 rate_limit(
                   headers.with(
                     {
@@ -134,21 +137,7 @@ program: |-
                   duration(string(headers[?"X-Ratelimit-Reset"][0].orValue("1")) + "s"),
                   0
                 )
-              ).as(rate_headers,
-                rate_headers.with(
-                  {
-                    // Work around inf detection in input.
-                    // If the headers are missing or rate_limit failed, rate and
-                    // next may be missing. So use optional types.
-                    ?"rate": (rate_headers.?rate == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
-                    ?"next": (rate_headers.?next == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
-                  }
-                )
-              ).as(limit,
-                {
-                  "rate_limit": limit, // Debugging value only.
-                }
-              )
+              ).drop(["rate", "next"])
             )
           ).as(resp, (resp.StatusCode == 200) ?
             resp.Body.decode_json().data.map(org,
@@ -227,18 +216,20 @@ program: |-
                 0
               )
             ).as(rate_headers,
-              rate_headers.with(
-                {
-                  // Work around inf detection in input.
-                  // If the headers are missing or rate_limit failed, rate and
-                  // next may be missing. So use optional types.
-                  ?"rate": (rate_headers.?rate == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
-                  ?"next": (rate_headers.?next == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
-                }
-              )
-            ).as(limit,
               {
-                "rate_limit": limit, // Debugging value only.
+               // Rate limit side-effects have already been applied to the
+               // limiter. This value is propagated to the final output for
+               // handleResponse to extract a waitUntil time when the
+               // quota is zero.
+               "rate_limit": rate_headers.with(
+                  {
+                    // Work around inf detection in input.
+                    // If the headers are missing or rate_limit failed, rate and
+                    // next may be missing. So use optional types.
+                    ?"rate": (rate_headers.?rate == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
+                    ?"next": (rate_headers.?next == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
+                  }
+                )
               }
             )
           )
@@ -248,6 +239,7 @@ program: |-
               "id": item.id,
               "events": [],
               "want_more": false,
+              "rate_limit": resp.rate_limit,
             }
           :
             {
@@ -274,6 +266,7 @@ program: |-
                 ).as(times, (size(times) == 0) ? item.?last_created.orValue(now) : times.max()),
               },
               "want_more": has(body.?links.next),
+              "rate_limit": resp.rate_limit,
             }
           )
         : (resp.StatusCode == 429) ?
@@ -281,6 +274,7 @@ program: |-
           {
             "events": [],
             "want_more": false,
+            "rate_limit": resp.rate_limit,
           }
         :
           {
@@ -298,6 +292,7 @@ program: |-
               },
             ],
             "want_more": false,
+            "rate_limit": resp.rate_limit,
           }
         )
       ).as(result,
@@ -321,6 +316,7 @@ program: |-
           ),
           "events": result.map(r, r.events).flatten(),
           "want_more": result.exists(r, r.want_more),
+          ?"rate_limit": result.last().rate_limit,
         }
       )
     )
