@@ -64,9 +64,101 @@ processors:
       tag: blat_json_to_ctx
       if: ctx.json instanceof Map
       source: |-
-        for (def e: ctx.json.entrySet()) {
-          ctx[e.getKey()] = e.getValue();
+
+        def mergeMaps(Map map1, Map map2) {
+          for (def key : map2.keySet()) {
+            if (!map1.containsKey(key)
+                || map1[key] == null
+                || map1[key] == ""
+                || (map1[key] instanceof Map && map1[key].isEmpty())) {
+              // If map1's value is absent or empty, use map2's.
+              map1[key] = map2[key];
+            } else if (map1[key] != map2[key]) {
+              if (map1[key] instanceof Map && map2[key] instanceof Map) {
+                // If values in map1 and map2 for key are both maps, merge them.
+                map1[key] = mergeMaps(map1[key], map2[key]);
+              } else if (map1[key] instanceof List) {
+                // If map1's value is a list, merge map2's value, remove any duplicates.
+                def combined = new LinkedHashSet(map1[key]);
+                if (map2[key] instanceof List) {
+                  combined.addAll(map2[key]);
+                } else if (map2[key] != null) {
+                  combined.add(map2[key]);
+                }
+                map1[key] = new ArrayList(combined);
+              }
+            }
+          }
+          return map1;
         }
+        mergeMaps(ctx, ctx.json);
+
+      # // Tests of mergeMaps that can the be run manually in Painless Lab
+      # def runTests(List tests) {
+      #   def results = new ArrayList();
+      #   for (def t : tests) {
+      #     def got = mergeMaps(t["map1"], t["map2"]);
+      #     results.add([
+      #       "test": t["name"],
+      #       "passed": got.equals(t["expect"]),
+      #       "got": got,
+      #       "expected": t["expect"]
+      #     ]);
+      #   }
+      #   def passed = new ArrayList();
+      #   def failed = new ArrayList();
+      #   for (def r : results) {
+      #     if (r["passed"]) passed.add(r);
+      #     else failed.add(r);
+      #   }
+      #   def result = new LinkedHashMap();
+      #   result.put("passed_all", passed.size() == tests.size());
+      #   result.put("passed_count", passed.size());
+      #   result.put("failed_count", failed.size());
+      #   //result.put("passed", passed);
+      #   result.put("failed", failed);
+      #   return result;
+      # }
+      # def tests = [
+      #   [
+      #     "name": "fill_missing_key",
+      #     "map1": ["a": 1],
+      #     "map2": ["b": 2],
+      #     "expect": ["a": 1, "b": 2]
+      #   ],
+      #   [
+      #     "name": "no_overwrite_non_empty_scalar",
+      #     "map1": ["a": 1],
+      #     "map2": ["a": 2],
+      #     "expect": ["a": 1]
+      #   ],
+      #   [
+      #     "name": "overwrite_null_empty_string_empty_map",
+      #     "map1": ["n": null, "s": "", "m": [:], "keep": "x"],
+      #     "map2": ["n": 5, "s": "hi", "m": ["k": 1], "keep": "y"],
+      #     "expect": ["n": 5, "s": "hi", "m": ["k": 1], "keep": "x"]
+      #   ],
+      #   [
+      #     "name": "deep_merge_nested_maps",
+      #     "map1": ["o": ["x": 1, "y": ""]],
+      #     "map2": ["o": ["x": 2, "y": "filled", "z": 3]],
+      #     "expect": ["o": ["x": 1, "y": "filled", "z": 3]]
+      #   ],
+      #   [
+      #     "name": "list_merge_empty_list_and_dedupe",
+      #     "map1": ["l": [], "l2": [1, 2]],
+      #     "map2": ["l": 7, "l2": [2, 3, 1]],
+      #     "expect": ["l": [7], "l2": [1, 2, 3]]
+      #   ],
+      #   [
+      #     "name": "list_merge_does_not_add_null_scalar",
+      #     "map1": ["l": [1]],
+      #     "map2": ["l": null],
+      #     "expect": ["l": [1]]
+      #   ]
+      # ];
+      # runTests(tests);
+
   - pipeline:
       name: '{{ IngestPipeline "events" }}'
       if: "ctx.log?.logger == 'org.keycloak.events'"
