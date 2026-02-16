@@ -33,6 +33,11 @@ processors:
 receivers:
     sqlserver/componentid-0:
         collection_interval: 30s
+        events:
+            db.server.query_sample:
+                enabled: false
+            db.server.top_query:
+                enabled: false
         initial_delay: 5s
         password: secretpassword
         port: 1434
@@ -48,6 +53,19 @@ receivers:
 secret_references: []
 service:
     pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        logs/componentid-1:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - sqlserver/componentid-0
         metrics:
             exporters:
                 - elasticsearch/componentid-0

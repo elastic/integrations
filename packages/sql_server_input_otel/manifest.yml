@@ -4,7 +4,7 @@ title: "SQL Server OpenTelemetry Input Package"
 version: "0.1.0"
 source:
   license: "Elastic-2.0"
-description: "Collect SQL Server metrics using OpenTelemetry Collector"
+description: "Collect SQL Server metrics and logs using OpenTelemetry Collector"
 type: input
 categories:
   - datastore
@@ -12,7 +12,7 @@ categories:
   - opentelemetry
 conditions:
   kibana:
-    version: "^9.2.0"
+    version: "^9.4.0"
   elastic:
     subscription: "basic"
 icons:
@@ -85,6 +85,21 @@ policy_templates:
         title: Initial Delay
         description: Defines how long this receiver waits before starting.
         default: 1s
+        show_user: false
+      # Log events (require direct connection; both disabled by default per receiver docs)
+      - name: enable_query_sample_events
+        type: bool
+        required: false
+        title: Enable Query Sample Events
+        description: Capture currently executing queries as log events (db.server.query_sample).
+        default: false
+        show_user: false
+      - name: enable_top_query_events
+        type: bool
+        required: false
+        title: Enable Top Query Events
+        description: Capture the most expensive queries as log events (db.server.top_query).
+        default: false
         show_user: false
       # Query sample collection settings
       - name: query_sample_max_rows_per_query

@@ -16,6 +16,11 @@ receivers:
 {{/if}}
     collection_interval: {{collection_interval}}
     initial_delay: {{initial_delay}}
+    events:
+      db.server.query_sample:
+        enabled: {{enable_query_sample_events}}
+      db.server.top_query:
+        enabled: {{enable_top_query_events}}
     query_sample_collection:
       max_rows_per_query: {{query_sample_max_rows_per_query}}
     top_query_collection:
@@ -29,5 +34,8 @@ processors:
 service:
   pipelines:
     metrics:
+      receivers: [sqlserver]
+      processors: [resourcedetection/system]
+    logs:
       receivers: [sqlserver]
       processors: [resourcedetection/system]
