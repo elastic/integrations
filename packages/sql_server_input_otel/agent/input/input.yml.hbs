@@ -1,0 +1,33 @@
+receivers:
+  sqlserver:
+    server: {{server}}
+    port: {{port}}
+{{#if username}}
+    username: {{username}}
+{{/if}}
+{{#if password}}
+    password: {{password}}
+{{/if}}
+{{#if instance_name}}
+    instance_name: {{instance_name}}
+{{/if}}
+{{#if computer_name}}
+    computer_name: {{computer_name}}
+{{/if}}
+    collection_interval: {{collection_interval}}
+    initial_delay: {{initial_delay}}
+    query_sample_collection:
+      max_rows_per_query: {{query_sample_max_rows_per_query}}
+    top_query_collection:
+      lookback_time: {{top_query_lookback_time}}
+      max_query_sample_count: {{top_query_max_query_sample_count}}
+      top_query_count: {{top_query_count}}
+      collection_interval: {{top_query_collection_interval}}
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    metrics:
+      receivers: [sqlserver]
+      processors: [resourcedetection/system]
