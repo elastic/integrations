@@ -15,54 +15,54 @@ An example event for `node` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-27T08:01:51.865Z",
+    "@timestamp": "2026-02-09T06:43:38.254Z",
     "agent": {
-        "ephemeral_id": "cc4072b4-71a6-40be-ad91-7245b283f11d",
-        "id": "8412e9e5-6fd3-4587-bc60-1fba76200570",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "de16bec6-bbcd-4a55-a439-5cc9e9562358",
+        "id": "ff44ae54-7fbd-4eaa-97ab-d61a3d1094e7",
+        "name": "elastic-agent-94391",
         "type": "metricbeat",
-        "version": "8.10.4"
+        "version": "9.2.2"
     },
     "data_stream": {
         "dataset": "redisenterprise.node",
-        "namespace": "default",
+        "namespace": "64311",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8412e9e5-6fd3-4587-bc60-1fba76200570",
+        "id": "ff44ae54-7fbd-4eaa-97ab-d61a3d1094e7",
         "snapshot": false,
-        "version": "8.10.4"
+        "version": "9.2.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "redisenterprise.node",
-        "duration": 240631792,
-        "ingested": "2023-10-27T08:01:52Z",
+        "duration": 68315542,
+        "ingested": "2026-02-09T06:43:41Z",
         "module": "prometheus"
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "5bf910baf91142d6b435357818c88ef5",
+        "hostname": "elastic-agent-94391",
         "ip": [
-            "172.19.0.7"
+            "172.18.0.4",
+            "172.27.0.2"
         ],
         "mac": [
-            "02-42-AC-13-00-07"
+            "2A-8C-19-BD-BB-92",
+            "F6-24-06-AC-B3-B9"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-94391",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.12.67-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -72,19 +72,46 @@ An example event for `node` looks as following:
     "redisenterprise": {
         "node": {
             "available_memory": {
-                "value": 146729029.556
+                "value": 2145286826.667
+            },
+            "available_memory_no_overbooking": {
+                "value": 2144885418.667
             },
             "conns": {
                 "value": 0
             },
             "cpu_idle": {
-                "value": 0.7493333333333334
+                "value": 0.9463333333333331
             },
             "cpu_idle_max": {
-                "value": 0.751
+                "value": 0.95
+            },
+            "cpu_idle_median": {
+                "value": 0.947
+            },
+            "cpu_idle_min": {
+                "value": 0.942
+            },
+            "cpu_iowait": {
+                "value": 0
+            },
+            "cpu_iowait_max": {
+                "value": 0
+            },
+            "cpu_iowait_median": {
+                "value": 0
             },
             "cpu_iowait_min": {
-                "value": 0.001
+                "value": 0
+            },
+            "cpu_irqs": {
+                "value": 0.0036666666666666666
+            },
+            "cpu_irqs_max": {
+                "value": 0.004
+            },
+            "cpu_irqs_median": {
+                "value": 0.004
             },
             "cpu_irqs_min": {
                 "value": 0.003
@@ -92,7 +119,16 @@ An example event for `node` looks as following:
             "cpu_nice": {
                 "value": 0
             },
+            "cpu_nice_max": {
+                "value": 0
+            },
+            "cpu_nice_median": {
+                "value": 0
+            },
             "cpu_nice_min": {
+                "value": 0
+            },
+            "cpu_steal": {
                 "value": 0
             },
             "cpu_steal_max": {
@@ -105,64 +141,82 @@ An example event for `node` looks as following:
                 "value": 0
             },
             "cpu_system": {
-                "value": 0.03566666666666667
+                "value": 0.008666666666666668
             },
             "cpu_system_max": {
-                "value": 0.037
+                "value": 0.009
             },
             "cpu_system_median": {
-                "value": 0.036
+                "value": 0.009
             },
             "cpu_system_min": {
-                "value": 0.034
+                "value": 0.008
             },
             "cpu_user": {
-                "value": 0.19533333333333336
+                "value": 0.035333333333333335
             },
             "cpu_user_max": {
-                "value": 0.199
+                "value": 0.039
             },
             "cpu_user_median": {
-                "value": 0.195
+                "value": 0.034
             },
             "cpu_user_min": {
-                "value": 0.192
+                "value": 0.033
             },
             "cur_aof_rewrites": {
                 "value": 0
             },
             "egress_bytes": {
-                "value": 1342.5556666666669
+                "value": 0
+            },
+            "egress_bytes_max": {
+                "value": 0
             },
             "egress_bytes_median": {
-                "value": 1569.778
+                "value": 0
             },
             "egress_bytes_min": {
-                "value": 885.889
+                "value": 0
             },
             "ephemeral_storage_avail": {
-                "value": 50210169287.111
+                "value": 888414001379.556
+            },
+            "ephemeral_storage_free": {
+                "value": 938163845347.556
             },
             "free_memory": {
-                "value": 257662065.778
+                "value": 2135573845.333
             },
             "ingress_bytes": {
-                "value": 258.815
+                "value": 0
+            },
+            "ingress_bytes_max": {
+                "value": 0
+            },
+            "ingress_bytes_median": {
+                "value": 0
             },
             "ingress_bytes_min": {
-                "value": 242
+                "value": 0
             },
             "labels": {
                 "cluster": "cluster.local",
-                "instance": "host.docker.internal:8070",
+                "instance": "svc-redisenterprise:8070",
                 "job": "prometheus",
                 "node": "1"
             },
             "persistent_storage_avail": {
-                "value": 50210169287.111
+                "value": 888414001379.556
             },
             "persistent_storage_free": {
-                "value": 53426885063.111
+                "value": 938163845347.556
+            },
+            "provisional_memory": {
+                "value": 666208775.667
+            },
+            "provisional_memory_no_overbooking": {
+                "value": 666728967.667
             },
             "total_req": {
                 "value": 0
@@ -170,7 +224,7 @@ An example event for `node` looks as following:
         }
     },
     "service": {
-        "address": "https://host.docker.internal:8070/metrics",
+        "address": "http://svc-redisenterprise:8070/metrics",
         "type": "prometheus"
     }
 }
@@ -218,54 +272,54 @@ An example event for `proxy` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-27T09:02:20.616Z",
+    "@timestamp": "2026-02-09T06:45:42.104Z",
     "agent": {
-        "ephemeral_id": "d53c023d-a17d-40d1-b9bc-4850df49633a",
-        "id": "e275fc30-5606-41f2-a4f9-c30819350b25",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "cea9ce9b-cb06-43d2-85c7-1556f7c0be87",
+        "id": "614462d0-9730-4fc0-9e8e-8a93d8cae093",
+        "name": "elastic-agent-74425",
         "type": "metricbeat",
-        "version": "8.10.4"
+        "version": "9.2.2"
     },
     "data_stream": {
         "dataset": "redisenterprise.proxy",
-        "namespace": "default",
+        "namespace": "63975",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e275fc30-5606-41f2-a4f9-c30819350b25",
+        "id": "614462d0-9730-4fc0-9e8e-8a93d8cae093",
         "snapshot": false,
-        "version": "8.10.4"
+        "version": "9.2.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "redisenterprise.proxy",
-        "duration": 395309250,
-        "ingested": "2023-10-27T09:02:21Z",
+        "duration": 26680375,
+        "ingested": "2026-02-09T06:45:45Z",
         "module": "prometheus"
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "5bf910baf91142d6b435357818c88ef5",
+        "hostname": "elastic-agent-74425",
         "ip": [
-            "172.22.0.7"
+            "172.18.0.4",
+            "172.27.0.2"
         ],
         "mac": [
-            "02-42-AC-16-00-07"
+            "3A-76-21-99-38-85",
+            "DE-E3-D9-70-BE-C4"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-74425",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.12.67-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -278,7 +332,7 @@ An example event for `proxy` looks as following:
                 "bdb": "1",
                 "cluster": "cluster.local",
                 "endpoint": "1:1",
-                "instance": "host.docker.internal:8070",
+                "instance": "svc-redisenterprise:8070",
                 "job": "prometheus",
                 "node": "1",
                 "port": "12000",
@@ -410,36 +464,6 @@ An example event for `proxy` looks as following:
             "listener_read_started_res_max": {
                 "counter": 0
             },
-            "listener_resp2_clients": {
-                "counter": 0
-            },
-            "listener_resp2_clients_max": {
-                "counter": 0
-            },
-            "listener_resp3_clients": {
-                "counter": 0
-            },
-            "listener_resp3_clients_max": {
-                "counter": 0
-            },
-            "listener_sconn_hello_failed": {
-                "counter": 0
-            },
-            "listener_sconn_hello_failed_max": {
-                "counter": 0
-            },
-            "listener_sconn_hello_setresp": {
-                "counter": 0
-            },
-            "listener_sconn_hello_setresp_max": {
-                "counter": 0
-            },
-            "listener_sconn_hello_setuser": {
-                "counter": 0
-            },
-            "listener_sconn_hello_setuser_max": {
-                "counter": 0
-            },
             "listener_total_connections_received": {
                 "counter": 0
             },
@@ -485,7 +509,7 @@ An example event for `proxy` looks as following:
         }
     },
     "service": {
-        "address": "https://host.docker.internal:8070/metrics",
+        "address": "http://svc-redisenterprise:8070/metrics",
         "type": "prometheus"
     }
 }
