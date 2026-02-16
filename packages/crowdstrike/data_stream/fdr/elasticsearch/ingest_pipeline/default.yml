@@ -560,11 +560,6 @@ processors:
       if: ctx.crowdstrike?.localipCount != null && ctx.crowdstrike?.localipCount != ''
       field: crowdstrike.localipCount
       type: integer
-  - convert:
-      tag: convert_crowdstrike_Nonce_to_string_ff12e7cf
-      if: ctx.crowdstrike?.Nonce != null && ctx.crowdstrike?.Nonce != ''
-      field: crowdstrike.Nonce
-      type: string
 
   # AWS S3 input does _id-Based Deduplication and generates "_id" by default.
   # When "Data Deduplication" is not enabled, this field must be removed.
@@ -2187,7 +2182,7 @@ processors:
       ignore_missing: true
   - set:
       tag: set_file_type_210bce6d
-      if: ctx.file?.path != null && !ctx.event.action.contains("Directory") && ctx.file?.type == null
+      if: ctx.file?.path != null && ctx.file?.type == null && !ctx.event.action.contains("Directory")
       field: file.type
       value: file
   - set:

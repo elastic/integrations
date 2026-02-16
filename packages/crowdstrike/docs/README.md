@@ -1912,7 +1912,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.NewFileIdentifier |  | keyword |
 | crowdstrike.NewUnixPermissions |  | keyword |
 | crowdstrike.NlMtu |  | keyword |
-| crowdstrike.Nonce |  | keyword |
+| crowdstrike.Nonce |  | unsigned_long |
 | crowdstrike.OSVersionFileData |  | match_only_text |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
