@@ -117,10 +117,10 @@ program: |-
               "limit": ["100"],
             }.format_query()
           ).with(auth_header).do_request().as(resp,
-            // We are doing this work for its side-effects.
+            // We are doing this work for the side-effects of the rate_limit call.
             resp.with(
               // Canonicalise header keys to match rate_limit conventions.
-              resp.Header.transformMapEntry(k, v, {k.canonical_mime_header_key(): v}).as(headers,
+              resp.Header.as(headers,
                 // Calculate and apply rate limits.
                 rate_limit(
                   headers.with(
@@ -210,10 +210,9 @@ program: |-
             }.format_query()
           )
         ).with(auth_header).do_request().as(resp,
-          // We are doing this work for its side-effects.
+          // We are doing this work for the side-effects of the rate_limit call.
           resp.with(
-            // Canonicalise header keys to match rate_limit conventions.
-            resp.Header.transformMapEntry(k, v, {k.canonical_mime_header_key(): v}).as(headers,
+            resp.Header.as(headers,
               // Calculate and apply rate limits.
               rate_limit(
                 headers.with(
