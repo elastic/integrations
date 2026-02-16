@@ -107,6 +107,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 2. In the search bar, type **SentinelOne**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **sentinel_one**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -186,3 +193,28 @@ This is the `unified alert` dataset.
 {{event "unified_alert"}}
 
 {{fields "unified_alert"}}
+
+### Inputs used
+
+These inputs are used in this integration:
+
+- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [httpjson](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson)
+
+### API usage
+
+This integration dataset uses the following APIs:
+
+- `Activity`: **Get Activities** endpoint from **SentinelOne Management API v2.1**.
+- `Agent`: **Get Agents** endpoint from **SentinelOne Management API v2.1**.
+- `Alert`: **Get alerts** endpoint from **SentinelOne Management API v2.1**.
+- `Application`: **Get Application Inventory Endpoints** and **Get Application Inventory** endpoints from **SentinelOne Management API v2.1**.
+- `Application Risk`: **Get CVE data** endpoint from **SentinelOne Management API v2.1**.
+- `Group`: **Get Groups** endpoint from **SentinelOne Management API v2.1**.
+- `Threat`: **Get Threats** endpoint from **SentinelOne Management API v2.1**.
+- `Threat Event`: **Get Events** and **Get Threats** endpoints from **SentinelOne Management API v2.1**.
+- `Unified Alert`: **Unified Alert Management GraphQL API**.
+
+#### ILM Policy
+
+To facilitate application, application risk, and threat event data, source data stream-backed indices `.ds-logs-sentinel_one.application-*`, `.ds-logs-sentinel_one.application_risk-*`, and `.ds-logs-sentinel_one.threat_event-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-sentinel_one.application-default_policy`, `logs-sentinel_one.application_risk-default_policy`, and `logs-sentinel_one.threat_event-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.

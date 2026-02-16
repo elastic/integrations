@@ -107,6 +107,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 2. In the search bar, type **SentinelOne**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **sentinel_one**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -2180,9 +2187,9 @@ An example event for `unified_alert` looks as following:
 {
     "@timestamp": "2025-03-06T16:42:19.518Z",
     "agent": {
-        "ephemeral_id": "fae04681-91da-4d88-8b67-1df4036ea5fa",
-        "id": "dcda103e-2d1f-476a-9c21-39fc40baf75d",
-        "name": "elastic-agent-99571",
+        "ephemeral_id": "6a92a6e6-ba13-45a9-b43b-ad6e113d4168",
+        "id": "416a9e43-9d12-43c1-a137-77caa655f60e",
+        "name": "elastic-agent-82584",
         "type": "filebeat",
         "version": "8.19.7"
     },
@@ -2195,14 +2202,14 @@ An example event for `unified_alert` looks as following:
     },
     "data_stream": {
         "dataset": "sentinel_one.unified_alert",
-        "namespace": "31316",
+        "namespace": "65959",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "dcda103e-2d1f-476a-9c21-39fc40baf75d",
+        "id": "416a9e43-9d12-43c1-a137-77caa655f60e",
         "snapshot": false,
         "version": "8.19.7"
     },
@@ -2215,7 +2222,7 @@ An example event for `unified_alert` looks as following:
         "dataset": "sentinel_one.unified_alert",
         "end": "2025-03-06T16:42:19.518Z",
         "id": "01911119-abcd-7454-1234-6abcdef67893",
-        "ingested": "2026-02-09T06:13:57Z",
+        "ingested": "2026-02-16T06:15:14Z",
         "kind": "alert",
         "original": "{\"aiInvestigation\":null,\"analystVerdict\":\"UNDEFINED\",\"analytics\":{\"category\":\"Reputation\",\"name\":\"Agent Policy\",\"typeValue\":\"STATIC\",\"uid\":\"analytic-uid-001\"},\"assets\":[{\"accessible\":true,\"agentUuid\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"agentVersion\":\"24.2.2.20\",\"assetTypeClassifier\":\"Linux Server\",\"category\":\"Server\",\"connectivityToConsole\":\"ONLINE\",\"decommissioned\":false,\"id\":\"masked00asset000000000001\",\"lastLoggedInUser\":null,\"name\":\"host-masked\",\"origin\":\"RESOURCES\",\"osType\":\"LINUX\",\"osVersion\":\"Linux Ubuntu 24.04.1 LTS 6.8.0-51-generic\",\"pendingReboot\":false,\"policy\":\"Default\",\"role\":\"TARGET\",\"status\":\"ACTIVE\",\"subcategory\":\"Other Server\"}],\"assignee\":null,\"attackSurfaces\":[\"ENDPOINT\"],\"availableActionIds\":null,\"classification\":\"MALWARE\",\"confidenceLevel\":\"MALICIOUS\",\"createdAt\":\"2025-02-04T15:54:59.485Z\",\"dataSources\":[],\"description\":\"Linux file events analysis detected a malicious file known to SentinelOne's Cloud Intelligence\",\"detectedAt\":\"2025-02-04T15:54:59.485Z\",\"detectionSource\":{\"product\":\"CWS\",\"vendor\":\"SentinelOne\"},\"detectionTime\":{\"assets\":[{\"accessible\":true,\"asset\":null,\"cloud\":null,\"kubernetes\":{\"clusterName\":\"prod-cluster-01\",\"containerId\":\"a1b2c3d4e5f6\",\"containerImageName\":\"ubuntu:22.04\",\"containerLabels\":[\"app=agent\",\"tier=security\"],\"containerName\":\"sentinel-agent\",\"controllerLabels\":[\"app=sentinel\"],\"controllerName\":\"sentinel-daemonset\",\"controllerType\":\"daemonset\",\"namespaceLabels\":[\"env=prod\"],\"namespaceName\":\"security\",\"nodeLabels\":[\"node-role=worker\"],\"nodeName\":\"worker-node-01\",\"podLabels\":[\"app=sentinel\",\"pod-template-hash=xyz99\"],\"podName\":\"sentinel-daemonset-abc12\"},\"origin\":\"RESOURCES\",\"scope\":{\"accountId\":\"111222333444\",\"accountName\":\"AccountName\",\"groupName\":\"Default Group\",\"siteName\":\"Default site\"}}],\"attacker\":{\"host\":\"attacker.example.com\",\"ip\":\"1.128.0.1\"},\"scope\":{\"accountId\":\"111222333444\",\"accountName\":\"AccountName\",\"groupName\":\"Default Group\",\"siteName\":\"Default site\"},\"targetUser\":{\"domain\":\"example.com\",\"emailAddress\":\"john.doe@example.com\",\"name\":\"John Doe\"}},\"exclusionHash\":null,\"externalId\":\"9876543210987654321\",\"firstSeenAt\":\"2025-02-04T15:54:59.485Z\",\"id\":\"01911119-abcd-7454-1234-6abcdef67893\",\"lastSeenAt\":\"2025-03-06T16:42:19.518Z\",\"name\":\"eicar.com.txt detected as Malware\",\"noteExists\":false,\"process\":{\"cmdLine\":\"/usr/bin/curl -O https://example.com/file.txt\",\"file\":{\"certSubject\":\"Example Corp\",\"md5\":\"5d41402abc4b2a76b9719d911017c592\",\"name\":\"eicar.com.txt\",\"path\":\"/tmp/eicar.com.txt\",\"sha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"sha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\"},\"parentName\":\"curl\"},\"realTime\":{\"scope\":{\"account\":{\"id\":\"111222333444\",\"name\":\"AccountName\"},\"group\":{\"id\":\"3334445556667778889\",\"name\":\"Default Group\"},\"site\":{\"id\":\"2223334445556667778\",\"name\":\"Default site\"}}},\"result\":\"UNMITIGATED\",\"severity\":\"MEDIUM\",\"sloDetails\":{\"timeToResolveData\":{\"actionComplete\":false,\"actionDue\":30,\"completion\":3600,\"completionTime\":null,\"status\":\"IN_PROGRESS\",\"target\":60,\"targetTime\":\"2025-02-05T16:00:00.000Z\"},\"timeToResponseData\":{\"actionComplete\":true,\"actionDue\":-5,\"completion\":300,\"completionTime\":\"2025-02-04T16:00:00.000Z\",\"status\":\"MET\",\"target\":15,\"targetTime\":\"2025-02-04T15:55:00.000Z\"}},\"status\":\"RESOLVED\",\"storylineId\":null,\"ticketId\":null,\"updatedAt\":\"2025-03-06T16:42:19.518Z\"}",
         "outcome": "failure",
@@ -2603,3 +2610,28 @@ An example event for `unified_alert` looks as following:
 | sentinel_one.unified_alert.ticket_id | Alert external ticket ID. | keyword |
 | sentinel_one.unified_alert.updated_at | Timestamp when the finding was last updated in ISO-8601 format. | date |
 
+
+### Inputs used
+
+These inputs are used in this integration:
+
+- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [httpjson](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson)
+
+### API usage
+
+This integration dataset uses the following APIs:
+
+- `Activity`: **Get Activities** endpoint from **SentinelOne Management API v2.1**.
+- `Agent`: **Get Agents** endpoint from **SentinelOne Management API v2.1**.
+- `Alert`: **Get alerts** endpoint from **SentinelOne Management API v2.1**.
+- `Application`: **Get Application Inventory Endpoints** and **Get Application Inventory** endpoints from **SentinelOne Management API v2.1**.
+- `Application Risk`: **Get CVE data** endpoint from **SentinelOne Management API v2.1**.
+- `Group`: **Get Groups** endpoint from **SentinelOne Management API v2.1**.
+- `Threat`: **Get Threats** endpoint from **SentinelOne Management API v2.1**.
+- `Threat Event`: **Get Events** and **Get Threats** endpoints from **SentinelOne Management API v2.1**.
+- `Unified Alert`: **Unified Alert Management GraphQL API**.
+
+#### ILM Policy
+
+To facilitate application, application risk, and threat event data, source data stream-backed indices `.ds-logs-sentinel_one.application-*`, `.ds-logs-sentinel_one.application_risk-*`, and `.ds-logs-sentinel_one.threat_event-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-sentinel_one.application-default_policy`, `logs-sentinel_one.application_risk-default_policy`, and `logs-sentinel_one.threat_event-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
