@@ -150,12 +150,12 @@ processors:
       lang: painless
       if: ctx.json?.properties?.timeTaken != null
       params:
-        S_TO_NS: 1000000000
+        S_TO_MS: 1000
       source: >-
         if (ctx.json.properties.timeTaken instanceof String) {
-          ctx.event.duration = (long)(Double.parseDouble(ctx.json.properties.timeTaken) * params.S_TO_NS);
+          ctx.event.duration = (long)(Double.parseDouble(ctx.json.properties.timeTaken)) * params.S_TO_MS;
         } else {
-          ctx.event.duration = (long)(ctx.json.properties.timeTaken * params.S_TO_NS);
+          ctx.event.duration = (long)(ctx.json.properties.timeTaken) * params.S_TO_MS;
         }
       description: Convert timeTaken from seconds to nanoseconds
   - script:
