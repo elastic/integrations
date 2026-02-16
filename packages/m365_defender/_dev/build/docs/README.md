@@ -22,6 +22,7 @@ This integration supports below API versions to collect data.
 | ---------------------------| -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts.                                                                                                              |
 | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization.                                                                                             |
+| CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
 | DeviceEvents              | Event types, including events triggered by security controls.                                                                                                                     |
 | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints.                                                                               |
 | DeviceFileEvents          | File creation, modification, and other file system events.                                                                                                                        |
@@ -40,7 +41,6 @@ This integration supports below API versions to collect data.
 | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services.                                                                                                          |
 | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains.                                                                                                |
 | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
-| CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services.                                                                                            |
 | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps.                                                                                                                |
 
 ## What data does this integration collect?
