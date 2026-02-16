@@ -1,0 +1,632 @@
+- name: prometheus
+  type: group
+  fields:
+    - name: labels.*
+      type: keyword
+      dimension: true
+      description: Prometheus metric labels.
+- name: grafana
+  type: group
+  fields:
+    # --- HTTP ---
+    - name: http
+      type: group
+      fields:
+        - name: request.count
+          type: long
+          metric_type: counter
+          description: HTTP request count by handler, method, and status code.
+        - name: request.duration.seconds
+          type: double
+          metric_type: counter
+          description: HTTP request duration sum in seconds.
+        - name: request.in_flight
+          type: long
+          metric_type: gauge
+          description: Number of HTTP requests currently in flight.
+        - name: response.size.count
+          type: long
+          metric_type: counter
+          description: HTTP response count by handler.
+        - name: response.size.bytes
+          type: double
+          metric_type: counter
+          description: HTTP response size sum in bytes.
+    # --- API ---
+    - name: api
+      type: group
+      fields:
+        - name: response.status.total
+          type: long
+          metric_type: counter
+          description: Total API responses by status code.
+        - name: dashboard.get.milliseconds
+          type: double
+          metric_type: gauge
+          description: Dashboard GET request duration quantile in milliseconds.
+        - name: dashboard.get.count
+          type: long
+          metric_type: counter
+          description: Dashboard GET request count.
+        - name: dashboard.get.sum
+          type: double
+          metric_type: counter
+          description: Dashboard GET request duration sum in milliseconds.
+        - name: dashboard.save.milliseconds
+          type: double
+          metric_type: gauge
+          description: Dashboard save duration quantile in milliseconds.
+        - name: dashboard.save.count
+          type: long
+          metric_type: counter
+          description: Dashboard save request count.
+        - name: dashboard.save.sum
+          type: double
+          metric_type: counter
+          description: Dashboard save duration sum in milliseconds.
+        - name: dashboard.search.milliseconds
+          type: double
+          metric_type: gauge
+          description: Dashboard search duration quantile in milliseconds.
+        - name: dashboard.search.count
+          type: long
+          metric_type: counter
+          description: Dashboard search request count.
+        - name: dashboard.search.sum
+          type: double
+          metric_type: counter
+          description: Dashboard search duration sum in milliseconds.
+        - name: dashboard.insert.total
+          type: long
+          metric_type: counter
+          description: Total dashboard inserts.
+        - name: dashboard.snapshot.create.total
+          type: long
+          metric_type: counter
+          description: Total dashboard snapshots created.
+        - name: dashboard.snapshot.get.total
+          type: long
+          metric_type: counter
+          description: Total dashboard snapshot retrievals.
+        - name: dataproxy.request.milliseconds
+          type: double
+          metric_type: gauge
+          description: Data proxy request duration quantile in milliseconds.
+        - name: dataproxy.request.count
+          type: long
+          metric_type: counter
+          description: Data proxy request count.
+        - name: dataproxy.request.sum
+          type: double
+          metric_type: counter
+          description: Data proxy request duration sum in milliseconds.
+        - name: login.post.total
+          type: long
+          metric_type: counter
+          description: Total POST login attempts.
+        - name: login.oauth.total
+          type: long
+          metric_type: counter
+          description: Total OAuth login attempts.
+    # --- Page / Proxy responses ---
+    - name: page
+      type: group
+      fields:
+        - name: response.status.total
+          type: long
+          metric_type: counter
+          description: Total page responses by status code.
+    - name: proxy
+      type: group
+      fields:
+        - name: response.status.total
+          type: long
+          metric_type: counter
+          description: Total proxy responses by status code.
+    # --- Alerting ---
+    - name: alerting
+      type: group
+      fields:
+        - name: active_alerts
+          type: long
+          metric_type: gauge
+          description: Number of active alerts.
+        - name: active_configurations
+          type: long
+          metric_type: gauge
+          description: Number of active alerting configurations.
+        - name: alerts
+          type: long
+          metric_type: gauge
+          description: Number of alerts by state.
+        - name: alerts_received.total
+          type: long
+          metric_type: counter
+          description: Total alerts received.
+        - name: alerts_invalid.total
+          type: long
+          metric_type: counter
+          description: Total invalid alerts received.
+        - name: silences
+          type: long
+          metric_type: gauge
+          description: Number of silences by state.
+        - name: result.total
+          type: long
+          metric_type: counter
+          description: Alert execution results by state.
+        - name: notification.sent.total
+          type: long
+          metric_type: counter
+          description: Alert notifications sent by type.
+        - name: notification.failed.total
+          type: long
+          metric_type: counter
+          description: Alert notifications failed by type.
+        - name: notification_latency.count
+          type: long
+          metric_type: counter
+          description: Alert notification latency count.
+        - name: notification_latency.seconds
+          type: double
+          metric_type: counter
+          description: Alert notification latency sum in seconds.
+        - name: execution_time.count
+          type: long
+          metric_type: counter
+          description: Alert execution time observation count.
+        - name: execution_time.milliseconds
+          type: double
+          metric_type: counter
+          description: Alert execution time sum in milliseconds.
+        - name: schedule.alert_rules
+          type: long
+          metric_type: gauge
+          description: Number of alert rules scheduled.
+        - name: scheduler.behind_seconds
+          type: double
+          metric_type: gauge
+          description: How far behind the alerting scheduler is in seconds.
+        - name: ticker.interval_seconds
+          type: double
+          metric_type: gauge
+          description: Alerting ticker interval in seconds.
+    # --- Datasource ---
+    - name: datasource
+      type: group
+      fields:
+        - name: request.total
+          type: long
+          metric_type: counter
+          description: Total datasource requests.
+        - name: query_by_id.total
+          type: long
+          metric_type: counter
+          description: Total datasource queries by ID.
+    # --- Database ---
+    - name: database
+      type: group
+      fields:
+        - name: connections.open
+          type: long
+          metric_type: gauge
+          description: Open database connections.
+        - name: connections.in_use
+          type: long
+          metric_type: gauge
+          description: In-use database connections.
+        - name: connections.idle
+          type: long
+          metric_type: gauge
+          description: Idle database connections.
+        - name: connections.max_open
+          type: long
+          metric_type: gauge
+          description: Maximum open database connections allowed.
+        - name: connections.wait_count
+          type: long
+          metric_type: counter
+          description: Total connection wait count.
+        - name: connections.wait_duration_seconds
+          type: double
+          metric_type: counter
+          description: Total time blocked waiting for a connection in seconds.
+        - name: connections.max_idle_closed
+          type: long
+          metric_type: counter
+          description: Total connections closed due to max idle limit.
+        - name: connections.max_idle_closed_seconds
+          type: double
+          metric_type: counter
+          description: Total time of max idle closed connections.
+        - name: connections.max_lifetime_closed
+          type: long
+          metric_type: counter
+          description: Total connections closed due to max lifetime.
+    # --- Instance stats ---
+    - name: stat
+      type: group
+      fields:
+        - name: dashboards.total
+          type: long
+          metric_type: gauge
+          description: Total number of dashboards.
+        - name: users.total
+          type: long
+          metric_type: gauge
+          description: Total users.
+        - name: users.active
+          type: long
+          metric_type: gauge
+          description: Active users.
+        - name: datasources.total
+          type: long
+          metric_type: gauge
+          description: Total datasources.
+        - name: alert_rules.total
+          type: long
+          metric_type: gauge
+          description: Total alert rules.
+        - name: orgs.total
+          type: long
+          metric_type: gauge
+          description: Total organizations.
+        - name: teams.total
+          type: long
+          metric_type: gauge
+          description: Total teams.
+        - name: playlists.total
+          type: long
+          metric_type: gauge
+          description: Total playlists.
+        - name: service_accounts.total
+          type: long
+          metric_type: gauge
+          description: Total service accounts.
+        - name: folders.total
+          type: long
+          metric_type: gauge
+          description: Total folders.
+        - name: annotations.total
+          type: long
+          metric_type: gauge
+          description: Total annotations.
+        - name: admins.total
+          type: long
+          metric_type: gauge
+          description: Total admin users.
+        - name: editors.total
+          type: long
+          metric_type: gauge
+          description: Total editor users.
+        - name: viewers.total
+          type: long
+          metric_type: gauge
+          description: Total viewer users.
+        - name: active_admins.total
+          type: long
+          metric_type: gauge
+          description: Active admin users.
+        - name: active_editors.total
+          type: long
+          metric_type: gauge
+          description: Active editor users.
+        - name: active_viewers.total
+          type: long
+          metric_type: gauge
+          description: Active viewer users.
+        - name: dashboard_versions.total
+          type: long
+          metric_type: gauge
+          description: Total dashboard versions.
+        - name: library_panels.total
+          type: long
+          metric_type: gauge
+          description: Total library panels.
+        - name: public_dashboards.total
+          type: long
+          metric_type: gauge
+          description: Total public dashboards.
+        - name: rule_groups.total
+          type: long
+          metric_type: gauge
+          description: Total rule groups.
+        - name: correlations.total
+          type: long
+          metric_type: gauge
+          description: Total correlations.
+        - name: data_keys.total
+          type: long
+          metric_type: gauge
+          description: Total data keys.
+        - name: repositories.total
+          type: long
+          metric_type: gauge
+          description: Total repositories.
+    # --- Authentication ---
+    - name: authentication
+      type: group
+      fields:
+        - name: attempts
+          type: long
+          metric_type: counter
+          description: Total authentication attempts.
+        - name: successful.total
+          type: long
+          metric_type: counter
+          description: Total successful authentications.
+        - name: failed.total
+          type: long
+          metric_type: counter
+          description: Total failed authentications.
+        - name: user_requests
+          type: long
+          metric_type: counter
+          description: Authenticated user requests.
+    # --- Email ---
+    - name: emails
+      type: group
+      fields:
+        - name: sent.total
+          type: long
+          metric_type: counter
+          description: Total emails sent.
+        - name: sent.failed
+          type: long
+          metric_type: counter
+          description: Total emails failed to send.
+    # --- Live / WebSocket ---
+    - name: live
+      type: group
+      fields:
+        - name: channels
+          type: long
+          metric_type: gauge
+          description: Number of live channels.
+        - name: clients
+          type: long
+          metric_type: gauge
+          description: Number of live clients.
+        - name: subscriptions
+          type: long
+          metric_type: gauge
+          description: Number of live subscriptions.
+        - name: users
+          type: long
+          metric_type: gauge
+          description: Number of live users.
+    # --- Frontend ---
+    - name: frontend
+      type: group
+      fields:
+        - name: boot.load_time.count
+          type: long
+          metric_type: counter
+          description: Frontend boot load time observation count.
+        - name: boot.load_time.seconds
+          type: double
+          metric_type: counter
+          description: Frontend boot load time sum in seconds.
+        - name: boot.fcp.count
+          type: long
+          metric_type: counter
+          description: First Contentful Paint observation count.
+        - name: boot.fcp.seconds
+          type: double
+          metric_type: counter
+          description: First Contentful Paint time sum in seconds.
+    # --- Other application ---
+    - name: public_dashboard
+      type: group
+      fields:
+        - name: request_count
+          type: long
+          metric_type: counter
+          description: Public dashboard request count.
+    - name: rendering
+      type: group
+      fields:
+        - name: queue_size
+          type: long
+          metric_type: gauge
+          description: Rendering queue size.
+    # --- Process ---
+    - name: process
+      type: group
+      fields:
+        - name: cpu.seconds.total
+          type: double
+          metric_type: counter
+          description: Total user and system CPU time in seconds.
+        - name: memory.resident_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Resident memory size in bytes.
+        - name: memory.virtual_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Virtual memory size in bytes.
+        - name: open_fds
+          type: long
+          metric_type: gauge
+          description: Number of open file descriptors.
+        - name: max_fds
+          type: long
+          metric_type: gauge
+          description: Maximum number of file descriptors.
+        - name: start_time_seconds
+          type: double
+          metric_type: gauge
+          description: Process start time in seconds since epoch.
+        - name: network.receive_bytes
+          type: long
+          metric_type: counter
+          unit: byte
+          description: Network bytes received.
+        - name: network.transmit_bytes
+          type: long
+          metric_type: counter
+          unit: byte
+          description: Network bytes transmitted.
+    # --- Go runtime ---
+    - name: go
+      type: group
+      fields:
+        - name: goroutines
+          type: long
+          metric_type: gauge
+          description: Number of goroutines.
+        - name: threads
+          type: long
+          metric_type: gauge
+          description: Number of OS threads created.
+        - name: memstats.heap_alloc_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Heap bytes allocated and in use.
+        - name: memstats.alloc_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Bytes allocated and in use.
+        - name: memstats.alloc_bytes_total
+          type: long
+          metric_type: counter
+          unit: byte
+          description: Total bytes allocated even if freed.
+        - name: memstats.sys_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Total bytes of memory obtained from the OS.
+        - name: memstats.heap_idle_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Heap bytes waiting to be used.
+        - name: memstats.heap_inuse_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Heap bytes in use by spans.
+        - name: memstats.heap_objects
+          type: long
+          metric_type: gauge
+          description: Number of allocated heap objects.
+        - name: memstats.heap_released_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Heap bytes released to the OS.
+        - name: memstats.heap_sys_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Heap bytes obtained from the OS.
+        - name: memstats.stack_inuse_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Stack bytes in use.
+        - name: memstats.stack_sys_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Stack bytes obtained from the OS.
+        - name: memstats.next_gc_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Target heap size for next GC cycle.
+        - name: memstats.mallocs_total
+          type: long
+          metric_type: counter
+          description: Total number of heap object allocations.
+        - name: memstats.frees_total
+          type: long
+          metric_type: counter
+          description: Total number of heap object frees.
+        - name: memstats.buck_hash_sys_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Bytes used by profiling bucket hash table.
+        - name: memstats.gc_sys_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Bytes used for GC metadata.
+        - name: memstats.mcache_inuse_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: MCache structures in use.
+        - name: memstats.mcache_sys_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: MCache structures obtained from OS.
+        - name: memstats.mspan_inuse_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: MSpan structures in use.
+        - name: memstats.mspan_sys_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: MSpan structures obtained from OS.
+        - name: memstats.other_sys_bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Other system bytes.
+        - name: memstats.last_gc_time_seconds
+          type: double
+          metric_type: gauge
+          description: Last GC time in seconds since epoch.
+        - name: gc.duration.count
+          type: long
+          metric_type: counter
+          description: GC pause count.
+        - name: gc.duration.seconds
+          type: double
+          metric_type: counter
+          description: GC pause duration sum in seconds.
+    # --- Build info ---
+    - name: build_info
+      type: group
+      fields:
+        - name: _value
+          type: double
+          metric_type: gauge
+          description: Build info metric value (always 1).
+        - name: version
+          type: keyword
+          dimension: true
+          description: Grafana version from build info.
+        - name: edition
+          type: keyword
+          dimension: true
+          description: Grafana edition (oss or enterprise).
+        - name: timestamp
+          type: double
+          metric_type: gauge
+          description: Build timestamp.
+    - name: environment_info
+      type: group
+      fields:
+        - name: _value
+          type: double
+          metric_type: gauge
+          description: Environment info metric value (always 1).
+    - name: instance
+      type: group
+      fields:
+        - name: start_total
+          type: long
+          metric_type: counter
+          description: Total instance starts.
