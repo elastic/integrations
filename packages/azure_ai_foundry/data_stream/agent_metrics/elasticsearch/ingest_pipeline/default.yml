@@ -1,0 +1,31 @@
+---
+description: Pipeline for parsing Microsoft Foundry agent metrics.
+processors:
+  - rename:
+      field: azure.metrics
+      target_field: azure.ai_foundry.agent
+      ignore_missing: true
+
+  - rename:
+      field: azure.ai_foundry.agent.inputtokens.total
+      target_field: azure.ai_foundry.agent.input_tokens.total
+      ignore_missing: true
+
+  - rename:
+      field: azure.ai_foundry.agent_outputtokens.total
+      target_field: azure.ai_foundry.agent.output_tokens.total
+      ignore_missing: true
+
+  - rename:
+      field: azure.ai_foundry.agent_toolcalls.total
+      target_field: azure.ai_foundry.agent.tool_calls.total
+      ignore_missing: true
+
+  - rename:
+      field: azure.ai_foundry.agent_usageindexed_files.total
+      target_field: azure.ai_foundry.agent.usage_indexed_files.total
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

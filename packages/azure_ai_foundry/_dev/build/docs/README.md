@@ -39,6 +39,12 @@ Enable the category `Logs related to ApiManagement Gateway` to stream the logs t
    └──────────────────┘      └──────────────┘     └─────────────────┘
 ```
 
+### Agent metrics
+
+The agent metrics data stream collects Microsoft Foundry **Agents** metrics from Azure Monitor (Category: Agents). These metrics help you monitor agent activity and usage, such as event volume, token consumption, runs, and tool calls.
+
+Agent metrics are available under the `azure.ai_foundry.agent.*` field namespace (for example, `azure.ai_foundry.agent.input_tokens.total` and `azure.ai_foundry.agent.tool_calls.total`).
+
 ### Metrics
 
 The metrics data stream collects the cognitive service metrics that is specific to the Microsoft Foundry service.
@@ -83,6 +89,18 @@ The primary aggregation value will be retrieved for all the metrics contained in
 For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
 
 {{fields "logs"}}
+
+### Agent metrics reference
+
+The Microsoft Foundry agent metrics provide visibility into agent activity and usage, such as token consumption, runs, and tool calls.
+
+{{event "agent_metrics"}}
+
+**ECS Field Reference**
+
+For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
+
+{{fields "agent_metrics"}}
 
 ### Metrics reference
 
