@@ -12,7 +12,7 @@ This package receives telemetry data from SQL Server instances by configuring th
 
 ### Windows Performance Counters
 
-Make sure to run the collector as administrator in order to collect all performance counters for metrics.
+Make sure to run the collector as administrator to collect all performance counters for metrics.
 
 ### Direct Connection
 
