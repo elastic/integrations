@@ -286,7 +286,7 @@ Instead of a connection string, you can authenticate using a Microsoft Entra ID 
 
 **Steps:**
 
-1. **Register an app in Microsoft Entra ID
+1. **Register an app in Microsoft Entra ID**
    In the [Azure Portal](https://portal.azure.com/), go to **Microsoft Entra ID** > **App registrations** > **New registration**. Note the **Application (client) ID** and **Directory (tenant) ID**.
 
 2. **Create a client secret**
