@@ -135,6 +135,8 @@ An example event for `ioc` looks as following:
 
 #### Exported fields
 
+**Exported fields**
+
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
@@ -174,3 +176,4 @@ An example event for `ioc` looks as following:
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
