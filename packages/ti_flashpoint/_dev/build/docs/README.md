@@ -22,9 +22,9 @@ This integration collects log messages of the following type:
 
 ### Supported use cases
 
-Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence alerts. Kibana dashboards present key metrics such as `Total Alerts`, along with visualizations showing `Alerts by Data Type`, `Source`, and `Origin`.
+Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence alerts. Kibana dashboards present key metrics such as `Total Alerts`, along with visualizations for `Alerts by Data Type` and `Alert Sources`.
 
-`Alert Trends over Time`, `Top Authors`, `MIME Types`, `Alert Sources`, and `Geographic Distribution` of related resources help analysts quickly monitor activity and investigate alerts. These insights support efficient threat monitoring and analysis workflows.
+`Alert Trends over Time` help analysts monitor activity patterns and quickly identify changes. These insights support efficient threat monitoring and investigation workflows.
 
 ## What do I need to use this integration?
 

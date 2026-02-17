@@ -22,9 +22,9 @@ This integration collects log messages of the following type:
 
 ### Supported use cases
 
-Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence alerts. Kibana dashboards present key metrics such as `Total Alerts`, along with visualizations showing `Alerts by Data Type`, `Source`, and `Origin`.
+Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence alerts. Kibana dashboards present key metrics such as `Total Alerts`, along with visualizations for `Alerts by Data Type` and `Alert Sources`.
 
-`Alert Trends over Time`, `Top Authors`, `MIME Types`, `Alert Sources`, and `Geographic Distribution` of related resources help analysts quickly monitor activity and investigate alerts. These insights support efficient threat monitoring and analysis workflows.
+`Alert Trends over Time` help analysts monitor activity patterns and quickly identify changes. These insights support efficient threat monitoring and investigation workflows.
 
 ## What do I need to use this integration?
 
@@ -173,42 +173,64 @@ An example event for `alert` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-12-17T06:53:59.956Z",
+    "@timestamp": "2025-12-12T11:41:37.775Z",
     "agent": {
-        "ephemeral_id": "307ed7f9-a244-4a69-b58d-179cd44507de",
-        "id": "69029d8a-4a05-480c-ae8a-9477425fa1f4",
-        "name": "elastic-agent-47245",
+        "ephemeral_id": "fe828f18-6ee6-4c80-ba23-4e05f7ac3655",
+        "id": "581405cc-6161-4ad5-853b-43a910e3824f",
+        "name": "elastic-agent-71469",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "container": {
-        "id": "284504102"
+        "id": "966491148640211034",
+        "name": "newbies-2"
     },
     "data_stream": {
         "dataset": "ti_flashpoint.alert",
-        "namespace": "32105",
+        "namespace": "75359",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "69029d8a-4a05-480c-ae8a-9477425fa1f4",
+        "id": "581405cc-6161-4ad5-853b-43a910e3824f",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2025-12-17T06:53:59.956Z",
+        "created": "2025-12-12T11:41:37.775Z",
         "dataset": "ti_flashpoint.alert",
-        "id": "61e89ab1-bd39-459e-84b5-79023b721c7d",
-        "ingested": "2025-12-18T12:49:50Z",
+        "id": "1fc0fc04-5a85-41ff-970d-acda1c0dd390",
+        "ingested": "2026-02-16T06:22:52Z",
         "kind": "alert",
-        "original": "{\"created_at\":\"2025-12-17T06:53:59.956272Z\",\"data_type\":\"board\",\"generated_at\":\"2025-12-17T06:53:57.570160Z\",\"highlight_text\":\"\\u0026gt;\\u0026gt;28\",\"highlights\":{\"body.text/plain\":[\"\\u0026gt;\\u0026gt;28450\"],\"site_actor.names.aliases\":[\"\\u003cmark\\u003eAnonymous\\u003c/mark\\u003e (None)\",\"\\u003cmark\\u003eAnonymous\\u003c/mark\\u003e (None)\"]},\"id\":\"61e89ab1-bd39-459e-84b5-79023b721c7d\",\"is_read\":false,\"parent_data_type\":null,\"reason\":{\"details\":{\"params\":{\"exclude\":{},\"include\":{\"date\":{\"end\":\"now\",\"label\":\"Last 30 Days\",\"start\":\"now-30d\"}}},\"sources\":[\"communities\",\"media\",\"marketplaces\",\"news\"]},\"entity\":null,\"id\":\"61e526db-8554-42bb-b590-e1f6a37cd4fb\",\"name\":\"temp\",\"origin\":\"searches\",\"text\":\"temp\"},\"resource\":{\"basetypes\":[\"chan\",\"comment\",\"conversation\",\"message\",\"web\"],\"container\":{\"container\":{\"native_id\":\"a\",\"title\":\"/a/ - Anime \\u0026 Manga\"},\"native_id\":\"284504102\"},\"created_at\":{\"date-time\":\"2025-12-15T11:43:32+00:00\",\"raw\":\"2025-12-15 11:43:32+00:00\",\"timestamp\":1765799012},\"id\":\"SrcBxTtDV-O5U-ycJ_Cv_g\",\"section\":\"/a/ - Anime \\u0026 Manga\",\"site\":{\"title\":\"4chan\"},\"site_actor\":{\"names\":{\"handle\":\"Anonymous (None)\"},\"native_id\":\"Anonymous\"},\"sort_date\":\"2025-12-15T11:43:32Z\",\"title\":\"284504102\"},\"source\":\"communities\",\"status\":null,\"tags\":{}}",
-        "reason": "temp"
+        "original": "{\"created_at\":\"2025-12-12T11:41:37.775301Z\",\"data_type\":\"news\",\"generated_at\":\"2025-12-12T11:41:35.896396Z\",\"highlight_text\":\"16\\nImage \\u003cmark\\u003eCredit\\u003c/mark\\u003e :\",\"highlights\":{\"body.text/plain\":[\"16\\nImage \\u003cmark\\u003eCredit\\u003c/mark\\u003e.\"]},\"id\":\"1fc0fc04-5a85-41ff-970d-acda1c0dd390\",\"is_read\":false,\"parent_data_type\":null,\"reason\":{\"details\":{\"params\":{\"exclude\":{},\"include\":{\"date\":{\"end\":\"now\",\"label\":\"Last 30 Days\",\"start\":\"now-30d\"}}},\"sources\":[\"communities\",\"media\",\"marketplaces\",\"news\"]},\"entity\":null,\"id\":\"0f325ca9-a28f-421b-8d0c-db3329366e5f\",\"name\":\"credit\",\"origin\":\"searches\",\"text\":\"credit\"},\"resource\":{\"author\":\"Alias Doe\",\"authors\":[\"Alias Doe\"],\"basetypes\":[\"article\",\"news\",\"newscatcher\"],\"container\":{\"name\":\"newbies-2\",\"native_id\":\"966491148640211034\"},\"country\":\"IN\",\"created_at\":{\"date-time\":\"2025-12-12T09:06:06+00:00\",\"raw\":\"2025-12-12 09:06:06\",\"timestamp\":1765530366},\"description\":\"Rajinikanth, who has ruled both South and Bollywood cinema, turns 75 today. Born on December 12, 1950, the superstar continues to deliver box-office blockbusters and is now gearing up for several exciting upcoming films.\",\"id\":\"c4FF4mbNV7m2vBWPIaV0uw\",\"link\":\"https://example.com\",\"media_v2\":[{\"mime_type\":\"image/jpeg\",\"phash\":\"9a996984a473e3c7\",\"phash256\":\"9abe917a69c984a6a4d47368e34cc526ed85658cc913cdb3986b9b4cd31c3673\",\"sha1\":\"ddc7b1f8b32056803bdce609c1262e59836bec87\",\"storage_uri\":\"gs://kraken-datalake-media/artifacts/71/71a2a7e557b989f25b89a7cbd9ec3a65183a4717bc2a05ede89971064f177b58\"}],\"site\":{\"title\":\"example.com\"},\"sort_date\":\"2025-12-12T09:06:06Z\",\"title\":\"Jailer 2 to Coolie 2: Rajinikanth at 75 Ready to Thrill Fans with Upcoming Hits\"},\"source\":\"news\",\"status\":null,\"tags\":{}}",
+        "reason": "credit",
+        "url": "https://example.com"
+    },
+    "file": {
+        "hash": {
+            "sha1": [
+                "ddc7b1f8b32056803bdce609c1262e59836bec87"
+            ]
+        },
+        "mime_type": [
+            "image/jpeg"
+        ]
     },
     "input": {
         "type": "cel"
+    },
+    "related": {
+        "hash": [
+            "9a996984a473e3c7",
+            "9abe917a69c984a6a4d47368e34cc526ed85658cc913cdb3986b9b4cd31c3673",
+            "ddc7b1f8b32056803bdce609c1262e59836bec87"
+        ],
+        "user": [
+            "Alias Doe"
+        ]
     },
     "tags": [
         "preserve_original_event",
@@ -218,20 +240,16 @@ An example event for `alert` looks as following:
     ],
     "ti_flashpoint": {
         "alert": {
-            "created_at": "2025-12-17T06:53:59.956Z",
-            "data_type": "board",
-            "generated_at": "2025-12-17T06:53:57.570Z",
-            "highlight_text": "&gt;&gt;28",
+            "created_at": "2025-12-12T11:41:37.775Z",
+            "data_type": "news",
+            "generated_at": "2025-12-12T11:41:35.896Z",
+            "highlight_text": "16\nImage <mark>Credit</mark> :",
             "highlights": {
                 "body.text/plain": [
-                    "&gt;&gt;28450"
-                ],
-                "site_actor.names.aliases": [
-                    "<mark>Anonymous</mark> (None)",
-                    "<mark>Anonymous</mark> (None)"
+                    "16\nImage <mark>Credit</mark>."
                 ]
             },
-            "id": "61e89ab1-bd39-459e-84b5-79023b721c7d",
+            "id": "1fc0fc04-5a85-41ff-970d-acda1c0dd390",
             "is_read": false,
             "reason": {
                 "details": {
@@ -251,43 +269,50 @@ An example event for `alert` looks as following:
                         "news"
                     ]
                 },
-                "id": "61e526db-8554-42bb-b590-e1f6a37cd4fb",
-                "name": "temp",
+                "id": "0f325ca9-a28f-421b-8d0c-db3329366e5f",
+                "name": "credit",
                 "origin": "searches",
-                "text": "temp"
+                "text": "credit"
             },
             "resource": {
+                "author": "Alias Doe",
+                "authors": [
+                    "Alias Doe"
+                ],
                 "basetypes": [
-                    "chan",
-                    "comment",
-                    "conversation",
-                    "message",
-                    "web"
+                    "article",
+                    "news",
+                    "newscatcher"
                 ],
                 "container": {
-                    "container": {
-                        "native_id": "a",
-                        "title": "/a/ - Anime & Manga"
-                    },
-                    "native_id": "284504102"
+                    "name": "newbies-2",
+                    "native_id": "966491148640211034"
                 },
-                "created_at": "2025-12-15T11:43:32.000Z",
-                "id": "SrcBxTtDV-O5U-ycJ_Cv_g",
-                "section": "/a/ - Anime & Manga",
+                "country": "IN",
+                "created_at": "2025-12-12T09:06:06.000Z",
+                "description": "Rajinikanth, who has ruled both South and Bollywood cinema, turns 75 today. Born on December 12, 1950, the superstar continues to deliver box-office blockbusters and is now gearing up for several exciting upcoming films.",
+                "id": "c4FF4mbNV7m2vBWPIaV0uw",
+                "link": "https://example.com",
+                "media_v2": [
+                    {
+                        "mime_type": "image/jpeg",
+                        "phash": "9a996984a473e3c7",
+                        "phash256": "9abe917a69c984a6a4d47368e34cc526ed85658cc913cdb3986b9b4cd31c3673",
+                        "sha1": "ddc7b1f8b32056803bdce609c1262e59836bec87",
+                        "storage_uri": "gs://kraken-datalake-media/artifacts/71/71a2a7e557b989f25b89a7cbd9ec3a65183a4717bc2a05ede89971064f177b58"
+                    }
+                ],
                 "site": {
-                    "title": "4chan"
+                    "title": "example.com"
                 },
-                "site_actor": {
-                    "names": {
-                        "handle": "Anonymous (None)"
-                    },
-                    "native_id": "Anonymous"
-                },
-                "sort_date": "2025-12-15T11:43:32.000Z",
-                "title": "284504102"
+                "sort_date": "2025-12-12T09:06:06.000Z",
+                "title": "Jailer 2 to Coolie 2: Rajinikanth at 75 Ready to Thrill Fans with Upcoming Hits"
             },
-            "source": "communities"
+            "source": "news"
         }
+    },
+    "user": {
+        "name": "Alias Doe"
     }
 }
 ```

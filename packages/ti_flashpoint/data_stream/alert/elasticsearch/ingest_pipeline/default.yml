@@ -5,9 +5,9 @@ processors:
       tag: drop_empty_events_placeholder_1f3e6c12
       if: ctx.message == 'empty_events_placeholder'
   - set:
-      tag: set_ecs_version_to_9_2_0_3273339c
+      tag: set_ecs_version_to_9_3_0_b777da29
       field: ecs.version
-      value: 9.2.0
+      value: 9.3.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error_4c75f12b
@@ -59,8 +59,11 @@ processors:
 
   # rename fields to snake_case (hyphen to underscore)
   - script:
-      description: Convert field names from hyphen to underscore.
-      tag: script_normalize_field_names_9f4e694c
+      description: >
+        Convert field names from hyphen to underscore recursively.
+        NOTE: This processor also assigns the normalized output to
+        ctx.ti_flashpoint.alert and removes ctx.json from the document.
+      tag: script_normalize_field_names_3535f568
       lang: painless
       source: |-
         // Replace '-' with '_' in field names
@@ -87,7 +90,10 @@ processors:
           return obj;
         }
 
-        // Apply transformation
+        // NOTE:
+        // - Normalizes all field names (hyphen -> underscore)
+        // - Populates ctx.ti_flashpoint.alert with normalized data
+        // - Removes ctx.json after processing
         if (ctx.json != null) {
           ctx.ti_flashpoint = ctx.ti_flashpoint ?: [:];
           ctx.ti_flashpoint.alert = normalizeFields(ctx.json);
@@ -96,66 +102,66 @@ processors:
 
   # Date processors
   - date:
-      tag: date_ti_flashpoint_alert_created_at_into_ti_flashpoint_alert_created_at_20fe7d61
+      tag: date_ti_flashpoint_alert_created_at_into_ti_flashpoint_alert_created_at_cce6fce9
       if: ctx.ti_flashpoint?.alert?.created_at != null && ctx.ti_flashpoint.alert.created_at != ''
       field: ti_flashpoint.alert.created_at
       target_field: ti_flashpoint.alert.created_at
       formats:
         - UNIX
         - ISO8601
-        - yyyy-MM-dd' 'HH:mm:ss
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
         - yyyy-MM-dd'T'HH:mm:ssXXXXX
+        - yyyy-MM-dd' 'HH:mm:ss
         - yyyy-MM-dd' 'HH:mm:ssXXXXX
       on_failure:
         - remove:
-            tag: remove_ti_flashpoint_alert_created_at_51709117
+            tag: remove_ti_flashpoint_alert_created_at_8f28c7ff
             field:
               - ti_flashpoint.alert.created_at
         - append:
-            tag: append_error_message_ca0f3ee7
+            tag: append_error_message_bde0885f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_ti_flashpoint_alert_generated_at_into_ti_flashpoint_alert_generated_at_9448b857
+      tag: date_ti_flashpoint_alert_generated_at_into_ti_flashpoint_alert_generated_at_6be92a6f
       if: ctx.ti_flashpoint?.alert?.generated_at != null && ctx.ti_flashpoint.alert.generated_at != ''
       field: ti_flashpoint.alert.generated_at
       target_field: ti_flashpoint.alert.generated_at
       formats:
         - UNIX
         - ISO8601
-        - yyyy-MM-dd' 'HH:mm:ss
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
         - yyyy-MM-dd'T'HH:mm:ssXXXXX
+        - yyyy-MM-dd' 'HH:mm:ss
         - yyyy-MM-dd' 'HH:mm:ssXXXXX
       on_failure:
         - remove:
-            tag: remove_ti_flashpoint_alert_generated_at_b31b7376
+            tag: remove_ti_flashpoint_alert_generated_at_f8608dfe
             field:
               - ti_flashpoint.alert.generated_at
         - append:
-            tag: append_error_message_c1605d45
+            tag: append_error_message_a5e0cc6d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_ti_flashpoint_alert_resource_sort_date_into_ti_flashpoint_alert_resource_sort_date_c561a9d0
+      tag: date_ti_flashpoint_alert_resource_sort_date_into_ti_flashpoint_alert_resource_sort_date_33d3d4c8
       if: ctx.ti_flashpoint?.alert?.resource?.sort_date != null && ctx.ti_flashpoint.alert.resource.sort_date != ''
       field: ti_flashpoint.alert.resource.sort_date
       target_field: ti_flashpoint.alert.resource.sort_date
       formats:
         - UNIX
         - ISO8601
-        - yyyy-MM-dd' 'HH:mm:ss
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ
         - yyyy-MM-dd'T'HH:mm:ssXXXXX
+        - yyyy-MM-dd' 'HH:mm:ss
         - yyyy-MM-dd' 'HH:mm:ssXXXXX
       on_failure:
         - remove:
-            tag: remove_ti_flashpoint_alert_resource_sort_date_7047e135
+            tag: remove_ti_flashpoint_alert_resource_sort_date_e340c9dd
             field:
               - ti_flashpoint.alert.resource.sort_date
         - append:
-            tag: append_error_message_d2ba01c0
+            tag: append_error_message_28b36828
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -347,7 +353,7 @@ processors:
       copy_from: ti_flashpoint.alert.resource.container.name
       ignore_empty_value: true
   - set:
-      tag: set_container_id_from_ti_flashpoint_alert_resource_container_native_id_32f7eccb
+      tag: set_container_id_from_ti_flashpoint_alert_resource_container_native_id_4065cced
       field: container.id
       copy_from: ti_flashpoint.alert.resource.container.native_id
       ignore_empty_value: true
@@ -368,16 +374,6 @@ processors:
           allow_duplicates: false
   - foreach:
       tag: foreach_of_ti_flashpoint_alert_resource_media_v2_13d37736
-      if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
-      field: ti_flashpoint.alert.resource.media_v2
-      processor:
-        append:
-          tag: append_file_hash_sha256_6ef886dd
-          field: file.hash.sha256
-          value: '{{{_ingest._value.phash256}}}'
-          allow_duplicates: false
-  - foreach:
-      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_14d378c9
       if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
       field: ti_flashpoint.alert.resource.media_v2
       processor:
@@ -403,7 +399,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_15d37a5c
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_14d378c9
       if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
       field: ti_flashpoint.alert.resource.media_v2
       processor:
@@ -413,7 +409,7 @@ processors:
           value: '{{{_ingest._value.phash}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_16d37bef
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_15d37a5c
       if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
       field: ti_flashpoint.alert.resource.media_v2
       processor:
@@ -423,7 +419,7 @@ processors:
           value: '{{{_ingest._value.phash256}}}'
           allow_duplicates: false
   - foreach:
-      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_17d37d82
+      tag: foreach_of_ti_flashpoint_alert_resource_media_v2_16d37bef
       if: ctx.ti_flashpoint?.alert?.resource?.media_v2 instanceof List
       field: ti_flashpoint.alert.resource.media_v2
       processor:
@@ -440,10 +436,9 @@ processors:
       field: ti_flashpoint.alert.resource.media_v2
       processor:
         remove:
-          tag: remove_custom_duplicate_fields_for_media_v2_020834ca
+          tag: remove_custom_duplicate_fields_for_media_v2_8d3a5f10
           field:
             - _ingest._value.mime_type
-            - _ingest._value.phash256
             - _ingest._value.sha1
           ignore_missing: true
   - remove:
