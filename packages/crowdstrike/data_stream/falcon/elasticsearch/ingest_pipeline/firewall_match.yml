@@ -1,6 +1,7 @@
 ---
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
@@ -46,7 +47,7 @@ processors:
       field: message
       value: "Firewall Rule: '{{{crowdstrike.event.RuleName}}}' triggered - Action: '{{{_tmp_.action}}}'"
       tag: set_message
-      if: ctx.crowdstrike?.event?.RuleName != null     
+      if: ctx.crowdstrike?.event?.RuleName != null
   - rename:
       field: crowdstrike.event.Ipv
       target_field: network.type
@@ -106,7 +107,7 @@ processors:
         tag: script-set-network-direction
         description: Set network.direction
         lang: painless
-        if : ctx.crowdstrike?.event?.ConnectionDirection != null
+        if: ctx.crowdstrike?.event?.ConnectionDirection != null
         source: |
           def result = [];
           if (ctx.crowdstrike.event.ConnectionDirection == "0") {
