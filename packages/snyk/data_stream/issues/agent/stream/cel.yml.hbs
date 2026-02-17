@@ -188,6 +188,12 @@ program: |-
             "want_more": has(body.?links.next),
           }
         )
+      : (resp.StatusCode == 429) ?
+        // We were not able to avoid a rate limit excession.
+        {
+          "events": [],
+          "want_more": false,
+        }
       :
         {
           "events": {
