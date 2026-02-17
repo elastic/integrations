@@ -116,9 +116,7 @@ program: |-
               // configurable limit.
               "limit": ["100"],
             }.format_query()
-          ).with(auth_header).do_request().as(resp, (resp.StatusCode != 200) ?
-            []
-          :
+          ).with(auth_header).do_request().as(resp, (resp.StatusCode == 200) ?
             // TODO: Remove unnecessary bytes conversion when kibana.version is at least v8.15.0.
             bytes(resp.Body).decode_json().data.map(org,
               {
@@ -130,6 +128,8 @@ program: |-
                 ?"last_created": state.?cursor[org.id].last_created,
               }
             )
+          :
+            []
           )
         : has(state.?cursor.last_created) ?
           // ... a single legacy cursor, ...
@@ -176,24 +176,7 @@ program: |-
               ?"events": state.?events_filter,
             }.format_query()
           )
-        ).with(auth_header).do_request().as(resp, (resp.StatusCode != 200) ?
-          {
-            "id": item.id,
-            "events": [
-              {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  "message": (size(resp.Body) != 0) ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + " (" + string(resp.StatusCode) + ")",
-                },
-              },
-            ],
-            "want_more": false,
-          }
-        :
+        ).with(auth_header).do_request().as(resp, (resp.StatusCode == 200) ?
           // TODO: Remove unnecessary bytes conversion when kibana.version is at least v8.15.0.
           bytes(resp.Body).decode_json().as(body, !has(body.?data.items) ?
             {
@@ -228,6 +211,23 @@ program: |-
               "want_more": has(body.?links.next),
             }
           )
+        :
+          {
+            "id": item.id,
+            "events": [
+              {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")",
+                },
+              },
+            ],
+            "want_more": false,
+          }
         )
       ).as(result,
         {

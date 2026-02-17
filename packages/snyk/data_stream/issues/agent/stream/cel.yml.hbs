@@ -129,23 +129,7 @@ program: |-
             ?"ignored": state.?ignored.optMap(i, [string(i)]),
           }.format_query()
         )
-      ).with(auth_header).do_request().as(resp, (resp.StatusCode != 200) ?
-        {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GET:" + (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
-            },
-          },
-          "want_more": false,
-        }
-      :
+      ).with(auth_header).do_request().as(resp, (resp.StatusCode == 200) ?
         bytes(resp.Body).decode_json().as(body, !has(body.data) ?
           {
             "events": [],
@@ -171,9 +155,7 @@ program: |-
                             "data": issue.relationships.scan_item.data.with(
                               get_request(
                                 state.url.trim_right("/") + "/rest" + issue.relationships.scan_item.links.related + "?" + {"version": [state.version]}.format_query()
-                              ).with(auth_header).do_request().as(resp, (resp.StatusCode != 200) ?
-                                {"_enrich_error_message": "Status code " + string(resp.StatusCode) + " received while fetching " + issue.relationships.scan_item.links.related}
-                              :
+                              ).with(auth_header).do_request().as(resp, (resp.StatusCode == 200) ?
                                 bytes(resp.Body).decode_json().as(body,
                                   body.?data.orValue(
                                     {
@@ -181,6 +163,8 @@ program: |-
                                     }
                                   )
                                 )
+                              :
+                                {"_enrich_error_message": "Status code " + string(resp.StatusCode) + " received while fetching " + issue.relationships.scan_item.links.related}
                               )
                             ),
                           }
@@ -204,6 +188,22 @@ program: |-
             "want_more": has(body.?links.next),
           }
         )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET:" + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
       )
     )
   )
