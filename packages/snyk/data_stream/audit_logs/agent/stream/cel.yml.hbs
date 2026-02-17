@@ -232,14 +232,10 @@ program: |-
           // The cursor cannot contain the next link since it may
           // stale by the time we revisit the cursor elements.
           // Make sure we remove legacy cursor time in last_created.
-          // TODO: Replace the line below with the following when kibana.version is at least v8.15.0.
-          // "cursor": state.?cursor.orValue({}).drop("last_created").with(zip(
-          "cursor": [state.?cursor.orValue({})].drop("last_created")[0].with(
+          "cursor": state.?cursor.orValue({}).drop("last_created").with(
             zip(
               result.map(r, has(r.?cursor.id), r.cursor.id),
-              // TODO: Replace the line below with the following when kibana.version is at least v8.15.0.
-              // result.map(r, has(r.?cursor.id), r.cursor.drop(["id","next"]))
-              result.map(r, has(r.?cursor.id), [r.cursor].drop(["id", "next"])[0])
+              result.map(r, has(r.?cursor.id), r.cursor.drop(["id", "next"]))
             )
           ),
           // The work_list does contain the next link since this
