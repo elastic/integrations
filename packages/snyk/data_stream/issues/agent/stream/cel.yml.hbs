@@ -74,7 +74,7 @@ program: |-
           "grant_type=client_credentials&client_id=" + state.client_id + "&client_secret=" + state.client_secret
         ).do_request().as(token_resp,
           (token_resp.StatusCode == 200) ?
-            bytes(token_resp.Body).decode_json().access_token.as(token,
+            token_resp.Body.decode_json().access_token.as(token,
               {
                 "Header": {
                   "Accept": ["application/vnd.api+json"],
@@ -130,7 +130,7 @@ program: |-
           }.format_query()
         )
       ).with(auth_header).do_request().as(resp, (resp.StatusCode == 200) ?
-        bytes(resp.Body).decode_json().as(body, !has(body.data) ?
+        resp.Body.decode_json().as(body, !has(body.data) ?
           {
             "events": [],
             "want_more": false,
@@ -156,7 +156,7 @@ program: |-
                               get_request(
                                 state.url.trim_right("/") + "/rest" + issue.relationships.scan_item.links.related + "?" + {"version": [state.version]}.format_query()
                               ).with(auth_header).do_request().as(resp, (resp.StatusCode == 200) ?
-                                bytes(resp.Body).decode_json().as(body,
+                                resp.Body.decode_json().as(body,
                                   body.?data.orValue(
                                     {
                                       "_enrich_error_message": "No data received for " + issue.relationships.scan_item.links.related,
