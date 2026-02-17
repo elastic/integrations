@@ -921,7 +921,7 @@ Current supported event types are:
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
 | crowdstrike.event.MatchedClassification.ID |  | keyword |
 | crowdstrike.event.MatchedClassification.Name |  | keyword |
-| crowdstrike.event.MitreAttack.PatternId |  | keyword |
+| crowdstrike.event.MitreAttack.PatternID |  | keyword |
 | crowdstrike.event.MitreAttack.Tactic |  | keyword |
 | crowdstrike.event.MitreAttack.TacticID |  | keyword |
 | crowdstrike.event.MitreAttack.Technique |  | keyword |
