@@ -2542,11 +2542,68 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: threat.framework
-      tag: set_threat_framework
-      value: MITRE ATT&CK
-      if: ctx.crowdstrike?.alert?.mitre_attack != null
+  - script:
+      description: For tactics that are prefixed with "CS" or "TA".
+      lang: painless
+      tag: script_threat_framework
+      params:
+        framework_cs: 'CrowdStrike Falcon Detections Framework'
+        framework_ma: 'MITRE ATT&CK'
+        falcon_tactic_names:
+          - malware
+          - exploit
+          - post-exploit
+          - machine learning
+          - custom intelligence
+          - falcon overwatch
+          - falcon intel
+          - ai powered ioa
+          - insecure security posture
+      source: |
+        if (ctx.threat == null) { return; }
+        def tid = ctx.threat.tactic?.id;
+        def nid = ctx.threat.technique?.id;
+        def tname = ctx.threat.tactic?.name;
+        if ((tid == null || tid.isEmpty()) && (nid == null || nid.isEmpty()) && (tname == null || tname.isEmpty())) {
+          return;
+        }
+        Set list = new HashSet();
+        // Handling tactics prefixed with "CS" or "TA".
+        if (tid != null && !tid.isEmpty()) {
+          for (String t: tid) {
+            if (t.startsWith("CS")) {
+              list.add(params.framework_cs);
+            }
+            else if (t.startsWith("TA")) {
+              list.add(params.framework_ma);
+            }
+          }
+        }
+        // Handling techniques prefixed with "CS".
+        if (nid != null && !nid.isEmpty()) {
+          for (String t: nid) {
+            if (t.startsWith("CS")) {
+              list.add(params.framework_cs);
+            }
+          }
+        }
+        // Handling falcon specific tactics.
+        if (tname != null && !tname.isEmpty()) {
+          for (String t: tname) {
+            if (params.falcon_tactic_names.contains(t.toLowerCase())) {
+              list.add(params.framework_cs);
+            }
+          }
+        }
+
+        if (!list.isEmpty()) {
+            ctx.threat = ctx.threat ?: [:];
+            ctx.threat.framework = list;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.template_instance_id
       tag: rename_template_instance_id
