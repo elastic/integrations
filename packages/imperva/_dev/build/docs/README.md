@@ -6,13 +6,6 @@
 
 The Imperva integration for Elastic enables you to collect and analyze logs from Imperva SecureSphere devices using Elastic Agent. By ingesting these logs into the Elastic Stack, you can monitor security events, audit database activity, and gain comprehensive visibility into web application traffic.
 
-This integration facilitates:
-- Web application firewall event monitoring and threat detection
-- Database security auditing and compliance tracking
-- Real-time visibility into security policy violations
-- Network traffic analysis and connection monitoring
-- Centralized logging for multi-appliance Imperva deployments
-
 ### Compatibility
 
 This integration is compatible with Imperva SecureSphere. It supports log collection from SecureSphere appliances configured to export logs via syslog.
