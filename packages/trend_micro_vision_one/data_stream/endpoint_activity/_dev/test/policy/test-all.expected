@@ -1,0 +1,183 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: trend_micro_vision_one
+      name: test-all-trend_micro_vision_one
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: trend_micro_vision_one.endpoint_activity
+          interval: 24h
+          processors:
+            - add_fields:
+                fields:
+                    test: policy-test
+                target: ""
+          program: |-
+            (
+              state.?want_more.orValue(false) ?
+                state
+              :
+                state.with({
+                  "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+                  "end_time": now.format(time_layout.RFC3339),
+                })
+            ).as(state,
+              // use next.link if available, otherwise build initial request
+              (
+                state.?next.link.hasValue() ?
+                  state.next.link
+                :
+                  state.url.trim_right("/") + "/v3.0/search/endpointActivities?" + {
+                    "top": [string(state.batch_size)],
+                    "startDateTime": [string(state.start_time)],
+                    "endDateTime": [string(state.end_time)],
+                  }.format_query()
+              ).as(request_url,
+                request(
+                  "GET",
+                  request_url
+                ).with(
+                  {
+                    "Header": {
+                      "Authorization": ["Bearer " + state.api_token],
+                      "Content-Type": ["application/json;charset=utf-8"],
+                      "TMV1-Query": ["*"],
+                    },
+                  }
+                ).do_request().as(resp,
+                  resp.StatusCode == 200 ?
+                    resp.Body.decode_json().as(body,
+                      {
+                        "events": has(body.items) && size(body.items) > 0 ?
+                          body.items.map(item,
+                            {
+                              "message": item.encode_json(),
+                            }
+                          )
+                        :
+                          [],
+                        // next.link will not be available in last paginated call
+                        "next": {?"link": body.?nextLink},
+                        "want_more": body.?nextLink.hasValue(),
+                        "api_token": state.api_token,
+                        "batch_size": state.batch_size,
+                        "initial_interval": state.initial_interval,
+                        "cursor": {
+                          ?"last_timestamp": (has(body.items) && size(body.items) > 0) ?
+                            (has(state.?cursor.last_timestamp) ?
+                              optional.of(
+                                max([
+                                  state.cursor.last_timestamp.parse_time("2006-01-02T15:04:05"),
+                                  timestamp(int(timestamp(0)+duration(string(int(body.items[0].eventTime))+"ms")))
+                                ]).format("2006-01-02T15:04:05")
+                              )
+                            :
+                              optional.of(timestamp(int(timestamp(0)+duration(string(int(body.items[0].eventTime))+"ms"))).format("2006-01-02T15:04:05"))
+                            )
+                          :
+                            state.?cursor.last_timestamp
+                        }
+                      }
+                    )
+                  :
+                    resp.StatusCode == 429 ?
+                      {
+                        "events": [],
+                        "rate_limited": debug("rate_limit_exceeded", bytes(resp.Body).decode_json().?fail[0].message.orValue("missing message")),
+                        "want_more": false,
+                        "next": state.?next,
+                        "api_token": state.api_token,
+                        "initial_interval": state.initial_interval,
+                        "batch_size": state.batch_size,
+                        "cursor": state.?cursor,
+                      }
+                    :
+                      {
+                        "events": [
+                          {
+                            "error": {
+                              "code": string(resp.StatusCode),
+                              "id": string(resp.Status),
+                              "message": "GET " + request_url + ": " + (
+                                size(resp.Body) != 0 ?
+                                  string(resp.Body)
+                                :
+                                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                              ),
+                            },
+                          },
+                        ],
+                        "want_more": false,
+                        "next": state.?next,
+                        "api_token": state.api_token,
+                        "initial_interval": state.initial_interval,
+                        "batch_size": state.batch_size,
+                        "cursor": state.?cursor,
+                      }
+                )
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_token
+          resource.proxy_url: https://user:pass@proxy.example.com:8080
+          resource.ssl:
+            certificate_authorities:
+                - |
+                  -----BEGIN CERTIFICATE-----
+                  MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+                  ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+                  MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+                  BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+                  fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+                  94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+                  /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+                  PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+                  CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+                  BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+                  8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+                  874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+                  3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+                  H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+                  8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+                  yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+                  sxSmbIUfc2SGJGCJD4I=
+                  -----END CERTIFICATE-----
+          resource.timeout: 60s
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://example.visionone.trendmicro.com
+          state:
+            api_token: ${SECRET_0}
+            batch_size: 500
+            initial_interval: 24h
+          tags:
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+            - trend_micro_vision_one-endpoint_activity
+            - test-policy
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-trend_micro_vision_one.endpoint_activity-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
