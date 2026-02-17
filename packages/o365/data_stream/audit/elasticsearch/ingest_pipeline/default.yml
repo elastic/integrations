@@ -1459,6 +1459,12 @@ processors:
       tag: append_email_message_id_1
       allow_duplicates: false
   - append:
+      field: email.message_id
+      value: "{{{o365audit.Item.InternetMessageId}}}"
+      if: ctx.o365audit?.Item?.InternetMessageId != null && ctx.o365audit.Item.InternetMessageId != ''
+      tag: append_item_internet_message_id_into_email_message_id
+      allow_duplicates: false
+  - append:
       field: email.local_id
       value: "{{{o365audit.NetworkMessageId}}}"
       if: ctx.o365audit?.NetworkMessageId != null && ctx.o365audit.NetworkMessageId != ''
@@ -1512,6 +1518,40 @@ processors:
       if: ctx.o365audit?.Subject != null && ctx.o365audit.Subject != ''
       tag: append_email_subject_1
       allow_duplicates: false
+  - append:
+      field: email.subject
+      value: "{{{o365audit.Item.Subject}}}"
+      if: ctx.o365audit?.Item?.Subject != null && ctx.o365audit.Item.Subject != ''
+      tag: append_item_subject_into_email_subject
+      allow_duplicates: false
+  - script:
+      tag: script_item_attachments
+      if: ctx.o365audit?.Item?.Attachments != null && ctx.o365audit.Item.Attachments != ''
+      description: Parse attachments from Item.Attachments.
+      source: |-
+        ctx.email = ctx.email ?: [:];
+        ctx.email.attachments = [];
+        
+        // Split semicolon-delimited attachment string into individual attachment entries
+        def attachmentList = ctx.o365audit.Item.Attachments.splitOnToken(';');
+        
+        for (def attachment : attachmentList) {
+          def attachmentObj = [:];
+          
+          // Parse pattern: "filename.extension (sizeb)"
+          def matcher = /^(.+?)\.([^.]+)\s*\((\d+)b\)$/.matcher(attachment);
+          if (matcher.matches()) {
+            attachmentObj.file = [:];
+            attachmentObj.file.extension = matcher.group(2);
+            attachmentObj.file.name = matcher.group(1) + '.' + matcher.group(2);
+            attachmentObj.file.size = Long.parseLong(matcher.group(3));
+            ctx.email.attachments.add(attachmentObj);
+          } 
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: o365audit.EndTimeUtc
       target_field: o365audit.EndTimeUtc
