@@ -121,7 +121,7 @@ If no events are being collected:
 | greenhouse.audit.event.target_id | The ID of the element that was edited or accessed. | keyword |
 | greenhouse.audit.event.target_type | The resource name for data changes, Harvest access, or the event action type for other actions. | keyword |
 | greenhouse.audit.event.type | The type of event: data_change_update, data_change_create, data_change_destroy, harvest_access, or action. | keyword |
-| greenhouse.audit.performer.id | The Greenhouse Recruiting user ID of the person who performed the change or the API key if performed via Greenhouse API. | keyword |
+| greenhouse.audit.performer.id | The Greenhouse Recruiting user ID of the person who performed the change or the API key if performed using Greenhouse API. | keyword |
 | greenhouse.audit.performer.ip_address | The IP address of the person or integration that performed the change. | ip |
 | greenhouse.audit.performer.meta.api_key_type | The type of API key used when performer is an API key. | keyword |
 | greenhouse.audit.performer.meta.name | The name of the performer. | keyword |
