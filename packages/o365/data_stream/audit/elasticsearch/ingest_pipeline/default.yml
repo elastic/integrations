@@ -53,7 +53,6 @@ processors:
       target_field: "_id"
       ignore_missing: true
 
-
   # Miscellaneous
   - set:
       tag: set_file_extension_9dc66335
@@ -177,11 +176,11 @@ processors:
   - script:
       description: 'This is the second half of an implementation of `if: _ingest._value instanceof String` for the foreach above.'
       if: ctx._tmp?.action_strings != null
-      tag: script_select_string_actions
+      tag: script_01a1e9ce
       source: |-
         // To reach here, ctx._tmp.action_strings must be non-null
         // and for this to be true, script_select_string_actions
-        // must have run, requring that ctx.o365audit.Actions is
+        // must have run, requiring that ctx.o365audit.Actions is
         // non-null, so we do not need to check again.
         ctx.o365audit.Actions.addAll(ctx._tmp.action_strings);
 
@@ -1814,15 +1813,7 @@ processors:
       tag: script_known_Data
       if: 'ctx.o365audit?.Data?.flattened instanceof Map'
       params:
-        knownKeys: [
-          'ad', 'af', 'aii', 'ail', 'alk', 'als', 'an', 'at',
-          'cid', 'cpid', 'dm', 'dpn', 'eid', 'etps', 'etype', 'f3u', 'fvs',
-          'imsgid', 'lon', 'mat', 'md', 'ms', 'od', 'op', 'ot', 'plk', 'pud',
-          'reid', 'rid', 'sev', 'sict', 'sid', 'sip', 'sitmi', 'srt', 'ssic',
-          'suid', 'tdc', 'te', 'thn', 'tht', 'tid', 'tpid', 'tpt', 'trc', 'ts',
-          'tsd', 'ttdt', 'ttr', 'upfc', 'upfv', 'ut', 'von', 'wl', 'zfh', 'zfn',
-          'zmfh', 'zmfn', 'zu'
-        ]
+        knownKeys: ['ad', 'af', 'aii', 'ail', 'alk', 'als', 'an', 'at', 'cid', 'cpid', 'dm', 'dpn', 'eid', 'etps', 'etype', 'f3u', 'fvs', 'imsgid', 'lon', 'mat', 'md', 'ms', 'od', 'op', 'ot', 'plk', 'pud', 'reid', 'rid', 'sev', 'sict', 'sid', 'sip', 'sitmi', 'srt', 'ssic', 'suid', 'tdc', 'te', 'thn', 'tht', 'tid', 'tpid', 'tpt', 'trc', 'ts', 'tsd', 'ttdt', 'ttr', 'upfc', 'upfv', 'ut', 'von', 'wl', 'zfh', 'zfn', 'zmfh', 'zmfn', 'zu']
       source: >
         for (def key : params.knownKeys) {
           if (ctx.o365audit.Data.flattened.containsKey(key)) {
@@ -1963,11 +1954,7 @@ processors:
       tag: script_known_Data.Entities
       if: ctx.o365audit?.Data?.flattened?.Entities instanceof List
       params:
-        knownEntityKeys: [
-          'InternetMessageId', 'NetworkMessageId', 'OriginalDeliveryLocation',
-          'P1Sender', 'P2Sender', 'PhishConfidenceLevel', 'Recipient', 'SenderIP', 'Subject',
-          'ThreatDetectionMethods', 'Upn'
-        ]
+        knownEntityKeys: ['InternetMessageId', 'NetworkMessageId', 'OriginalDeliveryLocation', 'P1Sender', 'P2Sender', 'PhishConfidenceLevel', 'Recipient', 'SenderIP', 'Subject', 'ThreatDetectionMethods', 'Upn']
       source: >
         ctx._tmp = ctx._tmp ?: [:];
         ctx._tmp.entities = [:];
