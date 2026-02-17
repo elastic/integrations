@@ -43,7 +43,7 @@ Example Host Configuration: `http://example.com:9090`
 
 ## Setup
   
-For step-by-step instructions on how to set up an integration, check the [quick start](integrations://docs/extend/quick-start.md).
+For step-by-step instructions on how to set up an integration, check the [quick start](integrations://extend/quick-start.md).
 
 **NOTE:** It is recommended to configure the application firewall to enable CEF-formatted logs.
 
