@@ -16,8 +16,8 @@ processors:
   - set:
       field: event.kind
       value: asset
-      tag: set_event_kind
-      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')          
+      tag: set_event_kind_e12429b2
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')
   - append:
       field: event.category
       value: authentication
@@ -26,8 +26,8 @@ processors:
   - append:
       field: event.category
       value: iam
-      tag: append_event_category
-      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')      
+      tag: append_event_category_e7df101f
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')
   - append:
       field: event.type
       value: info
@@ -35,8 +35,8 @@ processors:
   - append:
       field: event.type
       value: user
-      tag: append_event_type
-      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')            
+      tag: append_event_type_8f7ee2e1
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')
 
   # Json Processors
   - json:
@@ -45,6 +45,7 @@ processors:
       if: ctx.json?.properties?.ActivityObjects instanceof String && ctx.json.properties.ActivityObjects != ''
       on_failure:
         - append:
+            tag: append_error_message_63ce8c5f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - json:
@@ -53,6 +54,7 @@ processors:
       if: ctx.json?.properties?.RawEventData instanceof String && ctx.json.properties.RawEventData != ''
       on_failure:
         - append:
+            tag: append_error_message_e8bb7f9d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - json:
@@ -61,6 +63,7 @@ processors:
       if: ctx.json?.properties?.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
       on_failure:
         - append:
+            tag: append_error_message_5e0deff9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 
@@ -74,6 +77,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a4e18c4f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -85,6 +89,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9ede7fe9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -96,6 +101,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cf8631bd
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -107,6 +113,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bf36ea31
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -118,6 +125,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_85d04a03
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -129,6 +137,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c3a6e3c3
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -141,6 +150,7 @@ processors:
 
   # Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
   - script:
+      tag: script_49aaf900
       lang: painless
       source: |
        def isTruthy(def val) {
@@ -175,7 +185,8 @@ processors:
         ctx.m365_defender.event.is_anonymous_proxy = isTruthy(ctx.json?.properties?.IsAnonymousProxy);
         ctx.m365_defender.event.is_external_user = isTruthy(ctx.json?.properties?.IsExternalUser);
         ctx.m365_defender.event.is_impersonated = isTruthy(ctx.json?.properties?.IsImpersonated);
-    
+
+
   # Rename Processors
   - rename:
       field: json.properties.City
@@ -186,9 +197,9 @@ processors:
   - rename:
       field: json.properties.City
       target_field: m365_defender.event.account.city
-      tag: rename_json_properties_City
-      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')      
-      ignore_missing: true      
+      tag: rename_json_properties_City_to_m365_defender_event_account_city_1df01e5c
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')
+      ignore_missing: true
   - rename:
       field: json.properties.AccountName
       target_field: m365_defender.event.account.name
@@ -198,7 +209,7 @@ processors:
       field: json.properties.IsAccountEnabled
       target_field: m365_defender.event.account.is_enabled
       tag: rename_json_properties_IsAccountEnabled
-      ignore_missing: true      
+      ignore_missing: true
   - rename:
       field: json.properties.AccountSid
       target_field: m365_defender.event.account.sid
@@ -269,11 +280,11 @@ processors:
       target_field: m365_defender.event.country
       tag: rename_json_properties_Country
       if: ctx.m365_defender.event.category.toLowerCase() != 'advancedhunting-identityinfo'
-      ignore_missing: true      
+      ignore_missing: true
   - rename:
       field: json.properties.Country
       target_field: m365_defender.event.account.country
-      tag: rename_json_properties_Country
+      tag: rename_json_properties_Country_to_m365_defender_event_account_country_919afeab
       if: ctx.m365_defender.event.category.toLowerCase() == 'advancedhunting-identityinfo'
       ignore_missing: true
   - rename:
@@ -406,52 +417,52 @@ processors:
       field: json.properties.OnPremSid
       target_field: m365_defender.event.account.on_prem_sid
       tag: rename_json_properties_OnPremSid
-      ignore_missing: true 
+      ignore_missing: true
   - rename:
       field: json.properties.SourceProvider
       target_field: m365_defender.event.source_provider
       tag: rename_json_properties_SourceProvider
-      ignore_missing: true            
+      ignore_missing: true
   - rename:
       field: json.properties.SourceSystem
       target_field: m365_defender.event.source_system
       tag: rename_json_properties_SourceSystem
-      ignore_missing: true        
+      ignore_missing: true
   - rename:
       field: json.properties.AssignedRoles
       target_field: m365_defender.event.account.assigned_roles
       tag: rename_json_properties_AssignedRoles
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.ChangeSource
       target_field: m365_defender.event.change_source
       tag: rename_json_properties_ChangeSource
-      ignore_missing: true          
+      ignore_missing: true
   - rename:
       field: json.properties.EmailAddress
       target_field: m365_defender.event.account.email_address
       tag: rename_json_properties_EmailAddress
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.Address
       target_field: m365_defender.event.account.address
       tag: rename_json_properties_Address
-      ignore_missing: true  
+      ignore_missing: true
   - rename:
       field: json.properties.Phone
       target_field: m365_defender.event.account.phone
       tag: rename_json_properties_Phone
-      ignore_missing: true  
+      ignore_missing: true
   - rename:
       field: json.properties.Manager
       target_field: m365_defender.event.account.manager
       tag: rename_json_properties_Manager
-      ignore_missing: true  
+      ignore_missing: true
   - rename:
       field: json.properties.SipProxyAddress
       target_field: m365_defender.event.account.sip_proxy_address
       tag: rename_json_properties_SipProxyAddress
-      ignore_missing: true  
+      ignore_missing: true
   - rename:
       field: json.properties.CreatedDateTime
       target_field: m365_defender.event.account.created
@@ -461,83 +472,83 @@ processors:
       field: json.properties.JobTitle
       target_field: m365_defender.event.account.job_title
       tag: rename_json_properties_JobTitle
-      ignore_missing: true                  
+      ignore_missing: true
   - rename:
       field: json.properties.Department
       target_field: m365_defender.event.account.department
       tag: rename_json_properties_Department
-      ignore_missing: true          
+      ignore_missing: true
   - rename:
       field: json.properties.EmployeeId
       target_field: m365_defender.event.account.employee_id
       tag: rename_json_properties_EmployeeId
-      ignore_missing: true      
+      ignore_missing: true
   - rename:
       field: json.properties.Surname
       target_field: m365_defender.event.account.surname
       tag: rename_json_properties_Surname
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.GivenName
       target_field: m365_defender.event.account.given_name
       tag: rename_json_properties_GivenName
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.Type
       target_field: m365_defender.event.type
       tag: rename_json_properties_Type
-      ignore_missing: true          
+      ignore_missing: true
   - rename:
       field: json.properties.DistinguishedName
       target_field: m365_defender.event.account.distinguished_name
       tag: rename_json_properties_DistinguishedName
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.CloudSid
       target_field: m365_defender.event.account.cloud_sid
       tag: rename_json_properties_CloudSid
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.Tags
       target_field: m365_defender.event.account.tags
       tag: rename_json_properties_Tags
-      ignore_missing: true   
+      ignore_missing: true
   - rename:
       field: json.properties.BlastRadius
       target_field: m365_defender.event.account.blast_radius
       tag: rename_json_properties_BlastRadius
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.OtherMailAddresses
       target_field: m365_defender.event.account.other_mail_addresses
       tag: rename_json_properties_OtherMailAddresses
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.CompanyName
       target_field: m365_defender.event.account.company_name
       tag: rename_json_properties_CompanyName
-      ignore_missing: true   
+      ignore_missing: true
   - rename:
       field: json.properties.DeletedDateTime
       target_field: m365_defender.event.account.deleted_date_time
       tag: rename_json_properties_DeletedDateTime
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.CriticalityLevel
       target_field: m365_defender.event.account.criticality_level
       tag: rename_json_properties_CriticalityLevel
-      ignore_missing: true    
+      ignore_missing: true
   - rename:
       field: json.properties.RiskLevel
       target_field: m365_defender.event.account.risk_level
       tag: rename_json_properties_RiskLevel
-      ignore_missing: true   
+      ignore_missing: true
   - rename:
       field: json.properties.RiskLevelDetails
       target_field: m365_defender.event.account.risk_level_details
       tag: rename_json_properties_RiskLevelDetails
-      ignore_missing: true   
-                           
+      ignore_missing: true
+
   # Destination mapping
   - set:
       field: destination.domain
@@ -571,19 +582,23 @@ processors:
       tag: append_host_ip
       if: ctx.m365_defender?.event?.ip_address != null && ctx.m365_defender.event.ip_address != ''
   - set:
+      tag: set_host_os_type_62ba268a
       field: host.os.type
       value: windows
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('windows')
   - set:
+      tag: set_host_os_type_9c46628a
       field: host.os.type
       value: linux
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('linux')
   - set:
+      tag: set_host_os_type_280931ca
       field: host.os.type
       value: macos
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('macos')
   # For IdentityQueryEvents, OS type is derived from AdditionalFields.SourceComputerOperatingSystemType
   - set:
+      tag: set_host_os_type_e21638b3
       field: host.os.type
       copy_from: m365_defender.event.additional_fields.SourceComputerOperatingSystemType
       if: ctx.m365_defender?.event?.additional_fields?.SourceComputerOperatingSystemType != null
@@ -622,7 +637,7 @@ processors:
   - set:
       field: event.outcome
       value: 'failure'
-      tag: set_event_outcome
+      tag: set_event_outcome_108ff8d2
       if: (ctx.m365_defender?.event?.failure_reason != null && ctx.m365_defender.event.failure_reason != '') && ctx.m365_defender.event.category.toLowerCase() == 'advancedhunting-identitylogonevents'
   - set:
       field: event.id
@@ -698,6 +713,7 @@ processors:
       if: ctx.m365_defender?.event?.user_agent != null && ctx.m365_defender.event.user_agent != ''
       on_failure:
         - append:
+            tag: append_error_message_d4911da0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 
@@ -711,39 +727,39 @@ processors:
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.display_name}}}'
-      tag: append_related_user
+      tag: append_related_user_a19035db
       if: ctx.m365_defender?.event?.account?.display_name != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{m365_defender.event.target.account_display_name}}}'
-      tag: append_related_user
+      tag: append_related_user_2d61499b
       if: ctx.m365_defender?.event?.target?.account_display_name != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.cloud_sid}}}'
-      tag: append_related_user
+      tag: append_related_user_9f47301a
       if: ctx.m365_defender?.event?.account.cloud_sid != null
-      allow_duplicates: false   
+      allow_duplicates: false
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.on_prem_sid}}}'
-      tag: append_related_user
+      tag: append_related_user_cd0ba510
       if: ctx.m365_defender?.event?.account.on_prem_sid != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.upn}}}'
-      tag: append_related_user
+      tag: append_related_user_ee3a78d4
       if: ctx.m365_defender?.event?.account.upn != null
-      allow_duplicates: false   
+      allow_duplicates: false
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.email_address}}}'
-      tag: append_related_user
+      tag: append_related_user_d5f12e14
       if: ctx.m365_defender?.event?.account.email_address != null
-      allow_duplicates: false           
+      allow_duplicates: false
   - append:
       field: related.hosts
       value: '{{{destination.domain}}}'
@@ -759,10 +775,11 @@ processors:
   - append:
       field: related.hosts
       value: '{{{host.name}}}'
-      tag: append_related_hosts
+      tag: append_related_hosts_b21daee5
       if: ctx.host?.name != null
       allow_duplicates: false
   - foreach:
+      tag: foreach_host_ip_0c6db249
       field: host.ip
       if: ctx.host?.ip instanceof List
       ignore_failure: true
@@ -775,13 +792,13 @@ processors:
   - append:
       field: related.hosts
       value: '{{{user.domain}}}'
-      tag: append_related_hosts
+      tag: append_related_hosts_a29fcba7
       if: ctx.user?.domain != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{m365_defender.event.account.name}}}'
-      tag: append_related_user
+      tag: append_related_user_581a43b7
       if: ctx.m365_defender?.event?.account?.name != null
       allow_duplicates: false
 

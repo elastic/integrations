@@ -13,28 +13,35 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_d9b8968b
       if: ctx.json?.value != null && ctx.json.value.isEmpty()
   - remove:
+      tag: remove_json_alerts_3223f53f
       field: json.alerts
       if: ctx.json?.alerts != null && ctx.json.alerts.isEmpty()
   - fingerprint:
+      tag: fingerprint_a991fd6f
       fields:
         - json.id
         - json.lastUpdateDateTime
@@ -45,38 +52,47 @@ processors:
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - append:
+      tag: append_event_category_f8516cec
       field: event.category
       value: malware
       if: ctx.json?.determination != null && ['malware','malicioususeractivity'].contains(ctx.json.determination.toLowerCase())
   - append:
+      tag: append_event_category_a2f224aa
       field: event.category
       value: email
       if: ctx.json?.determination != null && ctx.json.determination.toLowerCase() == 'phishing'
   - append:
+      tag: append_event_category_e3b312a3
       field: event.category
       value: threat
       if: ctx.json?.determination != null && ctx.json.determination.toLowerCase() == 'apt'
   - append:
+      tag: append_event_type_afbaa211
       field: event.type
       value: indicator
       if: ctx.event?.category != null && (ctx.event.category).contains('threat')
   - append:
+      tag: append_event_type_e07a8062
       field: event.type
       value: info
       if: ctx.event?.category != null && ((ctx.event.category).contains('email') || (ctx.event.category).contains('malware'))
   - dot_expander:
+      tag: dot_expander_odata_type_3e061147
       field: '@odata.type'
       path: json
       ignore_failure: true
       override: true
   - rename:
+      tag: rename_json_odata_type_to_m365_defender_incident_odata_type_df323ac6
       field: json.@odata.type
       target_field: m365_defender.incident.odata_type
       ignore_missing: true
   - date:
+      tag: date_json_lastUpdateDateTime_to_m365_defender_incident_last_update_datetime_8aa4fd36
       field: json.lastUpdateDateTime
       target_field: m365_defender.incident.last_update_datetime
       formats:
@@ -84,32 +100,40 @@ processors:
       if: ctx.json?.lastUpdateDateTime != null
       on_failure:
         - remove:
+            tag: remove_json_lastUpdateDateTime_365215ad
             field: json.lastUpdateDateTime
             ignore_missing: true
         - append:
+            tag: append_error_message_92a8b409
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_bb0275ef
       field: '@timestamp'
       copy_from: m365_defender.incident.last_update_datetime
       ignore_failure: true
   - rename:
+      tag: rename_json_displayName_to_m365_defender_incident_display_name_d3256294
       field: json.displayName
       target_field: m365_defender.incident.display_name
       ignore_missing: true
   - set:
+      tag: set_message_a43ab586
       field: message
       copy_from: m365_defender.incident.display_name
       ignore_failure: true
   - rename:
+      tag: rename_json_tenantId_to_m365_defender_incident_tenant_id_c5efdac2
       field: json.tenantId
       target_field: m365_defender.incident.tenant_id
       ignore_missing: true
   - set:
+      tag: set_cloud_account_id_949387a2
       field: cloud.account.id
       copy_from: m365_defender.incident.tenant_id
       ignore_failure: true
   - date:
+      tag: date_json_createdDateTime_to_m365_defender_incident_created_datetime_c1c738dd
       field: json.createdDateTime
       target_field: m365_defender.incident.created_datetime
       formats:
@@ -117,32 +141,40 @@ processors:
       if: ctx.json?.createdDateTime != null
       on_failure:
         - remove:
+            tag: remove_json_createdDateTime_c83d6ce9
             field: json.createdDateTime
             ignore_missing: true
         - append:
+            tag: append_error_message_68e91a60
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_created_86b4f339
       field: event.created
       copy_from: m365_defender.incident.created_datetime
       ignore_failure: true
   - rename:
+      tag: rename_json_id_to_m365_defender_incident_id_681e17dd
       field: json.id
       target_field: m365_defender.incident.id
       ignore_missing: true
   - set:
+      tag: set_event_id_7919481b
       field: event.id
       copy_from: m365_defender.incident.id
       ignore_failure: true
   - rename:
+      tag: rename_json_alerts_serviceSource_to_m365_defender_incident_alert_service_source_80c39f93
       field: json.alerts.serviceSource
       target_field: m365_defender.incident.alert.service_source
       ignore_missing: true
   - set:
+      tag: set_event_provider_6d36d6f3
       field: event.provider
       copy_from: m365_defender.incident.alert.service_source
       ignore_failure: true
   - lowercase:
+      tag: lowercase_json_severity_to_m365_defender_incident_severity_4607249e
       field: json.severity
       target_field: m365_defender.incident.severity
       ignore_failure: true
@@ -165,28 +197,35 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_ff963832
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uri_parts:
+      tag: uri_parts_json_incidentWebUrl_to_m365_defender_incident_web_url_1e7447fe
       field: json.incidentWebUrl
       target_field: m365_defender.incident.web_url
       if: ctx.json?.incidentWebUrl != null
       keep_original: true
       on_failure:
         - remove:
+            tag: remove_json_incidentWebUrl_35b6da97
             field: json.incidentWebUrl
         - append:
+            tag: append_error_message_fb3d52d3
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_url_2155febd
       field: event.url
       copy_from: m365_defender.incident.web_url.original
       ignore_failure: true
   - rename:
+      tag: rename_json_assignedTo_to_m365_defender_incident_assigned_to_5b9f46aa
       field: json.assignedTo
       target_field: m365_defender.incident.assigned_to
       ignore_missing: true
   - grok:
+      tag: grok_m365_defender_incident_assigned_to_bf018620
       field: m365_defender.incident.assigned_to
       patterns:
         - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
@@ -199,62 +238,76 @@ processors:
       tag: copy_source_user_email
       if: ctx.m365_defender?.incident?.assigned_to != null && ctx.m365_defender.incident.assigned_to.indexOf("@") > 0
   - append:
+      tag: append_related_user_fb2b187b
       field: related.user
       value: '{{{source.user.name}}}'
       allow_duplicates: false
       ignore_failure: true
       if: ctx.source?.user?.name != null
   - append:
+      tag: append_related_user_f290fda3
       field: related.user
       value: '{{{source.user.email}}}'
       allow_duplicates: false
       ignore_failure: true
       if: ctx.source?.user?.email != null
   - rename:
+      tag: rename_json_alerts_threatFamilyName_to_m365_defender_incident_alert_threat_family_name_c183d3ba
       field: json.alerts.threatFamilyName
       target_field: m365_defender.incident.alert.threat_family_name
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_category_to_m365_defender_incident_alert_category_5318bb3a
       field: json.alerts.category
       target_field: m365_defender.incident.alert.category
       ignore_missing: true
   - append:
+      tag: append_threat_tactic_name_841337a0
       field: threat.tactic.name
       value: '{{{m365_defender.incident.alert.category}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_alerts_mitreTechniques_to_m365_defender_incident_alert_mitre_techniques_c8f2fa2b
       field: json.alerts.mitreTechniques
       target_field: m365_defender.incident.alert.mitre_techniques
       ignore_missing: true
   - set:
+      tag: set_threat_technique_subtechnique_id_1e18b023
       field: threat.technique.subtechnique.id
       copy_from: m365_defender.incident.alert.mitre_techniques
       ignore_failure: true
   - rename:
+      tag: rename_json_alerts_actorDisplayName_to_m365_defender_incident_alert_actor_display_name_d08c53de
       field: json.alerts.actorDisplayName
       target_field: m365_defender.incident.alert.actor_display_name
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_json_alerts_alertWebUrl_to_m365_defender_incident_alert_alert_web_url_15daaa51
       field: json.alerts.alertWebUrl
       target_field: m365_defender.incident.alert.alert_web_url
       if: ctx.json?.alerts?.alertWebUrl != null
       keep_original: true
       on_failure:
         - remove:
+            tag: remove_json_alerts_alertWebUrl_16872bf7
             field: json.alerts.alertWebUrl
         - append:
+            tag: append_error_message_390fc78a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_alerts_assignedTo_to_m365_defender_incident_alert_assigned_to_591c3835
       field: json.alerts.assignedTo
       target_field: m365_defender.incident.alert.assigned_to
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_classification_to_m365_defender_incident_alert_classification_0f8328c2
       field: json.alerts.classification
       target_field: m365_defender.incident.alert.classification
       ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_comments_bf061f74
       field: json.alerts.comments
       if: ctx.json?.alerts?.comments instanceof List
       ignore_failure: true
@@ -265,10 +318,12 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - rename:
+      tag: rename_json_alerts_comments_to_m365_defender_incident_alert_comments_f5dee286
       field: json.alerts.comments
       target_field: m365_defender.incident.alert.comments
       ignore_missing: true
   - date:
+      tag: date_json_alerts_createdDateTime_to_m365_defender_incident_alert_created_datetime_18ffd7e1
       field: json.alerts.createdDateTime
       target_field: m365_defender.incident.alert.created_datetime
       formats:
@@ -276,24 +331,30 @@ processors:
       if: ctx.json?.alerts?.createdDateTime != null
       on_failure:
         - remove:
+            tag: remove_json_alerts_createdDateTime_cf19198c
             field: json.alerts.createdDateTime
             ignore_missing: true
         - append:
+            tag: append_error_message_b7568088
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_alerts_description_to_m365_defender_incident_alert_description_2c05f3de
       field: json.alerts.description
       target_field: m365_defender.incident.alert.description
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_detectionSource_to_m365_defender_incident_alert_detection_source_3238f6bf
       field: json.alerts.detectionSource
       target_field: m365_defender.incident.alert.detection_source
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_detectorId_to_m365_defender_incident_alert_detector_id_4ea435dd
       field: json.alerts.detectorId
       target_field: m365_defender.incident.alert.detector_id
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_determination_to_m365_defender_incident_alert_determination_48b918be
       field: json.alerts.determination
       target_field: m365_defender.incident.alert.determination
       ignore_missing: true
@@ -317,6 +378,7 @@ processors:
         }
         drop(ctx.json.alerts.evidence);
   - foreach:
+      tag: foreach_json_alerts_evidence_8abbf466
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -328,6 +390,7 @@ processors:
             - ISO8601
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_f4f59654
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -337,6 +400,7 @@ processors:
           target_field: _ingest._value.remediation_status
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_221556c5
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -346,6 +410,7 @@ processors:
           target_field: _ingest._value.remediation_status_details
           ignore_missing: true
   - date:
+      tag: date_json_alerts_firstActivityDateTime_to_m365_defender_incident_alert_first_activity_datetime_9d12d05c
       field: json.alerts.firstActivityDateTime
       target_field: m365_defender.incident.alert.first_activity_datetime
       formats:
@@ -353,31 +418,39 @@ processors:
       if: ctx.json?.alerts?.firstActivityDateTime != null
       on_failure:
         - remove:
+            tag: remove_json_alerts_firstActivityDateTime_c34c70a8
             field: json.alerts.firstActivityDateTime
             ignore_missing: true
         - append:
+            tag: append_error_message_e8ae3bfb
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_alerts_id_to_m365_defender_incident_alert_id_f264e084
       field: json.alerts.id
       target_field: m365_defender.incident.alert.id
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_incidentId_to_m365_defender_incident_alert_incident_id_60022b55
       field: json.alerts.incidentId
       target_field: m365_defender.incident.alert.incident_id
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_json_alerts_incidentWebUrl_to_m365_defender_incident_alert_incident_web_url_83eca8e9
       field: json.alerts.incidentWebUrl
       target_field: m365_defender.incident.alert.incident_web_url
       if: ctx.json?.alerts?.incidentWebUrl != null
       keep_original: true
       on_failure:
         - remove:
+            tag: remove_json_alerts_incidentWebUrl_2874a3b7
             field: json.alerts.incidentWebUrl
         - append:
+            tag: append_error_message_d6de5c6e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_alerts_lastActivityDateTime_to_m365_defender_incident_alert_last_activity_datetime_bbd95506
       field: json.alerts.lastActivityDateTime
       target_field: m365_defender.incident.alert.last_activity_datetime
       formats:
@@ -385,12 +458,15 @@ processors:
       if: ctx.json?.alerts?.lastActivityDateTime != null
       on_failure:
         - remove:
+            tag: remove_json_alerts_lastActivityDateTime_aa228414
             field: json.alerts.lastActivityDateTime
             ignore_missing: true
         - append:
+            tag: append_error_message_68c7dc85
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_alerts_lastUpdateDateTime_to_m365_defender_incident_alert_last_update_datetime_3128390e
       field: json.alerts.lastUpdateDateTime
       target_field: m365_defender.incident.alert.last_update_datetime
       formats:
@@ -398,20 +474,25 @@ processors:
       if: ctx.json?.alerts?.lastUpdateDateTime != null
       on_failure:
         - remove:
+            tag: remove_json_alerts_lastUpdateDateTime_2b93c700
             field: json.alerts.lastUpdateDateTime
             ignore_missing: true
         - append:
+            tag: append_error_message_ae7b119d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_alerts_providerAlertId_to_m365_defender_incident_alert_provider_alert_id_764de052
       field: json.alerts.providerAlertId
       target_field: m365_defender.incident.alert.provider_alert_id
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_recommendedActions_to_m365_defender_incident_alert_recommended_actions_decb936d
       field: json.alerts.recommendedActions
       target_field: m365_defender.incident.alert.recommended_actions
       ignore_missing: true
   - date:
+      tag: date_json_alerts_resolvedDateTime_to_m365_defender_incident_alert_resolved_datetime_0cfb10e3
       field: json.alerts.resolvedDateTime
       target_field: m365_defender.incident.alert.resolved_datetime
       formats:
@@ -419,36 +500,45 @@ processors:
       if: ctx.json?.alerts?.resolvedDateTime != null
       on_failure:
         - remove:
+            tag: remove_json_alerts_resolvedDateTime_170defae
             field: json.alerts.resolvedDateTime
             ignore_missing: true
         - append:
+            tag: append_error_message_7e6704fa
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_alerts_severity_to_m365_defender_incident_alert_severity_119ae478
       field: json.alerts.severity
       target_field: m365_defender.incident.alert.severity
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_status_to_m365_defender_incident_alert_status_21e2aa26
       field: json.alerts.status
       target_field: m365_defender.incident.alert.status
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_tenantId_to_m365_defender_incident_alert_tenant_id_60f7b125
       field: json.alerts.tenantId
       target_field: m365_defender.incident.alert.tenant_id
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_threatDisplayName_to_m365_defender_incident_alert_threat_display_name_0b38a882
       field: json.alerts.threatDisplayName
       target_field: m365_defender.incident.alert.threat_display_name
       ignore_missing: true
   - rename:
+      tag: rename_json_alerts_title_to_m365_defender_incident_alert_title_0a247a8a
       field: json.alerts.title
       target_field: m365_defender.incident.alert.title
       ignore_missing: true
   - rename:
+      tag: rename_json_classification_to_m365_defender_incident_classification_fe0ed053
       field: json.classification
       target_field: m365_defender.incident.classification
       ignore_missing: true
   - foreach:
+      tag: foreach_json_comments_8b3f6843
       field: json.comments
       if: ctx.json?.comments instanceof List
       ignore_failure: true
@@ -459,6 +549,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_comments_e6153754
       field: json.comments
       if: ctx.json?.comments instanceof List
       ignore_failure: true
@@ -469,26 +560,32 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - rename:
+      tag: rename_json_comments_to_m365_defender_incident_comments_e0638933
       field: json.comments
       target_field: m365_defender.incident.comments
       ignore_missing: true
   - rename:
+      tag: rename_json_determination_to_m365_defender_incident_determination_898d1b6f
       field: json.determination
       target_field: m365_defender.incident.determination
       ignore_missing: true
   - rename:
+      tag: rename_json_redirectIncidentId_to_m365_defender_incident_redirect_incident_id_80ca4653
       field: json.redirectIncidentId
       target_field: m365_defender.incident.redirect_incident_id
       ignore_missing: true
   - rename:
+      tag: rename_json_status_to_m365_defender_incident_status_bd7492ab
       field: json.status
       target_field: m365_defender.incident.status
       ignore_missing: true
   - rename:
+      tag: rename_json_tags_to_m365_defender_incident_tags_4b17c251
       field: json.tags
       target_field: m365_defender.incident.tags
       ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_a1672010
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -498,6 +595,7 @@ processors:
           ignore_failure: true
           override: true
   - foreach:
+      tag: foreach_json_alerts_evidence_a2db0b0b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -506,6 +604,7 @@ processors:
           target_field: _ingest._value.odata_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_010d588a
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -517,6 +616,7 @@ processors:
             - ISO8601
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_39305e58
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -527,6 +627,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_fb9d7bc4
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -536,6 +637,7 @@ processors:
           target_field: _ingest._value.antispam_direction
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_f5531816
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -546,6 +648,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_ec199680
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -556,6 +659,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_9c8b3445
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -565,6 +669,7 @@ processors:
           target_field: _ingest._value.recipient_email_address
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_dccf038b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -575,6 +680,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_6b74fbce
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -585,6 +691,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_9f1c82fe
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -601,6 +708,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_9c3ff4ec
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -610,6 +718,7 @@ processors:
           target_field: _ingest._value.delivery_action
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_94f07ef8
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -619,6 +728,7 @@ processors:
           target_field: _ingest._value.delivery_location
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_da50797b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -628,6 +738,7 @@ processors:
           target_field: _ingest._value.internet_message_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_a3611723
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -637,6 +748,7 @@ processors:
           target_field: _ingest._value.network_message_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_9e7edee8
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -646,6 +758,7 @@ processors:
           ignore_failure: true
           override: true
   - foreach:
+      tag: foreach_json_alerts_evidence_fffa35fc
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -654,6 +767,7 @@ processors:
           target_field: _ingest._value.p1_sender.odata_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_5aaf2207
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -663,6 +777,7 @@ processors:
           ignore_failure: true
           override: true
   - foreach:
+      tag: foreach_json_alerts_evidence_b22c25f6
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -671,6 +786,7 @@ processors:
           target_field: _ingest._value.p2_sender.odata_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_ee4d629b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -680,6 +796,7 @@ processors:
           target_field: _ingest._value.p1_sender.display_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_2e2fe50b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -690,6 +807,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_21256efb
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -699,6 +817,7 @@ processors:
           target_field: _ingest._value.p1_sender.domain_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_465b8a21
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -709,6 +828,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_d75a3b19
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -718,6 +838,7 @@ processors:
           target_field: _ingest._value.p1_sender.email_address
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_08fe3abc
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -728,6 +849,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_62ac7120
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -738,6 +860,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_e16785f1
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -747,6 +870,7 @@ processors:
           target_field: _ingest._value.p2_sender.display_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_f205d7ee
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -757,6 +881,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_4fa9ddf7
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -766,6 +891,7 @@ processors:
           target_field: _ingest._value.p2_sender.domain_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_04b5b62a
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -776,6 +902,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_f760b001
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -785,6 +912,7 @@ processors:
           target_field: _ingest._value.p2_sender.email_address
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_8ee17e17
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -795,6 +923,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_6d5b27bb
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -805,6 +934,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_a1b707c6
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -821,6 +951,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_7074b98d
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -831,6 +962,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_3bca5391
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -840,6 +972,7 @@ processors:
           target_field: _ingest._value.threat_detection_methods
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_4c10de45
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -856,6 +989,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_c5c85a40
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -872,6 +1006,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_3a23098e
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -882,6 +1017,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_47527d5e
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -891,6 +1027,7 @@ processors:
           target_field: _ingest._value.instance_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_b2116276
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -901,6 +1038,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_42e8bbae
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -917,6 +1055,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_1b72e646
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -926,6 +1065,7 @@ processors:
           target_field: _ingest._value.display_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_1133ba9d
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -942,6 +1082,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_c9dc4a37
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -951,6 +1092,7 @@ processors:
           target_field: _ingest._value.vm_metadata.cloud_provider
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_4cf9abcb
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -960,6 +1102,7 @@ processors:
           target_field: _ingest._value.mde_device_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_5d670400
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -969,6 +1112,7 @@ processors:
           target_field: _ingest._value.os_platform
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_ff17203b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -979,6 +1123,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_2a9bcb76
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -989,6 +1134,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_45596747
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -999,6 +1145,7 @@ processors:
           value: '{{{_ingest._value.azureAdDeviceId}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_alerts_evidence_6f1695c6
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1008,6 +1155,7 @@ processors:
           target_field: _ingest._value.azure_ad_device_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_97bf5135
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1017,6 +1165,7 @@ processors:
           target_field: _ingest._value.defender_av_status
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_100576b3
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1026,6 +1175,7 @@ processors:
           target_field: _ingest._value.device_dns_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_91282048
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1036,6 +1186,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_c644fa79
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1057,6 +1208,7 @@ processors:
           value: '{{{_ingest._value.device_dns_name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_alerts_evidence_8aa50569
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1068,6 +1220,7 @@ processors:
             - ISO8601
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_b3e98b48
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1077,6 +1230,7 @@ processors:
           target_field: _ingest._value.health_status
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_02ebd7fc
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1091,6 +1245,7 @@ processors:
               target_field: _ingest._value.account_name
               ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_6e5325b1
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1106,6 +1261,7 @@ processors:
               allow_duplicates: false
               ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_e8504b63
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1121,6 +1277,7 @@ processors:
               allow_duplicates: false
               ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_df9684d6
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1135,6 +1292,7 @@ processors:
               target_field: _ingest._value.domain_name
               ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_6bae05c4
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1150,6 +1308,7 @@ processors:
               allow_duplicates: false
               ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_13c1c475
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1165,6 +1324,7 @@ processors:
               ignore_failure: true
               override: true
   - foreach:
+      tag: foreach_json_alerts_evidence_ea8823d2
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1179,6 +1339,7 @@ processors:
               target_field: _ingest._value.odata_type
               ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_6e04cc31
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1188,6 +1349,7 @@ processors:
           target_field: _ingest._value.logged_on_users
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_c1bbd306
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1197,6 +1359,7 @@ processors:
           target_field: _ingest._value.onboarding_status
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_bf826be2
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1213,6 +1376,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_59a48364
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1229,6 +1393,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_a26c85f6
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1238,6 +1403,7 @@ processors:
           target_field: _ingest._value.rbac_group.name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_2b29a72e
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1247,6 +1413,7 @@ processors:
           target_field: _ingest._value.risk_score
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_873b54ca
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1256,6 +1423,7 @@ processors:
           ignore_failure: true
           override: true
   - foreach:
+      tag: foreach_json_alerts_evidence_1fcc21c4
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1264,6 +1432,7 @@ processors:
           target_field: _ingest._value.vm_metadata.odata_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_4cd9c2e3
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1273,6 +1442,7 @@ processors:
           target_field: _ingest._value.vm_metadata.resource_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_65fa1219
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1282,6 +1452,7 @@ processors:
           target_field: _ingest._value.vm_metadata.subscription_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_f1929935
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1291,6 +1462,7 @@ processors:
           target_field: _ingest._value.vm_metadata.vm_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_8266eec8
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1300,6 +1472,7 @@ processors:
           target_field: _ingest._value.detection_status
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_c56c5c10
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1310,6 +1483,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_a7f30a76
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1319,6 +1493,7 @@ processors:
           ignore_failure: true
           override: true
   - foreach:
+      tag: foreach_json_alerts_evidence_ded9159e
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1327,6 +1502,7 @@ processors:
           target_field: _ingest._value.file_details.odata_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_1c59cd80
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1336,6 +1512,7 @@ processors:
           target_field: _ingest._value.file_details.sha1
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_be825919
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1346,6 +1523,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_daeb8781
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1356,6 +1534,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_60e0cb20
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1365,6 +1544,7 @@ processors:
           target_field: _ingest._value.file_details.sha256
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_fb2c64c9
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1375,6 +1555,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_1ad1b0fb
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1385,6 +1566,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_83468816
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1394,6 +1576,7 @@ processors:
           target_field: _ingest._value.file_details.name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_2369e501
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1404,6 +1587,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_c1fc666e
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1413,6 +1597,7 @@ processors:
           target_field: _ingest._value.file_details.path
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_e7875ce0
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1428,6 +1613,7 @@ processors:
       source: |-
         ctx.file.path.removeIf(v -> v == '\\');
   - foreach:
+      tag: foreach_json_alerts_evidence_78ab6d3a
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1444,6 +1630,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_7c0fafec
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1453,6 +1640,7 @@ processors:
           target_field: _ingest._value.file_details.publisher
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_1266b300
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1462,6 +1650,7 @@ processors:
           target_field: _ingest._value.file_details.issuer
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_5c1bcd9c
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1471,6 +1660,7 @@ processors:
           target_field: _ingest._value.file_details.signer
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_d0c4ab13
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1487,6 +1677,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_1135257e
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1497,6 +1688,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_7b0c511e
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1507,6 +1699,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_8d1c8a58
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1516,6 +1709,7 @@ processors:
           ignore_failure: true
           override: true
   - foreach:
+      tag: foreach_json_alerts_evidence_52f17fd4
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1524,6 +1718,7 @@ processors:
           target_field: _ingest._value.user_account.odata_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_2515683b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1533,6 +1728,7 @@ processors:
           target_field: _ingest._value.user_account.domain_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_6dce4ee1
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1543,6 +1739,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_64a98b81
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1552,6 +1749,7 @@ processors:
           target_field: _ingest._value.user_account.azure_ad_user_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_4126785c
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1562,6 +1760,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_70407370
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1571,6 +1770,7 @@ processors:
           target_field: _ingest._value.user_account.user_principal_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_032bc33b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1581,6 +1781,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_05766122
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1612,6 +1813,7 @@ processors:
           value: '{{{_ingest._value.primary_address}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_alerts_evidence_127b1a0d
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1621,6 +1823,7 @@ processors:
           target_field: _ingest._value.user_account.account_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_4241348b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1630,6 +1833,7 @@ processors:
           target_field: _ingest._value.user_account.display_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_39cdc106
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1639,6 +1843,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_02f2f8ac
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1649,6 +1854,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_bdf2d64f
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1658,6 +1864,7 @@ processors:
           target_field: _ingest._value.user_account.user_sid
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_b526a117
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1668,6 +1875,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_68c4a3ae
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1677,6 +1885,7 @@ processors:
           target_field: _ingest._value.cluster_by
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_12ea28a9
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1686,6 +1895,7 @@ processors:
           target_field: _ingest._value.cluster_by_value
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_17585420
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1702,6 +1912,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_e4d27f3f
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1711,6 +1922,7 @@ processors:
           target_field: _ingest._value.network_message_ids
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_91f5c95a
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1720,6 +1932,7 @@ processors:
           target_field: _ingest._value.object_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_ef286996
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1729,6 +1942,7 @@ processors:
           target_field: _ingest._value.process.command_line
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_7c9f5b30
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1792,9 +2006,11 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_6ff52099
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_a40d6a77
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1804,6 +2020,7 @@ processors:
           ignore_failure: true
           override: true
   - foreach:
+      tag: foreach_json_alerts_evidence_5ecefbd0
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1812,6 +2029,7 @@ processors:
           target_field: _ingest._value.image_file.odata_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_92383204
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1821,6 +2039,7 @@ processors:
           target_field: _ingest._value.image_file.sha1
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_51ea5225
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1831,6 +2050,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_47cf5f30
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1841,6 +2061,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_c101c758
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1850,6 +2071,7 @@ processors:
           target_field: _ingest._value.image_file.sha256
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_730e66e1
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1860,6 +2082,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_6594b75e
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1870,6 +2093,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_8cfd1c7e
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1879,6 +2103,7 @@ processors:
           ignore_failure: true
           override: true
   - foreach:
+      tag: foreach_json_alerts_evidence_cf4a2417
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       processor:
@@ -1887,6 +2112,7 @@ processors:
           target_field: _ingest._value.parent_process.image_file.odata_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_bb5f493d
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1896,6 +2122,7 @@ processors:
           target_field: _ingest._value.parent_process.image_file.sha1
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_8ef2fdb5
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1906,6 +2133,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_04e83004
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1916,6 +2144,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_7baea111
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1925,6 +2154,7 @@ processors:
           target_field: _ingest._value.parent_process.image_file.sha256
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_18599ec9
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1935,6 +2165,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_615f4f62
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1945,6 +2176,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_18bff8ef
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1961,6 +2193,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_cdf1175b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1972,6 +2205,7 @@ processors:
             - ISO8601
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_710f8c90
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1982,6 +2216,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_79f78a80
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1998,6 +2233,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_e81cdbce
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2009,6 +2245,7 @@ processors:
             - ISO8601
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_449df185
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2019,6 +2256,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_6f2db046
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2028,6 +2266,7 @@ processors:
           target_field: _ingest._value.image_file.name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_4ffb63f2
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2037,6 +2276,7 @@ processors:
           target_field: _ingest._value.image_file.path
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_b5106d06
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2046,6 +2286,7 @@ processors:
           target_field: _ingest._value.image_file.publisher
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_8795c90b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2062,6 +2303,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_8218fcb8
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2071,6 +2313,7 @@ processors:
           target_field: _ingest._value.image_file.issuer
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_16488b1c
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2080,6 +2323,7 @@ processors:
           target_field: _ingest._value.image_file.signer
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_f1721513
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2089,6 +2333,7 @@ processors:
           target_field: _ingest._value.parent_process.image_file.name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_e237d4bf
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2098,6 +2343,7 @@ processors:
           target_field: _ingest._value.parent_process.image_file.path
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_e38995b1
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2107,6 +2353,7 @@ processors:
           target_field: _ingest._value.parent_process.image_file.publisher
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_6ccccded
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2123,6 +2370,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_alerts_evidence_b8dee4f1
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2132,6 +2380,7 @@ processors:
           target_field: _ingest._value.parent_process.image_file.issuer
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_34d22b9f
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2236,6 +2485,7 @@ processors:
           }
         }
   - foreach:
+      tag: foreach_json_alerts_evidence_3f4526de
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2245,6 +2495,7 @@ processors:
           target_field: _ingest._value.registry_hive
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_a4a1e319
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2255,6 +2506,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_c4e38f24
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2264,6 +2516,7 @@ processors:
           target_field: _ingest._value.registry_key
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_9174185f
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2274,6 +2527,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_758d13cf
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2283,6 +2537,7 @@ processors:
           target_field: _ingest._value.registry_value_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_354c6451
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2293,6 +2548,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_ea866ff0
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2302,6 +2558,7 @@ processors:
           target_field: _ingest._value.registry_value
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_c2363a9b
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2312,6 +2569,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      tag: foreach_json_alerts_evidence_006ff1af
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2321,6 +2579,7 @@ processors:
           target_field: _ingest._value.registry_value_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_d26f466f
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2330,6 +2589,7 @@ processors:
           target_field: _ingest._value.security_group_id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_alerts_evidence_ce986880
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2340,10 +2600,11 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - script:
+      tag: script_3629e07c
       description: Map ecs fields based on evidence type.
       lang: painless
       if: ctx.json?.alerts?.evidence instanceof List
-      source:
+      source: |-
         def convertToOrderedArray(def list) {
           def result = new ArrayList();
           for (element in list) {
@@ -2457,6 +2718,7 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_alerts_evidence_0076b16f
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -2485,16 +2747,20 @@ processors:
             - _ingest._value.parentProcessImageFile.fileSize
           ignore_missing: true
   - lowercase:
+      tag: lowercase_host_name_c780fa50
       field: host.name
       if: ctx.host?.name != null
   - rename:
+      tag: rename_json_alerts_evidence_to_m365_defender_incident_alert_evidence_023ad7dc
       field: json.alerts.evidence
       target_field: m365_defender.incident.alert.evidence
       ignore_missing: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_4ad4a3a4
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - m365_defender.incident.last_update_datetime
@@ -2508,6 +2774,7 @@ processors:
         - m365_defender.incident.alert.mitre_techniques
       ignore_missing: true
   - foreach:
+      tag: foreach_m365_defender_incident_alert_evidence_b95d1593
       field: m365_defender.incident.alert.evidence
       if: ctx.m365_defender?.incident?.alert?.evidence instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
@@ -2521,6 +2788,7 @@ processors:
                 - _ingest._value.account_name
               ignore_missing: true
   - foreach:
+      tag: foreach_m365_defender_incident_alert_evidence_8a1d0726
       field: m365_defender.incident.alert.evidence
       if: ctx.m365_defender?.incident?.alert?.evidence instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
@@ -2559,6 +2827,7 @@ processors:
             - _ingest._value.security_group_id
           ignore_missing: true
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |

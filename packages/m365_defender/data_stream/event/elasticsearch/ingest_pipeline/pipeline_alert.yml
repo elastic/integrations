@@ -54,6 +54,7 @@ processors:
       if: ctx.json?.properties?.Categories instanceof String && ctx.json.properties.Categories != ''
       on_failure:
         - append:
+            tag: append_error_message_f0bfc88d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - json:
@@ -62,6 +63,7 @@ processors:
       if: ctx.json?.properties?.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
       on_failure:
         - append:
+            tag: append_error_message_5e0deff9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - json:
@@ -70,6 +72,7 @@ processors:
       if: ctx.json?.properties?.AttackTechniques instanceof String && ctx.json.properties.AttackTechniques != ''
       on_failure:
         - append:
+            tag: append_error_message_4c43ecf1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 
@@ -83,6 +86,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_026cb1f0
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -94,6 +98,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_75842b59
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -105,6 +110,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_aa8d4cbc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 
@@ -320,6 +326,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_6af68d2a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -528,6 +535,7 @@ processors:
       if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != ''
       on_failure:
         - append:
+            tag: append_error_message_ab0d0e22
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - sort:
@@ -536,6 +544,7 @@ processors:
       if: ctx.threat?.technique?.subtechnique?.id != null && ctx.threat.technique.subtechnique.id != ''
       on_failure:
         - append:
+            tag: append_error_message_7b86280a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - sort:
@@ -544,9 +553,9 @@ processors:
       if: ctx.threat?.technique?.subtechnique?.name != null && ctx.threat.technique.subtechnique.name != ''
       on_failure:
         - append:
+            tag: append_error_message_e2dd7f92
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-
 
   # File mapping (Unless category is threat)
   - set:
@@ -554,7 +563,7 @@ processors:
       copy_from: m365_defender.event.folder_path
       ignore_empty_value: true
       tag: set_file_directory
-      if: ctx.event?.category != null && !ctx.event.category.contains('threat') 
+      if: ctx.event?.category != null && !ctx.event.category.contains('threat')
   - set:
       field: file.hash.sha1
       copy_from: m365_defender.event.sha1
@@ -628,7 +637,7 @@ processors:
       field: user.id
       copy_from: m365_defender.event.account.object_id
       ignore_empty_value: true
-      tag: set_user_id
+      tag: set_user_id_442d5534
       if: ctx.user?.id == null
 
   # Email mapping
@@ -649,7 +658,7 @@ processors:
       copy_from: m365_defender.event.title
       tag: set_message
       ignore_empty_value: true
-  
+
   # Related mapping
   ## Host
   - append:
@@ -661,13 +670,13 @@ processors:
   - append:
       field: related.hosts
       value: '{{{user.domain}}}'
-      tag: append_related_hosts
+      tag: append_related_hosts_a29fcba7
       if: ctx.user?.domain != null
       allow_duplicates: false
   - append:
       field: related.hosts
       value: '{{{host.id}}}'
-      tag: append_related_hosts
+      tag: append_related_hosts_7257683d
       if: ctx.host?.id != null
       allow_duplicates: false
   ## User
@@ -680,7 +689,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      tag: append_related_user
+      tag: append_related_user_56737f2b
       if: ctx.user?.name != null
       allow_duplicates: false
   ## IP
@@ -693,7 +702,7 @@ processors:
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
-      tag: append_related_ip
+      tag: append_related_ip_78c8cc1d
       if: ctx.destination?.ip != null
       allow_duplicates: false
   ## Hash
@@ -706,7 +715,7 @@ processors:
   - append:
       field: related.hash
       value: '{{{m365_defender.event.sha1}}}'
-      tag: append_related_hash
+      tag: append_related_hash_70cd15fc
       if: ctx.m365_defender?.event?.sha1 != null
       allow_duplicates: false
 

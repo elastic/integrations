@@ -24,6 +24,7 @@ processors:
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -34,9 +35,10 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_2071e957
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  
+
   # Rename processors
   - rename:
       field: json.category
@@ -58,7 +60,7 @@ processors:
       target_field: m365_defender.event.tenant.id
       tag: rename_json_tenantId
       ignore_missing: true
-  
+
   # Date processors
   - date:
       field: json.time
@@ -69,6 +71,7 @@ processors:
       if: ctx.json?.time != null
       on_failure:
         - append:
+            tag: append_error_message_d5392b80
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
@@ -80,6 +83,7 @@ processors:
       if: ctx.json?.properties?.Timestamp != null
       on_failure:
         - append:
+            tag: append_error_message_8aaf286d
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
@@ -87,7 +91,7 @@ processors:
       copy_from: m365_defender.event.timestamp
       tag: set_timestamp
       ignore_empty_value: true
-  
+
   # Pipeline Processors
   # ctx.m365_defender.event.category is created by Eventhub when retrieving data from M365 Defender.
   # It represents the data table that it accessed, and is a required field for the pipeline to work.
@@ -189,6 +193,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_2b136ec5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
