@@ -2932,15 +2932,15 @@ An example event for `chrome` looks as following:
 {
     "@timestamp": "2024-12-09T14:18:25.405Z",
     "agent": {
-        "ephemeral_id": "22ff6e77-fce6-4e45-bc2d-52ade8e25589",
-        "id": "32a76848-9087-44d6-9609-47bbf0751dd4",
-        "name": "elastic-agent-93760",
+        "ephemeral_id": "5e3c65b6-9b4b-4f04-adaa-cc64f98c8310",
+        "id": "529394dd-d27c-464d-9215-01b83c09d076",
+        "name": "elastic-agent-85230",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_workspace.chrome",
-        "namespace": "88541",
+        "namespace": "32993",
         "type": "logs"
     },
     "device": {
@@ -2952,16 +2952,16 @@ An example event for `chrome` looks as following:
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "32a76848-9087-44d6-9609-47bbf0751dd4",
-        "snapshot": true,
-        "version": "8.18.0"
+        "id": "529394dd-d27c-464d-9215-01b83c09d076",
+        "snapshot": false,
+        "version": "8.19.4"
     },
     "event": {
         "action": "browser_extension_install",
         "agent_id_status": "verified",
         "dataset": "google_workspace.chrome",
         "id": "-3640711002716937498",
-        "ingested": "2025-04-22T12:02:30Z",
+        "ingested": "2026-01-21T12:47:55Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"kalpesh.kumar@example.io\",\"profileId\":\"109689693170624712102\"},\"etag\":\"\\\"CfV-pEPVZc7PJf2fWsHJTliD34MdGbO8iFIk3L4uBwQ/cBsNSJx2A9Lg8kiQCGLddmq827A\\\"\",\"events\":{\"name\":\"BROWSER_EXTENSION_INSTALL\",\"parameters\":[{\"intValue\":\"1733753905405\",\"name\":\"TIMESTAMP\"},{\"name\":\"EVENT_REASON\",\"value\":\"BROWSER_EXTENSION_INSTALL\"},{\"name\":\"APP_ID\",\"value\":\"lmjegmlicamnimmfhcmpkclmigmmcbeh\"},{\"name\":\"APP_NAME\",\"value\":\"Application Launcher For Drive (by Google)\"},{\"name\":\"BROWSER_VERSION\",\"value\":\"123.0.6312.112\"},{\"name\":\"CHROME_ORG_UNIT_ID\",\"value\":\"02gajno12larrqx\"},{\"name\":\"CLIENT_TYPE\",\"value\":\"CHROME_OS_DEVICE\"},{\"name\":\"DEVICE_NAME\",\"value\":\"NXKUTSI002429051947600\"},{\"name\":\"DEVICE_PLATFORM\",\"value\":\"ChromeOS 15786.48.2\"},{\"name\":\"DEVICE_USER\",\"value\":\"kalpesh.kumar@example.io\"},{\"name\":\"DIRECTORY_DEVICE_ID\",\"value\":\"efa9510f-8cd2-4d85-b6c2-939cfb335e9e\"},{\"name\":\"EVENT_RESULT\",\"value\":\"REPORTED\"},{\"name\":\"EXTENSION_ACTION\",\"value\":\"INSTALL\"},{\"name\":\"EXTENSION_SOURCE\",\"value\":\"CHROME_WEBSTORE\"},{\"name\":\"EXTENSION_VERSION\",\"value\":\"3.10\"},{\"name\":\"ORG_UNIT_NAME\",\"value\":\"example.io\"},{\"name\":\"PROFILE_USER_NAME\",\"value\":\"kalpesh.kumar@example.io\"},{\"name\":\"USER_AGENT\",\"value\":\"Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\"},{\"name\":\"VIRTUAL_DEVICE_ID\",\"value\":\"3d69c5a5-0afc-474b-a1a3-d3dc617e2a60\"}],\"type\":\"BROWSER_EXTENSION_INSTALL_TYPE\"},\"id\":{\"applicationName\":\"chrome\",\"customerId\":\"C03puekhd\",\"time\":\"2024-12-09T14:18:25.405Z\",\"uniqueQualifier\":\"-3640711002716937498\"},\"kind\":\"admin#reports#activity\"}",
         "outcome": "success",
@@ -3084,6 +3084,7 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.client_type | Event client type parameter. | keyword |
 | google_workspace.chrome.content_hash | Content hash event parameter. | keyword |
 | google_workspace.chrome.content_name | Content name event parameter. | keyword |
+| google_workspace.chrome.content_risk_level |  | keyword |
 | google_workspace.chrome.content_size | Content size event parameter. | long |
 | google_workspace.chrome.content_transfer_method | The method for content transferring. | keyword |
 | google_workspace.chrome.content_type | Content type event parameter. | keyword |
@@ -3104,9 +3105,12 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.id.customer_id |  | keyword |
 | google_workspace.chrome.id.time |  | date |
 | google_workspace.chrome.id.unique_qualifier |  | keyword |
+| google_workspace.chrome.iframe_urls |  | keyword |
 | google_workspace.chrome.ip_address |  | ip |
+| google_workspace.chrome.is_encrypted |  | boolean |
 | google_workspace.chrome.is_federated | A parameter that contains whether the login is through a federated 3rd party. | boolean |
 | google_workspace.chrome.kind |  | keyword |
+| google_workspace.chrome.local_ip |  | ip |
 | google_workspace.chrome.login_failure_reason | Login failure event reason parameter. | keyword |
 | google_workspace.chrome.login_user_name | A Parameter that contains the username used by the user when performing the login that triggered the login event report. | keyword |
 | google_workspace.chrome.name |  | keyword |
@@ -3115,6 +3119,7 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.owner_domain |  | keyword |
 | google_workspace.chrome.previous_boot_mode | Previous device boot mode. | keyword |
 | google_workspace.chrome.profile_user_name | GSuite user name of the profile. | keyword |
+| google_workspace.chrome.remote_ip |  | ip |
 | google_workspace.chrome.remove_user_reason | Parameter explaining why a user was removed from a device. | keyword |
 | google_workspace.chrome.scan_id | A parameter that contains the scan id of the content analysis scan which triggered the event. | keyword |
 | google_workspace.chrome.server_scan_status | Status indicates the outcome of the event's server scan, which could be complete, require a manual audit due to configuration settings, or require a manual audit because the scan took too long. | keyword |

@@ -395,7 +395,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ### Process
 
 The System `process` data stream provides process statistics. One document is
-provided for each process.
+provided for each process. 
+Refer to the [Configuration](beats://reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
 
 #### Supported operating systems
 
@@ -484,3 +485,6 @@ This data should be available without elevated permissions.
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "uptime"}}
+
+## Alerting Rule Template
+{{alertRuleTemplates}}

@@ -14,7 +14,7 @@ processors:
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '9.3.0'
   - set:
       field: event.kind
       value: alert
@@ -184,6 +184,11 @@ processors:
       field: user.name
       copy_from: json.threatInfo.processUser
       ignore_empty_value: true
+  - dissect:
+      field: user.name
+      pattern: '%{user.domain}\%{user.name}'
+      if: ctx.user?.name?.contains('\\') == true
+      description: "Split user and domain"
   - append:
       field: related.user
       value: '{{{user.name}}}'
@@ -654,6 +659,19 @@ processors:
               ignore_failure: true
           ignore_failure: true
       ignore_failure: true
+  - foreach:
+      field: json.indicators
+      if: ctx.json?.indicators instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ids
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.indicator.id
+              tag: append_indicators_ids_to_threat_indicator_id
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
   - foreach:
       field: json.indicators
       processor:

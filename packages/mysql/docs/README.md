@@ -1083,3 +1083,25 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | mysql.status.threads.running | The number of running threads. | long | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[MySQL Galera] Cluster State Abnormal**
+
+
+
+**[MySQL Replica] Replication Lag High**
+
+
+
+**[MySQL Performance] Slow Query Latency High**
+
+
+

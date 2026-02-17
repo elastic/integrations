@@ -107,13 +107,13 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-12-09T13:06:00.619Z",
+    "@timestamp": "2025-12-30T06:25:12.497Z",
     "agent": {
-        "ephemeral_id": "5eb4618e-1fb2-4db3-a80a-a1c9d60ddf79",
-        "id": "c25772f1-99b1-43d4-9ac3-8941538fa406",
-        "name": "elastic-agent-11567",
+        "ephemeral_id": "83655e80-2729-4332-8ace-457dd3a0bcef",
+        "id": "12042b44-811d-4c3e-b827-11cfb8074c86",
+        "name": "elastic-agent-48916",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "8.19.0"
     },
     "cloud": {
         "instance": {
@@ -122,16 +122,16 @@ An example event for `asset_host_detection` looks as following:
     },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
-        "namespace": "88746",
+        "namespace": "83470",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c25772f1-99b1-43d4-9ac3-8941538fa406",
+        "id": "12042b44-811d-4c3e-b827-11cfb8074c86",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -140,9 +140,9 @@ An example event for `asset_host_detection` looks as following:
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
         "id": "11111111",
-        "ingested": "2025-12-09T13:06:03Z",
+        "ingested": "2025-12-30T06:25:15Z",
         "kind": "alert",
-        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"CVE\":\"CVE-2023-48161,CVE-2024-21208,CVE-2024-21210,CVE-2024-21217,CVE-2024-21235\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"LATEST_VULNERABILITY_DETECTION_SOURCE\":\"Cloud Agent\",\"MITRE_TACTIC_ID\":\"TA0008, TA0004\",\"MITRE_TACTIC_NAME\":\"lateral-movement, privilege-escalation\",\"MITRE_TECHNIQUE_ID\":\"T1210, T1068\",\"MITRE_TECHNIQUE_NAME\":\"Exploitation of Remote Services, Exploitation for Privilege Escalation\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package\\tInstalled Version\\tRequired Version\\nlinux-cloud-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\\nlinux-aws-headers-4.4.0\\t1074_4.15.0-1126.135\\t1092\\nlinux-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-cloud-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TRURISK_ELIMINATION_STATUS\":\"FIXED\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"11111111\",\"VULNERABILITY_DETECTION_SOURCES\":\"Cloud Agent,Internal Scanner\"},\"DNS\":\"adfssrvr.adfs.local\",\"DNS_DATA\":{\"DOMAIN\":\"adfs.local\",\"FQDN\":\"adfssrvr.adfs.local\",\"HOSTNAME\":\"adfssrvr\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"KNOWLEDGE_BASE\":{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"CVSS\":{\"BASE\":{\"#text\":\"7.7\",\"source\":\"service\"},\"TEMPORAL\":\"4.0\",\"VECTOR_STRING\":\"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\"},\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"None\",\"VENDOR\":\"multi-vendor\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VULN_TYPE\":\"Vulnerability\"},\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"ADFSSRVR\",\"OS\":\"Windows 2016/2019/10\",\"TRACKING_METHOD\":\"IP\",\"interval_id\":\"040d4ccd-718d-43bb-8f0e-92a685dcd3e0\",\"interval_start\":\"2025-12-09T13:06:00.615439086Z\"}",
+        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"CVE\":\"CVE-2023-48161,CVE-2024-21208,CVE-2024-21210,CVE-2024-21217,CVE-2024-21235\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"LATEST_VULNERABILITY_DETECTION_SOURCE\":\"Cloud Agent\",\"MITRE_TACTIC_ID\":\"TA0008, TA0004\",\"MITRE_TACTIC_NAME\":\"lateral-movement, privilege-escalation\",\"MITRE_TECHNIQUE_ID\":\"T1210, T1068\",\"MITRE_TECHNIQUE_NAME\":\"Exploitation of Remote Services, Exploitation for Privilege Escalation\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package\\tInstalled Version\\tRequired Version\\nlinux-cloud-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\\nlinux-aws-headers-4.4.0\\t1074_4.15.0-1126.135\\t1092\\nlinux-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-cloud-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TRURISK_ELIMINATION_STATUS\":\"FIXED\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"11111111\",\"VULNERABILITY_DETECTION_SOURCES\":\"Cloud Agent,Internal Scanner\"},\"DNS\":\"adfssrvr.adfs.local\",\"DNS_DATA\":{\"DOMAIN\":\"adfs.local\",\"FQDN\":\"adfssrvr.adfs.local\",\"HOSTNAME\":\"adfssrvr\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"KNOWLEDGE_BASE\":{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"CVSS\":{\"BASE\":{\"#text\":\"7.7\",\"source\":\"service\"},\"TEMPORAL\":\"4.0\",\"VECTOR_STRING\":\"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\"},\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"None\",\"VENDOR\":\"multi-vendor\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VULN_TYPE\":\"Vulnerability\"},\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"ADFSSRVR\",\"OS\":\"Windows 2016/2019/10\",\"TRACKING_METHOD\":\"IP\",\"interval_id\":\"47a80f3f-ccfb-45ac-b90e-c0a618bb5bb8\",\"interval_start\":\"2025-12-30T06:25:12.491602751Z\"}",
         "type": [
             "info"
         ]
@@ -199,8 +199,8 @@ An example event for `asset_host_detection` looks as following:
                 "hostname": "adfssrvr"
             },
             "id": "1",
-            "interval_id": "040d4ccd-718d-43bb-8f0e-92a685dcd3e0",
-            "interval_start": "2025-12-09T13:06:00.615Z",
+            "interval_id": "47a80f3f-ccfb-45ac-b90e-c0a618bb5bb8",
+            "interval_start": "2025-12-30T06:25:12.491Z",
             "ip": "10.50.2.111",
             "knowledge_base": {
                 "category": "CGI",
@@ -649,24 +649,24 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "4e6d92f6-8a28-471c-a03f-8c2685171b7b",
-        "id": "dc86e78e-6670-441f-acdd-99309474050f",
-        "name": "elastic-agent-65730",
+        "ephemeral_id": "98b85997-99e2-41ee-bb02-6532fae2b357",
+        "id": "706ea693-7cbe-44f8-902f-ee169e228005",
+        "name": "elastic-agent-80703",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.knowledge_base",
-        "namespace": "47901",
+        "namespace": "60071",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dc86e78e-6670-441f-acdd-99309474050f",
+        "id": "706ea693-7cbe-44f8-902f-ee169e228005",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -674,10 +674,10 @@ An example event for `knowledge_base` looks as following:
             "vulnerability"
         ],
         "dataset": "qualys_vmdr.knowledge_base",
-        "id": "11830",
-        "ingested": "2024-09-25T21:49:31Z",
+        "id": "2",
+        "ingested": "2025-12-29T10:51:56Z",
         "kind": "alert",
-        "original": "{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"11830\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"\",\"VENDOR\":\"\"}]},\"SOLUTION\":\"\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"\",\"VULN_TYPE\":\"Vulnerability\"}",
+        "original": "{\"BUGTRAQ_LIST\":{\"BUGTRAQ\":[{\"ID\":\"9821\",\"URL\":\"https://url.com/bid/9821\"}]},\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"2\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"fusion\",\"VENDOR\":\"vmware\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"#text\":\"No_Patch\",\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VENDOR_REFERENCE_LIST\":{\"VENDOR_REFERENCE\":[{\"ID\":\"VMSA-2024-0010\",\"URL\":\"https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24280\"}]},\"VULN_TYPE\":\"Vulnerability\"}",
         "type": [
             "info"
         ]
@@ -687,11 +687,23 @@ An example event for `knowledge_base` looks as following:
     },
     "qualys_vmdr": {
         "knowledge_base": {
+            "bugtraq_list": [
+                {
+                    "id": "9821",
+                    "url": "https://url.com/bid/9821"
+                }
+            ],
             "category": "CGI",
+            "consequence": {
+                "value": "Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks."
+            },
             "cve_list": [
                 "CVE-2022-31629",
                 "CVE-2022-31628"
             ],
+            "diagnosis": {
+                "value": "This QID reports the absence of the following"
+            },
             "discovery": {
                 "remote": 1
             },
@@ -701,15 +713,32 @@ An example event for `knowledge_base` looks as following:
             "patchable": false,
             "pci_flag": true,
             "published_datetime": "2017-06-05T21:34:49.000Z",
-            "qid": "11830",
+            "qid": "2",
             "severity_level": "2",
+            "software_list": [
+                {
+                    "product": "fusion",
+                    "vendor": "vmware"
+                }
+            ],
+            "solution": {
+                "value": "<B>Note:</B> To better debug the results of this QID"
+            },
             "threat_intelligence": {
                 "intel": [
                     {
-                        "id": "8"
+                        "id": "8",
+                        "text": "No_Patch"
                     }
                 ]
             },
+            "title": "HTTP Security Header Not Detected",
+            "vendor_reference_list": [
+                {
+                    "id": "VMSA-2024-0010",
+                    "url": "https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24280"
+                }
+            ],
             "vuln_type": "Vulnerability"
         }
     },
