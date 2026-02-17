@@ -39,6 +39,9 @@ Enable the category `Logs related to ApiManagement Gateway` to stream the logs t
    └──────────────────┘      └──────────────┘     └─────────────────┘
 ```
 
+> **Upgrade note**
+If you are upgrading from a previous version to 0.9.0, the metrics configuration (for example, `client_id`, `client_secret`, `tenant_id`, `subscription_id`) has moved out of the metrics data stream and into the policy template. While upgrading, review your integration policy and re-enter these values.
+
 ### Agent metrics
 
 The agent metrics data stream collects Microsoft Foundry **Agents** metrics from Azure Monitor (Category: Agents). These metrics help you monitor agent activity and usage, such as event volume, token consumption, runs, and tool calls.
