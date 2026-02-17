@@ -1195,6 +1195,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.cost_type | Cost types include regular, tax, adjustment, and rounding_error. | keyword |
 | gcp.billing.effective_price | The charged price for usage of the Google Cloud SKUs and SKU tiers. Reflects contract pricing if applicable, otherwise, it's the list price. | float |
 | gcp.billing.invoice_month | Billing report month. | keyword |
+| gcp.billing.labels | Resource labels as key-value pairs. Labels are user-defined metadata that can be attached to GCP resources. | object |
+| gcp.billing.location.country | The country code for the resource location (e.g., US, GB). | keyword |
+| gcp.billing.location.region | The geographic region where the resource was used (e.g., us-central1, europe-west1). | keyword |
+| gcp.billing.location.zone | The specific zone within the region (e.g., us-central1-a). | keyword |
 | gcp.billing.project_id | Project ID of the billing report belongs to. | keyword |
 | gcp.billing.project_name | Project Name of the billing report belongs to. | keyword |
 | gcp.billing.service_description | The Google Cloud service that reported the Cloud Billing data. | keyword |
@@ -1205,6 +1209,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.tags.key |  | keyword |
 | gcp.billing.tags.value |  | keyword |
 | gcp.billing.total | Total billing amount. | float |
+| gcp.billing.usage_end_time | The end time of the usage period for this billing record. | date |
+| gcp.billing.usage_start_time | The start time of the usage period for this billing record. | date |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -1252,7 +1258,16 @@ An example event for `billing` looks as following:
                     "key": "size",
                     "value": "standard"
                 }
-            ]
+            ],
+            "labels": {
+                "test_label": "value"
+            },
+            "location": {
+                "region": "us-central1",
+                "country": "US"
+            },
+            "usage_start_time": "2023-10-22T22:00:00.000Z",
+            "usage_end_time": "2023-10-22T23:00:00.000Z"
         }
     },
     "metricset": {
@@ -1664,8 +1679,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.gke.node.memory.allocatable_utilization.pct | The fraction of the allocatable memory that is currently in use on the instance. This value cannot exceed 1 as usage cannot exceed allocatable memory bytes. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | double | gauge |
 | gcp.gke.node.memory.total.bytes | Number of bytes of memory allocatable on the node. Sampled every 60 seconds. | long | gauge |
 | gcp.gke.node.memory.used.bytes | Cumulative memory bytes used by the node. Sampled every 60 seconds. | long | gauge |
-| gcp.gke.node.network.received_bytes.count | Cumulative number of bytes received by the node over the network. Sampled every 60 seconds. | long | counter |
-| gcp.gke.node.network.sent_bytes.count | Cumulative number of bytes transmitted by the node over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.node.network.received.bytes | Cumulative number of bytes received by the node over the network. Sampled every 60 seconds. | long | counter |
+| gcp.gke.node.network.sent.bytes | Cumulative number of bytes transmitted by the node over the network. Sampled every 60 seconds. | long | counter |
 | gcp.gke.node.pid_limit.value | The max PID of OS on the node. Sampled every 60 seconds. | long | gauge |
 | gcp.gke.node.pid_used.value | The number of running process in the OS on the node. Sampled every 60 seconds. | long | gauge |
 | gcp.gke.node_daemon.cpu.core_usage_time.sec | Cumulative CPU usage on all cores used by the node level system daemon in seconds. Sampled every 60 seconds. | double | counter |

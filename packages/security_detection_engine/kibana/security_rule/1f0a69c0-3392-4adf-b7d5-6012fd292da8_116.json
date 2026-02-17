@@ -1,0 +1,126 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell scripts that references Antimalware Scan Interface (AMSI) bypass classes, methods, or known bypass strings. Attackers attempt AMSI bypass to disable scanning and run malicious PowerShell content undetected.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential Antimalware Scan Interface Bypass via PowerShell",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Antimalware Scan Interface Bypass via PowerShell\n\nThis rule detects PowerShell script block content that references Antimalware Scan Interface (AMSI) bypass techniques. This behavior is commonly used to impair PowerShell content scanning and is frequently a precursor to additional PowerShell activity that would otherwise be inspected.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Validate the intent of the script block:\n  - Review `powershell.file.script_block_text` and identify which AMSI-related indicators are present (for example, `System.Management.Automation.AmsiUtils`, `amsiInitFailed`, `amsiContext`, `amsiSession`, `AmsiInitialize`, `amsi.dll`).\n  - Identify bypass techniques suggested by the script content, such as reflection-based field modification (for example, `Assembly.GetType(` and `.SetValue(`) or in-memory modification patterns (for example, `AllocHGlobal`).\n  - Note explicit bypass helper names in the script text (for example, `Invoke-AmsiBypass`, `Bypass.AMSI`, `FindAmsiFun`, `unloadobfuscated`, `unloadsilent`) and any obfuscation (mixed casing, character-code string construction, normalization, or heavy use of `-replace`).\n  - Treat this alert as an AMSI bypass attempt; success is not typically confirmed from the matching script block alone, so prioritize follow-on activity review.\n- Reconstruct the complete script when content is split across multiple events:\n  - Pivot on `powershell.file.script_block_id` and collect all related fragments.\n  - Order fragments by `powershell.sequence` and confirm the expected count with `powershell.total`.\n  - Re-review the reconstructed text for additional behaviors beyond the bypass attempt (for example, retrieving additional content, decoding staged data, or invoking suspicious functions).\n- Determine the likely source of the script content:\n  - Review `file.path` and `file.name` when present to identify an on-disk script source.\n  - Assess whether the path and filename align with established administrative tooling for the user/host, or whether it appears in an unexpected or transient location (for example, user profile, Temp, Downloads, or other user-writable locations).\n  - If `file.path` is not present, treat the source as unknown and prioritize correlation with other telemetry based on `host.name` and `@timestamp`.\n- Establish the execution scope and operator context:\n  - Review `user.name`, `user.domain`, and `user.id` to understand which account generated the script block content and whether it is expected to run PowerShell on `host.name`.\n  - Review `host.name` and `host.id` to determine whether the activity is isolated to a single endpoint or recurring across multiple systems.\n  - Identify repeated alerts involving the same `user.id` and/or `host.id` in a short period, which may indicate iterative testing of bypass variants or repeated execution of the same script.\n- Hunt for related PowerShell activity on the same endpoint and account:\n  - Search for additional script blocks on the same `host.id` around `@timestamp` to identify activity immediately before and after the bypass attempt.\n  - Use distinctive strings from `powershell.file.script_block_text` (function names, variable names, or unique encodings) to identify reuse by the same `user.id` or across other hosts.\n  - Extract any observable indicators embedded in the script text (for example, domains, IPs, URLs, or file paths) and use them to expand scoping searches.\n- Correlate with adjacent telemetry using `host.name`, `user.name`, and the alert time window (if available in your environment):\n  - Process execution telemetry to identify how PowerShell was launched and the initiating parent process (interactive use vs. another application or automation).\n  - Network telemetry for outbound connections and DNS activity that align with any remote retrieval or command-and-control behavior implied by the script content.\n  - File and registry telemetry for artifacts consistent with payload staging or persistence created shortly after the bypass attempt.\n  - Authentication telemetry to identify unusual or new logon activity for the implicated user on the affected host near the alert time.\n\n### False positive analysis\n\n- Training material or code snippets may be executed verbatim in a console during learning exercises. Confirm the context in `powershell.file.script_block_text` and whether additional suspicious behaviors appear in nearby script blocks from the same user and host.\n\n### Response and remediation\n\n- If the activity is confirmed or strongly suspected to be malicious:\n  - Contain the affected host to prevent further execution and lateral movement.\n  - Preserve evidence from the alert: `powershell.file.script_block_text`, `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`, `host.name`, `host.id`, `user.name`, `user.domain`, `user.id`, and any associated `file.path`/`file.name`.\n  - If `file.path` is present, collect the referenced script from disk (if still available) and identify where else it exists in the environment.\n  - Scope for additional impacted systems by searching for the same bypass strings and distinctive patterns across other hosts and users.\n  - Investigate and remediate follow-on actions identified in the reconstructed script and adjacent script blocks (for example, retrieval of additional code, credential access attempts, or persistence).\n  - Reset credentials for involved accounts when warranted and review for further suspicious activity tied to `user.id` across the environment.\n- Reduce the likelihood of recurrence:\n  - Ensure PowerShell logging is appropriately enabled and centrally collected to support reconstruction and scoping.\n  - Apply least privilege and limit PowerShell usage to approved roles and systems where feasible.\n  - Review monitoring coverage for repeated AMSI bypass attempts and related PowerShell activity on the same host or by the same user.\n",
+        "query": "event.category:\"process\" and host.os.type:windows and\n  (\n    powershell.file.script_block_text : (\n      \"System.Management.Automation.AmsiUtils\" or\n\t\t\tamsiInitFailed or \n\t\t\t\"Invoke-AmsiBypass\" or \n\t\t\t\"Bypass.AMSI\" or \n\t\t\t\"amsi.dll\" or \n\t\t\tAntimalwareProvider  or \n\t\t\tamsiSession or \n\t\t\tamsiContext or\n\t\t\tAmsiInitialize or \n\t\t\tunloadobfuscated or \n\t\t\tunloadsilent or \n\t\t\tAmsiX64 or \n\t\t\tAmsiX32 or \n\t\t\tFindAmsiFun or\n\t\t    \"AllocHGlobal((9076\" or\n\t\t    \"[cHAr](65)+[cHaR]([byTe]0x6d)+[ChaR]([ByTe]0x73)+[CHaR]([BYte]0x69\"\n    ) or\n    powershell.file.script_block_text:(\"[Ref].Assembly.GetType(('System.Management.Automation\" and \".SetValue(\") or\n    powershell.file.script_block_text:(\"::AllocHGlobal((\" and \".SetValue(\" and \"-replace\" and \".NoRMALiZe(\")\n  ) and\n  not powershell.file.script_block_text : (\n    \"sentinelbreakpoints\" and \"Set-PSBreakpoint\"\n  )\n",
+        "references": [
+            "https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "1f0a69c0-3392-4adf-b7d5-6012fd292da8",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 116
+    },
+    "id": "1f0a69c0-3392-4adf-b7d5-6012fd292da8_116",
+    "type": "security-rule"
+}

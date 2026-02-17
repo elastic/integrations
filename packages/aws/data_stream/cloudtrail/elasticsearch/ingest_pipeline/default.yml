@@ -18,9 +18,6 @@ processors:
   - json:
       field: event.original
       target_field: json
-  - pipeline:
-      if: ctx.json?.preview != null
-      name: '{{ IngestPipeline "third-party" }}'
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -492,10 +489,11 @@ processors:
             "json.requestParameters.functionName",
             "json.responseElements.functionArn",
             "json.responseElements.functionName",
-            "json.responseElements.role",
-            "json.responseElements.vpcConfig.securityGroupIds",
-            "json.responseElements.vpcConfig.subnetIds"
+            "json.responseElements.role"
           ]);
+
+          addValues(enrichCtx.related, $("json.responseElements.vpcConfig.securityGroupIds", []));
+          addValues(enrichCtx.related, $("json.responseElements.vpcConfig.subnetIds", []));
 
           if (eventName == null) {
             return;
@@ -1078,7 +1076,7 @@ processors:
   - grok:
       field: aws.cloudtrail.user_identity.arn
       patterns:
-        - "arn:aws:sts:.*/%{GREEDYDATA:user.changes.name}$"
+        - "arn:(aws|aws-us-gov):sts:.*/%{GREEDYDATA:user.changes.name}$"
       ignore_missing: true
       if: (ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser') && ctx.aws?.cloudtrail?.user_identity?.arn != null
       tag: extract_user_name_from_arn
@@ -1239,9 +1237,12 @@ processors:
       field: json.apiVersion
       target_field: aws.cloudtrail.api_version
       ignore_failure: true
-  - rename:
-      field: json.managementEvent
-      target_field: aws.cloudtrail.management_event
+  - script:
+      lang: painless
+      source: |
+        if (ctx.json?.managementEvent != null) {
+          ctx.aws.cloudtrail.management_event = String.valueOf(ctx.json.managementEvent);
+        }
       ignore_failure: true
   - rename:
       field: json.readOnly

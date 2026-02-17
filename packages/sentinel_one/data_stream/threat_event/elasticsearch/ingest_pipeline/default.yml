@@ -7,7 +7,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.17.0
+      value: 9.3.0
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -773,6 +773,11 @@ processors:
       tag: set_user_name
       copy_from: sentinel_one.threat_event.user
       ignore_empty_value: true
+  - dissect:
+      field: user.name
+      pattern: '%{user.domain}\%{user.name}'
+      if: ctx.user?.name?.contains('\\') == true
+      description: "Split user and domain"
   - append:
       field: related.user
       tag: append_user_name_into_related_user
