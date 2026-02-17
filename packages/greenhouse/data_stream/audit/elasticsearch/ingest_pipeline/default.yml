@@ -17,6 +17,7 @@ processors:
   - json:
       field: event.original
       target_field: json
+      tag: parse_json
   - fail:
       if: ctx.json == null || !(ctx.json instanceof Map)
       message: Missing JSON object in input document
@@ -41,6 +42,11 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
         - ISO8601
+      tag: parse_timestamp
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Failed to parse timestamp from greenhouse.audit.event_time: {{{ _ingest.on_failure_message }}}'
 
   # Event fields
   - set:
@@ -108,6 +114,11 @@ processors:
       type: string
       target_field: user.id
       ignore_missing: true
+      tag: convert_performer_id
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Failed to convert performer.id to string: {{{ _ingest.on_failure_message }}}'
   - set:
       field: user.email
       copy_from: greenhouse.audit.performer.meta.username
@@ -123,6 +134,7 @@ processors:
       type: ip
       target_field: source.ip
       ignore_missing: true
+      tag: convert_ip_address
       on_failure:
         - append:
             field: error.message
@@ -133,6 +145,7 @@ processors:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      tag: geoip_source_geo
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -141,6 +154,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: geoip_source_asn
   - rename:
       field: source.as.asn
       target_field: source.as.number
@@ -156,12 +170,22 @@ processors:
       type: string
       target_field: organization.id
       ignore_missing: true
+      tag: convert_organization_id
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Failed to convert organization_id to string: {{{ _ingest.on_failure_message }}}'
 
   # Convert target_id to string (it comes as integer from API)
   - convert:
       field: greenhouse.audit.event.target_id
       type: string
       ignore_missing: true
+      tag: convert_target_id
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Failed to convert target_id to string: {{{ _ingest.on_failure_message }}}'
 
   # Related fields
   - append:
@@ -229,4 +253,4 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{ _ingest.on_failure_processor_tag }}} failed: {{{ _ingest.on_failure_message }}}'
