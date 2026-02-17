@@ -136,11 +136,7 @@ program: |-
           resp.Header.transformMapEntry(k, v, {k.canonical_mime_header_key(): v}).as(headers,
             // Calculate and apply rate limits.
             rate_limit(
-              headers.with(
-                {
-                  "X-Ratelimit-Reset": [string(int(now + duration(string(headers[?"X-Ratelimit-Reset"][0].orValue("1")) + "s")))],
-                }
-              ),
+              headers,
               "X-Ratelimit",
               false,
               true,
@@ -196,11 +192,7 @@ program: |-
                                   resp.Header.transformMapEntry(k, v, {k.canonical_mime_header_key(): v}).as(headers,
                                     // Calculate and apply rate limits.
                                     rate_limit(
-                                      headers.with(
-                                        {
-                                          "X-Ratelimit-Reset": [string(int(now + duration(string(headers[?"X-Ratelimit-Reset"][0].orValue("1")) + "s")))],
-                                        }
-                                      ),
+                                      headers,
                                       "X-Ratelimit",
                                       false,
                                       true,

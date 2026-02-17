@@ -126,11 +126,7 @@ program: |-
                 // result is not tenable, so we do not do any work to allow them
                 // to be interpreted by the input and just drop them.
                 rate_limit(
-                  headers.with(
-                    {
-                      "X-Ratelimit-Reset": [string(int(now + duration(string(headers[?"X-Ratelimit-Reset"][0].orValue("1")) + "s")))],
-                    }
-                  ),
+                  headers,
                   "X-Ratelimit",
                   false,
                   true,
@@ -204,11 +200,7 @@ program: |-
             resp.Header.as(headers,
               // Calculate and apply rate limits.
               rate_limit(
-                headers.with(
-                  {
-                    "X-Ratelimit-Reset": [string(int(now + duration(string(headers[?"X-Ratelimit-Reset"][0].orValue("1")) + "s")))],
-                  }
-                ),
+                headers,
                 "X-Ratelimit",
                 false,
                 true,
