@@ -1,12 +1,27 @@
-- external: ecs
+- description: |-
+    ECS version this event conforms to. `ecs.version` is a required field and must exist in all events.
+    When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events.
   name: ecs.version
-- external: ecs
+  type: keyword
+- description: Error message.
   name: error.message
-- external: ecs
+  type: match_only_text
+- description: |-
+    This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy.
+    `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events.
+    The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not.
   name: event.kind
-- external: ecs
+  type: keyword
+- description: |-
+    Address where data about this service was collected from.
+    This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets).
+  dimension: true
   name: service.address
+  type: keyword
+- description: |-
+    Name of the service data is collected from.
+    The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name.
+    In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified.
   dimension: true
-- external: ecs
   name: service.name
-  dimension: true
+  type: keyword

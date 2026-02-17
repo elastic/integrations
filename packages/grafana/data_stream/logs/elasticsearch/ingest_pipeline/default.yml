@@ -2,37 +2,45 @@
 description: Pipeline for Grafana server logs
 processors:
   - set:
+      tag: set_event_ingested
       field: event.ingested
       value: "{{_ingest.timestamp}}"
   - set:
+      tag: set_event_kind
       field: event.kind
       value: event
   - set:
+      tag: set_event_module
       field: event.module
       value: grafana
   - set:
+      tag: set_event_dataset
       field: event.dataset
       value: grafana.logs
 
   # Preserve original event (JSE00001-compliant pattern)
   - rename:
+      tag: rename_message_to_original
       field: message
       target_field: event.original
       if: ctx.event?.original == null
       ignore_failure: true
   - remove:
+      tag: remove_duplicate_message
       field: message
       if: ctx.event?.original != null
       ignore_missing: true
 
   # Try JSON parsing first
   - json:
+      tag: json_parse
       field: event.original
       target_field: grafana.log._json
       ignore_failure: true
 
   # Extract timestamp from JSON logs
   - date:
+      tag: date_json_timestamp
       if: ctx.grafana?.log?._json?.t != null
       field: grafana.log._json.t
       target_field: "@timestamp"
@@ -40,80 +48,94 @@ processors:
         - ISO8601
       ignore_failure: true
 
-  # Map JSON fields to ECS and grafana.log.*
+  # Map JSON fields to ECS
   - rename:
+      tag: rename_json_level
       if: ctx.grafana?.log?._json?.level != null
       field: grafana.log._json.level
       target_field: log.level
       ignore_failure: true
   - rename:
+      tag: rename_json_msg
       if: ctx.grafana?.log?._json?.msg != null
       field: grafana.log._json.msg
       target_field: message
       ignore_failure: true
   - rename:
+      tag: rename_json_logger
       if: ctx.grafana?.log?._json?.logger != null
       field: grafana.log._json.logger
-      target_field: grafana.log.logger
+      target_field: log.logger
       ignore_failure: true
   - rename:
+      tag: rename_json_caller_to_temp
       if: ctx.grafana?.log?._json?.caller != null
       field: grafana.log._json.caller
-      target_field: grafana.log.caller
+      target_field: _temp.caller
       ignore_failure: true
   - rename:
+      tag: rename_json_method
       if: ctx.grafana?.log?._json?.method != null
       field: grafana.log._json.method
-      target_field: grafana.log.method
+      target_field: http.request.method
       ignore_failure: true
   - rename:
+      tag: rename_json_url_path
       if: ctx.grafana?.log?._json?.path != null
       field: grafana.log._json.path
-      target_field: grafana.log.path
+      target_field: url.path
       ignore_failure: true
   - convert:
+      tag: convert_json_status_code
       if: ctx.grafana?.log?._json?.status != null
       field: grafana.log._json.status
-      target_field: grafana.log.status
+      target_field: http.response.status_code
       type: long
       ignore_failure: true
   - rename:
+      tag: rename_json_client_ip
       if: ctx.grafana?.log?._json?.remote_addr != null
       field: grafana.log._json.remote_addr
-      target_field: grafana.log.remote_addr
+      target_field: client.ip
       ignore_failure: true
   - rename:
+      tag: rename_json_duration_to_temp
       if: ctx.grafana?.log?._json?.duration != null
       field: grafana.log._json.duration
-      target_field: grafana.log.duration
+      target_field: _temp.duration_str
       ignore_failure: true
   - rename:
+      tag: rename_json_user_name
       if: ctx.grafana?.log?._json?.uname != null
       field: grafana.log._json.uname
-      target_field: grafana.log.uname
+      target_field: user.name
       ignore_failure: true
-  - convert:
+  - rename:
+      tag: rename_json_body_bytes
       if: ctx.grafana?.log?._json?.size != null
       field: grafana.log._json.size
-      target_field: grafana.log.size
-      type: long
+      target_field: http.response.body.bytes
       ignore_failure: true
   - rename:
+      tag: rename_json_referrer
       if: ctx.grafana?.log?._json?.referer != null
       field: grafana.log._json.referer
-      target_field: grafana.log.referer
+      target_field: http.request.referrer
       ignore_failure: true
   - rename:
+      tag: rename_json_handler
       if: ctx.grafana?.log?._json?.handler != null
       field: grafana.log._json.handler
       target_field: grafana.log.handler
       ignore_failure: true
   - rename:
+      tag: rename_json_subUrl
       if: ctx.grafana?.log?._json?.subUrl != null
       field: grafana.log._json.subUrl
       target_field: grafana.log.subUrl
       ignore_failure: true
   - convert:
+      tag: convert_json_orgId
       if: ctx.grafana?.log?._json?.orgId != null
       field: grafana.log._json.orgId
       target_field: grafana.log.orgId
@@ -123,18 +145,21 @@ processors:
   # Fallback: parse logfmt (key=value pairs in any order)
   # Handles modern Grafana v9+ (level=, variable field order) and legacy (lvl=, t= first)
   - grok:
+      tag: grok_logfmt_timestamp
       if: ctx.grafana?.log?._json == null
       field: event.original
       patterns:
         - '(?:^|\s)t=%{TIMESTAMP_ISO8601:_temp.logfmt_t}(?:\s|$)'
       ignore_failure: true
   - grok:
+      tag: grok_logfmt_level
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
         - '(?:^|\s)(?:level|lvl)=%{WORD:_temp.logfmt_level}(?:\s|$)'
       ignore_failure: true
   - grok:
+      tag: grok_logfmt_msg
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
@@ -142,55 +167,71 @@ processors:
         - '(?:^|\s)msg=%{NOTSPACE:_temp.logfmt_msg}'
       ignore_failure: true
   - grok:
+      tag: grok_logfmt_logger
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
         - '(?:^|\s)logger=%{NOTSPACE:_temp.logfmt_logger}(?:\s|$)'
       ignore_failure: true
+  - grok:
+      tag: grok_logfmt_caller
+      if: ctx._temp?.logfmt_t != null
+      field: event.original
+      patterns:
+        - '(?:^|\s)caller=%{NOTSPACE:_temp.logfmt_caller}(?:\s|$)'
+      ignore_failure: true
   # Extract HTTP request fields from logfmt (present in request completion logs)
   - grok:
+      tag: grok_logfmt_method
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
         - '(?:^|\s)method=%{WORD:_temp.logfmt_method}(?:\s|$)'
       ignore_failure: true
   - grok:
+      tag: grok_logfmt_path
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
         - '(?:^|\s)path=%{NOTSPACE:_temp.logfmt_path}(?:\s|$)'
       ignore_failure: true
   - grok:
+      tag: grok_logfmt_status
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
         - '(?:^|\s)status=%{INT:_temp.logfmt_status}(?:\s|$)'
       ignore_failure: true
   - grok:
+      tag: grok_logfmt_remote_addr
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
         - '(?:^|\s)remote_addr=%{IP:_temp.logfmt_remote_addr}(?:\s|$)'
       ignore_failure: true
   - grok:
+      tag: grok_logfmt_duration
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
         - '(?:^|\s)duration=%{NOTSPACE:_temp.logfmt_duration}(?:\s|$)'
       ignore_failure: true
   - grok:
+      tag: grok_logfmt_size
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
         - '(?:^|\s)size=%{INT:_temp.logfmt_size}(?:\s|$)'
       ignore_failure: true
   - grok:
+      tag: grok_logfmt_uname
       if: ctx._temp?.logfmt_t != null
       field: event.original
       patterns:
         - '(?:^|\s)uname=%{NOTSPACE:_temp.logfmt_uname}(?:\s|$)'
       ignore_failure: true
   - date:
+      tag: date_logfmt_timestamp
       if: ctx._temp?.logfmt_t != null
       field: _temp.logfmt_t
       target_field: "@timestamp"
@@ -198,59 +239,133 @@ processors:
         - ISO8601
       ignore_failure: true
   - set:
+      tag: set_logfmt_level
       if: ctx._temp?.logfmt_level != null
       field: log.level
       value: "{{_temp.logfmt_level}}"
   - set:
+      tag: set_logfmt_msg
       if: ctx._temp?.logfmt_msg != null && ctx.message == null
       field: message
       value: "{{_temp.logfmt_msg}}"
   - set:
+      tag: set_logfmt_logger
       if: ctx._temp?.logfmt_logger != null
-      field: grafana.log.logger
+      field: log.logger
       value: "{{_temp.logfmt_logger}}"
   - set:
+      tag: set_logfmt_caller_temp
+      if: ctx._temp?.logfmt_caller != null
+      field: _temp.caller
+      value: "{{_temp.logfmt_caller}}"
+  - set:
+      tag: set_logfmt_method
       if: ctx._temp?.logfmt_method != null
-      field: grafana.log.method
+      field: http.request.method
       value: "{{_temp.logfmt_method}}"
   - set:
+      tag: set_logfmt_url_path
       if: ctx._temp?.logfmt_path != null
-      field: grafana.log.path
+      field: url.path
       value: "{{_temp.logfmt_path}}"
   - convert:
+      tag: convert_logfmt_status_code
       if: ctx._temp?.logfmt_status != null
       field: _temp.logfmt_status
-      target_field: grafana.log.status
+      target_field: http.response.status_code
       type: long
       ignore_failure: true
   - set:
+      tag: set_logfmt_client_ip
       if: ctx._temp?.logfmt_remote_addr != null
-      field: grafana.log.remote_addr
+      field: client.ip
       value: "{{_temp.logfmt_remote_addr}}"
   - set:
+      tag: set_logfmt_duration_temp
       if: ctx._temp?.logfmt_duration != null
-      field: grafana.log.duration
+      field: _temp.duration_str
       value: "{{_temp.logfmt_duration}}"
   - convert:
+      tag: convert_logfmt_body_bytes
       if: ctx._temp?.logfmt_size != null
       field: _temp.logfmt_size
-      target_field: grafana.log.size
+      target_field: http.response.body.bytes
       type: long
       ignore_failure: true
   - set:
+      tag: set_logfmt_user_name
       if: ctx._temp?.logfmt_uname != null
-      field: grafana.log.uname
+      field: user.name
       value: "{{_temp.logfmt_uname}}"
+
+  # Normalize HTTP method to uppercase (ECS requirement)
+  - uppercase:
+      tag: uppercase_http_method
+      if: ctx.http?.request?.method != null
+      field: http.request.method
+      ignore_failure: true
+
+  # Parse caller "file.go:123" into log.origin.file.name and log.origin.file.line
+  - grok:
+      tag: grok_parse_caller
+      if: ctx._temp?.caller != null
+      field: _temp.caller
+      patterns:
+        - '%{DATA:log.origin.file.name}:%{INT:log.origin.file.line}'
+      ignore_failure: true
+  - convert:
+      tag: convert_caller_line
+      if: ctx.log?.origin?.file?.line != null
+      field: log.origin.file.line
+      type: long
+      ignore_failure: true
+
+  # Parse duration string (e.g. "1.234ms") into event.duration (nanoseconds)
+  - script:
+      tag: script_parse_duration
+      lang: painless
+      ignore_failure: true
+      source: |
+        def dur = ctx._temp?.duration_str;
+        if (dur == null) return;
+        long nanos;
+        if (dur.endsWith('ms')) {
+          nanos = (long)(Double.parseDouble(dur.substring(0, dur.length() - 2)) * 1000000.0);
+        } else if (dur.endsWith("µs") || dur.endsWith('us')) {
+          nanos = (long)(Double.parseDouble(dur.substring(0, dur.length() - 2)) * 1000.0);
+        } else if (dur.endsWith('ns')) {
+          nanos = (long)Double.parseDouble(dur.substring(0, dur.length() - 2));
+        } else if (dur.endsWith('s')) {
+          nanos = (long)(Double.parseDouble(dur.substring(0, dur.length() - 1)) * 1000000000.0);
+        } else {
+          return;
+        }
+        ctx.event.duration = nanos;
 
   # If neither parser extracted a message, restore original
   - set:
+      tag: set_message_fallback
       if: ctx.message == null
       field: message
       copy_from: event.original
       ignore_failure: true
 
+  # Normalize Grafana's non-standard log level spellings
+  # Grafana's logfmt library emits "eror" for error and "dbug" for debug
+  - script:
+      tag: script_normalize_log_level
+      lang: painless
+      ignore_failure: true
+      source: |
+        def level = ctx.log?.level;
+        if (level == null) return;
+        def lower = level.toLowerCase();
+        if (lower == 'eror') ctx.log.level = 'error';
+        else if (lower == 'dbug') ctx.log.level = 'debug';
+
   # Map log.level to event.severity (syslog-like scale)
   - script:
+      tag: script_map_severity
       lang: painless
       ignore_failure: true
       source: |
@@ -258,14 +373,15 @@ processors:
         if (level == null) return;
         level = level.toLowerCase();
         if (level == 'critical' || level == 'crit') ctx.event.severity = 2;
-        else if (level == 'error' || level == 'eror') ctx.event.severity = 3;
+        else if (level == 'error') ctx.event.severity = 3;
         else if (level == 'warn' || level == 'warning') ctx.event.severity = 4;
         else if (level == 'info') ctx.event.severity = 6;
-        else if (level == 'debug' || level == 'dbug') ctx.event.severity = 7;
+        else if (level == 'debug') ctx.event.severity = 7;
         else if (level == 'trace') ctx.event.severity = 8;
 
   # Clean up temporary fields
   - remove:
+      tag: remove_temp_fields
       field:
         - grafana.log._json
         - _temp
@@ -273,11 +389,15 @@ processors:
 
   # Remove event.original unless preserve_original_event is set
   - remove:
+      tag: remove_event_original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       field: event.original
       ignore_missing: true
 
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}"
