@@ -5884,61 +5884,20 @@
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-29bf96fd-6dcd-4667-8e14-8865fb5a7e63",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "dc4515a3-aac0-4a34-89b6-0402e4517f37",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "7f24eea7-ba2f-4efa-91f6-0da0ec11e5f8",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "12cd51e3-7dfe-48bc-a6fb-b864bc993b27": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldAttrs": {},
-                                    "fieldFormats": {},
-                                    "id": "12cd51e3-7dfe-48bc-a6fb-b864bc993b27",
-                                    "name": "events",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "logs-generic.otel-default"
-                                },
                                 "f641ba62-c9ca-4f45-ba95-3d68c419a5a5": {
                                     "allowHidden": false,
-                                    "allowNoIndex": false,
+                                    "allowNoIndex": true,
                                     "fieldAttrs": {},
                                     "fieldFormats": {},
                                     "id": "f641ba62-c9ca-4f45-ba95-3d68c419a5a5",
-                                    "name": "events-ad-hoc",
-                                    "runtimeFieldMap": {
-                                        "resource.attributes.k8s.namespace.name": {
-                                            "script": {
-                                                "source": "if (doc.containsKey('body_structured.object.regarding.kind')) {\n    if (doc['body_structured.object.regarding.kind'].value == \"Pod\") {\n        emit(doc['body_structured.object.regarding.namespace'].value);\n    }\n}"
-                                            },
-                                            "type": "keyword"
-                                        },
-                                        "resource.attributes.k8s.node.name": {
-                                            "script": {
-                                                "source": "if (doc.containsKey('body_structured.object.regarding.kind')) {\n    if (doc['body_structured.object.regarding.kind'].value == \"Node\") {\n        emit(doc['body_structured.object.regarding.name'].value);\n    }\n    if (doc['body_structured.object.regarding.kind'].value == \"Pod\") {\n        emit(doc['body_structured.object.reportingInstance'].value);\n    }\n}"
-                                            },
-                                            "type": "keyword"
-                                        }
-                                    },
+                                    "name": "k8seventsreceiver",
+                                    "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-*otel*"
+                                    "title": "logs-k8seventsreceiver.otel-*"
                                 }
                             },
                             "datasourceStates": {
@@ -6062,7 +6021,23 @@
                                     }
                                 }
                             ],
-                            "internalReferences": [],
+                            "internalReferences": [
+                                {
+                                    "id": "f641ba62-c9ca-4f45-ba95-3d68c419a5a5",
+                                    "name": "indexpattern-datasource-layer-29bf96fd-6dcd-4667-8e14-8865fb5a7e63",
+                                    "type": "index-pattern"
+                                },
+                                {
+                                    "id": "f641ba62-c9ca-4f45-ba95-3d68c419a5a5",
+                                    "name": "dc4515a3-aac0-4a34-89b6-0402e4517f37",
+                                    "type": "index-pattern"
+                                },
+                                {
+                                    "id": "f641ba62-c9ca-4f45-ba95-3d68c419a5a5",
+                                    "name": "7f24eea7-ba2f-4efa-91f6-0da0ec11e5f8",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -6205,11 +6180,11 @@
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
                                     "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
-                                    "name": "logs*",
+                                    "name": "logs-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs*",
+                                    "title": "logs-*",
                                     "type": "esql"
                                 }
                             },
@@ -6219,7 +6194,7 @@
                                         {
                                             "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
                                             "timeField": "@timestamp",
-                                            "title": "logs*"
+                                            "title": "logs-*"
                                         }
                                     ],
                                     "layers": {
@@ -6234,7 +6209,7 @@
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "sourceParams": {
-                                                            "indexPattern": "logs*",
+                                                            "indexPattern": "logs-*",
                                                             "sourceField": "k8s.event.start_time"
                                                         },
                                                         "type": "string"
@@ -6249,7 +6224,7 @@
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "sourceParams": {
-                                                            "indexPattern": "logs*",
+                                                            "indexPattern": "logs-*",
                                                             "sourceField": "k8s.object.kind"
                                                         },
                                                         "type": "string"
@@ -6264,7 +6239,7 @@
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "sourceParams": {
-                                                            "indexPattern": "logs*",
+                                                            "indexPattern": "logs-*",
                                                             "sourceField": "k8s.object.name"
                                                         },
                                                         "type": "string"
@@ -6277,7 +6252,7 @@
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "sourceParams": {
-                                                            "indexPattern": "logs*",
+                                                            "indexPattern": "logs-*",
                                                             "sourceField": "attributes.k8s.namespace.name"
                                                         },
                                                         "type": "string"
@@ -6290,7 +6265,7 @@
                                                     "meta": {
                                                         "esType": "text",
                                                         "sourceParams": {
-                                                            "indexPattern": "logs*",
+                                                            "indexPattern": "logs-*",
                                                             "sourceField": "body.text"
                                                         },
                                                         "type": "string"
@@ -6303,7 +6278,7 @@
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "sourceParams": {
-                                                            "indexPattern": "logs*",
+                                                            "indexPattern": "logs-*",
                                                             "sourceField": "k8s.event.reason"
                                                         },
                                                         "type": "string"
@@ -6312,7 +6287,7 @@
                                             ],
                                             "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
                                             "query": {
-                                                "esql": "FROM logs* | WHERE data_stream.dataset == \"k8seventsreceiver.otel\" AND severity_text == \"Warning\" | LIMIT 50"
+                                                "esql": "FROM logs-* | WHERE data_stream.dataset == \"k8seventsreceiver.otel\" AND severity_text == \"Warning\" | LIMIT 50"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -6322,7 +6297,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM logs* | WHERE data_stream.dataset == \"k8seventsreceiver.otel\" AND severity_text == \"Warning\" | LIMIT 50"
+                                "esql": "FROM logs-* | WHERE data_stream.dataset == \"k8seventsreceiver.otel\" AND severity_text == \"Warning\" | LIMIT 50"
                             },
                             "visualization": {
                                 "columns": [
@@ -6366,7 +6341,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs* | WHERE data_stream.dataset == \"k8seventsreceiver.otel\" AND severity_text == \"Warning\" | LIMIT 10"
+                        "esql": "FROM logs-* | WHERE data_stream.dataset == \"k8seventsreceiver.otel\" AND severity_text == \"Warning\" | LIMIT 10"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -6475,21 +6450,6 @@
         {
             "id": "metrics-*",
             "name": "dacf1fd7-9a7b-404d-9172-9bb9851b21e9:indexpattern-datasource-layer-5cd693aa-6e5b-43de-b3c5-3d353a0644a3",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "26e3bf8c-ac2a-4052-89a4-1466774193f5:indexpattern-datasource-layer-29bf96fd-6dcd-4667-8e14-8865fb5a7e63",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "26e3bf8c-ac2a-4052-89a4-1466774193f5:dc4515a3-aac0-4a34-89b6-0402e4517f37",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "26e3bf8c-ac2a-4052-89a4-1466774193f5:7f24eea7-ba2f-4efa-91f6-0da0ec11e5f8",
             "type": "index-pattern"
         },
         {
