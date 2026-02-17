@@ -1,0 +1,210 @@
+---
+description: Pipeline for processing customer IOC event logs.
+processors:
+  - set:
+      field: event.kind
+      value: enrichment
+      tag: set_event_kind_to_enrichment
+  - append:
+      field: event.category
+      value: threat
+      tag: append_event_category_threat
+  - append:
+      field: event.type
+      value: indicator
+      tag: append_event_type_indicator
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_event_ComputerName
+      copy_from: crowdstrike.event.ComputerName
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_event_ComputerName
+      copy_from: crowdstrike.event.ComputerName
+      ignore_empty_value: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_event_DeviceId
+      copy_from: crowdstrike.event.DeviceId
+      ignore_empty_value: true
+  - set:
+      field: file.name
+      tag: set_file_name_from_event_FileName
+      copy_from: crowdstrike.event.FileName
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_event_FilePath
+      copy_from: crowdstrike.event.FilePath
+      ignore_empty_value: true
+  - convert:
+      field: crowdstrike.event.IPv4
+      tag: convert_IPv4_to_ip
+      target_field: threat.indicator.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.crowdstrike?.event?.IPv4 != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: crowdstrike.event.IPv6
+      tag: convert_IPv6_to_ip
+      target_field: threat.indicator.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.crowdstrike?.event?.IPv6 != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: threat.indicator.ip
+      target_field: threat.indicator.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: threat.indicator.ip
+      target_field: threat.indicator.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: threat.indicator.as.asn
+      target_field: threat.indicator.as.number
+      ignore_missing: true
+  - rename:
+      field: threat.indicator.as.organization_name
+      target_field: threat.indicator.as.organization.name
+      ignore_missing: true
+  - set:
+      field: process.parent.entity_id
+      tag: set_process_parent_entity_id_from_event_ParentProcessId
+      copy_from: crowdstrike.event.ParentProcessId
+      ignore_empty_value: true
+  - set:
+      field: process.entity_id
+      tag: set_process_entity_id_from_event_ProcessId
+      copy_from: crowdstrike.event.ProcessId
+      ignore_empty_value: true
+  - date:
+      field: crowdstrike.event.ProcessStartTime
+      tag: date_ProcessStartTime
+      target_field: process.start
+      formats:
+        - UNIX
+      if: ctx.crowdstrike?.event?.ProcessStartTime != null && ctx.crowdstrike.event.ProcessStartTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# set threat indicator name based on available fields in the event. Only one field will be available at a time.
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_event_SHA256String
+      copy_from: crowdstrike.event.SHA256String
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_event_MD5String
+      copy_from: crowdstrike.event.MD5String
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_event_DomainName
+      copy_from: crowdstrike.event.DomainName
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_event_IPv4
+      copy_from: crowdstrike.event.IPv4
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_event_IPv6
+      copy_from: crowdstrike.event.IPv6
+      ignore_empty_value: true
+# set threat indicator type based on available fields in the event. Only one field will be available at a time.
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_ip_v4_addr
+      value: ipv4-addr
+      if: ctx.crowdstrike?.event?.IPv4 != null
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_ip_v6_addr
+      value: ipv6-addr
+      if: ctx.crowdstrike?.event?.IPv6 != null
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_domain_name
+      value: domain-name
+      if: ctx.crowdstrike?.event?.DomainName != null
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_file
+      value: file
+      if: ctx.crowdstrike?.event?.SHA256String != null || ctx.crowdstrike?.event?.MD5String != null
+  - append:
+      field: related.ip
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+      tag: append_related_ip
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip != ""
+  - append:
+      field: related.hash
+      value: '{{{crowdstrike.event.SHA256String}}}'
+      allow_duplicates: false
+      tag: append_related_hash
+      if: ctx.crowdstrike?.event?.SHA256String != null && ctx.crowdstrike.event.SHA256String != ""
+  - append:
+      field: related.hash
+      value: '{{{crowdstrike.event.MD5String}}}'
+      allow_duplicates: false
+      tag: append_related_hash
+      if: ctx.crowdstrike?.event?.MD5String != null && ctx.crowdstrike.event.MD5String != ""
+  - append:
+      field: related.hosts
+      value: '{{{crowdstrike.event.DomainName}}}'
+      allow_duplicates: false
+      tag: append_related_hosts
+      if: ctx.crowdstrike?.event?.DomainName != null && ctx.crowdstrike.event.DomainName != ""
+  - remove:
+      field:
+        - crowdstrike.event.ComputerName
+        - crowdstrike.event.DeviceId
+        - crowdstrike.event.FileName
+        - crowdstrike.event.FilePath
+        - crowdstrike.event.ParentProcessId
+        - crowdstrike.event.ProcessId
+        - crowdstrike.event.ProcessStartTime
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

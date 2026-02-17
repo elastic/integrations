@@ -1,0 +1,177 @@
+format_version: 3.5.0
+name: kubeletstats_input_otel
+title: "Kubelet Stats OpenTelemetry Input"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect Kubernetes node, pod, container, and volume metrics from the Kubelet API using the OpenTelemetry Collector."
+type: input
+categories:
+  - containers
+  - kubernetes
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/kubeletstats-logo.svg
+    title: Kubelet Stats logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: kubeletstatsreceiver
+    type: metrics
+    title: Kubelet Stats
+    description: Collect Kubernetes metrics from the Kubelet API using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: endpoint
+        type: text
+        title: Kubelet API Endpoint
+        description: The endpoint of the Kubelet API (e.g., https://${env:K8S_NODE_IP}:10250 for secure port, http://${env:K8S_NODE_IP}:10255 for read-only port). Users should adjust the endpoint based on their auth_type selection.
+        required: true
+        show_user: true
+        default: https://${env:K8S_NODE_IP}:10250
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: The interval at which to collect metrics.
+        required: false
+        show_user: true
+        # Same default as the EDOT's Helm chart
+        # https://github.com/elastic/elastic-agent/blob/main/deploy/helm/edot-collector/kube-stack/values.yaml#L407
+        default: 60s
+      - name: initial_delay
+        type: duration
+        title: Initial Delay
+        description: Defines how long this receiver waits before starting.
+        required: false
+        show_user: false
+        default: 1s
+      - name: insecure_skip_verify
+        type: bool
+        title: Skip TLS Verification
+        description: Whether to skip TLS certificate verification. Not recommended for production.
+        required: false
+        show_user: false
+        default: false
+      - name: auth_type
+        type: select
+        title: Authentication Type
+        description: Specifies the authentication method to use when connecting to the Kubelet API. Note that if auth_type is set to none, the read-only endpoint will be used.
+        required: true
+        show_user: true
+        default: serviceAccount
+        options:
+          - value: none
+            text: None
+          - value: tls
+            text: TLS
+          - value: serviceAccount
+            text: Service Account
+          - value: kubeConfig
+            text: Kube Config
+      - name: context
+        type: text
+        title: Kubeconfig Context
+        description: The kubeconfig context to use when auth_type is kubeConfig. If not specified, the current or default context is used.
+        required: false
+        show_user: false
+      - name: ca_file
+        type: text
+        title: CA File Path
+        description: Path to the certificate authority file for TLS verification.
+        required: false
+        show_user: false
+      - name: cert_file
+        type: text
+        title: Certificate File Path
+        description: Path to the client certificate file for TLS authentication.
+        required: false
+        show_user: false
+      - name: key_file
+        type: text
+        title: Key File Path
+        description: Path to the client private key file for TLS authentication.
+        required: false
+        show_user: false
+      - name: metric_groups
+        title: Metric Groups
+        description: Specify which metric groups to collect. Valid values are container, pod, node, volume.
+        type: text
+        multi: true
+        required: false
+        show_user: true
+      - name: extra_metadata_labels
+        type: text
+        title: Extra Metadata Labels
+        description: Additional metadata labels to include in metrics. Valid values are container.id, k8s.volume.type.
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - container.id
+      - name: node
+        type: text
+        title: Node Name
+        description: Node name to limit the discovery of nodes. Required when enabling node utilization metrics.
+        required: false
+        show_user: false
+      - name: k8s_api_config_auth_type
+        type: select
+        title: Kubernetes API Auth Type
+        description: Authentication type for the Kubernetes API when fetching additional metadata.
+        required: false
+        show_user: false
+        options:
+          - value: none
+            text: None
+          - value: tls
+            text: TLS
+          - value: serviceAccount
+            text: Service Account
+          - value: kubeConfig
+            text: Kube Config
+      - name: k8s_api_config_context
+        type: text
+        title: Kubernetes API Context
+        description: The kubeconfig context to use when k8s_api_config_auth_type is kubeConfig. If not specified, the current or default context is used.
+        required: false
+        show_user: false
+      - name: metrics
+        type: yaml
+        title: Metrics Configuration
+        description: |
+          ## Example configuration for enabling optional metrics.
+          ## The node utilization metrics require `node` and `k8s_api_config` to be configured.
+          # k8s.container.cpu.node.utilization:
+          #   enabled: true
+          # k8s.pod.cpu.node.utilization:
+          #   enabled: true
+          # k8s.container.memory.node.utilization:
+          #   enabled: true
+          # k8s.pod.memory.node.utilization:
+          #   enabled: true
+        required: false
+        show_user: false
+      - name: collect_all_network_interfaces_pod
+        type: bool
+        title: Collect All Pod Network Interfaces
+        description: Enable collecting network metrics from all pod interfaces.
+        required: false
+        show_user: false
+        default: false
+      - name: collect_all_network_interfaces_node
+        type: bool
+        title: Collect All Node Network Interfaces
+        description: Enable collecting network metrics from all node interfaces.
+        required: false
+        show_user: false
+        default: false
+owner:
+  github: elastic/ecosystem
+  type: elastic

@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation of a hidden launch agent or daemon property list file. An adversary may establish persistence by installing a new launch agent or daemon which executes at login. Hidden plist files with filenames starting with a dot are particularly suspicious.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Persistence via a Hidden Plist Filename",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Persistence via a Hidden Plist Filename\n\nLaunchAgents and LaunchDaemons are macOS persistence mechanisms that automatically execute programs at login or system startup. Files with names starting with a dot (.) are hidden from standard directory listings in macOS, making them less visible to users and administrators. Threat actors combine these techniques by creating hidden plist files in LaunchAgent/LaunchDaemon directories to establish stealthy persistence that survives reboots while evading casual inspection. This behavior was notably observed in the CloudMensis macOS spyware campaign.\n\n### Possible investigation steps\n\n- Examine the file.path to identify the full path of the hidden plist file and determine whether it is in a user-specific or system-wide LaunchAgent/LaunchDaemon directory.\n- Use plutil or defaults to read the plist contents and identify the executable path, arguments, and execution conditions configured in the ProgramArguments or Program keys.\n- Locate the binary or script referenced in the plist file and calculate its hash for threat intelligence lookups.\n- Analyze the binary's code signature using codesign -dvvv to determine if it is signed, and by whom.\n- Review the process.executable that created the plist file to understand the initial delivery mechanism.\n- Check file creation timestamps to determine when the hidden plist was created and correlate with other security events.\n- Search for other hidden files in LaunchAgent and LaunchDaemon directories across the system.\n\n### False positive analysis\n\n- Chef configuration management may create hidden plists matching .chef-com* patterns. These are already excluded in the query.\n- Some legitimate applications may temporarily create dot-prefixed files during installation. Verify the process that created the file and its signature.\n- Backup and synchronization tools occasionally create hidden configuration files. Confirm the tool's legitimacy and expected behavior.\n- System processes like sed may create temporary hidden files during in-place editing operations. These are partially excluded in the query.\n\n### Response and remediation\n\n- Immediately unload the hidden LaunchAgent or LaunchDaemon using launchctl unload with the plist path.\n- Remove the hidden plist file from the LaunchAgent or LaunchDaemon directory.\n- Locate and remove the malicious binary or script referenced in the plist's Program or ProgramArguments keys.\n- Search for related hidden files, configuration files, or staging directories that may be part of the same malware deployment.\n- Review system logs for evidence of the hidden persistence mechanism executing and what actions it performed.\n- Check for data exfiltration or command and control communication if the behavior matches known spyware patterns like CloudMensis.\n- Reset credentials that may have been accessed while the persistence mechanism was active.\n- Monitor for recreation of hidden plist files in LaunchAgent and LaunchDaemon directories.\n",
+        "query": "file where host.os.type == \"macos\" and event.type != \"deletion\" and\n  file.path like~ (\n    \"/System/Library/LaunchAgents/.*.plist\",\n    \"/Library/LaunchAgents/.*.plist\",\n    \"/Users/*/Library/LaunchAgents/.*.plist\",\n    \"/System/Library/LaunchDaemons/.*.plist\",\n    \"/Library/LaunchDaemons/.*.plist\"\n  ) and\n  not (file.name like \".chef-com*.plist\" and process.executable like \"/opt/chef/embedded/bin/ruby\") and\n  not (process.executable in (\"/usr/bin/sed\", \"/bin/bash\") and file.name like \".!*!*.plist\")\n",
+        "references": [
+            "https://www.welivesecurity.com/2022/07/19/i-see-what-you-did-there-look-cloudmensis-macos-spyware/",
+            "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e3f5a566-df31-40cc-987c-24bc4bb94ba5",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.011",
+                                "name": "Plist Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1547/011/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.001",
+                                "name": "Launch Agent",
+                                "reference": "https://attack.mitre.org/techniques/T1543/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/",
+                        "subtechnique": [
+                            {
+                                "id": "T1564.001",
+                                "name": "Hidden Files and Directories",
+                                "reference": "https://attack.mitre.org/techniques/T1564/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "e3f5a566-df31-40cc-987c-24bc4bb94ba5_1",
+    "type": "security-rule"
+}

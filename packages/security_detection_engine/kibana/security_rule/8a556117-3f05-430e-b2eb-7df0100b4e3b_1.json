@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects successful logins to the FortiGate management interface using the same Administrator account from multiple distinct source IP addresses within an 24-hour period. Administrator logins from multiple locations in a short time window may indicate credential sharing, compromised credentials, or unauthorized access and should be investigated.",
+        "from": "now-24h",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "FortiGate Administrator Login from Multiple IP Addresses",
+        "note": "## ## Triage and Analysis\n\n### Investigating FortiGate Administrator Login from Multiple IP Addresses\n\nThis alert indicates that the same **Administrator** account successfully logged in to the FortiGate management interface from **multiple distinct source IP addresses** within an 24-hour period.\n\nBecause FortiGate administrator credentials grant full control over network security infrastructure, this behavior may indicate credential compromise, account sharing, or misuse of administrative access.\n\n### Investigation Steps\n\n- **Review the affected account**\n  - Identify the administrator account in `source.user.name`.\n  - Confirm whether the account is shared, personal, or service-related.\n  - Validate whether concurrent or near-concurrent access is expected.\n\n- **Analyze source IP addresses**\n  - Review the list of `source.ip` values associated with the logins.\n  - Determine whether the IPs belong to trusted management networks, VPN pools, or jump hosts.\n  - Investigate geolocation differences using `source.geo.country_name`.\n\n- **Assess timing and session behavior**\n  - Check whether logins occurred close together in time or overlapped.\n  - Identify whether access patterns suggest session hopping or credential reuse.\n\n- **Review post-authentication activity**\n  - Examine FortiGate logs for configuration changes, policy updates, or administrative actions following the logins.\n  - Look for additional authentication attempts (successful or failed) from the same IPs or user.\n\n- **Correlate with environment context**\n  - Verify maintenance windows, incident response activity, or operational tasks that could explain the behavior.\n  - Confirm whether administrators commonly access FortiGate via multiple networks or devices.\n\n### False Positive Considerations\n\n- Administrators connecting through VPNs with dynamic or rotating IP addresses.\n- Access via bastion hosts, load-balanced management interfaces, or cloud-based management tools.\n- Automation or orchestration systems using shared administrator credentials.\n- Incident response or troubleshooting activity involving multiple access points.\n\n### Response and Remediation\n\n- **If the activity is expected**\n  - Document the behavior and consider tuning the rule or adding exceptions for known IP ranges or accounts.\n  - Encourage use of named accounts and centralized access paths.\n\n- **If the activity is suspicious**\n  - Reset or rotate credentials for the affected administrator account.\n  - Review FortiGate configuration changes made during the session(s).\n  - Restrict administrative access to trusted IP ranges.\n  - Enforce MFA for administrative logins if not already enabled.\n  - Monitor for additional signs of lateral movement or persistence.",
+        "query": "FROM logs-fortinet_fortigate.*, filebeat-* metadata _id\n\n| WHERE event.dataset == \"fortinet_fortigate.log\" and\n        event.category == \"authentication\" and event.action == \"login\" and\n        event.outcome == \"success\" and source.user.roles == \"Administrator\" and\n        source.user.name is not null and source.ip is not null\n| stats Esql.logon_count = count(*),\n        Esql.source_ip_count_distinct = COUNT_DISTINCT(source.ip),\n        Esql.max_timestamp = MAX(@timestamp),\n        Esql.source_ip_values = VALUES(source.ip),\n        Esql.message_values = VALUES(message),\n        Esql.source_geo_country_name_values = VALUES(source.geo.country_name) by source.user.name\n\n// last logon event timestamp is within 6m of the rule execution time to avoid duplicates\n| eval Esql.recent = DATE_DIFF(\"minute\", Esql.max_timestamp, now())\n| where Esql.recent <= 6 and Esql.logon_count >= 2 and Esql.source_ip_count_distinct >= 2\n\n// move dynamic fields to ECS equivalent for rule exceptions\n| eval source.ip = MV_FIRST(Esql.source_ip_values)\n\n| keep source.ip, source.user.name, Esql.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/fortinet_fortigate",
+            "https://www.cisa.gov/news-events/alerts/2026/01/28/fortinet-releases-guidance-address-ongoing-exploitation-authentication-bypass-vulnerability-cve-2026"
+        ],
+        "related_integrations": [
+            {
+                "package": "fortinet_fortigate",
+                "version": "^1.31.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.logon_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.max_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.message_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.recent",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_geo_country_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "8a556117-3f05-430e-b2eb-7df0100b4e3b",
+        "severity": "high",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide",
+            "Domain: Network",
+            "Domain: Identity",
+            "Data Source: Fortinet",
+            "Data Source: Fortinet FortiGate"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "8a556117-3f05-430e-b2eb-7df0100b4e3b_1",
+    "type": "security-rule"
+}

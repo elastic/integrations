@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the use of built-in utilities to discover running pods on a Kubernetes cluster. The utilities used are du, nice, find, locate, and ls. These utilities are commonly used to discover running pods on a Kubernetes cluster. The \"/var/lib/kubelet/pods\" directory is the default location for Kubelet pod information.",
+        "from": "now-6m",
+        "index": [
+            "logs-cloud_defend.file*",
+            "logs-cloud_defend.process*"
+        ],
+        "interval": "5m",
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Kubelet Pod Discovery Detected via Defend for Containers",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Kubelet Pod Discovery Detected via Defend for Containers\n\nThis rule detects interactive use of common Linux utilities (ls, find, du, locate, nice) repeatedly targeting the Kubelet pods directory, including direct access to `/var/lib/kubelet/pods/*`. This matters because enumerating that path reveals pod IDs, volumes, and runtime artifacts that can accelerate container and cluster discovery. A typical pattern is an attacker in a compromised container running `ls /var/lib/kubelet/pods/` followed by `find /var/lib/kubelet/pods -maxdepth 2` to map workloads and hunt for mounted secrets.\n\n### Possible investigation steps\n\n- Identify the originating workload (pod/namespace/node) and how the interactive session was obtained (e.g., kubectl exec, SSH to node, or container runtime attach) to determine whether access was expected.  \n- Review the container\u2019s security context and mounts to confirm whether `/var/lib/kubelet` was exposed via hostPath/privileged settings and assess whether this indicates a node breakout risk.  \n- Correlate the discovery activity with nearby events for follow-on actions such as reading service account tokens, kubeconfig files, or secrets/volumes under pod directories that would indicate credential harvesting.  \n- Validate the actor by mapping the involved user/service account to recent Kubernetes API audit activity and RBAC permissions to determine whether the behavior aligns with normal administration.  \n- Check for persistence or lateral movement attempts from the same container or node (new processes, outbound connections, package/tool downloads, or cron/systemd changes) to scope impact beyond discovery.\n\n### False positive analysis\n\n- An interactive troubleshooting session by a cluster administrator inside a privileged/host-mounted container uses `ls`, `find`, or `du` against `/var/lib/kubelet/pods/*` multiple times to confirm pod volume mounts, disk usage, or pod UID-to-workload mapping during an incident or maintenance window.  \n- An engineer running an interactive shell on the node or in a hostPID/hostPath-enabled container repeatedly inspects `/var/lib/kubelet/pods/*` with built-in utilities to validate kubelet behavior (e.g., orphaned pod directories, cleanup after pod churn, or verifying that expected pods are present) as part of routine operational checks.\n\n### Response and remediation\n\n- Contain by terminating the interactive session and isolating the originating pod (scale to zero or delete) and, if the container had hostPath access to `/var/lib/kubelet` or was privileged/hostPID, cordon and drain the node to stop further inspection of `/var/lib/kubelet/pods/*`.  \n- Scope and eradicate by reviewing recent commands and file reads under `/var/lib/kubelet/pods/` for access to mounted secrets, service account tokens, kubeconfig files, or pod volume contents, and remove any dropped tools/scripts or unauthorized cron/systemd changes on the affected node.  \n- Recover by rotating potentially exposed Kubernetes credentials (service account tokens, kubeconfigs, cloud/IAM keys) used by the affected workload and redeploying the application from a known-good image after validating no unexpected containers, DaemonSets, or mounts remain.  \n- Escalate to incident response immediately if you confirm reads of token/secret material within pod directories, discovery occurs from a privileged or host-mounted container, or you observe follow-on actions such as outbound connections, new binaries, or attempts to exec into additional pods/namespaces.  \n- Harden by eliminating unnecessary hostPath mounts to `/var/lib/kubelet` (and other node paths), enforcing non-root and read-only root filesystems, disabling interactive shells in production where feasible, and applying admission controls to block privileged/hostPID containers and restrict debug tooling to approved break-glass workflows.",
+        "query": "sequence by container.id, user.id with maxspan=5s\n  [any where host.os.type == \"linux\" and event.category in (\"file\", \"process\") and process.interactive == true and container.id like \"*\" and (\n    (event.category == \"file\" and event.type == \"change\" and event.action == \"open\" and file.path like \"/var/lib/kubelet/pods/*\") or\n    (event.category == \"process\" and event.type == \"start\" and event.action == \"exec\" and (\n      (process.name in (\"du\", \"nice\", \"find\", \"locate\", \"ls\")) or\n      (process.args in (\n        \"du\", \"/bin/du\", \"/usr/bin/du\", \"/usr/local/bin/du\",\n        \"nice\", \"/bin/nice\", \"/usr/bin/nice\", \"/usr/local/bin/nice\",\n        \"find\", \"/bin/find\", \"/usr/bin/find\", \"/usr/local/bin/find\",\n        \"locate\", \"/bin/locate\", \"/usr/bin/locate\", \"/usr/local/bin/locate\",\n        \"ls\", \"/bin/ls\", \"/usr/bin/ls\", \"/usr/local/bin/ls\"\n      ))\n    ) and process.args like \"*/var/lib/kubelet/pods/*\")\n  )] with runs=5\n",
+        "references": [
+            "https://heilancoos.github.io/research/2025/12/16/kubernetes.html#kubelet-api",
+            "https://www.cyberark.com/resources/threat-research-blog/using-kubelet-client-to-attack-the-kubernetes-cluster",
+            "https://www.aquasec.com/blog/kubernetes-exposed-exploiting-the-kubelet-api/"
+        ],
+        "related_integrations": [
+            {
+                "package": "cloud_defend",
+                "version": "^1.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "container.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "f596175f-b8fd-43ac-b9e9-ea2a96bb55d8",
+        "severity": "low",
+        "tags": [
+            "Data Source: Elastic Defend for Containers",
+            "Domain: Container",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "f596175f-b8fd-43ac-b9e9-ea2a96bb55d8_1",
+    "type": "security-rule"
+}

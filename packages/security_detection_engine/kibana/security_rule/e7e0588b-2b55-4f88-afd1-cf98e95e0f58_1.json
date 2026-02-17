@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the execution of an unsigned or untrusted binary followed by an outbound network connection to a raw IP address on a non-standard port. Many malicious payloads will connect directly to C2 or a payload server using non-standard ports.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Outbound Network Connection via Unsigned Binary",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Outbound Network Connection via Unsigned Binary\n\nUnsigned or untrusted binaries making outbound network connections to raw IP addresses on non-standard ports is a significant indicator of malware activity. Legitimate macOS applications are typically code-signed by Apple or identified developers, while malware often lacks valid signatures. This detection rule identifies this suspicious combination of unsigned binaries with network activity to detect potential command and control communication or data exfiltration attempts.\n\n### Possible investigation steps\n\n- Review the process.executable and process.hash fields to identify the unsigned binary and search for its hash in threat intelligence databases and malware repositories.\n- Examine the process.code_signature fields to understand why the binary is untrusted, including whether it lacks a signature entirely or has an invalid or revoked certificate.\n- Analyze the destination.ip and destination.port fields to identify the remote endpoint and research it in threat intelligence sources for known malicious infrastructure.\n- Investigate the process.parent.executable and process.command_line to understand how the unsigned binary was launched and trace the execution chain to the initial access vector.\n- Review file.creation and file.modification events to determine when and how the unsigned binary was placed on the system.\n- Check for persistence mechanisms that may have been created by or for the unsigned binary, such as LaunchAgents, LaunchDaemons, or cron jobs.\n- Correlate with other network events from the same host to identify patterns of C2 communication or additional indicators of compromise.\n\n### False positive analysis\n\n- Custom internal tools developed in-house may be unsigned and require network access for legitimate business purposes. Verify with development teams and consider adding specific exclusions.\n- Development builds and testing environments may use unsigned binaries during the software development lifecycle. Document these activities and create targeted exceptions.\n- Open-source utilities compiled locally may not have code signatures. Evaluate these on a case-by-case basis and add to exclusion lists if verified safe.\n- Homebrew and other package manager binaries are already excluded but verify that legitimate tools from these sources are not being flagged.\n\n### Response and remediation\n\n- Immediately terminate the unsigned process and block the destination IP address at network perimeters and endpoint firewalls.\n- Quarantine the unsigned binary for forensic analysis and malware reverse engineering.\n- Conduct a comprehensive scan of the affected system to identify additional malware components, persistence mechanisms, or lateral movement indicators.\n- Investigate how the unsigned binary was delivered to the system and remediate the initial access vector.\n- Review other systems in the environment for the same binary hash or similar indicators of compromise.\n- Implement application allowlisting policies to prevent unauthorized unsigned binaries from executing.\n- Escalate to the incident response team for further investigation if the binary is confirmed malicious.\n",
+        "query": "sequence by process.entity_id with maxspan=1m\n  [process where host.os.type == \"macos\" and event.type == \"start\" and event.action == \"exec\" and \n    (process.code_signature.trusted == false or process.code_signature.exists == false) and\n    process.args_count == 1 and\n    not process.executable like \"/opt/homebrew/*\"]\n  [network where host.os.type == \"macos\" and event.type == \"start\" and \n    destination.domain == null and \n    not destination.port in (443, 80, 53, 22, 25, 587, 993, 465, 8080, 8200, 9200) and \n    destination.port < 49152 and\n    not cidrmatch(destination.ip, \"0.0.0.0\", \"240.0.0.0/4\", \"233.252.0.0/24\", \"224.0.0.0/4\", \n                  \"198.19.0.0/16\", \"192.18.0.0/15\", \"192.0.0.0/24\", \"10.0.0.0/8\", \"127.0.0.0/8\", \n                  \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.2.0/24\", \"192.31.196.0/24\", \n                  \"192.52.193.0/24\", \"192.168.0.0/16\", \"192.88.99.0/24\", \"100.64.0.0/10\", \n                  \"192.175.48.0/24\", \"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\",\n                  \"::1\", \"FE80::/10\", \"FF00::/8\")]\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e7e0588b-2b55-4f88-afd1-cf98e95e0f58",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1571",
+                        "name": "Non-Standard Port",
+                        "reference": "https://attack.mitre.org/techniques/T1571/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 1
+    },
+    "id": "e7e0588b-2b55-4f88-afd1-cf98e95e0f58_1",
+    "type": "security-rule"
+}

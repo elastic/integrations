@@ -360,6 +360,11 @@ processors:
       tag: pipeline_epp_detection_summary_b611643c
       if: ctx.crowdstrike?.ExternalApiType == 'Event_EppDetectionSummaryEvent'
       name: '{{ IngestPipeline "epp_detection_summary" }}'
+  # File Integrity Monitor Rule Matched events
+  - pipeline:
+      tag: pipeline_fim_rule_matched_33f5a923
+      if: ctx.crowdstrike?.ExternalApiType == 'Event_FileIntegrityMonitorRuleMatchedEnriched' || ctx.crowdstrike?.event_simpleName == 'FileIntegrityMonitorRuleMatched'
+      name: '{{ IngestPipeline "fim_rule_matched" }}'
 
   # Handle case changes.
   - rename:
@@ -2134,7 +2139,7 @@ processors:
       ignore_missing: true
   - set:
       tag: set_file_type_f7adee81
-      if: ctx.file?.path != null && ctx.event?.action != null && !ctx.event.action.contains("Directory")
+      if: ctx.file?.path != null && ctx.file.type == null && ctx.event?.action != null && !ctx.event.action.contains("Directory")
       field: file.type
       value: file
   - set:
