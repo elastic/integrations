@@ -121,7 +121,10 @@ Audit-logs integration collects and parses Kubernetes audit logs.
 Audit logs can be collected from managed Kubernetes services in cloud providers:
 
 - Amazon EKS: Configure the aws-cloudwatch input to collect audit logs from a CloudWatch log group where EKS audit logs are published.
-- Azure AKS: Use the azure-eventhub input to receive audit logs from an Event Hub configured to stream AKS diagnostic logs. The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+- Azure AKS: Use the azure-eventhub input to receive audit logs from an Event Hub configured to stream AKS diagnostic logs.
+
+  **Authentication (Azure Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+
 - Google GKE: Use the gcp-pubsub input to subscribe to a Pub/Sub topic that receives GKE audit logs via Log Router sinks.
 
 To enable these, configure the corresponding input with access credentials and the appropriate log stream or topic.
