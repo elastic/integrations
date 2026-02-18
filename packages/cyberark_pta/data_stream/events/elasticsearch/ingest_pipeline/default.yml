@@ -30,6 +30,16 @@ processors:
       field: cyberark_pta.log.event_type
       value: "{{{cef.device.event_class_id}}}"
       if: "ctx?.cef?.device?.event_class_id != null && ctx?.cef?.device?.event_class_id != ''"
+  - grok:
+      field: event.original
+      patterns:
+        - '^%{SYSLOGTIMESTAMP} (?:%{IP:observer.ip}|%{HOSTNAME:observer.hostname}) CEF'
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      if: ctx.observer?.ip instanceof String
+      source: |-
+        ctx.observer.ip = Collections.singletonList(ctx.observer.ip);
   - rename:
       field: message
       target_field: event.reason
