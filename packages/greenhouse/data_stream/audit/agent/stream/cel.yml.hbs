@@ -19,7 +19,9 @@ state:
   token_url: {{token_url}}
   client_id: {{client_id}}
   client_secret: {{client_secret}}
+{{#if user_id}}
   user_id: "{{user_id}}"
+{{/if}}
   batch_size: {{batch_size}}
 {{#if performer_ids}}
   performer_ids: "{{performer_ids}}"
@@ -46,7 +48,7 @@ program: |
             "Content-Type": ["application/x-www-form-urlencoded"],
             "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
           },
-          "Body": bytes("grant_type=client_credentials&sub=" + state.user_id)
+          "Body": bytes("grant_type=client_credentials" + (has(state.user_id) && state.user_id != "" ? "&sub=" + state.user_id : ""))
         }).do_request().as(token_resp,
           token_resp.StatusCode == 200 ?
             bytes(token_resp.Body).decode_json().as(token_body, {

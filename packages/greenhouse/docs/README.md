@@ -12,7 +12,7 @@ This integration collects the following data:
 
 - Greenhouse Expert subscription tier with the Audit Log add-on
 - Harvest V3 (OAuth) API credentials with audit log permissions
-- A Site Admin user ID for API authorization
+- Optionally, a Site Admin user ID for API authorization (if not configured as a default in your OAuth credentials)
 
 ### Compatibility
 
@@ -29,9 +29,9 @@ This integration uses the Greenhouse Harvest API V3 with OAuth 2.0 Client Creden
 5. Save the credential and configure the scopes your integration needs (ensure Audit Log access is enabled)
 6. Copy the **Client ID** and **Client Secret** - you will need these for the integration
 
-### Finding the Authorizing User ID
+### Finding the Authorizing User ID (Optional)
 
-The OAuth 2.0 Client Credentials flow requires a `user_id` to identify the authorizing user. This user must be a **Site Admin** to access audit log endpoints.
+The OAuth 2.0 Client Credentials flow can use a `user_id` to identify the authorizing user. This user must be a **Site Admin** to access audit log endpoints. If your OAuth credentials are configured with a default authorizing user, this field can be left empty.
 
 To find a user's ID:
 1. In Greenhouse, navigate to **Configure > Users**
@@ -46,8 +46,8 @@ To find a user's ID:
 3. Enter your OAuth credentials:
    - **OAuth Client ID**: The Client ID from your Harvest V3 credentials
    - **OAuth Client Secret**: The Client Secret from your Harvest V3 credentials
-   - **Authorizing User ID**: The numeric user ID of a Site Admin
 4. Configure optional settings:
+   - **Authorizing User ID**: The numeric user ID of a Site Admin (optional if your OAuth credentials have a default user configured)
    - **Initial Interval**: How far back to collect logs on first run (default: 24h, maximum: 30d)
    - **Interval**: How often to poll for new events (default: 5m)
    - **Batch Size**: Number of events per API request (100-500, default: 500)
@@ -88,7 +88,7 @@ Greenhouse retains audit log data for 30 days only. To maintain a longer history
 If you receive "Failed to obtain OAuth access token" errors:
 1. Verify your Client ID and Client Secret are correct
 2. Ensure the OAuth credentials have audit log permissions enabled
-3. Check that the authorizing user ID is a valid Site Admin user
+3. If using a user ID, check that it is a valid Site Admin user
 
 ### 403 Forbidden Errors
 
