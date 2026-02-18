@@ -2,13 +2,6 @@ connectors:
     forward: {}
 exporters:
     elasticsearch/componentid-0:
-        api_key: ${ELASTICSEARCH_API_KEY}
-        endpoints:
-            - ${ELASTICSEARCH_HOST}
-        logs_index: logs-cloud_connector.permission_verification-default
-        mapping:
-            mode: ecs
-    elasticsearch/componentid-1:
         endpoints:
             - https://elasticsearch:9200
 inputs: []
@@ -60,12 +53,11 @@ service:
     pipelines:
         logs:
             exporters:
-                - elasticsearch/componentid-1
+                - elasticsearch/componentid-0
             receivers:
                 - forward
         logs/componentid-0:
             exporters:
-                - elasticsearch/componentid-0
                 - forward
             processors:
                 - transform/componentid-0

@@ -45,10 +45,10 @@ This integration is designed for Cloud Connectors to proactively check that all 
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| Integration Type | Yes | Package type (e.g., `aws_cloudtrail`, `azure_activitylogs`, `gcp_audit`, `okta_system`) |
+| Integration Type | Yes | Package type (for example, `aws_cloudtrail`, `azure_activitylogs`, `gcp_audit`, `okta_system`) |
 | Integration ID | No | Unique identifier for the integration instance |
 | Integration Name | No | Human-readable name of the integration |
-| Integration Version | No | Semantic version of the integration package (e.g., `2.17.0`). Different versions may require different permissions. When empty, the latest permission set is used. |
+| Integration Version | No | Semantic version of the integration package (for example, `2.17.0`). Different versions can require different permissions. When empty, the latest permission set is used. |
 
 ## Supported Integration Types
 
@@ -112,15 +112,20 @@ The integration emits OTEL logs with the following structure:
 | `policy.id` | Policy identifier |
 | `policy.name` | Policy name |
 | `integration.id` | Integration instance identifier |
-| `integration.type` | Integration type (e.g., `aws_cloudtrail`) |
-| `integration.version` | Integration package version (e.g., `2.17.0`) or `unspecified` |
+| `integration.name` | Integration name |
+| `integration.type` | Integration type (for example, `aws_cloudtrail`) |
+| `integration.version` | Integration package version (for example, `2.17.0`) or `unspecified` |
 | `provider.type` | Provider type (`aws`, `azure`, `gcp`, `okta`) |
-| `permission.action` | Permission being checked (e.g., `cloudtrail:LookupEvents`) |
+| `provider.account` | Provider account identifier |
+| `provider.region` | Provider region |
+| `permission.action` | Permission being checked (for example, `cloudtrail:LookupEvents`) |
+| `permission.category` | Permission category (for example, `data_access`) |
 | `permission.status` | Result: `granted`, `denied`, `error`, or `skipped` |
 | `permission.required` | Whether this permission is required |
 | `permission.error_code` | Error code from provider (if denied/error) |
 | `permission.error_message` | Error message from provider (if denied/error) |
 | `verification.method` | Method used: `api_call` or `dry_run` |
+| `verification.endpoint` | The API endpoint used for verification |
 | `verification.duration_ms` | Time taken for verification in milliseconds |
 
 ## Example Configuration

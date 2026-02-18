@@ -1,23 +1,17 @@
 receivers:
   verifier:
-    # Cloud Connector Identification
     cloud_connector_id: "{{cloud_connector_id}}"
 {{#if cloud_connector_name}}
     cloud_connector_name: "{{cloud_connector_name}}"
 {{/if}}
-    
-    # Verification Session
     verification_id: "{{verification_id}}"
 {{#if verification_type}}
     verification_type: "{{verification_type}}"
 {{else}}
     verification_type: "on_demand"
 {{/if}}
-    
-    # Provider Credentials
-    providers:
 {{#if providers.aws.credentials.role_arn}}
-      # AWS - Cloud Connector authentication
+    providers:
       aws:
         credentials:
           role_arn: "{{providers.aws.credentials.role_arn}}"
@@ -30,8 +24,6 @@ receivers:
           default_region: "us-east-1"
 {{/if}}
 {{/if}}
-    
-    # Policies and Integrations
     policies:
       - policy_id: "{{policy_id}}"
 {{#if policy_name}}
@@ -49,17 +41,7 @@ receivers:
             integration_version: "{{integration_version}}"
 {{/if}}
 
-exporters:
-  elasticsearch:
-    endpoints:
-      - "${ELASTICSEARCH_HOST}"
-    api_key: "${ELASTICSEARCH_API_KEY}"
-    logs_index: "logs-cloud_connector.permission_verification-default"
-    mapping:
-      mode: ecs
-
 service:
   pipelines:
     logs:
       receivers: [verifier]
-      exporters: [elasticsearch]
