@@ -333,6 +333,7 @@ To protect against resource exhaustion from malicious or oversized payloads, the
 - `max_compressed_body_bytes`: Maximum size of the compressed (snappy-encoded) request body in bytes. Requests exceeding this limit are rejected with HTTP 413 before being read into memory. Default: 2 MB (2097152 bytes).
 - `max_decoded_body_bytes`: Maximum size of the decompressed request body in bytes. The server checks the declared decoded size in the snappy header before allocating memory for decompression, preventing decompression bomb attacks. Default: 10 MB (10485760 bytes).
 
+Note: Above `max_compressed_body_bytes` and `max_decoded_body_bytes` configuration parameters are available in versions >=8.19.13 or >=9.2.5 (for 9.2.x) or >=9.3.1.
 
 ### Prometheus Queries (PromQL)
 
