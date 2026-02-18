@@ -124,7 +124,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         - Configure **Client ID**, **Client Secret** and **Tenant ID**. Configure either **Subscription ID** or **Management Group Name** as the scope.
     * To **Collect events using Azure Event Hub**, you'll need to:
 
-        - Configure **Azure Event Hub**, **Connection String**, **Storage Account**, and **storage_account_key**.
+        - Use either **connection string** (default: Azure Event Hub, Connection String, Storage Account, storage_account_key) or **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
 6. Select **Save and continue** to save the integration.
 

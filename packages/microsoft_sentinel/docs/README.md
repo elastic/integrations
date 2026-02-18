@@ -56,7 +56,7 @@ For Rest API, this module has been tested against the **2024-03-01** version.
 1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search bar, type **Microsoft Sentinel**.
 3. Select the **Microsoft Sentinel** integration and add it.
-4. Add all the required integration configuration parameters, including the URL, Login URL, Client ID, Client Secret, Tenant Id, Resource Group Name, Subscription ID, Workspace Name, Interval, and Initial Interval, to enable data collection for REST API input type and Azure Event Hub, Consumer Group, Connection String, Storage Account and Storage Account Key for Azure Event Hub input type.
+4. Add all the required integration configuration parameters, including the URL, Login URL, Client ID, Client Secret, Tenant Id, Resource Group Name, Subscription ID, Workspace Name, Interval, and Initial Interval, to enable data collection for REST API input type. For Azure Event Hub input type, the integration supports two authentication methods: **connection string** (default; Consumer Group, Connection String, Storage Account, Storage Account Key) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 5. Save the integration.
 
 ## Logs reference
