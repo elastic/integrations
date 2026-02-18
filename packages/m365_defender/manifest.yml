@@ -1,7 +1,7 @@
 format_version: "3.4.0"
 name: m365_defender
 title: Microsoft Defender XDR
-version: "5.7.0"
+version: "5.8.0"
 description: Collect logs from Microsoft Defender XDR with Elastic Agent.
 categories:
   - "security"
@@ -36,11 +36,11 @@ policy_templates:
         vars:
           - name: login_url
             type: text
-            title: OAuth Server URL
+            title: Oauth2 Token URL
             required: true
             show_user: false
             default: https://login.microsoftonline.com
-            description: "URL of Login Server 'tenant-id and token endpoint added automatically'."
+            description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Tenant ID` will be used for oauth2 token generation.
           - name: token_endpoint
             type: text
             title: OAuth Token endpoint
@@ -65,14 +65,14 @@ policy_templates:
           - name: client_id
             type: text
             title: Client ID
-            description: The client ID related to creating a new application on Azure.
+            description: Client ID for Azure AD application.
             multi: false
             required: true
             show_user: true
           - name: client_secret
             type: password
             title: Client Secret
-            description: The secret related to the client ID.
+            description: Client Secret for Azure AD application.
             multi: false
             required: true
             show_user: true
@@ -80,14 +80,14 @@ policy_templates:
           - name: tenant_id
             type: text
             title: Tenant ID
-            description: The tenant ID related to creating a new application on Azure.
+            description: Tenant ID of the Azure.
             multi: false
             required: true
             show_user: true
           - name: oauth_endpoint_params
             type: yaml
             title: OAuth2 Endpoint Params
-            description: Endpoint Params used for OAuth2 authentication as YAML. Refer to [documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson#_auth_oauth2_endpoint_params_2) for details.
+            description: Set of values that will be sent on each resource to the OAuth Server URL. Each param key can have multiple values and they are appended to the URL as query parameters.
             show_user: false
             multi: false
             required: false
@@ -97,7 +97,7 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
           - name: ssl
             type: yaml
             title: SSL Configuration
@@ -159,7 +159,7 @@ policy_templates:
             show_user: true
           - name: azure_tenant_id
             type: text
-            title: Azure Tenant ID 
+            title: Tenant ID 
             description: Tenant ID of the Azure.
             multi: false
             required: true
@@ -167,7 +167,7 @@ policy_templates:
           - name: token_url
             type: text
             title: Oauth2 Token URL
-            description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Azure Tenant ID` will be used for oauth2 token generation.
+            description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Tenant ID` will be used for oauth2 token generation.
             show_user: true
             required: false
             default: https://login.microsoftonline.com
