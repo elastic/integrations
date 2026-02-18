@@ -2,6 +2,7 @@
 description: Pipeline for processing application logs.
 processors:
   - drop:
+      tag: drop_046d48c9
       description: Ignore retry placeholder message.
       if: ctx.message == "retry"
   - set:
@@ -66,6 +67,7 @@ processors:
       if: ctx.json?.applicationInstallationDate != null && ctx.json.applicationInstallationDate != ''
       on_failure:
         - append:
+            tag: append_error_message_47bb3d2e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -101,6 +103,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d43bb8af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -111,6 +114,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3d574bd6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -126,6 +130,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5bebece3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -137,6 +142,7 @@ processors:
       if: ctx.json?.detectionDate != null && ctx.json.detectionDate != ''
       on_failure:
         - append:
+            tag: append_error_message_939594e2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -188,6 +194,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_adcd3a33
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -198,6 +205,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c7e7954d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -208,6 +216,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7ee7aa77
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -231,6 +240,7 @@ processors:
       target_field: sentinel_one.application.id
       ignore_missing: true
   - set:
+      tag: set_event_id_25409f66
       field: event.id
       copy_from: sentinel_one.application.id
       ignore_empty_value: true
@@ -339,6 +349,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

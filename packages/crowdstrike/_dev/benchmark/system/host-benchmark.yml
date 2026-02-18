@@ -1,0 +1,26 @@
+---
+description: Benchmark 100000 host events ingested
+input: cel
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  client_id: xxxx
+  client_secret: yyyy
+  token_url: http://{{Hostname}}:{{Port}}/oauth2/token
+data_stream:
+  name: host
+  vars:
+    enable_request_tracer: true
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: crowdstrike
+  generator:
+    total_events: 1000
+    template:
+      path: ./host-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./host-benchmark/config.yml
+    fields:
+      path: ./host-benchmark/fields.yml
