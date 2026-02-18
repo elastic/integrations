@@ -31,30 +31,30 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2024-05-15T16:34:14.144Z",
     "agent": {
-        "ephemeral_id": "6b4b2646-d403-4342-9261-edee5f31db21",
-        "id": "24936262-0cda-4934-aea3-82bed4844c98",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "486828a1-d4df-4297-b973-862f20836d5f",
+        "id": "4f82ead5-acc7-43ef-8529-68b1286c0acb",
+        "name": "elastic-agent-36575",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "snyk.audit_logs",
-        "namespace": "ep",
+        "namespace": "81796",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "24936262-0cda-4934-aea3-82bed4844c98",
+        "id": "4f82ead5-acc7-43ef-8529-68b1286c0acb",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "action": "org.project.issue.create",
         "agent_id_status": "verified",
         "dataset": "snyk.audit_logs",
-        "ingested": "2024-05-23T23:38:58Z",
+        "ingested": "2026-02-03T12:52:03Z",
         "original": "{\"content\":{\"action\":\"Returned from analysis\"},\"created\":\"2024-05-15T16:34:14.144Z\",\"event\":\"org.project.issue.create\",\"org_id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"project_id\":\"d2bf0629-84a7-4b0b-b435-f49a87f0720c\"}",
         "type": [
             "creation"
@@ -115,29 +115,29 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2024-05-15T18:49:24.958Z",
     "agent": {
-        "ephemeral_id": "e960d9c1-a9b4-46fe-874a-f631574b22c4",
-        "id": "f1ccac17-bee9-4ba8-99e4-9f6f3ddeeecc",
-        "name": "elastic-agent-93033",
+        "ephemeral_id": "accfaf83-d8a8-49d2-a703-8bd0dab258b4",
+        "id": "0f3c9c88-2460-4704-97bf-7ba6db2d8771",
+        "name": "elastic-agent-27574",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "snyk.issues",
-        "namespace": "82149",
+        "namespace": "98239",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f1ccac17-bee9-4ba8-99e4-9f6f3ddeeecc",
+        "id": "0f3c9c88-2460-4704-97bf-7ba6db2d8771",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "snyk.issues",
-        "ingested": "2025-09-17T16:16:33Z",
+        "ingested": "2026-02-03T12:53:43Z",
         "kind": [
             "alert"
         ],
