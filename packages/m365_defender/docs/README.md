@@ -76,6 +76,8 @@ Follow the steps below to configure data collection from Microsoft sources.
 - [Configure Microsoft Defender XDR to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/defender-xdr/streaming-api-event-hub?view=o365-worldwide).
 - A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping filebeat it can start back up at the spot that it stopped processing messages.
 
+**Authentication:** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+
 #### 2. Collecting Data using Microsoft Graph Security REST API (for Incidents & Alerts)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
@@ -124,7 +126,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         - Configure **Client ID**, **Client Secret** and **Tenant ID**. Configure either **Subscription ID** or **Management Group Name** as the scope.
     * To **Collect events using Azure Event Hub**, you'll need to:
 
-        - Use either **connection string** (default: Azure Event Hub, Connection String, Storage Account, storage_account_key) or **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+        - Configure **Azure Event Hub**, **Connection String**, **Storage Account**, and **storage_account_key**.
 
 6. Select **Save and continue** to save the integration.
 
