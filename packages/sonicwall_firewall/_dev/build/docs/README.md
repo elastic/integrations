@@ -6,12 +6,6 @@
 
 The SonicWall Firewall integration for Elastic enables you to collect logs from SonicWall firewall devices. This integration provides essential visibility into network security events and device activities, helping you monitor threats and troubleshoot network issues within the Elastic Stack.
 
-This integration facilitates:
-- Security monitoring: Tracks firewall access rules, application firewall events, flood protection, and security services like intrusion prevention (IPS), anti-spyware, and anti-virus.
-- Network operations: Provides insights into network events such as ARP, DNS, IP, and TCP activities to help you troubleshoot connectivity and performance.
-- User activity auditing: Tracks user authentication access, RADIUS authentication, and SSO Agent events to maintain an audit trail.
-- Configuration change tracking: Logs system administration and configuration auditing events to monitor changes made to the firewall.
-
 ### Compatibility
 
 This integration is compatible with SonicWall Firewall devices running SonicOS 6.5 and 7.0. It supports the Enhanced Syslog format provided by these versions.
