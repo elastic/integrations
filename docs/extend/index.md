@@ -15,6 +15,10 @@ Begin by understanding what is an [integration](./what-is-an-integration.md).
 
 Dive deep into the technical aspects of building integrations with Elastic products. Our [Building Integrations](./build-new-integration.md) guide covers everything from architecture and design principles to coding best practices and sample projects.
 
+## OTel Input Packages
+
+Learn how to create [OTel Input Packages](./otel-input-packages.md) that configure OpenTelemetry Collector receivers within EDOT (Elastic Distribution of OpenTelemetry).
+
 ## Testing and Validation
 
 Ensure your integrations work seamlessly by following our [Testing and Validation](./testing-validation.md) guidelines. Learn about different testing methodologies, tools, and techniques to validate your integration's performance and reliability.
