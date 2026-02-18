@@ -34,3 +34,15 @@ For the full list of settings exposed for the receiver and examples, refer to th
 ## Metrics reference
 
 For a complete list of all available metrics and their detailed descriptions, refer to the [SQL Server Receiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/sqlserverreceiver/documentation.md) in the upstream OpenTelemetry Collector repository.
+
+## Logs reference
+
+The SQL Server receiver can collect log events when a direct database connection is configured. Two event types are available, both disabled by default:
+
+- **Query Sample Events** (`db.server.query_sample`): Captures currently executing queries at scrape time, including session details, wait information, and resource consumption. Enable by setting **Enable Query Sample Events** to `true`.
+
+- **Top Query Events** (`db.server.top_query`): Captures the most expensive queries by execution time within a configurable lookback window, including execution counts, CPU time, and logical reads. Enable by setting **Enable Top Query Events** to `true`.
+
+Both event types require a direct database connection (server, port, username, and password must be configured). The `query_sample_collection` and `top_query_collection` settings control the behavior of each event type.
+
+For a complete list of log attributes, refer to the [SQL Server Receiver logs documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/sqlserverreceiver/logs-documentation.md) in the upstream OpenTelemetry Collector repository.
