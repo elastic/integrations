@@ -1,43 +1,73 @@
-receivers:
-  verifier:
-    # Cloud Connector Identification
-    cloud_connector_id: "test-cc-123"
-    cloud_connector_name: "Test Connector"
-    
-    # Verification Session
-    verification_id: "test-verify-456"
-    verification_type: "on_demand"
-    
-    # Provider Credentials
-    providers:
-      # AWS - Cloud Connector authentication
-      aws:
-        credentials:
-          role_arn: "arn:aws:iam::123456789012:role/TestRole"
-          external_id: "test-external-id"
-          default_region: "us-east-1"
-    
-    # Policies and Integrations
-    policies:
-      - policy_id: "test-policy-123"
-        policy_name: "Test Policy"
-        integrations:
-          - integration_type: "aws_cloudtrail"
-            integration_id: "test-int-789"
-            integration_name: "Test CloudTrail"
-            integration_version: "2.17.0"
-
+connectors:
+    forward: {}
 exporters:
-  elasticsearch:
-    endpoints:
-      - "${ELASTICSEARCH_HOST}"
-    api_key: "${ELASTICSEARCH_API_KEY}"
-    logs_index: "logs-cloud_connector.permission_verification-default"
-    mapping:
-      mode: ecs
-
+    elasticsearch/componentid-0:
+        api_key: ${ELASTICSEARCH_API_KEY}
+        endpoints:
+            - ${ELASTICSEARCH_HOST}
+        logs_index: logs-cloud_connector.permission_verification-default
+        mapping:
+            mode: ecs
+    elasticsearch/componentid-1:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    transform/componentid-0:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "verifier_otel.verifier")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    verifier/componentid-0:
+        cloud_connector_id: test-cc-123
+        cloud_connector_name: Test Connector
+        policies:
+            - integrations:
+                - integration_id: test-int-789
+                  integration_name: Test CloudTrail
+                  integration_type: aws_cloudtrail
+                  integration_version: "2.17.0"
+              policy_id: test-policy-123
+              policy_name: Test Policy
+        providers:
+            aws:
+                credentials:
+                    default_region: us-east-1
+                    external_id: ${SECRET_0}
+                    role_arn: arn:aws:iam::123456789012:role/TestRole
+        verification_id: test-verify-456
+        verification_type: on_demand
+secret_references:
+    - {}
 service:
-  pipelines:
-    logs:
-      receivers: [verifier]
-      exporters: [elasticsearch]
+    pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-1
+            receivers:
+                - forward
+        logs/componentid-0:
+            exporters:
+                - elasticsearch/componentid-0
+                - forward
+            processors:
+                - transform/componentid-0
+            receivers:
+                - verifier/componentid-0
