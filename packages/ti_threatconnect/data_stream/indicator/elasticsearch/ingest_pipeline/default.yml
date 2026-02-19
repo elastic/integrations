@@ -1804,17 +1804,11 @@ processors:
       value: '{{{threat_connect.indicator.legacy_link}}}'
       allow_duplicates: false
       if: ctx.threat_connect?.indicator?.legacy_link != null
-# handle file size if exists before hash mappings
-  - convert:
+  - rename:
       field: json.size
-      tag: convert_size_to_string
+      tag: rename_size
       target_field: threat_connect.indicator.size
-      type: string
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.size
       tag: set_threat_indicator_file_size_from_indicator_size
@@ -1996,6 +1990,16 @@ processors:
       value: '{{{threat_connect.indicator.sha256}}}'
       allow_duplicates: false
       if: ctx.threat_connect?.indicator?.md5 != null
+  - convert:
+      field: threat_connect.indicator.size
+      tag: convert_size_to_string
+      target_field: threat_connect.indicator.size
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.source
       tag: rename_source
