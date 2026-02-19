@@ -14,7 +14,7 @@
                     "explicitInput": {
                         "exclude": false,
                         "existsSelected": false,
-                        "fieldName": "_service.name",
+                        "fieldName": "service.name",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "singleSelect": true,
@@ -33,7 +33,7 @@
                     "explicitInput": {
                         "exclude": false,
                         "existsSelected": false,
-                        "fieldName": "_service.version",
+                        "fieldName": "service.version",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "singleSelect": true,
@@ -169,18 +169,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -213,18 +201,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -419,18 +395,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -463,18 +427,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -681,18 +633,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -725,18 +665,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -944,18 +872,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -988,18 +904,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -1191,18 +1095,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -1235,18 +1127,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -1399,18 +1279,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -1443,18 +1311,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -1608,18 +1464,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -1652,18 +1496,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -1881,18 +1713,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -1925,18 +1745,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -2142,18 +1950,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -2186,18 +1982,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -2350,18 +2134,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -2394,18 +2166,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -2558,18 +2318,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -2602,18 +2350,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -2838,18 +2574,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -2882,18 +2606,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -3047,18 +2759,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -3091,18 +2791,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
@@ -3357,18 +3045,6 @@
                                             "script": {
                                                 "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
                                             }
-                                        },
-                                        "_service.name": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
-                                            }
-                                        },
-                                        "_service.version": {
-                                            "type": "keyword",
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
-                                            }
                                         }
                                     },
                                     "fieldAttrs": {
@@ -3401,18 +3077,6 @@
                                         "_exception.stacktrace": {
                                             "customLabel": "exception.stacktrace",
                                             "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
-                                        },
-                                        "_service.name": {
-                                            "count": 2,
-                                            "customLabel": "service.name",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
-                                        },
-                                        "_service.version": {
-                                            "customLabel": "service.version",
-                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
-                                        },
-                                        "session.id": {
-                                            "count": 1
                                         }
                                     },
                                     "allowNoIndex": false,
