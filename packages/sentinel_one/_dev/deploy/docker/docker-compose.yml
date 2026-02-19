@@ -1,7 +1,7 @@
 version: "2.3"
 services:
   sentinel_one:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     hostname: sentinel_one
     ports:
       - 8080
@@ -13,3 +13,16 @@ services:
       - http-server
       - --addr=:8080
       - --config=/files/config.yml
+  sentinel_one-unified_alert:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: sentinel_one-unified_alert
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-unified_alert.yml
