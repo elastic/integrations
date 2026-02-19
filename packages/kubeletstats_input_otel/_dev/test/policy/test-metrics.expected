@@ -25,11 +25,14 @@ processors:
             - context: datapoint
               statements:
                 - set(attributes["data_stream.type"], "metrics")
-                - set(attributes["data_stream.dataset"], "kubeletstats_input_otel.kubeletstatsreceiver")
+                - set(attributes["data_stream.dataset"], "kubeletstatsreceiver")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     kubeletstats/componentid-0:
         auth_type: serviceAccount
+        collect_all_network_interfaces:
+            node: false
+            pod: false
         collection_interval: 30s
         endpoint: https://localhost:10250
         extra_metadata_labels:
@@ -37,10 +40,11 @@ receivers:
         initial_delay: 5s
         k8s_api_config:
             auth_type: serviceAccount
-        node: my-node
-        collect_all_network_interfaces:
-            node: false
-            pod: false
+        metric_groups:
+            - container
+            - pod
+            - node
+            - volume
         metrics:
             k8s.container.cpu.node.utilization:
                 enabled: true
@@ -50,11 +54,7 @@ receivers:
                 enabled: true
             k8s.pod.memory.node.utilization:
                 enabled: true
-        metric_groups:
-            - container
-            - pod
-            - node
-            - volume
+        node: my-node
 secret_references: []
 service:
     pipelines:
