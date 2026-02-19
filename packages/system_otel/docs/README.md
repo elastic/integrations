@@ -11,6 +11,10 @@ Collect and ingest OpenTelemetry data from the Collector's [`hostmetrics` receiv
 
 Compatible `hostmetrics` receiver versions are version 0.102.0 or later.
 
+## Where to start
+
+If you're configuring your OpenTelemetry Collector so the dashboards in this package work as expected, start with [Collector configuration](#collector-configuration), and then verify the required [Available metrics](#available-metrics).
+
 ## Collector configuration
 
 The Elastic Distribution of OpenTelemetry (EDOT) Collector and the upstream Contrib Collector both include the `hostmetrics` receiver. Regardless of which Collector distribution you use, review the snippets below and add or adjust your Collector configuration to ensure the required metrics are enabled, as some of them are not enabled by default.
