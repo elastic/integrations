@@ -23,9 +23,10 @@ import (
 )
 
 const (
-	defaultEndpoint  = "http://elastic-agent:9411"
-	defaultTracesDir = "/sample_traces"
-	spansPath        = "/api/v2/spans"
+	defaultEndpoint   = "http://elastic-agent:9411"
+	defaultTracesDir  = "/sample_traces"
+	defaultTracesGlob = "sample*.json"
+	spansPath         = "/api/v2/spans"
 
 	defaultTimeout = 5 * time.Second
 )
@@ -36,7 +37,11 @@ func main() {
 	endpoint = normalizeEndpoint(endpoint)
 	spansURL := endpoint + spansPath
 
-	tracesDir := getEnv("TRACES_DIR", defaultTracesDir)
+	tracesPattern := getEnv("TRACES_PATTERN", "")
+	if tracesPattern == "" {
+		tracesDir := getEnv("TRACES_DIR", defaultTracesDir)
+		tracesPattern = filepath.Join(tracesDir, defaultTracesGlob)
+	}
 
 	sendDelay := time.Duration(0)
 	if d := getEnv("SEND_DELAY", ""); d != "" {
@@ -50,7 +55,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGHUP)
 	defer stop()
 
-	log.Printf("zipkin-trace-sender: endpoint=%s traces_dir=%s send_delay=%s; waiting for SIGHUP", spansURL, tracesDir, sendDelay)
+	log.Printf("zipkin-trace-sender: endpoint=%s traces_pattern=%s send_delay=%s; waiting for SIGHUP", spansURL, tracesPattern, sendDelay)
 
 	<-ctx.Done()
 
@@ -62,7 +67,7 @@ func main() {
 		}
 	}
 
-	if err := sendTraces(spansURL, tracesDir); err != nil {
+	if err := sendTraces(spansURL, tracesPattern); err != nil {
 		log.Printf("send failed: %v", err)
 		os.Exit(1)
 	}
@@ -94,8 +99,7 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-func sendTraces(spansURL, tracesDir string) error {
-	pattern := filepath.Join(tracesDir, "sample*.json")
+func sendTraces(spansURL, pattern string) error {
 	matches, err := filepath.Glob(pattern)
 	if err != nil {
 		return fmt.Errorf("glob %s: %w", pattern, err)
