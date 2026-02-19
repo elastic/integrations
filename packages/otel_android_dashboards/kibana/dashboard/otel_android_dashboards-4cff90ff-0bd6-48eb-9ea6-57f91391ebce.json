@@ -72,15 +72,125 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                "name": "indexpattern-datasource-layer-9ad5f3d5-91c7-4509-94d8-9ef3e33c1815",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "title": "logs-generic.otel*,traces-generic.otel*,logs-apm*,traces-apm*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {
+                                        "_stacktrace.group_id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"error.grouping_key\") && !doc[\"error.grouping_key\"].isEmpty()) {\n  emit($(\"error.grouping_key\", \"\"));\n  return;\n}\nif(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)->\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)->\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            }
+                                        },
+                                        "_timeline.text": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"transaction.name\") && !doc[\"transaction.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"transaction.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") && !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else if (doc.containsKey(\"otel.event.name\") && !doc[\"otel.event.name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"otel.event.name\", \"\"));\n  } else if (doc.containsKey(\"labels.otel_event_name\") && !doc[\"labels.otel_event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"labels.otel_event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_os.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"os.version\")) {\n    emit($(\"os.version\", \"\"));\n} else if(doc.containsKey(\"host.os.version\")) {\n    emit($(\"host.os.version\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_exception.message": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.message\")) {\n  if(!doc[\"exception.message\"].isEmpty()){\n    emit($(\"exception.message\", \"\"));\n  }\n} else if(doc.containsKey(\"error.exception.type\")) {\n  emit($(\"message\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_app.installation.id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"app.installation.id\") && !doc[\"app.installation.id\"].isEmpty()) {\n  emit($(\"app.installation.id\", \"\"));\n} else if (doc.containsKey(\"labels.app_installation_id\") && !doc[\"labels.app_installation_id\"].isEmpty()) {\n  emit($(\"labels.app_installation_id\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_span.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit($(\"span.name\", \"\"));\n} else if(doc.containsKey(\"transaction.name\")) {\n  emit($(\"transaction.name\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_duration.ns": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"duration\") && !doc[\"duration\"].isEmpty()) {\n  emit($(\"duration\", 0));\n} else if(doc.containsKey(\"transaction.duration.us\") && !doc[\"transaction.duration.us\"].isEmpty()) {\n  emit($(\"transaction.duration.us\", 0) * 1000);\n} else if(doc.containsKey(\"span.duration.us\") && !doc[\"span.duration.us\"].isEmpty()) {\n  emit($(\"span.duration.us\", 0) * 1000);\n}"
+                                            }
+                                        },
+                                        "_exception.stacktrace": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
+                                            }
+                                        },
+                                        "_service.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_service.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
+                                            }
+                                        }
+                                    },
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_os.version": {
+                                            "customLabel": "os.version",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"os.version\" (for OTel data) or \"host.os.version\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.message": {
+                                            "customLabel": "exception.message",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"exception.message\" (for OTel data)."
+                                        },
+                                        "_app.installation.id": {
+                                            "customLabel": "app.installation.id",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"app.installation.id\" (for OTel data) or \"labels.app_installation_id\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_span.name": {
+                                            "customLabel": "span.name",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"span.name\" (for OTel data), \"transaction.name\" or \"span.name\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_duration.ns": {
+                                            "customLabel": "duration",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"duration\" (for OTel data), \"transaction.duration.us\" or \"span.duration.us\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.stacktrace": {
+                                            "customLabel": "exception.stacktrace",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
+                                        },
+                                        "_service.name": {
+                                            "count": 2,
+                                            "customLabel": "service.name",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
+                                        },
+                                        "_service.version": {
+                                            "customLabel": "service.version",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
+                                        },
+                                        "session.id": {
+                                            "count": 1
+                                        }
+                                    },
+                                    "allowNoIndex": false,
+                                    "name": "android-observability"
+                                }
+                            },
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -141,7 +251,13 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-9ad5f3d5-91c7-4509-94d8-9ef3e33c1815",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": "(os.name: \"Android\" or host.os.name: \"Android\") and (exception.stacktrace: * or error.grouping_key: *) and session.id : *"
@@ -221,18 +337,127 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                "name": "indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "title": "logs-generic.otel*,traces-generic.otel*,logs-apm*,traces-apm*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {
+                                        "_stacktrace.group_id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"error.grouping_key\") && !doc[\"error.grouping_key\"].isEmpty()) {\n  emit($(\"error.grouping_key\", \"\"));\n  return;\n}\nif(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)->\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)->\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            }
+                                        },
+                                        "_timeline.text": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"transaction.name\") && !doc[\"transaction.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"transaction.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") && !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else if (doc.containsKey(\"otel.event.name\") && !doc[\"otel.event.name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"otel.event.name\", \"\"));\n  } else if (doc.containsKey(\"labels.otel_event_name\") && !doc[\"labels.otel_event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"labels.otel_event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_os.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"os.version\")) {\n    emit($(\"os.version\", \"\"));\n} else if(doc.containsKey(\"host.os.version\")) {\n    emit($(\"host.os.version\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_exception.message": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.message\")) {\n  if(!doc[\"exception.message\"].isEmpty()){\n    emit($(\"exception.message\", \"\"));\n  }\n} else if(doc.containsKey(\"error.exception.type\")) {\n  emit($(\"message\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_app.installation.id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"app.installation.id\") && !doc[\"app.installation.id\"].isEmpty()) {\n  emit($(\"app.installation.id\", \"\"));\n} else if (doc.containsKey(\"labels.app_installation_id\") && !doc[\"labels.app_installation_id\"].isEmpty()) {\n  emit($(\"labels.app_installation_id\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_span.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit($(\"span.name\", \"\"));\n} else if(doc.containsKey(\"transaction.name\")) {\n  emit($(\"transaction.name\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_duration.ns": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"duration\") && !doc[\"duration\"].isEmpty()) {\n  emit($(\"duration\", 0));\n} else if(doc.containsKey(\"transaction.duration.us\") && !doc[\"transaction.duration.us\"].isEmpty()) {\n  emit($(\"transaction.duration.us\", 0) * 1000);\n} else if(doc.containsKey(\"span.duration.us\") && !doc[\"span.duration.us\"].isEmpty()) {\n  emit($(\"span.duration.us\", 0) * 1000);\n}"
+                                            }
+                                        },
+                                        "_exception.stacktrace": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
+                                            }
+                                        },
+                                        "_service.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_service.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
+                                            }
+                                        }
+                                    },
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_os.version": {
+                                            "customLabel": "os.version",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"os.version\" (for OTel data) or \"host.os.version\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.message": {
+                                            "customLabel": "exception.message",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"exception.message\" (for OTel data)."
+                                        },
+                                        "_app.installation.id": {
+                                            "customLabel": "app.installation.id",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"app.installation.id\" (for OTel data) or \"labels.app_installation_id\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_span.name": {
+                                            "customLabel": "span.name",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"span.name\" (for OTel data), \"transaction.name\" or \"span.name\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_duration.ns": {
+                                            "customLabel": "duration",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"duration\" (for OTel data), \"transaction.duration.us\" or \"span.duration.us\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.stacktrace": {
+                                            "customLabel": "exception.stacktrace",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
+                                        },
+                                        "_service.name": {
+                                            "count": 2,
+                                            "customLabel": "service.name",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
+                                        },
+                                        "_service.version": {
+                                            "customLabel": "service.version",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
+                                        },
+                                        "session.id": {
+                                            "count": 1
+                                        }
+                                    },
+                                    "allowNoIndex": false,
+                                    "name": "android-observability"
+                                }
+                            },
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "layers": {
                                         "90dab598-1e5c-4228-bd2b-6c00d93a4fbf": {
                                             "columnOrder": [
@@ -313,28 +538,26 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*,traces-*"
-                                        }
-                                    ],
+                                    "indexPatternRefs": [],
                                     "layers": {}
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": "(os.name: \"Android\" or host.os.name: \"Android\") and (exception.stacktrace: * or error.grouping_key: *) and session.id : * "
@@ -428,18 +651,127 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                "name": "indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "title": "logs-generic.otel*,traces-generic.otel*,logs-apm*,traces-apm*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {
+                                        "_stacktrace.group_id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"error.grouping_key\") && !doc[\"error.grouping_key\"].isEmpty()) {\n  emit($(\"error.grouping_key\", \"\"));\n  return;\n}\nif(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)->\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)->\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            }
+                                        },
+                                        "_timeline.text": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"transaction.name\") && !doc[\"transaction.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"transaction.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") && !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else if (doc.containsKey(\"otel.event.name\") && !doc[\"otel.event.name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"otel.event.name\", \"\"));\n  } else if (doc.containsKey(\"labels.otel_event_name\") && !doc[\"labels.otel_event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"labels.otel_event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_os.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"os.version\")) {\n    emit($(\"os.version\", \"\"));\n} else if(doc.containsKey(\"host.os.version\")) {\n    emit($(\"host.os.version\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_exception.message": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.message\")) {\n  if(!doc[\"exception.message\"].isEmpty()){\n    emit($(\"exception.message\", \"\"));\n  }\n} else if(doc.containsKey(\"error.exception.type\")) {\n  emit($(\"message\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_app.installation.id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"app.installation.id\") && !doc[\"app.installation.id\"].isEmpty()) {\n  emit($(\"app.installation.id\", \"\"));\n} else if (doc.containsKey(\"labels.app_installation_id\") && !doc[\"labels.app_installation_id\"].isEmpty()) {\n  emit($(\"labels.app_installation_id\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_span.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit($(\"span.name\", \"\"));\n} else if(doc.containsKey(\"transaction.name\")) {\n  emit($(\"transaction.name\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_duration.ns": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"duration\") && !doc[\"duration\"].isEmpty()) {\n  emit($(\"duration\", 0));\n} else if(doc.containsKey(\"transaction.duration.us\") && !doc[\"transaction.duration.us\"].isEmpty()) {\n  emit($(\"transaction.duration.us\", 0) * 1000);\n} else if(doc.containsKey(\"span.duration.us\") && !doc[\"span.duration.us\"].isEmpty()) {\n  emit($(\"span.duration.us\", 0) * 1000);\n}"
+                                            }
+                                        },
+                                        "_exception.stacktrace": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
+                                            }
+                                        },
+                                        "_service.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_service.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
+                                            }
+                                        }
+                                    },
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_os.version": {
+                                            "customLabel": "os.version",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"os.version\" (for OTel data) or \"host.os.version\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.message": {
+                                            "customLabel": "exception.message",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"exception.message\" (for OTel data)."
+                                        },
+                                        "_app.installation.id": {
+                                            "customLabel": "app.installation.id",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"app.installation.id\" (for OTel data) or \"labels.app_installation_id\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_span.name": {
+                                            "customLabel": "span.name",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"span.name\" (for OTel data), \"transaction.name\" or \"span.name\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_duration.ns": {
+                                            "customLabel": "duration",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"duration\" (for OTel data), \"transaction.duration.us\" or \"span.duration.us\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.stacktrace": {
+                                            "customLabel": "exception.stacktrace",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
+                                        },
+                                        "_service.name": {
+                                            "count": 2,
+                                            "customLabel": "service.name",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
+                                        },
+                                        "_service.version": {
+                                            "customLabel": "service.version",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
+                                        },
+                                        "session.id": {
+                                            "count": 1
+                                        }
+                                    },
+                                    "allowNoIndex": false,
+                                    "name": "android-observability"
+                                }
+                            },
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "layers": {
                                         "90dab598-1e5c-4228-bd2b-6c00d93a4fbf": {
                                             "columnOrder": [
@@ -460,28 +792,26 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*,traces-*"
-                                        }
-                                    ],
+                                    "indexPatternRefs": [],
                                     "layers": {}
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": "(os.name: \"Android\" or host.os.name: \"Android\") and (exception.stacktrace: * or error.grouping_key: *) and session.id : * "
@@ -532,18 +862,127 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                "name": "indexpattern-datasource-layer-d23814eb-f5c5-4b31-a46f-3f3596bfd0d5",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "title": "logs-generic.otel*,traces-generic.otel*,logs-apm*,traces-apm*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {
+                                        "_stacktrace.group_id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"error.grouping_key\") && !doc[\"error.grouping_key\"].isEmpty()) {\n  emit($(\"error.grouping_key\", \"\"));\n  return;\n}\nif(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)->\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)->\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            }
+                                        },
+                                        "_timeline.text": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"transaction.name\") && !doc[\"transaction.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"transaction.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") && !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else if (doc.containsKey(\"otel.event.name\") && !doc[\"otel.event.name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"otel.event.name\", \"\"));\n  } else if (doc.containsKey(\"labels.otel_event_name\") && !doc[\"labels.otel_event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"labels.otel_event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_os.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"os.version\")) {\n    emit($(\"os.version\", \"\"));\n} else if(doc.containsKey(\"host.os.version\")) {\n    emit($(\"host.os.version\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_exception.message": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.message\")) {\n  if(!doc[\"exception.message\"].isEmpty()){\n    emit($(\"exception.message\", \"\"));\n  }\n} else if(doc.containsKey(\"error.exception.type\")) {\n  emit($(\"message\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_app.installation.id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"app.installation.id\") && !doc[\"app.installation.id\"].isEmpty()) {\n  emit($(\"app.installation.id\", \"\"));\n} else if (doc.containsKey(\"labels.app_installation_id\") && !doc[\"labels.app_installation_id\"].isEmpty()) {\n  emit($(\"labels.app_installation_id\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_span.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit($(\"span.name\", \"\"));\n} else if(doc.containsKey(\"transaction.name\")) {\n  emit($(\"transaction.name\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_duration.ns": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"duration\") && !doc[\"duration\"].isEmpty()) {\n  emit($(\"duration\", 0));\n} else if(doc.containsKey(\"transaction.duration.us\") && !doc[\"transaction.duration.us\"].isEmpty()) {\n  emit($(\"transaction.duration.us\", 0) * 1000);\n} else if(doc.containsKey(\"span.duration.us\") && !doc[\"span.duration.us\"].isEmpty()) {\n  emit($(\"span.duration.us\", 0) * 1000);\n}"
+                                            }
+                                        },
+                                        "_exception.stacktrace": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
+                                            }
+                                        },
+                                        "_service.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_service.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
+                                            }
+                                        }
+                                    },
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_os.version": {
+                                            "customLabel": "os.version",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"os.version\" (for OTel data) or \"host.os.version\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.message": {
+                                            "customLabel": "exception.message",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"exception.message\" (for OTel data)."
+                                        },
+                                        "_app.installation.id": {
+                                            "customLabel": "app.installation.id",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"app.installation.id\" (for OTel data) or \"labels.app_installation_id\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_span.name": {
+                                            "customLabel": "span.name",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"span.name\" (for OTel data), \"transaction.name\" or \"span.name\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_duration.ns": {
+                                            "customLabel": "duration",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"duration\" (for OTel data), \"transaction.duration.us\" or \"span.duration.us\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.stacktrace": {
+                                            "customLabel": "exception.stacktrace",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
+                                        },
+                                        "_service.name": {
+                                            "count": 2,
+                                            "customLabel": "service.name",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
+                                        },
+                                        "_service.version": {
+                                            "customLabel": "service.version",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
+                                        },
+                                        "session.id": {
+                                            "count": 1
+                                        }
+                                    },
+                                    "allowNoIndex": false,
+                                    "name": "android-observability"
+                                }
+                            },
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "layers": {
                                         "d23814eb-f5c5-4b31-a46f-3f3596bfd0d5": {
                                             "columnOrder": [
@@ -589,28 +1028,26 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*,traces-*"
-                                        }
-                                    ],
+                                    "indexPatternRefs": [],
                                     "layers": {}
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-d23814eb-f5c5-4b31-a46f-3f3596bfd0d5",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": "(os.name: \"Android\" or host.os.name: \"Android\") and (exception.stacktrace: * or error.grouping_key: *) and session.id : * "
@@ -669,15 +1106,125 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                "name": "indexpattern-datasource-layer-e85d6684-402c-4186-a1b5-5aa79db4a066",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "title": "logs-generic.otel*,traces-generic.otel*,logs-apm*,traces-apm*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {
+                                        "_stacktrace.group_id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"error.grouping_key\") && !doc[\"error.grouping_key\"].isEmpty()) {\n  emit($(\"error.grouping_key\", \"\"));\n  return;\n}\nif(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)->\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)->\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            }
+                                        },
+                                        "_timeline.text": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"transaction.name\") && !doc[\"transaction.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"transaction.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") && !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else if (doc.containsKey(\"otel.event.name\") && !doc[\"otel.event.name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"otel.event.name\", \"\"));\n  } else if (doc.containsKey(\"labels.otel_event_name\") && !doc[\"labels.otel_event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"labels.otel_event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_os.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"os.version\")) {\n    emit($(\"os.version\", \"\"));\n} else if(doc.containsKey(\"host.os.version\")) {\n    emit($(\"host.os.version\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_exception.message": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.message\")) {\n  if(!doc[\"exception.message\"].isEmpty()){\n    emit($(\"exception.message\", \"\"));\n  }\n} else if(doc.containsKey(\"error.exception.type\")) {\n  emit($(\"message\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_app.installation.id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"app.installation.id\") && !doc[\"app.installation.id\"].isEmpty()) {\n  emit($(\"app.installation.id\", \"\"));\n} else if (doc.containsKey(\"labels.app_installation_id\") && !doc[\"labels.app_installation_id\"].isEmpty()) {\n  emit($(\"labels.app_installation_id\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_span.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit($(\"span.name\", \"\"));\n} else if(doc.containsKey(\"transaction.name\")) {\n  emit($(\"transaction.name\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_duration.ns": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"duration\") && !doc[\"duration\"].isEmpty()) {\n  emit($(\"duration\", 0));\n} else if(doc.containsKey(\"transaction.duration.us\") && !doc[\"transaction.duration.us\"].isEmpty()) {\n  emit($(\"transaction.duration.us\", 0) * 1000);\n} else if(doc.containsKey(\"span.duration.us\") && !doc[\"span.duration.us\"].isEmpty()) {\n  emit($(\"span.duration.us\", 0) * 1000);\n}"
+                                            }
+                                        },
+                                        "_exception.stacktrace": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
+                                            }
+                                        },
+                                        "_service.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_service.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
+                                            }
+                                        }
+                                    },
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_os.version": {
+                                            "customLabel": "os.version",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"os.version\" (for OTel data) or \"host.os.version\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.message": {
+                                            "customLabel": "exception.message",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"exception.message\" (for OTel data)."
+                                        },
+                                        "_app.installation.id": {
+                                            "customLabel": "app.installation.id",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"app.installation.id\" (for OTel data) or \"labels.app_installation_id\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_span.name": {
+                                            "customLabel": "span.name",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"span.name\" (for OTel data), \"transaction.name\" or \"span.name\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_duration.ns": {
+                                            "customLabel": "duration",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"duration\" (for OTel data), \"transaction.duration.us\" or \"span.duration.us\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.stacktrace": {
+                                            "customLabel": "exception.stacktrace",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
+                                        },
+                                        "_service.name": {
+                                            "count": 2,
+                                            "customLabel": "service.name",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
+                                        },
+                                        "_service.version": {
+                                            "customLabel": "service.version",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
+                                        },
+                                        "session.id": {
+                                            "count": 1
+                                        }
+                                    },
+                                    "allowNoIndex": false,
+                                    "name": "android-observability"
+                                }
+                            },
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -737,7 +1284,13 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-e85d6684-402c-4186-a1b5-5aa79db4a066",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": "(os.name: \"Android\" or host.os.name: \"Android\") and (exception.stacktrace: * or error.grouping_key: *) and session.id: *"
@@ -816,15 +1369,125 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                "name": "indexpattern-datasource-layer-e85d6684-402c-4186-a1b5-5aa79db4a066",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "title": "logs-generic.otel*,traces-generic.otel*,logs-apm*,traces-apm*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {
+                                        "_stacktrace.group_id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"error.grouping_key\") && !doc[\"error.grouping_key\"].isEmpty()) {\n  emit($(\"error.grouping_key\", \"\"));\n  return;\n}\nif(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)->\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)->\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            }
+                                        },
+                                        "_timeline.text": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"transaction.name\") && !doc[\"transaction.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"transaction.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") && !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else if (doc.containsKey(\"otel.event.name\") && !doc[\"otel.event.name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"otel.event.name\", \"\"));\n  } else if (doc.containsKey(\"labels.otel_event_name\") && !doc[\"labels.otel_event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"labels.otel_event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_os.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"os.version\")) {\n    emit($(\"os.version\", \"\"));\n} else if(doc.containsKey(\"host.os.version\")) {\n    emit($(\"host.os.version\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_exception.message": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.message\")) {\n  if(!doc[\"exception.message\"].isEmpty()){\n    emit($(\"exception.message\", \"\"));\n  }\n} else if(doc.containsKey(\"error.exception.type\")) {\n  emit($(\"message\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_app.installation.id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"app.installation.id\") && !doc[\"app.installation.id\"].isEmpty()) {\n  emit($(\"app.installation.id\", \"\"));\n} else if (doc.containsKey(\"labels.app_installation_id\") && !doc[\"labels.app_installation_id\"].isEmpty()) {\n  emit($(\"labels.app_installation_id\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_span.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit($(\"span.name\", \"\"));\n} else if(doc.containsKey(\"transaction.name\")) {\n  emit($(\"transaction.name\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_duration.ns": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"duration\") && !doc[\"duration\"].isEmpty()) {\n  emit($(\"duration\", 0));\n} else if(doc.containsKey(\"transaction.duration.us\") && !doc[\"transaction.duration.us\"].isEmpty()) {\n  emit($(\"transaction.duration.us\", 0) * 1000);\n} else if(doc.containsKey(\"span.duration.us\") && !doc[\"span.duration.us\"].isEmpty()) {\n  emit($(\"span.duration.us\", 0) * 1000);\n}"
+                                            }
+                                        },
+                                        "_exception.stacktrace": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
+                                            }
+                                        },
+                                        "_service.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_service.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
+                                            }
+                                        }
+                                    },
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_os.version": {
+                                            "customLabel": "os.version",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"os.version\" (for OTel data) or \"host.os.version\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.message": {
+                                            "customLabel": "exception.message",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"exception.message\" (for OTel data)."
+                                        },
+                                        "_app.installation.id": {
+                                            "customLabel": "app.installation.id",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"app.installation.id\" (for OTel data) or \"labels.app_installation_id\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_span.name": {
+                                            "customLabel": "span.name",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"span.name\" (for OTel data), \"transaction.name\" or \"span.name\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_duration.ns": {
+                                            "customLabel": "duration",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"duration\" (for OTel data), \"transaction.duration.us\" or \"span.duration.us\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.stacktrace": {
+                                            "customLabel": "exception.stacktrace",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
+                                        },
+                                        "_service.name": {
+                                            "count": 2,
+                                            "customLabel": "service.name",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
+                                        },
+                                        "_service.version": {
+                                            "customLabel": "service.version",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
+                                        },
+                                        "session.id": {
+                                            "count": 1
+                                        }
+                                    },
+                                    "allowNoIndex": false,
+                                    "name": "android-observability"
+                                }
+                            },
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -884,7 +1547,13 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-e85d6684-402c-4186-a1b5-5aa79db4a066",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": "(os.name: \"Android\" or host.os.name: \"Android\") and (exception.stacktrace: * or error.grouping_key: *) and session.id: * and (os.version: * or host.os.version: *)"
@@ -963,15 +1632,125 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                "name": "indexpattern-datasource-layer-e85d6684-402c-4186-a1b5-5aa79db4a066",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "title": "logs-generic.otel*,traces-generic.otel*,logs-apm*,traces-apm*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {
+                                        "_stacktrace.group_id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"error.grouping_key\") && !doc[\"error.grouping_key\"].isEmpty()) {\n  emit($(\"error.grouping_key\", \"\"));\n  return;\n}\nif(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)->\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)->\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            }
+                                        },
+                                        "_timeline.text": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"transaction.name\") && !doc[\"transaction.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"transaction.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") && !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else if (doc.containsKey(\"otel.event.name\") && !doc[\"otel.event.name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"otel.event.name\", \"\"));\n  } else if (doc.containsKey(\"labels.otel_event_name\") && !doc[\"labels.otel_event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"labels.otel_event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_os.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"os.version\")) {\n    emit($(\"os.version\", \"\"));\n} else if(doc.containsKey(\"host.os.version\")) {\n    emit($(\"host.os.version\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_exception.message": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.message\")) {\n  if(!doc[\"exception.message\"].isEmpty()){\n    emit($(\"exception.message\", \"\"));\n  }\n} else if(doc.containsKey(\"error.exception.type\")) {\n  emit($(\"message\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_app.installation.id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"app.installation.id\") && !doc[\"app.installation.id\"].isEmpty()) {\n  emit($(\"app.installation.id\", \"\"));\n} else if (doc.containsKey(\"labels.app_installation_id\") && !doc[\"labels.app_installation_id\"].isEmpty()) {\n  emit($(\"labels.app_installation_id\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_span.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit($(\"span.name\", \"\"));\n} else if(doc.containsKey(\"transaction.name\")) {\n  emit($(\"transaction.name\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_duration.ns": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"duration\") && !doc[\"duration\"].isEmpty()) {\n  emit($(\"duration\", 0));\n} else if(doc.containsKey(\"transaction.duration.us\") && !doc[\"transaction.duration.us\"].isEmpty()) {\n  emit($(\"transaction.duration.us\", 0) * 1000);\n} else if(doc.containsKey(\"span.duration.us\") && !doc[\"span.duration.us\"].isEmpty()) {\n  emit($(\"span.duration.us\", 0) * 1000);\n}"
+                                            }
+                                        },
+                                        "_exception.stacktrace": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
+                                            }
+                                        },
+                                        "_service.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_service.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
+                                            }
+                                        }
+                                    },
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_os.version": {
+                                            "customLabel": "os.version",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"os.version\" (for OTel data) or \"host.os.version\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.message": {
+                                            "customLabel": "exception.message",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"exception.message\" (for OTel data)."
+                                        },
+                                        "_app.installation.id": {
+                                            "customLabel": "app.installation.id",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"app.installation.id\" (for OTel data) or \"labels.app_installation_id\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_span.name": {
+                                            "customLabel": "span.name",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"span.name\" (for OTel data), \"transaction.name\" or \"span.name\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_duration.ns": {
+                                            "customLabel": "duration",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"duration\" (for OTel data), \"transaction.duration.us\" or \"span.duration.us\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.stacktrace": {
+                                            "customLabel": "exception.stacktrace",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
+                                        },
+                                        "_service.name": {
+                                            "count": 2,
+                                            "customLabel": "service.name",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
+                                        },
+                                        "_service.version": {
+                                            "customLabel": "service.version",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
+                                        },
+                                        "session.id": {
+                                            "count": 1
+                                        }
+                                    },
+                                    "allowNoIndex": false,
+                                    "name": "android-observability"
+                                }
+                            },
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1031,7 +1810,13 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-e85d6684-402c-4186-a1b5-5aa79db4a066",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": "(os.name: \"Android\" or host.os.name: \"Android\") and (exception.stacktrace: * or error.grouping_key: *) and session.id: * and device.manufacturer: *"
@@ -1110,18 +1895,127 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                "name": "indexpattern-datasource-layer-2bde3947-c2de-42af-bc3e-d7c0e36110cd",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "title": "logs-generic.otel*,traces-generic.otel*,logs-apm*,traces-apm*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {
+                                        "_stacktrace.group_id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"error.grouping_key\") && !doc[\"error.grouping_key\"].isEmpty()) {\n  emit($(\"error.grouping_key\", \"\"));\n  return;\n}\nif(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)->\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)->\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            }
+                                        },
+                                        "_timeline.text": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"transaction.name\") && !doc[\"transaction.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"transaction.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") && !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else if (doc.containsKey(\"otel.event.name\") && !doc[\"otel.event.name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"otel.event.name\", \"\"));\n  } else if (doc.containsKey(\"labels.otel_event_name\") && !doc[\"labels.otel_event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"labels.otel_event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_os.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"os.version\")) {\n    emit($(\"os.version\", \"\"));\n} else if(doc.containsKey(\"host.os.version\")) {\n    emit($(\"host.os.version\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_exception.message": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.message\")) {\n  if(!doc[\"exception.message\"].isEmpty()){\n    emit($(\"exception.message\", \"\"));\n  }\n} else if(doc.containsKey(\"error.exception.type\")) {\n  emit($(\"message\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_app.installation.id": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"app.installation.id\") && !doc[\"app.installation.id\"].isEmpty()) {\n  emit($(\"app.installation.id\", \"\"));\n} else if (doc.containsKey(\"labels.app_installation_id\") && !doc[\"labels.app_installation_id\"].isEmpty()) {\n  emit($(\"labels.app_installation_id\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_span.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") && !doc[\"span.name\"].isEmpty()) {\n  emit($(\"span.name\", \"\"));\n} else if(doc.containsKey(\"transaction.name\")) {\n  emit($(\"transaction.name\", \"\"));\n}"
+                                            }
+                                        },
+                                        "_duration.ns": {
+                                            "type": "long",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"duration\") && !doc[\"duration\"].isEmpty()) {\n  emit($(\"duration\", 0));\n} else if(doc.containsKey(\"transaction.duration.us\") && !doc[\"transaction.duration.us\"].isEmpty()) {\n  emit($(\"transaction.duration.us\", 0) * 1000);\n} else if(doc.containsKey(\"span.duration.us\") && !doc[\"span.duration.us\"].isEmpty()) {\n  emit($(\"span.duration.us\", 0) * 1000);\n}"
+                                            }
+                                        },
+                                        "_exception.stacktrace": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"exception.stacktrace\")) {\n  // EDOT Collector field\n  if(!doc[\"exception.stacktrace\"].isEmpty()) {\n    emit($(\"exception.stacktrace\", \"\"));\n  }\n  return;\n}\nif(doc.containsKey(\"error.stack_trace\") && !doc[\"error.stack_trace\"].isEmpty()) {\n  // APM Server fallback to ECS field for when the exception cannot be parsed\n  emit($(\"error.stack_trace\", \"\"));\n  return;\n}\ndef source = params['_source'];\nif(source.error?.exception == null) {\n  return;\n}\n// APM Server exception field\ndef exceptions = source.error.exception;\nif(exceptions.size() == 0) {\n  return;\n}\ndef newline = (char)0x0a;\ndef tabspace = (char)0x09;\ndef result = new StringBuilder();\nfor(int i = 0; i < exceptions.size(); i++) {\n  def ex = exceptions[i];\n  if(i == 0) {\n    if(ex.type != null) {\n      result.append(ex.type);\n      result.append(\": \");\n    }\n    result.append(ex.message);\n  } else {\n    result.append(newline);\n    result.append(\"Caused by: \");\n    result.append(ex.message);\n  }\n  def frames = ex.stacktrace;\n  if(frames == null || frames.size() == 0) {\n    continue;\n  }\n  for(int j = 0; j < frames.size(); j++) {\n    def frame = frames[j];\n    result.append(newline);\n    result.append(tabspace);\n    result.append(\"at \");\n    result.append(frame.classname);\n    result.append(\".\");\n    result.append(frame.function);\n    result.append(\"(\");\n    result.append(frame.filename);\n    if(frame.line?.number != null) {\n      result.append(\":\");\n      result.append(frame.line.number);\n    }\n    result.append(\")\")\n  }\n}\nemit(result.toString());\n"
+                                            }
+                                        },
+                                        "_service.name": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.name\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.name\", \"unknown\"));\n  }\n}"
+                                            }
+                                        },
+                                        "_service.version": {
+                                            "type": "keyword",
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"service.version\")) {\n  return;\n}\nif(doc.containsKey(\"os.name\")) {\n  if($(\"os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n} else if(doc.containsKey(\"host.os.name\")){\n  if($(\"host.os.name\", \"\") == \"Android\") {\n    emit($(\"service.version\", \"\"));\n  }\n}"
+                                            }
+                                        }
+                                    },
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_os.version": {
+                                            "customLabel": "os.version",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"os.version\" (for OTel data) or \"host.os.version\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.message": {
+                                            "customLabel": "exception.message",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"exception.message\" (for OTel data)."
+                                        },
+                                        "_app.installation.id": {
+                                            "customLabel": "app.installation.id",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"app.installation.id\" (for OTel data) or \"labels.app_installation_id\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_span.name": {
+                                            "customLabel": "span.name",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"span.name\" (for OTel data), \"transaction.name\" or \"span.name\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_duration.ns": {
+                                            "customLabel": "duration",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Use \"duration\" (for OTel data), \"transaction.duration.us\" or \"span.duration.us\" (for Elastic APM data) for your own queries."
+                                        },
+                                        "_exception.stacktrace": {
+                                            "customLabel": "exception.stacktrace",
+                                            "customDescription": "Internal mapping for both OTel and APM relevant fields. Do not use in user queries."
+                                        },
+                                        "_service.name": {
+                                            "count": 2,
+                                            "customLabel": "service.name",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.name\" for your own queries."
+                                        },
+                                        "_service.version": {
+                                            "customLabel": "service.version",
+                                            "customDescription": "Internal field used by Elastic dashboards. Use \"service.version\" for your own queries."
+                                        },
+                                        "session.id": {
+                                            "count": 1
+                                        }
+                                    },
+                                    "allowNoIndex": false,
+                                    "name": "android-observability"
+                                }
+                            },
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "layers": {
                                         "2bde3947-c2de-42af-bc3e-d7c0e36110cd": {
                                             "columnOrder": [
@@ -1173,28 +2067,26 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*,traces-*"
-                                        }
-                                    ],
+                                    "indexPatternRefs": [],
                                     "layers": {}
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-2bde3947-c2de-42af-bc3e-d7c0e36110cd",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": "(os.name: \"Android\" or host.os.name: \"Android\") and session.id : * and (exception.stacktrace: * or error.grouping_key: *) "
@@ -1260,49 +2152,9 @@
     "id": "otel_android_dashboards-4cff90ff-0bd6-48eb-9ea6-57f91391ebce",
     "references": [
         {
-            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-            "name": "eed746a9-7e1d-4258-a46c-e2ced4100f5e:indexpattern-datasource-layer-9ad5f3d5-91c7-4509-94d8-9ef3e33c1815",
-            "type": "index-pattern"
-        },
-        {
             "id": "otel_android_dashboards-66c53e5e-9a86-43f3-a85d-a1d90d974bff",
             "name": "eed746a9-7e1d-4258-a46c-e2ced4100f5e:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:dd9d5fda-48a3-4c5d-9679-559a8382965f:dashboardId",
             "type": "dashboard"
-        },
-        {
-            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-            "name": "18dd36f2-9b30-4dc0-9d0b-296f25b88f28:indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
-            "type": "index-pattern"
-        },
-        {
-            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-            "name": "4f65242b-ffad-449c-b7cb-9681e230f9ab:indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
-            "type": "index-pattern"
-        },
-        {
-            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-            "name": "db707750-bda5-44c7-89f3-5307c2535717:indexpattern-datasource-layer-d23814eb-f5c5-4b31-a46f-3f3596bfd0d5",
-            "type": "index-pattern"
-        },
-        {
-            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-            "name": "ebf1b677-2cac-4c11-b054-eca18feb9615:indexpattern-datasource-layer-e85d6684-402c-4186-a1b5-5aa79db4a066",
-            "type": "index-pattern"
-        },
-        {
-            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-            "name": "46b18d81-c2cc-42d3-82c6-4956597c18db:indexpattern-datasource-layer-e85d6684-402c-4186-a1b5-5aa79db4a066",
-            "type": "index-pattern"
-        },
-        {
-            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-            "name": "fd15ebf6-0989-4d92-a54e-1a95a1852f38:indexpattern-datasource-layer-e85d6684-402c-4186-a1b5-5aa79db4a066",
-            "type": "index-pattern"
-        },
-        {
-            "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-            "name": "e90b57f5-ad97-4a2e-87f8-3604d75f8ba6:indexpattern-datasource-layer-2bde3947-c2de-42af-bc3e-d7c0e36110cd",
-            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
