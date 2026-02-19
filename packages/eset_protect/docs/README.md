@@ -318,6 +318,7 @@ An example event for `detection` looks as following:
 | eset_protect.detection.scan_uuid | Reference to the on-demand scan during which the detection occurred. | keyword |
 | eset_protect.detection.severity_level | Severity levels abstracted to cover all the possible GUIs. Vocabulary is leaving interpretation of severity level completely to API client. | keyword |
 | eset_protect.detection.severity_score | The integer representation of the severity level to be comparable in queries. | long |
+| eset_protect.detection.triggering_event.data | Data of the event described as generic structure. | flattened |
 | eset_protect.detection.triggering_event.type | Event that triggered the detection. | keyword |
 | eset_protect.detection.type_name | Human-friendly type of detection. | keyword |
 | eset_protect.detection.uuid | Universally Unique Identifier of detection. | keyword |
