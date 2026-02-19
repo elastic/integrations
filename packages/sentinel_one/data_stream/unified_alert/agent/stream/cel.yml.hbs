@@ -1,0 +1,366 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  want_more: false
+  collect_alert_updation: false
+  api_token: {{api_token}}
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+  query: |
+    query GetAllUnifiedAlerts(
+      $after: String
+      $first: Int
+      $filters: [FilterInput!]
+      $sort: SortInput
+    ) {
+      alerts(
+        after: $after
+        first: $first
+        filters: $filters
+        sort: $sort
+      ) {
+        totalCount
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+        edges {
+          cursor
+          node {
+            id
+            aiInvestigation {
+              purpleAiStatus
+              status
+              verdict
+            }
+            analystVerdict
+            analytics {
+              category
+              name
+              typeValue
+              uid
+            }
+            assets {
+              accessible
+              agentUuid
+              agentVersion
+              assetTypeClassifier
+              category
+              connectivityToConsole
+              decommissioned
+              id
+              lastLoggedInUser
+              name
+              origin
+              osType
+              osVersion
+              pendingReboot
+              policy
+              role
+              status
+              subcategory
+            }
+            assignee {
+              email
+              fullName
+              userId
+            }
+            attackSurfaces
+            availableActionIds
+            classification
+            confidenceLevel
+            createdAt
+            dataSources
+            description
+            detectedAt
+            detectionSource {
+              product
+              vendor
+            }
+            detectionTime {
+              assets {
+                accessible
+                asset {
+                  agentVersion
+                  consoleIpAddress
+                  domain
+                  ipV4
+                  ipV6
+                  lastLoggedInUser
+                  osName
+                  osRevision
+                  osType
+                  policy
+                  subscriptionTime
+                }
+                cloud {
+                  accountId
+                  cloudProvider
+                  image
+                  instanceId
+                  instanceSize
+                  location
+                  network
+                  providerDetails {
+                    ... on DetectionAws {
+                      accountId
+                      imageId
+                      instanceId
+                      instanceType
+                      region
+                      role
+                      securityGroups
+                      subnetIds
+                      tags
+                      vpcId
+                    }
+                    ... on DetectionAzure {
+                      imageId
+                      instanceId
+                      instanceType
+                      region
+                      resourceGroup
+                      subscriptionId
+                      tags
+                    }
+                    ... on DetectionGcp {
+                      imageId
+                      instanceId
+                      instanceType
+                      projectId
+                      serviceAccount
+                      tags
+                      vpcId
+                      zone
+                    }
+                  }
+                  tags
+                }
+                kubernetes {
+                  clusterName
+                  containerId
+                  containerImageName
+                  containerLabels
+                  containerName
+                  controllerLabels
+                  controllerName
+                  controllerType
+                  namespaceLabels
+                  namespaceName
+                  nodeLabels
+                  nodeName
+                  podLabels
+                  podName
+                }
+                origin
+                scope {
+                  accountId
+                  accountName
+                  groupName
+                  siteName
+                }
+              }
+              attacker {
+                host
+                ip
+              }
+              scope {
+                accountId
+                accountName
+                groupName
+                siteName
+              }
+              targetUser {
+                domain
+                emailAddress
+                name
+              }
+            }
+            exclusionHash
+            externalId
+            firstSeenAt
+            lastSeenAt
+            name
+            noteExists
+            process {
+              cmdLine
+              file {
+                certSubject
+                md5
+                name
+                path
+                sha1
+                sha256
+              }
+              parentName
+            }
+            realTime {
+              scope {
+                account {
+                  id
+                  name
+                }
+                group {
+                  id
+                  name
+                }
+                site {
+                  id
+                  name
+                }
+              }
+            }
+            result
+            severity
+            sloDetails {
+              timeToResolveData {
+                actionComplete
+                actionDue
+                completion
+                completionTime
+                status
+                target
+                targetTime
+              }
+              timeToResponseData {
+                actionComplete
+                actionDue
+                completion
+                completionTime
+                status
+                target
+                targetTime
+              }
+            }
+            status
+            storylineId
+            ticketId
+            updatedAt
+          }
+        }
+      }
+    }
+redact:
+  fields:
+    - api_token
+
+program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).as(t, int(t)*1000 + t.getMilliseconds())),
+        "end_time": now.as(t, int(t)*1000 + t.getMilliseconds()),
+      })
+  ).as(state, state.with(
+    post_request(
+      state.url.trim_right("/") + "/web/api/v2.1/unifiedalerts/graphql",
+      "application/json",
+      {
+        "query": state.query,
+        "variables": {
+          "first": state.batch_size,
+          ?"after": state.?end_cursor.value,
+          "filters": [{
+            "fieldId": state.collect_alert_updation ? "updatedAt" : "detectedAt",
+            "dateTimeRange": {
+              "start": state.start_time,
+              "startInclusive": false,
+              "end": state.end_time
+            }
+          }],
+          "sort": {
+            "by": state.collect_alert_updation ? "updatedAt" : "detectedAt",
+            "order": "ASC"
+          }
+        }
+      }.encode_json()
+    ).with({
+      "Header":{
+        "Authorization": ["Bearer " + string(state.api_token)],
+        "Content-Type": ["application/json"],
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": (
+          size(body.data.alerts.edges) != 0 ?
+            body.data.alerts.edges.map(e, {"message": e.node.encode_json()})
+          :
+            [{"message": "retry"}]
+        ),
+        "end_cursor": {
+          ?"value": body.?data.alerts.pageInfo.hasNextPage.orValue(false) ?
+            body.?data.alerts.pageInfo.endCursor
+          :
+            optional.none()
+        },
+        // Two-phase: first by detectedAt (collect_alert_updation=false), then by updatedAt (collect_alert_updation=true).
+        // hasNextPage=false flips the phase; want_more=false only when update phase is done.
+        "want_more": body.?data.alerts.pageInfo.hasNextPage.orValue(false) || !state.collect_alert_updation,
+        "collect_alert_updation": (
+          body.?data.alerts.pageInfo.hasNextPage.orValue(false) ?
+            state.collect_alert_updation
+          :
+            !state.collect_alert_updation
+        ),
+        "cursor": {
+          ?"last_timestamp": body.?data.alerts.pageInfo.hasNextPage.orValue(false) || !state.collect_alert_updation ?
+            state.?cursor.last_timestamp
+          :
+            optional.of(state.end_time)
+        }
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + "/web/api/v2.1/unifiedalerts/graphql:" + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "end_cursor": {},
+        "collect_alert_updation": false,
+        "want_more": false,
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
