@@ -6,12 +6,6 @@
 
 The Fortinet FortiMail integration for Elastic enables you to collect and analyze logs from your FortiMail instances. FortiMail provides multi-layered protection against a wide spectrum of email-borne threats, including spam, phishing, malware, zero-day threats, impersonation, and Business Email Compromise (BEC) attacks. By integrating FortiMail with the Elastic Stack, you gain visibility into your email environment and can correlate security events across your infrastructure.
 
-This integration facilitates:
-- Email traffic analysis: Monitor all incoming and outgoing email traffic, including sender, recipient, subject, and delivery status, to gain insights into mail flow patterns and identify anomalies.
-- System activity monitoring: Track system management activities, administrator logins/logouts, and configuration changes to maintain an audit trail and detect unauthorized modifications.
-- Threat detection and response: Identify and analyze antispam and antivirus events to detect email-borne threats like spam, phishing, malware, and zero-day attacks, enabling quicker response.
-- Encryption event auditing: Keep a record of IBE-related (Identity-Based Encryption) events to ensure compliance and monitor the usage and effectiveness of email encryption policies.
-
 ### Compatibility
 
 This integration is compatible with Fortinet FortiMail version 7.2.2.
@@ -21,14 +15,6 @@ This integration is compatible with Elastic Stack version 8.11.0 or higher.
 ### How it works
 
 This integration collects logs from FortiMail by receiving syslog data or reading log files directly. You configure your FortiMail instance to forward logs in CSV format to an Elastic Agent using `tcp` or `udp`. Alternatively, the agent can read logs from a local file using the `filestream` input. The agent then processes the data through the `log` data stream and maps it to the Elastic Common Schema (ECS), allowing you to visualize and analyze it using Kibana dashboards.
-
-The integration supports the following event types:
-- History events
-- System events
-- Mail events
-- Antispam events
-- Antivirus events
-- Encryption events
 
 ## What data does this integration collect?
 
@@ -182,13 +168,6 @@ The following issues are commonly encountered when setting up the Fortinet Forti
 - Facility or level mismatch: Logs might not be forwarded if the FortiMail's logging level or facility code doesn't match what you expect. For troubleshooting, set the FortiMail's logging Level to Debug or Information and ensure you've selected all relevant log types in the Logging Policy Configuration section.
 - Parsing failures due to malformed CSV: If you see `error.message` fields in Kibana or events are dropped, it indicates the logs aren't in the expected CSV format or have unexpected deviations. Verify that the CSV format option is explicitly enabled on the FortiMail device and check the raw `message` field in Kibana for any discrepancies.
 - TCP framing issues: When you use the TCP input, ensure the framing settings match between your FortiMail device and the Elastic Agent configuration. The integration defaults to `rfc6587`. If you've customized the syslog format on the vendor side, you may need to adjust the Custom TCP Options to match the expected framing or line delimiters.
-
-### Vendor resources
-
-For more information, refer to the following Fortinet documentation:
-- [Fortinet FortiMail Product Page](https://www.fortinet.com/products/email-security)
-- [About FortiMail logging](https://docs.fortinet.com/document/fortimail/7.2.2/administration-guide/435158/about-fortimail-logging)
-- [FortiMail Administration Guide: Configuring Syslog](https://docs.fortinet.com/document/fortimail/7.2.2/administration-guide/332364)
 
 ## Performance and scaling
 
