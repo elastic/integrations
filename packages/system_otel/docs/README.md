@@ -13,7 +13,7 @@ Compatible `hostmetrics` receiver versions are version 0.102.0 or later.
 
 ## Collector configuration
 
-By default, the Elastic Distribution of OpenTelemetry Collector already uses the `hostmetrics` receiver. If you're using a different Collector distribution or the contrib Collector, make sure to add the following snippets to your Collector configuration file.
+The Elastic Distribution of OpenTelemetry (EDOT) Collector and the upstream Contrib Collector both include the `hostmetrics` receiver. Regardless of which Collector distribution you use, review the snippets below and add or adjust your Collector configuration to ensure the required metrics are enabled, as some of them are not enabled by default.
 
 ### Receivers configuration
 
@@ -202,10 +202,10 @@ Also, it's recommended to enable the [`resourcedetection` processor](https://git
 
 ## Troubleshooting
 
-If individual widgets in the dashboard show errors that certain fields are not evailable, that might be an indicator of one of the following:
+If individual widgets in the dashboard show errors that certain fields are not available, that might be an indicator of one of the following:
 
-- For your use case the missing data is not relevant (e.g. you are only running plain, local VMs, no `Cloud` metadata will be available)
-- You are using the OpenTelemetry upstream Contrib Collector (or any other, non-EDOT Collector) and some of the above-mentioned requirements are not met
+- For your use case, the missing data is not relevant (e.g. you are only running plain, local VMs, no `Cloud` metadata will be available).
+- Your Collector configuration does not enable all of the required metrics, or resource attributes.
 
 For additional information, refer to:
 
