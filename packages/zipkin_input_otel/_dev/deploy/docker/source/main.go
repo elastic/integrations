@@ -115,24 +115,34 @@ func sendTraces(spansURL, tracesDir string) error {
 	}
 
 	for _, path := range matches {
-		data, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("read %s: %w", path, err)
+		if err := sendTraceFile(client, spansURL, path); err != nil {
+			return err
 		}
-
-		resp, err := client.Post(spansURL, "application/json", bytes.NewReader(data))
-		if err != nil {
-			return fmt.Errorf("POST %s: %w", path, err)
-		}
-		defer resp.Body.Close()
-
-		// Zipkin returns 202 for accepted traces
-		// https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/a13d183f72cd20c2c705ec63cb5180ddb3d9b751/receiver/zipkinreceiver/trace_receiver.go#L240-L246
-		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
-			return fmt.Errorf("POST %s: status %d", path, resp.StatusCode)
-		}
-		log.Printf("posted %s -> %d", path, resp.StatusCode)
 	}
 
+	return nil
+}
+
+// sendTraceFile reads one trace file and POSTs it to the Zipkin spans endpoint.
+// It is a separate function so that defer resp.Body.Close() runs at the end of
+// each call, not at the end of the loop.
+func sendTraceFile(client *http.Client, spansURL, path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("read %s: %w", path, err)
+	}
+
+	resp, err := client.Post(spansURL, "application/json", bytes.NewReader(data))
+	if err != nil {
+		return fmt.Errorf("POST %s: %w", path, err)
+	}
+	defer resp.Body.Close()
+
+	// Zipkin returns 202 for accepted traces
+	// https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/a13d183f72cd20c2c705ec63cb5180ddb3d9b751/receiver/zipkinreceiver/trace_receiver.go#L240-L246
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
+		return fmt.Errorf("POST %s: status %d", path, resp.StatusCode)
+	}
+	log.Printf("posted %s -> %d", path, resp.StatusCode)
 	return nil
 }
