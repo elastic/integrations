@@ -20,7 +20,7 @@ processors:
   - append:
       field: event.category
       value: file
-      tag: append_event_category
+      tag: append_event_category_3c037ca6
       if: ctx.json?.properties?.FileType != null
   - append:
       field: event.type
@@ -30,7 +30,7 @@ processors:
   - append:
       field: event.type
       value: info
-      tag: append_event_type
+      tag: append_event_type_cda7b7fa
       if: ctx.event?.type == null
 
   # JSON Processors
@@ -40,27 +40,31 @@ processors:
       if: ctx.json?.properties?.DetectionMethods != null && ctx.json.properties.DetectionMethods instanceof String && ctx.json.properties.DetectionMethods != ''
       on_failure:
         - append:
+            tag: append_error_message_529b4da0
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.ConfidenceLevel
       tag: json_confidence_level
       if: ctx.json?.properties?.ConfidenceLevel != null && ctx.json.properties.ConfidenceLevel instanceof String && ctx.json.properties.ConfidenceLevel != ''
       on_failure:
         - append:
+            tag: append_error_message_ed3749b9
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
       field: json.properties.AdditionalFields
       tag: json_additional_fields
       if: ctx.json?.properties?.AdditionalFields != null && ctx.json.properties.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
       on_failure:
         - append:
+            tag: append_error_message_1ce37b77
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  
-# Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Numbers to boolean (Undocumented field types like string, numeric etc is possible, have to check all of them)
   - script:
+      tag: script_52aa7c2c
       lang: painless
       source: |
        def isTruthy(def val) {
@@ -103,8 +107,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a82265d2
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.IPAddress
       target_field: m365_defender.event.ip_address
@@ -114,8 +119,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6b777f4b
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.FileSize
       target_field: m365_defender.event.file.size
@@ -125,8 +131,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_22b19da9
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.SenderIPv4
       target_field: m365_defender.event.sender.ipv4
@@ -136,8 +143,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cf7d02be
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.SenderIPv6
       target_field: m365_defender.event.sender.ipv6
@@ -147,8 +155,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5e73475a
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.AttachmentCount
       target_field: m365_defender.event.attachment_count
@@ -158,8 +167,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0669b188
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.BulkComplaintLevel
       target_field: m365_defender.event.bulk_complaint_level
@@ -169,8 +179,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_afed7c92
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.ReportId
       target_field: m365_defender.event.report_id
@@ -180,8 +191,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bf36ea31
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.UrlCount
       target_field: m365_defender.event.url_count
@@ -191,8 +203,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_29c72742
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Rename Processors
   - rename:
@@ -366,6 +379,7 @@ processors:
       tag: rename_action_result
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_ActionTrigger_to_m365_defender_event_action_trigger_5917d9e4
       field: json.properties.ActionTrigger
       target_field: m365_defender.event.action.trigger
       ignore_missing: true
@@ -488,10 +502,10 @@ processors:
   - append:
       field: source.ip
       value: '{{{m365_defender.event.sender.ipv6}}}'
-      tag: append_source_ip
+      tag: append_source_ip_3d5316b1
       if: ctx.m365_defender?.event?.sender?.ipv6 != null
       allow_duplicates: false
-  
+
   # Host mappings
   - set:
       field: host.ip
@@ -506,6 +520,7 @@ processors:
       field: m365_defender.event.url
       on_failure:
       - set:
+          tag: set_url_original_52901182
           field: url.original
           copy_from: m365_defender.event.url
           ignore_empty_value: true
@@ -520,7 +535,7 @@ processors:
   - append:
       field: related.user
       value: '{{{m365_defender.event.recipient.email_address}}}'
-      tag: append_related_user
+      tag: append_related_user_d93de317
       if: ctx.m365_defender?.event?.recipient?.email_address != null
       allow_duplicates: false
   - append:
@@ -538,13 +553,13 @@ processors:
   - append:
       field: related.ip
       value: '{{{m365_defender.event.sender.ipv6}}}'
-      tag: append_related_ip
+      tag: append_related_ip_73da7a6d
       if: ctx.m365_defender?.event?.sender?.ipv6 != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: '{{{m365_defender.event.ip_address}}}'
-      tag: append_related_ip
+      tag: append_related_ip_b688df00
       if: ctx.m365_defender?.event?.ip_address != null
       allow_duplicates: false
   - append:
@@ -556,13 +571,13 @@ processors:
   - append:
       field: related.hosts
       value: '{{{m365_defender.event.sender.mail_from_domain}}}'
-      tag: append_related_hosts
+      tag: append_related_hosts_9fe98c73
       if: ctx.m365_defender?.event?.sender?.mail_from_domain != null
       allow_duplicates: false
   - append:
       field: related.hosts
       value: '{{{m365_defender.event.url_domain}}}'
-      tag: append_related_hosts
+      tag: append_related_hosts_b757a958
       if: ctx.m365_defender?.event?.url_domain != null
       allow_duplicates: false
 
