@@ -1,30 +1,30 @@
 inputs:
-    - data_stream:
-        namespace: ep
-      meta:
-        package:
-            name: microsoft_exchange_server
-      name: test-custom-processors-microsoft_exchange_server
-      streams:
-        - data_stream:
-            dataset: microsoft_exchange_server.smtp
-          exclude_files:
-            - .gz$
-          paths:
-            - C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\Hub\ProtocolLog\SmtpSend\*.LOG
-          processors:
-            - add_locale: null
-            - add_fields:
-                fields:
-                    source: smtp_test
-                target: test
-            - drop_fields:
-                fields:
-                    - agent.ephemeral_id
-          prospector.scanner: null
-          tags: null
-      type: filestream
-      use_output: default
+  - data_stream:
+      namespace: ep
+    meta:
+      package:
+        name: microsoft_exchange_server
+    name: test-custom-processors-microsoft_exchange_server
+    streams:
+      - data_stream:
+          dataset: microsoft_exchange_server.smtp
+        exclude_files:
+          - .gz$
+        paths:
+          - C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\Hub\ProtocolLog\SmtpSend\*.LOG
+        processors:
+          - add_locale: null
+          - add_fields:
+              target: test
+              fields:
+                source: smtp_test
+          - drop_fields:
+              fields:
+                - agent.ephemeral_id
+        prospector.scanner: null
+        tags: null
+    type: filestream
+    use_output: default
 output_permissions:
     default:
         _elastic_agent_checks:
