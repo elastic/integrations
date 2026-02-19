@@ -21,6 +21,11 @@ state:
   issues_id: {{issues_id}}
   api_token: {{api_token}}
   fetch_related_projects: {{fetch_related_projects}}
+  oauth_enable: {{oauth_enable}}
+{{#if oauth_enable}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+{{/if}}
 {{#if effective_severity_level}}
   effective_severity_level:
 {{#each effective_severity_level as |l|}}
@@ -61,113 +66,198 @@ max_executions: {{max_executions}}
 {{/if}}
 program: |-
   state.with(
-    get_request(
-      state.url.trim_right("/") + state.?cursor.next.orValue(
-        state.end_point_type + state.issues_id + "/issues?" + {
-          "version": [state.version],
-          // limit must be multiple of 10 for ... reasons; see spec. Always return a
-          // non-zero value, but otherwise do not ask for more than the user configured.
-          ?"limit": state.?limit.optMap(l, [string(max([1, int(l) / 10]) * 10)]),
-          ?"updated_after": has(state.?cursor.last_updated) ?
-            optional.of([state.cursor.last_updated])
-          : state.?lookback.optMap(l,
-            [string(now - duration(l))]
-          ),
-          ?"effective_severity_level": state.?effective_severity_level.optMap(l, [l.join(",")]),
-          ?"status": state.?status.optMap(s, [s.join(",")]),
-          ?"type": state.?type.optMap(t, [t]),
-          ?"scan_item.id": state.?scan_item_id.optMap(id, [id]),
-          ?"scan_item.type": state.?scan_item_type.optMap(t, [t]),
-          ?"ignored": state.?ignored.optMap(i, [string(i)]),
-        }.format_query()
-      )
-    ).with(
-      {
-        "Header": {
-          "Accept": ["application/vnd.api+json"],
-          "Authorization": ["Token " + state.api_token],
-        },
-      }
-    ).do_request().as(resp, (resp.StatusCode != 200) ?
-      {
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": "GET:" + (
-              (size(resp.Body) != 0) ?
-                string(resp.Body)
-              :
-                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-            ),
+    (
+      state.oauth_enable ?
+        post_request(
+          state.url.trim_right("/") + "/oauth2/token",
+          "application/x-www-form-urlencoded",
+          "grant_type=client_credentials&client_id=" + state.client_id + "&client_secret=" + state.client_secret
+        ).do_request().as(token_resp,
+          (token_resp.StatusCode == 200) ?
+            token_resp.Body.decode_json().access_token.as(token,
+              {
+                "Header": {
+                  "Accept": ["application/vnd.api+json"],
+                  "Authorization": ["Bearer " + token],
+                },
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(token_resp.StatusCode),
+                  "id": string(token_resp.Status),
+                  "message": "POST /oauth2/token :" + (
+                    (size(token_resp.Body) != 0) ?
+                      string(token_resp.Body)
+                    :
+                      string(token_resp.Status) + " (" + string(token_resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      :
+        {
+          "Header": {
+            "Accept": ["application/vnd.api+json"],
+            "Authorization": ["Token " + state.api_token],
           },
-        },
-        "want_more": false,
-      }
+        }
+    ).as(auth_header, has(auth_header.error) ? // Exit early due to Oauth authentication failure.
+      auth_header
     :
-      bytes(resp.Body).decode_json().as(body, !has(body.data) ?
+      get_request(
+        state.url.trim_right("/") + state.?cursor.next.orValue(
+          state.end_point_type + state.issues_id + "/issues?" + {
+            "version": [state.version],
+            // limit must be multiple of 10 for ... reasons; see spec. Always return a
+            // non-zero value, but otherwise do not ask for more than the user configured.
+            ?"limit": state.?limit.optMap(l, [string(max([1, int(l) / 10]) * 10)]),
+            ?"updated_after": has(state.?cursor.last_updated) ?
+              optional.of([state.cursor.last_updated])
+            : state.?lookback.optMap(l,
+              [string(now - duration(l))]
+            ),
+            ?"effective_severity_level": state.?effective_severity_level.optMap(l, [l.join(",")]),
+            ?"status": state.?status.optMap(s, [s.join(",")]),
+            ?"type": state.?type.optMap(t, [t]),
+            ?"scan_item.id": state.?scan_item_id.optMap(id, [id]),
+            ?"scan_item.type": state.?scan_item_type.optMap(t, [t]),
+            ?"ignored": state.?ignored.optMap(i, [string(i)]),
+          }.format_query()
+        )
+      ).with(auth_header).do_request().as(resp,
+        // We are doing this work mainly for the side-effects of the rate_limit call.
+        resp.with(
+          // Calculate and apply rate limits.
+          rate_limit(
+            resp.Header,
+            "X-Ratelimit",
+            false,
+            true,
+            duration(string(resp.Header[?"X-Ratelimit-Reset"][0].orValue("1")) + "s"),
+            0
+          ).as(rate_headers,
+            {
+              // Rate limit side-effects have already been applied to the
+              // limiter. This value is propagated to the final output for
+              // handleResponse to extract a waitUntil time when the
+              // quota is zero.
+              "rate_limit": rate_headers.with(
+                {
+                  // Work around inf detection in input.
+                  // If the headers are missing or rate_limit failed, rate and
+                  // next may be missing. So use optional types.
+                  ?"rate": (rate_headers.?rate == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
+                  ?"next": (rate_headers.?next == optional.of(double("Infinity"))) ? optional.of("inf") : optional.none(),
+                }
+              ),
+            }
+          )
+        )
+      ).as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body, !has(body.data) ?
+          {
+            "events": [],
+            "want_more": false,
+            "rate_limit": resp.rate_limit,
+          }
+        :
+          {
+            "events": body.data.map(issue,
+              (
+                state.fetch_related_projects == false || issue.?relationships.scan_item.links.related.orValue("") == "" ||
+                issue.?relationships.scan_item.data.type.orValue("") != "project"
+              ) ?
+                // not activated or no link or not a project, don't enrich
+                issue
+              :
+                // use the link to enrich
+                issue.with(
+                  {
+                    "relationships": issue.relationships.with(
+                      {
+                        "scan_item": issue.relationships.scan_item.with(
+                          {
+                            "data": issue.relationships.scan_item.data.with(
+                              get_request(
+                                state.url.trim_right("/") + "/rest" + issue.relationships.scan_item.links.related + "?" + {"version": [state.version]}.format_query()
+                              ).with(auth_header).do_request().as(resp,
+                                // We are doing this work purely for the side-effects of the rate_limit call.
+                                resp.with(
+                                  // Calculate and apply rate limits.
+                                  // Threading rate-limit results obtained here through to the final
+                                  // result is not tenable, so we do not do any work to allow them
+                                  // to be interpreted by the input and just drop them.
+                                  rate_limit(
+                                    resp.Header,
+                                    "X-Ratelimit",
+                                    false,
+                                    true,
+                                    duration(string(resp.Header[?"X-Ratelimit-Reset"][0].orValue("1")) + "s"),
+                                    0
+                                  ).drop(["rate", "next"])
+                                )
+                              ).as(resp, (resp.StatusCode == 200) ?
+                                resp.Body.decode_json().as(body,
+                                  body.?data.orValue(
+                                    {
+                                      "_enrich_error_message": "No data received for " + issue.relationships.scan_item.links.related,
+                                    }
+                                  )
+                                )
+                              :
+                                {"_enrich_error_message": "Status code " + string(resp.StatusCode) + " received while fetching " + issue.relationships.scan_item.links.related}
+                              )
+                            ),
+                          }
+                        ),
+                      }
+                    ),
+                  }
+                )
+            ).map(issue,
+              {
+                "message": issue.encode_json(),
+              }
+            ),
+            "cursor": {
+              ?"next": body.?links.next,
+              // Always keep last updated. This is our next periodic start point.
+              "last_updated": body.data.map(d, has(d.?attributes.updated_at),
+                timestamp(d.attributes.updated_at)
+              ).as(times, (size(times) == 0) ? state.?cursor.last_updated.orValue(now) : times.max()),
+            },
+            "want_more": has(body.?links.next),
+            "rate_limit": resp.rate_limit,
+          }
+        )
+      : (resp.StatusCode == 429) ?
+        // We were not able to avoid a rate limit excession.
         {
           "events": [],
           "want_more": false,
+          "rate_limit": resp.rate_limit,
         }
       :
         {
-          "events": body.data.map(issue,
-            (
-              state.fetch_related_projects == false || issue.?relationships.scan_item.links.related.orValue("") == "" ||
-              issue.?relationships.scan_item.data.type.orValue("") != "project"
-            ) ?
-              // not activated or no link or not a project, don't enrich
-              issue
-            :
-              // use the link to enrich
-              issue.with(
-                {
-                  "relationships": issue.relationships.with(
-                    {
-                      "scan_item": issue.relationships.scan_item.with(
-                        {
-                          "data": issue.relationships.scan_item.data.with(
-                            get_request(
-                              state.url.trim_right("/") + "/rest" + issue.relationships.scan_item.links.related + "?" + {"version": [state.version]}.format_query()
-                            ).with(
-                              {
-                                "Header": {
-                                  "Accept": ["application/vnd.api+json"],
-                                  "Authorization": ["Token " + state.api_token],
-                                },
-                              }
-                            ).do_request().as(resp, (resp.StatusCode != 200) ?
-                              {"_enrich_error_message": "Status code " + string(resp.StatusCode) + " received while fetching " + issue.relationships.scan_item.links.related}
-                            :
-                              bytes(resp.Body).decode_json().as(body,
-                                body.?data.orValue(
-                                  {
-                                    "_enrich_error_message": "No data received for " + issue.relationships.scan_item.links.related,
-                                  }
-                                )
-                              )
-                            )
-                          ),
-                        }
-                      ),
-                    }
-                  ),
-                }
-              )
-          ).map(issue,
-            {
-              "message": issue.encode_json(),
-            }
-          ),
-          "cursor": {
-            ?"next": body.?links.next,
-            // Always keep last updated. This is our next periodic start point.
-            "last_updated": body.data.map(d, has(d.?attributes.updated_at),
-              timestamp(d.attributes.updated_at)
-            ).as(times, (size(times) == 0) ? state.?cursor.last_updated.orValue(now) : times.max()),
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET:" + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
           },
-          "want_more": has(body.?links.next),
+          "want_more": false,
+          "rate_limit": resp.rate_limit,
         }
       )
     )
