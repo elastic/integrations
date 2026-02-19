@@ -1,0 +1,45 @@
+services:
+  dockerd:
+    image: docker:24-dind
+    privileged: true
+    command: ["--tls=false", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    ports:
+      - 2375
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  workload:
+    image: docker:24-cli
+    environment:
+      - DOCKER_HOST=tcp://dockerd:2375
+    depends_on:
+      dockerd:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        # Redirect all output (including stderr) to a log file
+        exec > /var/log/workload.log 2>&1
+        echo "Check binaries..."
+        which docker && which sh
+        echo "Waiting for Docker daemon at $DOCKER_HOST..."
+        # Simply wait for the daemon
+        while ! docker info >/dev/null 2>&1; do
+          echo "Waiting for Docker daemon connection..."
+          sleep 5
+        done
+        echo "Docker daemon found!"
+        docker info
+        # Start a container that generates some stats (simulating load)
+        echo "Starting stressful container..."
+        # Identify if container already exists to avoid conflict on restart
+        docker rm -f stressful || true
+        docker run -d --name stressful alpine sh -c "while true; do :; done"
+        echo "Stressful container running."
+        # Keep this container alive
+        tail -f /var/log/workload.log
