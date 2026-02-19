@@ -1,0 +1,95 @@
+format_version: "3.3.2"
+name: greenhouse
+title: "Greenhouse"
+version: "0.1.0"
+description: Collect audit logs from Greenhouse ATS with Elastic Agent.
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: "^8.18.0 || ^9.0.0"
+icons:
+  - src: /img/greenhouse-logo.svg
+    title: Greenhouse logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: greenhouse
+    title: Greenhouse Audit Logs
+    description: Collect audit logs from Greenhouse API
+    inputs:
+      - type: cel
+        title: Collect data from Greenhouse Audit Log API
+        description: Collect audit logs from the Greenhouse Audit Log API
+        vars:
+          - name: url
+            type: text
+            title: Greenhouse Audit Log API URL
+            multi: false
+            show_user: false
+            required: true
+            default: https://auditlog.us.greenhouse.io
+            description: The base URL of the Greenhouse Audit Log API.
+          - name: token_url
+            type: text
+            title: Greenhouse OAuth Token URL
+            multi: false
+            show_user: false
+            required: true
+            default: https://auth.greenhouse.io/token
+            description: The OAuth 2.0 token endpoint URL for obtaining access tokens.
+          - name: client_id
+            type: text
+            title: OAuth Client ID
+            multi: false
+            show_user: true
+            required: true
+            description: The Client ID from your Harvest V3 (OAuth) API credentials in Greenhouse.
+          - name: client_secret
+            type: password
+            title: OAuth Client Secret
+            multi: false
+            show_user: true
+            required: true
+            secret: true
+            description: The Client Secret from your Harvest V3 (OAuth) API credentials in Greenhouse.
+          - name: user_id
+            type: text
+            title: Authorizing User ID
+            multi: false
+            show_user: true
+            required: false
+            description: The numeric Greenhouse user_id of a Site Admin user who authorizes API access. Find this in the URL when viewing the user in Greenhouse. This field is optional if your OAuth credentials are configured with a default user.
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging.
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: true
+            default: 60s
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/security-service-integrations
+  type: community

@@ -1,0 +1,206 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  token_url: {{token_url}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+{{#if user_id}}
+  user_id: "{{user_id}}"
+{{/if}}
+  batch_size: {{batch_size}}
+{{#if performer_ids}}
+  performer_ids: "{{performer_ids}}"
+{{/if}}
+{{#if event_types}}
+  event_types: "{{event_types}}"
+{{/if}}
+  want_more: false
+redact:
+  fields:
+    - client_secret
+    - token
+program: |
+  state.with(
+    // Check if token needs refresh (expired or not present)
+    (
+      !has(state.token) || state.token == "" ||
+      !has(state.token_expires) || timestamp(state.token_expires) < now
+    ).as(need_token,
+      need_token ?
+        // Step 1: Get OAuth access token using Client Credentials flow (Harvest API V3)
+        request("POST", state.token_url).with({
+          "Header": {
+            "Content-Type": ["application/x-www-form-urlencoded"],
+            "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
+          },
+          "Body": bytes("grant_type=client_credentials" + (has(state.user_id) && state.user_id != "" ? "&sub=" + state.user_id : ""))
+        }).do_request().as(token_resp,
+          token_resp.StatusCode == 200 ?
+            bytes(token_resp.Body).decode_json().as(token_body, {
+              "token": token_body.access_token,
+              "token_expires": token_body.expires_at,
+              "cursor": has(state.cursor) ? state.cursor : {},
+            })
+          :
+            {
+              "events": [{
+                "error": {
+                  "code": string(token_resp.StatusCode),
+                  "message": "Failed to obtain OAuth access token: " + (
+                    size(token_resp.Body) != 0 ?
+                      string(token_resp.Body)
+                    :
+                      string(token_resp.Status) + " (" + string(token_resp.StatusCode) + ")"
+                  ),
+                }
+              }],
+              "want_more": false,
+              "cursor": has(state.cursor) ? state.cursor : {},
+            }
+        )
+      :
+        // Token still valid, use existing
+        {
+          "token": state.token,
+          "token_expires": state.token_expires,
+          "cursor": has(state.cursor) ? state.cursor : {},
+        }
+    ).as(auth,
+      // Check if we got an error during token acquisition
+      has(auth.events) ?
+        auth
+      :
+        // Step 2: Build query parameters for audit log request
+        (
+          has(state.cursor) && has(state.cursor.last_event_time) ?
+            state.cursor.last_event_time
+          :
+            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+        ).as(after_time,
+          // Build headers including pagination if we have cursor
+          {
+            "Authorization": ["Bearer " + auth.token],
+            "Content-Type": ["application/json"],
+            "Size": [string(int(state.batch_size))],
+          }.as(base_headers,
+            (
+              has(state.cursor) && has(state.cursor.pit_id) && state.cursor.pit_id != "" ?
+                base_headers.with({"Pit-Id": [state.cursor.pit_id]})
+              :
+                base_headers
+            ).as(headers_with_pit,
+              (
+                has(state.cursor) && has(state.cursor.search_after) && state.cursor.search_after != "" ?
+                  headers_with_pit.with({"Search-After": [state.cursor.search_after]})
+                :
+                  headers_with_pit
+              ).as(headers,
+                // Build URL with query params
+                (
+                  state.url.trim_right("/") + "/events?paging=true&after_time=" + after_time +
+                  (has(state.performer_ids) && state.performer_ids != "" ? "&performer_ids=" + state.performer_ids : "") +
+                  (has(state.event_types) && state.event_types != "" ? "&event_types=" + state.event_types : "")
+                ).as(request_url,
+                  // Make the audit log API request
+                  request("GET", request_url).with({
+                    "Header": headers
+                  }).do_request().as(resp,
+                    resp.StatusCode == 200 ?
+                      bytes(resp.Body).decode_json().as(body,
+                        {
+                          // Preserve token for next iteration
+                          "token": auth.token,
+                          "token_expires": auth.token_expires,
+                          // Map events to messages
+                          "events": has(body.results) && size(body.results) > 0 ?
+                            body.results.map(event, {
+                              "message": event.encode_json()
+                            })
+                          :
+                            [],
+                          // Update cursor with pagination info
+                          "cursor": {
+                            "pit_id": has(body.paging) && has(body.paging.pit_id) ? string(body.paging.pit_id) : "",
+                            "search_after": has(body.paging) && has(body.paging.next_search_after) && body.paging.next_search_after != null ?
+                              string(body.paging.next_search_after)
+                            :
+                              "",
+                            "last_event_time": has(body.results) && size(body.results) > 0 ?
+                              body.results[size(body.results) - 1].event_time
+                            :
+                              after_time,
+                          },
+                          // Continue pagination if there are more results
+                          "want_more": has(body.paging) && has(body.paging.next_search_after) && body.paging.next_search_after != null,
+                        }
+                      )
+                    : resp.StatusCode == 401 ?
+                      // Token expired, clear it and retry on next interval
+                      {
+                        "token": "",
+                        "token_expires": "",
+                        "events": [{
+                          "error": {
+                            "code": "401",
+                            "message": "OAuth access token expired or invalid. Will refresh on next interval.",
+                          }
+                        }],
+                        "want_more": false,
+                        "cursor": has(state.cursor) ? state.cursor : {},
+                      }
+                    :
+                      // Other error - preserve state
+                      {
+                        "token": auth.token,
+                        "token_expires": auth.token_expires,
+                        "events": [{
+                          "error": {
+                            "code": string(resp.StatusCode),
+                            "message": "Audit log API request failed: " + (
+                              size(resp.Body) != 0 ?
+                                string(resp.Body)
+                              :
+                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                            ),
+                          }
+                        }],
+                        "want_more": false,
+                        "cursor": has(state.cursor) ? state.cursor : {},
+                      }
+                  )
+                )
+              )
+            )
+          )
+        )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
