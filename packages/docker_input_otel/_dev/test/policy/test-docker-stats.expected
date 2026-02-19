@@ -1,7 +1,9 @@
 connectors:
     forward: {}
 exporters:
-    elasticsearch/componentid-0: {}
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
 inputs: []
 output_permissions:
     default:
@@ -28,22 +30,22 @@ processors:
             - context: datapoint
               statements:
                 - set(attributes["data_stream.type"], "metrics")
-                - set(attributes["data_stream.dataset"], "docker_input_otel.dockerstatsreceiver")
+                - set(attributes["data_stream.dataset"], "dockerstatsreceiver")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     docker_stats/componentid-0:
         api_version: "1.44"
         collection_interval: 10s
         container_labels_to_metric_labels:
-            com.docker.compose.service: compose_service
             com.docker.compose.project: compose_project
+            com.docker.compose.service: compose_service
         endpoint: unix:///var/run/docker.sock
-        env_vars_to_metric_labels: 
+        env_vars_to_metric_labels:
             ENVIRONMENT: environment
         excluded_images:
             - nginx:latest
             - redis:alpine
-        initial_delay: "5s"
+        initial_delay: 5s
         metrics:
             container.cpu.usage.percpu:
                 enabled: true
