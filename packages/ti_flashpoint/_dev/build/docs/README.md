@@ -4,7 +4,7 @@
 
 [Flashpoint](https://flashpoint.io/) is a comprehensive threat intelligence platform that delivers actionable insights from dark web, deep web, and technical sources. It combines human-curated intelligence with automated collection to help organizations identify emerging threats, monitor adversary activity, and assess cyber risk with enriched context.
 
-The Flashpoint integration for Elastic collects security indicators from the **Flashpoint Ignite API** and visualizes them in Kibana.
+The Flashpoint integration for Elastic collects alerts and indicators from the **Flashpoint Ignite API** and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -18,13 +18,18 @@ This integration periodically queries the Flashpoint Ignite API to retrieve logs
 
 This integration collects log messages of the following type:
 
+- `Alert`: Collects `alert` logs from the Flashpoint Ignite API (endpoint: `/alert-management/v1/notifications`),
 - `Indicator`: Collects `indicator` logs from the Flashpoint Ignite API (endpoint: `/technical-intelligence/v2/indicators`),
 
-### Supported use cases
+### Supported Use Cases
 
-Integrating Flashpoint Indicators with Elastic SIEM provides centralized visibility into threat intelligence indicators and their associated sightings. Kibana dashboards highlight key metrics such as `Total Indicators` and `Total Indicator Sightings`, enabling quick assessment of indicator volume and activity.
+Integrating Flashpoint with Elastic SIEM provides centralized visibility into both threat intelligence **Alerts** and **Indicators**, enabling efficient monitoring and investigation within Kibana dashboards.
 
-Visualizations present indicators categorized by `Type` and `Score Tier` through pie charts. Tables surface `Top MITRE Tactics`, `Top Sighting Sources`, and `Top Platform URLs`, supporting deeper investigation and context. A control panel allows interactive filtering to efficiently analyze indicators across multiple dimensions.
+For **Alerts**, dashboard presents key metrics such as `Total Alerts` and `Alert Trends Over Time`, helping analysts quickly detect activity spikes and monitor evolving threat patterns.
+
+For **Indicators**, dashboard highlights `Total Indicators` and `Indicators by Type`, providing insight into indicator volume and classification for effective threat analysis.
+
+Interactive filtering controls allow analysts to drill down across alerts and indicators, supporting streamlined investigation workflows within a unified threat intelligence view.
 
 ## What do I need to use this integration?
 
@@ -96,6 +101,16 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
+#### Alert
+
+{{fields "alert"}}
+
+### Example event
+
+#### Alert
+
+{{event "alert"}}
+
 #### Indicator
 
 {{fields "indicator"}}
@@ -107,15 +122,16 @@ For more information on architectures that can be used for scaling this integrat
 {{event "indicator"}}
 
 
+
 ### Inputs used
 
 These input is used in the integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
-
 ### API usage
 
 This integration dataset uses the following API:
 
+* List Alerts (endpoint: `/alert-management/v1/notifications`)|
 * List Indicators (endpoint: `/technical-intelligence/v2/indicators`)
