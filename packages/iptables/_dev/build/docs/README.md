@@ -1,5 +1,7 @@
 # Iptables Integration for Elastic
 
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
+
 ## Overview
 The Iptables integration for Elastic enables you to collect and analyze logs from `iptables` and `ip6tables` running on Linux distributions and Ubiquiti networking equipment. It's designed to provide deep visibility into network traffic filtered by kernel firewalls, which helps you monitor allowed and denied connections across your infrastructure.
 
