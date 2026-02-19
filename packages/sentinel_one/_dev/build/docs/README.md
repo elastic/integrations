@@ -10,7 +10,7 @@ This module has been tested against `SentinelOne Management Console API version 
 
 ### How it works
 
-This integration periodically queries the SentinelOne REST API to retrieve Activity, Agent, Alert, Application, Application Risk, Group, Threat, Threat Event and Unified Alert logs.
+This integration periodically queries the SentinelOne REST API to retrieve Activity, Agent, Alert, Application, Application Risk, Group, Threat, Threat Event, and Unified Alert logs.
 
 ## What data does this integration collect?
 
@@ -198,8 +198,8 @@ This is the `unified alert` dataset.
 
 These inputs are used in this integration:
 
-- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
-- [httpjson](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson)
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+- [HTTP JSON](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson)
 
 ### API usage
 
