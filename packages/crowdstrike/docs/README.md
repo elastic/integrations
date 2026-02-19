@@ -765,6 +765,7 @@ By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhos
 Parts of the configuration file called `EventTypeCollection` and `EventSubTypeCollection` provides a list of event types that the connector should collect.
 
 Current supported event types are:
+- CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
 - EppDetectionSummaryEvent
@@ -842,6 +843,7 @@ Current supported event types are:
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
+| crowdstrike.event.DomainName |  | keyword |
 | crowdstrike.event.EgressEventId |  | keyword |
 | crowdstrike.event.EgressSessionId |  | keyword |
 | crowdstrike.event.EmailAddresses | Summary list of all associated entity email addresses. | keyword |
@@ -898,6 +900,8 @@ Current supported event types are:
 | crowdstrike.event.IOARuleName | Name given to the custom IOA rule that triggered. | keyword |
 | crowdstrike.event.IOCType | CrowdStrike type for indicator of compromise. | keyword |
 | crowdstrike.event.IOCValue | CrowdStrike value for indicator of compromise. | keyword |
+| crowdstrike.event.IPv4 |  | ip |
+| crowdstrike.event.IPv6 |  | ip |
 | crowdstrike.event.IdpPolicyRuleAction | Identity Protection policy rule action. | keyword |
 | crowdstrike.event.IdpPolicyRuleName | Identity Protection policy rule name. | keyword |
 | crowdstrike.event.IdpPolicyRuleTrigger | Identity Protection policy rule trigger. | keyword |
@@ -1529,6 +1533,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.CertificatePublisher |  | keyword |
 | crowdstrike.CertificateSignatureHash |  | keyword |
 | crowdstrike.CertificateSignatureHashAlgorithm |  | keyword |
+| crowdstrike.ChangeId |  | keyword |
 | crowdstrike.ChangeTime |  | date |
 | crowdstrike.ChangedPcrBitmap |  | match_only_text |
 | crowdstrike.ChannelDiffStatus |  | keyword |
@@ -1563,6 +1568,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ConnectionAddressIP6 |  | match_only_text |
 | crowdstrike.ConnectionFlags |  | keyword |
 | crowdstrike.ConnectionType |  | keyword |
+| crowdstrike.ContentDiff.Exists |  | boolean |
 | crowdstrike.ContentPatternCounts |  | nested |
 | crowdstrike.ContentPatterns.ConfidenceLevel |  | long |
 | crowdstrike.ContentPatterns.ID |  | keyword |
@@ -1675,6 +1681,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.FeatureVector |  | match_only_text |
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
+| crowdstrike.FileAttributesNew |  | keyword |
+| crowdstrike.FileAttributesPrevious |  | keyword |
 | crowdstrike.FileCategory |  | keyword |
 | crowdstrike.FileCategoryCounts |  | nested |
 | crowdstrike.FileContent |  | match_only_text |
@@ -1797,6 +1805,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.IpEntryFlags |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
 | crowdstrike.IsClipboard |  | boolean |
+| crowdstrike.IsEBPF |  | keyword |
+| crowdstrike.IsFromDifferentMountNamespace |  | keyword |
 | crowdstrike.IsHosted |  | keyword |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
@@ -1901,14 +1911,18 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.NetworkModuleLoadCount |  | long |
 | crowdstrike.NetworkRecvAcceptCount |  | long |
 | crowdstrike.NewExecutableWrittenCount |  | long |
+| crowdstrike.NewFileAttributesLinux |  | keyword |
 | crowdstrike.NewFileIdentifier |  | keyword |
+| crowdstrike.NewUnixPermissions |  | keyword |
 | crowdstrike.NlMtu |  | keyword |
-| crowdstrike.Nonce |  | integer |
+| crowdstrike.Nonce |  | unsigned_long |
 | crowdstrike.OSVersionFileData |  | match_only_text |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
 | crowdstrike.Object1Type |  | keyword |
+| crowdstrike.ObjectAccessOperationType |  | keyword |
 | crowdstrike.ObjectNameEtw |  | match_only_text |
+| crowdstrike.ObjectType |  | keyword |
 | crowdstrike.ObjectTypeEtw |  | match_only_text |
 | crowdstrike.Objective |  | keyword |
 | crowdstrike.OciContainerAppName |  | match_only_text |
@@ -2027,10 +2041,16 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.PlatformId |  | keyword |
 | crowdstrike.PlatformName |  | keyword |
 | crowdstrike.PointerSize |  | keyword |
+| crowdstrike.Policy.ID |  | keyword |
+| crowdstrike.Policy.Name |  | keyword |
+| crowdstrike.PolicyRuleSeverity |  | long |
 | crowdstrike.PreferredLifetime |  | keyword |
 | crowdstrike.PrefixLength |  | keyword |
 | crowdstrike.PrefixOrigin |  | keyword |
+| crowdstrike.Prevalence.Key |  | keyword |
 | crowdstrike.PreviousConnectTime |  | date |
+| crowdstrike.PreviousFileAttributesLinux |  | keyword |
+| crowdstrike.PreviousUnixPermissions |  | keyword |
 | crowdstrike.PrimaryModule |  | keyword |
 | crowdstrike.PrivilegedProcessHandleCount |  | long |
 | crowdstrike.PrivilegesBitmask |  | keyword |
@@ -2127,6 +2147,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ScriptControlErrorCode |  | keyword |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
 | crowdstrike.ScriptingLanguageId |  | keyword |
+| crowdstrike.SecurityInformationLinux |  | keyword |
 | crowdstrike.SensorGroupingTags |  | keyword |
 | crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
@@ -2203,6 +2224,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.SubjectDomainNameEtw |  | match_only_text |
 | crowdstrike.SuffixOrigin |  | keyword |
 | crowdstrike.SuppressType |  | keyword |
+| crowdstrike.Suppression.Suppressed |  | boolean |
 | crowdstrike.SuspectStackCount |  | long |
 | crowdstrike.SuspiciousCredentialModuleLoadCount |  | long |
 | crowdstrike.SuspiciousDnsRequestCount |  | long |
