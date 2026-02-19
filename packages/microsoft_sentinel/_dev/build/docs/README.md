@@ -58,7 +58,7 @@ For Rest API, this module has been tested against the **2024-03-01** version.
 3. Select the **Microsoft Sentinel** integration and add it.
 4. Add all the required integration configuration parameters:
    - **REST API input type:** URL, Login URL, Client ID, Client Secret, Tenant Id, Resource Group Name, Subscription ID, Workspace Name, Interval, and Initial Interval.
-   - **Azure Event Hub input type:** Authentication type (Connection String or Client Secret). For **Connection String**: Consumer Group, Connection String, Storage Account, and Storage Account Key. For **Client Secret**: Tenant ID, Client ID, Client Secret, Event Hub namespace, plus Storage Account (and optional container). For client secret setup and required RBAC roles, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
+   - **Azure Event Hub input type:** Authentication type (Connection String or Client Secret). For **Connection String**: Consumer Group, Connection String, Storage Account, and Storage Account Key. For **Client Secret**: Azure Event Hub, Consumer Group, Tenant ID, Client ID, Client Secret, Event Hub namespace, plus Storage Account (and optional container). For client secret setup and required RBAC roles, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 5. Save the integration.
 
 ## Logs reference
