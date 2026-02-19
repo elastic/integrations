@@ -1,15 +1,158 @@
 # System OpenTelemetry Assets
 
-System OpenTelemetry Assets provides dashboards for vizualising OpenTelemetry hosts' metrics and logs. 
+System OpenTelemetry Assets provides dashboards for visualizing OpenTelemetry hosts' metrics and logs. 
 
 ## Requirements
 
 Collect and ingest OpenTelemetry data from the Collector's [`hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.127.0/receiver/hostmetricsreceiver) through:
 
-- the [Elastic Distributions of OpenTelemetry](https://www.elastic.co/docs/reference/opentelemetry/quickstart/)
-- or using the vanilla / upstream OpenTelemetry Collector
+- [Elastic Distributions of OpenTelemetry](https://www.elastic.co/docs/reference/opentelemetry/quickstart/)
+- Contrib or upstream OpenTelemetry Collector
 
-Compatible `hostmetrics` receiver versions are all versions `>= v0.102.0`.
+Compatible `hostmetrics` receiver versions are version 0.102.0 or later.
+
+## Where to start
+
+If you're configuring your OpenTelemetry Collector so the dashboards in this package work as expected, start with [Collector configuration](#collector-configuration), and then verify the required [Available metrics](#available-metrics).
+
+## Collector configuration
+
+The Elastic Distribution of OpenTelemetry (EDOT) Collector and the upstream Contrib Collector both include the `hostmetrics` receiver. Regardless of which Collector distribution you use, review the following snippets and add or adjust your Collector configuration to ensure the required metrics are enabled, as some of them are not enabled by default.
+
+### Receivers configuration
+
+Make sure that your receivers section in the Collector configuration file is as follows:
+
+#### Linux
+
+```yaml
+  # Receiver for CPU, Disk, Memory, and Filesystem metrics
+  hostmetrics/system:
+    collection_interval: 60s
+    scrapers:
+      disk:
+      filesystem:
+      cpu:
+        metrics:
+          system.cpu.utilization:
+            enabled: true
+          system.cpu.logical.count:
+            enabled: true
+      memory:
+        metrics:
+          system.memory.utilization:
+            enabled: true
+      #process:
+      #  mute_process_exe_error: true
+      #  mute_process_io_error: true
+      #  mute_process_user_error: true
+      #  metrics:
+      #    process.threads:
+      #      enabled: true
+      #    process.open_file_descriptors:
+      #      enabled: true
+      #    process.memory.utilization:
+      #      enabled: true
+      #    process.disk.operations:
+      #      enabled: true
+      network:
+      processes:
+      load:
+```
+
+#### Windows
+
+```yaml
+  # Receiver for CPU, Disk, Memory, and Filesystem metrics
+  hostmetrics/system:
+    collection_interval: 60s
+    scrapers:
+      filesystem:
+      memory:
+        metrics:
+          system.memory.utilization:
+            enabled: true
+      #process:
+      #  mute_process_exe_error: true
+      #  mute_process_io_error: true
+      #  mute_process_user_error: true
+      #  metrics:
+      #    process.threads:
+      #      enabled: true
+      #    process.open_file_descriptors:
+      #      enabled: true
+      #    process.memory.utilization:
+      #      enabled: true
+      #    process.disk.operations:
+      #      enabled: true
+      network:
+      processes:
+      load:
+```
+
+### Processors configuration
+
+Make sure that your processors section in the Collector configuration file is as follows:
+
+```yaml
+processors:
+  resourcedetection:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.name:
+          enabled: true
+        host.id:
+          enabled: false
+        host.arch:
+          enabled: true
+        host.ip:
+          enabled: true
+        host.mac:
+          enabled: true
+        host.cpu.vendor.id:
+          enabled: true
+        host.cpu.family:
+          enabled: true
+        host.cpu.model.id:
+          enabled: true
+        host.cpu.model.name:
+          enabled: true
+        host.cpu.stepping:
+          enabled: true
+        host.cpu.cache.l2.size:
+          enabled: true
+        os.description:
+          enabled: true
+        os.type:
+          enabled: true
+```
+
+### Service configuration
+
+Make sure that the service section in your Collector configuration file includes the receiver and processor:
+
+#### Self-managed
+
+```yaml
+service:
+    metrics/hostmetrics:
+      receivers: [hostmetrics/system]
+      processors: [resourcedetection]
+      exporters: [elasticsearch/otel]
+```
+
+### ECH and Serverless
+
+```yaml
+    metrics/hostmetrics:
+      receivers: [hostmetrics/system]
+      processors: [resourcedetection]
+      exporters: [otlp/ingest_metrics_traces]
+```
+
+## Available metrics
 
 For full functionality of the dashboards included in this content pack, you will need to ensure the following metrics are enabled in the [`hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.127.0/receiver/hostmetricsreceiver):
 
@@ -63,12 +206,12 @@ Also, it's recommended to enable the [`resourcedetection` processor](https://git
 
 ## Troubleshooting
 
-If individual widgets in the dashboard show errors that certain fields are not evailable, that might be an indicator of one of the following:
+If individual widgets in the dashboard show errors that certain fields are not available, that might be an indicator of one of the following:
 
-- For your use case the missing data is not relevant (e.g. you are only running plain, local VMs, no `Cloud` metadata will be available)
-- You are using the OpenTelemetry upstream Contrib Collector (or any other, non-EDOT Collector) and some of the above-mentioned requirements are not met
+- For your use case, the missing data is not relevant (e.g. you are only running plain, local VMs, no `Cloud` metadata will be available).
+- Your Collector configuration does not enable all of the required metrics, or resource attributes.
 
-See also:
+For additional information, refer to:
 
-- [Scraper limitations](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.127.0/receiver/hostmetricsreceiver#host-metrics-receiver) with the `hostmetrics` receiver for certain systems
-- [Related EDOT Collector limitations](https://www.elastic.co/docs/reference/opentelemetry/compatibility/limitations#infrastructure-and-host-metrics) for host metrics 
+- [Scraper limitations](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.127.0/receiver/hostmetricsreceiver#host-metrics-receiver) with the `hostmetrics` receiver for certain systems.
+- [Related EDOT Collector limitations](https://www.elastic.co/docs/reference/opentelemetry/compatibility/limitations#infrastructure-and-host-metrics) for host metrics.
