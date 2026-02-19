@@ -17,7 +17,7 @@ If you're configuring your OpenTelemetry Collector so the dashboards in this pac
 
 ## Collector configuration
 
-The Elastic Distribution of OpenTelemetry (EDOT) Collector and the upstream Contrib Collector both include the `hostmetrics` receiver. Regardless of which Collector distribution you use, review the snippets below and add or adjust your Collector configuration to ensure the required metrics are enabled, as some of them are not enabled by default.
+The Elastic Distribution of OpenTelemetry (EDOT) Collector and the upstream Contrib Collector both include the `hostmetrics` receiver. Regardless of which Collector distribution you use, review the following snippets and add or adjust your Collector configuration to ensure the required metrics are enabled, as some of them are not enabled by default.
 
 ### Receivers configuration
 
