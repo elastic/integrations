@@ -254,7 +254,7 @@ To collect logs via TCP, select **Collect logs via TCP** and configure the follo
 To enable encrypted connections, configure the following SSL settings:
 
 **SSL Settings:**
-- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Enable SSL - Toggle to enable SSL/TLS encryption
 - Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
 - Certificate Key - Path to the private key file (`.key`)
 - Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
@@ -357,6 +357,7 @@ The `log` data stream collects various log types from Fortinet FortiMail instanc
 | fortinet_fortimail.log.type |  | keyword |
 | fortinet_fortimail.log.ui |  | keyword |
 | fortinet_fortimail.log.ui_ip |  | ip |
+| fortinet_fortimail.log.url |  | keyword |
 | fortinet_fortimail.log.user |  | keyword |
 | fortinet_fortimail.log.virus |  | keyword |
 | fortinet_fortimail.log.xfer_time |  | double |
