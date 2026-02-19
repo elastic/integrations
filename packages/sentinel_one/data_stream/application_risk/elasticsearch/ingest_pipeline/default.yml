@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.11.0
+      value: 9.3.0
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -76,6 +76,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_88d9bd93
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -116,6 +117,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5c3f4563
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -127,6 +129,7 @@ processors:
       if: ctx.json?.detectionDate != null && ctx.json.detectionDate != ''
       on_failure:
         - append:
+            tag: append_error_message_ea9f7ee9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -190,6 +193,7 @@ processors:
       if: ctx.json?.lastScanDate != null && ctx.json.lastScanDate != ''
       on_failure:
         - append:
+            tag: append_error_message_b4367070
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -203,14 +207,17 @@ processors:
       target_field: sentinel_one.application_risk.last_scan_result
       ignore_missing: true
   - set:
+      tag: set_event_outcome_3ea2a4a4
       field: event.outcome
       value: success
       if: ctx.sentinel_one?.application_risk?.last_scan_result?.equalsIgnoreCase('Succeeded') == true
   - set:
+      tag: set_event_outcome_21c5d555
       field: event.outcome
       value: failure
       if: ctx.sentinel_one?.application_risk?.last_scan_result?.equalsIgnoreCase('Failed') == true
   - set:
+      tag: set_event_outcome_2820f2e9
       field: event.outcome
       value: unknown
       override: false
@@ -238,6 +245,7 @@ processors:
       if: ctx.json?.markedDate != null && ctx.json.markedDate != ''
       on_failure:
         - append:
+            tag: append_error_message_43807570
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -255,6 +263,7 @@ processors:
       if: ctx.json?.mitigationStatusChangeTime != null && ctx.json.mitigationStatusChangeTime != ''
       on_failure:
         - append:
+            tag: append_error_message_15a0b2fc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -276,6 +285,7 @@ processors:
       if: ctx.json?.nvdBaseScore != ''
       on_failure:
         - append:
+            tag: append_error_message_a14f82a0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -306,6 +316,7 @@ processors:
       if: ctx.json?.publishedDate != null && ctx.json.publishedDate != ''
       on_failure:
         - append:
+            tag: append_error_message_33fe06d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -346,6 +357,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b75d6d29
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -354,6 +366,7 @@ processors:
       target_field: sentinel_one.application_risk.severity
       ignore_missing: true
   - script:
+      tag: script_e4bd0b3b
       description: Set event severity based on severity.
       if: ctx.sentinel_one?.application_risk?.severity != null
       lang: painless
@@ -367,6 +380,7 @@ processors:
         ctx.event.severity = params.get(ctx.sentinel_one.application_risk.severity.toLowerCase());
       on_failure:
         - append:
+            tag: append_error_message_7268bec9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -427,6 +441,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
