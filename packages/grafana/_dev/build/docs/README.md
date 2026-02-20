@@ -18,7 +18,7 @@ Grafana must have metrics enabled (`GF_METRICS_ENABLED=true` or `[metrics] enabl
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "metrics"}}
 
@@ -30,15 +30,15 @@ The `logs` data stream collects Grafana server logs from file. Both JSON and log
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "logs"}}
 
 ## Setup
 
 1. Add the Grafana integration in Fleet.
-2. Configure the **Grafana Hosts** to point at your Grafana instance(s), e.g. `http://grafana:3000`.
-3. For logs, set the **Log Paths** to the location of your Grafana log file(s), e.g. `/var/log/grafana/grafana.log`.
+2. Configure the **Grafana Hosts** to point at your Grafana instance(s), for example `http://grafana:3000`.
+3. For logs, set the **Log Paths** to the location of your Grafana log file(s), for example `/var/log/grafana/grafana.log`.
 4. If your `/metrics` endpoint requires authentication, provide the **Username** and **Password**.
 
 ## Dashboards
